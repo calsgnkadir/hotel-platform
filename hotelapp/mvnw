@@ -1,0 +1,14 @@
+#!/bin/sh
+# Basit Maven çalıştırıcı - eğer mvn sistemde yüklüyse onu kullanır,
+# değilse kullanıcıya nasıl yükleneceğini söyler
+if command -v mvn >/dev/null 2>&1; then
+  exec mvn "$@"
+else
+  echo "Maven yüklü değil. Yüklemek için:"
+  echo "  Mac:     brew install maven"
+  echo "  Ubuntu:  sudo apt install maven"
+  echo "  Windows: https://maven.apache.org/download.cgi"
+  echo ""
+  echo "Veya IntelliJ IDEA kullan - Maven'ı otomatik yönetir."
+  exit 1
+fi

@@ -1,0 +1,62 @@
+package com.hotelapp.dto;
+
+import com.hotelapp.enums.ApplicationStatus;
+import lombok.Builder;
+import lombok.Data;
+
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
+@Data
+@Builder
+public class ApplicationResponse {
+
+    private Long id;
+    private ApplicationStatus status;
+    private String coverLetter;
+    private LocalDateTime deadline;
+    private LocalDateTime createdAt;
+    private String note;
+    private boolean noShow;
+
+    private CandidateSummary candidate;
+    private ListingSummary listing;
+
+    private List<AvailabilityDto> availabilities;
+    private List<DocumentRequestDto> documentRequests;
+
+    @Data @Builder
+    public static class CandidateSummary {
+        private Long id;
+        private String fullName;
+        private String email;
+    }
+
+    @Data @Builder
+    public static class ListingSummary {
+        private Long id;
+        private String title;
+        private String position;
+        private String jobType;
+        private Long businessId;
+        private String businessName;
+        private String businessType;
+    }
+
+    @Data @Builder
+    public static class AvailabilityDto {
+        private DayOfWeek dayOfWeek;
+        private LocalTime startTime;
+        private LocalTime endTime;
+    }
+
+    @Data @Builder
+    public static class DocumentRequestDto {
+        private Long id;
+        private String documentType;
+        private String status;
+        private LocalDateTime requestedAt;
+    }
+}

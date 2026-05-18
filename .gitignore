@@ -1,0 +1,51 @@
+# ─────────────────────────────────────────
+# IDE
+# ─────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+
+# ─────────────────────────────────────────
+# OS
+# ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─────────────────────────────────────────
+# Logs
+# ─────────────────────────────────────────
+*.log
+logs/
+
+# ─────────────────────────────────────────
+# Claude Code — sadece local ayarlar
+# Agent'lar (.claude/agents/) commit edilir, paylaşılır
+# ─────────────────────────────────────────
+.claude/settings.local.json
+
+# ─────────────────────────────────────────
+# Spring Boot (hotelapp/)
+# ─────────────────────────────────────────
+**/target/
+**/*.class
+*.jar
+
+# Yüklenen kullanıcı dosyaları — asla commit'leme
+hotelapp/uploads/
+
+# ─────────────────────────────────────────
+# Node / Vite (hotel-web/)
+# ─────────────────────────────────────────
+**/node_modules/
+**/dist/
+*.local
+
+# ─────────────────────────────────────────
+# Environment dosyaları — SECRETS, asla commit'leme
+# .env.example commit'leniyor (placeholder şablon)
+# ─────────────────────────────────────────
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example

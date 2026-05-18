@@ -1,0 +1,24 @@
+# Maven
+target/
+*.class
+*.jar
+
+# Environment — asla commit'leme
+.env
+*.env.local
+
+# Yüklenen belgeler
+uploads/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Loglar
+*.log
+logs/

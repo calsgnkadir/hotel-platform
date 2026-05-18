@@ -1,0 +1,49 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:hotel_platform}?useSSL=false&serverTimezone=Europe/Istanbul&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:hotelapp}
+    password: ${DB_PASSWORD:HotelApp2026}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 15MB
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:./uploads}
+
+# Swagger UI — http://localhost:8080/swagger-ui.html
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha       # tag'lere göre alfabetik sırala
+    operations-sorter: alpha
+    display-request-duration: true
+    disable-swagger-default-url: true
+
+logging:
+  level:
+    com.hotelapp: ${LOG_LEVEL:INFO}
+    org.springframework.security: ${LOG_LEVEL_SECURITY:WARN}
