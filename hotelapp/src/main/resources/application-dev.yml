@@ -17,10 +17,9 @@ spring:
     show-sql: true       # Dev'de SQL'i console'a yaz
 
 jwt:
-  # ⚠️ Bu değeri production'da kullanma — sadece geliştirme için!
-  secret: dev-only-secret-key-at-least-32-characters-long-!!!
+  # Dev varsayılanı; production'da JWT_SECRET environment variable ile override edilir
+  secret: ${JWT_SECRET:dev-only-secret-key-at-least-32-characters-long-!!!}
   expiration: 86400000
-
 file:
   upload-dir: ./uploads
 
