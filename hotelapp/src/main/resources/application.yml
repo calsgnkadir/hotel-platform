@@ -6,8 +6,8 @@ spring:
     active: dev
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:hotel_platform}?useSSL=false&serverTimezone=Europe/Istanbul&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME:hotelapp}
-    password: ${DB_PASSWORD:HotelApp2026}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
