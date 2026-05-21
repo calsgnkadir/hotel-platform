@@ -50,6 +50,17 @@ export async function deleteBusinessPhoto(photoId) {
   await api.delete(`/api/business/photos/${photoId}`)
 }
 
+/* ── Candidate profile ── */
+export async function getCandidateProfile() {
+  const { data } = await api.get('/api/candidate/profile')
+  return data
+}
+
+export async function updateCandidateProfile(payload) {
+  const { data } = await api.put('/api/candidate/profile', payload)
+  return data
+}
+
 /* ── Job listing endpoints (public browse) ── */
 /**
  * Aktif ilanları listele — tüm filtreler opsiyonel.
@@ -155,4 +166,16 @@ export async function reviewApplication(applicationId, decision, note) {
 export async function requestDocument(applicationId, documentType) {
   const { data } = await api.post(`/api/business/applications/${applicationId}/document-requests`, { documentType })
   return data
+}
+
+export async function getApplicationDocuments(applicationId) {
+  const { data } = await api.get(`/api/business/applications/${applicationId}/documents`)
+  return data
+}
+
+export async function viewDocument(documentId) {
+  const response = await api.get(`/api/documents/${documentId}/download`, { responseType: 'blob' })
+  const url = URL.createObjectURL(response.data)
+  window.open(url, '_blank')
+  // Blob URL açık sekmede kullanılırken iptal etmiyoruz
 }

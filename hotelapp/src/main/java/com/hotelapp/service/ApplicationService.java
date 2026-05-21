@@ -70,6 +70,22 @@ public class ApplicationService {
         }
 
         applicationRepository.save(application);
+
+        // Aday başvuru sırasında belirli hassas belgelere önceden izin verdiyse,
+        // her biri için GRANTED durumda DocumentRequest oluştur. İşletme görür/inceler.
+        if (request.getGrantedSensitiveTypes() != null && !request.getGrantedSensitiveTypes().isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            for (com.hotelapp.enums.DocumentType type : request.getGrantedSensitiveTypes()) {
+                DocumentRequest preGranted = DocumentRequest.builder()
+                        .application(application)
+                        .documentType(type)
+                        .status(DocumentRequestStatus.GRANTED)
+                        .respondedAt(now)
+                        .build();
+                documentRequestRepository.save(preGranted);
+            }
+        }
+
         return toResponse(application);
     }
 

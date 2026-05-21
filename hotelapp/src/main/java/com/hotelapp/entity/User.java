@@ -1,5 +1,9 @@
 package com.hotelapp.entity;
 
+import com.hotelapp.enums.EducationLevel;
+import com.hotelapp.enums.Gender;
+import com.hotelapp.enums.JobType;
+import com.hotelapp.enums.Language;
 import com.hotelapp.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,9 +11,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -54,6 +61,49 @@ public class User implements UserDetails {
     @Column(nullable = false)
     @Builder.Default
     private boolean enabled = true;
+
+    // ================================================================
+    // CANDIDATE PROFILE FIELDS (Faz C1)
+    // BUSINESS_OWNER kullanıcılarda bu alanlar boş kalır.
+    // ================================================================
+
+    private String district;              // İstanbul içi ilçe
+    private LocalDate birthDate;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    @Enumerated(EnumType.STRING)
+    private EducationLevel education;
+
+    @ElementCollection(targetClass = Language.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+        name = "user_languages",
+        joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "language")
+    @Builder.Default
+    private Set<Language> languages = new HashSet<>();
+
+    @ElementCollection(targetClass = JobType.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+        name = "user_availability_types",
+        joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "availability_type")
+    @Builder.Default
+    private Set<JobType> availabilityTypes = new HashSet<>();
+
+    @Column(columnDefinition = "TEXT")
+    private String previousExperience;    // Serbest text — önceki iş deneyimi
+
+    // Boolean (nullable): null = belirtilmemiş, true/false = cevap verildi
+    private Boolean smokes;
+    private Boolean hasLicense;
+
+    // ================================================================
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

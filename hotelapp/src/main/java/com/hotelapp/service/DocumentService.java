@@ -1,11 +1,15 @@
 package com.hotelapp.service;
 
+import com.hotelapp.entity.Application;
 import com.hotelapp.entity.Document;
+import com.hotelapp.entity.DocumentRequest;
 import com.hotelapp.entity.User;
+import com.hotelapp.enums.DocumentRequestStatus;
 import com.hotelapp.enums.DocumentType;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
+import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.DocumentRepository;
 import com.hotelapp.repository.DocumentRequestRepository;
 import com.hotelapp.repository.UserRepository;
@@ -23,6 +27,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +36,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentRequestRepository documentRequestRepository;
     private final UserRepository userRepository;
+    private final ApplicationRepository applicationRepository;
     private final FileStorageService fileStorageService;
 
     private static final Set<DocumentType> SENSITIVE_TYPES = Set.of(
@@ -83,6 +89,32 @@ public class DocumentService {
     public List<DocumentDto> getPublicDocuments(Long candidateId) {
         return documentRepository.findAllByStudentIdAndIsSensitiveFalse(candidateId)
                 .stream().map(this::toDto).toList();
+    }
+
+    /**
+     * İşletme sahibinin bir başvuru için erişebileceği tüm belgeleri döner.
+     * - Adayın tüm AÇIK (sensitive=false) belgeleri
+     * - Bu başvuru için GRANTED durumda olan hassas belge tiplerine ait belgeler
+     */
+    @Transactional(readOnly = true)
+    public List<DocumentDto> getAccessibleDocsForApplication(Long applicationId, Long ownerId) {
+        Application app = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
+
+        if (!app.getJobListing().getBusiness().getOwner().getId().equals(ownerId)) {
+            throw new UnauthorizedException("Bu başvuru size ait değil");
+        }
+
+        Set<DocumentType> grantedSensitiveTypes = app.getDocumentRequests().stream()
+                .filter(dr -> dr.getStatus() == DocumentRequestStatus.GRANTED)
+                .map(DocumentRequest::getDocumentType)
+                .collect(Collectors.toSet());
+
+        Long candidateId = app.getCandidate().getId();
+        return documentRepository.findAllByStudentId(candidateId).stream()
+                .filter(d -> !d.isSensitive() || grantedSensitiveTypes.contains(d.getType()))
+                .map(this::toDto)
+                .toList();
     }
 
     public Resource downloadDocument(Long documentId, Long requesterId, boolean isBusinessOwner) {

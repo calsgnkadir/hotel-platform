@@ -12,16 +12,26 @@ const JOB_TYPE_LABELS = {
   PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı',
 }
 const SHIFT_LABELS = {
-  MORNING: '🌅 Sabah (08:00–16:00)',
-  EVENING: '🌆 Akşam (16:00–24:00)',
-  NIGHT:   '🌙 Gece (22:00–08:00)',
+  MORNING: 'Sabah (08:00–16:00)',
+  EVENING: 'Akşam (16:00–24:00)',
+  NIGHT:   'Gece (22:00–08:00)',
 }
 const SHIFT_SHORT = {
-  MORNING: '🌅 Sabah',
-  EVENING: '🌆 Akşam',
-  NIGHT:   '🌙 Gece',
+  MORNING: 'Sabah',
+  EVENING: 'Akşam',
+  NIGHT:   'Gece',
 }
 const STATUS_LABELS = { ACTIVE: 'Aktif', PAUSED: 'Durduruldu', CLOSED: 'Kapatıldı' }
+const SENSITIVE_DOC_TYPES_BIZ = [
+  { type: 'CRIMINAL_RECORD',    label: 'Adli Sicil' },
+  { type: 'HEALTH_CERTIFICATE', label: 'Sağlık Raporu' },
+  { type: 'IDENTITY_DOCUMENT',  label: 'Kimlik Fotokopisi' },
+]
+const DOC_REQ_STATUS_LABELS = {
+  PENDING: { cls: 'bg-amber-50 text-amber-700',   label: 'Bekliyor' },
+  GRANTED: { cls: 'bg-emerald-50 text-emerald-700', label: 'İzin Verildi' },
+  DENIED:  { cls: 'bg-red-50 text-red-700',        label: 'Reddedildi' },
+}
 const BUSINESS_TYPE_LABELS = {
   HOTEL: '🏨 Otel',
   RESTAURANT: '🍽️ Restoran',
@@ -810,6 +820,26 @@ function ApplicationsTab({ applications, onRefresh }) {
   const [selected, setSelected] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [note, setNote] = useState('')
+  const [accessibleDocs, setAccessibleDocs] = useState([])
+  const [docsLoading, setDocsLoading] = useState(false)
+
+  // Modal açıldığında veya selected güncellendiğinde, erişilebilir belgeleri yükle
+  useEffect(() => {
+    if (!selected) { setAccessibleDocs([]); return }
+    setDocsLoading(true)
+    hotelApi.getApplicationDocuments(selected.id)
+      .then(setAccessibleDocs)
+      .catch(() => setAccessibleDocs([]))
+      .finally(() => setDocsLoading(false))
+  }, [selected?.id, selected?.documentRequests?.length])
+
+  async function handleViewDoc(doc) {
+    try {
+      await hotelApi.viewDocument(doc.id)
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    }
+  }
 
   const filtered = filter === 'ALL' ? applications
     : applications.filter(a => a.status === filter)
@@ -831,6 +861,21 @@ function ApplicationsTab({ applications, onRefresh }) {
       toast.success(decision === 'ACCEPTED' ? 'Başvuru kabul edildi ✅' : 'Başvuru reddedildi')
       setSelected(null)
       setNote('')
+      onRefresh()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
+  const [requestingType, setRequestingType] = useState('')
+
+  async function handleRequestDoc() {
+    if (!requestingType || !selected) return
+    setActionLoading(true)
+    try {
+      const updated = await hotelApi.requestDocument(selected.id, requestingType)
+      toast.success('Belge talebi gönderildi')
+      setRequestingType('')
+      setSelected(updated)  // güncel documentRequests listesi ile modal'ı yenile
       onRefresh()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionLoading(false) }
@@ -951,6 +996,88 @@ function ApplicationsTab({ applications, onRefresh }) {
                   </div>
                 </div>
               )}
+
+              {/* Görüntülenebilir Belgeler */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Görüntülenebilir Belgeler
+                </h3>
+                {docsLoading ? (
+                  <p className="text-xs text-slate-400">Yükleniyor...</p>
+                ) : accessibleDocs.length === 0 ? (
+                  <p className="text-xs text-slate-400 mb-3">
+                    Bu aday henüz belge yüklememiş veya hassas belgeler için izin yok.
+                  </p>
+                ) : (
+                  <div className="space-y-1.5 mb-3">
+                    {accessibleDocs.map(doc => {
+                      const typeLabel = (
+                        SENSITIVE_DOC_TYPES_BIZ.find(t => t.type === doc.type)?.label
+                      ) || doc.type
+                      return (
+                        <div key={doc.id}
+                          className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm text-slate-700 font-medium truncate">{typeLabel}</div>
+                            <div className="text-xs text-slate-400 truncate">{doc.originalFileName}</div>
+                          </div>
+                          <button onClick={() => handleViewDoc(doc)}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-md bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors flex-shrink-0">
+                            Görüntüle
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Belge Talepleri */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Belge Talepleri</h3>
+
+                {selected.documentRequests?.length > 0 ? (
+                  <div className="space-y-1.5 mb-3">
+                    {selected.documentRequests.map(dr => {
+                      const meta = SENSITIVE_DOC_TYPES_BIZ.find(t => t.type === dr.documentType)
+                      const statusMeta = DOC_REQ_STATUS_LABELS[dr.status] || { cls: 'bg-slate-100 text-slate-600', label: dr.status }
+                      return (
+                        <div key={dr.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
+                          <span className="text-sm text-slate-700">{meta?.label || dr.documentType}</span>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusMeta.cls}`}>
+                            {statusMeta.label}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 mb-3">Henüz belge talep edilmemiş</p>
+                )}
+
+                {/* Yeni talep — sadece sonuçlanmamış başvurularda */}
+                {['PENDING', 'REVIEWING'].includes(selected.status) && (() => {
+                  const requestedTypes = new Set(selected.documentRequests?.map(dr => dr.documentType) || [])
+                  const availableTypes = SENSITIVE_DOC_TYPES_BIZ.filter(t => !requestedTypes.has(t.type))
+                  if (availableTypes.length === 0) {
+                    return <p className="text-xs text-slate-400">Tüm hassas belge tipleri zaten talep edilmiş.</p>
+                  }
+                  return (
+                    <div className="flex gap-2">
+                      <select value={requestingType} onChange={e => setRequestingType(e.target.value)}
+                        className="input text-sm flex-1">
+                        <option value="">Belge tipi seç...</option>
+                        {availableTypes.map(t => <option key={t.type} value={t.type}>{t.label}</option>)}
+                      </select>
+                      <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
+                        className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all"
+                        style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                        Talep Et
+                      </button>
+                    </div>
+                  )
+                })()}
+              </div>
 
               {selected.status === 'REVIEWING' && (
                 <div className="border-t border-slate-100 pt-4 space-y-3">

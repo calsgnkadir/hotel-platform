@@ -3,6 +3,7 @@
 # ─────────────────────────────────────────
 .idea/
 .vscode/
+.run/
 *.iml
 
 # ─────────────────────────────────────────
@@ -49,3 +50,6 @@ hotelapp/uploads/
 **/.env.local
 **/.env.*.local
 !**/.env.example
+
+hotel-platform/
+untitled/

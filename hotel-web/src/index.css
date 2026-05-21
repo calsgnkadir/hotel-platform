@@ -10,7 +10,7 @@ html, body, #root {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #f1f5f9;
+  background: #0f172a;  /* koyu lacivert — slate-900 */
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
 }
@@ -160,14 +160,14 @@ body {
   @apply border-b-0;
 }
 
-/* ── Sidebar Nav ── */
+/* ── Sidebar Nav (koyu tema) ── */
 .nav-link {
-  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600
-         hover:text-slate-900 hover:bg-slate-100 transition-all duration-150 cursor-pointer;
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300
+         hover:text-white hover:bg-slate-800 transition-all duration-150 cursor-pointer;
 }
 
 .nav-link.active {
-  @apply text-blue-700 bg-blue-50;
+  @apply text-white bg-slate-800;
 }
 
 /* ── Empty State ── */

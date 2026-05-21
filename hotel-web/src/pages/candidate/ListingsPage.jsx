@@ -12,9 +12,9 @@ const JOB_TYPE_LABELS = {
 }
 const BUSINESS_TYPE_ICONS = { HOTEL: '🏨', RESTAURANT: '🍽️', CAFE: '☕' }
 const SHIFT_INFO = {
-  MORNING: { icon: '🌅', label: 'Sabah', time: '08:00–16:00' },
-  EVENING: { icon: '🌆', label: 'Akşam', time: '16:00–24:00' },
-  NIGHT:   { icon: '🌙', label: 'Gece',  time: '22:00–08:00' },
+  MORNING: { icon: '', label: 'Sabah', time: '08:00–16:00' },
+  EVENING: { icon: '', label: 'Akşam', time: '16:00–24:00' },
+  NIGHT:   { icon: '', label: 'Gece',  time: '22:00–08:00' },
 }
 const ISTANBUL_DISTRICTS = [
   'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler',
@@ -25,6 +25,24 @@ const ISTANBUL_DISTRICTS = [
   'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla',
   'Ümraniye', 'Üsküdar', 'Zeytinburnu',
 ]
+
+const WEEKDAYS_SHORT = [
+  { key: 'MONDAY',    label: 'Pzt' },
+  { key: 'TUESDAY',   label: 'Sal' },
+  { key: 'WEDNESDAY', label: 'Çar' },
+  { key: 'THURSDAY',  label: 'Per' },
+  { key: 'FRIDAY',    label: 'Cum' },
+  { key: 'SATURDAY',  label: 'Cmt' },
+  { key: 'SUNDAY',    label: 'Paz' },
+]
+
+// Hassas belge tipleri — açık olanlar (CV, TRANSCRIPT, STUDENT_CERTIFICATE) zaten herkese açık
+const SENSITIVE_DOC_LABELS = {
+  CRIMINAL_RECORD:    'Adli Sicil',
+  HEALTH_CERTIFICATE: 'Sağlık Raporu',
+  IDENTITY_DOCUMENT:  'Kimlik Fotokopisi',
+}
+const SENSITIVE_DOC_TYPES = Object.keys(SENSITIVE_DOC_LABELS)
 
 function formatSalary(min, max) {
   if (min && max) return `${min.toLocaleString('tr-TR')} – ${max.toLocaleString('tr-TR')} ₺`
@@ -38,11 +56,56 @@ function ApplyModal({ listing, onClose, onSuccess }) {
   const [coverLetter, setCoverLetter] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Daimi (PERMANENT) işlerde müsaitlik gerekmez — aday tam zamanlı çalışacak demek.
+  // Sezonluk/Günlük/Yarı Zamanlı için anlamlı.
+  const isFlexibleJob = listing.jobType !== 'PERMANENT'
+
+  // Müsaitlik (sadece esnek işlerde aktif)
+  const [selectedDays, setSelectedDays] = useState([])
+  const [startTime, setStartTime] = useState('09:00')
+  const [endTime, setEndTime] = useState('17:00')
+
+  // Hassas belge izinleri (sadece kullanıcının yüklediği türler arasından seçilebilir)
+  const [myDocs, setMyDocs] = useState([])
+  const [grantedTypes, setGrantedTypes] = useState([])
+
+  useEffect(() => {
+    hotelApi.getMyDocuments().then(setMyDocs).catch(() => setMyDocs([]))
+  }, [])
+
+  // Kullanıcının yüklediği hassas belge tipleri (eşsiz)
+  const uploadedSensitiveTypes = [...new Set(
+    myDocs.map(d => d.type).filter(t => SENSITIVE_DOC_TYPES.includes(t))
+  )]
+
+  function toggleDay(day) {
+    setSelectedDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day])
+  }
+
+  function toggleGrant(type) {
+    setGrantedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
+
+    if (selectedDays.length > 0 && endTime <= startTime) {
+      return toast.error('Bitiş saati başlangıçtan büyük olmalı')
+    }
+
+    // Daimi işlerde müsaitlik gönderme; esnek işlerde seçili günleri ekle
+    const availabilities = isFlexibleJob
+      ? selectedDays.map(day => ({ dayOfWeek: day, startTime, endTime }))
+      : []
+
     setLoading(true)
     try {
-      await hotelApi.applyToListing({ jobListingId: listing.id, coverLetter, availabilities: [] })
+      await hotelApi.applyToListing({
+        jobListingId: listing.id,
+        coverLetter,
+        availabilities,
+        grantedSensitiveTypes: grantedTypes,
+      })
       toast.success('Başvurunuz gönderildi!')
       onSuccess()
       onClose()
@@ -55,8 +118,9 @@ function ApplyModal({ listing, onClose, onSuccess }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-slate-100">
+      <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
                  style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
@@ -69,20 +133,89 @@ function ApplyModal({ listing, onClose, onSuccess }) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Ön Yazı */}
           <div>
             <label className="label">Ön Yazı <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
             <textarea
               value={coverLetter}
               onChange={e => setCoverLetter(e.target.value)}
-              className="input resize-none h-32 text-sm leading-relaxed"
+              className="input resize-none h-24 text-sm leading-relaxed"
               placeholder="Kendinizi kısaca tanıtın, neden bu pozisyonda çalışmak istediğinizi anlatın..."
               autoFocus
             />
             <p className="text-xs text-slate-400 mt-1">{coverLetter.length} karakter</p>
           </div>
 
-          <div className="flex gap-3">
+          {/* Müsaitlik takvimi — sadece esnek işlerde göster, daimi'de hiç görünmesin */}
+          {isFlexibleJob && (
+            <div>
+              <label className="label">Müsaitlik <span className="text-slate-400 font-normal">(opsiyonel — çalışabileceğin günler ve saatler)</span></label>
+              <div className="grid grid-cols-7 gap-1.5 mb-2">
+                {WEEKDAYS_SHORT.map(d => {
+                  const active = selectedDays.includes(d.key)
+                  return (
+                    <button key={d.key} type="button" onClick={() => toggleDay(d.key)}
+                      className={`py-2 rounded-lg border text-xs font-medium transition-all
+                        ${active
+                          ? 'border-violet-400 bg-violet-50 text-violet-700 shadow-sm'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300'}`}>
+                      {d.label}
+                    </button>
+                  )
+                })}
+              </div>
+              {selectedDays.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-slate-500">Başlangıç</label>
+                    <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)}
+                      className="input text-sm mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-500">Bitiş</label>
+                    <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)}
+                      className="input text-sm mt-1" />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Belge izinleri — sadece kullanıcının yüklediği hassas belgeler için */}
+          {uploadedSensitiveTypes.length > 0 && (
+            <div>
+              <label className="label">Belge İzinleri <span className="text-slate-400 font-normal">(işletme talep etmeden görsün)</span></label>
+              <div className="space-y-2">
+                {uploadedSensitiveTypes.map(type => {
+                  const checked = grantedTypes.includes(type)
+                  return (
+                    <label key={type}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-all
+                        ${checked
+                          ? 'border-violet-400 bg-violet-50'
+                          : 'border-slate-200 hover:border-violet-300'}`}>
+                      <input type="checkbox" checked={checked} onChange={() => toggleGrant(type)}
+                        className="w-4 h-4 accent-violet-600" />
+                      <span className="text-sm text-slate-700">{SENSITIVE_DOC_LABELS[type]}</span>
+                    </label>
+                  )
+                })}
+              </div>
+              <p className="text-xs text-slate-400 mt-1.5">
+                ⓘ CV, transkript ve öğrenci belgesi zaten herkese açık — izin gerekmez.
+              </p>
+            </div>
+          )}
+
+          {uploadedSensitiveTypes.length === 0 && (
+            <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-500 border border-slate-200">
+              💡 Hassas belge yüklemediysen "Belgelerim" sekmesinden ekleyebilir, başvuru sırasında işletmeye direkt izin verebilirsin.
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white py-3 -mx-6 px-6 border-t border-slate-100">
             <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm">İptal</button>
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"

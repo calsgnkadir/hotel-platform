@@ -8,7 +8,7 @@
 spring:
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:hotel_platform}?useSSL=false&serverTimezone=Europe/Istanbul&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
-    username: ${DB_USERNAME}
+    username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD}
 
   jpa:

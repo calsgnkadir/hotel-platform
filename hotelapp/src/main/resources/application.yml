@@ -6,7 +6,7 @@ spring:
     active: dev
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:hotel_platform}?useSSL=false&serverTimezone=Europe/Istanbul&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME}
+    username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
@@ -26,7 +26,7 @@ spring:
       max-request-size: 15MB
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:dev-only-secret-key-at-least-32-characters-long-!!!}
   expiration: ${JWT_EXPIRATION:86400000}
 
 file:

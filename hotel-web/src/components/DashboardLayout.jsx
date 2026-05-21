@@ -31,37 +31,37 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="min-h-screen flex">
 
       {/* ── Sidebar ── */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-100 shadow-sm
+        fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-800 shadow-sm
         flex flex-col transform transition-transform duration-300
         lg:relative lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Brand */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100">
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
             <span className="text-lg">🏨</span>
           </div>
           <div>
-            <div className="text-sm font-bold text-slate-900">AjansHotel</div>
+            <div className="text-sm font-bold text-white">AjansHotel</div>
             <div className="text-xs text-slate-400">İş Platformu</div>
           </div>
         </div>
 
         {/* User Info */}
-        <div className="px-4 py-4 border-b border-slate-100">
-          <div className="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
+        <div className="px-4 py-4 border-b border-slate-800">
+          <div className="flex items-center gap-3 bg-slate-800 rounded-xl p-3">
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
                  style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
               {user?.fullName?.charAt(0)?.toUpperCase() || '?'}
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-slate-800 truncate">{user?.fullName}</div>
-              <div className="text-xs text-slate-500 truncate">{user?.email}</div>
+              <div className="text-sm font-semibold text-white truncate">{user?.fullName}</div>
+              <div className="text-xs text-slate-400 truncate">{user?.email}</div>
             </div>
           </div>
         </div>
@@ -84,9 +84,9 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         </nav>
 
         {/* Logout */}
-        <div className="px-3 py-4 border-t border-slate-100">
+        <div className="px-3 py-4 border-t border-slate-800">
           <button onClick={handleLogout}
-            className="nav-link w-full text-left text-red-500 hover:text-red-600 hover:bg-red-50">
+            className="nav-link w-full text-left text-red-400 hover:text-red-300 hover:bg-red-950/40">
             <span className="text-base">🚪</span>
             <span>Çıkış Yap</span>
           </button>
@@ -102,28 +102,27 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       {/* ── Main Content ── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-slate-100 px-4 lg:px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <header className="bg-slate-900 border-b border-slate-800 px-4 lg:px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-sm">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors">
-              <svg className="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              className="lg:hidden p-2 rounded-lg hover:bg-slate-800 transition-colors">
+              <svg className="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </button>
             <div>
-              <h1 className="text-base font-semibold text-slate-900">
+              <h1 className="text-base font-semibold text-white">
                 {navItems.find(n => n.id === activeTab)?.label || 'Panel'}
               </h1>
-              <p className="text-xs text-slate-500 hidden sm:block">
+              <p className="text-xs text-slate-400 hidden sm:block">
                 {isCandidate ? 'AjansHotel · Aday Paneli' : 'AjansHotel · İşletme Paneli'}
               </p>
             </div>
           </div>
 
           {/* Role badge */}
-          <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold
-            ${isCandidate ? 'bg-violet-50 text-violet-700' : 'bg-emerald-50 text-emerald-700'}`}>
-            <span>{isCandidate ? '💼' : '🏢'}</span>
+          <div className={`hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-semibold
+            ${isCandidate ? 'bg-violet-500/20 text-violet-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
             {isCandidate ? 'Aday' : 'İşletme'}
           </div>
         </header>

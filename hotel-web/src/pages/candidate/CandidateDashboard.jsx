@@ -6,6 +6,38 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import ListingsPage from './ListingsPage'
 
+const ISTANBUL_DISTRICTS = [
+  'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler',
+  'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü',
+  'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt',
+  'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane',
+  'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer',
+  'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla',
+  'Ümraniye', 'Üsküdar', 'Zeytinburnu',
+]
+const GENDER_LABELS = { MALE: 'Erkek', FEMALE: 'Kadın', OTHER: 'Diğer' }
+const EDUCATION_LABELS = {
+  HIGH_SCHOOL: 'Lise',
+  UNIVERSITY_GRADUATE: 'Üniversite',
+}
+const LANGUAGE_LABELS = {
+  TURKISH:  'Türkçe',  ENGLISH:  'İngilizce', GERMAN:   'Almanca',
+  RUSSIAN:  'Rusça',   ARABIC:   'Arapça',    FRENCH:   'Fransızca',
+  SPANISH:  'İspanyolca', ITALIAN: 'İtalyanca',
+}
+const AVAILABILITY_LABELS = {
+  PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı',
+}
+const DOC_TYPE_LABELS = {
+  CV: 'CV',
+  TRANSCRIPT: 'Transkript',
+  STUDENT_CERTIFICATE: 'Öğrenci Belgesi',
+  CRIMINAL_RECORD: 'Adli Sicil',
+  HEALTH_CERTIFICATE: 'Sağlık Raporu',
+  IDENTITY_DOCUMENT: 'Kimlik Fotokopisi',
+}
+const SENSITIVE_DOC_TYPES_CAND = ['CRIMINAL_RECORD', 'HEALTH_CERTIFICATE', 'IDENTITY_DOCUMENT']
+
 /* ── Status Badge ── */
 function StatusBadge({ status }) {
   const map = {
@@ -20,7 +52,30 @@ function StatusBadge({ status }) {
 }
 
 /* ── Applications Tab ── */
-function ApplicationsTab({ applications }) {
+function ApplicationsTab({ applications, onRefresh }) {
+  const [respondingId, setRespondingId] = useState(null)
+  const [myDocs, setMyDocs] = useState([])
+
+  // Aday'ın yüklediği belge tipleri — Onayla butonunu validate için
+  useEffect(() => {
+    hotelApi.getMyDocuments().then(setMyDocs).catch(() => setMyDocs([]))
+  }, [applications])  // başvuru güncellenince belgeler de yeniden okunsun
+
+  const uploadedTypes = new Set(myDocs.map(d => d.type))
+
+  async function handleRespond(reqId, grant) {
+    setRespondingId(reqId)
+    try {
+      await hotelApi.respondDocumentRequest(reqId, grant)
+      toast.success(grant ? 'Belgeye izin verildi' : 'Talep reddedildi')
+      onRefresh?.()
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setRespondingId(null)
+    }
+  }
+
   if (applications.length === 0) {
     return (
       <div className="card">
@@ -66,15 +121,48 @@ function ApplicationsTab({ applications }) {
             <div className="px-4 pb-4">
               <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Belge Talepleri</div>
               <div className="space-y-2">
-                {app.documentRequests.map(dr => (
-                  <div key={dr.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
-                    <span className="text-sm text-slate-700">{dr.documentType}</span>
-                    <span className={`badge text-xs ${
-                      dr.status === 'PENDING' ? 'badge-pending' :
-                      dr.status === 'GRANTED' ? 'badge-accepted' : 'badge-rejected'
-                    }`}>{dr.status}</span>
-                  </div>
-                ))}
+                {app.documentRequests.map(dr => {
+                  const label = DOC_TYPE_LABELS[dr.documentType] || dr.documentType
+                  const isPending = dr.status === 'PENDING'
+                  const hasUploaded = uploadedTypes.has(dr.documentType)
+                  return (
+                    <div key={dr.id}
+                      className={`rounded-lg px-3 py-2.5 ${isPending ? 'bg-violet-50 border border-violet-200' : 'bg-slate-50'}`}>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className="text-sm text-slate-700 font-medium">{label}</span>
+                        {!isPending && (
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                            dr.status === 'GRANTED' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+                          }`}>
+                            {dr.status === 'GRANTED' ? 'İzin Verdin' : 'Reddettin'}
+                          </span>
+                        )}
+                      </div>
+                      {isPending && (
+                        <>
+                          {!hasUploaded && (
+                            <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5 mt-2">
+                              ⚠ Bu belgeyi henüz yüklemedin. <b>Belgelerim</b> sekmesinden yükledikten sonra izin verebilirsin.
+                            </div>
+                          )}
+                          <div className="flex gap-2 mt-2">
+                            <button onClick={() => handleRespond(dr.id, true)}
+                              disabled={respondingId === dr.id || !hasUploaded}
+                              title={!hasUploaded ? 'Önce bu belgeyi yükle' : ''}
+                              className="flex-1 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                              İzin Ver
+                            </button>
+                            <button onClick={() => handleRespond(dr.id, false)}
+                              disabled={respondingId === dr.id}
+                              className="flex-1 py-1.5 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold transition-colors disabled:opacity-50">
+                              Reddet
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -212,17 +300,6 @@ function OverviewTab({ user, applications, onTabChange }) {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Card */}
-      <div className="rounded-2xl p-6 text-white relative overflow-hidden"
-           style={{ background: 'linear-gradient(135deg, #3b0764 0%, #7c3aed 60%, #2563eb 100%)' }}>
-        <div className="relative z-10">
-          <div className="text-3xl mb-3">👋</div>
-          <h2 className="text-xl font-bold">Hoş geldin, {user?.fullName?.split(' ')[0]}!</h2>
-          <p className="text-violet-200 text-sm mt-1">İstanbul'un otel iş platformu</p>
-        </div>
-        <div className="absolute -right-8 -bottom-8 text-9xl opacity-10 select-none">💼</div>
-      </div>
-
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
@@ -281,6 +358,213 @@ function OverviewTab({ user, applications, onTabChange }) {
   )
 }
 
+/* ── Profile Tab ── */
+function ProfileTab() {
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState(null)
+  const [profile, setProfile] = useState(null)  // readonly meta (email, role, isStudent)
+
+  useEffect(() => {
+    hotelApi.getCandidateProfile()
+      .then(data => {
+        setProfile(data)
+        setForm({
+          fullName:           data.fullName           || '',
+          phone:              data.phone              || '',
+          district:           data.district           || '',
+          birthDate:          data.birthDate          || '',
+          gender:             data.gender             || '',
+          education:          data.education          || '',
+          languages:          data.languages          || [],
+          availabilityTypes:  data.availabilityTypes  || [],
+          previousExperience: data.previousExperience || '',
+          smokes:             data.smokes ?? null,
+          hasLicense:         data.hasLicense ?? null,
+        })
+      })
+      .catch(() => toast.error('Profil yüklenemedi'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  function handleChange(e) {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  function toggleSetField(field, value) {
+    setForm(prev => {
+      const has = prev[field].includes(value)
+      return {
+        ...prev,
+        [field]: has ? prev[field].filter(x => x !== value) : [...prev[field], value],
+      }
+    })
+  }
+
+  function setTriState(field, raw) {
+    setForm(prev => ({
+      ...prev,
+      [field]: raw === 'unknown' ? null : raw === 'yes',
+    }))
+  }
+
+  const triValue = (v) => v === null || v === undefined ? 'unknown' : (v ? 'yes' : 'no')
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    if (!form.fullName.trim()) return toast.error('Ad soyad zorunlu')
+
+    setSaving(true)
+    try {
+      const payload = {
+        fullName:           form.fullName.trim(),
+        phone:              form.phone.trim() || null,
+        district:           form.district || null,
+        birthDate:          form.birthDate || null,
+        gender:             form.gender || null,
+        education:          form.education || null,
+        languages:          form.languages,
+        availabilityTypes:  form.availabilityTypes,
+        previousExperience: form.previousExperience.trim() || null,
+        smokes:             form.smokes,
+        hasLicense:         form.hasLicense,
+      }
+      const data = await hotelApi.updateCandidateProfile(payload)
+      setProfile(data)
+      toast.success('Profil güncellendi!')
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) return <div className="flex justify-center py-16"><div className="spinner" /></div>
+  if (!form) return null
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5 max-w-3xl">
+      {/* Block 1: Temel Bilgiler */}
+      <div className="card p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Temel Bilgiler</h3>
+          {profile?.isStudent && (
+            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
+              🎓 Onaylı Öğrenci
+            </span>
+          )}
+        </div>
+
+        <div>
+          <label className="label">Ad Soyad *</label>
+          <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="input" />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="label">E-posta <span className="text-slate-400 font-normal">(değiştirilemez)</span></label>
+            <input type="email" value={profile?.email || ''} disabled
+              className="input bg-slate-50 text-slate-500 cursor-not-allowed" />
+          </div>
+          <div>
+            <label className="label">Telefon</label>
+            <input type="text" name="phone" value={form.phone} onChange={handleChange}
+              className="input" placeholder="05XX XXX XX XX" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label className="label">İlçe</label>
+            <select name="district" value={form.district} onChange={handleChange} className="input">
+              <option value="">Seçin</option>
+              {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label">Doğum Tarihi</label>
+            <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange} className="input" />
+          </div>
+          <div>
+            <label className="label">Cinsiyet</label>
+            <select name="gender" value={form.gender} onChange={handleChange} className="input">
+              <option value="">Belirtmedim</option>
+              {Object.entries(GENDER_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Block 2: Eğitim */}
+      <div className="card p-5 space-y-4">
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Eğitim</h3>
+
+        <div>
+          <label className="label">Eğitim Durumu <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+          <select name="education" value={form.education} onChange={handleChange} className="input">
+            <option value="">Seçin</option>
+            {Object.entries(EDUCATION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {/* Block 3: İş Tercihleri */}
+      <div className="card p-5 space-y-4">
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">İş Tercihleri</h3>
+
+        <div>
+          <label className="label">Müsaitlik Türü <span className="text-slate-400 font-normal">(birden fazla seçebilirsin)</span></label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {Object.entries(AVAILABILITY_LABELS).map(([key, label]) => {
+              const active = form.availabilityTypes.includes(key)
+              return (
+                <button key={key} type="button" onClick={() => toggleSetField('availabilityTypes', key)}
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all
+                    ${active
+                      ? 'border-violet-400 bg-violet-50 text-violet-700 shadow-sm'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300'}`}>
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className="label">Önceki Deneyim <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+          <textarea name="previousExperience" value={form.previousExperience} onChange={handleChange}
+            className="input resize-none h-24 text-sm"
+            placeholder="Daha önce çalıştığın yerler, pozisyonlar, kazandığın deneyimler..." />
+        </div>
+      </div>
+
+      {/* Block 4: Diğer */}
+      <div className="card p-5 space-y-4">
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Diğer</h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="label">Ehliyet</label>
+            <select value={triValue(form.hasLicense)} onChange={e => setTriState('hasLicense', e.target.value)} className="input">
+              <option value="unknown">Belirtmedim</option>
+              <option value="yes">Var</option>
+              <option value="no">Yok</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button type="submit" disabled={saving}
+          className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', boxShadow: '0 3px 12px rgba(124,58,237,0.3)' }}>
+          {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
 /* ── Placeholder Tab ── */
 function PlaceholderTab({ icon, title, desc }) {
   return (
@@ -324,9 +608,9 @@ export default function CandidateDashboard() {
         <>
           {activeTab === 'overview'      && <OverviewTab user={user} applications={applications} onTabChange={setActiveTab} />}
           {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={fetchApplications} />}
-          {activeTab === 'applications'  && <ApplicationsTab applications={applications} />}
+          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={fetchApplications} />}
           {activeTab === 'documents'     && <DocumentsTab />}
-          {activeTab === 'profile'       && <PlaceholderTab icon="👤" title="Profil" desc="Profil düzenleme yakında eklenecek" />}
+          {activeTab === 'profile'       && <ProfileTab />}
         </>
       )}
     </DashboardLayout>
