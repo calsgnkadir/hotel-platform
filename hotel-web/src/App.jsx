@@ -7,6 +7,7 @@ import RegisterPage from './pages/auth/RegisterPage'
 import CandidateDashboard from './pages/candidate/CandidateDashboard'
 import BusinessDashboard from './pages/business/BusinessDashboard'
 import AdminPage from './pages/admin/AdminPage'
+import KvkkPage from './pages/KvkkPage'
 
 function RootRedirect() {
   const { user, loading } = useAuth()
@@ -28,6 +29,7 @@ export default function App() {
           {/* Public */}
           <Route path="/login"    element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/kvkk"     element={<KvkkPage />} />
 
           {/* Candidate panel */}
           <Route

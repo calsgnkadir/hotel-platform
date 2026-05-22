@@ -280,6 +280,13 @@ export default function RegisterPage() {
                 Giriş yap
               </Link>
             </p>
+            <p className="text-xs text-center text-slate-400 mt-2">
+              Kayıt olarak{' '}
+              <Link to="/kvkk" className="underline hover:text-violet-600">
+                KVKK Aydınlatma Metni
+              </Link>
+              'ni okuduğunu kabul edersin.
+            </p>
           </form>
         )}
       </div>
