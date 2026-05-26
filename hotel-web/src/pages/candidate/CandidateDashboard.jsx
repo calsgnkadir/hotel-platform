@@ -300,7 +300,13 @@ function DocumentsTab() {
                       {new Date(doc.uploadedAt).toLocaleDateString('tr-TR')}
                     </td>
                     <td>
-                      <button onClick={() => handleDelete(doc.id)} className="btn-danger">Sil</button>
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => hotelApi.viewDocument(doc.id)}
+                          className="text-xs px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors font-medium">
+                          Görüntüle
+                        </button>
+                        <button onClick={() => handleDelete(doc.id)} className="btn-danger">Sil</button>
+                      </div>
                     </td>
                   </tr>
                 ))}
