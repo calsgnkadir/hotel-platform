@@ -83,6 +83,13 @@
             <version>8.10.1</version>
         </dependency>
 
+        <!-- Cloudinary — kalıcı dosya/foto storage (Railway ephemeral disk sorunu için) -->
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http5</artifactId>
+            <version>1.39.0</version>
+        </dependency>
+
         <!-- API Dokümantasyonu — Swagger UI -->
         <dependency>
             <groupId>org.springdoc</groupId>

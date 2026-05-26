@@ -181,10 +181,11 @@ export async function getApplicationDocuments(applicationId) {
 }
 
 export async function viewDocument(documentId) {
-  const response = await api.get(`/api/documents/${documentId}/download`, { responseType: 'blob' })
-  const url = URL.createObjectURL(response.data)
-  window.open(url, '_blank')
-  // Blob URL açık sekmede kullanılırken iptal etmiyoruz
+  // Backend Cloudinary signed URL döner (1 saat geçerli)
+  const { data } = await api.get(`/api/documents/${documentId}/url`)
+  if (data?.url) {
+    window.open(data.url, '_blank', 'noopener,noreferrer')
+  }
 }
 
 /* ── Admin endpoints ── */

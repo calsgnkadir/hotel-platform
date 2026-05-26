@@ -30,7 +30,14 @@ jwt:
   expiration: ${JWT_EXPIRATION:86400000}
 
 file:
-  upload-dir: ${FILE_UPLOAD_DIR:./uploads}
+  upload-dir: ${FILE_UPLOAD_DIR:./uploads}   # legacy, artık kullanılmıyor — Cloudinary kullanıyoruz
+
+# Cloudinary — kalıcı dosya/foto storage
+# Format: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+# Dev: .env'den veya IntelliJ run config'ten gelir
+# Prod: Railway env var
+cloudinary:
+  url: ${CLOUDINARY_URL:}
 
 # Swagger UI — http://localhost:8080/swagger-ui.html
 springdoc:

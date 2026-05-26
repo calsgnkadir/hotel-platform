@@ -4,7 +4,6 @@ import com.hotelapp.entity.User;
 import com.hotelapp.enums.BusinessType;
 import com.hotelapp.service.BusinessService;
 import com.hotelapp.service.BusinessService.BusinessDto;
-import com.hotelapp.service.BusinessService.LoadedFile;
 import com.hotelapp.service.BusinessService.PhotoDto;
 import com.hotelapp.service.BusinessService.ProfileUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +11,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -46,18 +45,20 @@ public class BusinessController {
         return ResponseEntity.ok(businessService.getGalleryPhotosForBusiness(id));
     }
 
-    @Operation(summary = "Logo dosyasını ham byte olarak getir (public)")
+    @Operation(summary = "Logo URL'sine yönlendir (legacy — yeni frontend BusinessDto.logoUrl'i direkt kullanır)")
     @GetMapping("/api/businesses/{id}/logo")
-    public ResponseEntity<Resource> getLogoBytes(@PathVariable Long id) {
-        LoadedFile lf = businessService.loadLogo(id);
-        return ResponseEntity.ok().contentType(lf.mediaType()).body(lf.resource());
+    public ResponseEntity<Void> getLogo(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(businessService.getLogoRedirectUrl(id)))
+                .build();
     }
 
-    @Operation(summary = "Galeri foto dosyasını ham byte olarak getir (public)")
+    @Operation(summary = "Galeri foto URL'sine yönlendir (legacy)")
     @GetMapping("/api/businesses/photos/{photoId}")
-    public ResponseEntity<Resource> getGalleryPhotoBytes(@PathVariable Long photoId) {
-        LoadedFile lf = businessService.loadGalleryPhoto(photoId);
-        return ResponseEntity.ok().contentType(lf.mediaType()).body(lf.resource());
+    public ResponseEntity<Void> getGalleryPhoto(@PathVariable Long photoId) {
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(businessService.getGalleryPhotoRedirectUrl(photoId)))
+                .build();
     }
 
     // ================================================================

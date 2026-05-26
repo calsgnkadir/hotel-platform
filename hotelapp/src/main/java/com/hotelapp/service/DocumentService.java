@@ -6,7 +6,6 @@ import com.hotelapp.entity.DocumentRequest;
 import com.hotelapp.entity.User;
 import com.hotelapp.enums.DocumentRequestStatus;
 import com.hotelapp.enums.DocumentType;
-import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
@@ -16,14 +15,10 @@ import com.hotelapp.repository.UserRepository;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.MalformedURLException;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -117,21 +112,28 @@ public class DocumentService {
                 .toList();
     }
 
-    public Resource downloadDocument(Long documentId, Long requesterId, boolean isBusinessOwner) {
+    /**
+     * Belgeye erişim kontrolü yapar ve Cloudinary signed URL döner.
+     * Caller (controller) bu URL'ye 302 redirect eder.
+     */
+    public String getDownloadUrl(Long documentId, Long requesterId, boolean isBusinessOwner) {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Belge", documentId));
 
         if (!isBusinessOwner) {
+            // Aday kendi belgesini her zaman görebilir
             if (!document.getStudent().getId().equals(requesterId)) {
                 throw new UnauthorizedException("Bu belgeye erişim yetkiniz yok");
             }
-            return loadResource(document.getFilePath());
+            return fileStorageService.signedUrl(document.getFilePath());
         }
 
+        // İşletme sahibi — hassas olmayan belgelere erişebilir
         if (!document.isSensitive()) {
-            return loadResource(document.getFilePath());
+            return fileStorageService.signedUrl(document.getFilePath());
         }
 
+        // Hassas belge → talep + onay kontrolü
         boolean granted = documentRequestRepository.hasGrantedAccess(
                 requesterId,
                 document.getStudent().getId(),
@@ -142,20 +144,7 @@ public class DocumentService {
                     "Bu belgeye erişmek için adaydan talep oluşturup onay almanız gerekiyor");
         }
 
-        return loadResource(document.getFilePath());
-    }
-
-    private Resource loadResource(String filePath) {
-        try {
-            Path path = fileStorageService.getFullPath(filePath);
-            Resource resource = new UrlResource(path.toUri());
-            if (!resource.exists() || !resource.isReadable()) {
-                throw new BusinessRuleException("Dosya okunamıyor, yeniden yüklemeyi deneyin");
-            }
-            return resource;
-        } catch (MalformedURLException e) {
-            throw new BusinessRuleException("Dosya yolu hatalı: " + e.getMessage());
-        }
+        return fileStorageService.signedUrl(document.getFilePath());
     }
 
     private DocumentDto toDto(Document doc) {

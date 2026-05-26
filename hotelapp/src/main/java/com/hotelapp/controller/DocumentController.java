@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -63,19 +64,36 @@ public class DocumentController {
         return ResponseEntity.ok(documentService.getPublicDocuments(candidateId));
     }
 
-    @Operation(summary = "Dosya indir — CANDIDATE veya BUSINESS_OWNER")
+    @Operation(
+            summary = "Dosya indir — CANDIDATE veya BUSINESS_OWNER",
+            description = "Cloudinary signed URL'ye 302 redirect döner. Browser/axios redirect'i takip eder."
+    )
     @GetMapping("/{id}/download")
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
-    public ResponseEntity<Resource> download(
+    public ResponseEntity<Void> download(
             @AuthenticationPrincipal User currentUser,
             @PathVariable Long id) {
         boolean isBusinessOwner = currentUser.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_BUSINESS_OWNER"));
-        Resource resource = documentService.downloadDocument(id, currentUser.getId(), isBusinessOwner);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + resource.getFilename() + "\"")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
+        String url = documentService.getDownloadUrl(id, currentUser.getId(), isBusinessOwner);
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(url))
+                .build();
+    }
+
+    @Operation(
+            summary = "Dosya görüntüleme URL'si al — CANDIDATE veya BUSINESS_OWNER",
+            description = "Erişim kontrolünü yapar ve Cloudinary signed URL'yi JSON olarak döner. " +
+                    "Frontend bu URL'yi window.open() ile açabilir."
+    )
+    @GetMapping("/{id}/url")
+    @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
+    public ResponseEntity<Map<String, String>> getDownloadUrl(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id) {
+        boolean isBusinessOwner = currentUser.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_BUSINESS_OWNER"));
+        String url = documentService.getDownloadUrl(id, currentUser.getId(), isBusinessOwner);
+        return ResponseEntity.ok(Map.of("url", url));
     }
 }

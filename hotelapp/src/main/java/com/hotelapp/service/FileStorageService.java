@@ -1,25 +1,36 @@
 package com.hotelapp.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.hotelapp.exception.BusinessRuleException;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Dosya storage — Cloudinary tabanlı (Railway ephemeral disk yerine).
+ *
+ * DB'ye saklanan değer: Cloudinary public_id (örn: "ajanshotel/documents/5/cv_abc123")
+ *   Tam URL gerektiğinde {@link #publicUrl(String)} ile build edilir.
+ *
+ * Hassas belgeler (criminal/health/identity) için resource_type=raw, type=authenticated kullanılır;
+ * indirme zamanı signed URL üretilir. Görseller ve public belgeler için type=upload (CDN'den public).
+ */
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class FileStorageService {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final Cloudinary cloudinary;
 
-    // İzin verilen dosya uzantıları (belgeler)
-    // PDF + her tipte foto (HEIC iPhone, WebP modern, DOC/DOCX Office)
+    // Belge uzantıları (CV, transkript, foto, vs.)
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             "pdf",
             "jpg", "jpeg", "png", "webp", "heic", "heif",
@@ -31,142 +42,181 @@ public class FileStorageService {
             "jpg", "jpeg", "png", "webp", "heic", "heif"
     );
 
-    // Maksimum dosya boyutu: 15 MB (belge — modern telefon foto + PDF için)
-    private static final long MAX_FILE_SIZE = 15L * 1024 * 1024;
+    private static final long MAX_FILE_SIZE = 15L * 1024 * 1024;   // 15 MB
+    private static final long MAX_IMAGE_SIZE = 10L * 1024 * 1024;  // 10 MB
 
-    // Maksimum görsel boyutu: 10 MB (modern foto için)
-    private static final long MAX_IMAGE_SIZE = 10L * 1024 * 1024;
-
-    @PostConstruct
-    public void init() throws IOException {
-        // Uygulama başlarken klasörü oluştur
-        Files.createDirectories(Paths.get(uploadDir));
-        Files.createDirectories(Paths.get(uploadDir, "documents"));
-        Files.createDirectories(Paths.get(uploadDir, "business"));
-    }
-
-    /**
-     * Dosyayı diske kaydeder ve kaydedilen yolu döner.
-     * Dosya adı: {UUID}_{orijinal-ad} — çakışma ve path traversal riskini önler.
-     */
+    // -----------------------------------------------------------------------
+    // Aday belge yükleme
+    // -----------------------------------------------------------------------
     public String store(MultipartFile file, Long studentId) {
-        // Boş dosya kontrolü
-        if (file.isEmpty()) {
-            throw new BusinessRuleException("Boş dosya yüklenemez");
-        }
+        validate(file, ALLOWED_EXTENSIONS, MAX_FILE_SIZE,
+                "Kabul edilenler: PDF, JPG, JPEG, PNG, WEBP, HEIC, DOC, DOCX",
+                "Dosya çok büyük (%.1f MB). Maksimum 15 MB olmalı.");
 
-        // Boyut kontrolü
-        if (file.getSize() > MAX_FILE_SIZE) {
-            double mb = file.getSize() / (1024.0 * 1024.0);
-            throw new BusinessRuleException(
-                    String.format("Dosya çok büyük (%.1f MB). Maksimum 15 MB olmalı.", mb));
-        }
+        String ext = getExtension(file.getOriginalFilename()).toLowerCase();
+        // Görseller image olarak, diğerleri raw olarak yüklenir
+        String resourceType = isImageExt(ext) ? "image" : "raw";
+        String folder = "ajanshotel/documents/" + studentId;
+        String publicId = folder + "/" + UUID.randomUUID();
 
-        // Uzantı kontrolü
-        String originalName = StringUtils.cleanPath(file.getOriginalFilename());
-        if (originalName == null || originalName.isBlank()) {
-            throw new BusinessRuleException("Dosya adı okunamadı");
-        }
-        String extension = getExtension(originalName).toLowerCase();
-        if (extension.isEmpty()) {
-            throw new BusinessRuleException("Dosyanın uzantısı yok — geçerli bir dosya seçin");
-        }
-        if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new BusinessRuleException(
-                    "'." + extension + "' formatı desteklenmiyor. " +
-                    "Kabul edilenler: PDF, JPG, JPEG, PNG, WEBP, HEIC, DOC, DOCX");
-        }
+        // Belgeler PUBLIC değil — type=authenticated → signed URL gerekir
+        Map<String, Object> options = ObjectUtils.asMap(
+                "public_id", publicId,
+                "resource_type", resourceType,
+                "type", "authenticated",
+                "overwrite", true,
+                "use_filename", false,
+                "unique_filename", false
+        );
 
-        // Path traversal koruması
-        if (originalName.contains("..")) {
-            throw new BusinessRuleException("Geçersiz dosya adı");
-        }
-
-        // Öğrenciye özel klasör: uploads/documents/{studentId}/
         try {
-            Path studentDir = Paths.get(uploadDir, "documents", studentId.toString());
-            Files.createDirectories(studentDir);
-
-            String uniqueName = UUID.randomUUID() + "_" + originalName;
-            Path targetPath = studentDir.resolve(uniqueName);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-            // DB'ye kaydedilecek relative path
-            return "documents/" + studentId + "/" + uniqueName;
-
+            Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), options);
+            log.info("Cloudinary belge yüklendi: {} (size={} KB)", publicId, file.getSize() / 1024);
+            // DB'ye saklanacak değer: prefix + public_id + ":" + resource_type
+            // Format: "authenticated:raw:ajanshotel/documents/5/uuid"
+            return "authenticated:" + resourceType + ":" + publicId;
         } catch (IOException e) {
-            throw new BusinessRuleException("Dosya kaydedilemedi: " + e.getMessage());
+            throw new BusinessRuleException("Cloudinary'ye yüklenemedi: " + e.getMessage());
         }
     }
 
-    /**
-     * Dosyayı diskten siler.
-     */
-    public void delete(String filePath) {
-        try {
-            Path path = Paths.get(uploadDir, filePath);
-            Files.deleteIfExists(path);
-        } catch (IOException e) {
-            // Silme hatası kritik değil, loglanır geçilir
-            System.err.println("Dosya silinemedi: " + filePath + " - " + e.getMessage());
-        }
-    }
-
-    /**
-     * İşletme görseli kaydet (logo veya galeri).
-     * @param subfolder "logo" veya "gallery"
-     * @return relative path: "business/{businessId}/{subfolder}/{uuid}_{name}"
-     */
+    // -----------------------------------------------------------------------
+    // İşletme görseli (logo/galeri) yükleme — PUBLIC, CDN'den direkt erişim
+    // -----------------------------------------------------------------------
     public String storeBusinessImage(MultipartFile file, Long businessId, String subfolder) {
+        validate(file, ALLOWED_IMAGE_EXTENSIONS, MAX_IMAGE_SIZE,
+                "Kabul edilenler: JPG, JPEG, PNG, WEBP, HEIC",
+                "Görsel çok büyük (%.1f MB). Maksimum 10 MB olmalı.");
+
+        String folder = "ajanshotel/business/" + businessId + "/" + subfolder;
+        String publicId = folder + "/" + UUID.randomUUID();
+
+        Map<String, Object> options = ObjectUtils.asMap(
+                "public_id", publicId,
+                "resource_type", "image",
+                "type", "upload",
+                "overwrite", true,
+                "use_filename", false,
+                "unique_filename", false,
+                "transformation", new com.cloudinary.Transformation()
+                        .quality("auto").fetchFormat("auto")
+        );
+
+        try {
+            Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), options);
+            log.info("Cloudinary görsel yüklendi: {} (size={} KB)", publicId, file.getSize() / 1024);
+            // Format: "upload:image:ajanshotel/business/.../uuid"
+            return "upload:image:" + publicId;
+        } catch (IOException e) {
+            throw new BusinessRuleException("Cloudinary'ye yüklenemedi: " + e.getMessage());
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Sil
+    // -----------------------------------------------------------------------
+    public void delete(String storedRef) {
+        if (storedRef == null || storedRef.isBlank()) return;
+
+        ParsedRef ref = parseRef(storedRef);
+        Map<String, Object> options = ObjectUtils.asMap(
+                "resource_type", ref.resourceType,
+                "type", ref.type,
+                "invalidate", true
+        );
+        try {
+            cloudinary.uploader().destroy(ref.publicId, options);
+            log.info("Cloudinary silindi: {}", ref.publicId);
+        } catch (IOException e) {
+            // Silme hatası kritik değil
+            log.warn("Cloudinary silinemedi: {} — {}", ref.publicId, e.getMessage());
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Public URL üret (CDN'den direkt erişilebilir — sadece type=upload için)
+    // -----------------------------------------------------------------------
+    public String publicUrl(String storedRef) {
+        if (storedRef == null || storedRef.isBlank()) return null;
+        ParsedRef ref = parseRef(storedRef);
+        return cloudinary.url()
+                .secure(true)
+                .resourceType(ref.resourceType)
+                .type(ref.type)
+                .generate(ref.publicId);
+    }
+
+    // -----------------------------------------------------------------------
+    // Signed URL üret (type=authenticated için — 1 saat geçerli)
+    // -----------------------------------------------------------------------
+    public String signedUrl(String storedRef) {
+        if (storedRef == null || storedRef.isBlank()) return null;
+        ParsedRef ref = parseRef(storedRef);
+
+        // 1 saat sonra expire et
+        long expiresAt = (System.currentTimeMillis() / 1000) + 3600;
+
+        return cloudinary.url()
+                .secure(true)
+                .resourceType(ref.resourceType)
+                .type(ref.type)
+                .signed(true)
+                .source(ref.publicId)
+                .generate();
+    }
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+    private void validate(MultipartFile file, Set<String> allowedExts, long maxSize,
+                          String acceptedListMsg, String oversizeFormat) {
         if (file.isEmpty()) {
             throw new BusinessRuleException("Boş dosya yüklenemez");
         }
-        if (file.getSize() > MAX_IMAGE_SIZE) {
+        if (file.getSize() > maxSize) {
             double mb = file.getSize() / (1024.0 * 1024.0);
-            throw new BusinessRuleException(
-                    String.format("Görsel çok büyük (%.1f MB). Maksimum 10 MB olmalı.", mb));
+            throw new BusinessRuleException(String.format(oversizeFormat, mb));
         }
-
-        String originalName = StringUtils.cleanPath(file.getOriginalFilename());
-        if (originalName == null || originalName.isBlank()) {
+        String originalName = StringUtils.cleanPath(file.getOriginalFilename() == null ? "" : file.getOriginalFilename());
+        if (originalName.isBlank()) {
             throw new BusinessRuleException("Dosya adı okunamadı");
-        }
-        String extension = getExtension(originalName).toLowerCase();
-        if (extension.isEmpty()) {
-            throw new BusinessRuleException("Dosyanın uzantısı yok — geçerli bir dosya seçin");
-        }
-        if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
-            throw new BusinessRuleException(
-                    "'." + extension + "' formatı desteklenmiyor. " +
-                    "Kabul edilenler: JPG, JPEG, PNG, WEBP, HEIC");
         }
         if (originalName.contains("..")) {
             throw new BusinessRuleException("Geçersiz dosya adı");
         }
-
-        try {
-            Path dir = Paths.get(uploadDir, "business", businessId.toString(), subfolder);
-            Files.createDirectories(dir);
-
-            String uniqueName = UUID.randomUUID() + "_" + originalName;
-            Path targetPath = dir.resolve(uniqueName);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-            return "business/" + businessId + "/" + subfolder + "/" + uniqueName;
-        } catch (IOException e) {
-            throw new BusinessRuleException("Görsel kaydedilemedi: " + e.getMessage());
+        String ext = getExtension(originalName).toLowerCase();
+        if (ext.isEmpty()) {
+            throw new BusinessRuleException("Dosyanın uzantısı yok — geçerli bir dosya seçin");
         }
-    }
-
-    /**
-     * Dosyanın tam disk yolunu döner (indirme/görüntüleme için).
-     */
-    public Path getFullPath(String filePath) {
-        return Paths.get(uploadDir, filePath).normalize();
+        if (!allowedExts.contains(ext)) {
+            throw new BusinessRuleException("'." + ext + "' formatı desteklenmiyor. " + acceptedListMsg);
+        }
     }
 
     private String getExtension(String filename) {
+        if (filename == null) return "";
         int dotIndex = filename.lastIndexOf('.');
         return (dotIndex >= 0) ? filename.substring(dotIndex + 1) : "";
     }
+
+    private boolean isImageExt(String ext) {
+        return ALLOWED_IMAGE_EXTENSIONS.contains(ext);
+    }
+
+    /**
+     * DB'de saklanan ref formatı: "type:resource_type:public_id"
+     * Örn: "authenticated:raw:ajanshotel/documents/5/abc-uuid"
+     *      "upload:image:ajanshotel/business/3/logo/xyz-uuid"
+     * Geriye uyumluluk: eski "documents/5/..." formatlı path'ler için raw/authenticated varsayılır.
+     */
+    private ParsedRef parseRef(String storedRef) {
+        String[] parts = storedRef.split(":", 3);
+        if (parts.length == 3) {
+            return new ParsedRef(parts[0], parts[1], parts[2]);
+        }
+        // Legacy fallback (eski Railway ephemeral dosyaları — artık erişilebilir değil ama format)
+        return new ParsedRef("upload", "image", storedRef);
+    }
+
+    private record ParsedRef(String type, String resourceType, String publicId) {}
 }

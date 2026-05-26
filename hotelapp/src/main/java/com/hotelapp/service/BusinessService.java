@@ -13,15 +13,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 @Service
@@ -127,7 +122,7 @@ public class BusinessService {
     public List<PhotoDto> getGalleryPhotosForBusiness(Long businessId) {
         return businessPhotoRepository.findAllByBusinessIdOrderByCreatedAtDesc(businessId)
                 .stream()
-                .map(p -> new PhotoDto(p.getId(), buildPhotoUrl(p.getId())))
+                .map(p -> new PhotoDto(p.getId(), fileStorageService.publicUrl(p.getFilePath())))
                 .toList();
     }
 
@@ -148,7 +143,7 @@ public class BusinessService {
                 .filePath(path)
                 .build();
         businessPhotoRepository.save(photo);
-        return new PhotoDto(photo.getId(), buildPhotoUrl(photo.getId()));
+        return new PhotoDto(photo.getId(), fileStorageService.publicUrl(photo.getFilePath()));
     }
 
     @Transactional
@@ -165,43 +160,28 @@ public class BusinessService {
     }
 
     // ================================================================
-    // FILE SERVING (public — bytes return)
+    // FILE SERVING — Cloudinary URL redirect (legacy endpoint backward compat)
     // ================================================================
 
     /**
-     * İşletme logosunu bytes olarak yükle (Resource + MediaType).
+     * Eski endpoint /api/businesses/{id}/logo için Cloudinary URL'sini döner.
+     * Yeni frontend zaten DTO'daki logoUrl'yi (Cloudinary) direkt kullanır.
      */
     @Transactional(readOnly = true)
-    public LoadedFile loadLogo(Long businessId) {
+    public String getLogoRedirectUrl(Long businessId) {
         Business business = businessRepository.findById(businessId)
                 .orElseThrow(() -> new ResourceNotFoundException("İşletme", businessId));
         if (business.getLogoPath() == null) {
             throw new ResourceNotFoundException("Logo", businessId);
         }
-        return loadFile(business.getLogoPath());
+        return fileStorageService.publicUrl(business.getLogoPath());
     }
 
     @Transactional(readOnly = true)
-    public LoadedFile loadGalleryPhoto(Long photoId) {
+    public String getGalleryPhotoRedirectUrl(Long photoId) {
         BusinessPhoto photo = businessPhotoRepository.findById(photoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Foto", photoId));
-        return loadFile(photo.getFilePath());
-    }
-
-    private LoadedFile loadFile(String relativePath) {
-        Path fullPath = fileStorageService.getFullPath(relativePath);
-        if (!Files.exists(fullPath)) {
-            throw new ResourceNotFoundException("Dosya", relativePath);
-        }
-        return new LoadedFile(new FileSystemResource(fullPath), detectMediaType(relativePath));
-    }
-
-    private MediaType detectMediaType(String filename) {
-        String lower = filename.toLowerCase();
-        if (lower.endsWith(".png"))  return MediaType.IMAGE_PNG;
-        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return MediaType.IMAGE_JPEG;
-        if (lower.endsWith(".webp")) return MediaType.valueOf("image/webp");
-        return MediaType.APPLICATION_OCTET_STREAM;
+        return fileStorageService.publicUrl(photo.getFilePath());
     }
 
     // ----------------------------------------------------------------
@@ -222,16 +202,10 @@ public class BusinessService {
                 .instagram(b.getInstagram())
                 .facebook(b.getFacebook())
                 .workingHours(b.getWorkingHours())
-                .logoUrl(b.getLogoPath() != null ? buildLogoUrl(b.getId()) : null)
+                .logoUrl(b.getLogoPath() != null
+                        ? fileStorageService.publicUrl(b.getLogoPath())
+                        : null)
                 .build();
-    }
-
-    private String buildLogoUrl(Long businessId) {
-        return "/api/businesses/" + businessId + "/logo";
-    }
-
-    private String buildPhotoUrl(Long photoId) {
-        return "/api/businesses/photos/" + photoId;
     }
 
     // ----------------------------------------------------------------
@@ -271,6 +245,4 @@ public class BusinessService {
     }
 
     public record PhotoDto(Long id, String url) {}
-
-    public record LoadedFile(Resource resource, MediaType mediaType) {}
 }
