@@ -12,10 +12,16 @@ const api = axios.create({
 })
 
 // REQUEST interceptor — her istekte token ekle
+// Auth endpoint'lerinde token gönderme (login/register) — eski token backend'e
+// rastgele 403 attırabilir.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  const url = config.url || ''
+  const isAuthEndpoint = url.includes('/api/auth/')
+  if (!isAuthEndpoint) {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
   }
   return config
 })
