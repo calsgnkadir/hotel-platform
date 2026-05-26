@@ -57,7 +57,8 @@ public class FileStorageService {
         // Görseller image olarak, diğerleri raw olarak yüklenir
         String resourceType = isImageExt(ext) ? "image" : "raw";
         String folder = "ajanshotel/documents/" + studentId;
-        String publicId = folder + "/" + UUID.randomUUID();
+        // public_id'ye uzantı ekle → browser dosya tipini tanıyor, preview çalışıyor
+        String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
 
         // Belgeler PUBLIC değil — type=authenticated → signed URL gerekir
         Map<String, Object> options = ObjectUtils.asMap(
@@ -88,8 +89,10 @@ public class FileStorageService {
                 "Kabul edilenler: JPG, JPEG, PNG, WEBP, HEIC",
                 "Görsel çok büyük (%.1f MB). Maksimum 10 MB olmalı.");
 
+        String ext = getExtension(file.getOriginalFilename()).toLowerCase();
         String folder = "ajanshotel/business/" + businessId + "/" + subfolder;
-        String publicId = folder + "/" + UUID.randomUUID();
+        // public_id'ye uzantı ekle → browser dosya tipini tanıyor
+        String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
 
         Map<String, Object> options = ObjectUtils.asMap(
                 "public_id", publicId,
