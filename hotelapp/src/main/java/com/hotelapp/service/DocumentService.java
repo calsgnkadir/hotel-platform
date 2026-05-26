@@ -125,12 +125,12 @@ public class DocumentService {
             if (!document.getStudent().getId().equals(requesterId)) {
                 throw new UnauthorizedException("Bu belgeye erişim yetkiniz yok");
             }
-            return fileStorageService.signedUrl(document.getFilePath());
+            return fileStorageService.publicUrl(document.getFilePath());
         }
 
         // İşletme sahibi — hassas olmayan belgelere erişebilir
         if (!document.isSensitive()) {
-            return fileStorageService.signedUrl(document.getFilePath());
+            return fileStorageService.publicUrl(document.getFilePath());
         }
 
         // Hassas belge → talep + onay kontrolü
@@ -144,7 +144,7 @@ public class DocumentService {
                     "Bu belgeye erişmek için adaydan talep oluşturup onay almanız gerekiyor");
         }
 
-        return fileStorageService.signedUrl(document.getFilePath());
+        return fileStorageService.publicUrl(document.getFilePath());
     }
 
     private DocumentDto toDto(Document doc) {

@@ -60,22 +60,22 @@ public class FileStorageService {
         // public_id'ye uzantı ekle → browser dosya tipini tanıyor, preview çalışıyor
         String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
 
-        // Belgeler PUBLIC değil — type=authenticated → signed URL gerekir
+        // type=upload + UUID path → URL tahmin edilemez, backend access control yapar
+        // (signed URL karmaşıklığı yerine "security through obscurity" + auth endpoint)
         Map<String, Object> options = ObjectUtils.asMap(
                 "public_id", publicId,
                 "resource_type", resourceType,
-                "type", "authenticated",
+                "type", "upload",
                 "overwrite", true,
                 "use_filename", false,
                 "unique_filename", false
         );
 
         try {
-            Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), options);
+            cloudinary.uploader().upload(file.getBytes(), options);
             log.info("Cloudinary belge yüklendi: {} (size={} KB)", publicId, file.getSize() / 1024);
-            // DB'ye saklanacak değer: prefix + public_id + ":" + resource_type
-            // Format: "authenticated:raw:ajanshotel/documents/5/uuid"
-            return "authenticated:" + resourceType + ":" + publicId;
+            // DB'ye saklanacak değer: "upload:resource_type:public_id"
+            return "upload:" + resourceType + ":" + publicId;
         } catch (IOException e) {
             throw new BusinessRuleException("Cloudinary'ye yüklenemedi: " + e.getMessage());
         }
