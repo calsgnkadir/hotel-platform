@@ -97,6 +97,7 @@ function StatusBadge({ status }) {
     ACCEPTED:  { cls: 'badge-accepted',  icon: '✅', label: 'Kabul Edildi' },
     REJECTED:  { cls: 'badge-rejected',  icon: '❌', label: 'Reddedildi' },
     EXPIRED:   { cls: 'badge-expired',   icon: '⌛', label: 'Süresi Doldu' },
+    WITHDRAWN: { cls: 'badge-expired',   icon: '🚫', label: 'Aday İptal Etti' },
   }
   const s = map[status] || { cls: 'badge-pending', icon: '?', label: status }
   return <span className={`badge ${s.cls}`}>{s.icon} {s.label}</span>

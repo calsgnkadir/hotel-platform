@@ -134,6 +134,12 @@ export async function respondDocumentRequest(requestId, grant) {
   return data
 }
 
+// D6: Aday başvurusunu iptal eder (sadece PENDING/REVIEWING)
+export async function withdrawApplication(applicationId) {
+  const { data } = await api.put(`/api/candidate/applications/${applicationId}/withdraw`)
+  return data
+}
+
 /* ── Document endpoints (Candidate) ── */
 export async function getMyDocuments() {
   const { data } = await api.get('/api/documents/my')

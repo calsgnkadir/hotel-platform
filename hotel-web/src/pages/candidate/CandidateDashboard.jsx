@@ -47,6 +47,7 @@ function StatusBadge({ status }) {
     ACCEPTED:  { cls: 'badge-accepted',  icon: '✅', label: 'Kabul' },
     REJECTED:  { cls: 'badge-rejected',  icon: '❌', label: 'Red' },
     EXPIRED:   { cls: 'badge-expired',   icon: '⌛', label: 'Süresi Doldu' },
+    WITHDRAWN: { cls: 'badge-expired',   icon: '🚫', label: 'İptal Edildi' },
   }
   const s = map[status] || { cls: 'badge-pending', icon: '?', label: status }
   return <span className={`badge ${s.cls}`}>{s.icon} {s.label}</span>
@@ -74,6 +75,22 @@ function ApplicationsTab({ applications, onRefresh }) {
       toast.error(extractErrorMessage(err))
     } finally {
       setRespondingId(null)
+    }
+  }
+
+  // D6: Aday başvurusunu iptal eder
+  const [withdrawingId, setWithdrawingId] = useState(null)
+  async function handleWithdraw(appId) {
+    if (!confirm('Bu başvuruyu iptal etmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz.')) return
+    setWithdrawingId(appId)
+    try {
+      await hotelApi.withdrawApplication(appId)
+      toast.success('Başvurunuz iptal edildi')
+      onRefresh?.()
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setWithdrawingId(null)
     }
   }
 
@@ -107,7 +124,17 @@ function ApplicationsTab({ applications, onRefresh }) {
                 </div>
               </div>
             </div>
-            <StatusBadge status={app.status} />
+            <div className="flex flex-col items-end gap-2">
+              <StatusBadge status={app.status} />
+              {/* D6: Sadece PENDING/REVIEWING başvurular iptal edilebilir */}
+              {(app.status === 'PENDING' || app.status === 'REVIEWING') && (
+                <button onClick={() => handleWithdraw(app.id)}
+                  disabled={withdrawingId === app.id}
+                  className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium disabled:opacity-50">
+                  {withdrawingId === app.id ? 'İptal ediliyor...' : '🚫 İptal Et'}
+                </button>
+              )}
+            </div>
           </div>
 
           {app.note && (

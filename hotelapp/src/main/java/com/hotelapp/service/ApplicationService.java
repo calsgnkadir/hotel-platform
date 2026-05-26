@@ -209,6 +209,38 @@ public class ApplicationService {
     }
 
     // ----------------------------------------------------------------
+    // CANDIDATE: Withdraw own application (D6)
+    // - Sadece PENDING/REVIEWING başvurular iptal edilebilir
+    // - ACCEPTED ise işletme planlamış, iptal yok (no-show işaretlemek için kullanılır)
+    // - Aday başka birinin başvurusunu iptal edemez
+    // ----------------------------------------------------------------
+    @Transactional
+    public ApplicationResponse withdrawApplication(Long applicationId, Long candidateId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
+
+        if (!application.getCandidate().getId().equals(candidateId)) {
+            throw new UnauthorizedException("Bu başvuru size ait değil");
+        }
+
+        ApplicationStatus current = application.getStatus();
+        if (current != ApplicationStatus.PENDING && current != ApplicationStatus.REVIEWING) {
+            String msg = switch (current) {
+                case ACCEPTED  -> "Kabul edilmiş başvuru iptal edilemez. İşletme ile iletişime geçin.";
+                case REJECTED  -> "Bu başvuru zaten reddedilmiş.";
+                case EXPIRED   -> "Bu başvurunun süresi dolmuş.";
+                case WITHDRAWN -> "Bu başvuru zaten iptal edilmiş.";
+                default        -> "Bu başvuru iptal edilemez. Mevcut durum: " + current;
+            };
+            throw new BusinessRuleException(msg);
+        }
+
+        application.setStatus(ApplicationStatus.WITHDRAWN);
+        applicationRepository.save(application);
+        return toResponse(application);
+    }
+
+    // ----------------------------------------------------------------
     // BUSINESS OWNER: Mark accepted candidate as no-show (D2)
     // - Sadece ACCEPTED başvuru işaretlenebilir
     // - Bir başvuru sadece BİR KEZ işaretlenebilir

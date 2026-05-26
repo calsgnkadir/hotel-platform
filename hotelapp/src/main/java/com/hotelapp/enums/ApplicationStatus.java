@@ -5,5 +5,6 @@ public enum ApplicationStatus {
     REVIEWING,    // otel inceliyor
     ACCEPTED,     // kabul edildi
     REJECTED,     // reddedildi
-    EXPIRED       // 1 hafta içinde cevap gelmedi
+    EXPIRED,      // 1 hafta içinde cevap gelmedi
+    WITHDRAWN     // aday kendisi iptal etti (PENDING/REVIEWING aşamasında)
 }

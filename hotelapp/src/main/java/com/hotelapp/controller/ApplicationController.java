@@ -56,6 +56,20 @@ public class ApplicationController {
                 .body(applicationService.createApplication(currentUser.getId(), request));
     }
 
+    @Operation(
+            summary = "Başvuruyu iptal et — sadece CANDIDATE (kendi başvurusu)",
+            description = "Sadece PENDING veya REVIEWING durumdaki başvurular iptal edilebilir. ACCEPTED ise iptal yapılamaz."
+    )
+    @PutMapping("/api/candidate/applications/{applicationId}/withdraw")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApplicationResponse> withdrawApplication(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long applicationId) {
+        return ResponseEntity.ok(
+                applicationService.withdrawApplication(applicationId, currentUser.getId()));
+    }
+
     @Operation(summary = "Belge talebine yanıt ver (izin ver/reddet) — sadece CANDIDATE")
     @PutMapping("/api/candidate/document-requests/{requestId}/respond")
     @PreAuthorize("hasRole('CANDIDATE')")
