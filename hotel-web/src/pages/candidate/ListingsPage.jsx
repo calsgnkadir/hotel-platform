@@ -56,14 +56,15 @@ function ApplyModal({ listing, onClose, onSuccess }) {
   const [coverLetter, setCoverLetter] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Daimi (PERMANENT) işlerde müsaitlik gerekmez — aday tam zamanlı çalışacak demek.
-  // Sezonluk/Günlük/Yarı Zamanlı için anlamlı.
-  const isFlexibleJob = listing.jobType !== 'PERMANENT'
+  // Faz E3: Adayın seçtiği slotlar (id listesi)
+  const [selectedSlotIds, setSelectedSlotIds] = useState([])
 
-  // Müsaitlik (sadece esnek işlerde aktif)
-  const [selectedDays, setSelectedDays] = useState([])
-  const [startTime, setStartTime] = useState('09:00')
-  const [endTime, setEndTime] = useState('17:00')
+  // Backend tarihe göre sıralı dönüyor; yine de güvenli ol
+  const allSlots = [...(listing.shiftSlots || [])].sort((a, b) => {
+    const c = (a.date || '').localeCompare(b.date || '')
+    return c !== 0 ? c : (a.startTime || '').localeCompare(b.startTime || '')
+  })
+  const hasSlots = allSlots.length > 0
 
   // Hassas belge izinleri (sadece kullanıcının yüklediği türler arasından seçilebilir)
   const [myDocs, setMyDocs] = useState([])
@@ -78,8 +79,9 @@ function ApplyModal({ listing, onClose, onSuccess }) {
     myDocs.map(d => d.type).filter(t => SENSITIVE_DOC_TYPES.includes(t))
   )]
 
-  function toggleDay(day) {
-    setSelectedDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day])
+  function toggleSlot(id, full) {
+    if (full) return  // dolu slot toggle edilemez
+    setSelectedSlotIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
   function toggleGrant(type) {
@@ -89,21 +91,16 @@ function ApplyModal({ listing, onClose, onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault()
 
-    if (selectedDays.length > 0 && endTime <= startTime) {
-      return toast.error('Bitiş saati başlangıçtan büyük olmalı')
+    if (hasSlots && selectedSlotIds.length === 0) {
+      return toast.error('En az 1 vardiya seçmelisiniz')
     }
-
-    // Daimi işlerde müsaitlik gönderme; esnek işlerde seçili günleri ekle
-    const availabilities = isFlexibleJob
-      ? selectedDays.map(day => ({ dayOfWeek: day, startTime, endTime }))
-      : []
 
     setLoading(true)
     try {
       await hotelApi.applyToListing({
         jobListingId: listing.id,
         coverLetter,
-        availabilities,
+        slotIds: selectedSlotIds,
         grantedSensitiveTypes: grantedTypes,
       })
       toast.success('Başvurunuz gönderildi!')
@@ -147,38 +144,55 @@ function ApplyModal({ listing, onClose, onSuccess }) {
             <p className="text-xs text-slate-400 mt-1">{coverLetter.length} karakter</p>
           </div>
 
-          {/* Müsaitlik takvimi — sadece esnek işlerde göster, daimi'de hiç görünmesin */}
-          {isFlexibleJob && (
+          {/* Faz E3: Slot seçimi (zorunlu — min 1) */}
+          {hasSlots ? (
             <div>
-              <label className="label">Müsaitlik <span className="text-slate-400 font-normal">(opsiyonel — çalışabileceğin günler ve saatler)</span></label>
-              <div className="grid grid-cols-7 gap-1.5 mb-2">
-                {WEEKDAYS_SHORT.map(d => {
-                  const active = selectedDays.includes(d.key)
+              <label className="label">
+                Vardiya Seçimi *
+                <span className="text-slate-400 font-normal ml-1">(çalışabileceğin günleri işaretle)</span>
+              </label>
+              <div className="space-y-1.5">
+                {allSlots.map(s => {
+                  const full = s.full || (s.slotsFilled >= s.slotsNeeded)
+                  const selected = selectedSlotIds.includes(s.id)
+                  const dateLabel = new Date(s.date).toLocaleDateString('tr-TR', {
+                    day: 'numeric', month: 'short', weekday: 'short',
+                  })
+                  const timeLabel = `${(s.startTime || '').slice(0, 5)}–${(s.endTime || '').slice(0, 5)}`
                   return (
-                    <button key={d.key} type="button" onClick={() => toggleDay(d.key)}
-                      className={`py-2 rounded-lg border text-xs font-medium transition-all
-                        ${active
-                          ? 'border-violet-400 bg-violet-50 text-violet-700 shadow-sm'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300'}`}>
-                      {d.label}
-                    </button>
+                    <label key={s.id}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all
+                        ${full
+                          ? 'border-slate-200 bg-slate-50 cursor-not-allowed opacity-60'
+                          : selected
+                            ? 'border-violet-400 bg-violet-50 cursor-pointer shadow-sm'
+                            : 'border-slate-200 bg-white cursor-pointer hover:border-violet-300'}`}>
+                      <input type="checkbox" checked={selected} disabled={full}
+                        onChange={() => toggleSlot(s.id, full)}
+                        className="w-4 h-4 accent-violet-600" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-slate-800">
+                          📅 {dateLabel} · 🕐 {timeLabel}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          {full
+                            ? '⚠ Bu vardiya doldu'
+                            : `${s.slotsFilled || 0}/${s.slotsNeeded} dolu — ${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
+                        </div>
+                      </div>
+                    </label>
                   )
                 })}
               </div>
-              {selectedDays.length > 0 && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-slate-500">Başlangıç</label>
-                    <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)}
-                      className="input text-sm mt-1" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-500">Bitiş</label>
-                    <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)}
-                      className="input text-sm mt-1" />
-                  </div>
-                </div>
+              {selectedSlotIds.length > 0 && (
+                <p className="text-xs text-violet-600 font-medium mt-2">
+                  ✓ {selectedSlotIds.length} vardiya seçtin
+                </p>
               )}
+            </div>
+          ) : (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-700">
+              ⚠ Bu ilana henüz vardiya eklenmemiş — başvuru alınamaz.
             </div>
           )}
 
@@ -217,7 +231,7 @@ function ApplyModal({ listing, onClose, onSuccess }) {
           {/* Footer */}
           <div className="flex gap-3 pt-2 sticky bottom-0 bg-white py-3 -mx-6 px-6 border-t border-slate-100">
             <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm">İptal</button>
-            <button type="submit" disabled={loading}
+            <button type="submit" disabled={loading || !hasSlots}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
               style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', boxShadow: '0 3px 12px rgba(124,58,237,0.35)' }}>
               {loading ? 'Gönderiliyor...' : 'Başvur →'}
@@ -233,8 +247,11 @@ function ApplyModal({ listing, onClose, onSuccess }) {
 function DetailModal({ listing, onClose, onApply }) {
   const shift = listing.shift ? SHIFT_INFO[listing.shift] : null
   const salary = formatSalary(listing.salaryMin, listing.salaryMax)
-  const hasCustomHours = listing.shiftStart || listing.shiftEnd
   const hasDates = listing.startDate || listing.endDate
+  const slots = [...(listing.shiftSlots || [])].sort((a, b) => {
+    const c = (a.date || '').localeCompare(b.date || '')
+    return c !== 0 ? c : (a.startTime || '').localeCompare(b.startTime || '')
+  })
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -307,7 +324,7 @@ function DetailModal({ listing, onClose, onApply }) {
 
           {hasDates && (
             <div>
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Çalışma Dönemi</h3>
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Kontrat Dönemi</h3>
               <p className="text-sm text-slate-700">
                 {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 {listing.startDate && listing.endDate && ' — '}
@@ -316,12 +333,34 @@ function DetailModal({ listing, onClose, onApply }) {
             </div>
           )}
 
-          {hasCustomHours && (
+          {/* Faz E3: Vardiya listesi */}
+          {slots.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Özel Saat Aralığı</h3>
-              <p className="text-sm text-slate-700">
-                🕐 {listing.shiftStart || '?'} — {listing.shiftEnd || '?'}
-              </p>
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                Vardiyalar ({slots.length})
+              </h3>
+              <div className="space-y-1.5">
+                {slots.map(s => {
+                  const full = s.full || (s.slotsFilled >= s.slotsNeeded)
+                  const dateLabel = new Date(s.date).toLocaleDateString('tr-TR', {
+                    day: 'numeric', month: 'short', weekday: 'short',
+                  })
+                  return (
+                    <div key={s.id}
+                      className={`flex items-center justify-between rounded-lg px-3 py-2 border
+                        ${full ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-violet-50/50 border-violet-100'}`}>
+                      <div className="text-sm">
+                        <span className="font-medium text-slate-800">📅 {dateLabel}</span>
+                        <span className="text-slate-500 ml-2">🕐 {s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
+                      </div>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
+                        ${full ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                        {full ? 'DOLU' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -384,6 +423,23 @@ function ListingCard({ listing, onApply, onDetail }) {
           </div>
         )}
 
+        {/* Faz E3: slot özeti */}
+        {listing.shiftSlots?.length > 0 && (() => {
+          const slots = [...listing.shiftSlots].sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+          const next = slots.find(s => !(s.full || s.slotsFilled >= s.slotsNeeded)) || slots[0]
+          const openCount = slots.filter(s => !(s.full || s.slotsFilled >= s.slotsNeeded)).length
+          const nextStr = next
+            ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}`
+            : null
+          return (
+            <div className="text-xs text-violet-600 font-medium mt-1">
+              🗓 {slots.length} vardiya
+              {openCount === 0 && ' · ⚠ tümü dolu'}
+              {openCount > 0 && nextStr && ` · ${nextStr}`}
+            </div>
+          )
+        })()}
+
         <p className="text-xs text-slate-500 mt-2 line-clamp-2">{listing.description}</p>
 
         <div className="flex-1" />
@@ -424,6 +480,34 @@ export default function ListingsPage({ onApplicationSubmitted }) {
   const [minSalary, setMinSalary] = useState('')
   const [shifts, setShifts] = useState([])
 
+  // Faz E4: Tarih filtresi
+  // datePreset: '' | 'TODAY' | 'TOMORROW' | 'WEEK' | 'WEEKEND' | 'CUSTOM'
+  const [datePreset, setDatePreset] = useState('')
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo,   setCustomTo]   = useState('')
+
+  // Preset → dateFrom/dateTo (YYYY-MM-DD)
+  const dateRange = (() => {
+    const today = new Date()
+    const fmt = (d) => d.toISOString().split('T')[0]
+    const addDays = (d, n) => { const c = new Date(d); c.setDate(c.getDate() + n); return c }
+    switch (datePreset) {
+      case 'TODAY':    return { dateFrom: fmt(today),                dateTo: fmt(today) }
+      case 'TOMORROW': return { dateFrom: fmt(addDays(today, 1)),    dateTo: fmt(addDays(today, 1)) }
+      case 'WEEK':     return { dateFrom: fmt(today),                dateTo: fmt(addDays(today, 7)) }
+      case 'WEEKEND': {
+        // En yakın Cmt (6) ve Paz (0)
+        const dow = today.getDay()  // 0=Paz, 6=Cmt
+        const daysToSat = dow === 6 ? 0 : (6 - dow + 7) % 7
+        const sat = addDays(today, daysToSat)
+        const sun = addDays(sat, 1)
+        return { dateFrom: fmt(sat), dateTo: fmt(sun) }
+      }
+      case 'CUSTOM':   return { dateFrom: customFrom || null, dateTo: customTo || null }
+      default:         return { dateFrom: null, dateTo: null }
+    }
+  })()
+
   useEffect(() => {
     const t = setTimeout(() => setDebouncedKeyword(keyword), 400)
     return () => clearTimeout(t)
@@ -434,11 +518,15 @@ export default function ListingsPage({ onApplicationSubmitted }) {
     hotelApi.getListings({
       position, jobType, shifts, district, minSalary,
       keyword: debouncedKeyword,
+      dateFrom: dateRange.dateFrom,
+      dateTo:   dateRange.dateTo,
     })
       .then(setListings)
       .catch(() => toast.error('İlanlar yüklenemedi'))
       .finally(() => setLoading(false))
-  }, [position, jobType, shifts, district, minSalary, debouncedKeyword])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [position, jobType, shifts, district, minSalary, debouncedKeyword,
+      datePreset, customFrom, customTo])
 
   function toggleShift(shift) {
     setShifts(prev => prev.includes(shift) ? prev.filter(s => s !== shift) : [...prev, shift])
@@ -447,11 +535,13 @@ export default function ListingsPage({ onApplicationSubmitted }) {
   function clearFilters() {
     setKeyword(''); setPosition(''); setJobType('')
     setDistrict(''); setMinSalary(''); setShifts([])
+    setDatePreset(''); setCustomFrom(''); setCustomTo('')
   }
 
   const activeFilterCount =
     (keyword ? 1 : 0) + (position ? 1 : 0) + (jobType ? 1 : 0) +
-    (district ? 1 : 0) + (minSalary ? 1 : 0) + shifts.length
+    (district ? 1 : 0) + (minSalary ? 1 : 0) + shifts.length +
+    (datePreset ? 1 : 0)
 
   return (
     <div className="space-y-4">
@@ -515,6 +605,49 @@ export default function ListingsPage({ onApplicationSubmitted }) {
             <input type="number" value={minSalary} onChange={e => setMinSalary(e.target.value)}
               placeholder="5000" min="0" className="input text-sm" />
           </div>
+        </div>
+
+        {/* Faz E4: Tarih filtresi */}
+        <div>
+          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">Tarih</label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: '',         label: 'Tümü' },
+              { key: 'TODAY',    label: 'Bugün' },
+              { key: 'TOMORROW', label: 'Yarın' },
+              { key: 'WEEK',     label: 'Bu Hafta' },
+              { key: 'WEEKEND',  label: 'Haftasonu' },
+              { key: 'CUSTOM',   label: 'Özel...' },
+            ].map(p => {
+              const active = datePreset === p.key
+              return (
+                <button key={p.key || 'all'} type="button" onClick={() => setDatePreset(p.key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+                    ${active
+                      ? 'text-white shadow-sm'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
+                  style={active ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                  {p.label}
+                </button>
+              )
+            })}
+          </div>
+          {datePreset === 'CUSTOM' && (
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              <div>
+                <label className="text-xs text-slate-500">Başlangıç</label>
+                <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="input text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-500">Bitiş</label>
+                <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                  min={customFrom || new Date().toISOString().split('T')[0]}
+                  className="input text-sm mt-1" />
+              </div>
+            </div>
+          )}
         </div>
 
         <div>

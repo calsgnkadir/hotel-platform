@@ -101,6 +101,15 @@ function StatusBadge({ status }) {
   return <span className={`badge ${s.cls}`}>{s.icon} {s.label}</span>
 }
 
+/* ── No-show Badge ── */
+function NoShowBadge() {
+  return (
+    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+      🚫 İşe Gelmedi
+    </span>
+  )
+}
+
 /* ── Listing Form Modal (create + edit) ── */
 function ListingFormModal({ listing, onClose, onSuccess }) {
   const isEdit = !!listing
@@ -116,12 +125,45 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
     salaryMax:    listing?.salaryMax    ?? '',
     startDate:    listing?.startDate    || '',
     endDate:      listing?.endDate      || '',
-    shiftStart:   listing?.shiftStart   || '',
-    shiftEnd:     listing?.shiftEnd     || '',
+  })
+
+  // Faz E2: Slot listesi (date+start+end+slotsNeeded)
+  // Edit modunda mevcut slotlardan başlat, yeni ilanda 1 boş satır
+  const [slots, setSlots] = useState(() => {
+    if (listing?.shiftSlots?.length) {
+      return listing.shiftSlots.map(s => ({
+        id:          s.id ?? null,
+        date:        s.date || '',
+        startTime:   s.startTime ? s.startTime.slice(0, 5) : '',
+        endTime:     s.endTime ? s.endTime.slice(0, 5) : '',
+        slotsNeeded: s.slotsNeeded ?? 1,
+        slotsFilled: s.slotsFilled ?? 0,
+      }))
+    }
+    return [{ id: null, date: '', startTime: '', endTime: '', slotsNeeded: 1, slotsFilled: 0 }]
   })
 
   function handleChange(e) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  function updateSlot(i, patch) {
+    setSlots(prev => prev.map((s, idx) => idx === i ? { ...s, ...patch } : s))
+  }
+
+  function addSlot() {
+    setSlots(prev => [...prev, { id: null, date: '', startTime: '', endTime: '', slotsNeeded: 1, slotsFilled: 0 }])
+  }
+
+  function removeSlot(i) {
+    setSlots(prev => prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev)
+  }
+
+  function duplicateSlot(i) {
+    setSlots(prev => {
+      const copy = { ...prev[i], id: null, slotsFilled: 0 }
+      return [...prev.slice(0, i + 1), copy, ...prev.slice(i + 1)]
+    })
   }
 
   async function handleSubmit(e) {
@@ -139,9 +181,31 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
       return toast.error('Max. ücret min. ücretten küçük olamaz')
     }
 
-    // Tarih sırası
+    // Kontrat dönemi tarihleri opsiyonel — sadece sanity check
+    const today = new Date().toISOString().split('T')[0]
+    if (form.startDate && form.startDate < today) {
+      return toast.error('Başlangıç tarihi geçmişte olamaz')
+    }
+    if (form.endDate && form.endDate < today) {
+      return toast.error('Bitiş tarihi geçmişte olamaz')
+    }
     if (form.startDate && form.endDate && form.endDate < form.startDate) {
       return toast.error('Bitiş tarihi başlangıçtan önce olamaz')
+    }
+
+    // Faz E2: Slot validasyonu
+    if (slots.length === 0) {
+      return toast.error('En az 1 vardiya slotu eklemelisiniz')
+    }
+    for (let i = 0; i < slots.length; i++) {
+      const s = slots[i]
+      const n = i + 1
+      if (!s.date)      return toast.error(`Slot ${n}: tarih zorunlu`)
+      if (!s.startTime) return toast.error(`Slot ${n}: başlangıç saati zorunlu`)
+      if (!s.endTime)   return toast.error(`Slot ${n}: bitiş saati zorunlu`)
+      if (s.date < today) return toast.error(`Slot ${n}: geçmiş tarih olamaz`)
+      if (s.endTime <= s.startTime) return toast.error(`Slot ${n}: bitiş saati başlangıçtan sonra olmalı`)
+      if (!s.slotsNeeded || s.slotsNeeded < 1) return toast.error(`Slot ${n}: ihtiyaç sayısı en az 1`)
     }
 
     setLoading(true)
@@ -157,8 +221,16 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
         salaryMax:   max,
         startDate:   form.startDate || null,
         endDate:     form.endDate || null,
-        shiftStart:  form.shiftStart || null,
-        shiftEnd:    form.shiftEnd || null,
+        shiftStart:  null,  // legacy — artık her slot kendi saatini taşıyor
+        shiftEnd:    null,
+        // Faz E2: slotları gönder
+        shiftSlots: slots.map(s => ({
+          id:          s.id || null,
+          date:        s.date,
+          startTime:   s.startTime.length === 5 ? `${s.startTime}:00` : s.startTime,
+          endTime:     s.endTime.length === 5 ? `${s.endTime}:00` : s.endTime,
+          slotsNeeded: parseInt(s.slotsNeeded, 10) || 1,
+        })),
       }
       if (isEdit) {
         await hotelApi.updateListing(listing.id, payload)
@@ -257,28 +329,110 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
             </div>
           </div>
 
-          {/* Çalışma dönemi (özellikle SEASONAL/DAILY için) */}
+          {/* Faz E2: Vardiya slotları (zorunlu — en az 1) */}
+          {(() => {
+            const todayStr = new Date().toISOString().split('T')[0]
+            return (
+              <div className="border-2 border-violet-100 rounded-xl p-4 bg-violet-50/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="label !mb-0">Vardiyalar *</label>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Adaylar bu vardiyalardan birine veya birkaçına başvurabilir
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">
+                    {slots.length} vardiya
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {slots.map((s, i) => {
+                    const locked = (s.slotsFilled || 0) > 0  // kabul edilmiş başvuru var
+                    return (
+                      <div key={i}
+                        className="bg-white rounded-lg p-3 border border-slate-200 space-y-2 relative">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-slate-500">
+                            Vardiya #{i + 1}
+                            {locked && (
+                              <span className="ml-2 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                {s.slotsFilled}/{s.slotsNeeded} dolu
+                              </span>
+                            )}
+                          </span>
+                          <div className="flex gap-1">
+                            <button type="button" onClick={() => duplicateSlot(i)}
+                              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600"
+                              title="Bu vardiyayı çoğalt">
+                              ⎘
+                            </button>
+                            {slots.length > 1 && (
+                              <button type="button" onClick={() => removeSlot(i)}
+                                disabled={locked}
+                                className="text-xs px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title={locked ? 'Bu slota kabul edilmiş aday var, silinemez' : 'Sil'}>
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          <div className="col-span-2 sm:col-span-2">
+                            <label className="text-xs text-slate-500">Tarih</label>
+                            <input type="date" value={s.date} min={todayStr}
+                              onChange={e => updateSlot(i, { date: e.target.value })}
+                              className="input text-sm !py-1.5" required />
+                          </div>
+                          <div>
+                            <label className="text-xs text-slate-500">Başlangıç</label>
+                            <input type="time" value={s.startTime}
+                              onChange={e => updateSlot(i, { startTime: e.target.value })}
+                              className="input text-sm !py-1.5" required />
+                          </div>
+                          <div>
+                            <label className="text-xs text-slate-500">Bitiş</label>
+                            <input type="time" value={s.endTime}
+                              onChange={e => updateSlot(i, { endTime: e.target.value })}
+                              className="input text-sm !py-1.5" required />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs text-slate-500">İhtiyaç sayısı (kaç aday)</label>
+                          <input type="number" min="1" max="50" value={s.slotsNeeded}
+                            onChange={e => updateSlot(i, { slotsNeeded: e.target.value })}
+                            className="input text-sm !py-1.5 w-24" required />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <button type="button" onClick={addSlot}
+                  className="w-full py-2 text-sm font-semibold text-violet-700 bg-white border-2 border-dashed border-violet-300 rounded-lg hover:bg-violet-100 transition-colors">
+                  + Vardiya Ekle
+                </button>
+              </div>
+            )
+          })()}
+
+          {/* Kontrat dönemi (opsiyonel — kalıcı pozisyon için) */}
           <div>
-            <label className="label">Çalışma Dönemi <span className="text-slate-400 font-normal">(opsiyonel — sezonluk/günlük için)</span></label>
+            <label className="label">
+              Kontrat Dönemi <span className="text-slate-400 font-normal">(opsiyonel — kalıcı/sezonluk için)</span>
+            </label>
             <div className="grid grid-cols-2 gap-3">
-              <input type="date" name="startDate" value={form.startDate} onChange={handleChange}
+              <input type="date" name="startDate" value={form.startDate}
+                onChange={handleChange} min={new Date().toISOString().split('T')[0]}
                 className="input" placeholder="Başlangıç" />
-              <input type="date" name="endDate" value={form.endDate} onChange={handleChange}
+              <input type="date" name="endDate" value={form.endDate}
+                onChange={handleChange} min={form.startDate || new Date().toISOString().split('T')[0]}
                 className="input" placeholder="Bitiş" />
             </div>
-          </div>
-
-          {/* Spesifik saat (opsiyonel — vardiya dışında özel saat varsa) */}
-          <div>
-            <label className="label">Özel Saat Aralığı <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
-            <div className="grid grid-cols-2 gap-3">
-              <input type="time" name="shiftStart" value={form.shiftStart} onChange={handleChange}
-                className="input" />
-              <input type="time" name="shiftEnd" value={form.shiftEnd} onChange={handleChange}
-                className="input" />
-            </div>
             <p className="text-xs text-slate-400 mt-1">
-              Vardiya kategorisinden farklı bir saat aralığı varsa belirtin
+              İşin bütünüyle kapsadığı dönem (yukarıdaki vardiyalar bu dönem içinde olur)
             </p>
           </div>
 
@@ -767,6 +921,23 @@ function MyListingsTab() {
                       {listing.salaryMax && ` – ${listing.salaryMax.toLocaleString('tr-TR')}`} ₺
                     </p>
                   )}
+                  {/* Faz E2: slot özeti */}
+                  {listing.shiftSlots?.length > 0 && (() => {
+                    const total      = listing.shiftSlots.length
+                    const next       = listing.shiftSlots[0]  // backend tarihe göre sıralı dönüyor
+                    const totalSeats = listing.shiftSlots.reduce((sum, s) => sum + (s.slotsNeeded || 0), 0)
+                    const filled     = listing.shiftSlots.reduce((sum, s) => sum + (s.slotsFilled || 0), 0)
+                    const nextStr = next
+                      ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}–${next.endTime?.slice(0, 5)}`
+                      : null
+                    return (
+                      <p className="text-xs text-violet-600 font-medium mt-0.5">
+                        🗓 {total} vardiya
+                        {nextStr && ` · en yakın: ${nextStr}`}
+                        {totalSeats > 0 && ` · ${filled}/${totalSeats} dolu`}
+                      </p>
+                    )
+                  })()}
                   <p className="text-xs text-slate-400 mt-0.5">
                     {new Date(listing.createdAt).toLocaleDateString('tr-TR')}
                   </p>
@@ -866,6 +1037,25 @@ function ApplicationsTab({ applications, onRefresh }) {
     finally { setActionLoading(false) }
   }
 
+  async function handleNoShow(appId) {
+    if (!confirm('Bu adayı NO-SHOW olarak işaretlemek istediğinize emin misiniz?\n\nBu işlem geri alınamaz. Adayın strike hakkı 1 düşecek, sıfıra inerse 30 gün otomatik banlanacak.')) {
+      return
+    }
+    setActionLoading(true)
+    try {
+      const result = await hotelApi.markNoShow(appId)
+      if (result.autoBanned) {
+        const banDate = new Date(result.bannedUntil).toLocaleDateString('tr-TR')
+        toast.success(`No-show işaretlendi. Aday otomatik olarak ${banDate} tarihine kadar banlandı.`, { duration: 5000 })
+      } else {
+        toast.success(`No-show işaretlendi. Adayın kalan strike hakkı: ${result.candidateStrikesRemaining}`)
+      }
+      setSelected(result.application)
+      onRefresh()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
   const [requestingType, setRequestingType] = useState('')
 
   async function handleRequestDoc() {
@@ -930,6 +1120,7 @@ function ApplicationsTab({ applications, onRefresh }) {
               </div>
               <div className="flex flex-col items-end gap-2">
                 <StatusBadge status={app.status} />
+                {app.noShow && <NoShowBadge />}
                 {app.status === 'PENDING' && (
                   <button onClick={e => { e.stopPropagation(); handleReview(app.id) }}
                     disabled={actionLoading}
@@ -1099,6 +1290,37 @@ function ApplicationsTab({ applications, onRefresh }) {
                       className="py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors">
                       ❌ Reddet
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* No-show işaretleme — sadece ACCEPTED + henüz işaretlenmemiş */}
+              {selected.status === 'ACCEPTED' && !selected.noShow && (
+                <div className="border-t border-slate-100 pt-4 space-y-2">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">İşe Gelme Durumu</h3>
+                  <p className="text-xs text-slate-500">
+                    Aday kabul edilen iş için işe gelmediyse aşağıdaki butonla işaretleyin.
+                    Aday 3 kez işe gelmediğinde otomatik olarak 30 gün banlanır.
+                  </p>
+                  <button onClick={() => handleNoShow(selected.id)}
+                    disabled={actionLoading}
+                    className="w-full py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors disabled:opacity-60">
+                    🚫 Aday İşe Gelmedi (No-Show) Olarak İşaretle
+                  </button>
+                </div>
+              )}
+
+              {/* No-show işaretlenmişse uyarı banner */}
+              {selected.noShow && (
+                <div className="border-t border-slate-100 pt-4">
+                  <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
+                    <span className="text-lg leading-none">🚫</span>
+                    <div>
+                      <div className="font-semibold">No-show olarak işaretlendi</div>
+                      <div className="text-xs text-red-600 mt-0.5">
+                        Bu aday kabul edilen iş için işe gelmediğini bildirdiniz. Strike hakkı düşürüldü.
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

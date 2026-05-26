@@ -17,7 +17,14 @@ public class ApplicationRequest {
 
     private String coverLetter; // optional
 
-    private List<AvailabilityDto> availabilities; // optional
+    /** Eski akış (Faz E öncesi) — yeni başvurular boş bırakmalı */
+    private List<AvailabilityDto> availabilities; // optional/legacy
+
+    /**
+     * Faz E1: Adayın başvurduğu spesifik vardiya slotları.
+     * Yeni akışta en az 1 zorunlu.
+     */
+    private List<Long> slotIds; // optional in DTO, validated in service
 
     /**
      * Aday başvururken hassas belge tiplerini önceden işletmeye açık yapabilir.

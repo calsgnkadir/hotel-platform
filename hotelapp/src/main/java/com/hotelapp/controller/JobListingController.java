@@ -20,7 +20,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
 @RequestMapping("/api/listings")
@@ -32,7 +34,7 @@ public class JobListingController {
 
     @Operation(
             summary = "Aktif ilanları listele",
-            description = "Tüm parametreler opsiyonel. shifts çoklu (MORNING,EVENING,NIGHT), keyword başlıkta arar."
+            description = "Tüm parametreler opsiyonel. shifts çoklu (MORNING,EVENING,NIGHT), keyword başlıkta arar. dateFrom/dateTo YYYY-MM-DD formatında."
     )
     @GetMapping
     public ResponseEntity<List<ListingResponse>> listActiveListings(
@@ -41,9 +43,11 @@ public class JobListingController {
             @RequestParam(required = false) List<Shift> shifts,
             @RequestParam(required = false) String district,
             @RequestParam(required = false) BigDecimal minSalary,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
         return ResponseEntity.ok(
-                jobListingService.getActiveListings(position, jobType, shifts, district, minSalary, keyword));
+                jobListingService.getActiveListings(position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo));
     }
 
     @Operation(summary = "Kendi ilanlarımı listele — sadece BUSINESS_OWNER")

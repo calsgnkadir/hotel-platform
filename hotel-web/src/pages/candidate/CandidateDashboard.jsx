@@ -446,14 +446,7 @@ function ProfileTab() {
     <form onSubmit={handleSubmit} className="space-y-5 max-w-3xl">
       {/* Block 1: Temel Bilgiler */}
       <div className="card p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Temel Bilgiler</h3>
-          {profile?.isStudent && (
-            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
-              🎓 Onaylı Öğrenci
-            </span>
-          )}
-        </div>
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Temel Bilgiler</h3>
 
         <div>
           <label className="label">Ad Soyad *</label>

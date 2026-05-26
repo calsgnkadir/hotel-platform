@@ -98,7 +98,7 @@ public class CandidateProfileService {
         private Long id;
         private String email;
         private String role;
-        private boolean isStudent;
+        private Boolean isStudent;
 
         // Editable
         private String fullName;

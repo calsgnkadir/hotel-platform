@@ -6,7 +6,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "applications")
@@ -53,9 +55,21 @@ public class Application {
     private LocalDateTime updatedAt;
     private LocalDateTime reviewedAt;
 
+    // Faz E1 öncesi: keyfi haftalık müsaitlik. Yeni akış slot kullanır;
+    // bu liste eski başvurularda kalır ama yeni başvurularda boş kalır.
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Availability> availabilities = new ArrayList<>();
+
+    // Faz E1: Adayın başvurduğu spesifik vardiya slotları (ManyToMany)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "application_shift_slots",
+        joinColumns = @JoinColumn(name = "application_id"),
+        inverseJoinColumns = @JoinColumn(name = "shift_slot_id")
+    )
+    @Builder.Default
+    private Set<ShiftSlot> requestedSlots = new HashSet<>();
 
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

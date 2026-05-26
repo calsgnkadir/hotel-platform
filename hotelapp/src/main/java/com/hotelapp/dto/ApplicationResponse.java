@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -26,6 +27,9 @@ public class ApplicationResponse {
 
     private List<AvailabilityDto> availabilities;
     private List<DocumentRequestDto> documentRequests;
+
+    /** Faz E1: Adayın başvurduğu slot(lar) */
+    private List<RequestedSlotDto> requestedSlots;
 
     @Data @Builder
     public static class CandidateSummary {
@@ -58,5 +62,14 @@ public class ApplicationResponse {
         private String documentType;
         private String status;
         private LocalDateTime requestedAt;
+    }
+
+    /** Faz E1 */
+    @Data @Builder
+    public static class RequestedSlotDto {
+        private Long id;
+        private LocalDate date;
+        private LocalTime startTime;
+        private LocalTime endTime;
     }
 }

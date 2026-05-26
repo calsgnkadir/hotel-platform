@@ -1,6 +1,7 @@
 package com.hotelapp.service;
 
 import com.hotelapp.dto.*;
+import com.hotelapp.dto.ApplicationResponse.RequestedSlotDto;
 import com.hotelapp.entity.*;
 import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.enums.DocumentRequestStatus;
@@ -9,13 +10,17 @@ import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.*;
+import lombok.Builder;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,7 @@ public class ApplicationService {
     private final UserRepository userRepository;
     private final JobListingRepository jobListingRepository;
     private final DocumentRequestRepository documentRequestRepository;
+    private final ShiftSlotRepository shiftSlotRepository;
 
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
@@ -41,14 +47,25 @@ public class ApplicationService {
             throw new BusinessRuleException("Bu ilan şu anda aktif değil");
         }
 
-        boolean alreadyApplied = applicationRepository
+        // Bu ilana zaten PENDING/REVIEWING/ACCEPTED başvurusu var mı?
+        // - PENDING/REVIEWING: süreç henüz tamamlanmadı
+        // - ACCEPTED: aday zaten kabul edildi, tekrar başvurmasına gerek yok
+        // - REJECTED/EXPIRED: ikinci şans verilebilir (engellemiyoruz)
+        Application existing = applicationRepository
                 .findAllByCandidateId(candidateId).stream()
-                .anyMatch(a -> a.getJobListing().getId().equals(request.getJobListingId())
+                .filter(a -> a.getJobListing().getId().equals(request.getJobListingId())
                         && (a.getStatus() == ApplicationStatus.PENDING
-                            || a.getStatus() == ApplicationStatus.REVIEWING));
+                            || a.getStatus() == ApplicationStatus.REVIEWING
+                            || a.getStatus() == ApplicationStatus.ACCEPTED))
+                .findFirst().orElse(null);
 
-        if (alreadyApplied) {
-            throw new BusinessRuleException("Bu ilana zaten aktif bir başvurunuz var");
+        if (existing != null) {
+            String msg = switch (existing.getStatus()) {
+                case ACCEPTED  -> "Bu ilan için başvurunuz zaten kabul edildi. Tekrar başvuramazsınız.";
+                case REVIEWING -> "Bu ilana yaptığınız başvuru işletme tarafından inceleniyor.";
+                default        -> "Bu ilana zaten aktif bir başvurunuz var.";
+            };
+            throw new BusinessRuleException(msg);
         }
 
         Application application = Application.builder()
@@ -67,6 +84,29 @@ public class ApplicationService {
                             .build())
                     .toList();
             application.setAvailabilities(availabilities);
+        }
+
+        // Faz E1: Slot bağlama + doluluk kontrolü
+        // - slotIds opsiyonel (eski akışla uyumlu kalmak için), ama ilana slot eklendiyse zorunlu olmalı
+        boolean listingHasSlots = listing.getShiftSlots() != null && !listing.getShiftSlots().isEmpty();
+        if (listingHasSlots) {
+            if (request.getSlotIds() == null || request.getSlotIds().isEmpty()) {
+                throw new BusinessRuleException("Bu ilanda en az 1 vardiya slotu seçmelisiniz");
+            }
+            Set<ShiftSlot> selected = new HashSet<>();
+            for (Long slotId : request.getSlotIds()) {
+                ShiftSlot slot = shiftSlotRepository.findById(slotId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Vardiya slotu", slotId));
+                if (!slot.getJobListing().getId().equals(listing.getId())) {
+                    throw new BusinessRuleException("Slot bu ilana ait değil: " + slotId);
+                }
+                if (slot.isFull()) {
+                    throw new BusinessRuleException(
+                            "Seçtiğiniz slot dolu: " + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
+                }
+                selected.add(slot);
+            }
+            application.setRequestedSlots(selected);
         }
 
         applicationRepository.save(application);
@@ -147,10 +187,83 @@ public class ApplicationService {
             throw new BusinessRuleException("Geçersiz karar. Sadece ACCEPTED veya REJECTED gönderin");
         }
 
+        // Faz E1: ACCEPTED ise slot kapasitelerini güncelle
+        if (request.getDecision() == ApplicationStatus.ACCEPTED
+                && application.getRequestedSlots() != null
+                && !application.getRequestedSlots().isEmpty()) {
+            for (ShiftSlot slot : application.getRequestedSlots()) {
+                if (slot.isFull()) {
+                    throw new BusinessRuleException(
+                            "Slot kapasitesi dolduğu için kabul edilemez: "
+                            + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
+                }
+                slot.setSlotsFilled(slot.getSlotsFilled() + 1);
+                shiftSlotRepository.save(slot);
+            }
+        }
+
         application.setStatus(request.getDecision());
         application.setNote(request.getNote());
         applicationRepository.save(application);
         return toResponse(application);
+    }
+
+    // ----------------------------------------------------------------
+    // BUSINESS OWNER: Mark accepted candidate as no-show (D2)
+    // - Sadece ACCEPTED başvuru işaretlenebilir
+    // - Bir başvuru sadece BİR KEZ işaretlenebilir
+    // - Adayın strikesRemaining'i 1 düşer
+    // - 0'a düşerse 30 gün otomatik ban + strike 3'e reset
+    // ----------------------------------------------------------------
+    @Transactional
+    public NoShowResult markNoShow(Long applicationId, Long ownerId) {
+        Application application = getApplicationForBusinessOwner(applicationId, ownerId);
+
+        if (application.getStatus() != ApplicationStatus.ACCEPTED) {
+            throw new BusinessRuleException(
+                    "Sadece KABUL EDİLMİŞ başvurular no-show olarak işaretlenebilir. Mevcut durum: "
+                    + application.getStatus());
+        }
+        if (application.isNoShow()) {
+            throw new BusinessRuleException("Bu başvuru zaten no-show olarak işaretlenmiş.");
+        }
+
+        // Başvuruyu işaretle
+        application.setNoShow(true);
+
+        // Adayın strike'ını düş
+        User candidate = application.getCandidate();
+        int remaining = Math.max(0, candidate.getStrikesRemaining() - 1);
+        candidate.setStrikesRemaining(remaining);
+
+        boolean autoBanned = false;
+        LocalDateTime bannedUntil = null;
+        if (remaining <= 0) {
+            // Otomatik ban: 30 gün
+            bannedUntil = LocalDateTime.now().plusDays(30);
+            candidate.setBannedUntil(bannedUntil);
+            // Ban sonrası tekrar 3 hak tanı
+            candidate.setStrikesRemaining(3);
+            autoBanned = true;
+        }
+
+        userRepository.save(candidate);
+        applicationRepository.save(application);
+
+        return NoShowResult.builder()
+                .application(toResponse(application))
+                .candidateStrikesRemaining(candidate.getStrikesRemaining())
+                .autoBanned(autoBanned)
+                .bannedUntil(bannedUntil)
+                .build();
+    }
+
+    @Data @Builder
+    public static class NoShowResult {
+        private ApplicationResponse application;
+        private Integer candidateStrikesRemaining;
+        private Boolean autoBanned;
+        private LocalDateTime bannedUntil;
     }
 
     // ----------------------------------------------------------------
@@ -232,6 +345,21 @@ public class ApplicationService {
                         .build())
                 .toList();
 
+        // Faz E1: Adayın başvurduğu slotlar (tarih+saate göre sıralı)
+        List<RequestedSlotDto> slotDtos = (app.getRequestedSlots() == null) ? List.of()
+                : app.getRequestedSlots().stream()
+                    .sorted((a, b) -> {
+                        int c = a.getDate().compareTo(b.getDate());
+                        return c != 0 ? c : a.getStartTime().compareTo(b.getStartTime());
+                    })
+                    .map(s -> RequestedSlotDto.builder()
+                            .id(s.getId())
+                            .date(s.getDate())
+                            .startTime(s.getStartTime())
+                            .endTime(s.getEndTime())
+                            .build())
+                    .toList();
+
         JobListing listing = app.getJobListing();
         Business business = listing.getBusiness();
 
@@ -259,6 +387,7 @@ public class ApplicationService {
                         .build())
                 .availabilities(avDtos)
                 .documentRequests(drDtos)
+                .requestedSlots(slotDtos)
                 .build();
     }
 }

@@ -80,6 +80,8 @@ export async function getListings(filters = {}) {
   if (filters.district)            params.district  = filters.district
   if (filters.minSalary)           params.minSalary = filters.minSalary
   if (filters.keyword?.trim())     params.keyword   = filters.keyword.trim()
+  if (filters.dateFrom)            params.dateFrom  = filters.dateFrom  // YYYY-MM-DD
+  if (filters.dateTo)              params.dateTo    = filters.dateTo
   const { data } = await api.get('/api/listings', { params })
   return data
 }
@@ -163,6 +165,11 @@ export async function reviewApplication(applicationId, decision, note) {
   return data
 }
 
+export async function markNoShow(applicationId) {
+  const { data } = await api.put(`/api/business/applications/${applicationId}/no-show`)
+  return data  // { application, candidateStrikesRemaining, autoBanned, bannedUntil }
+}
+
 export async function requestDocument(applicationId, documentType) {
   const { data } = await api.post(`/api/business/applications/${applicationId}/document-requests`, { documentType })
   return data
@@ -178,4 +185,38 @@ export async function viewDocument(documentId) {
   const url = URL.createObjectURL(response.data)
   window.open(url, '_blank')
   // Blob URL açık sekmede kullanılırken iptal etmiyoruz
+}
+
+/* ── Admin endpoints ── */
+export async function adminListUsers(role, search) {
+  const params = {}
+  if (role)   params.role = role
+  if (search) params.search = search
+  const { data } = await api.get('/api/admin/users', { params })
+  return data
+}
+
+export async function adminGetUser(id) {
+  const { data } = await api.get(`/api/admin/users/${id}`)
+  return data
+}
+
+export async function adminSetStudentStatus(id, approved) {
+  const { data } = await api.put(`/api/admin/users/${id}/student-status`, { approved })
+  return data
+}
+
+export async function adminBanUser(id, days) {
+  const { data } = await api.put(`/api/admin/users/${id}/ban`, { days })
+  return data
+}
+
+export async function adminUnbanUser(id) {
+  const { data } = await api.put(`/api/admin/users/${id}/unban`)
+  return data
+}
+
+export async function adminGetStats() {
+  const { data } = await api.get('/api/admin/stats')
+  return data
 }

@@ -7,6 +7,7 @@ import com.hotelapp.dto.ReviewRequest;
 import com.hotelapp.entity.User;
 import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.service.ApplicationService;
+import com.hotelapp.service.ApplicationService.NoShowResult;
 import com.hotelapp.service.DocumentService;
 import com.hotelapp.service.DocumentService.DocumentDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -106,6 +107,20 @@ public class ApplicationController {
             @Valid @RequestBody ReviewRequest request) {
         return ResponseEntity.ok(
                 applicationService.reviewApplication(applicationId, currentUser.getId(), request));
+    }
+
+    @Operation(
+            summary = "Kabul edilmiş başvuruyu NO-SHOW olarak işaretle — sadece BUSINESS_OWNER",
+            description = "Adayın strike hakkı 1 düşer. Hak sıfıra inerse aday 30 gün otomatik banlanır ve hakları 3'e resetlenir."
+    )
+    @PutMapping("/api/business/applications/{applicationId}/no-show")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<NoShowResult> markNoShow(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long applicationId) {
+        return ResponseEntity.ok(
+                applicationService.markNoShow(applicationId, currentUser.getId()));
     }
 
     @Operation(summary = "Adaydan hassas belge talep et — sadece BUSINESS_OWNER")

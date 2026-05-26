@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "job_listings")
@@ -64,6 +66,11 @@ public class JobListing {
     @Column(nullable = false)
     @Builder.Default
     private ListingStatus status = ListingStatus.ACTIVE;
+
+    // Faz E1: Bu ilana ait spesifik vardiya slotları (date+startTime+endTime+slotsNeeded)
+    @OneToMany(mappedBy = "jobListing", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ShiftSlot> shiftSlots = new ArrayList<>();
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -177,18 +177,6 @@ export default function RegisterPage() {
                   <p className="text-xs text-slate-400 mt-1">Diğer şehirler yakında eklenecek</p>
                 </div>
 
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <input type="checkbox" className="mt-0.5 w-4 h-4 rounded accent-violet-600"
-                    {...register('studentSelf')} />
-                  <div>
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-violet-700 transition-colors">
-                      Üniversite öğrencisiyim
-                    </span>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Öğrenci avantajları için admin doğrulaması gerekir
-                    </p>
-                  </div>
-                </label>
               </div>
             )}
 

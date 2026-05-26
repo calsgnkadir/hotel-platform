@@ -17,13 +17,19 @@ const businessNav = [
   { id: 'profile',       icon: '🏢', label: 'İşletme Profili' },
 ]
 
+const adminNav = [
+  { id: 'overview', icon: '🏠', label: 'Genel Bakış' },
+  { id: 'users',    icon: '👥', label: 'Kullanıcılar' },
+]
+
 export default function DashboardLayout({ children, activeTab, onTabChange }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const isCandidate = user?.role === 'CANDIDATE'
-  const navItems = isCandidate ? candidateNav : businessNav
+  const isAdmin = user?.role === 'ADMIN'
+  const navItems = isAdmin ? adminNav : (isCandidate ? candidateNav : businessNav)
 
   function handleLogout() {
     logout()
@@ -115,15 +121,17 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                 {navItems.find(n => n.id === activeTab)?.label || 'Panel'}
               </h1>
               <p className="text-xs text-slate-400 hidden sm:block">
-                {isCandidate ? 'AjansHotel · Aday Paneli' : 'AjansHotel · İşletme Paneli'}
+                AjansHotel · {isAdmin ? 'Admin Paneli' : isCandidate ? 'Aday Paneli' : 'İşletme Paneli'}
               </p>
             </div>
           </div>
 
           {/* Role badge */}
           <div className={`hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-semibold
-            ${isCandidate ? 'bg-violet-500/20 text-violet-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
-            {isCandidate ? 'Aday' : 'İşletme'}
+            ${isAdmin ? 'bg-amber-500/20 text-amber-300'
+              : isCandidate ? 'bg-violet-500/20 text-violet-300'
+              : 'bg-emerald-500/20 text-emerald-300'}`}>
+            {isAdmin ? 'Admin' : isCandidate ? 'Aday' : 'İşletme'}
           </div>
         </header>
 

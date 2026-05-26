@@ -1,0 +1,214 @@
+package com.hotelapp.service;
+
+import com.hotelapp.entity.User;
+import com.hotelapp.enums.DocumentType;
+import com.hotelapp.enums.Role;
+import com.hotelapp.exception.BusinessRuleException;
+import com.hotelapp.exception.ResourceNotFoundException;
+import com.hotelapp.repository.ApplicationRepository;
+import com.hotelapp.repository.BusinessRepository;
+import com.hotelapp.repository.DocumentRepository;
+import com.hotelapp.repository.JobListingRepository;
+import com.hotelapp.repository.UserRepository;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AdminService {
+
+    private final UserRepository userRepository;
+    private final BusinessRepository businessRepository;
+    private final JobListingRepository jobListingRepository;
+    private final ApplicationRepository applicationRepository;
+    private final DocumentRepository documentRepository;
+
+    // ================================================================
+    // Listing & detail
+    // ================================================================
+
+    @Transactional(readOnly = true)
+    public List<UserSummary> listUsers(Role role, String search) {
+        return userRepository.searchUsers(role, search).stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public UserDetail getUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", id));
+
+        boolean hasStudentDoc = documentRepository
+                .findByStudentIdAndType(user.getId(), DocumentType.STUDENT_CERTIFICATE)
+                .isPresent();
+
+        long applicationCount = applicationRepository.findAllByCandidateId(user.getId()).size();
+        long listingCount = jobListingRepository.findAllByBusiness_OwnerId(user.getId()).size();
+
+        return UserDetail.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
+                .role(user.getRole().name())
+                .isStudent(user.isStudent())
+                .strikesRemaining(user.getStrikesRemaining())
+                .bannedUntil(user.getBannedUntil())
+                .currentlyBanned(isBanned(user))
+                .createdAt(user.getCreatedAt())
+                .district(user.getDistrict())
+                .hasStudentDoc(hasStudentDoc)
+                .applicationCount(applicationCount)
+                .listingCount(listingCount)
+                .build();
+    }
+
+    // ================================================================
+    // Actions
+    // ================================================================
+
+    @Transactional
+    public UserSummary setStudentStatus(Long id, boolean approved) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", id));
+        if (user.getRole() != Role.CANDIDATE) {
+            throw new BusinessRuleException("Sadece CANDIDATE rolündeki kullanıcılar için öğrenci onayı verilir.");
+        }
+        user.setStudent(approved);
+        // Onaylı öğrenci 5 strike, normal aday 3 strike (kural)
+        user.setStrikesRemaining(approved ? 5 : 3);
+        userRepository.save(user);
+        return toSummary(user);
+    }
+
+    @Transactional
+    public UserSummary ban(Long id, int days) {
+        if (days < 1 || days > 365) {
+            throw new BusinessRuleException("Ban süresi 1-365 gün aralığında olmalı.");
+        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", id));
+        if (user.getRole() == Role.ADMIN) {
+            throw new BusinessRuleException("Admin kullanıcı banlanamaz.");
+        }
+        user.setBannedUntil(LocalDateTime.now().plusDays(days));
+        userRepository.save(user);
+        return toSummary(user);
+    }
+
+    @Transactional
+    public UserSummary unban(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", id));
+        user.setBannedUntil(null);
+        userRepository.save(user);
+        return toSummary(user);
+    }
+
+    // ================================================================
+    // Stats
+    // ================================================================
+
+    @Transactional(readOnly = true)
+    public StatsDto getStats() {
+        return StatsDto.builder()
+                .totalUsers(userRepository.count())
+                .candidates(userRepository.countByRole(Role.CANDIDATE))
+                .businessOwners(userRepository.countByRole(Role.BUSINESS_OWNER))
+                .admins(userRepository.countByRole(Role.ADMIN))
+                .bannedUsers(userRepository.countCurrentlyBanned(LocalDateTime.now()))
+                .totalBusinesses(businessRepository.count())
+                .totalListings(jobListingRepository.count())
+                .totalApplications(applicationRepository.count())
+                .build();
+    }
+
+    // ================================================================
+    // Mapping
+    // ================================================================
+
+    private UserSummary toSummary(User u) {
+        return UserSummary.builder()
+                .id(u.getId())
+                .email(u.getEmail())
+                .fullName(u.getFullName())
+                .role(u.getRole().name())
+                .isStudent(u.isStudent())
+                .strikesRemaining(u.getStrikesRemaining())
+                .bannedUntil(u.getBannedUntil())
+                .currentlyBanned(isBanned(u))
+                .createdAt(u.getCreatedAt())
+                .build();
+    }
+
+    private boolean isBanned(User u) {
+        return u.getBannedUntil() != null && u.getBannedUntil().isAfter(LocalDateTime.now());
+    }
+
+    // ================================================================
+    // DTOs / requests
+    // ================================================================
+
+    @Data @Builder
+    public static class UserSummary {
+        private Long id;
+        private String email;
+        private String fullName;
+        private String role;
+        // Boolean (wrapper) primitive değil — Jackson "isStudent" olarak serialize etsin
+        private Boolean isStudent;
+        private Integer strikesRemaining;
+        private LocalDateTime bannedUntil;
+        private Boolean currentlyBanned;
+        private LocalDateTime createdAt;
+    }
+
+    @Data @Builder
+    public static class UserDetail {
+        private Long id;
+        private String email;
+        private String fullName;
+        private String phone;
+        private String role;
+        private Boolean isStudent;
+        private Integer strikesRemaining;
+        private LocalDateTime bannedUntil;
+        private Boolean currentlyBanned;
+        private LocalDateTime createdAt;
+        private String district;
+        private Boolean hasStudentDoc;
+        private long applicationCount;
+        private long listingCount;
+    }
+
+    @Data @Builder
+    public static class StatsDto {
+        private long totalUsers;
+        private long candidates;
+        private long businessOwners;
+        private long admins;
+        private long bannedUsers;
+        private long totalBusinesses;
+        private long totalListings;
+        private long totalApplications;
+    }
+
+    @Data
+    public static class StudentStatusRequest {
+        @NotNull private Boolean approved;
+    }
+
+    @Data
+    public static class BanRequest {
+        @NotNull @Min(1) private Integer days;
+    }
+}
