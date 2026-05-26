@@ -31,6 +31,7 @@ public class ApplicationService {
     private final JobListingRepository jobListingRepository;
     private final DocumentRequestRepository documentRequestRepository;
     private final ShiftSlotRepository shiftSlotRepository;
+    private final FileStorageService fileStorageService;
 
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
@@ -407,6 +408,9 @@ public class ApplicationService {
                         .id(app.getCandidate().getId())
                         .fullName(app.getCandidate().getFullName())
                         .email(app.getCandidate().getEmail())
+                        .avatarUrl(app.getCandidate().getAvatarPath() != null
+                                ? fileStorageService.publicUrl(app.getCandidate().getAvatarPath())
+                                : null)
                         .build())
                 .listing(ApplicationResponse.ListingSummary.builder()
                         .id(listing.getId())

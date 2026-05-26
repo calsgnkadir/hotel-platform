@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,5 +38,24 @@ public class CandidateController {
             @AuthenticationPrincipal User currentUser,
             @Valid @RequestBody ProfileUpdateRequest request) {
         return ResponseEntity.ok(candidateProfileService.updateMyProfile(currentUser.getId(), request));
+    }
+
+    @Operation(summary = "Profil fotoğrafı yükle/değiştir (D7) — sadece CANDIDATE")
+    @PostMapping(value = "/api/candidate/avatar", consumes = "multipart/form-data")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<CandidateProfileDto> uploadAvatar(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(candidateProfileService.uploadAvatar(currentUser.getId(), file));
+    }
+
+    @Operation(summary = "Profil fotoğrafını sil — sadece CANDIDATE")
+    @DeleteMapping("/api/candidate/avatar")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Void> deleteAvatar(@AuthenticationPrincipal User currentUser) {
+        candidateProfileService.deleteAvatar(currentUser.getId());
+        return ResponseEntity.noContent().build();
     }
 }

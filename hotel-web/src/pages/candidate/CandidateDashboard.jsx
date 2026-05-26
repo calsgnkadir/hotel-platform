@@ -441,6 +441,41 @@ function ProfileTab() {
       .finally(() => setLoading(false))
   }, [])
 
+  // D7: Avatar upload/delete
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  async function handleAvatarUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const MAX = 5 * 1024 * 1024
+    if (file.size > MAX) {
+      toast.error(`Foto çok büyük (${(file.size/1024/1024).toFixed(1)} MB). Maksimum 5 MB.`)
+      e.target.value = ''; return
+    }
+    const ext = (file.name.split('.').pop() || '').toLowerCase()
+    if (!['jpg','jpeg','png','webp','heic','heif'].includes(ext)) {
+      toast.error(`'.${ext}' desteklenmiyor. JPG/PNG/WEBP/HEIC kullanın.`)
+      e.target.value = ''; return
+    }
+
+    setAvatarUploading(true)
+    try {
+      const updated = await hotelApi.uploadCandidateAvatar(file)
+      setProfile(updated)
+      toast.success('Profil fotoğrafı güncellendi')
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setAvatarUploading(false); e.target.value = '' }
+  }
+
+  async function handleAvatarDelete() {
+    if (!confirm('Profil fotoğrafı silinsin mi?')) return
+    try {
+      await hotelApi.deleteCandidateAvatar()
+      setProfile(prev => ({ ...prev, avatarUrl: null }))
+      toast.success('Profil fotoğrafı silindi')
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+  }
+
   function handleChange(e) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
@@ -498,6 +533,39 @@ function ProfileTab() {
 
   return (
     <div className="space-y-5 max-w-3xl">
+    {/* D7: Profil fotoğrafı — form'un dışında ayrı kart (kendi upload akışı) */}
+    <div className="card p-5">
+      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Profil Fotoğrafı</h3>
+      <div className="flex items-center gap-4">
+        <div className="w-24 h-24 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+          {profile?.avatarUrl ? (
+            <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-3xl text-slate-300">👤</span>
+          )}
+        </div>
+        <div className="flex-1 space-y-2">
+          <label className={`block px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
+            ${avatarUploading
+              ? 'bg-violet-50 text-violet-400 cursor-wait'
+              : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}>
+            <input type="file" className="sr-only" accept="image/*,.heic,.heif"
+              onChange={handleAvatarUpload} disabled={avatarUploading} />
+            {avatarUploading
+              ? '⏳ Yükleniyor...'
+              : (profile?.avatarUrl ? '🔄 Fotoyu Değiştir' : '📷 Foto Yükle')}
+          </label>
+          {profile?.avatarUrl && (
+            <button type="button" onClick={handleAvatarDelete}
+              className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">
+              🗑 Fotoyu Kaldır
+            </button>
+          )}
+          <p className="text-xs text-slate-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
+        </div>
+      </div>
+    </div>
+
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Block 1: Temel Bilgiler */}
       <div className="card p-5 space-y-4">

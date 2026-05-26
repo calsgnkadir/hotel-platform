@@ -103,6 +103,10 @@ public class User implements UserDetails {
     private Boolean smokes;
     private Boolean hasLicense;
 
+    // Profil fotoğrafı — Cloudinary storage ref (D7)
+    // Format: "upload:image:ajanshotel/avatars/{userId}/{uuid}.jpg"
+    private String avatarPath;
+
     // ================================================================
 
     private LocalDateTime createdAt;

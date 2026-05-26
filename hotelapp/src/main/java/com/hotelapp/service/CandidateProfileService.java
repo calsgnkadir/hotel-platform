@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import java.util.Set;
 public class CandidateProfileService {
 
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     // ----------------------------------------------------------------
     // Read own profile
@@ -67,6 +69,36 @@ public class CandidateProfileService {
     }
 
     // ----------------------------------------------------------------
+    // Avatar yükle/sil (D7)
+    // ----------------------------------------------------------------
+    @Transactional
+    public CandidateProfileDto uploadAvatar(Long candidateId, MultipartFile file) {
+        User user = userRepository.findById(candidateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", candidateId));
+
+        // Eski avatar varsa Cloudinary'den sil
+        if (user.getAvatarPath() != null) {
+            fileStorageService.delete(user.getAvatarPath());
+        }
+
+        String ref = fileStorageService.storeAvatar(file, candidateId);
+        user.setAvatarPath(ref);
+        userRepository.save(user);
+        return toDto(user);
+    }
+
+    @Transactional
+    public void deleteAvatar(Long candidateId) {
+        User user = userRepository.findById(candidateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", candidateId));
+        if (user.getAvatarPath() != null) {
+            fileStorageService.delete(user.getAvatarPath());
+            user.setAvatarPath(null);
+            userRepository.save(user);
+        }
+    }
+
+    // ----------------------------------------------------------------
     // Mapping
     // ----------------------------------------------------------------
     private CandidateProfileDto toDto(User u) {
@@ -86,6 +118,9 @@ public class CandidateProfileService {
                 .previousExperience(u.getPreviousExperience())
                 .smokes(u.getSmokes())
                 .hasLicense(u.getHasLicense())
+                .avatarUrl(u.getAvatarPath() != null
+                        ? fileStorageService.publicUrl(u.getAvatarPath())
+                        : null)
                 .build();
     }
 
@@ -112,6 +147,9 @@ public class CandidateProfileService {
         private String previousExperience;
         private Boolean smokes;
         private Boolean hasLicense;
+
+        // D7: Profil fotoğrafı URL'si (Cloudinary CDN)
+        private String avatarUrl;
     }
 
     @Data

@@ -116,6 +116,40 @@ public class FileStorageService {
     }
 
     // -----------------------------------------------------------------------
+    // Aday profil fotoğrafı (D7) — image only, max 5 MB
+    // -----------------------------------------------------------------------
+    public String storeAvatar(MultipartFile file, Long userId) {
+        validate(file, ALLOWED_IMAGE_EXTENSIONS, 5L * 1024 * 1024,
+                "Kabul edilenler: JPG, JPEG, PNG, WEBP, HEIC",
+                "Profil fotoğrafı çok büyük (%.1f MB). Maksimum 5 MB olmalı.");
+
+        String ext = getExtension(file.getOriginalFilename()).toLowerCase();
+        String folder = "ajanshotel/avatars/" + userId;
+        String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
+
+        Map<String, Object> options = ObjectUtils.asMap(
+                "public_id", publicId,
+                "resource_type", "image",
+                "type", "upload",
+                "overwrite", true,
+                "use_filename", false,
+                "unique_filename", false,
+                // Avatar için: 400x400 yüze odaklı kırpma, otomatik kalite
+                "transformation", new com.cloudinary.Transformation()
+                        .width(400).height(400).gravity("face").crop("fill")
+                        .quality("auto").fetchFormat("auto")
+        );
+
+        try {
+            cloudinary.uploader().upload(file.getBytes(), options);
+            log.info("Cloudinary avatar yüklendi: {} (size={} KB)", publicId, file.getSize() / 1024);
+            return "upload:image:" + publicId;
+        } catch (IOException e) {
+            throw new BusinessRuleException("Avatar yüklenemedi: " + e.getMessage());
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // Sil
     // -----------------------------------------------------------------------
     public void delete(String storedRef) {

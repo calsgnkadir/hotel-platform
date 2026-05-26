@@ -1130,10 +1130,15 @@ function ApplicationsTab({ applications, onRefresh }) {
                onClick={() => setSelected(app)}>
             <div className="p-4 flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                     style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
-                  {app.candidate?.fullName?.charAt(0) || '?'}
-                </div>
+                {app.candidate?.avatarUrl ? (
+                  <img src={app.candidate.avatarUrl} alt={app.candidate.fullName}
+                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                       style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                    {app.candidate?.fullName?.charAt(0) || '?'}
+                  </div>
+                )}
                 <div>
                   <div className="font-semibold text-slate-800">{app.candidate?.fullName}</div>
                   <div className="text-xs text-slate-500">{app.candidate?.email}</div>
@@ -1165,10 +1170,21 @@ function ApplicationsTab({ applications, onRefresh }) {
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="p-6 border-b border-slate-100">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">{selected.candidate?.fullName}</h2>
-                  <p className="text-sm text-slate-500">{selected.candidate?.email}</p>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  {selected.candidate?.avatarUrl ? (
+                    <img src={selected.candidate.avatarUrl} alt={selected.candidate.fullName}
+                      className="w-14 h-14 rounded-full object-cover border border-slate-200 flex-shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+                         style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                      {selected.candidate?.fullName?.charAt(0) || '?'}
+                    </div>
+                  )}
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900">{selected.candidate?.fullName}</h2>
+                    <p className="text-sm text-slate-500">{selected.candidate?.email}</p>
+                  </div>
                 </div>
                 <StatusBadge status={selected.status} />
               </div>

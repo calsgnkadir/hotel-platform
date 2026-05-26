@@ -67,6 +67,20 @@ export async function updateCandidateProfile(payload) {
   return data
 }
 
+// D7: Aday profil fotoğrafı (avatar)
+export async function uploadCandidateAvatar(file) {
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await api.post('/api/candidate/avatar', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data  // CandidateProfileDto with new avatarUrl
+}
+
+export async function deleteCandidateAvatar() {
+  await api.delete('/api/candidate/avatar')
+}
+
 /* ── Job listing endpoints (public browse) ── */
 /**
  * Aktif ilanları listele — tüm filtreler opsiyonel.

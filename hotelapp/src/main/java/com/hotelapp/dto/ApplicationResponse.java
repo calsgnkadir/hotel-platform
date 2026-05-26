@@ -36,6 +36,8 @@ public class ApplicationResponse {
         private Long id;
         private String fullName;
         private String email;
+        /** D7: Cloudinary CDN URL'i, null olabilir */
+        private String avatarUrl;
     }
 
     @Data @Builder
