@@ -50,6 +50,12 @@ export async function deleteBusinessPhoto(photoId) {
   await api.delete(`/api/business/photos/${photoId}`)
 }
 
+/* ── Şifre değiştirme (D3) ── */
+export async function changePassword(currentPassword, newPassword) {
+  const { data } = await api.put('/api/auth/change-password', { currentPassword, newPassword })
+  return data
+}
+
 /* ── Candidate profile ── */
 export async function getCandidateProfile() {
   const { data } = await api.get('/api/candidate/profile')

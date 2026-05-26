@@ -5,6 +5,7 @@ import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import ListingsPage from './ListingsPage'
+import ChangePasswordCard from '../../components/ChangePasswordCard'
 
 const ISTANBUL_DISTRICTS = [
   'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler',
@@ -469,7 +470,8 @@ function ProfileTab() {
   if (!form) return null
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 max-w-3xl">
+    <div className="space-y-5 max-w-3xl">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* Block 1: Temel Bilgiler */}
       <div className="card p-5 space-y-4">
         <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Temel Bilgiler</h3>
@@ -581,6 +583,10 @@ function ProfileTab() {
         </button>
       </div>
     </form>
+
+    {/* D3: Şifre Değiştir — ayrı form, profil form'unun dışında */}
+    <ChangePasswordCard />
+    </div>
   )
 }
 

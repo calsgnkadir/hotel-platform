@@ -11,6 +11,9 @@ import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.UserRepository;
 import com.hotelapp.security.JwtService;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -82,5 +85,37 @@ public class AuthService {
                 .fullName(user.getFullName())
                 .role(user.getRole())
                 .build();
+    }
+
+    /**
+     * D3: Giriş yapmış kullanıcı şifresini değiştirir.
+     * - Mevcut şifre doğrulanır
+     * - Yeni şifre eski ile aynı olmamalı
+     * - Yeni şifre BCrypt ile hash'lenir
+     */
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", userId));
+
+        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            throw new BusinessRuleException("Mevcut şifre yanlış");
+        }
+        if (req.getCurrentPassword().equals(req.getNewPassword())) {
+            throw new BusinessRuleException("Yeni şifre eskisiyle aynı olamaz");
+        }
+
+        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Data
+    public static class ChangePasswordRequest {
+        @NotBlank(message = "Mevcut şifre zorunlu")
+        private String currentPassword;
+
+        @NotBlank(message = "Yeni şifre zorunlu")
+        @Size(min = 8, message = "Yeni şifre en az 8 karakter olmalı")
+        private String newPassword;
     }
 }

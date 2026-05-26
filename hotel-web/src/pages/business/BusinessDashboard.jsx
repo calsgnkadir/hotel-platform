@@ -3,6 +3,7 @@ import DashboardLayout from '../../components/DashboardLayout'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
+import ChangePasswordCard from '../../components/ChangePasswordCard'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -745,7 +746,8 @@ function ProfileTab() {
   if (!form) return null
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 max-w-3xl">
+    <div className="space-y-5 max-w-3xl">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* Görseller (logo + galeri) */}
       <MediaBlock
         logoUrl={logoUrl}
@@ -856,6 +858,10 @@ function ProfileTab() {
         </button>
       </div>
     </form>
+
+    {/* D3: Şifre Değiştir — profil form'unun dışında ayrı kart */}
+    <ChangePasswordCard />
+    </div>
   )
 }
 
