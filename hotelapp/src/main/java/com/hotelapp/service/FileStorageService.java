@@ -1,5 +1,6 @@
 package com.hotelapp.service;
 
+import com.hotelapp.exception.BusinessRuleException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,20 +19,23 @@ public class FileStorageService {
     private String uploadDir;
 
     // İzin verilen dosya uzantıları (belgeler)
+    // PDF + her tipte foto (HEIC iPhone, WebP modern, DOC/DOCX Office)
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
-            "pdf", "jpg", "jpeg", "png"
+            "pdf",
+            "jpg", "jpeg", "png", "webp", "heic", "heif",
+            "doc", "docx"
     );
 
     // Sadece görsel — işletme logo/galeri
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of(
-            "jpg", "jpeg", "png", "webp"
+            "jpg", "jpeg", "png", "webp", "heic", "heif"
     );
 
-    // Maksimum dosya boyutu: 10 MB (belge)
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+    // Maksimum dosya boyutu: 15 MB (belge — modern telefon foto + PDF için)
+    private static final long MAX_FILE_SIZE = 15L * 1024 * 1024;
 
-    // Maksimum görsel boyutu: 5 MB
-    private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+    // Maksimum görsel boyutu: 10 MB (modern foto için)
+    private static final long MAX_IMAGE_SIZE = 10L * 1024 * 1024;
 
     @PostConstruct
     public void init() throws IOException {
@@ -48,24 +52,34 @@ public class FileStorageService {
     public String store(MultipartFile file, Long studentId) {
         // Boş dosya kontrolü
         if (file.isEmpty()) {
-            throw new RuntimeException("Boş dosya yüklenemez");
+            throw new BusinessRuleException("Boş dosya yüklenemez");
         }
 
         // Boyut kontrolü
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new RuntimeException("Dosya boyutu 10 MB'ı aşamaz");
+            double mb = file.getSize() / (1024.0 * 1024.0);
+            throw new BusinessRuleException(
+                    String.format("Dosya çok büyük (%.1f MB). Maksimum 15 MB olmalı.", mb));
         }
 
         // Uzantı kontrolü
         String originalName = StringUtils.cleanPath(file.getOriginalFilename());
+        if (originalName == null || originalName.isBlank()) {
+            throw new BusinessRuleException("Dosya adı okunamadı");
+        }
         String extension = getExtension(originalName).toLowerCase();
+        if (extension.isEmpty()) {
+            throw new BusinessRuleException("Dosyanın uzantısı yok — geçerli bir dosya seçin");
+        }
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new RuntimeException("Sadece PDF, JPG, JPEG, PNG yüklenebilir");
+            throw new BusinessRuleException(
+                    "'." + extension + "' formatı desteklenmiyor. " +
+                    "Kabul edilenler: PDF, JPG, JPEG, PNG, WEBP, HEIC, DOC, DOCX");
         }
 
         // Path traversal koruması
         if (originalName.contains("..")) {
-            throw new RuntimeException("Geçersiz dosya adı");
+            throw new BusinessRuleException("Geçersiz dosya adı");
         }
 
         // Öğrenciye özel klasör: uploads/documents/{studentId}/
@@ -81,7 +95,7 @@ public class FileStorageService {
             return "documents/" + studentId + "/" + uniqueName;
 
         } catch (IOException e) {
-            throw new RuntimeException("Dosya kaydedilemedi: " + e.getMessage());
+            throw new BusinessRuleException("Dosya kaydedilemedi: " + e.getMessage());
         }
     }
 
@@ -105,19 +119,29 @@ public class FileStorageService {
      */
     public String storeBusinessImage(MultipartFile file, Long businessId, String subfolder) {
         if (file.isEmpty()) {
-            throw new RuntimeException("Boş dosya yüklenemez");
+            throw new BusinessRuleException("Boş dosya yüklenemez");
         }
         if (file.getSize() > MAX_IMAGE_SIZE) {
-            throw new RuntimeException("Görsel boyutu 5 MB'ı aşamaz");
+            double mb = file.getSize() / (1024.0 * 1024.0);
+            throw new BusinessRuleException(
+                    String.format("Görsel çok büyük (%.1f MB). Maksimum 10 MB olmalı.", mb));
         }
 
         String originalName = StringUtils.cleanPath(file.getOriginalFilename());
+        if (originalName == null || originalName.isBlank()) {
+            throw new BusinessRuleException("Dosya adı okunamadı");
+        }
         String extension = getExtension(originalName).toLowerCase();
+        if (extension.isEmpty()) {
+            throw new BusinessRuleException("Dosyanın uzantısı yok — geçerli bir dosya seçin");
+        }
         if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
-            throw new RuntimeException("Sadece JPG, JPEG, PNG, WEBP yüklenebilir");
+            throw new BusinessRuleException(
+                    "'." + extension + "' formatı desteklenmiyor. " +
+                    "Kabul edilenler: JPG, JPEG, PNG, WEBP, HEIC");
         }
         if (originalName.contains("..")) {
-            throw new RuntimeException("Geçersiz dosya adı");
+            throw new BusinessRuleException("Geçersiz dosya adı");
         }
 
         try {
@@ -130,7 +154,7 @@ public class FileStorageService {
 
             return "business/" + businessId + "/" + subfolder + "/" + uniqueName;
         } catch (IOException e) {
-            throw new RuntimeException("Görsel kaydedilemedi: " + e.getMessage());
+            throw new BusinessRuleException("Görsel kaydedilemedi: " + e.getMessage());
         }
     }
 

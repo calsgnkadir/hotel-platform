@@ -523,10 +523,27 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
   const [logoUploading, setLogoUploading] = useState(false)
   const [photoUploading, setPhotoUploading] = useState(false)
   const MAX_PHOTOS = 10
+  const MAX_IMAGE_SIZE = 10 * 1024 * 1024  // 10 MB (backend ile aynı)
+  const ALLOWED_IMG_EXT = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']
+
+  function validateImage(file) {
+    if (file.size > MAX_IMAGE_SIZE) {
+      const mb = (file.size / (1024 * 1024)).toFixed(1)
+      toast.error(`Görsel çok büyük (${mb} MB). Maksimum 10 MB.`)
+      return false
+    }
+    const ext = (file.name.split('.').pop() || '').toLowerCase()
+    if (!ALLOWED_IMG_EXT.includes(ext)) {
+      toast.error(`'.${ext}' formatı desteklenmiyor. Kabul edilenler: JPG, PNG, WEBP, HEIC`)
+      return false
+    }
+    return true
+  }
 
   async function handleLogoChange(e) {
     const file = e.target.files?.[0]
     if (!file) return
+    if (!validateImage(file)) { e.target.value = ''; return }
     setLogoUploading(true)
     try { await onLogoUpload(file) }
     finally { setLogoUploading(false); e.target.value = '' }
@@ -535,6 +552,7 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
   async function handlePhotoChange(e) {
     const file = e.target.files?.[0]
     if (!file) return
+    if (!validateImage(file)) { e.target.value = ''; return }
     setPhotoUploading(true)
     try { await onPhotoUpload(file) }
     finally { setPhotoUploading(false); e.target.value = '' }
@@ -561,7 +579,7 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
               ${logoUploading
                 ? 'bg-violet-50 text-violet-400 cursor-wait'
                 : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}>
-              <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp"
+              <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
                 onChange={handleLogoChange} disabled={logoUploading} />
               {logoUploading
                 ? '⏳ Yükleniyor...'
@@ -573,7 +591,7 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
                 🗑 Logoyu Kaldır
               </button>
             )}
-            <p className="text-xs text-slate-400">Max 5 MB · JPG/PNG/WEBP</p>
+            <p className="text-xs text-slate-400">Max 10 MB · JPG/PNG/WEBP/HEIC</p>
           </div>
         </div>
       </div>
@@ -587,7 +605,7 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
               ${photoUploading
                 ? 'bg-violet-50 text-violet-400 cursor-wait'
                 : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}>
-              <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp"
+              <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
                 onChange={handlePhotoChange} disabled={photoUploading} />
               {photoUploading ? '⏳ Yükleniyor...' : '+ Foto Ekle'}
             </label>

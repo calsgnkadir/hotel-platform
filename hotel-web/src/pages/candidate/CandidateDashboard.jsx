@@ -196,7 +196,27 @@ function DocumentsTab() {
 
   async function handleUpload(e) {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file) {
+      return
+    }
+
+    // Client-side ön kontrol — backend'e gitmeden hızlı feedback
+    const MAX_SIZE = 15 * 1024 * 1024  // 15 MB (backend ile aynı)
+    if (file.size > MAX_SIZE) {
+      const mb = (file.size / (1024 * 1024)).toFixed(1)
+      toast.error(`Dosya çok büyük (${mb} MB). Maksimum 15 MB olmalı.`)
+      e.target.value = ''
+      return
+    }
+
+    const allowed = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'doc', 'docx']
+    const ext = (file.name.split('.').pop() || '').toLowerCase()
+    if (!allowed.includes(ext)) {
+      toast.error(`'.${ext}' formatı desteklenmiyor. Kabul edilenler: PDF, JPG, PNG, WEBP, HEIC, DOC, DOCX`)
+      e.target.value = ''
+      return
+    }
+
     setUploading(true)
     try {
       await hotelApi.uploadDocument(file, selectedType)
@@ -232,8 +252,8 @@ function DocumentsTab() {
               ${uploading ? 'border-violet-300 bg-violet-50 text-violet-400 cursor-wait'
                 : 'border-slate-300 hover:border-violet-400 hover:bg-violet-50 text-slate-600 hover:text-violet-600'}`}>
               <input type="file" className="sr-only" onChange={handleUpload} disabled={uploading}
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"/>
-              {uploading ? '⏳ Yükleniyor...' : '📎 Dosya Seç (PDF, JPEG, PNG, DOC)'}
+                accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx,image/*,application/pdf"/>
+              {uploading ? '⏳ Yükleniyor...' : '📎 Dosya Seç (PDF, JPG, PNG, WEBP, HEIC, DOC, max 15 MB)'}
             </label>
           </div>
         </div>
