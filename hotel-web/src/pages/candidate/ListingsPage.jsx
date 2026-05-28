@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
+import ReportModal from '../../components/ReportModal'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -245,6 +246,7 @@ function ApplyModal({ listing, onClose, onSuccess }) {
 
 /* ── Detail Modal ── */
 function DetailModal({ listing, onClose, onApply }) {
+  const [showReport, setShowReport] = useState(false)
   const shift = listing.shift ? SHIFT_INFO[listing.shift] : null
   const salary = formatSalary(listing.salaryMin, listing.salaryMax)
   const hasDates = listing.startDate || listing.endDate
@@ -366,7 +368,12 @@ function DetailModal({ listing, onClose, onApply }) {
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-slate-100 sticky bottom-0 bg-white">
+        <div className="flex gap-3 p-6 border-t border-slate-100 sticky bottom-0 bg-white items-center">
+          <button onClick={() => setShowReport(true)}
+            title="Bu ilanı bildir"
+            className="text-sm px-3 py-2.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0">
+            ⚠ Bildir
+          </button>
           <button onClick={onClose} className="btn-secondary flex-1 text-sm">Kapat</button>
           <button onClick={() => { onApply(listing); onClose() }}
             className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all hover:-translate-y-0.5"
@@ -375,6 +382,15 @@ function DetailModal({ listing, onClose, onApply }) {
           </button>
         </div>
       </div>
+
+      {showReport && (
+        <ReportModal
+          targetType="LISTING"
+          targetId={listing.id}
+          targetLabel={`${listing.title} · ${listing.businessName}`}
+          onClose={() => setShowReport(false)}
+        />
+      )}
     </div>
   )
 }

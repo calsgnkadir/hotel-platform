@@ -1,12 +1,16 @@
 package com.hotelapp.controller;
 
 import com.hotelapp.enums.Role;
+import com.hotelapp.enums.ReportStatus;
 import com.hotelapp.service.AdminService;
 import com.hotelapp.service.AdminService.BanRequest;
 import com.hotelapp.service.AdminService.StatsDto;
 import com.hotelapp.service.AdminService.StudentStatusRequest;
 import com.hotelapp.service.AdminService.UserDetail;
 import com.hotelapp.service.AdminService.UserSummary;
+import com.hotelapp.service.ReportService;
+import com.hotelapp.service.ReportService.ReportDto;
+import com.hotelapp.service.ReportService.UpdateReportStatusRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +31,27 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final ReportService reportService;
+
+    // ================================================================
+    // Şikayetler (D8)
+    // ================================================================
+
+    @Operation(summary = "Şikayetleri listele (opsiyonel status filtresi)")
+    @GetMapping("/reports")
+    public ResponseEntity<List<ReportDto>> listReports(
+            @RequestParam(required = false) ReportStatus status) {
+        return ResponseEntity.ok(reportService.listReports(status));
+    }
+
+    @Operation(summary = "Şikayet durumunu güncelle (RESOLVED/DISMISSED)")
+    @PutMapping("/reports/{id}/status")
+    public ResponseEntity<ReportDto> updateReportStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateReportStatusRequest request) {
+        return ResponseEntity.ok(
+                reportService.updateStatus(id, request.getStatus(), request.getAdminNote()));
+    }
 
     @Operation(summary = "Kullanıcıları listele (filtre + arama)")
     @GetMapping("/users")

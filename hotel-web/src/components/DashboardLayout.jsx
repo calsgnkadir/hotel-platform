@@ -20,6 +20,7 @@ const businessNav = [
 const adminNav = [
   { id: 'overview', icon: '🏠', label: 'Genel Bakış' },
   { id: 'users',    icon: '👥', label: 'Kullanıcılar' },
+  { id: 'reports',  icon: '⚠️', label: 'Şikayetler' },
 ]
 
 export default function DashboardLayout({ children, activeTab, onTabChange }) {

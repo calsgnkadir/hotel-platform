@@ -214,6 +214,24 @@ export async function viewDocument(documentId) {
   }
 }
 
+/* ── Şikayet (Report) endpoints ── */
+export async function createReport(payload) {
+  // payload: { targetType, targetId, reason, description }
+  const { data } = await api.post('/api/reports', payload)
+  return data
+}
+
+export async function adminListReports(status) {
+  const params = status ? { status } : {}
+  const { data } = await api.get('/api/admin/reports', { params })
+  return data
+}
+
+export async function adminUpdateReportStatus(id, status, adminNote) {
+  const { data } = await api.put(`/api/admin/reports/${id}/status`, { status, adminNote })
+  return data
+}
+
 /* ── Admin endpoints ── */
 export async function adminListUsers(role, search) {
   const params = {}

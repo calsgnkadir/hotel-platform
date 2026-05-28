@@ -325,6 +325,134 @@ function UsersTab() {
   )
 }
 
+/* ── Reports Tab (D8) ── */
+const REPORT_REASON_LABELS = {
+  FAKE: 'Sahte', SPAM: 'Spam', SCAM: 'Dolandırıcılık',
+  INAPPROPRIATE: 'Uygunsuz', HARASSMENT: 'Taciz', OTHER: 'Diğer',
+}
+const REPORT_TYPE_LABELS = { LISTING: 'İlan', BUSINESS: 'İşletme', USER: 'Kullanıcı' }
+const REPORT_STATUS_META = {
+  PENDING:   { cls: 'bg-amber-100 text-amber-700',     label: 'Bekliyor' },
+  RESOLVED:  { cls: 'bg-emerald-100 text-emerald-700', label: 'Çözüldü' },
+  DISMISSED: { cls: 'bg-slate-100 text-slate-500',     label: 'Reddedildi' },
+}
+const REPORT_FILTERS = [
+  { value: '',          label: 'Tümü' },
+  { value: 'PENDING',   label: 'Bekleyen' },
+  { value: 'RESOLVED',  label: 'Çözülen' },
+  { value: 'DISMISSED', label: 'Reddedilen' },
+]
+
+function ReportsTab() {
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [statusFilter, setStatusFilter] = useState('')
+  const [actionId, setActionId] = useState(null)
+
+  const fetchReports = useCallback(() => {
+    setLoading(true)
+    hotelApi.adminListReports(statusFilter || undefined)
+      .then(setReports)
+      .catch(() => toast.error('Şikayetler yüklenemedi'))
+      .finally(() => setLoading(false))
+  }, [statusFilter])
+
+  useEffect(() => { fetchReports() }, [fetchReports])
+
+  async function handleStatus(id, status) {
+    let adminNote = null
+    if (status === 'DISMISSED') {
+      adminNote = prompt('Neden reddediliyor? (opsiyonel)') || null
+    }
+    setActionId(id)
+    try {
+      await hotelApi.adminUpdateReportStatus(id, status, adminNote)
+      toast.success(status === 'RESOLVED' ? 'Çözüldü olarak işaretlendi' : 'Reddedildi')
+      fetchReports()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionId(null) }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-1.5 flex-wrap">
+        {REPORT_FILTERS.map(f => (
+          <button key={f.value} onClick={() => setStatusFilter(f.value)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+              ${statusFilter === f.value
+                ? 'text-white shadow-sm'
+                : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
+            style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12"><div className="spinner" /></div>
+      ) : reports.length === 0 ? (
+        <div className="card">
+          <div className="empty-state py-14">
+            <span className="text-4xl mb-3">✅</span>
+            <p className="text-slate-500 text-sm">Şikayet yok</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {reports.map(r => {
+            const sm = REPORT_STATUS_META[r.status] || REPORT_STATUS_META.PENDING
+            return (
+              <div key={r.id} className="card p-4">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        {REPORT_TYPE_LABELS[r.targetType] || r.targetType} #{r.targetId}
+                      </span>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600">
+                        {REPORT_REASON_LABELS[r.reason] || r.reason}
+                      </span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sm.cls}`}>
+                        {sm.label}
+                      </span>
+                    </div>
+                    {r.description && (
+                      <p className="text-sm text-slate-700 mt-2">{r.description}</p>
+                    )}
+                    <p className="text-xs text-slate-400 mt-1.5">
+                      Şikayet eden: {r.reporterName} ({r.reporterEmail}) ·{' '}
+                      {new Date(r.createdAt).toLocaleString('tr-TR')}
+                    </p>
+                    {r.adminNote && (
+                      <p className="text-xs text-slate-500 mt-1 italic">Admin notu: {r.adminNote}</p>
+                    )}
+                  </div>
+
+                  {r.status === 'PENDING' && (
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button onClick={() => handleStatus(r.id, 'RESOLVED')} disabled={actionId === r.id}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50">
+                        ✓ Çözüldü
+                      </button>
+                      <button onClick={() => handleStatus(r.id, 'DISMISSED')} disabled={actionId === r.id}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50">
+                        ✕ Reddet
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-2">
+                  💡 İşlem için: Kullanıcılar sekmesinden ilgili kullanıcıyı bulup banlayabilirsin.
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ── Main Page ── */
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('overview')
@@ -333,6 +461,7 @@ export default function AdminPage() {
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
       {activeTab === 'overview' && <OverviewTab />}
       {activeTab === 'users'    && <UsersTab />}
+      {activeTab === 'reports'  && <ReportsTab />}
     </DashboardLayout>
   )
 }
