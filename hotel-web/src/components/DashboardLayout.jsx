@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import NotificationBell from './NotificationBell'
 
 const candidateNav = [
   { id: 'overview',      icon: '🏠', label: 'Genel Bakış' },
@@ -128,12 +129,17 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
             </div>
           </div>
 
-          {/* Role badge */}
-          <div className={`hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-semibold
-            ${isAdmin ? 'bg-amber-500/20 text-amber-300'
-              : isCandidate ? 'bg-violet-500/20 text-violet-300'
-              : 'bg-emerald-500/20 text-emerald-300'}`}>
-            {isAdmin ? 'Admin' : isCandidate ? 'Aday' : 'İşletme'}
+          <div className="flex items-center gap-2">
+            {/* Bildirim zili */}
+            <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
+
+            {/* Role badge */}
+            <div className={`hidden sm:flex items-center px-3 py-1.5 rounded-full text-xs font-semibold
+              ${isAdmin ? 'bg-amber-500/20 text-amber-300'
+                : isCandidate ? 'bg-violet-500/20 text-violet-300'
+                : 'bg-emerald-500/20 text-emerald-300'}`}>
+              {isAdmin ? 'Admin' : isCandidate ? 'Aday' : 'İşletme'}
+            </div>
           </div>
         </header>
 

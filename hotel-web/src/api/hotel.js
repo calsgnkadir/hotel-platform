@@ -214,6 +214,25 @@ export async function viewDocument(documentId) {
   }
 }
 
+/* ── Bildirim (Notification) endpoints ── */
+export async function getNotifications(limit = 20) {
+  const { data } = await api.get('/api/notifications', { params: { limit } })
+  return data
+}
+
+export async function getUnreadNotificationCount() {
+  const { data } = await api.get('/api/notifications/unread-count')
+  return data.count
+}
+
+export async function markNotificationRead(id) {
+  await api.put(`/api/notifications/${id}/read`)
+}
+
+export async function markAllNotificationsRead() {
+  await api.put('/api/notifications/read-all')
+}
+
 /* ── Şikayet (Report) endpoints ── */
 export async function createReport(payload) {
   // payload: { targetType, targetId, reason, description }

@@ -4,6 +4,7 @@ import com.hotelapp.dto.*;
 import com.hotelapp.dto.ApplicationResponse.RequestedSlotDto;
 import com.hotelapp.entity.*;
 import com.hotelapp.enums.ApplicationStatus;
+import com.hotelapp.enums.NotificationType;
 import com.hotelapp.enums.DocumentRequestStatus;
 import com.hotelapp.enums.ListingStatus;
 import com.hotelapp.exception.BusinessRuleException;
@@ -33,6 +34,7 @@ public class ApplicationService {
     private final ShiftSlotRepository shiftSlotRepository;
     private final FileStorageService fileStorageService;
     private final AuditLogService auditLogService;
+    private final NotificationService notificationService;
 
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
@@ -128,6 +130,13 @@ public class ApplicationService {
             }
         }
 
+        // Bildirim: işletme sahibine yeni başvuru
+        Long ownerId = listing.getBusiness().getOwner().getId();
+        notificationService.notify(ownerId, NotificationType.NEW_APPLICATION,
+                "Yeni başvuru",
+                candidate.getFullName() + " · " + listing.getTitle() + " ilanına başvurdu",
+                "applications");
+
         return toResponse(application);
     }
 
@@ -207,6 +216,22 @@ public class ApplicationService {
         application.setStatus(request.getDecision());
         application.setNote(request.getNote());
         applicationRepository.save(application);
+
+        // Bildirim: adaya kabul/red
+        Long candidateId = application.getCandidate().getId();
+        String listingTitle = application.getJobListing().getTitle();
+        if (request.getDecision() == ApplicationStatus.ACCEPTED) {
+            notificationService.notify(candidateId, NotificationType.APPLICATION_ACCEPTED,
+                    "Başvurun kabul edildi 🎉",
+                    listingTitle + " ilanına başvurun kabul edildi!",
+                    "applications");
+        } else {
+            notificationService.notify(candidateId, NotificationType.APPLICATION_REJECTED,
+                    "Başvurun reddedildi",
+                    listingTitle + " ilanına başvurun maalesef reddedildi.",
+                    "applications");
+        }
+
         return toResponse(application);
     }
 
@@ -239,6 +264,15 @@ public class ApplicationService {
 
         application.setStatus(ApplicationStatus.WITHDRAWN);
         applicationRepository.save(application);
+
+        // Bildirim: işletmeye aday iptali
+        Long ownerId = application.getJobListing().getBusiness().getOwner().getId();
+        notificationService.notify(ownerId, NotificationType.APPLICATION_WITHDRAWN,
+                "Başvuru iptal edildi",
+                application.getCandidate().getFullName() + " · "
+                        + application.getJobListing().getTitle() + " başvurusunu iptal etti",
+                "applications");
+
         return toResponse(application);
     }
 
@@ -293,6 +327,19 @@ public class ApplicationService {
                     "3 strike → " + candidate.getEmail() + " otomatik 30 gün banlandı (bitiş: " + bannedUntil + ")");
         }
 
+        // Bildirim: adaya no-show (ve banlandıysa ekstra)
+        notificationService.notify(candidate.getId(), NotificationType.NO_SHOW_MARKED,
+                "İşe gelmedin olarak işaretlendin",
+                application.getJobListing().getTitle() + " için no-show işaretlendin. Kalan strike hakkın: "
+                        + candidate.getStrikesRemaining(),
+                "applications");
+        if (autoBanned) {
+            notificationService.notify(candidate.getId(), NotificationType.AUTO_BANNED,
+                    "Hesabın geçici olarak askıya alındı",
+                    "Çok sayıda no-show nedeniyle hesabın " + bannedUntil.toLocalDate() + " tarihine kadar askıya alındı.",
+                    null);
+        }
+
         return NoShowResult.builder()
                 .application(toResponse(application))
                 .candidateStrikesRemaining(candidate.getStrikesRemaining())
@@ -330,6 +377,14 @@ public class ApplicationService {
                 .build();
 
         documentRequestRepository.save(docRequest);
+
+        // Bildirim: adaya belge talebi
+        notificationService.notify(application.getCandidate().getId(), NotificationType.DOCUMENT_REQUEST,
+                "Belge talebi",
+                application.getJobListing().getBusiness().getName() + " senden "
+                        + dto.getDocumentType().name() + " belgesi istedi",
+                "applications");
+
         return toResponse(application);
     }
 
@@ -352,6 +407,16 @@ public class ApplicationService {
         docRequest.setStatus(grant ? DocumentRequestStatus.GRANTED : DocumentRequestStatus.DENIED);
         docRequest.setRespondedAt(LocalDateTime.now());
         documentRequestRepository.save(docRequest);
+
+        // Bildirim: işletmeye belge izni sonucu
+        Application app = docRequest.getApplication();
+        Long ownerId = app.getJobListing().getBusiness().getOwner().getId();
+        notificationService.notify(ownerId,
+                grant ? NotificationType.DOCUMENT_GRANTED : NotificationType.DOCUMENT_DENIED,
+                grant ? "Belge izni verildi" : "Belge izni reddedildi",
+                app.getCandidate().getFullName() + " · " + docRequest.getDocumentType().name()
+                        + (grant ? " belgesine erişim verdi" : " belgesine erişimi reddetti"),
+                "applications");
     }
 
     // ----------------------------------------------------------------
