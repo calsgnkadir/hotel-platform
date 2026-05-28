@@ -32,6 +32,7 @@ public class ApplicationService {
     private final DocumentRequestRepository documentRequestRepository;
     private final ShiftSlotRepository shiftSlotRepository;
     private final FileStorageService fileStorageService;
+    private final AuditLogService auditLogService;
 
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
@@ -282,6 +283,15 @@ public class ApplicationService {
 
         userRepository.save(candidate);
         applicationRepository.save(application);
+
+        // D4: Audit log — no-show (işletme) + otomatik ban (sistem)
+        auditLogService.log(ownerId, "MARK_NO_SHOW", "APPLICATION", applicationId,
+                "Aday " + candidate.getEmail() + " no-show işaretlendi. Kalan strike: "
+                        + candidate.getStrikesRemaining());
+        if (autoBanned) {
+            auditLogService.logSystem("AUTO_BAN", "USER", candidate.getId(),
+                    "3 strike → " + candidate.getEmail() + " otomatik 30 gün banlandı (bitiş: " + bannedUntil + ")");
+        }
 
         return NoShowResult.builder()
                 .application(toResponse(application))

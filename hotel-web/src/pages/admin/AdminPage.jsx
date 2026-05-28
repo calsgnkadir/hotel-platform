@@ -453,6 +453,88 @@ function ReportsTab() {
   )
 }
 
+/* ── Audit Log Tab (D4) ── */
+const ACTION_META = {
+  BAN_USER:       { icon: '🚫', label: 'Kullanıcı banlandı',  cls: 'bg-red-50 text-red-700' },
+  UNBAN_USER:     { icon: '✓',  label: 'Ban kaldırıldı',      cls: 'bg-emerald-50 text-emerald-700' },
+  MARK_NO_SHOW:   { icon: '⛔', label: 'No-show işaretlendi',  cls: 'bg-amber-50 text-amber-700' },
+  AUTO_BAN:       { icon: '🤖', label: 'Otomatik ban',         cls: 'bg-red-50 text-red-700' },
+  RESOLVE_REPORT: { icon: '✓',  label: 'Şikayet çözüldü',      cls: 'bg-emerald-50 text-emerald-700' },
+  DISMISS_REPORT: { icon: '✕',  label: 'Şikayet reddedildi',   cls: 'bg-slate-100 text-slate-500' },
+}
+const AUDIT_FILTERS = [
+  { value: '',             label: 'Tümü' },
+  { value: 'BAN_USER',     label: 'Banlar' },
+  { value: 'AUTO_BAN',     label: 'Otomatik ban' },
+  { value: 'MARK_NO_SHOW', label: 'No-show' },
+  { value: 'RESOLVE_REPORT', label: 'Şikayet işlem' },
+]
+
+function AuditTab() {
+  const [logs, setLogs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [actionFilter, setActionFilter] = useState('')
+
+  const fetchLogs = useCallback(() => {
+    setLoading(true)
+    hotelApi.adminListAuditLogs(actionFilter || undefined, 100)
+      .then(setLogs)
+      .catch(() => toast.error('İşlem geçmişi yüklenemedi'))
+      .finally(() => setLoading(false))
+  }, [actionFilter])
+
+  useEffect(() => { fetchLogs() }, [fetchLogs])
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-1.5 flex-wrap">
+        {AUDIT_FILTERS.map(f => (
+          <button key={f.value} onClick={() => setActionFilter(f.value)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+              ${actionFilter === f.value
+                ? 'text-white shadow-sm'
+                : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
+            style={actionFilter === f.value ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12"><div className="spinner" /></div>
+      ) : logs.length === 0 ? (
+        <div className="card">
+          <div className="empty-state py-14">
+            <span className="text-4xl mb-3">📜</span>
+            <p className="text-slate-500 text-sm">Henüz işlem kaydı yok</p>
+          </div>
+        </div>
+      ) : (
+        <div className="card divide-y divide-slate-50">
+          {logs.map(l => {
+            const m = ACTION_META[l.action] || { icon: '•', label: l.action, cls: 'bg-slate-100 text-slate-600' }
+            return (
+              <div key={l.id} className="px-4 py-3 flex items-start gap-3">
+                <span className={`text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ${m.cls}`}>
+                  {m.icon} {m.label}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-slate-700">{l.details}</div>
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    {l.actorEmail === 'SYSTEM' ? '🤖 Sistem' : `👤 ${l.actorEmail}`}
+                    {' · '}
+                    {new Date(l.createdAt).toLocaleString('tr-TR')}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ── Main Page ── */
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('overview')
@@ -462,6 +544,7 @@ export default function AdminPage() {
       {activeTab === 'overview' && <OverviewTab />}
       {activeTab === 'users'    && <UsersTab />}
       {activeTab === 'reports'  && <ReportsTab />}
+      {activeTab === 'audit'    && <AuditTab />}
     </DashboardLayout>
   )
 }

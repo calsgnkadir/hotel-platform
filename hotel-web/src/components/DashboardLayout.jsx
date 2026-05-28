@@ -21,6 +21,7 @@ const adminNav = [
   { id: 'overview', icon: '🏠', label: 'Genel Bakış' },
   { id: 'users',    icon: '👥', label: 'Kullanıcılar' },
   { id: 'reports',  icon: '⚠️', label: 'Şikayetler' },
+  { id: 'audit',    icon: '📜', label: 'İşlem Geçmişi' },
 ]
 
 export default function DashboardLayout({ children, activeTab, onTabChange }) {

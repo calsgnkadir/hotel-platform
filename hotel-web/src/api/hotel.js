@@ -227,6 +227,13 @@ export async function adminListReports(status) {
   return data
 }
 
+export async function adminListAuditLogs(action, limit = 100) {
+  const params = { limit }
+  if (action) params.action = action
+  const { data } = await api.get('/api/admin/audit-logs', { params })
+  return data
+}
+
 export async function adminUpdateReportStatus(id, status, adminNote) {
   const { data } = await api.put(`/api/admin/reports/${id}/status`, { status, adminNote })
   return data
