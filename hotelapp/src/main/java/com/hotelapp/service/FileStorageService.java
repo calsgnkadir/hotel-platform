@@ -89,10 +89,10 @@ public class FileStorageService {
                 "Kabul edilenler: JPG, JPEG, PNG, WEBP, HEIC",
                 "Görsel çok büyük (%.1f MB). Maksimum 10 MB olmalı.");
 
-        String ext = getExtension(file.getOriginalFilename()).toLowerCase();
         String folder = "ajanshotel/business/" + businessId + "/" + subfolder;
-        // public_id'ye uzantı ekle → browser dosya tipini tanıyor
-        String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
+        // GÖRSELLERDE uzantı YOK — Cloudinary formatı içerikten algılar.
+        // Uzantı koyarsak (.webp/.jpg) yanlış yorumlanıp bozuk görsel oluyor.
+        String publicId = folder + "/" + UUID.randomUUID();
 
         // Sade yükleme — incoming transformation (f_auto/q_auto) bozuk görsel
         // üretiyordu. Optimizasyon gerekirse delivery URL'inde yapılır.
@@ -123,9 +123,9 @@ public class FileStorageService {
                 "Kabul edilenler: JPG, JPEG, PNG, WEBP, HEIC",
                 "Profil fotoğrafı çok büyük (%.1f MB). Maksimum 5 MB olmalı.");
 
-        String ext = getExtension(file.getOriginalFilename()).toLowerCase();
         String folder = "ajanshotel/avatars/" + userId;
-        String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
+        // GÖRSELLERDE uzantı YOK — Cloudinary formatı içerikten algılar.
+        String publicId = folder + "/" + UUID.randomUUID();
 
         // Sade yükleme — transformation yok (free tier face detection sorununu önler).
         // Kırpma CSS tarafında (object-cover + rounded-full) yapılıyor.
