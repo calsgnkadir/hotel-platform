@@ -94,19 +94,19 @@ public class FileStorageService {
         // public_id'ye uzantı ekle → browser dosya tipini tanıyor
         String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
 
+        // Sade yükleme — incoming transformation (f_auto/q_auto) bozuk görsel
+        // üretiyordu. Optimizasyon gerekirse delivery URL'inde yapılır.
         Map<String, Object> options = ObjectUtils.asMap(
                 "public_id", publicId,
                 "resource_type", "image",
                 "type", "upload",
                 "overwrite", true,
                 "use_filename", false,
-                "unique_filename", false,
-                "transformation", new com.cloudinary.Transformation()
-                        .quality("auto").fetchFormat("auto")
+                "unique_filename", false
         );
 
         try {
-            Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), options);
+            cloudinary.uploader().upload(file.getBytes(), options);
             log.info("Cloudinary görsel yüklendi: {} (size={} KB)", publicId, file.getSize() / 1024);
             // Format: "upload:image:ajanshotel/business/.../uuid"
             return "upload:image:" + publicId;
