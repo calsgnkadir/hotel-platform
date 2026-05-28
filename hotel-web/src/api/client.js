@@ -11,6 +11,26 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+/** JWT payload'ından exp claim'ini okuyup süresi dolmuş mu kontrol eder */
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    if (!payload.exp) return false
+    // exp saniye cinsinden — 10sn buffer ekle
+    return payload.exp * 1000 < Date.now() + 10000
+  } catch {
+    return true  // parse edilemiyorsa bozuk = süresi dolmuş say
+  }
+}
+
+function clearSessionAndRedirect() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  if (!window.location.pathname.includes('/login')) {
+    window.location.href = '/login'
+  }
+}
+
 // REQUEST interceptor — her istekte token ekle
 // Sadece login/register'da token gönderme (stale token backend'e
 // rastgele 403 attırabilir). change-password gibi auth gerektiren
@@ -22,6 +42,11 @@ api.interceptors.request.use((config) => {
   if (!skipToken) {
     const token = localStorage.getItem('token')
     if (token) {
+      // Süresi dolmuş token'ı gönderme — temizle, login'e at
+      if (isTokenExpired(token)) {
+        clearSessionAndRedirect()
+        return Promise.reject(new axios.Cancel('Oturum süresi doldu'))
+      }
       config.headers.Authorization = `Bearer ${token}`
     }
   }

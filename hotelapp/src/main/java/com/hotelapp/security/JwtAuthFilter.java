@@ -39,20 +39,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         final String jwt = authHeader.substring(7);
-        final String userEmail = jwtService.extractUsername(jwt);
+
+        // Token parse — süresi dolmuş/geçersiz token EXCEPTION fırlatmamalı.
+        // Aksi halde public endpoint'ler (örn. /api/listings) bile çöker.
+        // Hata olursa anonim istek olarak devam et; korumalı endpoint'ler 401/403 döner.
+        String userEmail = null;
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+        } catch (Exception ex) {
+            // ExpiredJwtException, MalformedJwtException, SignatureException vb.
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Kullanıcı email var ama henüz authenticate edilmemiş
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            try {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception ex) {
+                // Kullanıcı bulunamadı / token doğrulama hatası → anonim devam
             }
         }
 
