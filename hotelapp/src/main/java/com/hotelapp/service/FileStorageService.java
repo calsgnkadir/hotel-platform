@@ -127,17 +127,15 @@ public class FileStorageService {
         String folder = "ajanshotel/avatars/" + userId;
         String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
 
+        // Sade yükleme — transformation yok (free tier face detection sorununu önler).
+        // Kırpma CSS tarafında (object-cover + rounded-full) yapılıyor.
         Map<String, Object> options = ObjectUtils.asMap(
                 "public_id", publicId,
                 "resource_type", "image",
                 "type", "upload",
                 "overwrite", true,
                 "use_filename", false,
-                "unique_filename", false,
-                // Avatar için: 400x400 yüze odaklı kırpma, otomatik kalite
-                "transformation", new com.cloudinary.Transformation()
-                        .width(400).height(400).gravity("face").crop("fill")
-                        .quality("auto").fetchFormat("auto")
+                "unique_filename", false
         );
 
         try {
