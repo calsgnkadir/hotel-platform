@@ -51,7 +51,7 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public long countUnread(Long recipientId) {
-        return notificationRepository.countByRecipientIdAndIsReadFalse(recipientId);
+        return notificationRepository.countUnread(recipientId);
     }
 
     @Transactional(readOnly = true)

@@ -68,6 +68,8 @@ export default function NotificationBell({ onNavigate }) {
       try {
         const data = await hotelApi.getNotifications(20)
         setItems(data)
+        // Sayacı da tazele (30sn poll'u bekleme)
+        fetchUnread()
       } catch { /* sessiz */ }
       finally { setLoading(false) }
     }
