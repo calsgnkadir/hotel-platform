@@ -1,9 +1,11 @@
 package com.hotelapp.repository;
 
 import com.hotelapp.entity.User;
+import com.hotelapp.enums.Position;
 import com.hotelapp.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,4 +32,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
         ORDER BY u.id DESC
     """)
     List<User> searchUsers(Role role, String search);
+
+    /**
+     * ADIM J: Bir ilçe + pozisyon kombinasyonu için tercih eşleşmesi olan adayları getir.
+     * Aday CANDIDATE rolünde + ilçesi tercihinde + pozisyonu tercihinde olmalı.
+     * Tercihleri boş olanlar bildirilmez (opt-in).
+     */
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN u.preferredDistricts d
+        JOIN u.preferredPositions p
+        WHERE u.role = com.hotelapp.enums.Role.CANDIDATE
+        AND d = :district
+        AND p = :position
+    """)
+    List<User> findCandidatesMatchingPreferences(
+            @Param("district") String district,
+            @Param("position") Position position);
 }

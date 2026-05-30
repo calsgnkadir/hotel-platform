@@ -19,6 +19,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,11 +33,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class JobListingService {
 
     private final JobListingRepository jobListingRepository;
     private final BusinessRepository businessRepository;
+    private final com.hotelapp.repository.UserRepository userRepository;
     private final ReviewService reviewService;
+    private final NotificationService notificationService;
 
     // ----------------------------------------------------------------
     // Public: browse active listings (dynamic filtering via Specification)
@@ -164,7 +168,36 @@ public class JobListingService {
         }
 
         jobListingRepository.save(listing);
+
+        // ADIM J: Tercihleri eşleşen adaylara "İlgini çekebilir" bildirimi
+        notifyMatchingCandidates(listing);
+
         return toResponse(listing);
+    }
+
+    /**
+     * ADIM J: İlanın ilçe + pozisyonuyla eşleşen aday tercihleri varsa bildirim at.
+     * Tercih boş (opt-out) olan adaylar bildirilmez.
+     */
+    private void notifyMatchingCandidates(JobListing listing) {
+        try {
+            String district = listing.getBusiness().getDistrict();
+            if (district == null || district.isBlank()) return;
+
+            var matching = userRepository.findCandidatesMatchingPreferences(district, listing.getPosition());
+            String posLabel = listing.getPosition().name();
+            for (var aday : matching) {
+                notificationService.notify(aday.getId(),
+                        com.hotelapp.enums.NotificationType.MATCHING_LISTING,
+                        "İlgini çekebilir 🎯",
+                        listing.getBusiness().getName() + " · " + district
+                                + " · " + posLabel + " — " + listing.getTitle(),
+                        "listings");
+            }
+        } catch (Exception e) {
+            // Bildirim hatası ilan oluşturmayı bozmasın
+            log.warn("Eşleşen aday bildirimi atılamadı: {}", e.getMessage());
+        }
     }
 
     // ----------------------------------------------------------------

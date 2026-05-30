@@ -8,6 +8,11 @@ import ListingsPage from './ListingsPage'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
 import ReviewModal from '../../components/ReviewModal'
 
+const POSITION_LABELS = {
+  WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
+  RECEPTION: 'Resepsiyon', KITCHEN_STAFF: 'Mutfak Personeli', BELLBOY: 'Bellboy', SECURITY: 'Güvenlik',
+}
+
 const ISTANBUL_DISTRICTS = [
   'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler',
   'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü',
@@ -479,6 +484,8 @@ function ProfileTab() {
           previousExperience: data.previousExperience || '',
           smokes:             data.smokes ?? null,
           hasLicense:         data.hasLicense ?? null,
+          preferredDistricts: data.preferredDistricts || [],
+          preferredPositions: data.preferredPositions || [],
         })
       })
       .catch(() => toast.error('Profil yüklenemedi'))
@@ -561,6 +568,8 @@ function ProfileTab() {
         previousExperience: form.previousExperience.trim() || null,
         smokes:             form.smokes,
         hasLicense:         form.hasLicense,
+        preferredDistricts: form.preferredDistricts,
+        preferredPositions: form.preferredPositions,
       }
       const data = await hotelApi.updateCandidateProfile(payload)
       setProfile(data)
@@ -711,6 +720,56 @@ function ProfileTab() {
               <option value="no">Yok</option>
             </select>
           </div>
+        </div>
+      </div>
+
+      {/* ADIM J: Bildirim tercihleri — ilgilendiği ilçeler + pozisyonlar */}
+      <div className="card p-5 space-y-4">
+        <div>
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Bildirim Tercihleri</h3>
+          <p className="text-xs text-slate-500 mt-1">
+            🎯 İlgini çekebilecek yeni ilan açıldığında otomatik bildirim al. Hiçbirini seçmezsen bildirim yok.
+          </p>
+        </div>
+
+        <div>
+          <label className="label">İlgilendiğin İlçeler</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto p-2 border border-slate-200 rounded-lg">
+            {ISTANBUL_DISTRICTS.map(d => {
+              const active = form.preferredDistricts.includes(d)
+              return (
+                <label key={d}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs cursor-pointer
+                    ${active ? 'bg-violet-50 text-violet-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}>
+                  <input type="checkbox" checked={active}
+                    onChange={() => toggleSetField('preferredDistricts', d)}
+                    className="w-3.5 h-3.5 accent-violet-600" />
+                  {d}
+                </label>
+              )
+            })}
+          </div>
+          <p className="text-xs text-slate-400 mt-1">{form.preferredDistricts.length} ilçe seçili</p>
+        </div>
+
+        <div>
+          <label className="label">İlgilendiğin Pozisyonlar</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {Object.entries(POSITION_LABELS).map(([value, label]) => {
+              const active = form.preferredPositions.includes(value)
+              return (
+                <label key={value}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
+                    ${active ? 'border-violet-400 bg-violet-50 text-violet-700 font-medium' : 'border-slate-200 hover:border-violet-300'}`}>
+                  <input type="checkbox" checked={active}
+                    onChange={() => toggleSetField('preferredPositions', value)}
+                    className="w-4 h-4 accent-violet-600" />
+                  {label}
+                </label>
+              )
+            })}
+          </div>
+          <p className="text-xs text-slate-400 mt-1">{form.preferredPositions.length} pozisyon seçili</p>
         </div>
       </div>
 

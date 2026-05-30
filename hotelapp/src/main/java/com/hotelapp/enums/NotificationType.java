@@ -15,5 +15,8 @@ public enum NotificationType {
     DOCUMENT_GRANTED,       // aday belge iznini verdi
     DOCUMENT_DENIED,        // aday belge iznini reddetti
 
+    // ADIM J: Tercihlerine uygun yeni ilan
+    MATCHING_LISTING,
+
     GENERIC                 // genel
 }

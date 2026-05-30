@@ -96,6 +96,27 @@ public class User implements UserDetails {
     @Builder.Default
     private Set<JobType> availabilityTypes = new HashSet<>();
 
+    /** ADIM J: Aday'ın iş bildirimi için ilgilendiği ilçeler */
+    @ElementCollection
+    @CollectionTable(
+        name = "user_preferred_districts",
+        joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "district", length = 50)
+    @Builder.Default
+    private Set<String> preferredDistricts = new HashSet<>();
+
+    /** ADIM J: Aday'ın iş bildirimi için ilgilendiği pozisyonlar */
+    @ElementCollection(targetClass = com.hotelapp.enums.Position.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+        name = "user_preferred_positions",
+        joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "position", length = 30)
+    @Builder.Default
+    private Set<com.hotelapp.enums.Position> preferredPositions = new HashSet<>();
+
     @Column(columnDefinition = "TEXT")
     private String previousExperience;    // Serbest text — önceki iş deneyimi
 

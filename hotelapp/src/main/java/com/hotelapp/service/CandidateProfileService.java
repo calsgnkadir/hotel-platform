@@ -5,6 +5,7 @@ import com.hotelapp.enums.EducationLevel;
 import com.hotelapp.enums.Gender;
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.Language;
+import com.hotelapp.enums.Position;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.UserRepository;
 import jakarta.validation.constraints.NotBlank;
@@ -64,6 +65,14 @@ public class CandidateProfileService {
         user.setSmokes(req.getSmokes());
         user.setHasLicense(req.getHasLicense());
 
+        // ADIM J: bildirim tercihleri
+        user.setPreferredDistricts(req.getPreferredDistricts() != null
+                ? new HashSet<>(req.getPreferredDistricts())
+                : new HashSet<>());
+        user.setPreferredPositions(req.getPreferredPositions() != null
+                ? new HashSet<>(req.getPreferredPositions())
+                : new HashSet<>());
+
         userRepository.save(user);
         return toDto(user);
     }
@@ -121,6 +130,8 @@ public class CandidateProfileService {
                 .avatarUrl(u.getAvatarPath() != null
                         ? fileStorageService.publicUrl(u.getAvatarPath())
                         : null)
+                .preferredDistricts(u.getPreferredDistricts())
+                .preferredPositions(u.getPreferredPositions())
                 .build();
     }
 
@@ -150,6 +161,10 @@ public class CandidateProfileService {
 
         // D7: Profil fotoğrafı URL'si (Cloudinary CDN)
         private String avatarUrl;
+
+        // ADIM J: Bildirim tercihleri
+        private Set<String> preferredDistricts;
+        private Set<Position> preferredPositions;
     }
 
     @Data
@@ -167,5 +182,9 @@ public class CandidateProfileService {
         private String previousExperience;
         private Boolean smokes;
         private Boolean hasLicense;
+
+        // ADIM J: Bildirim tercihleri (opsiyonel)
+        private Set<String> preferredDistricts;
+        private Set<Position> preferredPositions;
     }
 }

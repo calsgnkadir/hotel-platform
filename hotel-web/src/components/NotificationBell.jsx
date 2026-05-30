@@ -11,6 +11,7 @@ const TYPE_ICON = {
   APPLICATION_WITHDRAWN: '↩️',
   DOCUMENT_GRANTED:      '🔓',
   DOCUMENT_DENIED:       '🔒',
+  MATCHING_LISTING:      '🎯',
   GENERIC:               '🔔',
 }
 
