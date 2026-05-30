@@ -35,6 +35,7 @@ public class ApplicationService {
     private final FileStorageService fileStorageService;
     private final AuditLogService auditLogService;
     private final NotificationService notificationService;
+    private final ReviewService reviewService;
 
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
@@ -479,14 +480,7 @@ public class ApplicationService {
                 .createdAt(app.getCreatedAt())
                 .note(app.getNote())
                 .noShow(app.isNoShow())
-                .candidate(ApplicationResponse.CandidateSummary.builder()
-                        .id(app.getCandidate().getId())
-                        .fullName(app.getCandidate().getFullName())
-                        .email(app.getCandidate().getEmail())
-                        .avatarUrl(app.getCandidate().getAvatarPath() != null
-                                ? fileStorageService.publicUrl(app.getCandidate().getAvatarPath())
-                                : null)
-                        .build())
+                .candidate(buildCandidateSummary(app.getCandidate()))
                 .listing(ApplicationResponse.ListingSummary.builder()
                         .id(listing.getId())
                         .title(listing.getTitle())
@@ -499,6 +493,21 @@ public class ApplicationService {
                 .availabilities(avDtos)
                 .documentRequests(drDtos)
                 .requestedSlots(slotDtos)
+                .build();
+    }
+
+    /** Aday özeti — avatar + rating dahil */
+    private ApplicationResponse.CandidateSummary buildCandidateSummary(User candidate) {
+        var rating = reviewService.getCandidateRating(candidate.getId());
+        return ApplicationResponse.CandidateSummary.builder()
+                .id(candidate.getId())
+                .fullName(candidate.getFullName())
+                .email(candidate.getEmail())
+                .avatarUrl(candidate.getAvatarPath() != null
+                        ? fileStorageService.publicUrl(candidate.getAvatarPath())
+                        : null)
+                .averageRating(rating.getAverageRating())
+                .reviewCount(rating.getReviewCount())
                 .build();
     }
 }

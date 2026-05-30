@@ -3,6 +3,7 @@ import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import ReportModal from '../../components/ReportModal'
+import StarRating from '../../components/StarRating'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -267,7 +268,13 @@ function DetailModal({ listing, onClose, onApply }) {
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-bold text-slate-900 leading-tight">{listing.title}</h2>
-              <p className="text-sm text-slate-500 mt-0.5">{listing.businessName}</p>
+              <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                <p className="text-sm text-slate-500">{listing.businessName}</p>
+                {listing.businessReviewCount > 0 && (
+                  <StarRating value={listing.businessAverageRating}
+                    count={listing.businessReviewCount} size="sm" />
+                )}
+              </div>
             </div>
             <span className="text-xs font-semibold px-2 py-1 rounded-full bg-violet-50 text-violet-700 flex-shrink-0">
               {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
@@ -419,7 +426,13 @@ function ListingCard({ listing, onApply, onDetail }) {
         <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2 group-hover:text-violet-700 transition-colors">
           {listing.title}
         </h3>
-        <p className="text-sm text-slate-500 mt-0.5">{listing.businessName}</p>
+        <div className="flex items-center gap-2 flex-wrap mt-0.5">
+          <p className="text-sm text-slate-500">{listing.businessName}</p>
+          {listing.businessReviewCount > 0 && (
+            <StarRating value={listing.businessAverageRating}
+              count={listing.businessReviewCount} size="xs" />
+          )}
+        </div>
 
         <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-400 flex-wrap">
           <span>📍 {listing.businessDistrict || 'İstanbul'}</span>

@@ -26,6 +26,7 @@ public class BusinessService {
     private final BusinessRepository businessRepository;
     private final BusinessPhotoRepository businessPhotoRepository;
     private final FileStorageService fileStorageService;
+    private final ReviewService reviewService;
 
     // Maksimum galeri foto sayısı per işletme
     private static final int MAX_GALLERY_PHOTOS = 10;
@@ -188,6 +189,7 @@ public class BusinessService {
     // Mapping
     // ----------------------------------------------------------------
     private BusinessDto toDto(Business b) {
+        var rating = reviewService.getBusinessRating(b.getId());
         return BusinessDto.builder()
                 .id(b.getId())
                 .name(b.getName())
@@ -205,6 +207,8 @@ public class BusinessService {
                 .logoUrl(b.getLogoPath() != null
                         ? fileStorageService.publicUrl(b.getLogoPath())
                         : null)
+                .averageRating(rating.getAverageRating())
+                .reviewCount(rating.getReviewCount())
                 .build();
     }
 
@@ -227,6 +231,9 @@ public class BusinessService {
         private String facebook;
         private String workingHours;
         private String logoUrl;
+        // R3
+        private Double averageRating;  // null = yorum yok
+        private Long reviewCount;
     }
 
     @Data

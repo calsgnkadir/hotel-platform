@@ -36,6 +36,7 @@ public class JobListingService {
 
     private final JobListingRepository jobListingRepository;
     private final BusinessRepository businessRepository;
+    private final ReviewService reviewService;
 
     // ----------------------------------------------------------------
     // Public: browse active listings (dynamic filtering via Specification)
@@ -349,6 +350,8 @@ public class JobListingService {
                 .businessName(l.getBusiness().getName())
                 .businessType(l.getBusiness().getType().name())
                 .businessDistrict(l.getBusiness().getDistrict())
+                .businessAverageRating(reviewService.getBusinessRating(l.getBusiness().getId()).getAverageRating())
+                .businessReviewCount(reviewService.getBusinessRating(l.getBusiness().getId()).getReviewCount())
                 .createdAt(l.getCreatedAt())
                 .shiftSlots(slotDtos)
                 .build();
@@ -418,6 +421,9 @@ public class JobListingService {
         private String businessName;
         private String businessType;
         private String businessDistrict;
+        // R3
+        private Double businessAverageRating;
+        private Long businessReviewCount;
         private LocalDateTime createdAt;
 
         // Faz E1

@@ -38,6 +38,9 @@ public class ApplicationResponse {
         private String email;
         /** D7: Cloudinary CDN URL'i, null olabilir */
         private String avatarUrl;
+        /** R3: adayın aldığı yorumların ortalaması (null = yok) ve sayısı */
+        private Double averageRating;
+        private Long reviewCount;
     }
 
     @Data @Builder

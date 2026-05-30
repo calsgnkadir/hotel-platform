@@ -214,6 +214,28 @@ export async function viewDocument(documentId) {
   }
 }
 
+/* ── Yorum (Review) endpoints ── */
+export async function createReview(applicationId, rating, comment) {
+  const { data } = await api.post(`/api/applications/${applicationId}/reviews`,
+    { rating, comment })
+  return data
+}
+
+export async function getBusinessReviews(businessId) {
+  const { data } = await api.get(`/api/businesses/${businessId}/reviews`)
+  return data
+}
+
+export async function getBusinessRating(businessId) {
+  const { data } = await api.get(`/api/businesses/${businessId}/rating`)
+  return data
+}
+
+export async function getCandidateReviews(candidateId) {
+  const { data } = await api.get(`/api/candidates/${candidateId}/reviews`)
+  return data
+}
+
 /* ── Bildirim (Notification) endpoints ── */
 export async function getNotifications(limit = 20) {
   const { data } = await api.get('/api/notifications', { params: { limit } })

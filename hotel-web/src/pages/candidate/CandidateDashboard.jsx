@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import ListingsPage from './ListingsPage'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
+import ReviewModal from '../../components/ReviewModal'
 
 const ISTANBUL_DISTRICTS = [
   'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler',
@@ -78,6 +79,9 @@ function ApplicationsTab({ applications, onRefresh }) {
     }
   }
 
+  // R4: Yorum hedefi
+  const [reviewTarget, setReviewTarget] = useState(null)
+
   // D6: Aday başvurusunu iptal eder
   const [withdrawingId, setWithdrawingId] = useState(null)
   async function handleWithdraw(appId) {
@@ -132,6 +136,16 @@ function ApplicationsTab({ applications, onRefresh }) {
                   disabled={withdrawingId === app.id}
                   className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium disabled:opacity-50">
                   {withdrawingId === app.id ? 'İptal ediliyor...' : '🚫 İptal Et'}
+                </button>
+              )}
+              {/* R4: Kabul edilmiş başvuruda işletmeyi puanla */}
+              {app.status === 'ACCEPTED' && (
+                <button onClick={() => setReviewTarget({
+                    id: app.id,
+                    title: app.listing?.businessName || 'İşletme',
+                  })}
+                  className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
+                  ⭐ Puanla
                 </button>
               )}
             </div>
@@ -196,6 +210,15 @@ function ApplicationsTab({ applications, onRefresh }) {
           )}
         </div>
       ))}
+
+      {reviewTarget && (
+        <ReviewModal
+          applicationId={reviewTarget.id}
+          title={reviewTarget.title}
+          onClose={() => setReviewTarget(null)}
+          onSuccess={onRefresh}
+        />
+      )}
     </div>
   )
 }

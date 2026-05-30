@@ -4,6 +4,8 @@ import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
+import ReviewModal from '../../components/ReviewModal'
+import StarRating from '../../components/StarRating'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -1014,6 +1016,7 @@ function MyListingsTab() {
 function ApplicationsTab({ applications, onRefresh }) {
   const [filter, setFilter] = useState('ALL')
   const [selected, setSelected] = useState(null)
+  const [reviewTarget, setReviewTarget] = useState(null)  // R4
   const [actionLoading, setActionLoading] = useState(false)
   const [note, setNote] = useState('')
   const [accessibleDocs, setAccessibleDocs] = useState([])
@@ -1140,7 +1143,14 @@ function ApplicationsTab({ applications, onRefresh }) {
                   </div>
                 )}
                 <div>
-                  <div className="font-semibold text-slate-800">{app.candidate?.fullName}</div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="font-semibold text-slate-800">{app.candidate?.fullName}</div>
+                    {/* R4: Aday'ın geçmiş işletmelerden aldığı rating */}
+                    {app.candidate?.reviewCount > 0 && (
+                      <StarRating value={app.candidate.averageRating}
+                        count={app.candidate.reviewCount} size="xs" />
+                    )}
+                  </div>
                   <div className="text-xs text-slate-500">{app.candidate?.email}</div>
                   <div className="text-xs text-slate-400 mt-0.5">{app.listing?.title}</div>
                   <div className="text-xs text-slate-400">
@@ -1351,6 +1361,19 @@ function ApplicationsTab({ applications, onRefresh }) {
                 </div>
               )}
 
+              {/* R4: ACCEPTED başvuruda adayı puanla */}
+              {selected.status === 'ACCEPTED' && (
+                <div className="border-t border-slate-100 pt-4">
+                  <button onClick={() => setReviewTarget({
+                      id: selected.id,
+                      title: selected.candidate?.fullName || 'Aday',
+                    })}
+                    className="w-full py-2.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 text-sm font-semibold transition-colors">
+                    ⭐ Adayı Puanla
+                  </button>
+                </div>
+              )}
+
               {/* No-show işaretlenmişse uyarı banner */}
               {selected.noShow && (
                 <div className="border-t border-slate-100 pt-4">
@@ -1372,6 +1395,15 @@ function ApplicationsTab({ applications, onRefresh }) {
             </div>
           </div>
         </div>
+      )}
+
+      {reviewTarget && (
+        <ReviewModal
+          applicationId={reviewTarget.id}
+          title={reviewTarget.title}
+          onClose={() => setReviewTarget(null)}
+          onSuccess={onRefresh}
+        />
       )}
     </div>
   )
