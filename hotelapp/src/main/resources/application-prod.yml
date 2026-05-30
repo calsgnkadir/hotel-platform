@@ -7,7 +7,8 @@
 
 spring:
   datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=true&serverTimezone=Europe/Istanbul&allowPublicKeyRetrieval=true
+    # Tarih kayması fix: connectionTimeZone + forceConnectionTimeZoneToSession + preserveInstants=false
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=true&serverTimezone=Europe/Istanbul&connectionTimeZone=Europe/Istanbul&forceConnectionTimeZoneToSession=true&preserveInstants=false&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -19,6 +20,9 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        # Hibernate temporal tipler için zaman dilimi — LocalDate 1 gün geri kaymayı önler
+        jdbc:
+          time_zone: Europe/Istanbul
 
   servlet:
     multipart:

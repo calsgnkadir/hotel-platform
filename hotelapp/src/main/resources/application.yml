@@ -5,7 +5,10 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:hotel_platform}?useSSL=false&serverTimezone=Europe/Istanbul&allowPublicKeyRetrieval=true
+    # connectionTimeZone + forceConnectionTimeZoneToSession: MySQL Connector/J 8.x
+    # JDBC katmanı LocalDate'i bu zaman dilimine göre işlemeli (1 gün kayma fix).
+    # preserveInstants=false: LocalDateTime'a timezone dönüşümü uygulanmasın.
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:hotel_platform}?useSSL=false&serverTimezone=Europe/Istanbul&connectionTimeZone=Europe/Istanbul&forceConnectionTimeZoneToSession=true&preserveInstants=false&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -18,6 +21,10 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
+        # Hibernate'in temporal tipler için kullanacağı zaman dilimi.
+        # LocalDate'in java.sql.Date'e dönüşümünde 1 gün kaymayı önler.
+        jdbc:
+          time_zone: Europe/Istanbul
 
   servlet:
     multipart:
