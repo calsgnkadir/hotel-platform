@@ -49,15 +49,12 @@ public class ReviewService {
                     "Çalışma henüz tamamlanmadı. Son vardiya gününden sonra puanlayabilirsiniz.");
         }
 
-        // Yorum yapan kim: aday mı, işletme sahibi mi?
-        String byRole;
-        if (application.getCandidate().getId().equals(reviewerUserId)) {
-            byRole = "CANDIDATE";
-        } else if (application.getJobListing().getBusiness().getOwner().getId().equals(reviewerUserId)) {
-            byRole = "BUSINESS";
-        } else {
-            throw new UnauthorizedException("Bu başvuru için yorum yapma yetkiniz yok");
+        // Sadece aday işletmeyi puanlar (tek yönlü). İşletme adayı puanlamaz.
+        if (!application.getCandidate().getId().equals(reviewerUserId)) {
+            throw new UnauthorizedException(
+                    "Sadece aday yorum yapabilir — işletme aday puanlama özelliği kaldırıldı.");
         }
+        String byRole = "CANDIDATE";
 
         // Aynı yönde mevcut yorum var mı?
         reviewRepository.findByApplicationIdAndByRole(applicationId, byRole).ifPresent(existing -> {

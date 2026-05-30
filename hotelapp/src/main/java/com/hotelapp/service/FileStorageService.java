@@ -57,8 +57,11 @@ public class FileStorageService {
         // Görseller image olarak, diğerleri raw olarak yüklenir
         String resourceType = isImageExt(ext) ? "image" : "raw";
         String folder = "ajanshotel/documents/" + studentId;
-        // public_id'ye uzantı ekle → browser dosya tipini tanıyor, preview çalışıyor
-        String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
+        // RAW (PDF/DOC): uzantı public_id'ye dahil (Cloudinary delivery için gerekli)
+        // IMAGE (JPG/PNG/WEBP): uzantı public_id'de YOK (Cloudinary formatı içerikten algılar)
+        String publicId = "image".equals(resourceType)
+                ? folder + "/" + UUID.randomUUID()
+                : folder + "/" + UUID.randomUUID() + "." + ext;
 
         // type=upload + UUID path → URL tahmin edilemez, backend access control yapar
         // (signed URL karmaşıklığı yerine "security through obscurity" + auth endpoint)

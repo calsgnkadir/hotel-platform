@@ -177,6 +177,7 @@ public class JobListingService {
             throw new BusinessRuleException("İlan için en az 1 vardiya slotu eklemelisiniz");
         }
         LocalDate today = LocalDate.now();
+        java.time.LocalTime nowTime = java.time.LocalTime.now();
         for (int i = 0; i < slots.size(); i++) {
             ShiftSlotCreate s = slots.get(i);
             int n = i + 1;
@@ -185,6 +186,10 @@ public class JobListingService {
             if (s.getEndTime() == null)   throw new BusinessRuleException("Slot " + n + ": bitiş saati zorunlu");
             if (s.getDate().isBefore(today)) {
                 throw new BusinessRuleException("Slot " + n + ": geçmiş tarih olamaz");
+            }
+            // Bugün için: başlangıç saati şu andan önce olamaz (bugün 22:00'da 08:00 vardiyası anlamsız)
+            if (s.getDate().equals(today) && !s.getStartTime().isAfter(nowTime)) {
+                throw new BusinessRuleException("Slot " + n + ": bugün için başlangıç saati şu andan sonra olmalı");
             }
             if (!s.getEndTime().isAfter(s.getStartTime())) {
                 throw new BusinessRuleException("Slot " + n + ": bitiş saati başlangıçtan sonra olmalı");
