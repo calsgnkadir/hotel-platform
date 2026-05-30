@@ -387,13 +387,19 @@ function OverviewTab({ user, applications, onTabChange }) {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Başvuru',  value: applications.length, icon: '📋', color: 'from-blue-500 to-blue-600' },
-          { label: 'Bekleyen', value: pending,              icon: '⏳', color: 'from-amber-500 to-amber-600' },
-          { label: 'Kabul',    value: accepted,             icon: '✅', color: 'from-emerald-500 to-emerald-600' },
+          { label: 'Başvuru',  value: applications.length, color: 'from-blue-500 to-blue-600',
+            svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z' },
+          { label: 'Bekleyen', value: pending,              color: 'from-amber-500 to-amber-600',
+            svg: 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
+          { label: 'Kabul',    value: accepted,             color: 'from-emerald-500 to-emerald-600',
+            svg: 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
         ].map(s => (
           <div key={s.label} className="stat-card text-center">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center text-xl mx-auto mb-2`}>
-              {s.icon}
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mx-auto mb-2`}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   strokeWidth={1.8} stroke="white" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d={s.svg} />
+              </svg>
             </div>
             <div className="text-2xl font-bold text-slate-900">{s.value}</div>
             <div className="text-xs text-slate-500">{s.label}</div>
@@ -404,13 +410,21 @@ function OverviewTab({ user, applications, onTabChange }) {
       {/* Quick Actions */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { label: 'İlanları Keşfet',  icon: '📌', tab: 'listings',     desc: 'Aktif iş ilanlarına göz at' },
-          { label: 'Başvurularım',     icon: '📋', tab: 'applications', desc: 'Başvuru durumlarını takip et' },
-          { label: 'Belgelerim',       icon: '📁', tab: 'documents',    desc: 'CV, transkript ve diğerleri' },
+          { label: 'İlanları Keşfet',  tab: 'listings',     desc: 'Aktif iş ilanlarına göz at',
+            svg: 'M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z' },
+          { label: 'Başvurularım',     tab: 'applications', desc: 'Başvuru durumlarını takip et',
+            svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z' },
+          { label: 'Belgelerim',       tab: 'documents',    desc: 'CV, transkript ve diğerleri',
+            svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6 9 2.25 2.25L19.5 12m-9.75 9h9.75c.621 0 1.125-.504 1.125-1.125V11.25c0-3-3.375-9-9-9H4.875c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h5.25' },
         ].map(action => (
           <button key={action.tab} onClick={() => onTabChange(action.tab)}
             className="card text-left p-5 hover:border-violet-200 hover:-translate-y-0.5 transition-all duration-200 w-full">
-            <div className="text-2xl mb-3">{action.icon}</div>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   strokeWidth={1.8} stroke="white" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d={action.svg} />
+              </svg>
+            </div>
             <div className="font-semibold text-slate-800 text-sm">{action.label}</div>
             <div className="text-xs text-slate-500 mt-0.5">{action.desc}</div>
           </button>

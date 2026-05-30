@@ -1388,14 +1388,21 @@ function OverviewTab({ applications, onTabChange }) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Toplam Başvuru', value: applications.length, color: 'from-blue-500 to-blue-600',     icon: '📋' },
-          { label: 'Bekleyen',       value: pending,             color: 'from-amber-500 to-amber-600',   icon: '⏳' },
-          { label: 'İnceleniyor',    value: reviewing,           color: 'from-violet-500 to-violet-600', icon: '🔍' },
-          { label: 'Kabul Edildi',   value: accepted,            color: 'from-emerald-500 to-emerald-600', icon: '✅' },
+          { label: 'Toplam Başvuru', value: applications.length, color: 'from-blue-500 to-blue-600',
+            svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z' },
+          { label: 'Bekleyen',       value: pending,             color: 'from-amber-500 to-amber-600',
+            svg: 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
+          { label: 'İnceleniyor',    value: reviewing,           color: 'from-violet-500 to-violet-600',
+            svg: 'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z' },
+          { label: 'Kabul Edildi',   value: accepted,            color: 'from-emerald-500 to-emerald-600',
+            svg: 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
         ].map(s => (
           <div key={s.label} className="stat-card">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center text-xl mb-3`}>
-              {s.icon}
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3`}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   strokeWidth={1.8} stroke="white" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d={s.svg} />
+              </svg>
             </div>
             <div className="text-2xl font-bold text-slate-900">{s.value}</div>
             <div className="text-xs text-slate-500 mt-0.5">{s.label}</div>

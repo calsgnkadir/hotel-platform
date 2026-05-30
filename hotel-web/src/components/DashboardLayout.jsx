@@ -4,25 +4,25 @@ import { useNavigate } from 'react-router-dom'
 import NotificationBell from './NotificationBell'
 
 const candidateNav = [
-  { id: 'overview',      icon: '🏠', label: 'Genel Bakış' },
-  { id: 'listings',      icon: '📌', label: 'İlanlar' },
-  { id: 'applications',  icon: '📋', label: 'Başvurularım' },
-  { id: 'documents',     icon: '📁', label: 'Belgelerim' },
-  { id: 'profile',       icon: '👤', label: 'Profilim' },
+  { id: 'overview',      label: 'Genel Bakış' },
+  { id: 'listings',      label: 'İlanlar' },
+  { id: 'applications',  label: 'Başvurularım' },
+  { id: 'documents',     label: 'Belgelerim' },
+  { id: 'profile',       label: 'Profilim' },
 ]
 
 const businessNav = [
-  { id: 'overview',      icon: '🏠', label: 'Genel Bakış' },
-  { id: 'mylistings',    icon: '📌', label: 'İlanlarım' },
-  { id: 'applications',  icon: '📋', label: 'Gelen Başvurular' },
-  { id: 'profile',       icon: '🏢', label: 'İşletme Profili' },
+  { id: 'overview',      label: 'Genel Bakış' },
+  { id: 'mylistings',    label: 'İlanlarım' },
+  { id: 'applications',  label: 'Gelen Başvurular' },
+  { id: 'profile',       label: 'İşletme Profili' },
 ]
 
 const adminNav = [
-  { id: 'overview', icon: '🏠', label: 'Genel Bakış' },
-  { id: 'users',    icon: '👥', label: 'Kullanıcılar' },
-  { id: 'reports',  icon: '⚠️', label: 'Şikayetler' },
-  { id: 'audit',    icon: '📜', label: 'İşlem Geçmişi' },
+  { id: 'overview', label: 'Genel Bakış' },
+  { id: 'users',    label: 'Kullanıcılar' },
+  { id: 'reports',  label: 'Şikayetler' },
+  { id: 'audit',    label: 'İşlem Geçmişi' },
 ]
 
 export default function DashboardLayout({ children, activeTab, onTabChange }) {
@@ -50,15 +50,9 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Brand */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-               style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
-            <span className="text-lg">🏨</span>
-          </div>
-          <div>
-            <div className="text-sm font-bold text-white">AjansHotel</div>
-            <div className="text-xs text-slate-400">İş Platformu</div>
-          </div>
+        <div className="px-6 py-5 border-b border-slate-800">
+          <div className="text-base font-bold text-white tracking-tight">AjansHotel</div>
+          <div className="text-xs text-slate-400">İş Platformu</div>
         </div>
 
         {/* User Info */}
@@ -83,7 +77,6 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               onClick={() => { onTabChange?.(item.id); setSidebarOpen(false) }}
               className={`nav-link w-full text-left ${activeTab === item.id ? 'active' : ''}`}
             >
-              <span className="text-base">{item.icon}</span>
               <span>{item.label}</span>
               {activeTab === item.id && (
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-violet-600"></span>
@@ -96,7 +89,6 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         <div className="px-3 py-4 border-t border-slate-800">
           <button onClick={handleLogout}
             className="nav-link w-full text-left text-red-400 hover:text-red-300 hover:bg-red-950/40">
-            <span className="text-base">🚪</span>
             <span>Çıkış Yap</span>
           </button>
         </div>
