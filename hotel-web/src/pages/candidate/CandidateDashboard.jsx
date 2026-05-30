@@ -138,15 +138,22 @@ function ApplicationsTab({ applications, onRefresh }) {
                   {withdrawingId === app.id ? 'İptal ediliyor...' : '🚫 İptal Et'}
                 </button>
               )}
-              {/* R4: Kabul edilmiş başvuruda işletmeyi puanla */}
+              {/* R4 + R5: Sadece ACCEPTED + çalışma tamamlanmış başvuruda puanla */}
               {app.status === 'ACCEPTED' && (
-                <button onClick={() => setReviewTarget({
-                    id: app.id,
-                    title: app.listing?.businessName || 'İşletme',
-                  })}
-                  className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
-                  ⭐ Puanla
-                </button>
+                app.workCompleted ? (
+                  <button onClick={() => setReviewTarget({
+                      id: app.id,
+                      title: app.listing?.businessName || 'İşletme',
+                    })}
+                    className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
+                    ⭐ Puanla
+                  </button>
+                ) : (
+                  <span className="text-[10px] text-slate-400 italic"
+                    title="Vardiya günü geçince puanlayabilirsiniz">
+                    Çalışma sonrası puanlanır
+                  </span>
+                )
               )}
             </div>
           </div>

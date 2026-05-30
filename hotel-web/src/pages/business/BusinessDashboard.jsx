@@ -1361,16 +1361,22 @@ function ApplicationsTab({ applications, onRefresh }) {
                 </div>
               )}
 
-              {/* R4: ACCEPTED başvuruda adayı puanla */}
+              {/* R4 + R5: Sadece çalışma tamamlandıktan sonra puanla */}
               {selected.status === 'ACCEPTED' && (
                 <div className="border-t border-slate-100 pt-4">
-                  <button onClick={() => setReviewTarget({
-                      id: selected.id,
-                      title: selected.candidate?.fullName || 'Aday',
-                    })}
-                    className="w-full py-2.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 text-sm font-semibold transition-colors">
-                    ⭐ Adayı Puanla
-                  </button>
+                  {selected.workCompleted ? (
+                    <button onClick={() => setReviewTarget({
+                        id: selected.id,
+                        title: selected.candidate?.fullName || 'Aday',
+                      })}
+                      className="w-full py-2.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 text-sm font-semibold transition-colors">
+                      ⭐ Adayı Puanla
+                    </button>
+                  ) : (
+                    <div className="text-center text-xs text-slate-500 italic py-2">
+                      ⏳ Vardiya günü geçtikten sonra adayı puanlayabilirsiniz
+                    </div>
+                  )}
                 </div>
               )}
 

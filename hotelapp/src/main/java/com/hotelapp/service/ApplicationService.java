@@ -480,6 +480,7 @@ public class ApplicationService {
                 .createdAt(app.getCreatedAt())
                 .note(app.getNote())
                 .noShow(app.isNoShow())
+                .workCompleted(reviewService.isWorkCompleted(app))
                 .candidate(buildCandidateSummary(app.getCandidate()))
                 .listing(ApplicationResponse.ListingSummary.builder()
                         .id(listing.getId())

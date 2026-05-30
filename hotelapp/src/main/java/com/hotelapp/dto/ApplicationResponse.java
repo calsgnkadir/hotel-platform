@@ -21,6 +21,8 @@ public class ApplicationResponse {
     private LocalDateTime createdAt;
     private String note;
     private boolean noShow;
+    /** R5: tüm vardiyalar geçmişte mi (puanlanabilir mi) */
+    private boolean workCompleted;
 
     private CandidateSummary candidate;
     private ListingSummary listing;

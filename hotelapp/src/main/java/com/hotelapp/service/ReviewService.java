@@ -2,6 +2,7 @@ package com.hotelapp.service;
 
 import com.hotelapp.entity.Application;
 import com.hotelapp.entity.Review;
+import com.hotelapp.entity.ShiftSlot;
 import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
@@ -17,7 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -38,6 +41,12 @@ public class ReviewService {
         if (application.getStatus() != ApplicationStatus.ACCEPTED) {
             throw new BusinessRuleException(
                     "Sadece kabul edilmiş başvurular puanlanabilir. Mevcut durum: " + application.getStatus());
+        }
+
+        // Çalışma tamamlandı mı? (en son slot tarihi geçmiş olmalı)
+        if (!isWorkCompleted(application)) {
+            throw new BusinessRuleException(
+                    "Çalışma henüz tamamlanmadı. Son vardiya gününden sonra puanlayabilirsiniz.");
         }
 
         // Yorum yapan kim: aday mı, işletme sahibi mi?
@@ -65,6 +74,23 @@ public class ReviewService {
 
         reviewRepository.save(review);
         return toDto(review);
+    }
+
+    /**
+     * Bir başvurudaki tüm vardiyalar geçmişte mi (çalışma tamamlandı mı)?
+     * Slot yoksa (eski başvuru) tamamlandı sayılır (backward compat).
+     * Public — ApplicationService toResponse'unda da kullanılır.
+     */
+    public boolean isWorkCompleted(Application application) {
+        if (application.getRequestedSlots() == null || application.getRequestedSlots().isEmpty()) {
+            return true;
+        }
+        LocalDate today = LocalDate.now();
+        return application.getRequestedSlots().stream()
+                .map(ShiftSlot::getDate)
+                .max(Comparator.naturalOrder())
+                .map(latest -> latest.isBefore(today))
+                .orElse(true);
     }
 
     // ----------------------------------------------------------------
