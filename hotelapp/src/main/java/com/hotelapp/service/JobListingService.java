@@ -182,11 +182,20 @@ public class JobListingService {
     private void notifyMatchingCandidates(JobListing listing) {
         try {
             String district = listing.getBusiness().getDistrict();
-            if (district == null || district.isBlank()) return;
+            if (district == null || district.isBlank()) {
+                log.info("[MATCH] Listing #{} — Business district BOŞ, eşleştirme atlanıyor (businessId={})",
+                        listing.getId(), listing.getBusiness().getId());
+                return;
+            }
 
             var matching = userRepository.findCandidatesMatchingPreferences(district, listing.getPosition());
+            log.info("[MATCH] Listing #{} — district='{}', position={}, eşleşen aday sayısı={}",
+                    listing.getId(), district, listing.getPosition(), matching.size());
+
             String posLabel = listing.getPosition().name();
             for (var aday : matching) {
+                log.info("[MATCH]   -> Bildirim atılıyor: candidateId={}, email={}",
+                        aday.getId(), aday.getEmail());
                 notificationService.notify(aday.getId(),
                         com.hotelapp.enums.NotificationType.MATCHING_LISTING,
                         "İlgini çekebilir 🎯",
@@ -196,7 +205,7 @@ public class JobListingService {
             }
         } catch (Exception e) {
             // Bildirim hatası ilan oluşturmayı bozmasın
-            log.warn("Eşleşen aday bildirimi atılamadı: {}", e.getMessage());
+            log.warn("Eşleşen aday bildirimi atılamadı: {}", e.getMessage(), e);
         }
     }
 
