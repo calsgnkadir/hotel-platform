@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -28,8 +29,9 @@ public class AuditLogService {
     private final AuditLogRepository auditLogRepository;
     private final UserRepository userRepository;
 
-    /** Bir kullanıcının yaptığı eylemi kaydet (actor email/role otomatik çözülür) */
-    @Transactional
+    /** Bir kullanıcının yaptığı eylemi kaydet (actor email/role otomatik çözülür).
+     *  REQUIRES_NEW: ana akışı bozmaz, kendi tx'inde calisir. */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(Long actorId, String action, String targetType, Long targetId, String details) {
         try {
             String email = "?";
@@ -48,8 +50,9 @@ public class AuditLogService {
         }
     }
 
-    /** Sistem tarafından otomatik tetiklenen eylem (örn. otomatik ban) */
-    @Transactional
+    /** Sistem tarafından otomatik tetiklenen eylem (örn. otomatik ban).
+     *  REQUIRES_NEW: ana akışı bozmaz. */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logSystem(String action, String targetType, Long targetId, String details) {
         try {
             save(null, "SYSTEM", "SYSTEM", action, targetType, targetId, details);

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -28,8 +29,11 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
-    /** Bildirim oluştur — recipientId, tip, başlık, mesaj, opsiyonel link */
-    @Transactional
+    /**
+     * Bildirim oluştur. REQUIRES_NEW ile kendi tx'ında çalışır — başarısız olursa
+     * çağıran metodun transaction'ını etkilemez (örn. ilan oluşturma).
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notify(Long recipientId, NotificationType type, String title, String message, String link) {
         try {
             User recipient = userRepository.findById(recipientId).orElse(null);
