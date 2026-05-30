@@ -289,27 +289,33 @@ public class JobListingService {
         listing.setShiftStart(request.getShiftStart());
         listing.setShiftEnd(request.getShiftEnd());
 
-        // Slot diff: id eşleşenleri güncelle, yenileri ekle, kalanları sil
-        // (orphanRemoval + cascade ALL ile silme otomatik join_table'a da yansır)
-        List<ShiftSlot> existing = listing.getShiftSlots();
-        java.util.Map<Long, ShiftSlot> existingById = new java.util.HashMap<>();
-        for (ShiftSlot s : existing) {
-            if (s.getId() != null) existingById.put(s.getId(), s);
-        }
+        // Slot diff (orphanRemoval ile uyumlu güvenli desen):
+        // 1) Request'te kalmayan slotları çıkar (orphan -> Hibernate siler)
+        // 2) Kalan/var olan slotların alanlarını yerinde güncelle
+        // 3) ID'siz (yeni) slotları ekle
+        // NOT: clear()+addAll() kullanmıyoruz çünkü orphanRemoval ile field güncellemeleri kayboluyor.
+        java.util.Set<Long> incomingIds = request.getShiftSlots().stream()
+                .map(ShiftSlotCreate::getId)
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
 
-        List<ShiftSlot> updated = new ArrayList<>();
+        listing.getShiftSlots().removeIf(s -> s.getId() != null && !incomingIds.contains(s.getId()));
+
+        java.util.Map<Long, ShiftSlot> existingById = listing.getShiftSlots().stream()
+                .filter(s -> s.getId() != null)
+                .collect(java.util.stream.Collectors.toMap(ShiftSlot::getId, s -> s));
+
         for (ShiftSlotCreate dto : request.getShiftSlots()) {
-            ShiftSlot slot;
             if (dto.getId() != null && existingById.containsKey(dto.getId())) {
-                // Mevcut slot — alanları güncelle (slotsFilled korunur)
-                slot = existingById.get(dto.getId());
-                slot.setDate(dto.getDate());
-                slot.setStartTime(dto.getStartTime());
-                slot.setEndTime(dto.getEndTime());
-                slot.setSlotsNeeded(dto.getSlotsNeeded() == null ? 1 : dto.getSlotsNeeded());
+                // Mevcut slot — alanları yerinde güncelle (slotsFilled korunur)
+                ShiftSlot s = existingById.get(dto.getId());
+                s.setDate(dto.getDate());
+                s.setStartTime(dto.getStartTime());
+                s.setEndTime(dto.getEndTime());
+                s.setSlotsNeeded(dto.getSlotsNeeded() == null ? 1 : dto.getSlotsNeeded());
             } else {
                 // Yeni slot
-                slot = ShiftSlot.builder()
+                ShiftSlot newSlot = ShiftSlot.builder()
                         .jobListing(listing)
                         .date(dto.getDate())
                         .startTime(dto.getStartTime())
@@ -317,13 +323,9 @@ public class JobListingService {
                         .slotsNeeded(dto.getSlotsNeeded() == null ? 1 : dto.getSlotsNeeded())
                         .slotsFilled(0)
                         .build();
+                listing.getShiftSlots().add(newSlot);
             }
-            updated.add(slot);
         }
-
-        // existing collection'ı in-place değiştir (orphanRemoval için aynı referans olmalı)
-        existing.clear();
-        existing.addAll(updated);
 
         jobListingRepository.save(listing);
         return toResponse(listing);
