@@ -5,6 +5,28 @@ Uptime + Smoke Test (auth). En son rapor en üstte.
 
 ---
 
+## 2026-06-01 01:14 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.20s |
+| Backend OpenAPI | ✅ 200 | 2.80s |
+| Backend listings (public) | ✅ 200 | 0.40s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ✅ 200 | 0.46s |
+| Profile (GET /candidate/profile) | ✅ 200 | 0.31s |
+| My applications (GET /candidate/applications) | ✅ 200 | 0.24s |
+
+
+---
+
 ## 2026-06-01 01:06 +03
 
 **Uptime**
