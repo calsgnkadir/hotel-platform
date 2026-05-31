@@ -1,16 +1,20 @@
 name: Daily Health Check
 
 # Her gün İstanbul saatiyle 09:07'de çalışır (UTC+3 → 06:07 UTC).
-# Frontend + backend uptime + public API smoke test yapar, status.md'ye yazar.
-# Manuel tetikleme için: Actions sekmesi → Daily Health Check → Run workflow
+# 3 fazlı kontrol:
+#   1) Uptime  — frontend + backend public endpoint'leri
+#   2) Smoke   — login, authenticated profile, applications listesi
+#   3) Rapor   — status.md'ye reverse-chrono yazar + auto-commit
+#
+# Manuel tetikleme: Actions → Daily Health Check → Run workflow
 
 on:
   schedule:
     - cron: '7 6 * * *'   # 09:07 Istanbul (UTC+3)
-  workflow_dispatch: {}    # Manuel çalıştırma
+  workflow_dispatch: {}
 
 permissions:
-  contents: write          # status.md'yi commit + push için
+  contents: write
 
 jobs:
   health-check:
@@ -26,8 +30,10 @@ jobs:
         env:
           FRONTEND_URL: https://hotel-platform-seven.vercel.app
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
+          BOT_EMAIL: ${{ secrets.HEALTHCHECK_BOT_EMAIL }}
+          BOT_PASSWORD: ${{ secrets.HEALTHCHECK_BOT_PASSWORD }}
         run: |
-          set +e   # Exit code'ları manuel yöneteceğiz
+          set +e
 
           # Yardımcı: URL'i kontrol et, "kod|süre" döndür
           check() {
@@ -36,6 +42,19 @@ jobs:
             curl -sS -o /dev/null \
                  -w "%{http_code}|%{time_total}" \
                  --max-time "$timeout" \
+                 -H "User-Agent: AjansHotel-HealthCheck/1.0" \
+                 "$url" 2>/dev/null || echo "000|0"
+          }
+
+          # Auth gerekli endpoint kontrolü (Bearer token ile)
+          check_auth() {
+            local url="$1"
+            local token="$2"
+            local timeout="${3:-15}"
+            curl -sS -o /dev/null \
+                 -w "%{http_code}|%{time_total}" \
+                 --max-time "$timeout" \
+                 -H "Authorization: Bearer $token" \
                  -H "User-Agent: AjansHotel-HealthCheck/1.0" \
                  "$url" 2>/dev/null || echo "000|0"
           }
@@ -54,31 +73,65 @@ jobs:
             fi
           }
 
-          # --- Checks ---
-          FE_RAW=$(check "$FRONTEND_URL")
-          FE_LINE=$(format "Frontend (Vercel)" "$FE_RAW")
+          # ────────────────────────────────────────────────
+          # FAZ 1 — UPTIME
+          # ────────────────────────────────────────────────
+          UP_LINES=""
+          UP_LINES+=$(format "Frontend (Vercel)"          "$(check "$FRONTEND_URL")")$'\n'
 
           if [ -n "$BACKEND_URL" ]; then
-            BE_DOCS_RAW=$(check "$BACKEND_URL/v3/api-docs")
-            BE_DOCS_LINE=$(format "Backend OpenAPI" "$BE_DOCS_RAW")
-
-            BE_LIST_RAW=$(check "$BACKEND_URL/api/listings?page=0&size=1")
-            BE_LIST_LINE=$(format "Backend listings (public)" "$BE_LIST_RAW")
+            UP_LINES+=$(format "Backend OpenAPI"           "$(check "$BACKEND_URL/v3/api-docs")")$'\n'
+            UP_LINES+=$(format "Backend listings (public)" "$(check "$BACKEND_URL/api/listings?page=0&size=1")")$'\n'
           else
-            BE_DOCS_LINE="| Backend OpenAPI | ⚠️ N/A | BACKEND_URL secret eksik |"
-            BE_LIST_LINE="| Backend listings | ⚠️ N/A | BACKEND_URL secret eksik |"
+            UP_LINES+="| Backend | ⚠️ N/A | BACKEND_URL secret eksik |"$'\n'
           fi
 
-          # Multi-line output'u GitHub Actions'a aktar
+          # ────────────────────────────────────────────────
+          # FAZ 2 — SMOKE (login + authenticated endpoints)
+          # ────────────────────────────────────────────────
+          SMOKE_LINES=""
+
+          if [ -z "$BACKEND_URL" ] || [ -z "$BOT_EMAIL" ] || [ -z "$BOT_PASSWORD" ]; then
+            SMOKE_LINES+="| Smoke test | ⚠️ N/A | Bot credentials secret eksik |"$'\n'
+          else
+            # Login dene + token al
+            LOGIN_BODY=$(printf '{"email":"%s","password":"%s"}' "$BOT_EMAIL" "$BOT_PASSWORD")
+            LOGIN_START=$(date +%s.%N)
+            LOGIN_RESP=$(curl -sS -X POST "$BACKEND_URL/api/auth/login" \
+                              -H "Content-Type: application/json" \
+                              -d "$LOGIN_BODY" \
+                              --max-time 20 \
+                              -w "\n[HTTP:%{http_code}]" 2>/dev/null)
+            LOGIN_END=$(date +%s.%N)
+            LOGIN_TIME=$(awk "BEGIN {printf \"%.2f\", $LOGIN_END - $LOGIN_START}")
+            LOGIN_CODE=$(echo "$LOGIN_RESP" | grep -o '\[HTTP:[0-9]*\]' | grep -o '[0-9]*')
+            TOKEN=$(echo "$LOGIN_RESP" | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+
+            if [ "$LOGIN_CODE" = "200" ] && [ -n "$TOKEN" ]; then
+              SMOKE_LINES+=$(printf "| Login (POST /auth/login) | ✅ 200 | %.2fs |\n" "$LOGIN_TIME")$'\n'
+
+              # Profile (auth gerekli)
+              PROFILE_LINE=$(format "Profile (GET /candidate/profile)" \
+                                    "$(check_auth "$BACKEND_URL/api/candidate/profile" "$TOKEN")")
+              SMOKE_LINES+="$PROFILE_LINE"$'\n'
+
+              # Başvurularım (auth gerekli)
+              APPS_LINE=$(format "My applications (GET /candidate/applications)" \
+                                 "$(check_auth "$BACKEND_URL/api/candidate/applications" "$TOKEN")")
+              SMOKE_LINES+="$APPS_LINE"$'\n'
+            else
+              SMOKE_LINES+=$(printf "| Login (POST /auth/login) | ❌ %s | %.2fs |\n" "${LOGIN_CODE:-000}" "$LOGIN_TIME")$'\n'
+              SMOKE_LINES+="| Authenticated checks | ⏭️ skipped | login başarısız |"$'\n'
+            fi
+          fi
+
+          # GitHub Actions output'larına aktar
           {
-            echo "fe_line<<EOF"
-            echo "$FE_LINE"
+            echo "up_lines<<EOF"
+            echo "$UP_LINES"
             echo "EOF"
-            echo "be_docs_line<<EOF"
-            echo "$BE_DOCS_LINE"
-            echo "EOF"
-            echo "be_list_line<<EOF"
-            echo "$BE_LIST_LINE"
+            echo "smoke_lines<<EOF"
+            echo "$SMOKE_LINES"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -90,22 +143,28 @@ jobs:
           cat > /tmp/new_entry.md <<EOF
           ## $DATE
 
+          **Uptime**
+
           | Check | Status | Time |
           |---|---|---|
-          ${{ steps.checks.outputs.fe_line }}
-          ${{ steps.checks.outputs.be_docs_line }}
-          ${{ steps.checks.outputs.be_list_line }}
+          ${{ steps.checks.outputs.up_lines }}
+
+          **Smoke Test** (auth flow)
+
+          | Check | Status | Time |
+          |---|---|---|
+          ${{ steps.checks.outputs.smoke_lines }}
 
           ---
 
           EOF
 
-          # Header (her zaman aynı) + yeni entry + eski entry'ler (varsa)
+          # Header (her zaman aynı) + yeni entry + eski entry'ler
           cat > /tmp/new_status.md <<'HDR'
           # Daily Health Check
 
           Otomatik kontrol — her gün 09:07 İstanbul saati (GitHub Actions).
-          En son rapor en üstte.
+          Uptime + Smoke Test (auth). En son rapor en üstte.
 
           ---
 
@@ -114,7 +173,6 @@ jobs:
           cat /tmp/new_entry.md >> /tmp/new_status.md
 
           if [ -f status.md ]; then
-            # Eski entry'leri al (ilk "## YYYY" satırından itibaren)
             awk '/^## [0-9]{4}-/{found=1} found' status.md >> /tmp/new_status.md
           fi
 
