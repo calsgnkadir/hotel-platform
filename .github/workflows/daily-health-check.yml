@@ -1,0 +1,135 @@
+name: Daily Health Check
+
+# Her gün İstanbul saatiyle 09:07'de çalışır (UTC+3 → 06:07 UTC).
+# Frontend + backend uptime + public API smoke test yapar, status.md'ye yazar.
+# Manuel tetikleme için: Actions sekmesi → Daily Health Check → Run workflow
+
+on:
+  schedule:
+    - cron: '7 6 * * *'   # 09:07 Istanbul (UTC+3)
+  workflow_dispatch: {}    # Manuel çalıştırma
+
+permissions:
+  contents: write          # status.md'yi commit + push için
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run health checks
+        id: checks
+        env:
+          FRONTEND_URL: https://hotel-platform-seven.vercel.app
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+        run: |
+          set +e   # Exit code'ları manuel yöneteceğiz
+
+          # Yardımcı: URL'i kontrol et, "kod|süre" döndür
+          check() {
+            local url="$1"
+            local timeout="${2:-15}"
+            curl -sS -o /dev/null \
+                 -w "%{http_code}|%{time_total}" \
+                 --max-time "$timeout" \
+                 -H "User-Agent: AjansHotel-HealthCheck/1.0" \
+                 "$url" 2>/dev/null || echo "000|0"
+          }
+
+          # Sonucu emoji+detay formatına çevir
+          format() {
+            local label="$1"
+            local result="$2"
+            local expected="${3:-200}"
+            local code=$(echo "$result" | cut -d'|' -f1)
+            local time=$(echo "$result" | cut -d'|' -f2)
+            if [ "$code" = "$expected" ]; then
+              printf "| %s | ✅ %s | %.2fs |\n" "$label" "$code" "$time"
+            else
+              printf "| %s | ❌ %s | %.2fs |\n" "$label" "$code" "$time"
+            fi
+          }
+
+          # --- Checks ---
+          FE_RAW=$(check "$FRONTEND_URL")
+          FE_LINE=$(format "Frontend (Vercel)" "$FE_RAW")
+
+          if [ -n "$BACKEND_URL" ]; then
+            BE_DOCS_RAW=$(check "$BACKEND_URL/v3/api-docs")
+            BE_DOCS_LINE=$(format "Backend OpenAPI" "$BE_DOCS_RAW")
+
+            BE_LIST_RAW=$(check "$BACKEND_URL/api/listings?page=0&size=1")
+            BE_LIST_LINE=$(format "Backend listings (public)" "$BE_LIST_RAW")
+          else
+            BE_DOCS_LINE="| Backend OpenAPI | ⚠️ N/A | BACKEND_URL secret eksik |"
+            BE_LIST_LINE="| Backend listings | ⚠️ N/A | BACKEND_URL secret eksik |"
+          fi
+
+          # Multi-line output'u GitHub Actions'a aktar
+          {
+            echo "fe_line<<EOF"
+            echo "$FE_LINE"
+            echo "EOF"
+            echo "be_docs_line<<EOF"
+            echo "$BE_DOCS_LINE"
+            echo "EOF"
+            echo "be_list_line<<EOF"
+            echo "$BE_LIST_LINE"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update status.md
+        run: |
+          DATE=$(TZ=Europe/Istanbul date +"%Y-%m-%d %H:%M %Z")
+
+          # Yeni entry'yi geçici dosyaya yaz
+          cat > /tmp/new_entry.md <<EOF
+          ## $DATE
+
+          | Check | Status | Time |
+          |---|---|---|
+          ${{ steps.checks.outputs.fe_line }}
+          ${{ steps.checks.outputs.be_docs_line }}
+          ${{ steps.checks.outputs.be_list_line }}
+
+          ---
+
+          EOF
+
+          # Header (her zaman aynı) + yeni entry + eski entry'ler (varsa)
+          cat > /tmp/new_status.md <<'HDR'
+          # Daily Health Check
+
+          Otomatik kontrol — her gün 09:07 İstanbul saati (GitHub Actions).
+          En son rapor en üstte.
+
+          ---
+
+          HDR
+
+          cat /tmp/new_entry.md >> /tmp/new_status.md
+
+          if [ -f status.md ]; then
+            # Eski entry'leri al (ilk "## YYYY" satırından itibaren)
+            awk '/^## [0-9]{4}-/{found=1} found' status.md >> /tmp/new_status.md
+          fi
+
+          mv /tmp/new_status.md status.md
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet status.md; then
+            echo "status.md değişmedi, commit yok."
+            exit 0
+          fi
+
+          git add status.md
+          git commit -m "chore: günlük sağlık kontrolü $(TZ=Europe/Istanbul date +%Y-%m-%d)"
+          git push
