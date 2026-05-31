@@ -94,10 +94,15 @@ jobs:
           if [ -z "$BACKEND_URL" ] || [ -z "$BOT_EMAIL" ] || [ -z "$BOT_PASSWORD" ]; then
             SMOKE_LINES+="| Smoke test | ⚠️ N/A | Bot credentials secret eksik |"$'\n'
           else
+            # Secret'tan baş/son boşluk ve newline'ları temizle (paste hatasına karşı savunma).
+            # Bizim botun şifresinde whitespace YOK, o yüzden güvenli.
+            BOT_EMAIL=$(printf '%s' "$BOT_EMAIL" | tr -d '[:space:]')
+            BOT_PASSWORD=$(printf '%s' "$BOT_PASSWORD" | tr -d '[:space:]')
+
             # Debug: secret'ların ayarlandığını kanıtla (gerçek değerler değil)
             echo "::group::Smoke test debug"
-            echo "Email length    : ${#BOT_EMAIL}"
-            echo "Password length : ${#BOT_PASSWORD}"
+            echo "Email length (trimmed)    : ${#BOT_EMAIL}"
+            echo "Password length (trimmed) : ${#BOT_PASSWORD}"
             echo "::endgroup::"
 
             # JSON güvenli inşa — jq özel karakterleri (!, ", \, vb.) doğru escape eder
