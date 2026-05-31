@@ -94,18 +94,33 @@ jobs:
           if [ -z "$BACKEND_URL" ] || [ -z "$BOT_EMAIL" ] || [ -z "$BOT_PASSWORD" ]; then
             SMOKE_LINES+="| Smoke test | ⚠️ N/A | Bot credentials secret eksik |"$'\n'
           else
-            # Login dene + token al
-            LOGIN_BODY=$(printf '{"email":"%s","password":"%s"}' "$BOT_EMAIL" "$BOT_PASSWORD")
+            # Debug: secret'ların ayarlandığını kanıtla (gerçek değerler değil)
+            echo "::group::Smoke test debug"
+            echo "Email length    : ${#BOT_EMAIL}"
+            echo "Password length : ${#BOT_PASSWORD}"
+            echo "::endgroup::"
+
+            # JSON güvenli inşa — jq özel karakterleri (!, ", \, vb.) doğru escape eder
+            LOGIN_BODY=$(jq -nc --arg email "$BOT_EMAIL" --arg pwd "$BOT_PASSWORD" \
+                            '{email:$email, password:$pwd}')
+
             LOGIN_START=$(date +%s.%N)
             LOGIN_RESP=$(curl -sS -X POST "$BACKEND_URL/api/auth/login" \
                               -H "Content-Type: application/json" \
-                              -d "$LOGIN_BODY" \
+                              --data-raw "$LOGIN_BODY" \
                               --max-time 20 \
                               -w "\n[HTTP:%{http_code}]" 2>/dev/null)
             LOGIN_END=$(date +%s.%N)
             LOGIN_TIME=$(awk "BEGIN {printf \"%.2f\", $LOGIN_END - $LOGIN_START}")
             LOGIN_CODE=$(echo "$LOGIN_RESP" | grep -o '\[HTTP:[0-9]*\]' | grep -o '[0-9]*')
             TOKEN=$(echo "$LOGIN_RESP" | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+
+            # Eğer başarısız olursa response body'sini logla (token gizli olur)
+            if [ "$LOGIN_CODE" != "200" ]; then
+              echo "::group::Login failed — response body"
+              echo "$LOGIN_RESP" | sed 's/[0-9]\{20,\}/[REDACTED-TOKEN]/g'
+              echo "::endgroup::"
+            fi
 
             if [ "$LOGIN_CODE" = "200" ] && [ -n "$TOKEN" ]; then
               SMOKE_LINES+=$(printf "| Login (POST /auth/login) | ✅ 200 | %.2fs |\n" "$LOGIN_TIME")$'\n'
