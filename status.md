@@ -5,7 +5,13 @@ En son rapor en üstte.
 
 ---
 
-## Henüz çalışmadı
+## 2026-06-01 00:07 +03
 
-İlk rapor yarın sabah 09:07'de buraya düşecek.
-Şu an manuel test yapmak için: GitHub repo → **Actions** → **Daily Health Check** → **Run workflow**
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.28s |
+| Backend OpenAPI | ✅ 200 | 3.07s |
+| Backend listings (public) | ✅ 200 | 0.51s |
+
+---
+
