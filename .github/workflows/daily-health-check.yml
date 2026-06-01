@@ -151,20 +151,17 @@ jobs:
           # Internal exception'lar (Hibernate, NPE, vb.) genelde 500 olarak yansır.
           # ────────────────────────────────────────────────
           SENTINEL_LINES=""
-          SENTINEL_FAILED=0
-          SENTINEL_TOTAL=0
 
-          # 5xx döndü mü? Sadece HTTP code kontrolü
+          # 5xx veya timeout? Sadece HTTP code kontrolü.
+          # NOT: probe command substitution içinde çağrıldığında subshell'de çalışır,
+          # parent shell sayaçlarını etkileyemez. Sayım sonra grep ile yapılır.
           probe() {
             local label="$1"
             local url="$2"
             local result=$(check "$url" 10)
             local code=$(echo "$result" | cut -d'|' -f1)
             local time=$(echo "$result" | cut -d'|' -f2)
-            SENTINEL_TOTAL=$((SENTINEL_TOTAL + 1))
-            # 5xx veya 000 (timeout) hata
             if [ "${code:0:1}" = "5" ] || [ "$code" = "000" ]; then
-              SENTINEL_FAILED=$((SENTINEL_FAILED + 1))
               printf "| %s | 🚨 %s | %.2fs |\n" "$label" "$code" "$time"
             elif [ "$code" = "200" ] || [ "$code" = "204" ] || [ "$code" = "401" ] || [ "$code" = "403" ]; then
               # 401/403 yetki hatası — endpoint çalışıyor demek
@@ -183,6 +180,10 @@ jobs:
           else
             SENTINEL_LINES+="| Sentinel | ⚠️ N/A | BACKEND_URL secret eksik |"$'\n'
           fi
+
+          # Toplam ve başarısız sayım — parent shell'de, grep ile
+          SENTINEL_TOTAL=$(echo "$SENTINEL_LINES"  | grep -c "^|" || true)
+          SENTINEL_FAILED=$(echo "$SENTINEL_LINES" | grep -c "🚨" || true)
 
           # Sentinel özet satırı
           if [ "$SENTINEL_FAILED" -gt 0 ]; then
