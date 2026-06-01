@@ -145,6 +145,52 @@ jobs:
             fi
           fi
 
+          # ────────────────────────────────────────────────
+          # FAZ 3 — ENDPOINT SENTINEL
+          # 5 kritik public endpoint'i tara, herhangi biri 5xx ise alarm.
+          # Internal exception'lar (Hibernate, NPE, vb.) genelde 500 olarak yansır.
+          # ────────────────────────────────────────────────
+          SENTINEL_LINES=""
+          SENTINEL_FAILED=0
+          SENTINEL_TOTAL=0
+
+          # 5xx döndü mü? Sadece HTTP code kontrolü
+          probe() {
+            local label="$1"
+            local url="$2"
+            local result=$(check "$url" 10)
+            local code=$(echo "$result" | cut -d'|' -f1)
+            local time=$(echo "$result" | cut -d'|' -f2)
+            SENTINEL_TOTAL=$((SENTINEL_TOTAL + 1))
+            # 5xx veya 000 (timeout) hata
+            if [ "${code:0:1}" = "5" ] || [ "$code" = "000" ]; then
+              SENTINEL_FAILED=$((SENTINEL_FAILED + 1))
+              printf "| %s | 🚨 %s | %.2fs |\n" "$label" "$code" "$time"
+            elif [ "$code" = "200" ] || [ "$code" = "204" ] || [ "$code" = "401" ] || [ "$code" = "403" ]; then
+              # 401/403 yetki hatası — endpoint çalışıyor demek
+              printf "| %s | ✅ %s | %.2fs |\n" "$label" "$code" "$time"
+            else
+              printf "| %s | ⚠️ %s | %.2fs |\n" "$label" "$code" "$time"
+            fi
+          }
+
+          if [ -n "$BACKEND_URL" ]; then
+            SENTINEL_LINES+=$(probe "GET /listings (no filter)"   "$BACKEND_URL/api/listings?page=0&size=5")$'\n'
+            SENTINEL_LINES+=$(probe "GET /listings (position)"    "$BACKEND_URL/api/listings?position=WAITER&page=0&size=5")$'\n'
+            SENTINEL_LINES+=$(probe "GET /listings (date filter)" "$BACKEND_URL/api/listings?dateFrom=2026-06-01&page=0&size=5")$'\n'
+            SENTINEL_LINES+=$(probe "GET /v3/api-docs"            "$BACKEND_URL/v3/api-docs")$'\n'
+            SENTINEL_LINES+=$(probe "GET /swagger-ui.html"        "$BACKEND_URL/swagger-ui/index.html")$'\n'
+          else
+            SENTINEL_LINES+="| Sentinel | ⚠️ N/A | BACKEND_URL secret eksik |"$'\n'
+          fi
+
+          # Sentinel özet satırı
+          if [ "$SENTINEL_FAILED" -gt 0 ]; then
+            SENTINEL_SUMMARY="🚨 $SENTINEL_FAILED/$SENTINEL_TOTAL endpoint 5xx döndü"
+          else
+            SENTINEL_SUMMARY="✅ Tüm $SENTINEL_TOTAL endpoint sağlıklı"
+          fi
+
           # GitHub Actions output'larına aktar
           {
             echo "up_lines<<EOF"
@@ -153,6 +199,10 @@ jobs:
             echo "smoke_lines<<EOF"
             echo "$SMOKE_LINES"
             echo "EOF"
+            echo "sentinel_lines<<EOF"
+            echo "$SENTINEL_LINES"
+            echo "EOF"
+            echo "sentinel_summary=$SENTINEL_SUMMARY"
           } >> "$GITHUB_OUTPUT"
 
       - name: Update status.md
@@ -175,6 +225,12 @@ jobs:
           |---|---|---|
           ${{ steps.checks.outputs.smoke_lines }}
 
+          **Endpoint Sentinel** — ${{ steps.checks.outputs.sentinel_summary }}
+
+          | Check | Status | Time |
+          |---|---|---|
+          ${{ steps.checks.outputs.sentinel_lines }}
+
           ---
 
           EOF
@@ -184,7 +240,8 @@ jobs:
           # Daily Health Check
 
           Otomatik kontrol — her gün 09:07 İstanbul saati (GitHub Actions).
-          Uptime + Smoke Test (auth). En son rapor en üstte.
+          3 fazlı: Uptime + Smoke Test (auth) + Endpoint Sentinel.
+          En son rapor en üstte.
 
           ---
 
