@@ -12,6 +12,13 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    # HikariCP — düşük trafik için bağlantı havuzunu küçült (RAM tasarrufu)
+    hikari:
+      maximum-pool-size: 3      # Varsayılan 10 — küçük app için 3 yeter
+      minimum-idle: 1           # Varsayılan 10 — boşken sadece 1 bağlantı tut
+      idle-timeout: 60000       # 1 dk
+      max-lifetime: 600000      # 10 dk
+      connection-timeout: 20000 # 20 sn
 
   jpa:
     hibernate:
