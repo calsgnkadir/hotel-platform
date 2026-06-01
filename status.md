@@ -6,6 +6,39 @@ En son rapor en üstte.
 
 ---
 
+## 2026-06-02 01:27 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.41s |
+| Backend OpenAPI | ✅ 200 | 4.63s |
+| Backend listings (public) | ✅ 200 | 0.61s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ✅ 200 | 0.47s |
+| Profile (GET /candidate/profile) | ✅ 200 | 0.49s |
+| My applications (GET /candidate/applications) | ✅ 200 | 0.28s |
+
+
+**Endpoint Sentinel** — ✅ Tüm 5 endpoint sağlıklı
+
+| Check | Status | Time |
+|---|---|---|
+| GET /listings (no filter) | ✅ 200 | 0.25s |
+| GET /listings (position) | ✅ 200 | 0.26s |
+| GET /listings (date filter) | ✅ 200 | 0.24s |
+| GET /v3/api-docs | ✅ 200 | 0.14s |
+| GET /swagger-ui.html | ✅ 200 | 0.14s |
+
+
+---
+
 ## 2026-06-02 01:20 +03
 
 **Uptime**
