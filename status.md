@@ -1,7 +1,41 @@
 # Daily Health Check
 
 Otomatik kontrol — her gün 09:07 İstanbul saati (GitHub Actions).
-Uptime + Smoke Test (auth). En son rapor en üstte.
+3 fazlı: Uptime + Smoke Test (auth) + Endpoint Sentinel.
+En son rapor en üstte.
+
+---
+
+## 2026-06-02 01:16 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.36s |
+| Backend OpenAPI | ✅ 200 | 2.59s |
+| Backend listings (public) | ✅ 200 | 0.42s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ✅ 200 | 0.40s |
+| Profile (GET /candidate/profile) | ✅ 200 | 0.18s |
+| My applications (GET /candidate/applications) | ✅ 200 | 0.14s |
+
+
+**Endpoint Sentinel** — ✅ Tüm 0 endpoint sağlıklı
+
+| Check | Status | Time |
+|---|---|---|
+| GET /listings (no filter) | ✅ 200 | 0.21s |
+| GET /listings (position) | ✅ 200 | 0.22s |
+| GET /listings (date filter) | ✅ 200 | 0.18s |
+| GET /v3/api-docs | ✅ 200 | 0.16s |
+| GET /swagger-ui.html | ✅ 200 | 0.10s |
+
 
 ---
 
