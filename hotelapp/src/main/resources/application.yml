@@ -17,10 +17,14 @@ spring:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: ${JPA_SHOW_SQL:false}
+    # open-in-view: false — DB session view render'a kadar açık kalmasın.
+    # Lazy loading sadece @Transactional servis katmanında olur (DTO mapping orada).
+    # Performans artar, gizli N+1 sorgular erken yakalanır.
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        # dialect belirtilmedi — Hibernate JDBC bağlantısından otomatik algılar (MySQLDialect)
         # Hibernate'in temporal tipler için kullanacağı zaman dilimi.
         # LocalDate'in java.sql.Date'e dönüşümünde 1 gün kaymayı önler.
         jdbc:

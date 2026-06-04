@@ -3,6 +3,7 @@ package com.hotelapp.controller;
 import com.hotelapp.dto.ApplicationRequest;
 import com.hotelapp.dto.ApplicationResponse;
 import com.hotelapp.dto.DocRequestCreate;
+import com.hotelapp.dto.PageResponse;
 import com.hotelapp.dto.ReviewRequest;
 import com.hotelapp.entity.User;
 import com.hotelapp.enums.ApplicationStatus;
@@ -15,6 +16,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,14 +39,19 @@ public class ApplicationController {
     // CANDIDATE
     // ============================================================
 
-    @Operation(summary = "Başvurularımı listele — sadece CANDIDATE")
+    @Operation(
+            summary = "Başvurularımı listele (sayfalı) — sadece CANDIDATE",
+            description = "Opsiyonel: status filtresi. Sayfalama: ?page=0&size=20&sort=createdAt,desc"
+    )
     @GetMapping("/api/candidate/applications")
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<List<ApplicationResponse>> myApplications(
-            @AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<PageResponse<ApplicationResponse>> myApplications(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam(required = false) ApplicationStatus status,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(
-                applicationService.getCandidateApplications(currentUser.getId()));
+                applicationService.getCandidateApplicationsPaged(currentUser.getId(), status, pageable));
     }
 
     @Operation(summary = "İlana başvur — sadece CANDIDATE")
@@ -87,17 +96,21 @@ public class ApplicationController {
     // ============================================================
 
     @Operation(
-            summary = "Gelen başvuruları listele — sadece BUSINESS_OWNER",
-            description = "status parametresi opsiyonel (PENDING, REVIEWING, ACCEPTED, REJECTED, EXPIRED)"
+            summary = "Gelen başvuruları listele (sayfalı) — sadece BUSINESS_OWNER",
+            description = "Opsiyonel filtreler: status, listingId (ilan), q (aday adı arama). "
+                    + "Sayfalama: ?page=0&size=20&sort=createdAt,desc"
     )
     @GetMapping("/api/business/applications")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<List<ApplicationResponse>> businessApplications(
+    public ResponseEntity<PageResponse<ApplicationResponse>> businessApplications(
             @AuthenticationPrincipal User currentUser,
-            @RequestParam(required = false) ApplicationStatus status) {
+            @RequestParam(required = false) ApplicationStatus status,
+            @RequestParam(required = false) Long listingId,
+            @RequestParam(required = false) String q,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(
-                applicationService.getBusinessApplications(currentUser.getId(), status));
+                applicationService.getBusinessApplicationsPaged(currentUser.getId(), status, listingId, q, pageable));
     }
 
     @Operation(summary = "Başvuruyu incelemeye al (PENDING → REVIEWING) — sadece BUSINESS_OWNER")

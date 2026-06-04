@@ -14,6 +14,7 @@ import com.hotelapp.repository.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -150,6 +151,15 @@ public class ApplicationService {
                 .stream().map(this::toResponse).toList();
     }
 
+    /** #84: Aday başvuruları — sayfalı + opsiyonel status filtresi. */
+    @Transactional(readOnly = true)
+    public PageResponse<ApplicationResponse> getCandidateApplicationsPaged(
+            Long candidateId, ApplicationStatus status, Pageable pageable) {
+        return PageResponse.of(
+                applicationRepository.searchCandidateApplications(candidateId, status, pageable),
+                this::toResponse);
+    }
+
     // ----------------------------------------------------------------
     // BUSINESS OWNER: List incoming applications (optionally filtered)
     // ----------------------------------------------------------------
@@ -159,6 +169,16 @@ public class ApplicationService {
                 ? applicationRepository.findAllByJobListing_Business_OwnerIdAndStatus(ownerId, status)
                 : applicationRepository.findAllByJobListing_Business_OwnerId(ownerId);
         return applications.stream().map(this::toResponse).toList();
+    }
+
+    /** #84: İşletme başvuruları — sayfalı + status/ilan/arama filtreleri. */
+    @Transactional(readOnly = true)
+    public PageResponse<ApplicationResponse> getBusinessApplicationsPaged(
+            Long ownerId, ApplicationStatus status, Long listingId, String q, Pageable pageable) {
+        String normalizedQ = (q != null && !q.isBlank()) ? q.trim() : null;
+        return PageResponse.of(
+                applicationRepository.searchBusinessApplications(ownerId, status, listingId, normalizedQ, pageable),
+                this::toResponse);
     }
 
     // ----------------------------------------------------------------
@@ -241,7 +261,11 @@ public class ApplicationService {
     // - Sadece PENDING/REVIEWING başvurular iptal edilebilir
     // - ACCEPTED ise işletme planlamış, iptal yok (no-show işaretlemek için kullanılır)
     // - Aday başka birinin başvurusunu iptal edemez
+    // - İptal politikası: en yakın vardiyaya CANCEL_LOCK_HOURS saatten az kaldıysa iptal YASAK
+    //   (işletmeyi son dakika mağdur etmemek için)
     // ----------------------------------------------------------------
+    private static final int CANCEL_LOCK_HOURS = 12;
+
     @Transactional
     public ApplicationResponse withdrawApplication(Long applicationId, Long candidateId) {
         Application application = applicationRepository.findById(applicationId)
@@ -261,6 +285,23 @@ public class ApplicationService {
                 default        -> "Bu başvuru iptal edilemez. Mevcut durum: " + current;
             };
             throw new BusinessRuleException(msg);
+        }
+
+        // İptal politikası: en yakın vardiya başlangıcına 12 saatten az kaldıysa iptal yasak
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime earliestStart = application.getRequestedSlots().stream()
+                .map(s -> LocalDateTime.of(s.getDate(), s.getStartTime()))
+                .min(LocalDateTime::compareTo)
+                .orElse(null);
+
+        if (earliestStart != null && now.isBefore(earliestStart)) {
+            LocalDateTime lockThreshold = earliestStart.minusHours(CANCEL_LOCK_HOURS);
+            if (!now.isBefore(lockThreshold)) {
+                // now, [start - 12h, start) aralığında → iptal kilitli
+                throw new BusinessRuleException(
+                        "İşe " + CANCEL_LOCK_HOURS + " saatten az kaldığında başvuru iptal edilemez. "
+                        + "Gelemeyecekseniz lütfen işletme ile iletişime geçin.");
+            }
         }
 
         application.setStatus(ApplicationStatus.WITHDRAWN);
