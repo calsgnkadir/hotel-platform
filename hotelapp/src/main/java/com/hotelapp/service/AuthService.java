@@ -52,6 +52,7 @@ public class AuthService {
                     .name(request.getBusinessName())
                     .type(request.getBusinessType())
                     .district(request.getDistrict())
+                    .neighborhood(request.getNeighborhood())
                     .address(request.getAddress())
                     .phone(request.getBusinessPhone())
                     .website(request.getWebsite())

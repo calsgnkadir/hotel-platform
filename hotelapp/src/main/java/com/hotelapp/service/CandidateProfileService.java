@@ -8,6 +8,8 @@ import com.hotelapp.enums.Language;
 import com.hotelapp.enums.Position;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.UserRepository;
+import com.hotelapp.validation.AdultAge;
+import com.hotelapp.validation.TurkeyPhone;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
@@ -52,6 +54,7 @@ public class CandidateProfileService {
 
         // Candidate profile fields
         user.setDistrict(req.getDistrict());
+        user.setNeighborhood(req.getNeighborhood());
         user.setBirthDate(req.getBirthDate());
         user.setGender(req.getGender());
         user.setEducation(req.getEducation());
@@ -119,6 +122,7 @@ public class CandidateProfileService {
                 .role(u.getRole().name())
                 .isStudent(u.isStudent())
                 .district(u.getDistrict())
+                .neighborhood(u.getNeighborhood())
                 .birthDate(u.getBirthDate())
                 .gender(u.getGender())
                 .education(u.getEducation())
@@ -150,6 +154,7 @@ public class CandidateProfileService {
         private String fullName;
         private String phone;
         private String district;
+        private String neighborhood;
         private LocalDate birthDate;
         private Gender gender;
         private EducationLevel education;
@@ -172,9 +177,15 @@ public class CandidateProfileService {
         @NotBlank(message = "Ad soyad zorunlu")
         private String fullName;
 
+        @TurkeyPhone(mobileOnly = true, message = "Geçerli bir cep telefonu girin (örn: 0555 123 45 67)")
         private String phone;
+
         private String district;
+        private String neighborhood;
+
+        @AdultAge(min = 16, max = 65, message = "Yaşınız 16-65 aralığında olmalı")
         private LocalDate birthDate;
+
         private Gender gender;
         private EducationLevel education;
         private Set<Language> languages;

@@ -2,6 +2,7 @@ package com.hotelapp.dto;
 
 import com.hotelapp.enums.BusinessType;
 import com.hotelapp.enums.Role;
+import com.hotelapp.validation.TurkeyPhone;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +25,8 @@ public class RegisterRequest {
     @NotNull(message = "Rol seçimi zorunlu")
     private Role role; // CANDIDATE or BUSINESS_OWNER
 
+    /** Kişisel telefon — mobil bekliyoruz (5XX...). */
+    @TurkeyPhone(mobileOnly = true, message = "Geçerli bir cep telefonu girin (örn: 0555 123 45 67)")
     private String phone;
 
     // --- CANDIDATE fields ---
@@ -34,8 +37,13 @@ public class RegisterRequest {
     private String businessName;
     private BusinessType businessType;
     private String district;
+    private String neighborhood;
     private String address;
+
+    /** İşletme telefonu — mobil veya sabit hat (0212/0216/...) ikisi de kabul. */
+    @TurkeyPhone(message = "Geçerli bir telefon numarası girin (örn: 0212 555 12 34)")
     private String businessPhone;
+
     private String website;
     private String description;
 }

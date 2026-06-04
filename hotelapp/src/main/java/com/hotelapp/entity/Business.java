@@ -31,6 +31,8 @@ public class Business {
 
     private String district;
 
+    private String neighborhood;
+
     private String address;
 
     @Column(columnDefinition = "TEXT")

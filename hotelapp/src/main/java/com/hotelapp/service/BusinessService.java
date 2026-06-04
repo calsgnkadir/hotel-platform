@@ -8,6 +8,7 @@ import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.BusinessPhotoRepository;
 import com.hotelapp.repository.BusinessRepository;
+import com.hotelapp.validation.TurkeyPhone;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -63,6 +64,7 @@ public class BusinessService {
         business.setName(req.getName());
         business.setType(req.getType());
         business.setDistrict(req.getDistrict());
+        business.setNeighborhood(req.getNeighborhood());
         business.setAddress(req.getAddress());
         business.setDescription(req.getDescription());
         business.setPhone(req.getPhone());
@@ -196,6 +198,7 @@ public class BusinessService {
                 .type(b.getType().name())
                 .city(b.getCity())
                 .district(b.getDistrict())
+                .neighborhood(b.getNeighborhood())
                 .address(b.getAddress())
                 .description(b.getDescription())
                 .phone(b.getPhone())
@@ -222,6 +225,7 @@ public class BusinessService {
         private String type;
         private String city;
         private String district;
+        private String neighborhood;
         private String address;
         private String description;
         private String phone;
@@ -241,9 +245,14 @@ public class BusinessService {
         @NotBlank private String name;
         @NotNull  private BusinessType type;
         private String district;
+        private String neighborhood;
         private String address;
         private String description;
+
+        /** İşletme telefonu — mobil veya sabit hat (0212/0216/...) ikisi de kabul. */
+        @TurkeyPhone(message = "Geçerli bir telefon numarası girin (örn: 0212 555 12 34)")
         private String phone;
+
         private String website;
         private String category;
         private String instagram;

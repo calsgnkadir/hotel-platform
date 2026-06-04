@@ -68,6 +68,7 @@ public class User implements UserDetails {
     // ================================================================
 
     private String district;              // İstanbul içi ilçe
+    private String neighborhood;           // İstanbul içi mahalle (ilçeye bağlı)
     private LocalDate birthDate;
 
     @Enumerated(EnumType.STRING)
