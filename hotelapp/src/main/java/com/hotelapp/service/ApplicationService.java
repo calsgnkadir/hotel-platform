@@ -259,13 +259,11 @@ public class ApplicationService {
     // ----------------------------------------------------------------
     // CANDIDATE: Withdraw own application (D6)
     // - Sadece PENDING/REVIEWING başvurular iptal edilebilir
-    // - ACCEPTED ise işletme planlamış, iptal yok (no-show işaretlemek için kullanılır)
+    //   (henüz işletme planlamamış, iptal aday hakkıdır)
+    // - ACCEPTED ise işletme planlamış, iptal yasak — "İletişime geçin" mesajı
+    //   (Eğer aday gerçekten gelmezse işletme NO-SHOW işaretler, strike düşer)
     // - Aday başka birinin başvurusunu iptal edemez
-    // - İptal politikası: en yakın vardiyaya CANCEL_LOCK_HOURS saatten az kaldıysa iptal YASAK
-    //   (işletmeyi son dakika mağdur etmemek için)
     // ----------------------------------------------------------------
-    private static final int CANCEL_LOCK_HOURS = 12;
-
     @Transactional
     public ApplicationResponse withdrawApplication(Long applicationId, Long candidateId) {
         Application application = applicationRepository.findById(applicationId)
@@ -285,23 +283,6 @@ public class ApplicationService {
                 default        -> "Bu başvuru iptal edilemez. Mevcut durum: " + current;
             };
             throw new BusinessRuleException(msg);
-        }
-
-        // İptal politikası: en yakın vardiya başlangıcına 12 saatten az kaldıysa iptal yasak
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime earliestStart = application.getRequestedSlots().stream()
-                .map(s -> LocalDateTime.of(s.getDate(), s.getStartTime()))
-                .min(LocalDateTime::compareTo)
-                .orElse(null);
-
-        if (earliestStart != null && now.isBefore(earliestStart)) {
-            LocalDateTime lockThreshold = earliestStart.minusHours(CANCEL_LOCK_HOURS);
-            if (!now.isBefore(lockThreshold)) {
-                // now, [start - 12h, start) aralığında → iptal kilitli
-                throw new BusinessRuleException(
-                        "İşe " + CANCEL_LOCK_HOURS + " saatten az kaldığında başvuru iptal edilemez. "
-                        + "Gelemeyecekseniz lütfen işletme ile iletişime geçin.");
-            }
         }
 
         application.setStatus(ApplicationStatus.WITHDRAWN);

@@ -45,28 +45,6 @@ const DOC_TYPE_LABELS = {
 }
 const SENSITIVE_DOC_TYPES_CAND = ['CRIMINAL_RECORD', 'HEALTH_CERTIFICATE', 'IDENTITY_DOCUMENT']
 
-// İptal politikası: en yakın vardiyaya bu kadar saatten az kalınca iptal kilitlenir
-const CANCEL_LOCK_HOURS = 12
-
-/** Başvurunun en erken vardiya başlangıç zamanı (Date) veya null */
-function earliestSlotStart(app) {
-  const slots = app.requestedSlots || []
-  const starts = slots
-    .filter(s => s.date && s.startTime)
-    .map(s => new Date(`${s.date}T${s.startTime}`))
-    .filter(d => !isNaN(d))
-  if (!starts.length) return null
-  return new Date(Math.min(...starts.map(d => d.getTime())))
-}
-
-/** En yakın vardiyaya 12 saatten az mı kaldı? (gelecekteki vardiya için) */
-function isWithinCancelLock(app) {
-  const start = earliestSlotStart(app)
-  if (!start) return false
-  const hoursUntil = (start.getTime() - Date.now()) / 3_600_000
-  return hoursUntil > 0 && hoursUntil < CANCEL_LOCK_HOURS
-}
-
 /* ── Status Badge ── */
 function StatusBadge({ status }) {
   const map = {
@@ -197,25 +175,13 @@ function ApplicationsTab({ applications, onRefresh }) {
             <div className="flex flex-col items-end gap-2">
               <StatusBadge status={app.status} />
               {/* D6: Sadece PENDING/REVIEWING başvurular iptal edilebilir.
-                  İptal politikası: vardiyaya 12 saatten az kalınca iptal kilitli. */}
+                  ACCEPTED ise iptal yasak — backend "iletişime geçin" mesajı döner. */}
               {(app.status === 'PENDING' || app.status === 'REVIEWING') && (
-                isWithinCancelLock(app) ? (
-                  <div className="flex flex-col items-end gap-0.5">
-                    <button disabled
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 font-medium cursor-not-allowed">
-                      İptal kilitli
-                    </button>
-                    <span className="text-[10px] text-slate-400 text-right max-w-[140px]">
-                      Vardiyaya {CANCEL_LOCK_HOURS} saatten az kaldığında iptal edilemez
-                    </span>
-                  </div>
-                ) : (
-                  <button onClick={() => handleWithdraw(app.id)}
-                    disabled={withdrawingId === app.id}
-                    className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium disabled:opacity-50">
-                    {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal Et'}
-                  </button>
-                )
+                <button onClick={() => handleWithdraw(app.id)}
+                  disabled={withdrawingId === app.id}
+                  className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium disabled:opacity-50">
+                  {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal Et'}
+                </button>
               )}
               {/* R4 + R5: Sadece ACCEPTED + çalışma tamamlanmış başvuruda puanla */}
               {app.status === 'ACCEPTED' && (
