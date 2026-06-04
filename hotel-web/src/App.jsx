@@ -51,7 +51,7 @@ export default function App() {
             }
           />
 
-          {/* Admin panel — placeholder */}
+          {/* Admin panel */}
           <Route
             path="/admin/*"
             element={

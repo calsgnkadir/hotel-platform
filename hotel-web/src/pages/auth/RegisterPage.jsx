@@ -174,7 +174,7 @@ export default function RegisterPage() {
                   <select className="input" {...register('city')}>
                     <option value="Istanbul">İstanbul</option>
                   </select>
-                  <p className="text-xs text-slate-400 mt-1">Diğer şehirler yakında eklenecek</p>
+                  <p className="text-xs text-slate-400 mt-1">Platform şu an İstanbul'a özeldir</p>
                 </div>
 
               </div>

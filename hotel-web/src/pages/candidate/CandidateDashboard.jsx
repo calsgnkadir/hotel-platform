@@ -45,6 +45,28 @@ const DOC_TYPE_LABELS = {
 }
 const SENSITIVE_DOC_TYPES_CAND = ['CRIMINAL_RECORD', 'HEALTH_CERTIFICATE', 'IDENTITY_DOCUMENT']
 
+// İptal politikası: en yakın vardiyaya bu kadar saatten az kalınca iptal kilitlenir
+const CANCEL_LOCK_HOURS = 12
+
+/** Başvurunun en erken vardiya başlangıç zamanı (Date) veya null */
+function earliestSlotStart(app) {
+  const slots = app.requestedSlots || []
+  const starts = slots
+    .filter(s => s.date && s.startTime)
+    .map(s => new Date(`${s.date}T${s.startTime}`))
+    .filter(d => !isNaN(d))
+  if (!starts.length) return null
+  return new Date(Math.min(...starts.map(d => d.getTime())))
+}
+
+/** En yakın vardiyaya 12 saatten az mı kaldı? (gelecekteki vardiya için) */
+function isWithinCancelLock(app) {
+  const start = earliestSlotStart(app)
+  if (!start) return false
+  const hoursUntil = (start.getTime() - Date.now()) / 3_600_000
+  return hoursUntil > 0 && hoursUntil < CANCEL_LOCK_HOURS
+}
+
 /* ── Status Badge ── */
 function StatusBadge({ status }) {
   const map = {
@@ -59,10 +81,21 @@ function StatusBadge({ status }) {
   return <span className={`badge ${s.cls}`}>{s.icon} {s.label}</span>
 }
 
+// Aday başvuru status filtre seçenekleri
+const CAND_STATUS_FILTERS = [
+  { value: '',          label: 'Tümü' },
+  { value: 'PENDING',   label: 'Bekleyen' },
+  { value: 'REVIEWING', label: 'İnceleniyor' },
+  { value: 'ACCEPTED',  label: 'Kabul' },
+  { value: 'REJECTED',  label: 'Red' },
+  { value: 'WITHDRAWN', label: 'İptal' },
+]
+
 /* ── Applications Tab ── */
 function ApplicationsTab({ applications, onRefresh }) {
   const [respondingId, setRespondingId] = useState(null)
   const [myDocs, setMyDocs] = useState([])
+  const [statusFilter, setStatusFilter] = useState('')
 
   // Aday'ın yüklediği belge tipleri — Onayla butonunu validate için
   useEffect(() => {
@@ -115,9 +148,37 @@ function ApplicationsTab({ applications, onRefresh }) {
     )
   }
 
+  // #84: Client-side status filtresi (aday genelde az başvuruya sahip)
+  const filtered = statusFilter
+    ? applications.filter(a => a.status === statusFilter)
+    : applications
+
   return (
     <div className="space-y-3">
-      {applications.map(app => (
+      {/* Status filtre pill'leri */}
+      <div className="flex gap-1.5 flex-wrap">
+        {CAND_STATUS_FILTERS.map(f => {
+          const count = f.value ? applications.filter(a => a.status === f.value).length : applications.length
+          return (
+            <button key={f.value} onClick={() => setStatusFilter(f.value)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+                ${statusFilter === f.value
+                  ? 'text-white shadow-sm'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
+              style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+              {f.label} <span className="opacity-70">({count})</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="card">
+          <div className="empty-state py-10">
+            <p className="text-sm text-slate-500">Bu filtrede başvuru yok</p>
+          </div>
+        </div>
+      ) : filtered.map(app => (
         <div key={app.id} className="card">
           <div className="p-4 flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
@@ -135,13 +196,26 @@ function ApplicationsTab({ applications, onRefresh }) {
             </div>
             <div className="flex flex-col items-end gap-2">
               <StatusBadge status={app.status} />
-              {/* D6: Sadece PENDING/REVIEWING başvurular iptal edilebilir */}
+              {/* D6: Sadece PENDING/REVIEWING başvurular iptal edilebilir.
+                  İptal politikası: vardiyaya 12 saatten az kalınca iptal kilitli. */}
               {(app.status === 'PENDING' || app.status === 'REVIEWING') && (
-                <button onClick={() => handleWithdraw(app.id)}
-                  disabled={withdrawingId === app.id}
-                  className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium disabled:opacity-50">
-                  {withdrawingId === app.id ? 'İptal ediliyor...' : '🚫 İptal Et'}
-                </button>
+                isWithinCancelLock(app) ? (
+                  <div className="flex flex-col items-end gap-0.5">
+                    <button disabled
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 font-medium cursor-not-allowed">
+                      İptal kilitli
+                    </button>
+                    <span className="text-[10px] text-slate-400 text-right max-w-[140px]">
+                      Vardiyaya {CANCEL_LOCK_HOURS} saatten az kaldığında iptal edilemez
+                    </span>
+                  </div>
+                ) : (
+                  <button onClick={() => handleWithdraw(app.id)}
+                    disabled={withdrawingId === app.id}
+                    className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium disabled:opacity-50">
+                    {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal Et'}
+                  </button>
+                )
               )}
               {/* R4 + R5: Sadece ACCEPTED + çalışma tamamlanmış başvuruda puanla */}
               {app.status === 'ACCEPTED' && (
@@ -788,19 +862,6 @@ function ProfileTab() {
   )
 }
 
-/* ── Placeholder Tab ── */
-function PlaceholderTab({ icon, title, desc }) {
-  return (
-    <div className="card">
-      <div className="card-body empty-state py-16">
-        <span className="text-5xl mb-4">{icon}</span>
-        <p className="font-medium text-slate-700">{title}</p>
-        <p className="text-sm text-slate-500 mt-1">{desc}</p>
-      </div>
-    </div>
-  )
-}
-
 /* ── Main Dashboard ── */
 export default function CandidateDashboard() {
   const { user } = useAuth()
@@ -811,7 +872,8 @@ export default function CandidateDashboard() {
   const fetchApplications = useCallback(async () => {
     try {
       const data = await hotelApi.getMyApplications()
-      setApplications(data)
+      // #84: Backend artık PageResponse döner → içeriği çıkar
+      setApplications(Array.isArray(data) ? data : (data?.content ?? []))
     } catch {
       // Fail silently on overview — errors shown per-tab
     } finally {

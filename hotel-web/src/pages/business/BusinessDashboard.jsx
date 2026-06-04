@@ -1011,8 +1011,12 @@ function MyListingsTab() {
 }
 
 /* ── Applications Tab ── */
+const APPS_PAGE_SIZE = 15
+
 function ApplicationsTab({ applications, onRefresh }) {
   const [filter, setFilter] = useState('ALL')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(0)
   const [selected, setSelected] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [note, setNote] = useState('')
@@ -1037,8 +1041,20 @@ function ApplicationsTab({ applications, onRefresh }) {
     }
   }
 
-  const filtered = filter === 'ALL' ? applications
-    : applications.filter(a => a.status === filter)
+  // #84: status filtresi + aday adı araması (client-side; backend de destekler)
+  const filtered = applications.filter(a => {
+    if (filter !== 'ALL' && a.status !== filter) return false
+    if (search.trim()) {
+      const name = (a.candidate?.fullName || '').toLowerCase()
+      if (!name.includes(search.trim().toLowerCase())) return false
+    }
+    return true
+  })
+
+  // Client-side sayfalama
+  const pageCount = Math.max(1, Math.ceil(filtered.length / APPS_PAGE_SIZE))
+  const safePage = Math.min(page, pageCount - 1)
+  const pageItems = filtered.slice(safePage * APPS_PAGE_SIZE, safePage * APPS_PAGE_SIZE + APPS_PAGE_SIZE)
 
   async function handleReview(appId) {
     setActionLoading(true)
@@ -1098,34 +1114,45 @@ function ApplicationsTab({ applications, onRefresh }) {
 
   return (
     <div className="space-y-4">
-      {/* Filter Pills */}
-      <div className="flex gap-2 flex-wrap">
-        {['ALL', 'PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED'].map(f => {
-          const labels = { ALL: 'Tümü', PENDING: 'Bekleyen', REVIEWING: 'İnceleniyor', ACCEPTED: 'Kabul', REJECTED: 'Red' }
-          const count = f === 'ALL' ? applications.length : applications.filter(a => a.status === f).length
-          return (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150
-                ${filter === f
-                  ? 'text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
-              style={filter === f ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
-              {labels[f]} ({count})
-            </button>
-          )
-        })}
+      {/* Filtre + arama */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {['ALL', 'PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED'].map(f => {
+            const labels = { ALL: 'Tümü', PENDING: 'Bekleyen', REVIEWING: 'İnceleniyor', ACCEPTED: 'Kabul', REJECTED: 'Red' }
+            const count = f === 'ALL' ? applications.length : applications.filter(a => a.status === f).length
+            return (
+              <button key={f} onClick={() => { setFilter(f); setPage(0) }}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150
+                  ${filter === f
+                    ? 'text-white shadow-sm'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
+                style={filter === f ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                {labels[f]} ({count})
+              </button>
+            )
+          })}
+        </div>
+        <div className="relative flex-1 sm:max-w-xs sm:ml-auto">
+          <input type="text" value={search}
+            onChange={e => { setSearch(e.target.value); setPage(0) }}
+            placeholder="Aday adı ara..." className="input text-sm" />
+        </div>
       </div>
 
       {/* List */}
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="card">
-            <div className="empty-state">
-              <span className="text-4xl mb-3">📭</span>
+            <div className="empty-state py-12">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-slate-300 mb-3">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>
               <p className="text-slate-500 text-sm">Bu filtreye uyan başvuru yok</p>
             </div>
           </div>
-        ) : filtered.map(app => (
+        ) : pageItems.map(app => (
           <div key={app.id} className="card hover:border-violet-200 cursor-pointer transition-all"
                onClick={() => setSelected(app)}>
             <div className="p-4 flex items-start justify-between gap-3">
@@ -1163,6 +1190,33 @@ function ApplicationsTab({ applications, onRefresh }) {
             </div>
           </div>
         ))}
+
+        {/* #84: Pagination footer */}
+        {filtered.length > APPS_PAGE_SIZE && (
+          <div className="flex items-center justify-between gap-3 pt-2 px-1 text-xs text-slate-500">
+            <span>
+              {filtered.length} sonuçtan {safePage * APPS_PAGE_SIZE + 1}
+              {' – '}
+              {Math.min((safePage + 1) * APPS_PAGE_SIZE, filtered.length)}
+              {' arası'}
+            </span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={safePage === 0}
+                className="px-3 py-1.5 rounded-md bg-white border border-slate-200 hover:border-violet-300 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+                ← Önceki
+              </button>
+              <span className="font-semibold text-slate-700">
+                {safePage + 1} / {pageCount}
+              </span>
+              <button onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
+                disabled={safePage >= pageCount - 1}
+                className="px-3 py-1.5 rounded-md bg-white border border-slate-200 hover:border-violet-300 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+                Sonraki →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Detail Modal */}
@@ -1463,8 +1517,10 @@ export default function BusinessDashboard() {
 
   const fetchApplications = useCallback(async () => {
     try {
-      const data = await hotelApi.getBusinessApplications()
-      setApplications(data)
+      // #84: Backend artık PageResponse döner. Overview stats + client filtre için
+      // tümünü çekiyoruz (büyük size). Liste içinde ayrıca sayfalama yapılır.
+      const data = await hotelApi.getBusinessApplications({ size: 1000 })
+      setApplications(Array.isArray(data) ? data : (data?.content ?? []))
     } catch {
       toast.error('Başvurular yüklenemedi')
     } finally {

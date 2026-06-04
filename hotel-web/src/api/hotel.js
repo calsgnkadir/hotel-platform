@@ -132,9 +132,13 @@ export async function updateListingStatus(listingId, status) {
 }
 
 /* ── Application endpoints (Candidate) ── */
-export async function getMyApplications() {
-  const { data } = await api.get('/api/candidate/applications')
-  return data
+// #84: Backend artık PageResponse döner. Aday genelde az başvuruya sahip;
+// büyük size çekip içeriği array gibi kullanıyoruz (filtre client-side).
+export async function getMyApplications(params = {}) {
+  const { data } = await api.get('/api/candidate/applications', {
+    params: { size: 100, sort: 'createdAt,desc', ...params },
+  })
+  return data  // PageResponse<ApplicationResponse>
 }
 
 export async function applyToListing(payload) {
@@ -175,8 +179,14 @@ export async function deleteDocument(documentId) {
 }
 
 /* ── Application endpoints (Business owner) ── */
-export async function getBusinessApplications(status) {
-  const params = status ? { status } : {}
+// #84: Sayfalı + filtreli. opts: { status, listingId, q, page, size }
+// PageResponse döner: { content, page, size, totalElements, totalPages, first, last }
+export async function getBusinessApplications(opts = {}) {
+  const { status, listingId, q, page = 0, size = 20 } = opts
+  const params = { page, size, sort: 'createdAt,desc' }
+  if (status)    params.status = status
+  if (listingId) params.listingId = listingId
+  if (q)         params.q = q
   const { data } = await api.get('/api/business/applications', { params })
   return data
 }

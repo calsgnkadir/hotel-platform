@@ -4,6 +4,30 @@ import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 
+/* ── Inline SVG helper (Heroicons stroke stili) ── */
+function Icon({ d, className = 'w-4 h-4', strokeWidth = 2 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         strokeWidth={strokeWidth} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d={d} />
+    </svg>
+  )
+}
+
+// Sık kullanılan ikon path'leri
+const ICONS = {
+  search:   'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z',
+  check:    'm4.5 12.75 6 6 9-13.5',
+  xmark:    'M6 18 18 6M6 6l12 12',
+  ban:      'm5.636 5.636 12.728 12.728M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+  bolt:     'm3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z',
+  doc:      'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z',
+  user:     'M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z',
+  cpuChip:  'M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z',
+  bulb:     'M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.354a14.4 14.4 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18',
+  checkCircle: 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+}
+
 const ROLE_LABELS = {
   CANDIDATE: 'Aday',
   BUSINESS_OWNER: 'İşletme',
@@ -172,16 +196,16 @@ function UserDetailModal({ user, onClose, onUpdated }) {
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Ban Yönetimi</h3>
               {user.currentlyBanned ? (
                 <button onClick={handleUnban} disabled={actionLoading}
-                  className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold disabled:opacity-50">
-                  ✓ Banı Kaldır
+                  className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-1.5">
+                  <Icon d={ICONS.check} className="w-4 h-4" /> Banı Kaldır
                 </button>
               ) : (
                 <div className="flex gap-2">
                   <input type="number" value={banDays} onChange={e => setBanDays(parseInt(e.target.value) || 1)}
                     min="1" max="365" className="input text-sm w-24" />
                   <button onClick={handleBan} disabled={actionLoading}
-                    className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold disabled:opacity-50">
-                    🚫 {banDays} Gün Banla
+                    className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-1.5">
+                    <Icon d={ICONS.ban} className="w-4 h-4" /> {banDays} Gün Banla
                   </button>
                 </div>
               )}
@@ -257,7 +281,9 @@ function UsersTab() {
           ))}
         </div>
         <div className="relative flex-1 sm:max-w-xs sm:ml-auto">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🔍</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <Icon d={ICONS.search} className="w-4 h-4" />
+          </span>
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Email veya isim ara..." className="input pl-9 text-sm" />
         </div>
@@ -269,7 +295,7 @@ function UsersTab() {
       ) : users.length === 0 ? (
         <div className="card">
           <div className="empty-state py-14">
-            <span className="text-4xl mb-3">🔎</span>
+            <Icon d={ICONS.search} className="w-10 h-10 text-slate-300 mb-3" strokeWidth={1.5} />
             <p className="text-slate-500 text-sm">Eşleşen kullanıcı yok</p>
           </div>
         </div>
@@ -304,8 +330,8 @@ function UsersTab() {
                   <td className="hidden md:table-cell text-sm">{u.strikesRemaining ?? '—'}</td>
                   <td>
                     {u.currentlyBanned ? (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                        🚫 Banlı
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 inline-flex items-center gap-1">
+                        <Icon d={ICONS.ban} className="w-3 h-3" /> Banlı
                       </span>
                     ) : (
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
@@ -404,7 +430,7 @@ function ReportsTab() {
       ) : reports.length === 0 ? (
         <div className="card">
           <div className="empty-state py-14">
-            <span className="text-4xl mb-3">✅</span>
+            <Icon d={ICONS.checkCircle} className="w-10 h-10 text-emerald-400 mb-3" strokeWidth={1.5} />
             <p className="text-slate-500 text-sm">Şikayet yok</p>
           </div>
         </div>
@@ -442,18 +468,19 @@ function ReportsTab() {
                   {r.status === 'PENDING' && (
                     <div className="flex gap-2 flex-shrink-0">
                       <button onClick={() => handleStatus(r.id, 'RESOLVED')} disabled={actionId === r.id}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50">
-                        ✓ Çözüldü
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50 inline-flex items-center gap-1">
+                        <Icon d={ICONS.check} className="w-3.5 h-3.5" /> Çözüldü
                       </button>
                       <button onClick={() => handleStatus(r.id, 'DISMISSED')} disabled={actionId === r.id}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50">
-                        ✕ Reddet
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50 inline-flex items-center gap-1">
+                        <Icon d={ICONS.xmark} className="w-3.5 h-3.5" /> Reddet
                       </button>
                     </div>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-400 mt-2">
-                  💡 İşlem için: Kullanıcılar sekmesinden ilgili kullanıcıyı bulup banlayabilirsin.
+                <p className="text-[11px] text-slate-400 mt-2 inline-flex items-center gap-1">
+                  <Icon d={ICONS.bulb} className="w-3.5 h-3.5 flex-shrink-0" />
+                  İşlem için: Kullanıcılar sekmesinden ilgili kullanıcıyı bulup banlayabilirsin.
                 </p>
               </div>
             )
@@ -466,12 +493,12 @@ function ReportsTab() {
 
 /* ── Audit Log Tab (D4) ── */
 const ACTION_META = {
-  BAN_USER:       { icon: '🚫', label: 'Kullanıcı banlandı',  cls: 'bg-red-50 text-red-700' },
-  UNBAN_USER:     { icon: '✓',  label: 'Ban kaldırıldı',      cls: 'bg-emerald-50 text-emerald-700' },
-  MARK_NO_SHOW:   { icon: '⛔', label: 'No-show işaretlendi',  cls: 'bg-amber-50 text-amber-700' },
-  AUTO_BAN:       { icon: '🤖', label: 'Otomatik ban',         cls: 'bg-red-50 text-red-700' },
-  RESOLVE_REPORT: { icon: '✓',  label: 'Şikayet çözüldü',      cls: 'bg-emerald-50 text-emerald-700' },
-  DISMISS_REPORT: { icon: '✕',  label: 'Şikayet reddedildi',   cls: 'bg-slate-100 text-slate-500' },
+  BAN_USER:       { path: ICONS.ban,     label: 'Kullanıcı banlandı',  cls: 'bg-red-50 text-red-700' },
+  UNBAN_USER:     { path: ICONS.check,   label: 'Ban kaldırıldı',      cls: 'bg-emerald-50 text-emerald-700' },
+  MARK_NO_SHOW:   { path: ICONS.ban,     label: 'No-show işaretlendi',  cls: 'bg-amber-50 text-amber-700' },
+  AUTO_BAN:       { path: ICONS.bolt,    label: 'Otomatik ban',         cls: 'bg-red-50 text-red-700' },
+  RESOLVE_REPORT: { path: ICONS.check,   label: 'Şikayet çözüldü',      cls: 'bg-emerald-50 text-emerald-700' },
+  DISMISS_REPORT: { path: ICONS.xmark,   label: 'Şikayet reddedildi',   cls: 'bg-slate-100 text-slate-500' },
 }
 const AUDIT_FILTERS = [
   { value: '',             label: 'Tümü' },
@@ -516,23 +543,25 @@ function AuditTab() {
       ) : logs.length === 0 ? (
         <div className="card">
           <div className="empty-state py-14">
-            <span className="text-4xl mb-3">📜</span>
+            <Icon d={ICONS.doc} className="w-10 h-10 text-slate-300 mb-3" strokeWidth={1.5} />
             <p className="text-slate-500 text-sm">Henüz işlem kaydı yok</p>
           </div>
         </div>
       ) : (
         <div className="card divide-y divide-slate-50">
           {logs.map(l => {
-            const m = ACTION_META[l.action] || { icon: '•', label: l.action, cls: 'bg-slate-100 text-slate-600' }
+            const m = ACTION_META[l.action] || { path: ICONS.doc, label: l.action, cls: 'bg-slate-100 text-slate-600' }
+            const isSystem = l.actorEmail === 'SYSTEM'
             return (
               <div key={l.id} className="px-4 py-3 flex items-start gap-3">
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ${m.cls}`}>
-                  {m.icon} {m.label}
+                <span className={`text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 inline-flex items-center gap-1 ${m.cls}`}>
+                  <Icon d={m.path} className="w-3.5 h-3.5" /> {m.label}
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-slate-700">{l.details}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">
-                    {l.actorEmail === 'SYSTEM' ? '🤖 Sistem' : `👤 ${l.actorEmail}`}
+                  <div className="text-xs text-slate-400 mt-0.5 inline-flex items-center gap-1">
+                    <Icon d={isSystem ? ICONS.cpuChip : ICONS.user} className="w-3.5 h-3.5" />
+                    {isSystem ? 'Sistem' : l.actorEmail}
                     {' · '}
                     {new Date(l.createdAt).toLocaleString('tr-TR')}
                   </div>
