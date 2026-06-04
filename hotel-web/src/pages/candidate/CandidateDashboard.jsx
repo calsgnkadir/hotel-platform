@@ -7,21 +7,15 @@ import { extractErrorMessage } from '../../api/client'
 import ListingsPage from './ListingsPage'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
 import ReviewModal from '../../components/ReviewModal'
+import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
+import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
+import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
   RECEPTION: 'Resepsiyon', KITCHEN_STAFF: 'Mutfak Personeli', BELLBOY: 'Bellboy', SECURITY: 'Güvenlik',
 }
 
-const ISTANBUL_DISTRICTS = [
-  'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler',
-  'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü',
-  'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt',
-  'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane',
-  'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer',
-  'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla',
-  'Ümraniye', 'Üsküdar', 'Zeytinburnu',
-]
 const GENDER_LABELS = { MALE: 'Erkek', FEMALE: 'Kadın', OTHER: 'Diğer' }
 const EDUCATION_LABELS = {
   HIGH_SCHOOL: 'Lise',
@@ -516,6 +510,7 @@ function ProfileTab() {
           fullName:           data.fullName           || '',
           phone:              data.phone              || '',
           district:           data.district           || '',
+          neighborhood:       data.neighborhood       || '',
           birthDate:          data.birthDate          || '',
           gender:             data.gender             || '',
           education:          data.education          || '',
@@ -594,12 +589,19 @@ function ProfileTab() {
     e.preventDefault()
     if (!form.fullName.trim()) return toast.error('Ad soyad zorunlu')
 
+    // #74: Phone + yaş validation (backend ile aynı kurallar)
+    const phoneError = validateTurkeyPhone(form.phone, { mobileOnly: true })
+    if (phoneError) return toast.error(phoneError)
+    const ageError = validateAdultAge(form.birthDate)
+    if (ageError) return toast.error(ageError)
+
     setSaving(true)
     try {
       const payload = {
         fullName:           form.fullName.trim(),
         phone:              form.phone.trim() || null,
         district:           form.district || null,
+        neighborhood:       form.neighborhood?.trim() || null,
         birthDate:          form.birthDate || null,
         gender:             form.gender || null,
         education:          form.education || null,
@@ -677,22 +679,25 @@ function ProfileTab() {
           </div>
           <div>
             <label className="label">Telefon</label>
-            <input type="text" name="phone" value={form.phone} onChange={handleChange}
-              className="input" placeholder="05XX XXX XX XX" />
+            <input type="tel" name="phone" value={form.phone} maxLength={14}
+              onChange={e => setForm(prev => ({ ...prev, phone: formatTurkeyPhoneInput(e.target.value) }))}
+              className="input" placeholder="0555 123 45 67" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* İlçe + Mahalle (cascading) */}
+        <DistrictNeighborhoodSelect
+          district={form.district}
+          neighborhood={form.neighborhood}
+          onChange={({ district, neighborhood }) =>
+            setForm(prev => ({ ...prev, district, neighborhood }))
+          } />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="label">İlçe</label>
-            <select name="district" value={form.district} onChange={handleChange} className="input">
-              <option value="">Seçin</option>
-              {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="label">Doğum Tarihi</label>
-            <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange} className="input" />
+            <label className="label">Doğum Tarihi <span className="text-slate-400 font-normal text-[10px]">(16-65 yaş)</span></label>
+            <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange}
+              {...birthDateBounds()} className="input" />
           </div>
           <div>
             <label className="label">Cinsiyet</label>

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import ReportModal from '../../components/ReportModal'
 import StarRating from '../../components/StarRating'
+import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -18,16 +19,6 @@ const SHIFT_INFO = {
   EVENING: { icon: '', label: 'Akşam', time: '16:00–24:00' },
   NIGHT:   { icon: '', label: 'Gece',  time: '22:00–08:00' },
 }
-const ISTANBUL_DISTRICTS = [
-  'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler',
-  'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü',
-  'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt',
-  'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane',
-  'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer',
-  'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla',
-  'Ümraniye', 'Üsküdar', 'Zeytinburnu',
-]
-
 const WEEKDAYS_SHORT = [
   { key: 'MONDAY',    label: 'Pzt' },
   { key: 'TUESDAY',   label: 'Sal' },

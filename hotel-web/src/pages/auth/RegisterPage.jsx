@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
+import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../utils/validation'
+import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 
 const ROLE_OPTIONS = [
   {
@@ -36,6 +38,7 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm()
 
@@ -161,7 +164,12 @@ export default function RegisterPage() {
 
             <div>
               <label className="label">Telefon <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
-              <input type="tel" className="input" placeholder="05XX XXX XX XX" {...register('phone')} />
+              <input type="tel" className="input" placeholder="0555 123 45 67" maxLength={14}
+                {...register('phone', {
+                  validate: v => validateTurkeyPhone(v, { mobileOnly: true }) || true,
+                  onChange: e => { e.target.value = formatTurkeyPhoneInput(e.target.value) },
+                })} />
+              {errors.phone && <p className="error-text">⚠ {errors.phone.message}</p>}
             </div>
 
             {/* ── CANDIDATE extra fields ── */}
@@ -217,12 +225,17 @@ export default function RegisterPage() {
                   {errors.businessType && <p className="error-text">⚠ {errors.businessType.message}</p>}
                 </div>
 
-                <div>
-                  <label className="label">İlçe (İstanbul)</label>
-                  <input type="text" className="input" placeholder="Beşiktaş, Şişli, Beyoğlu..."
-                    {...register('district', { required: 'İlçe zorunlu' })} />
-                  {errors.district && <p className="error-text">⚠ {errors.district.message}</p>}
-                </div>
+                <input type="hidden" {...register('district', { required: 'İlçe seçin' })} />
+                <input type="hidden" {...register('neighborhood')} />
+                <DistrictNeighborhoodSelect
+                  district={watch('district') || ''}
+                  neighborhood={watch('neighborhood') || ''}
+                  onChange={({ district, neighborhood }) => {
+                    setValue('district', district, { shouldValidate: true })
+                    setValue('neighborhood', neighborhood)
+                  }}
+                  districtRequired />
+                {errors.district && <p className="error-text">⚠ {errors.district.message}</p>}
 
                 <div>
                   <label className="label">Adres</label>
@@ -233,7 +246,12 @@ export default function RegisterPage() {
 
                 <div>
                   <label className="label">İşletme Telefonu <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
-                  <input type="tel" className="input" placeholder="0212 XXX XX XX" {...register('businessPhone')} />
+                  <input type="tel" className="input" placeholder="0212 555 12 34" maxLength={14}
+                    {...register('businessPhone', {
+                      validate: v => validateTurkeyPhone(v) || true,
+                      onChange: e => { e.target.value = formatTurkeyPhoneInput(e.target.value) },
+                    })} />
+                  {errors.businessPhone && <p className="error-text">⚠ {errors.businessPhone.message}</p>}
                 </div>
 
                 <div>

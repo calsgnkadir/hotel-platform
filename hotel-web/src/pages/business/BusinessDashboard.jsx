@@ -4,6 +4,9 @@ import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
+import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../utils/validation'
+import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
+import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -38,16 +41,6 @@ const BUSINESS_TYPE_LABELS = {
   RESTAURANT: '🍽️ Restoran',
   CAFE: '☕ Kafe',
 }
-const ISTANBUL_DISTRICTS = [
-  'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler',
-  'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü',
-  'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt',
-  'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane',
-  'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer',
-  'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla',
-  'Ümraniye', 'Üsküdar', 'Zeytinburnu',
-]
-
 const WEEKDAYS = [
   { key: 'MONDAY',    label: 'Pazartesi' },
   { key: 'TUESDAY',   label: 'Salı' },
@@ -659,6 +652,7 @@ function ProfileTab() {
           name:         profile.name         || '',
           type:         profile.type         || 'HOTEL',
           district:     profile.district     || '',
+          neighborhood: profile.neighborhood || '',
           address:      profile.address      || '',
           description:  profile.description  || '',
           phone:        profile.phone        || '',
@@ -718,12 +712,17 @@ function ProfileTab() {
     e.preventDefault()
     if (!form.name.trim()) return toast.error('İşletme adı zorunlu')
 
+    // #74: Phone validation (mobil veya sabit hat)
+    const phoneError = validateTurkeyPhone(form.phone)
+    if (phoneError) return toast.error(phoneError)
+
     setSaving(true)
     try {
       const payload = {
         name:         form.name.trim(),
         type:         form.type,
         district:     form.district || null,
+        neighborhood: form.neighborhood?.trim() || null,
         address:      form.address.trim() || null,
         description:  form.description.trim() || null,
         phone:        form.phone.trim() || null,
@@ -786,18 +785,18 @@ function ProfileTab() {
           </div>
         </div>
 
-        <div>
-          <label className="label">İlçe <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
-          <select name="district" value={form.district} onChange={handleChange} className="input">
-            <option value="">Seçin</option>
-            {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-        </div>
+        {/* İlçe + Mahalle (cascading) */}
+        <DistrictNeighborhoodSelect
+          district={form.district}
+          neighborhood={form.neighborhood}
+          onChange={({ district, neighborhood }) =>
+            setForm(prev => ({ ...prev, district, neighborhood }))
+          } />
 
         <div>
           <label className="label">Adres <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
           <input type="text" name="address" value={form.address} onChange={handleChange}
-            className="input" placeholder="Mahalle, sokak, no" />
+            className="input" placeholder="Sokak, bina no, kat" />
         </div>
 
         <div>
@@ -815,7 +814,8 @@ function ProfileTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="label">📞 Telefon</label>
-            <input type="text" name="phone" value={form.phone} onChange={handleChange}
+            <input type="tel" name="phone" value={form.phone} maxLength={14}
+              onChange={e => setForm(prev => ({ ...prev, phone: formatTurkeyPhoneInput(e.target.value) }))}
               className="input" placeholder="0212 555 12 34" />
           </div>
           <div>
