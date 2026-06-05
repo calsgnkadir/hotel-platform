@@ -50,6 +50,24 @@ export async function deleteBusinessPhoto(photoId) {
   await api.delete(`/api/business/photos/${photoId}`)
 }
 
+/** #86: Galeri sırasını güncelle — body: foto id'lerinin yeni sırası. */
+export async function reorderBusinessPhotos(orderedPhotoIds) {
+  const { data } = await api.put('/api/business/photos/order', orderedPhotoIds)
+  return data  // PhotoDto[] (yeni sırayla)
+}
+
+/** #86: Kapak fotoğrafı belirle. */
+export async function setBusinessCoverPhoto(photoId) {
+  const { data } = await api.put(`/api/business/photos/${photoId}/cover`)
+  return data  // PhotoDto
+}
+
+/** Public — bir işletmenin galerisi (aday tarafı). */
+export async function getBusinessGallery(businessId) {
+  const { data } = await api.get(`/api/businesses/${businessId}/photos`)
+  return data  // PhotoDto[]
+}
+
 /* ── Şifre değiştirme (D3) ── */
 export async function changePassword(currentPassword, newPassword) {
   const { data } = await api.put('/api/auth/change-password', { currentPassword, newPassword })

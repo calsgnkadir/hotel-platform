@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import ReportModal from '../../components/ReportModal'
 import StarRating from '../../components/StarRating'
+import GalleryCarousel from '../../components/GalleryCarousel'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 
 const POSITION_LABELS = {
@@ -274,6 +275,11 @@ function DetailModal({ listing, onClose, onApply }) {
         </div>
 
         <div className="p-6 space-y-5">
+          {/* #87: İşletme galerisi carousel — varsa göster */}
+          {listing.businessId && (
+            <GalleryCarousel businessId={listing.businessId} height="h-56" />
+          )}
+
           {/* Quick facts grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="bg-slate-50 rounded-lg p-3 text-center">

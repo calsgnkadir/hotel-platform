@@ -8,6 +8,7 @@ import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../utils/validat
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import MessagesPage from '../MessagesPage'
+import GalleryEditor from '../../components/GalleryEditor'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -592,44 +593,7 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
         </div>
       </div>
 
-      {/* Gallery */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="label !mb-0">Galeri ({photos.length}/{MAX_PHOTOS})</label>
-          {photos.length < MAX_PHOTOS && (
-            <label className={`px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-colors
-              ${photoUploading
-                ? 'bg-violet-50 text-violet-400 cursor-wait'
-                : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}>
-              <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
-                onChange={handlePhotoChange} disabled={photoUploading} />
-              {photoUploading ? '⏳ Yükleniyor...' : '+ Foto Ekle'}
-            </label>
-          )}
-        </div>
-
-        {photos.length === 0 ? (
-          <div className="empty-state py-8 bg-slate-50 rounded-xl">
-            <span className="text-3xl mb-2">🖼️</span>
-            <p className="text-sm text-slate-500">Henüz foto yok</p>
-            <p className="text-xs text-slate-400 mt-0.5">İşletmenizi tanıtan fotoğraflar ekleyin</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {photos.map(photo => (
-              <div key={photo.id} className="relative aspect-square rounded-xl overflow-hidden bg-slate-100 group">
-                <img src={photo.url} alt="Galeri" className="w-full h-full object-cover" />
-                <button type="button"
-                  onClick={() => onPhotoDelete(photo.id)}
-                  className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-red-500 text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600"
-                  title="Sil">
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Galeri ayrı kartta — #87 GalleryEditor component'i ile yönetilir */}
     </div>
   )
 }
@@ -749,7 +713,7 @@ function ProfileTab() {
   return (
     <div className="space-y-5 max-w-3xl">
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Görseller (logo + galeri) */}
+      {/* Logo */}
       <MediaBlock
         logoUrl={logoUrl}
         logoVersion={logoVersion}
@@ -759,6 +723,9 @@ function ProfileTab() {
         onPhotoUpload={handlePhotoUpload}
         onPhotoDelete={handlePhotoDelete}
       />
+
+      {/* #87: Galeri — drag-drop sıralama + kapak seçme */}
+      <GalleryEditor />
 
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
