@@ -145,23 +145,23 @@ public class DemoSeeder implements CommandLineRunner {
         }
 
         // ── 3) İlanlar + slotlar ─────────────────────────────
-        record ListingSeed(int bizIdx, String title, Position pos, ShiftCategory shift, int minSal, int maxSal) {}
+        record ListingSeed(int bizIdx, String title, Position pos, Shift shift, int minSal, int maxSal) {}
         ListingSeed[] listingDefs = {
-                new ListingSeed(0, "Sabah vardiyası garson",        Position.WAITER,      ShiftCategory.MORNING, 700, 1000),
-                new ListingSeed(0, "Resepsiyon görevlisi (gece)",   Position.RECEPTION,   ShiftCategory.NIGHT,   900, 1300),
-                new ListingSeed(0, "Kat hizmetleri personeli",      Position.HOUSEKEEPING, ShiftCategory.MORNING, 800, 1100),
-                new ListingSeed(1, "Akşam garson - balık restoran", Position.WAITER,      ShiftCategory.EVENING, 800, 1200),
-                new ListingSeed(1, "Bulaşıkçı",                     Position.DISHWASHER,  ShiftCategory.EVENING, 600, 900),
-                new ListingSeed(1, "Mutfak personeli",              Position.KITCHEN_STAFF, ShiftCategory.EVENING, 1000, 1500),
-                new ListingSeed(2, "Hafta sonu kahveci/barista",    Position.WAITER,      ShiftCategory.MORNING, 750, 1000),
-                new ListingSeed(2, "Açılış vardiyası",              Position.WAITER,      ShiftCategory.MORNING, 700, 950),
-                new ListingSeed(3, "Bellboy - butik otel",          Position.BELLBOY,     ShiftCategory.EVENING, 750, 1050),
-                new ListingSeed(3, "Güvenlik (gece)",               Position.SECURITY,    ShiftCategory.NIGHT,   900, 1200),
-                new ListingSeed(4, "Garson - Türk lokantası",       Position.WAITER,      ShiftCategory.EVENING, 700, 1000),
-                new ListingSeed(4, "Aşçı yardımcısı",               Position.KITCHEN_STAFF, ShiftCategory.EVENING, 900, 1300),
-                new ListingSeed(5, "Barista - 3rd wave",            Position.WAITER,      ShiftCategory.MORNING, 850, 1200),
-                new ListingSeed(5, "Bulaşıkçı (yarım gün)",         Position.DISHWASHER,  ShiftCategory.MORNING, 500, 750),
-                new ListingSeed(5, "Akşam vardiyası",               Position.WAITER,      ShiftCategory.EVENING, 800, 1100),
+                new ListingSeed(0, "Sabah vardiyası garson",        Position.WAITER,      Shift.MORNING, 700, 1000),
+                new ListingSeed(0, "Resepsiyon görevlisi (gece)",   Position.RECEPTION,   Shift.NIGHT,   900, 1300),
+                new ListingSeed(0, "Kat hizmetleri personeli",      Position.HOUSEKEEPING, Shift.MORNING, 800, 1100),
+                new ListingSeed(1, "Akşam garson - balık restoran", Position.WAITER,      Shift.EVENING, 800, 1200),
+                new ListingSeed(1, "Bulaşıkçı",                     Position.DISHWASHER,  Shift.EVENING, 600, 900),
+                new ListingSeed(1, "Mutfak personeli",              Position.KITCHEN_STAFF, Shift.EVENING, 1000, 1500),
+                new ListingSeed(2, "Hafta sonu kahveci/barista",    Position.WAITER,      Shift.MORNING, 750, 1000),
+                new ListingSeed(2, "Açılış vardiyası",              Position.WAITER,      Shift.MORNING, 700, 950),
+                new ListingSeed(3, "Bellboy - butik otel",          Position.BELLBOY,     Shift.EVENING, 750, 1050),
+                new ListingSeed(3, "Güvenlik (gece)",               Position.SECURITY,    Shift.NIGHT,   900, 1200),
+                new ListingSeed(4, "Garson - Türk lokantası",       Position.WAITER,      Shift.EVENING, 700, 1000),
+                new ListingSeed(4, "Aşçı yardımcısı",               Position.KITCHEN_STAFF, Shift.EVENING, 900, 1300),
+                new ListingSeed(5, "Barista - 3rd wave",            Position.WAITER,      Shift.MORNING, 850, 1200),
+                new ListingSeed(5, "Bulaşıkçı (yarım gün)",         Position.DISHWASHER,  Shift.MORNING, 500, 750),
+                new ListingSeed(5, "Akşam vardiyası",               Position.WAITER,      Shift.EVENING, 800, 1100),
         };
         List<JobListing> listings = new ArrayList<>();
         for (ListingSeed ls : listingDefs) {
@@ -185,8 +185,8 @@ public class DemoSeeder implements CommandLineRunner {
             for (int s = 0; s < slotCount; s++) {
                 int dayOffset = -30 + random.nextInt(60);  // -30..+30 gün
                 LocalDate date = LocalDate.now().plusDays(dayOffset);
-                LocalTime start = ls.shift == ShiftCategory.MORNING ? LocalTime.of(8, 0)
-                              : ls.shift == ShiftCategory.EVENING ? LocalTime.of(16, 0)
+                LocalTime start = ls.shift == Shift.MORNING ? LocalTime.of(8, 0)
+                              : ls.shift == Shift.EVENING ? LocalTime.of(16, 0)
                               : LocalTime.of(22, 0);
                 LocalTime end = start.plusHours(8);
                 ShiftSlot slot = ShiftSlot.builder()
