@@ -137,7 +137,7 @@ export default function RegisterPage() {
               <label className="label">Ad Soyad</label>
               <input type="text" className="input" placeholder="Adınız Soyadınız"
                 {...register('fullName', { required: 'Ad soyad zorunlu' })} />
-              {errors.fullName && <p className="error-text">⚠ {errors.fullName.message}</p>}
+              {errors.fullName && <p className="error-text">{errors.fullName.message}</p>}
             </div>
 
             <div>
@@ -147,7 +147,7 @@ export default function RegisterPage() {
                   required: 'E-posta zorunlu',
                   pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Geçerli bir e-posta girin' },
                 })} />
-              {errors.email && <p className="error-text">⚠ {errors.email.message}</p>}
+              {errors.email && <p className="error-text">{errors.email.message}</p>}
             </div>
 
             <div>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
                   required: 'Şifre zorunlu',
                   minLength: { value: 8, message: 'En az 8 karakter olmalı' },
                 })} />
-              {errors.password && <p className="error-text">⚠ {errors.password.message}</p>}
+              {errors.password && <p className="error-text">{errors.password.message}</p>}
             </div>
 
             <div>
@@ -167,7 +167,7 @@ export default function RegisterPage() {
                   validate: v => validateTurkeyPhone(v, { mobileOnly: true }) || true,
                   onChange: e => { e.target.value = formatTurkeyPhoneInput(e.target.value) },
                 })} />
-              {errors.phone && <p className="error-text">⚠ {errors.phone.message}</p>}
+              {errors.phone && <p className="error-text">{errors.phone.message}</p>}
             </div>
 
             {/* ── CANDIDATE extra fields ── */}
@@ -195,7 +195,7 @@ export default function RegisterPage() {
                   <label className="label">İşletme Adı</label>
                   <input type="text" className="input" placeholder="Grand Hotel İstanbul"
                     {...register('businessName', { required: 'İşletme adı zorunlu' })} />
-                  {errors.businessName && <p className="error-text">⚠ {errors.businessName.message}</p>}
+                  {errors.businessName && <p className="error-text">{errors.businessName.message}</p>}
                 </div>
 
                 <div>
@@ -220,7 +220,7 @@ export default function RegisterPage() {
                       </label>
                     ))}
                   </div>
-                  {errors.businessType && <p className="error-text">⚠ {errors.businessType.message}</p>}
+                  {errors.businessType && <p className="error-text">{errors.businessType.message}</p>}
                 </div>
 
                 <input type="hidden" {...register('district', { required: 'İlçe seçin' })} />
@@ -233,13 +233,13 @@ export default function RegisterPage() {
                     setValue('neighborhood', neighborhood)
                   }}
                   districtRequired />
-                {errors.district && <p className="error-text">⚠ {errors.district.message}</p>}
+                {errors.district && <p className="error-text">{errors.district.message}</p>}
 
                 <div>
                   <label className="label">Adres</label>
                   <input type="text" className="input" placeholder="Cadde, sokak, bina no..."
                     {...register('address', { required: 'Adres zorunlu' })} />
-                  {errors.address && <p className="error-text">⚠ {errors.address.message}</p>}
+                  {errors.address && <p className="error-text">{errors.address.message}</p>}
                 </div>
 
                 <div>
@@ -249,7 +249,7 @@ export default function RegisterPage() {
                       validate: v => validateTurkeyPhone(v) || true,
                       onChange: e => { e.target.value = formatTurkeyPhoneInput(e.target.value) },
                     })} />
-                  {errors.businessPhone && <p className="error-text">⚠ {errors.businessPhone.message}</p>}
+                  {errors.businessPhone && <p className="error-text">{errors.businessPhone.message}</p>}
                 </div>
 
                 <div>

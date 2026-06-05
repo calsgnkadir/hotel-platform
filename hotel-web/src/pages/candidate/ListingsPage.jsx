@@ -14,7 +14,7 @@ const POSITION_LABELS = {
 const JOB_TYPE_LABELS = {
   PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı',
 }
-const BUSINESS_TYPE_ICONS = { HOTEL: '', RESTAURANT: '', CAFE: '' }
+const BUSINESS_TYPE_LETTER = { HOTEL: 'O', RESTAURANT: 'R', CAFE: 'K' }
 const SHIFT_INFO = {
   MORNING: { icon: '', label: 'Sabah', time: '08:00–16:00' },
   EVENING: { icon: '', label: 'Akşam', time: '16:00–24:00' },
@@ -115,7 +115,7 @@ function ApplyModal({ listing, onClose, onSuccess }) {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
                  style={{ background: '#047857' }}>
-              {BUSINESS_TYPE_ICONS[listing.businessType] || ''}
+              {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900">{listing.title}</h2>
@@ -170,7 +170,7 @@ function ApplyModal({ listing, onClose, onSuccess }) {
                         </div>
                         <div className="text-xs text-slate-500 mt-0.5">
                           {full
-                            ? '⚠ Bu vardiya doldu'
+                            ? 'Bu vardiya doldu'
                             : `${s.slotsFilled || 0}/${s.slotsNeeded} dolu — ${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
                         </div>
                       </div>
@@ -180,13 +180,13 @@ function ApplyModal({ listing, onClose, onSuccess }) {
               </div>
               {selectedSlotIds.length > 0 && (
                 <p className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-2">
-                  ✓ {selectedSlotIds.length} vardiya seçtin
+                  {selectedSlotIds.length} vardiya seçtin
                 </p>
               )}
             </div>
           ) : (
             <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-700">
-              ⚠ Bu ilana henüz vardiya eklenmemiş — başvuru alınamaz.
+              Bu ilana henüz vardiya eklenmemiş — başvuru alınamaz.
             </div>
           )}
 
@@ -256,7 +256,7 @@ function DetailModal({ listing, onClose, onApply }) {
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
                  style={{ background: '#047857' }}>
-              {BUSINESS_TYPE_ICONS[listing.businessType] || ''}
+              {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-bold text-slate-900 leading-tight">{listing.title}</h2>
@@ -376,7 +376,7 @@ function DetailModal({ listing, onClose, onApply }) {
           <button onClick={() => setShowReport(true)}
             title="Bu ilanı bildir"
             className="text-sm px-3 py-2.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0">
-            ⚠ Bildir
+            Bildir
           </button>
           <button onClick={onClose} className="btn-secondary flex-1 text-sm">Kapat</button>
           <button onClick={() => { onApply(listing); onClose() }}
@@ -413,7 +413,7 @@ function ListingCard({ listing, onApply, onDetail }) {
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0 shadow-sm"
                style={{ background: '#047857' }}>
-            {BUSINESS_TYPE_ICONS[listing.businessType] || ''}
+            {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
           </div>
           <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
             {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
@@ -460,7 +460,7 @@ function ListingCard({ listing, onApply, onDetail }) {
           return (
             <div className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-1">
               {slots.length} vardiya
-              {openCount === 0 && ' · ⚠ tümü dolu'}
+              {openCount === 0 && ' · tümü dolu'}
               {openCount > 0 && nextStr && ` · ${nextStr}`}
             </div>
           )
@@ -480,7 +480,7 @@ function ListingCard({ listing, onApply, onDetail }) {
             onClick={(e) => { e.stopPropagation(); onApply(listing) }}
             className="flex-1 py-2 px-3 text-sm font-semibold text-white rounded-lg
                        transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-            style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
             Başvur
           </button>
         </div>
@@ -687,7 +687,7 @@ export default function ListingsPage({ onApplicationSubmitted }) {
                     ${active
                       ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-sm'
                       : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                  <div>{s.icon} {s.label}</div>
+                  <div>{s.label}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5 font-normal">{s.time}</div>
                 </button>
               )

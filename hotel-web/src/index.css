@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,22 +10,22 @@ html, body, #root {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #f8fafc;          /* light: slate-50 */
-  color: #0f172a;               /* light: slate-900 */
+  background: #0a0f1c;          /* dark-first: ink-900 */
+  color: #f1f5f9;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s, color 0.2s;
 }
 
-:root.dark body {
-  background: #020617;          /* slate-950 */
-  color: #f1f5f9;               /* slate-100 */
+:root:not(.dark) body {
+  background: #f8fafc;
+  color: #0f172a;
 }
 
 /* ────────────────────────────────────────────────────────────────
-   AUTH PAGES (#90)
+   AUTH BG — dark-first
    ──────────────────────────────────────────────────────────────── */
 .auth-bg {
-  background: #ffffff;
+  background: #0a0f1c;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -33,24 +33,24 @@ body {
   padding: 1.5rem;
   position: relative;
 }
-:root.dark .auth-bg {
-  background: #020617;
+:root:not(.dark) .auth-bg {
+  background: #ffffff;
 }
 
 .auth-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 1rem;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 1.25rem;
   padding: 2rem;
   width: 100%;
   max-width: 440px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
   animation: slideUp 0.4s ease-out;
 }
-:root.dark .auth-card {
-  background: #0f172a;
-  border-color: #1e293b;
-  box-shadow: none;
+:root:not(.dark) .auth-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
 @keyframes slideUp {
@@ -59,80 +59,118 @@ body {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   FORM ELEMENTS — dark mode uyumlu
+   FORM ELEMENTS — dark-first
    ──────────────────────────────────────────────────────────────── */
 .input {
-  @apply w-full px-4 py-2.5 border rounded-lg text-sm transition-all duration-200
-         border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400
-         focus:bg-white focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100
-         disabled:opacity-60 disabled:cursor-not-allowed
-         dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500
-         dark:focus:bg-slate-900 dark:focus:ring-brand-900;
+  @apply w-full px-4 py-2.5 border rounded-xl text-sm transition-all duration-200
+         border-slate-700 bg-slate-900/60 text-slate-100 placeholder:text-slate-500
+         focus:bg-slate-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20
+         disabled:opacity-60 disabled:cursor-not-allowed;
+}
+:root:not(.dark) .input {
+  @apply border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400
+         focus:bg-white focus:border-brand-600 focus:ring-brand-100;
 }
 
+/* ── Pill butonlar (StoryHell tarzı, rounded-full) ── */
 .btn-primary {
-  @apply w-full py-2.5 px-4 font-semibold text-sm text-white rounded-lg
-         transition-all duration-200 active:scale-95
-         disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100;
-  background: #047857; /* brand-700 */
+  @apply w-full py-3 px-6 font-semibold text-sm text-white rounded-full
+         transition-all duration-200 active:scale-[0.97]
+         disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
+         inline-flex items-center justify-center gap-2;
+  background: linear-gradient(135deg, #047857, #10b981);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
 }
 .btn-primary:hover:not(:disabled) {
-  background: #065f46;
+  background: linear-gradient(135deg, #065f46, #047857);
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.45);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  @apply w-full py-2.5 px-4 font-medium text-sm rounded-lg border
-         transition-all duration-200 active:scale-95
-         bg-white hover:bg-slate-50 text-slate-700 border-slate-200
-         dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700;
+  @apply w-full py-3 px-6 font-medium text-sm rounded-full border
+         transition-all duration-200 active:scale-[0.97]
+         bg-slate-800/60 hover:bg-slate-800 text-slate-200 border-slate-700;
+}
+:root:not(.dark) .btn-secondary {
+  @apply bg-white hover:bg-slate-50 text-slate-700 border-slate-200;
 }
 
 .btn-sm {
-  @apply px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-150 active:scale-95;
+  @apply px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 active:scale-95;
 }
 
 .btn-danger {
-  @apply px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-150 active:scale-95
-         text-red-600 bg-red-50 hover:bg-red-100 border border-red-200
-         dark:text-red-400 dark:bg-red-950/40 dark:hover:bg-red-950/60 dark:border-red-900;
+  @apply px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 active:scale-95
+         text-red-400 bg-red-950/40 hover:bg-red-950/60 border border-red-900;
+}
+:root:not(.dark) .btn-danger {
+  @apply text-red-600 bg-red-50 hover:bg-red-100 border-red-200;
 }
 
 .label {
-  @apply block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300;
+  @apply block text-xs font-semibold uppercase tracking-wider mb-1.5 text-slate-400;
+}
+:root:not(.dark) .label {
+  @apply text-slate-600;
 }
 
 .error-text {
-  @apply text-red-500 dark:text-red-400 text-xs mt-1 flex items-center gap-1;
+  @apply text-red-400 text-xs mt-1.5 flex items-center gap-1.5;
+}
+:root:not(.dark) .error-text {
+  @apply text-red-600;
 }
 
 /* ────────────────────────────────────────────────────────────────
-   STATUS BADGES — koyu modda biraz daha doygun
+   STATUS BADGES — pill, emoji'siz, sade
    ──────────────────────────────────────────────────────────────── */
 .badge {
-  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide;
 }
-.badge-pending   { @apply bg-amber-100 text-amber-700 border border-amber-200
-                          dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900; }
-.badge-reviewing { @apply bg-blue-100 text-blue-700 border border-blue-200
-                          dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900; }
-.badge-accepted  { @apply bg-emerald-100 text-emerald-700 border border-emerald-200
-                          dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900; }
-.badge-rejected  { @apply bg-red-100 text-red-700 border border-red-200
-                          dark:bg-red-950/40 dark:text-red-300 dark:border-red-900; }
-.badge-expired   { @apply bg-slate-100 text-slate-500 border border-slate-200
-                          dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700; }
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  display: inline-block;
+}
+.badge-pending     { @apply bg-amber-950/40 text-amber-300 border border-amber-900/60; }
+.badge-pending::before     { background: #fbbf24; }
+.badge-reviewing   { @apply bg-blue-950/40 text-blue-300 border border-blue-900/60; }
+.badge-reviewing::before   { background: #60a5fa; }
+.badge-accepted    { @apply bg-emerald-950/40 text-emerald-300 border border-emerald-900/60; }
+.badge-accepted::before    { background: #34d399; }
+.badge-rejected    { @apply bg-red-950/40 text-red-300 border border-red-900/60; }
+.badge-rejected::before    { background: #f87171; }
+.badge-expired     { @apply bg-slate-800 text-slate-400 border border-slate-700; }
+.badge-expired::before     { background: #94a3b8; }
+
+:root:not(.dark) .badge-pending     { @apply bg-amber-50 text-amber-700 border-amber-200; }
+:root:not(.dark) .badge-reviewing   { @apply bg-blue-50 text-blue-700 border-blue-200; }
+:root:not(.dark) .badge-accepted    { @apply bg-emerald-50 text-emerald-700 border-emerald-200; }
+:root:not(.dark) .badge-rejected    { @apply bg-red-50 text-red-700 border-red-200; }
+:root:not(.dark) .badge-expired     { @apply bg-slate-100 text-slate-500 border-slate-200; }
 
 /* ────────────────────────────────────────────────────────────────
-   CARDS
+   CARDS — dark-first, rounded-2xl, hover glow
    ──────────────────────────────────────────────────────────────── */
 .card {
-  @apply bg-white rounded-xl border border-slate-200 shadow-sm transition-colors duration-200
-         dark:bg-slate-900 dark:border-slate-800;
+  @apply rounded-2xl border transition-all duration-200
+         bg-slate-900 border-slate-800;
+}
+.card:hover {
+  border-color: rgba(16, 185, 129, 0.25);
+}
+:root:not(.dark) .card {
+  @apply bg-white border-slate-200 shadow-sm;
 }
 
 .card-header {
-  @apply px-6 py-4 border-b flex items-center justify-between
-         border-slate-100 dark:border-slate-800;
+  @apply px-6 py-4 border-b flex items-center justify-between border-slate-800;
+}
+:root:not(.dark) .card-header {
+  @apply border-slate-100;
 }
 
 .card-body {
@@ -140,16 +178,25 @@ body {
 }
 
 .stat-card {
-  @apply bg-white rounded-xl p-5 border border-slate-200 shadow-sm transition-colors duration-200
-         dark:bg-slate-900 dark:border-slate-800;
+  @apply rounded-2xl p-5 border transition-all duration-200
+         bg-slate-900 border-slate-800;
+}
+.stat-card:hover {
+  border-color: rgba(16, 185, 129, 0.30);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
+}
+:root:not(.dark) .stat-card {
+  @apply bg-white border-slate-200 shadow-sm;
 }
 
 /* ────────────────────────────────────────────────────────────────
-   TABLES
+   TABLES — dark-first
    ──────────────────────────────────────────────────────────────── */
 .table-container {
-  @apply overflow-x-auto rounded-xl border shadow-sm
-         border-slate-200 dark:border-slate-800;
+  @apply overflow-x-auto rounded-2xl border border-slate-800;
+}
+:root:not(.dark) .table-container {
+  @apply border-slate-200 shadow-sm;
 }
 
 .table {
@@ -158,21 +205,31 @@ body {
 
 .table th {
   @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider border-b
-         bg-slate-50 text-slate-500 border-slate-200
-         dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800;
+         bg-slate-900 text-slate-400 border-slate-800;
+}
+:root:not(.dark) .table th {
+  @apply bg-slate-50 text-slate-500 border-slate-200;
 }
 
 .table td {
-  @apply px-4 py-3.5 border-b text-slate-700 border-slate-100
-         dark:text-slate-300 dark:border-slate-800;
+  @apply px-4 py-3.5 border-b text-slate-300 border-slate-800;
+}
+:root:not(.dark) .table td {
+  @apply text-slate-700 border-slate-100;
 }
 
 .table tbody tr {
-  @apply bg-white dark:bg-slate-950;
+  @apply bg-slate-950;
+}
+:root:not(.dark) .table tbody tr {
+  @apply bg-white;
 }
 
 .table tbody tr:hover {
-  @apply bg-slate-50 dark:bg-slate-900;
+  @apply bg-slate-900;
+}
+:root:not(.dark) .table tbody tr:hover {
+  @apply bg-slate-50;
 }
 
 .table tbody tr:last-child td {
@@ -180,20 +237,27 @@ body {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   SIDEBAR — şu an zaten koyu (slate-900); light modda da koyu kalır
-   (kullanıcı isteği: dashboard koyu kalsın, sadece dış sayfalar beyaz olsun
-    artık dashboard'ları da dönüştürüyoruz — sidebar uyumlu yeşil aksan)
+   SIDEBAR NAV-LINK — pill stili
    ──────────────────────────────────────────────────────────────── */
 .nav-link {
-  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer
+  @apply flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-medium cursor-pointer
          transition-all duration-150
-         text-slate-600 hover:text-slate-900 hover:bg-slate-100
-         dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800;
+         text-slate-400 hover:text-white hover:bg-slate-800;
+}
+:root:not(.dark) .nav-link {
+  @apply text-slate-600 hover:text-slate-900 hover:bg-slate-100;
 }
 
 .nav-link.active {
-  @apply text-brand-700 bg-brand-50 font-semibold
-         dark:text-brand-300 dark:bg-brand-900/30;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.08));
+  color: #34d399;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.25);
+}
+:root:not(.dark) .nav-link.active {
+  background: linear-gradient(135deg, rgba(4, 120, 87, 0.10), rgba(4, 120, 87, 0.04));
+  color: #047857;
+  box-shadow: inset 0 0 0 1px rgba(4, 120, 87, 0.20);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -216,15 +280,15 @@ body {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   MODAL
+   MODAL — dark-first
    ──────────────────────────────────────────────────────────────── */
 .modal-overlay {
-  @apply fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4;
-  background: rgba(15, 23, 42, 0.5);   /* slate-900/50 */
+  @apply fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4;
+  background: rgba(2, 6, 23, 0.75);
   animation: fadeInOverlay 0.2s ease-out;
 }
-:root.dark .modal-overlay {
-  background: rgba(0, 0, 0, 0.65);
+:root:not(.dark) .modal-overlay {
+  background: rgba(15, 23, 42, 0.5);
 }
 
 @keyframes fadeInOverlay {
@@ -234,8 +298,13 @@ body {
 
 .modal-content {
   @apply rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto
-         bg-white text-slate-800
-         dark:bg-slate-900 dark:text-slate-100 dark:border dark:border-slate-800;
+         bg-slate-900 text-slate-100 border border-slate-800;
+}
+:root:not(.dark) .modal-content {
+  @apply bg-white text-slate-800 border-0;
+}
+
+.modal-content {
   animation: slideUpModal 0.25s ease-out;
 }
 
@@ -245,19 +314,15 @@ body {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   SPINNER
+   SPINNER — neon
    ──────────────────────────────────────────────────────────────── */
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(4, 120, 87, 0.15);
-  border-top-color: #047857;
+  border: 3px solid rgba(16, 185, 129, 0.15);
+  border-top-color: #10b981;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-}
-:root.dark .spinner {
-  border-color: rgba(110, 231, 183, 0.15);
-  border-top-color: #34d399;
 }
 
 @keyframes spin {
@@ -265,11 +330,20 @@ body {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   SCROLLBAR
+   SCROLLBAR — dark-first
    ──────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-:root.dark ::-webkit-scrollbar-thumb { background: #334155; }
-:root.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+:root:not(.dark) ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+:root:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ────────────────────────────────────────────────────────────────
+   NEON TOP STRIP (Wordplay tarzı yeşil hat)
+   ──────────────────────────────────────────────────────────────── */
+.neon-strip {
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #10b981 30%, #34d399 50%, #10b981 70%, transparent 100%);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+}

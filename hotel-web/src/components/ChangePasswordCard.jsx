@@ -76,10 +76,10 @@ export default function ChangePasswordCard() {
             placeholder="Yeni şifreyi tekrar girin"
             autoComplete="new-password" />
           {confirmPassword && newPassword !== confirmPassword && (
-            <p className="text-xs text-red-600 mt-1">⚠ Şifreler eşleşmiyor</p>
+            <p className="text-xs text-red-600 mt-1">Şifreler eşleşmiyor</p>
           )}
           {confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 && (
-            <p className="text-xs text-emerald-600 mt-1">✓ Şifreler eşleşiyor</p>
+            <p className="text-xs text-emerald-600 mt-1">Şifreler eşleşiyor</p>
           )}
         </div>
 

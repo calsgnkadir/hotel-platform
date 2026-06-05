@@ -98,7 +98,7 @@ function StatusBadge({ status }) {
     WITHDRAWN: { cls: 'badge-expired',   icon: '', label: 'Aday İptal Etti' },
   }
   const s = map[status] || { cls: 'badge-pending', icon: '?', label: status }
-  return <span className={`badge ${s.cls}`}>{s.icon} {s.label}</span>
+  return <span className={`badge ${s.cls}`}>{s.label}</span>
 }
 
 /* ── No-show Badge ── */

@@ -5,11 +5,11 @@ const ThemeContext = createContext({ theme: 'light', toggle: () => {} })
 const STORAGE_KEY = 'ajanshotel-theme'
 
 function getInitialTheme() {
-  if (typeof window === 'undefined') return 'light'
+  if (typeof window === 'undefined') return 'dark'
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved === 'light' || saved === 'dark') return saved
-  // İlk ziyarette tarayıcı tercihine bak
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  // Hibrit tasarım: default dark (Wordplay/StoryHell tarzı)
+  return 'dark'
 }
 
 export function ThemeProvider({ children }) {

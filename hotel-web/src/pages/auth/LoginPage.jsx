@@ -25,110 +25,150 @@ export default function LoginPage() {
       } else if (result.role === 'ADMIN') {
         navigate('/admin', { replace: true })
       }
-      toast.success(`Hoş geldiniz, ${result.fullName}!`)
+      toast.success(`Hoş geldin, ${result.fullName}!`)
     } catch (err) {
       toast.error(extractErrorMessage(err))
     }
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-ink-900 text-slate-100 flex flex-col relative overflow-hidden">
+      {/* Neon üst hat */}
+      <div className="neon-strip" />
+
+      {/* Arka plan spotlight */}
+      <div aria-hidden className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[60%] h-96 rounded-full bg-brand-600/15 blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-emerald-500/10 blur-[100px]" />
+      </div>
+
       {/* Üst bar */}
-      <header className="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+      <header className="relative px-6 py-4 flex items-center justify-between border-b border-slate-800/60">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-brand-700 flex items-center justify-center">
-            <span className="text-white text-sm font-bold">A</span>
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-glow-sm">
+            <span className="text-white text-sm font-black">A</span>
           </div>
-          <span className="font-semibold text-sm">AjansHotel</span>
+          <span className="font-bold text-sm tracking-tight">AjansHotel</span>
         </Link>
         <ThemeToggle />
       </header>
 
       {/* İçerik */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-sm">
-          <div className="mb-7">
-            <h1 className="text-2xl font-bold tracking-tight">Hoş geldin</h1>
-            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1.5">
-              Aday veya işletme hesabınla giriş yap.
+      <main className="relative flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-full px-3 py-1 mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow-pulse" />
+              <span className="text-[11px] uppercase tracking-widest text-slate-300">Hoş Geldin</span>
+            </div>
+            <h1 className="text-3xl font-black tracking-tight uppercase">
+              <span className="block">Hesabına</span>
+              <span className="block bg-gradient-to-r from-emerald-300 to-brand-500 bg-clip-text text-transparent">Giriş Yap</span>
+            </h1>
+            <p className="text-[13px] text-slate-400 mt-3">
+              Aday veya işletme hesabınla devam et.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label className="block text-[12px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                E-posta
-              </label>
-              <input
-                type="email"
-                className="w-full px-3.5 py-2.5 text-[13px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 transition-all"
-                placeholder="ornek@email.com"
-                {...register('email', {
-                  required: 'E-posta zorunlu',
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Geçerli bir e-posta girin' },
-                })}
-              />
-              {errors.email && <p className="text-[11px] text-red-500 mt-1">⚠ {errors.email.message}</p>}
-            </div>
+          <div className="auth-card">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <label className="label">E-posta</label>
+                <input
+                  type="email"
+                  className="input"
+                  placeholder="ornek@email.com"
+                  {...register('email', {
+                    required: 'E-posta zorunlu',
+                    pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Geçerli bir e-posta girin' },
+                  })}
+                />
+                {errors.email && (
+                  <p className="error-text">
+                    <WarningIcon />
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-[12px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                Şifre
-              </label>
-              <input
-                type="password"
-                className="w-full px-3.5 py-2.5 text-[13px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900 transition-all"
-                placeholder="••••••••"
-                {...register('password', {
-                  required: 'Şifre zorunlu',
-                  minLength: { value: 8, message: 'En az 8 karakter' },
-                })}
-              />
-              {errors.password && <p className="text-[11px] text-red-500 mt-1">⚠ {errors.password.message}</p>}
-            </div>
+              <div>
+                <label className="label">Şifre</label>
+                <input
+                  type="password"
+                  className="input"
+                  placeholder="••••••••"
+                  {...register('password', {
+                    required: 'Şifre zorunlu',
+                    minLength: { value: 8, message: 'En az 8 karakter' },
+                  })}
+                />
+                {errors.password && (
+                  <p className="error-text">
+                    <WarningIcon />
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
 
-            <button type="submit" disabled={isSubmitting}
-              className="w-full mt-2 px-4 py-2.5 rounded-lg bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm flex items-center justify-center gap-2">
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                  </svg>
-                  Giriş yapılıyor...
-                </>
-              ) : (
-                <>
-                  Giriş Yap
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       strokeWidth={2.2} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                  </svg>
-                </>
-              )}
-            </button>
-          </form>
+              <button type="submit" disabled={isSubmitting} className="btn-primary mt-2">
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                    </svg>
+                    Giriş yapılıyor...
+                  </>
+                ) : (
+                  <>
+                    Giriş Yap
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </form>
 
-          <p className="text-[12px] text-center text-slate-500 dark:text-slate-400 mt-7">
-            Hesabın yok mu?{' '}
-            <Link to="/register" className="font-semibold text-brand-700 dark:text-brand-400 hover:underline">
-              Ücretsiz kayıt ol
-            </Link>
-          </p>
+            <p className="text-[12px] text-center text-slate-400 mt-6">
+              Hesabın yok mu?{' '}
+              <Link to="/register" className="font-bold text-brand-400 hover:text-brand-300 transition-colors">
+                Ücretsiz kayıt ol
+              </Link>
+            </p>
+          </div>
 
           {/* Demo bilgisi */}
-          <div className="mt-8 border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-900">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-400 mb-2">
+          <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-3">
               Demo Hesaplar
             </p>
-            <div className="space-y-1.5 text-[11px] font-mono text-slate-600 dark:text-slate-400">
-              <div>Aday:     <code className="text-slate-800 dark:text-slate-200">demo-aday1@test.com</code></div>
-              <div>İşletme:  <code className="text-slate-800 dark:text-slate-200">demo-isletme1@test.com</code></div>
-              <div>Şifre:    <code className="text-slate-800 dark:text-slate-200">Demo1234!</code></div>
+            <div className="space-y-2 text-[12px] font-mono text-slate-400">
+              <DemoRow k="Aday"     v="demo-aday1@test.com" />
+              <DemoRow k="İşletme"  v="demo-isletme1@test.com" />
+              <DemoRow k="Şifre"    v="Demo1234!" />
             </div>
           </div>
         </div>
       </main>
     </div>
+  )
+}
+
+function DemoRow({ k, v }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="text-slate-500 uppercase tracking-wider text-[10px]">{k}</span>
+      <code className="text-slate-200">{v}</code>
+    </div>
+  )
+}
+
+function WarningIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" className="w-3.5 h-3.5">
+      <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+    </svg>
   )
 }

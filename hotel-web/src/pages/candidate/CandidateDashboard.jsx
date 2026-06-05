@@ -53,7 +53,7 @@ function StatusBadge({ status }) {
     WITHDRAWN: { cls: 'badge-expired',   icon: '', label: 'İptal Edildi' },
   }
   const s = map[status] || { cls: 'badge-pending', icon: '?', label: status }
-  return <span className={`badge ${s.cls}`}>{s.icon} {s.label}</span>
+  return <span className={`badge ${s.cls}`}>{s.label}</span>
 }
 
 // Aday başvuru status filtre seçenekleri
@@ -171,9 +171,9 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
         <div key={app.id} className="card">
           <div className="p-4 flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0"
-                   style={{ background: '#047857' }}>
-                </div>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-black flex-shrink-0 bg-gradient-to-br from-brand-500 to-brand-700 shadow-glow-sm">
+                {(app.listing?.businessName || '?').charAt(0).toUpperCase()}
+              </div>
               <div>
                 <div className="font-semibold text-slate-800 dark:text-slate-100">{app.listing?.title}</div>
                 <div className="text-xs text-slate-500 mt-0.5">{app.listing?.businessName}</div>
@@ -254,7 +254,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                         <>
                           {!hasUploaded && (
                             <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5 mt-2">
-                              ⚠ Bu belgeyi henüz yüklemedin. <b>Belgelerim</b> sekmesinden yükledikten sonra izin verebilirsin.
+                              Bu belgeyi henüz yüklemedin. <b>Belgelerim</b> sekmesinden yükledikten sonra izin verebilirsin.
                             </div>
                           )}
                           <div className="flex gap-2 mt-2">
@@ -404,9 +404,9 @@ function HistoryTab({ applications, onOpenMessages }) {
             <div key={app.id} className="card">
               <div className="p-4 flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0"
-                       style={{ background: '#047857' }}>
-                    </div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-black flex-shrink-0 bg-gradient-to-br from-brand-500 to-brand-700 shadow-glow-sm">
+                    {(app.listing?.businessName || '?').charAt(0).toUpperCase()}
+                  </div>
                   <div className="min-w-0">
                     <div className="font-semibold text-slate-800 dark:text-slate-100 truncate">{app.listing?.title}</div>
                     <div className="text-xs text-slate-500 mt-0.5">{app.listing?.businessName}</div>
@@ -420,7 +420,7 @@ function HistoryTab({ applications, onOpenMessages }) {
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
                   {app.candidateReviewedBusiness ? (
                     <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">
-                      ✓ Puanladın
+                      Puanladın
                     </span>
                   ) : (
                     <button onClick={() => setReviewTarget({
