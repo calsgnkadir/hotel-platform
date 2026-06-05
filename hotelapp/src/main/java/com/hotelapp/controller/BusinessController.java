@@ -131,4 +131,29 @@ public class BusinessController {
         businessService.deleteGalleryPhoto(currentUser.getId(), photoId);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(
+            summary = "Galeri sıralamasını değiştir — sadece BUSINESS_OWNER",
+            description = "Body: foto id'lerinin yeni sırasıyla dizi."
+    )
+    @PutMapping("/api/business/photos/order")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<List<PhotoDto>> reorderGallery(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody List<Long> orderedPhotoIds) {
+        return ResponseEntity.ok(
+                businessService.reorderGallery(currentUser.getId(), orderedPhotoIds));
+    }
+
+    @Operation(summary = "Kapak fotoğrafı belirle — sadece BUSINESS_OWNER (sahibi)")
+    @PutMapping("/api/business/photos/{photoId}/cover")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<PhotoDto> setCoverPhoto(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long photoId) {
+        return ResponseEntity.ok(
+                businessService.setCoverPhoto(currentUser.getId(), photoId));
+    }
 }

@@ -123,9 +123,10 @@ public class BusinessService {
 
     @Transactional(readOnly = true)
     public List<PhotoDto> getGalleryPhotosForBusiness(Long businessId) {
-        return businessPhotoRepository.findAllByBusinessIdOrderByCreatedAtDesc(businessId)
+        return businessPhotoRepository
+                .findAllByBusinessIdOrderByDisplayOrderAscCreatedAtAsc(businessId)
                 .stream()
-                .map(p -> new PhotoDto(p.getId(), fileStorageService.publicUrl(p.getFilePath())))
+                .map(this::toPhotoDto)
                 .toList();
     }
 
@@ -134,19 +135,23 @@ public class BusinessService {
         Business business = businessRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("İşletme profili", ownerId));
 
-        long currentCount = businessPhotoRepository
-                .findAllByBusinessIdOrderByCreatedAtDesc(business.getId()).size();
+        long currentCount = businessPhotoRepository.countByBusinessId(business.getId());
         if (currentCount >= MAX_GALLERY_PHOTOS) {
             throw new BusinessRuleException("Galeri en fazla " + MAX_GALLERY_PHOTOS + " foto tutabilir");
         }
+
+        // Sıralama: yeni foto sona eklenir
+        int nextOrder = businessPhotoRepository.findMaxDisplayOrder(business.getId()) + 1;
 
         String path = fileStorageService.storeBusinessImage(file, business.getId(), "gallery");
         BusinessPhoto photo = BusinessPhoto.builder()
                 .business(business)
                 .filePath(path)
+                .displayOrder(nextOrder)
+                .isCover(currentCount == 0)  // İlk foto otomatik kapak
                 .build();
         businessPhotoRepository.save(photo);
-        return new PhotoDto(photo.getId(), fileStorageService.publicUrl(photo.getFilePath()));
+        return toPhotoDto(photo);
     }
 
     @Transactional
@@ -158,8 +163,81 @@ public class BusinessService {
             throw new UnauthorizedException("Bu foto size ait değil");
         }
 
+        boolean wasCover = Boolean.TRUE.equals(photo.getIsCover());
+        Long businessId = photo.getBusiness().getId();
+
         fileStorageService.delete(photo.getFilePath());
         businessPhotoRepository.delete(photo);
+
+        // Kapağı sildiysek bir sonraki fotoyu kapak yap
+        if (wasCover) {
+            businessPhotoRepository
+                    .findAllByBusinessIdOrderByDisplayOrderAscCreatedAtAsc(businessId)
+                    .stream().findFirst()
+                    .ifPresent(p -> {
+                        p.setIsCover(true);
+                        businessPhotoRepository.save(p);
+                    });
+        }
+    }
+
+    /** #86: Galeri sıralamasını güncelle (drag-drop sonrası). */
+    @Transactional
+    public List<PhotoDto> reorderGallery(Long ownerId, List<Long> orderedPhotoIds) {
+        Business business = businessRepository.findByOwnerId(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("İşletme profili", ownerId));
+
+        if (orderedPhotoIds == null || orderedPhotoIds.isEmpty()) {
+            throw new BusinessRuleException("Sıralama listesi boş olamaz");
+        }
+
+        // Tüm foto'lar gerçekten bu işletmeye mi ait?
+        List<BusinessPhoto> photos = businessPhotoRepository.findAllById(orderedPhotoIds);
+        for (BusinessPhoto p : photos) {
+            if (!p.getBusiness().getId().equals(business.getId())) {
+                throw new UnauthorizedException("Bu fotoğraflardan biri size ait değil");
+            }
+        }
+        if (photos.size() != orderedPhotoIds.size()) {
+            throw new BusinessRuleException("Geçersiz foto id'si var");
+        }
+
+        // İndeksleri ID -> Photo map'iyle hızlı uygula
+        java.util.Map<Long, BusinessPhoto> byId = new java.util.HashMap<>();
+        for (BusinessPhoto p : photos) byId.put(p.getId(), p);
+
+        for (int i = 0; i < orderedPhotoIds.size(); i++) {
+            BusinessPhoto p = byId.get(orderedPhotoIds.get(i));
+            p.setDisplayOrder(i);
+        }
+        businessPhotoRepository.saveAll(photos);
+
+        return getMyGalleryPhotos(ownerId);
+    }
+
+    /** #86: Kapak fotoğrafı ayarla (önce tümünü unset, sonra hedefi set). */
+    @Transactional
+    public PhotoDto setCoverPhoto(Long ownerId, Long photoId) {
+        BusinessPhoto photo = businessPhotoRepository.findById(photoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Foto", photoId));
+
+        if (!photo.getBusiness().getOwner().getId().equals(ownerId)) {
+            throw new UnauthorizedException("Bu foto size ait değil");
+        }
+
+        businessPhotoRepository.clearCoverForBusiness(photo.getBusiness().getId());
+        photo.setIsCover(true);
+        businessPhotoRepository.save(photo);
+        return toPhotoDto(photo);
+    }
+
+    private PhotoDto toPhotoDto(BusinessPhoto p) {
+        return PhotoDto.builder()
+                .id(p.getId())
+                .url(fileStorageService.publicUrl(p.getFilePath()))
+                .displayOrder(p.getDisplayOrder())
+                .isCover(Boolean.TRUE.equals(p.getIsCover()))
+                .build();
     }
 
     // ================================================================
@@ -210,6 +288,10 @@ public class BusinessService {
                 .logoUrl(b.getLogoPath() != null
                         ? fileStorageService.publicUrl(b.getLogoPath())
                         : null)
+                .coverPhotoUrl(businessPhotoRepository
+                        .findByBusinessIdAndIsCoverTrue(b.getId())
+                        .map(p -> fileStorageService.publicUrl(p.getFilePath()))
+                        .orElse(null))
                 .averageRating(rating.getAverageRating())
                 .reviewCount(rating.getReviewCount())
                 .build();
@@ -235,6 +317,8 @@ public class BusinessService {
         private String facebook;
         private String workingHours;
         private String logoUrl;
+        /** #86: Kapak fotoğrafı URL'i — kartlarda preview için. */
+        private String coverPhotoUrl;
         // R3
         private Double averageRating;  // null = yorum yok
         private Long reviewCount;
@@ -260,5 +344,15 @@ public class BusinessService {
         private String workingHours;
     }
 
-    public record PhotoDto(Long id, String url) {}
+    /** #86: Genişletilmiş — displayOrder + isCover bilgileri. */
+    @Data
+    @lombok.AllArgsConstructor
+    @lombok.NoArgsConstructor
+    @Builder
+    public static class PhotoDto {
+        private Long id;
+        private String url;
+        private Integer displayOrder;
+        private Boolean isCover;
+    }
 }

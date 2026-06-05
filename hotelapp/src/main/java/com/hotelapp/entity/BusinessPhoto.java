@@ -29,10 +29,22 @@ public class BusinessPhoto {
     @Column(nullable = false)
     private String filePath;
 
+    /** Galeri sıralama indeksi — küçükten büyüğe gösterilir. */
+    @Column(name = "display_order", nullable = false)
+    @Builder.Default
+    private Integer displayOrder = 0;
+
+    /** Kapak fotoğrafı mı? Her işletmede en fazla 1 tane true olur. */
+    @Column(name = "is_cover", nullable = false)
+    @Builder.Default
+    private Boolean isCover = false;
+
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        if (displayOrder == null) displayOrder = 0;
+        if (isCover == null)      isCover = false;
     }
 }
