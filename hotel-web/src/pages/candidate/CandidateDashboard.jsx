@@ -293,6 +293,178 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
   )
 }
 
+/* ── History Tab (#78) — Çalışması tamamlanmış başvurular ── */
+
+/** İki LocalTime (HH:mm:ss veya HH:mm) arası süre saat cinsinden. */
+function shiftHours(startTime, endTime) {
+  if (!startTime || !endTime) return 0
+  const [sh, sm] = startTime.split(':').map(Number)
+  const [eh, em] = endTime.split(':').map(Number)
+  let mins = (eh * 60 + em) - (sh * 60 + sm)
+  if (mins < 0) mins += 24 * 60  // gece vardiyası (örn 22:00-06:00)
+  return mins / 60
+}
+
+/** Bir başvurudaki toplam çalışılan saat (slotsNeeded'a değil tek aday'a göre). */
+function totalHoursForApplication(app) {
+  return (app.requestedSlots || []).reduce(
+    (sum, s) => sum + shiftHours(s.startTime, s.endTime), 0)
+}
+
+function HistoryTab({ applications, onOpenMessages }) {
+  const [reviewTarget, setReviewTarget] = useState(null)
+
+  // Sadece kabul edilmiş + çalışma tamamlanmış başvurular
+  const completed = applications
+    .filter(a => a.status === 'ACCEPTED' && a.workCompleted)
+    .sort((a, b) => {
+      const ad = (a.requestedSlots?.[0]?.date) || a.createdAt
+      const bd = (b.requestedSlots?.[0]?.date) || b.createdAt
+      return (bd || '').localeCompare(ad || '')
+    })
+
+  const totalHours = completed.reduce((s, a) => s + totalHoursForApplication(a), 0)
+  const uniqueBusinesses = new Set(completed.map(a => a.listing?.businessId)).size
+  const reviewedCount = completed.filter(a => a.candidateReviewedBusiness).length
+
+  if (completed.length === 0) {
+    return (
+      <div className="card">
+        <div className="empty-state py-16">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-slate-300 mb-3">
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+          <p className="font-medium text-slate-700">Henüz tamamlanmış işin yok</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Kabul edilmiş bir başvurun olup vardiya günü geçtiğinde burada görünür
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Özet stat kartları */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="stat-card">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 strokeWidth={1.8} stroke="white" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{totalHours.toFixed(0)}<span className="text-base">sa</span></div>
+          <div className="text-xs text-slate-500 mt-0.5">Toplam Çalışma</div>
+        </div>
+        <div className="stat-card">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 strokeWidth={1.8} stroke="white" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+            </svg>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{uniqueBusinesses}</div>
+          <div className="text-xs text-slate-500 mt-0.5">Farklı İşletme</div>
+        </div>
+        <div className="stat-card">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 strokeWidth={1.8} stroke="white" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+            </svg>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{reviewedCount}<span className="text-base text-slate-400">/{completed.length}</span></div>
+          <div className="text-xs text-slate-500 mt-0.5">Verilen Puan</div>
+        </div>
+      </div>
+
+      {/* Çalışma listesi */}
+      <div className="space-y-3">
+        {completed.map(app => {
+          const hours = totalHoursForApplication(app)
+          const slotDates = (app.requestedSlots || [])
+            .map(s => s.date)
+            .filter(Boolean)
+            .sort()
+          const firstDate = slotDates[0]
+          const lastDate = slotDates[slotDates.length - 1]
+          const dateLabel = !firstDate
+            ? '—'
+            : firstDate === lastDate
+              ? new Date(firstDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
+              : `${new Date(firstDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} → ${new Date(lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}`
+
+          return (
+            <div key={app.id} className="card">
+              <div className="p-4 flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0"
+                       style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                    🏨
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-slate-800 truncate">{app.listing?.title}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{app.listing?.businessName}</div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
+                      <span className="text-slate-600">📅 {dateLabel}</span>
+                      <span className="text-slate-600">⏱️ {hours.toFixed(1)} saat</span>
+                      <span className="text-slate-600">{POSITION_LABELS[app.listing?.position] || app.listing?.position}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                  {app.candidateReviewedBusiness ? (
+                    <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">
+                      ✓ Puanladın
+                    </span>
+                  ) : (
+                    <button onClick={() => setReviewTarget({
+                        id: app.id,
+                        title: app.listing?.businessName || 'İşletme',
+                      })}
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
+                      ⭐ Puanla
+                    </button>
+                  )}
+                  {app.listing?.businessOwnerId && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          await hotelApi.startConversation({
+                            otherPartyId: app.listing.businessOwnerId,
+                            applicationId: app.id,
+                          })
+                          onOpenMessages?.()
+                        } catch (err) { toast.error(extractErrorMessage(err)) }
+                      }}
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors font-medium">
+                      💬 Mesaj
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {reviewTarget && (
+        <ReviewModal
+          applicationId={reviewTarget.id}
+          title={reviewTarget.title}
+          onClose={() => setReviewTarget(null)}
+          onSuccess={() => setReviewTarget(null)} />
+      )}
+    </div>
+  )
+}
+
 /* ── Documents Tab ── */
 function DocumentsTab() {
   const [documents, setDocuments] = useState([])
@@ -889,6 +1061,7 @@ export default function CandidateDashboard() {
           {activeTab === 'overview'      && <OverviewTab user={user} applications={applications} onTabChange={setActiveTab} />}
           {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={fetchApplications} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={fetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
+          {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'documents'     && <DocumentsTab />}
           {activeTab === 'profile'       && <ProfileTab />}

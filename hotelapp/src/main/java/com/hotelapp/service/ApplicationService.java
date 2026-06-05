@@ -503,6 +503,7 @@ public class ApplicationService {
                 .note(app.getNote())
                 .noShow(app.isNoShow())
                 .workCompleted(reviewService.isWorkCompleted(app))
+                .candidateReviewedBusiness(reviewService.hasCandidateReviewedBusiness(app.getId()))
                 .candidate(buildCandidateSummary(app.getCandidate()))
                 .listing(ApplicationResponse.ListingSummary.builder()
                         .id(listing.getId())

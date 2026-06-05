@@ -23,6 +23,8 @@ public class ApplicationResponse {
     private boolean noShow;
     /** R5: tüm vardiyalar geçmişte mi (puanlanabilir mi) */
     private boolean workCompleted;
+    /** #78: Aday bu başvuru için işletmeye puan verdi mi? */
+    private boolean candidateReviewedBusiness;
 
     private CandidateSummary candidate;
     private ListingSummary listing;

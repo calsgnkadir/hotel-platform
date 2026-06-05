@@ -90,6 +90,11 @@ public class ReviewService {
                 .orElse(true);
     }
 
+    /** #78: Aday bu başvuru için işletmeye puan verdi mi? */
+    public boolean hasCandidateReviewedBusiness(Long applicationId) {
+        return reviewRepository.findByApplicationIdAndByRole(applicationId, "CANDIDATE").isPresent();
+    }
+
     // ----------------------------------------------------------------
     // Listeleme — işletme/aday için aldığı yorumlar
     // ----------------------------------------------------------------
