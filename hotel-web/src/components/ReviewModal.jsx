@@ -35,7 +35,7 @@ export default function ReviewModal({ applicationId, title, onClose, onSuccess }
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
         <div className="p-6 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-900">⭐ Puanla</h2>
+          <h2 className="text-lg font-bold text-slate-900">Puanla</h2>
           {title && <p className="text-sm text-slate-500 mt-0.5 truncate">{title}</p>}
         </div>
 

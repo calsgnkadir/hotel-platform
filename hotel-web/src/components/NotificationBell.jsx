@@ -1,19 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import * as hotelApi from '../api/hotel'
 
-const TYPE_ICON = {
-  APPLICATION_ACCEPTED:  '✅',
-  APPLICATION_REJECTED:  '❌',
-  DOCUMENT_REQUEST:      '📄',
-  NO_SHOW_MARKED:        '⛔',
-  AUTO_BANNED:           '🚫',
-  NEW_APPLICATION:       '📋',
-  APPLICATION_WITHDRAWN: '↩️',
-  DOCUMENT_GRANTED:      '🔓',
-  DOCUMENT_DENIED:       '🔒',
-  MATCHING_LISTING:      '🎯',
-  NEW_MESSAGE:           '💬',
-  GENERIC:               '🔔',
+// Her bildirim tipi için sol kenarda küçük renkli "dot" — emoji yerine sade gösterim
+const TYPE_COLOR = {
+  APPLICATION_ACCEPTED:  'bg-emerald-500',
+  APPLICATION_REJECTED:  'bg-red-500',
+  DOCUMENT_REQUEST:      'bg-blue-500',
+  NO_SHOW_MARKED:        'bg-orange-500',
+  AUTO_BANNED:           'bg-red-600',
+  NEW_APPLICATION:       'bg-brand-600',
+  APPLICATION_WITHDRAWN: 'bg-slate-400',
+  DOCUMENT_GRANTED:      'bg-emerald-500',
+  DOCUMENT_DENIED:       'bg-red-500',
+  MATCHING_LISTING:      'bg-brand-600',
+  NEW_MESSAGE:           'bg-blue-500',
+  GENERIC:               'bg-slate-500',
 }
 
 function timeAgo(dateStr) {
@@ -70,7 +71,6 @@ export default function NotificationBell({ onNavigate }) {
       try {
         const data = await hotelApi.getNotifications(20)
         setItems(data)
-        // Sayacı da tazele (30sn poll'u bekleme)
         fetchUnread()
       } catch { /* sessiz */ }
       finally { setLoading(false) }
@@ -137,17 +137,17 @@ export default function NotificationBell({ onNavigate }) {
               <div className="py-10 flex justify-center"><div className="spinner" /></div>
             ) : items.length === 0 ? (
               <div className="py-10 text-center text-slate-400 dark:text-slate-500 text-sm">
-                <div className="text-3xl mb-2">📭</div>
                 Henüz bildirim yok
               </div>
             ) : (
               items.map(n => (
                 <button key={n.id} onClick={() => handleItemClick(n)}
-                  className={`w-full text-left px-4 py-3 border-b transition-colors flex gap-3
+                  className={`w-full text-left px-4 py-3 border-b transition-colors flex gap-3 items-start
                               border-slate-50 hover:bg-slate-50
                               dark:border-slate-800 dark:hover:bg-slate-800
                               ${!n.isRead ? 'bg-brand-50/40 dark:bg-brand-900/20' : ''}`}>
-                  <span className="text-lg flex-shrink-0">{TYPE_ICON[n.type] || '🔔'}</span>
+                  {/* Sol: tip renkli küçük dot */}
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${TYPE_COLOR[n.type] || 'bg-slate-400'}`} />
                   <div className="min-w-0 flex-1">
                     <div className={`text-sm ${!n.isRead ? 'font-semibold text-slate-800 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'}`}>
                       {n.title}

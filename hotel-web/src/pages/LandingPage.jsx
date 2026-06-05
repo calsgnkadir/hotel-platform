@@ -37,7 +37,24 @@ export default function LandingPage() {
       </header>
 
       {/* ───── Hero ───── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+      <section className="relative overflow-hidden">
+        {/* Arka plan: spotlight + blob (Perdeno tarzı) */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[80%] h-[600px] rounded-full
+                          bg-brand-200/50 dark:bg-brand-700/20 blur-[120px]" />
+          <div className="absolute top-[20%] left-[10%] w-72 h-72 rounded-full
+                          bg-emerald-200/40 dark:bg-emerald-600/10 blur-[80px]" />
+          <div className="absolute top-[35%] right-[10%] w-80 h-80 rounded-full
+                          bg-brand-300/40 dark:bg-brand-600/15 blur-[100px]" />
+          {/* İnce grid deseni (subtle) */}
+          <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
+               style={{
+                 backgroundImage: 'linear-gradient(to right, #047857 1px, transparent 1px), linear-gradient(to bottom, #047857 1px, transparent 1px)',
+                 backgroundSize: '50px 50px'
+               }} />
+        </div>
+
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="animate-fade-up">
             <div className="flex flex-wrap items-center gap-2 mb-5">
@@ -48,9 +65,12 @@ export default function LandingPage() {
                 İstanbul Pazarı
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.1] tracking-tight">
-              AjansHotel — başvurudan{' '}
-              <span className="text-brand-700 dark:text-brand-400">çalışmaya tek ekranda</span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">
+              Başvurudan{' '}
+              <span className="bg-gradient-to-r from-brand-600 to-emerald-500 dark:from-brand-400 dark:to-emerald-400 bg-clip-text text-transparent">
+                çalışmaya
+              </span>
+              <br/>tek ekranda
             </h1>
             <p className="mt-5 text-[15px] text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">
               İstanbul'daki hoteller, restoranlar ve kafelerde günlük veya aylık iş arayan
@@ -99,6 +119,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+      </div>
       </section>
 
       {/* ───── Features ───── */}

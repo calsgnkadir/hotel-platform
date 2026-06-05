@@ -10,13 +10,13 @@ import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSel
 const ROLE_OPTIONS = [
   {
     value: 'CANDIDATE',
-    icon: '💼',
+    icon: '',
     title: 'İş Arıyorum',
     desc: 'İstanbul\'daki otellerde, restoranlarda ve kafelerde iş bul',
   },
   {
     value: 'BUSINESS_OWNER',
-    icon: '🏨',
+    icon: '',
     title: 'İşletmem için eleman arıyorum',
     desc: 'Oteliniz, restoranınız veya kafeniz için aday bulun',
   },
@@ -128,7 +128,7 @@ export default function RegisterPage() {
               </button>
               <span className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full"
                     style={{ background: '#d1fae5', color: '#047857' }}>
-                {selectedRole === 'CANDIDATE' ? '💼 Aday' : '🏨 İşletme Sahibi'}
+                {selectedRole === 'CANDIDATE' ? 'Aday' : 'İşletme Sahibi'}
               </span>
             </div>
 
@@ -212,7 +212,7 @@ export default function RegisterPage() {
                           {...register('businessType', { required: 'İşletme türü seçin' })}
                           className="sr-only" />
                         <span className="text-lg">
-                          {value === 'HOTEL' ? '🏨' : value === 'RESTAURANT' ? '🍽️' : '☕'}
+                          {value === 'HOTEL' ? '' : value === 'RESTAURANT' ? '' : ''}
                         </span>
                         <span className={`text-xs font-semibold ${watch('businessType') === value ? 'text-brand-700' : 'text-slate-600 dark:text-slate-300'}`}>
                           {label}

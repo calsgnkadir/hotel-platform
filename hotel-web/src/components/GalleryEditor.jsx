@@ -11,7 +11,7 @@ const MAX_SIZE = 10 * 1024 * 1024  // 10 MB
  * İşletme galerisi editörü.
  * - Çoklu yükleme (file input multiple)
  * - HTML5 drag-drop ile sıralama
- * - Her foto: ⭐ kapak yap, 🗑️ sil
+ * - Her foto: kapak yap, sil
  * - Limit: 10 foto, max 10 MB her biri
  */
 export default function GalleryEditor() {
@@ -144,7 +144,7 @@ export default function GalleryEditor() {
         <div>
           <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Galeri</h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            {photos.length}/{MAX_PHOTOS} foto · sürükleyerek sırala · ⭐ kapak yap
+            {photos.length}/{MAX_PHOTOS} foto · sürükleyerek sırala · kapak yap
           </p>
         </div>
         <div>
@@ -182,7 +182,7 @@ export default function GalleryEditor() {
               {/* Kapak badge'i */}
               {p.isCover && (
                 <div className="absolute top-1 left-1 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-md bg-brand-700">
-                  ⭐ Kapak
+                  Kapak
                 </div>
               )}
 
@@ -191,8 +191,11 @@ export default function GalleryEditor() {
                 {!p.isCover && (
                   <button onClick={() => handleSetCover(p.id)} disabled={busyId === p.id}
                     title="Kapak yap"
-                    className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-amber-600 text-base shadow disabled:opacity-50">
-                    ⭐
+                    className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-amber-600 shadow disabled:opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                         className="w-4 h-4 mx-auto">
+                      <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                    </svg>
                   </button>
                 )}
                 <button onClick={() => handleDelete(p.id)} disabled={busyId === p.id}

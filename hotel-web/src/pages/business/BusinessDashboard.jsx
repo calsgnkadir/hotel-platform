@@ -42,9 +42,9 @@ const DOC_REQ_STATUS_LABELS = {
   DENIED:  { cls: 'bg-red-50 text-red-700',        label: 'Reddedildi' },
 }
 const BUSINESS_TYPE_LABELS = {
-  HOTEL: '🏨 Otel',
-  RESTAURANT: '🍽️ Restoran',
-  CAFE: '☕ Kafe',
+  HOTEL: 'Otel',
+  RESTAURANT: 'Restoran',
+  CAFE: 'Kafe',
 }
 const WEEKDAYS = [
   { key: 'MONDAY',    label: 'Pazartesi' },
@@ -90,12 +90,12 @@ function parseWorkingHours(text) {
 /* ── Status Badge ── */
 function StatusBadge({ status }) {
   const map = {
-    PENDING:   { cls: 'badge-pending',   icon: '⏳', label: 'Bekliyor' },
-    REVIEWING: { cls: 'badge-reviewing', icon: '🔍', label: 'İnceleniyor' },
-    ACCEPTED:  { cls: 'badge-accepted',  icon: '✅', label: 'Kabul Edildi' },
-    REJECTED:  { cls: 'badge-rejected',  icon: '❌', label: 'Reddedildi' },
-    EXPIRED:   { cls: 'badge-expired',   icon: '⌛', label: 'Süresi Doldu' },
-    WITHDRAWN: { cls: 'badge-expired',   icon: '🚫', label: 'Aday İptal Etti' },
+    PENDING:   { cls: 'badge-pending',   icon: '', label: 'Bekliyor' },
+    REVIEWING: { cls: 'badge-reviewing', icon: '', label: 'İnceleniyor' },
+    ACCEPTED:  { cls: 'badge-accepted',  icon: '', label: 'Kabul Edildi' },
+    REJECTED:  { cls: 'badge-rejected',  icon: '', label: 'Reddedildi' },
+    EXPIRED:   { cls: 'badge-expired',   icon: '', label: 'Süresi Doldu' },
+    WITHDRAWN: { cls: 'badge-expired',   icon: '', label: 'Aday İptal Etti' },
   }
   const s = map[status] || { cls: 'badge-pending', icon: '?', label: status }
   return <span className={`badge ${s.cls}`}>{s.icon} {s.label}</span>
@@ -105,7 +105,7 @@ function StatusBadge({ status }) {
 function NoShowBadge() {
   return (
     <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-      🚫 İşe Gelmedi
+      İşe Gelmedi
     </span>
   )
 }
@@ -566,12 +566,16 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
       <div>
         <label className="label">Logo</label>
         <div className="flex items-center gap-4">
-          <div className="w-24 h-24 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-24 h-24 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
             {logoUrl ? (
               <img src={`${logoUrl}?v=${logoVersion}`} alt="Logo"
                    className="w-full h-full object-cover" />
             ) : (
-              <span className="text-3xl text-slate-300">🏢</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-slate-400 dark:text-slate-500">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21" />
+              </svg>
             )}
           </div>
           <div className="flex-1 space-y-2">
@@ -582,13 +586,13 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
               <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
                 onChange={handleLogoChange} disabled={logoUploading} />
               {logoUploading
-                ? '⏳ Yükleniyor...'
-                : (logoUrl ? '🔄 Logoyu Değiştir' : '📷 Logo Yükle')}
+                ? 'Yükleniyor...'
+                : (logoUrl ? 'Logoyu Değiştir' : 'Logo Yükle')}
             </label>
             {logoUrl && (
               <button type="button" onClick={onLogoDelete}
                 className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">
-                🗑 Logoyu Kaldır
+                Logoyu Kaldır
               </button>
             )}
             <p className="text-xs text-slate-400">Max 10 MB · JPG/PNG/WEBP/HEIC</p>
@@ -707,11 +711,11 @@ function WorkersTab({ applications, onOpenMessages }) {
                   <div className="font-semibold text-slate-800 dark:text-slate-100 truncate">{w.candidate?.fullName}</div>
                   <div className="text-xs text-slate-500 mt-0.5">{w.candidate?.email}</div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
-                    <span className="text-slate-600">⏱️ {w.totalHours.toFixed(1)} saat</span>
-                    <span className="text-slate-600">📋 {w.jobCount} iş</span>
+                    <span className="text-slate-600">{w.totalHours.toFixed(1)} saat</span>
+                    <span className="text-slate-600">{w.jobCount} iş</span>
                     {w.lastDate && (
                       <span className="text-slate-600">
-                        📅 Son: {new Date(w.lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        Son: {new Date(w.lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     )}
                   </div>
@@ -725,7 +729,7 @@ function WorkersTab({ applications, onOpenMessages }) {
                   } catch (err) { toast.error(extractErrorMessage(err)) }
                 }}
                 className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium flex-shrink-0">
-                💬 Mesaj
+                Mesaj
               </button>
             </div>
           </div>
@@ -848,7 +852,7 @@ function ProfileTab() {
   if (!form) return null
 
   return (
-    <div className="space-y-5 max-w-3xl">
+    <div className="space-y-5 max-w-5xl mx-auto">
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Logo */}
       <MediaBlock
@@ -918,13 +922,13 @@ function ProfileTab() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="label">📞 Telefon</label>
+            <label className="label">Telefon</label>
             <input type="tel" name="phone" value={form.phone} maxLength={14}
               onChange={e => setForm(prev => ({ ...prev, phone: formatTurkeyPhoneInput(e.target.value) }))}
               className="input" placeholder="0212 555 12 34" />
           </div>
           <div>
-            <label className="label">🌐 Web Sitesi</label>
+            <label className="label">Web Sitesi</label>
             <input type="text" name="website" value={form.website} onChange={handleChange}
               className="input" placeholder="https://..." />
           </div>
@@ -932,12 +936,12 @@ function ProfileTab() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="label">📷 Instagram</label>
+            <label className="label">Instagram</label>
             <input type="text" name="instagram" value={form.instagram} onChange={handleChange}
               className="input" placeholder="@kullaniciadi" />
           </div>
           <div>
-            <label className="label">📘 Facebook</label>
+            <label className="label">Facebook</label>
             <input type="text" name="facebook" value={form.facebook} onChange={handleChange}
               className="input" placeholder="sayfa adı veya URL" />
           </div>
@@ -1016,7 +1020,6 @@ function MyListingsTab() {
       {listings.length === 0 ? (
         <div className="card">
           <div className="empty-state py-14">
-            <span className="text-5xl mb-4">📌</span>
             <p className="font-medium text-slate-700">Henüz ilanınız yok</p>
             <p className="text-sm text-slate-500 mt-1">İlk ilanınızı oluşturun</p>
             <button onClick={() => setFormTarget('new')}
@@ -1062,7 +1065,7 @@ function MyListingsTab() {
                       : null
                     return (
                       <p className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-0.5">
-                        🗓 {total} vardiya
+                        {total} vardiya
                         {nextStr && ` · en yakın: ${nextStr}`}
                         {totalSeats > 0 && ` · ${filled}/${totalSeats} dolu`}
                       </p>
@@ -1175,7 +1178,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
     setActionLoading(true)
     try {
       await hotelApi.reviewApplication(appId, decision, note)
-      toast.success(decision === 'ACCEPTED' ? 'Başvuru kabul edildi ✅' : 'Başvuru reddedildi')
+      toast.success(decision === 'ACCEPTED' ? 'Başvuru kabul edildi ' : 'Başvuru reddedildi')
       setSelected(null)
       setNote('')
       onRefresh()
@@ -1483,12 +1486,12 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                     <button onClick={() => handleDecision(selected.id, 'ACCEPTED')}
                       disabled={actionLoading}
                       className="py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors">
-                      ✅ Kabul Et
+                      Kabul Et
                     </button>
                     <button onClick={() => handleDecision(selected.id, 'REJECTED')}
                       disabled={actionLoading}
                       className="py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors">
-                      ❌ Reddet
+                      Reddet
                     </button>
                   </div>
                 </div>
@@ -1505,7 +1508,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   <button onClick={() => handleNoShow(selected.id)}
                     disabled={actionLoading}
                     className="w-full py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors disabled:opacity-60">
-                    🚫 Aday İşe Gelmedi (No-Show) Olarak İşaretle
+                    Aday İşe Gelmedi (No-Show) Olarak İşaretle
                   </button>
                 </div>
               )}
@@ -1514,7 +1517,6 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
               {selected.noShow && (
                 <div className="border-t border-slate-100 pt-4">
                   <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
-                    <span className="text-lg leading-none">🚫</span>
                     <div>
                       <div className="font-semibold">No-show olarak işaretlendi</div>
                       <div className="text-xs text-red-600 mt-0.5">
@@ -1545,7 +1547,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   }}
                   className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
                   style={{ background: '#047857' }}>
-                  💬 Mesaj Gönder
+                  Mesaj Gönder
                 </button>
               )}
             </div>
@@ -1659,7 +1661,6 @@ function OverviewTab({ applications, onTabChange }) {
         </div>
         {applications.length === 0 ? (
           <div className="empty-state">
-            <span className="text-4xl mb-3">📭</span>
             <p className="text-slate-500 text-sm">Henüz başvuru yok</p>
           </div>
         ) : (

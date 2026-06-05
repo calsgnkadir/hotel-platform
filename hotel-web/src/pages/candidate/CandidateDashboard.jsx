@@ -45,12 +45,12 @@ const SENSITIVE_DOC_TYPES_CAND = ['CRIMINAL_RECORD', 'HEALTH_CERTIFICATE', 'IDEN
 /* ── Status Badge ── */
 function StatusBadge({ status }) {
   const map = {
-    PENDING:   { cls: 'badge-pending',   icon: '⏳', label: 'Bekliyor' },
-    REVIEWING: { cls: 'badge-reviewing', icon: '🔍', label: 'İnceleniyor' },
-    ACCEPTED:  { cls: 'badge-accepted',  icon: '✅', label: 'Kabul' },
-    REJECTED:  { cls: 'badge-rejected',  icon: '❌', label: 'Red' },
-    EXPIRED:   { cls: 'badge-expired',   icon: '⌛', label: 'Süresi Doldu' },
-    WITHDRAWN: { cls: 'badge-expired',   icon: '🚫', label: 'İptal Edildi' },
+    PENDING:   { cls: 'badge-pending',   icon: '', label: 'Bekliyor' },
+    REVIEWING: { cls: 'badge-reviewing', icon: '', label: 'İnceleniyor' },
+    ACCEPTED:  { cls: 'badge-accepted',  icon: '', label: 'Kabul' },
+    REJECTED:  { cls: 'badge-rejected',  icon: '', label: 'Red' },
+    EXPIRED:   { cls: 'badge-expired',   icon: '', label: 'Süresi Doldu' },
+    WITHDRAWN: { cls: 'badge-expired',   icon: '', label: 'İptal Edildi' },
   }
   const s = map[status] || { cls: 'badge-pending', icon: '?', label: status }
   return <span className={`badge ${s.cls}`}>{s.icon} {s.label}</span>
@@ -130,7 +130,6 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
     return (
       <div className="card">
         <div className="empty-state">
-          <span className="text-4xl mb-3">📋</span>
           <p className="font-medium text-slate-700">Henüz başvurunuz yok</p>
           <p className="text-sm text-slate-500 mt-1">İlanlar bölümünden bir ilana başvurun</p>
         </div>
@@ -174,8 +173,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0"
                    style={{ background: '#047857' }}>
-                🏨
-              </div>
+                </div>
               <div>
                 <div className="font-semibold text-slate-800 dark:text-slate-100">{app.listing?.title}</div>
                 <div className="text-xs text-slate-500 mt-0.5">{app.listing?.businessName}</div>
@@ -200,7 +198,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                 <button onClick={() => handleStartChat(app)}
                   disabled={openingChatId === app.id}
                   className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium disabled:opacity-50">
-                  {openingChatId === app.id ? 'Açılıyor...' : '💬 Mesaj Gönder'}
+                  {openingChatId === app.id ? 'Açılıyor...' : 'Mesaj Gönder'}
                 </button>
               )}
               {/* R4 + R5: Sadece ACCEPTED + çalışma tamamlanmış başvuruda puanla */}
@@ -211,7 +209,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                       title: app.listing?.businessName || 'İşletme',
                     })}
                     className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
-                    ⭐ Puanla
+                    Puanla
                   </button>
                 ) : (
                   <span className="text-[10px] text-slate-400 italic"
@@ -408,14 +406,13 @@ function HistoryTab({ applications, onOpenMessages }) {
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0"
                        style={{ background: '#047857' }}>
-                    🏨
-                  </div>
+                    </div>
                   <div className="min-w-0">
                     <div className="font-semibold text-slate-800 dark:text-slate-100 truncate">{app.listing?.title}</div>
                     <div className="text-xs text-slate-500 mt-0.5">{app.listing?.businessName}</div>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
-                      <span className="text-slate-600">📅 {dateLabel}</span>
-                      <span className="text-slate-600">⏱️ {hours.toFixed(1)} saat</span>
+                      <span className="text-slate-600">{dateLabel}</span>
+                      <span className="text-slate-600">{hours.toFixed(1)} saat</span>
                       <span className="text-slate-600">{POSITION_LABELS[app.listing?.position] || app.listing?.position}</span>
                     </div>
                   </div>
@@ -431,7 +428,7 @@ function HistoryTab({ applications, onOpenMessages }) {
                         title: app.listing?.businessName || 'İşletme',
                       })}
                       className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
-                      ⭐ Puanla
+                      Puanla
                     </button>
                   )}
                   {app.listing?.businessOwnerId && (
@@ -446,7 +443,7 @@ function HistoryTab({ applications, onOpenMessages }) {
                         } catch (err) { toast.error(extractErrorMessage(err)) }
                       }}
                       className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
-                      💬 Mesaj
+                      Mesaj
                     </button>
                   )}
                 </div>
@@ -548,7 +545,7 @@ function DocumentsTab() {
                 : 'border-slate-300 hover:border-brand-500 dark:border-brand-500 hover:bg-brand-50 dark:bg-brand-900/30 text-slate-600 hover:text-brand-700 dark:text-brand-400'}`}>
               <input type="file" className="sr-only" onChange={handleUpload} disabled={uploading}
                 accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx,image/*,application/pdf"/>
-              {uploading ? '⏳ Yükleniyor...' : '📎 Dosya Seç (PDF, JPG, PNG, WEBP, HEIC, DOC, max 15 MB)'}
+              {uploading ? 'Yükleniyor...' : 'Dosya Seç (PDF, JPG, PNG, WEBP, HEIC, DOC, max 15 MB)'}
             </label>
           </div>
         </div>
@@ -561,7 +558,6 @@ function DocumentsTab() {
         </div>
         {documents.length === 0 ? (
           <div className="empty-state py-10">
-            <span className="text-4xl mb-3">📁</span>
             <p className="text-slate-500 text-sm">Henüz belge yüklenmedi</p>
           </div>
         ) : (
@@ -581,14 +577,13 @@ function DocumentsTab() {
                   <tr key={doc.id}>
                     <td>
                       <div className="flex items-center gap-2">
-                        <span>📄</span>
                         <span className="font-medium text-slate-700 text-sm">{doc.originalFileName}</span>
                       </div>
                     </td>
                     <td><span className="badge badge-reviewing">{doc.type}</span></td>
                     <td>
                       {doc.sensitive
-                        ? <span className="text-amber-600 text-xs font-medium">🔒 Hassas</span>
+                        ? <span className="text-amber-600 text-xs font-medium">Hassas</span>
                         : <span className="text-slate-400 text-xs">Açık</span>}
                     </td>
                     <td className="hidden sm:table-cell text-slate-400 text-xs">
@@ -874,16 +869,20 @@ function ProfileTab() {
   if (!form) return null
 
   return (
-    <div className="space-y-5 max-w-3xl">
+    <div className="space-y-5 max-w-5xl mx-auto">
     {/* D7: Profil fotoğrafı — form'un dışında ayrı kart (kendi upload akışı) */}
     <div className="card p-5">
       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">Profil Fotoğrafı</h3>
       <div className="flex items-center gap-4">
-        <div className="w-24 h-24 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
           {profile?.avatarUrl ? (
             <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
-            <span className="text-3xl text-slate-300">👤</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-slate-400 dark:text-slate-500">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
           )}
         </div>
         <div className="flex-1 space-y-2">
@@ -894,13 +893,13 @@ function ProfileTab() {
             <input type="file" className="sr-only" accept="image/*,.heic,.heif"
               onChange={handleAvatarUpload} disabled={avatarUploading} />
             {avatarUploading
-              ? '⏳ Yükleniyor...'
-              : (profile?.avatarUrl ? '🔄 Fotoyu Değiştir' : '📷 Foto Yükle')}
+              ? 'Yükleniyor...'
+              : (profile?.avatarUrl ? 'Fotoyu Değiştir' : 'Foto Yükle')}
           </label>
           {profile?.avatarUrl && (
             <button type="button" onClick={handleAvatarDelete}
               className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">
-              🗑 Fotoyu Kaldır
+              Fotoyu Kaldır
             </button>
           )}
           <p className="text-xs text-slate-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
@@ -1020,7 +1019,7 @@ function ProfileTab() {
         <div>
           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Bildirim Tercihleri</h3>
           <p className="text-xs text-slate-500 mt-1">
-            🎯 İlgini çekebilecek yeni ilan açıldığında otomatik bildirim al. Hiçbirini seçmezsen bildirim yok.
+            İlgini çekebilecek yeni ilan açıldığında otomatik bildirim al. Hiçbirini seçmezsen bildirim yok.
           </p>
         </div>
 

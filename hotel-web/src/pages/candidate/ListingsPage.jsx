@@ -14,7 +14,7 @@ const POSITION_LABELS = {
 const JOB_TYPE_LABELS = {
   PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı',
 }
-const BUSINESS_TYPE_ICONS = { HOTEL: '🏨', RESTAURANT: '🍽️', CAFE: '☕' }
+const BUSINESS_TYPE_ICONS = { HOTEL: '', RESTAURANT: '', CAFE: '' }
 const SHIFT_INFO = {
   MORNING: { icon: '', label: 'Sabah', time: '08:00–16:00' },
   EVENING: { icon: '', label: 'Akşam', time: '16:00–24:00' },
@@ -115,7 +115,7 @@ function ApplyModal({ listing, onClose, onSuccess }) {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
                  style={{ background: '#047857' }}>
-              {BUSINESS_TYPE_ICONS[listing.businessType] || '🏨'}
+              {BUSINESS_TYPE_ICONS[listing.businessType] || ''}
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900">{listing.title}</h2>
@@ -166,7 +166,7 @@ function ApplyModal({ listing, onClose, onSuccess }) {
                         className="w-4 h-4 accent-brand-700" />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-slate-800">
-                          📅 {dateLabel} · 🕐 {timeLabel}
+                          {dateLabel} · {timeLabel}
                         </div>
                         <div className="text-xs text-slate-500 mt-0.5">
                           {full
@@ -218,7 +218,7 @@ function ApplyModal({ listing, onClose, onSuccess }) {
 
           {uploadedSensitiveTypes.length === 0 && (
             <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-500 border border-slate-200">
-              💡 Hassas belge yüklemediysen "Belgelerim" sekmesinden ekleyebilir, başvuru sırasında işletmeye direkt izin verebilirsin.
+              Hassas belge yüklemediysen "Belgelerim" sekmesinden ekleyebilir, başvuru sırasında işletmeye direkt izin verebilirsin.
             </div>
           )}
 
@@ -256,7 +256,7 @@ function DetailModal({ listing, onClose, onApply }) {
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
                  style={{ background: '#047857' }}>
-              {BUSINESS_TYPE_ICONS[listing.businessType] || '🏨'}
+              {BUSINESS_TYPE_ICONS[listing.businessType] || ''}
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-bold text-slate-900 leading-tight">{listing.title}</h2>
@@ -285,7 +285,7 @@ function DetailModal({ listing, onClose, onApply }) {
             <div className="bg-slate-50 rounded-lg p-3 text-center">
               <div className="text-[10px] text-slate-500 uppercase tracking-wider">İlçe</div>
               <div className="text-sm font-semibold text-slate-700 mt-0.5">
-                📍 {listing.businessDistrict || '—'}
+                {listing.businessDistrict || '—'}
               </div>
             </div>
             <div className="bg-slate-50 rounded-lg p-3 text-center">
@@ -356,8 +356,8 @@ function DetailModal({ listing, onClose, onApply }) {
                       className={`flex items-center justify-between rounded-lg px-3 py-2 border
                         ${full ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-brand-50/60 dark:bg-brand-900/20 border-brand-100 dark:border-brand-900/40'}`}>
                       <div className="text-sm">
-                        <span className="font-medium text-slate-800">📅 {dateLabel}</span>
-                        <span className="text-slate-500 ml-2">🕐 {s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
+                        <span className="font-medium text-slate-800">{dateLabel}</span>
+                        <span className="text-slate-500 ml-2">{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
                       </div>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
                         ${full ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
@@ -413,7 +413,7 @@ function ListingCard({ listing, onApply, onDetail }) {
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0 shadow-sm"
                style={{ background: '#047857' }}>
-            {BUSINESS_TYPE_ICONS[listing.businessType] || '🏨'}
+            {BUSINESS_TYPE_ICONS[listing.businessType] || ''}
           </div>
           <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
             {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
@@ -432,7 +432,7 @@ function ListingCard({ listing, onApply, onDetail }) {
         </div>
 
         <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-400 flex-wrap">
-          <span>📍 {listing.businessDistrict || 'İstanbul'}</span>
+          <span>{listing.businessDistrict || 'İstanbul'}</span>
           <span>·</span>
           <span>{POSITION_LABELS[listing.position] || listing.position}</span>
           {shift && (
@@ -459,7 +459,7 @@ function ListingCard({ listing, onApply, onDetail }) {
             : null
           return (
             <div className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-1">
-              🗓 {slots.length} vardiya
+              {slots.length} vardiya
               {openCount === 0 && ' · ⚠ tümü dolu'}
               {openCount > 0 && nextStr && ` · ${nextStr}`}
             </div>
@@ -591,7 +591,7 @@ export default function ListingsPage({ onApplicationSubmitted }) {
       </div>
 
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🔍</span>
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></span>
         <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
           placeholder="İlan başlığında ara..."
           className="input pl-10 text-sm" />
@@ -710,7 +710,7 @@ export default function ListingsPage({ onApplicationSubmitted }) {
       ) : listings.length === 0 ? (
         <div className="card">
           <div className="empty-state py-16">
-            <span className="text-5xl mb-4">{activeFilterCount > 0 ? '🔎' : '📌'}</span>
+            <span className="text-5xl mb-4">{activeFilterCount > 0 ? '🔎' : ''}</span>
             <p className="font-medium text-slate-700">
               {activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
             </p>
