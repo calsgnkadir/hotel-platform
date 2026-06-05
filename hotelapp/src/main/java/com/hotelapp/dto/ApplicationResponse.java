@@ -54,6 +54,8 @@ public class ApplicationResponse {
         private Long businessId;
         private String businessName;
         private String businessType;
+        /** #77: İşletme sahibinin user id'si — mesajlaşma başlatmak için. */
+        private Long businessOwnerId;
     }
 
     @Data @Builder

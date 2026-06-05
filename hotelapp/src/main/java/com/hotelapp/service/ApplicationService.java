@@ -512,6 +512,7 @@ public class ApplicationService {
                         .businessId(business.getId())
                         .businessName(business.getName())
                         .businessType(business.getType().name())
+                        .businessOwnerId(business.getOwner().getId())  // #77 mesajlaşma
                         .build())
                 .availabilities(avDtos)
                 .documentRequests(drDtos)

@@ -18,5 +18,8 @@ public enum NotificationType {
     // ADIM J: Tercihlerine uygun yeni ilan
     MATCHING_LISTING,
 
+    // #76: Mesajlaşma
+    NEW_MESSAGE,            // yeni sohbet mesajı geldi
+
     GENERIC                 // genel
 }
