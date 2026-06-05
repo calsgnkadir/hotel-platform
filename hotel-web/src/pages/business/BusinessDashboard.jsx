@@ -1574,73 +1574,28 @@ function OverviewTab({ applications, onTabChange }) {
   }, [])
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-4">
+      {/* Stat strip — kompakt, logosuz */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
         {[
-          { label: 'Toplam Başvuru', value: applications.length, color: 'from-blue-500 to-blue-600',
-            svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z' },
-          { label: 'Bekleyen',       value: pending,             color: 'from-amber-500 to-amber-600',
-            svg: 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
-          { label: 'İnceleniyor',    value: reviewing,           color: 'from-brand-600 to-brand-700',
-            svg: 'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z' },
-          { label: 'Kabul Edildi',   value: accepted,            color: 'from-emerald-500 to-emerald-600',
-            svg: 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
-        ].map(s => (
-          <div key={s.label} className="stat-card">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3`}>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.8} stroke="white" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d={s.svg} />
-              </svg>
+          { label: 'Toplam',      value: applications.length, dot: 'bg-blue-400' },
+          { label: 'Bekleyen',    value: pending,             dot: 'bg-amber-400' },
+          { label: 'İnceleniyor', value: reviewing,           dot: 'bg-brand-400' },
+          { label: 'Kabul',       value: accepted,            dot: 'bg-emerald-400' },
+          stats && { label: 'Bu Ay',       value: stats.thisMonthApplications, dot: 'bg-brand-400' },
+          stats && { label: 'Kabul %',     value: `${Math.round((stats.acceptanceRate || 0) * 100)}%`, dot: 'bg-emerald-400' },
+          stats && { label: 'Red %',       value: `${Math.round((stats.rejectionRate || 0) * 100)}%`, dot: 'bg-red-400' },
+          stats && { label: 'Aktif İlan',  value: stats.activeListings, dot: 'bg-blue-400' },
+        ].filter(Boolean).map(s => (
+          <div key={s.label} className="stat-card !p-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold truncate">{s.label}</span>
             </div>
-            <div className="text-2xl font-bold text-slate-900">{s.value}</div>
-            <div className="text-xs text-slate-500 mt-0.5">{s.label}</div>
+            <div className="text-xl font-black text-white leading-none">{s.value}</div>
           </div>
         ))}
       </div>
-
-      {/* #89: Bonus metrikler */}
-      {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="card p-4">
-            <div className="text-xs text-slate-500 mb-1">Bu Ay</div>
-            <div className="text-2xl font-bold text-brand-700 dark:text-brand-400">
-              {stats.thisMonthApplications}
-            </div>
-            <div className="text-[10px] text-slate-400 mt-1">
-              Geçen ay: {stats.lastMonthApplications}
-              {stats.lastMonthApplications > 0 && (
-                <span className={stats.thisMonthApplications >= stats.lastMonthApplications ? 'text-emerald-600 ml-1' : 'text-red-500 ml-1'}>
-                  {stats.thisMonthApplications >= stats.lastMonthApplications ? '↑' : '↓'}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="card p-4">
-            <div className="text-xs text-slate-500 mb-1">Kabul Oranı</div>
-            <div className="text-2xl font-bold text-emerald-600">
-              {Math.round((stats.acceptanceRate || 0) * 100)}<span className="text-base">%</span>
-            </div>
-            <div className="text-[10px] text-slate-400 mt-1">
-              Toplam {stats.totalApplications} başvuru
-            </div>
-          </div>
-          <div className="card p-4">
-            <div className="text-xs text-slate-500 mb-1">Red Oranı</div>
-            <div className="text-2xl font-bold text-red-500">
-              {Math.round((stats.rejectionRate || 0) * 100)}<span className="text-base">%</span>
-            </div>
-            <div className="text-[10px] text-slate-400 mt-1">son veriler</div>
-          </div>
-          <div className="card p-4">
-            <div className="text-xs text-slate-500 mb-1">Aktif İlan</div>
-            <div className="text-2xl font-bold text-blue-600">
-              {stats.activeListings}
-            </div>
-            <div className="text-[10px] text-slate-400 mt-1">yayında</div>
-          </div>
-        </div>
-      )}
 
       {/* #89: Trendler */}
       {stats && stats.totalApplications > 0 && (

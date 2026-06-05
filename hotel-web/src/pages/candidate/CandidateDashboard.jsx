@@ -623,62 +623,33 @@ function OverviewTab({ user, applications, onTabChange }) {
   }, [])
 
   return (
-    <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+    <div className="space-y-4">
+      {/* Stats — kompakt, logosuz, sadece sayı + label */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
         {[
-          { label: 'Başvuru',  value: applications.length, color: 'from-blue-500 to-blue-600',
-            svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z' },
-          { label: 'Bekleyen', value: pending,              color: 'from-amber-500 to-amber-600',
-            svg: 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
-          { label: 'Kabul',    value: accepted,             color: 'from-emerald-500 to-emerald-600',
-            svg: 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
-        ].map(s => (
-          <div key={s.label} className="stat-card text-center">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mx-auto mb-2`}>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.8} stroke="white" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d={s.svg} />
-              </svg>
+          { label: 'Başvuru',  value: applications.length, dot: 'bg-blue-400' },
+          { label: 'Bekleyen', value: pending,             dot: 'bg-amber-400' },
+          { label: 'Kabul',    value: accepted,            dot: 'bg-emerald-400' },
+          stats && stats.totalApplications > 0 && {
+            label: 'Kabul Oranı',
+            value: `${Math.round((stats.acceptanceRate || 0) * 100)}%`,
+            dot: 'bg-brand-400',
+          },
+          stats && stats.avgResponseHours != null && {
+            label: 'Yanıt Süresi',
+            value: `${stats.avgResponseHours.toFixed(1)}sa`,
+            dot: 'bg-emerald-400',
+          },
+        ].filter(Boolean).map(s => (
+          <div key={s.label} className="stat-card !p-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{s.label}</span>
             </div>
-            <div className="text-2xl font-bold text-slate-900">{s.value}</div>
-            <div className="text-xs text-slate-500">{s.label}</div>
+            <div className="text-xl font-black text-white leading-none">{s.value}</div>
           </div>
         ))}
       </div>
-
-      {/* #89: Bonus stat (kabul oranı + ortalama yanıt) */}
-      {stats && stats.totalApplications > 0 && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="card p-4">
-            <div className="text-xs text-slate-500 mb-1">Kabul Oranı</div>
-            <div className="text-2xl font-bold text-emerald-600">
-              {Math.round((stats.acceptanceRate || 0) * 100)}<span className="text-base">%</span>
-            </div>
-            <div className="text-[10px] text-slate-400 mt-1">
-              {stats.totalApplications} başvurudan
-            </div>
-          </div>
-          <div className="card p-4">
-            <div className="text-xs text-slate-500 mb-1">Ortalama Yanıt Süresi</div>
-            {stats.avgResponseHours != null ? (
-              <>
-                <div className="text-2xl font-bold text-brand-700 dark:text-brand-400">
-                  {stats.avgResponseHours.toFixed(1)}<span className="text-base">sa</span>
-                </div>
-                <div className="text-[10px] text-slate-400 mt-1">
-                  başvurudan sonra
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="text-2xl font-bold text-slate-300">—</div>
-                <div className="text-[10px] text-slate-400 mt-1">Henüz yanıtlanmış başvuru yok</div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* #89: Grafikler */}
       {stats && stats.totalApplications > 0 && (
@@ -699,15 +670,19 @@ function OverviewTab({ user, applications, onTabChange }) {
             svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6 9 2.25 2.25L19.5 12m-9.75 9h9.75c.621 0 1.125-.504 1.125-1.125V11.25c0-3-3.375-9-9-9H4.875c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h5.25' },
         ].map(action => (
           <button key={action.tab} onClick={() => onTabChange(action.tab)}
-            className="card text-left p-5 hover:border-brand-300 dark:hover:border-brand-700 hover:-translate-y-0.5 transition-all duration-200 w-full">
-            <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.8} stroke="white" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d={action.svg} />
-              </svg>
+            className="card text-left p-3 hover:border-brand-600/50 hover:-translate-y-0.5 transition-all duration-200 w-full group">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg border border-slate-700 group-hover:border-brand-500/60 flex items-center justify-center flex-shrink-0 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-400 transition-colors">
+                  <path strokeLinecap="round" strokeLinejoin="round" d={action.svg} />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold text-white text-[12px] truncate">{action.label}</div>
+                <div className="text-[10px] text-slate-500 truncate mt-0.5">{action.desc}</div>
+              </div>
             </div>
-            <div className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{action.label}</div>
-            <div className="text-xs text-slate-500 mt-0.5">{action.desc}</div>
           </button>
         ))}
       </div>

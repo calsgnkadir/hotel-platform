@@ -102,17 +102,19 @@ export default function NotificationBell({ onNavigate }) {
   return (
     <div className="relative" ref={ref}>
       <button onClick={toggleOpen}
-        className="relative w-9 h-9 rounded-lg flex items-center justify-center transition-colors
+        className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all
                    bg-slate-100 hover:bg-slate-200 text-slate-700
-                   dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200"
+                   dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-200
+                   hover:scale-105 active:scale-95"
         title="Bildirimler">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-             strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round"
-                d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+        {/* Inbox / kutucuk + dalga — özgün notification ikonu */}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4"
+             fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 13 L8 13 L9.5 15.5 L14.5 15.5 L16 13 L21 13" />
+          <path d="M5 5 L19 5 L21 13 L21 18 A1.5 1.5 0 0 1 19.5 19.5 L4.5 19.5 A1.5 1.5 0 0 1 3 18 L3 13 Z" />
         </svg>
         {unread > 0 && (
-          <span className="absolute top-0 right-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center ring-2 ring-ink-900 dark:ring-ink-900">
             {unread > 99 ? '99+' : unread}
           </span>
         )}

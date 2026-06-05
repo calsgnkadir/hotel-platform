@@ -45,48 +45,39 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-ink-900 dark:bg-ink-900">
-      {/* Neon üst hat */}
+    <div className="min-h-screen flex bg-ink-900">
+      {/* Neon üst hat (ince) */}
       <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none" />
 
       {/* ── Sidebar ── */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 flex flex-col transform transition-transform duration-300
+        fixed inset-y-0 left-0 z-40 w-56 flex flex-col transform transition-transform duration-300
         bg-ink-900 border-r border-slate-800
         lg:relative lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        {/* Brand */}
-        <Link to="/" className="px-5 py-4 border-b border-slate-800 flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 shadow-glow-sm">
-            <span className="text-white text-sm font-black">A</span>
-          </div>
-          <div className="min-w-0">
-            <div className="text-sm font-bold tracking-tight text-white">AjansHotel</div>
-            <div className="text-[10px] text-slate-500 uppercase tracking-wider">İş Platformu</div>
-          </div>
+        {/* Brand — logo'suz, sadece text */}
+        <Link to="/" className="px-5 pt-5 pb-4 flex items-baseline gap-2">
+          <span className="text-[15px] font-black tracking-tight text-white">AjansHotel</span>
+          <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
         </Link>
 
-        {/* User Info */}
-        <div className="px-3 py-3 border-b border-slate-800">
-          <div className="flex items-center gap-2.5 rounded-2xl p-2.5 bg-slate-900/60 border border-slate-800">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 bg-gradient-to-br from-brand-500 to-brand-700">
-              {user?.fullName?.charAt(0)?.toUpperCase() || '?'}
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-semibold truncate text-white">{user?.fullName}</div>
-              <div className="text-[10px] truncate text-slate-500">{user?.email}</div>
-            </div>
+        {/* User Info — küçük + logosuz */}
+        <div className="px-3 pb-3 border-b border-slate-800">
+          <div className="rounded-xl px-3 py-2 bg-slate-900/60 border border-slate-800">
+            <div className="text-[12px] font-semibold truncate text-slate-200">{user?.fullName}</div>
+            <div className="text-[10px] truncate text-slate-500 mt-0.5">{user?.email}</div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-2.5 py-3 space-y-0.5">
           {navItems.map(item => (
             <button
               key={item.id}
               onClick={() => { onTabChange?.(item.id); setSidebarOpen(false) }}
-              className={`nav-link w-full text-left text-[13px] ${activeTab === item.id ? 'active' : ''}`}
+              className={`nav-link w-full text-left text-[12.5px] ${activeTab === item.id ? 'active' : ''}`}
+              style={{ padding: '0.5rem 0.85rem' }}
             >
               <span className="flex-1 truncate">{item.label}</span>
               {activeTab === item.id && (
@@ -97,10 +88,11 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         </nav>
 
         {/* Logout */}
-        <div className="px-3 py-3 border-t border-slate-800">
+        <div className="px-2.5 py-3 border-t border-slate-800">
           <button onClick={handleLogout}
-            className="nav-link w-full text-left text-[13px] text-red-400 hover:bg-red-950/40 hover:text-red-300">
-            <span>Çıkış Yap</span>
+            className="nav-link w-full text-left text-[12.5px] text-red-400 hover:bg-red-950/40 hover:text-red-300"
+            style={{ padding: '0.5rem 0.85rem' }}>
+            <span>Çıkış</span>
           </button>
         </div>
       </aside>
@@ -113,32 +105,32 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
       {/* ── Main Content ── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar */}
-        <header className="px-4 lg:px-8 py-3.5 flex items-center justify-between sticky top-0.5 z-20
+        {/* Top Bar — sıkı + küçük */}
+        <header className="px-4 lg:px-6 py-2.5 flex items-center justify-between sticky top-0.5 z-20
                            bg-ink-900/85 backdrop-blur-lg border-b border-slate-800">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-full hover:bg-slate-800 transition-colors">
-              <svg className="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              className="lg:hidden p-1.5 rounded-full hover:bg-slate-800 transition-colors">
+              <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </button>
             <div>
-              <h1 className="text-[15px] font-bold tracking-tight text-white">
+              <h1 className="text-[13px] font-bold tracking-tight text-white leading-tight">
                 {navItems.find(n => n.id === activeTab)?.label || 'Panel'}
               </h1>
-              <p className="text-[11px] hidden sm:block text-slate-500 uppercase tracking-wider">
-                {isAdmin ? 'Admin Paneli' : isCandidate ? 'Aday Paneli' : 'İşletme Paneli'}
+              <p className="text-[9px] hidden sm:block text-slate-500 uppercase tracking-[0.18em] leading-tight mt-0.5">
+                {isAdmin ? 'Admin' : isCandidate ? 'Aday' : 'İşletme'} Paneli
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <ThemeToggle />
             <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
 
-            {/* Role badge */}
-            <div className={`hidden sm:flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border
+            {/* Role badge — küçük pill */}
+            <div className={`hidden sm:flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ml-1
               ${isAdmin
                 ? 'bg-amber-950/40 text-amber-300 border-amber-900/60'
                 : isCandidate
@@ -150,7 +142,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-8 fade-in text-slate-300">
+        <main className="flex-1 p-3 lg:p-5 fade-in text-slate-300 text-[13px]">
           {children}
         </main>
       </div>
