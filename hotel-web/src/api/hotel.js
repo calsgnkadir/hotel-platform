@@ -388,3 +388,15 @@ export async function getMessagesUnreadCount() {
   const { data } = await api.get('/api/messages/unread-count')
   return data?.unread ?? 0
 }
+
+/* ── Dashboard stats (#88) ── */
+
+export async function getBusinessStats() {
+  const { data } = await api.get('/api/business/stats')
+  return data
+}
+
+export async function getCandidateStats() {
+  const { data } = await api.get('/api/candidate/stats')
+  return data
+}

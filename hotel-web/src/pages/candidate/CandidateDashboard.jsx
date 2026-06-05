@@ -11,6 +11,8 @@ import ReviewModal from '../../components/ReviewModal'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
+import StatusDonut from '../../components/charts/StatusDonut'
+import MonthlyTrendBar from '../../components/charts/MonthlyTrendBar'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -617,6 +619,14 @@ function OverviewTab({ user, applications, onTabChange }) {
   const accepted  = applications.filter(a => a.status === 'ACCEPTED').length
   const pending   = applications.filter(a => a.status === 'PENDING').length
 
+  // #89: Backend stats
+  const [stats, setStats] = useState(null)
+  useEffect(() => {
+    hotelApi.getCandidateStats()
+      .then(setStats)
+      .catch(() => setStats(null))
+  }, [])
+
   return (
     <div className="space-y-6">
       {/* Stats */}
@@ -641,6 +651,47 @@ function OverviewTab({ user, applications, onTabChange }) {
           </div>
         ))}
       </div>
+
+      {/* #89: Bonus stat (kabul oranı + ortalama yanıt) */}
+      {stats && stats.totalApplications > 0 && (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="card p-4">
+            <div className="text-xs text-slate-500 mb-1">Kabul Oranı</div>
+            <div className="text-2xl font-bold text-emerald-600">
+              {Math.round((stats.acceptanceRate || 0) * 100)}<span className="text-base">%</span>
+            </div>
+            <div className="text-[10px] text-slate-400 mt-1">
+              {stats.totalApplications} başvurudan
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="text-xs text-slate-500 mb-1">Ortalama Yanıt Süresi</div>
+            {stats.avgResponseHours != null ? (
+              <>
+                <div className="text-2xl font-bold text-violet-600">
+                  {stats.avgResponseHours.toFixed(1)}<span className="text-base">sa</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-1">
+                  başvurudan sonra
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-slate-300">—</div>
+                <div className="text-[10px] text-slate-400 mt-1">Henüz yanıtlanmış başvuru yok</div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* #89: Grafikler */}
+      {stats && stats.totalApplications > 0 && (
+        <div className="grid lg:grid-cols-2 gap-4">
+          <StatusDonut data={stats.byStatus} />
+          <MonthlyTrendBar data={stats.monthlyTrend} />
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="grid sm:grid-cols-3 gap-4">

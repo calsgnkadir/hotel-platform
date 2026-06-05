@@ -9,6 +9,9 @@ import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSel
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import MessagesPage from '../MessagesPage'
 import GalleryEditor from '../../components/GalleryEditor'
+import StatusDonut from '../../components/charts/StatusDonut'
+import DailyTrendLine from '../../components/charts/DailyTrendLine'
+import PositionBar from '../../components/charts/PositionBar'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -1560,6 +1563,14 @@ function OverviewTab({ applications, onTabChange }) {
   const reviewing = applications.filter(a => a.status === 'REVIEWING').length
   const accepted  = applications.filter(a => a.status === 'ACCEPTED').length
 
+  // #89: Backend stats
+  const [stats, setStats] = useState(null)
+  useEffect(() => {
+    hotelApi.getBusinessStats()
+      .then(setStats)
+      .catch(() => setStats(null))
+  }, [])
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1585,6 +1596,60 @@ function OverviewTab({ applications, onTabChange }) {
           </div>
         ))}
       </div>
+
+      {/* #89: Bonus metrikler */}
+      {stats && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="card p-4">
+            <div className="text-xs text-slate-500 mb-1">Bu Ay</div>
+            <div className="text-2xl font-bold text-violet-600">
+              {stats.thisMonthApplications}
+            </div>
+            <div className="text-[10px] text-slate-400 mt-1">
+              Geçen ay: {stats.lastMonthApplications}
+              {stats.lastMonthApplications > 0 && (
+                <span className={stats.thisMonthApplications >= stats.lastMonthApplications ? 'text-emerald-600 ml-1' : 'text-red-500 ml-1'}>
+                  {stats.thisMonthApplications >= stats.lastMonthApplications ? '↑' : '↓'}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="text-xs text-slate-500 mb-1">Kabul Oranı</div>
+            <div className="text-2xl font-bold text-emerald-600">
+              {Math.round((stats.acceptanceRate || 0) * 100)}<span className="text-base">%</span>
+            </div>
+            <div className="text-[10px] text-slate-400 mt-1">
+              Toplam {stats.totalApplications} başvuru
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="text-xs text-slate-500 mb-1">Red Oranı</div>
+            <div className="text-2xl font-bold text-red-500">
+              {Math.round((stats.rejectionRate || 0) * 100)}<span className="text-base">%</span>
+            </div>
+            <div className="text-[10px] text-slate-400 mt-1">son veriler</div>
+          </div>
+          <div className="card p-4">
+            <div className="text-xs text-slate-500 mb-1">Aktif İlan</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {stats.activeListings}
+            </div>
+            <div className="text-[10px] text-slate-400 mt-1">yayında</div>
+          </div>
+        </div>
+      )}
+
+      {/* #89: Trendler */}
+      {stats && stats.totalApplications > 0 && (
+        <>
+          <DailyTrendLine data={stats.dailyTrend} />
+          <div className="grid lg:grid-cols-2 gap-4">
+            <StatusDonut data={stats.byStatus} />
+            <PositionBar data={stats.byPosition} />
+          </div>
+        </>
+      )}
 
       <div className="card">
         <div className="card-header">
