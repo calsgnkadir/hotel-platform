@@ -54,4 +54,77 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("listingId") Long listingId,
             @Param("q") String q,
             Pageable pageable);
+
+    // ----------------------------------------------------------------
+    // #88: Dashboard stats (aggregation)
+    // ----------------------------------------------------------------
+
+    /** İşletme: belirli aralıkta başvuru sayısı. */
+    @Query("""
+        SELECT COUNT(a) FROM Application a
+        WHERE a.jobListing.business.owner.id = :ownerId
+          AND a.createdAt >= :start
+          AND a.createdAt < :end
+    """)
+    long countBusinessApplicationsInRange(
+            @Param("ownerId") Long ownerId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
+
+    /** İşletme: status bazlı sayım. [status, count] çiftleri. */
+    @Query("""
+        SELECT a.status, COUNT(a) FROM Application a
+        WHERE a.jobListing.business.owner.id = :ownerId
+        GROUP BY a.status
+    """)
+    List<Object[]> countBusinessApplicationsByStatus(@Param("ownerId") Long ownerId);
+
+    /** İşletme: pozisyon bazlı sayım. [position, count] çiftleri. */
+    @Query("""
+        SELECT a.jobListing.position, COUNT(a) FROM Application a
+        WHERE a.jobListing.business.owner.id = :ownerId
+        GROUP BY a.jobListing.position
+        ORDER BY COUNT(a) DESC
+    """)
+    List<Object[]> countBusinessApplicationsByPosition(@Param("ownerId") Long ownerId);
+
+    /** İşletme: günlük başvuru sayımı, son N gün için. [date, count] çiftleri. */
+    @Query("""
+        SELECT CAST(a.createdAt AS LocalDate), COUNT(a) FROM Application a
+        WHERE a.jobListing.business.owner.id = :ownerId
+          AND a.createdAt >= :since
+        GROUP BY CAST(a.createdAt AS LocalDate)
+        ORDER BY CAST(a.createdAt AS LocalDate) ASC
+    """)
+    List<Object[]> dailyApplicationCountForBusiness(
+            @Param("ownerId") Long ownerId,
+            @Param("since") LocalDateTime since);
+
+    /** Aday: status bazlı sayım. */
+    @Query("""
+        SELECT a.status, COUNT(a) FROM Application a
+        WHERE a.candidate.id = :candidateId
+        GROUP BY a.status
+    """)
+    List<Object[]> countCandidateApplicationsByStatus(@Param("candidateId") Long candidateId);
+
+    /** Aday: aylık başvuru sayımı (YYYY-MM key). */
+    @Query("""
+        SELECT FUNCTION('DATE_FORMAT', a.createdAt, '%Y-%m'), COUNT(a) FROM Application a
+        WHERE a.candidate.id = :candidateId
+          AND a.createdAt >= :since
+        GROUP BY FUNCTION('DATE_FORMAT', a.createdAt, '%Y-%m')
+        ORDER BY FUNCTION('DATE_FORMAT', a.createdAt, '%Y-%m') ASC
+    """)
+    List<Object[]> monthlyApplicationCountForCandidate(
+            @Param("candidateId") Long candidateId,
+            @Param("since") LocalDateTime since);
+
+    /** Aday: ortalama yanıt süresi (saat). reviewedAt - createdAt. Null safe. */
+    @Query("""
+        SELECT AVG(FUNCTION('TIMESTAMPDIFF', SECOND, a.createdAt, a.reviewedAt)) FROM Application a
+        WHERE a.candidate.id = :candidateId
+          AND a.reviewedAt IS NOT NULL
+    """)
+    Double avgResponseSecondsForCandidate(@Param("candidateId") Long candidateId);
 }

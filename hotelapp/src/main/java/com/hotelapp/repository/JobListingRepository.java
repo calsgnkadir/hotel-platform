@@ -10,4 +10,7 @@ public interface JobListingRepository
         extends JpaRepository<JobListing, Long>, JpaSpecificationExecutor<JobListing> {
 
     List<JobListing> findAllByBusiness_OwnerId(Long ownerId);
+
+    /** #88: Bir işletmenin belirli statüde kaç ilanı var? (örn. ACTIVE) */
+    long countByBusiness_OwnerIdAndStatus(Long ownerId, com.hotelapp.enums.ListingStatus status);
 }
