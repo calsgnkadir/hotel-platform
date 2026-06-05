@@ -102,7 +102,9 @@ export default function NotificationBell({ onNavigate }) {
   return (
     <div className="relative" ref={ref}>
       <button onClick={toggleOpen}
-        className="relative p-2 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-white"
+        className="relative w-9 h-9 rounded-lg flex items-center justify-center transition-colors
+                   bg-slate-100 hover:bg-slate-200 text-slate-700
+                   dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200"
         title="Bildirimler">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
              strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
@@ -117,12 +119,14 @@ export default function NotificationBell({ onNavigate }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-            <span className="font-semibold text-slate-800 text-sm">Bildirimler</span>
+        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl shadow-xl z-50 overflow-hidden
+                        bg-white border border-slate-200
+                        dark:bg-slate-900 dark:border-slate-700">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+            <span className="font-semibold text-sm text-slate-800 dark:text-slate-100">Bildirimler</span>
             {unread > 0 && (
               <button onClick={handleMarkAll}
-                className="text-xs font-medium text-violet-600 hover:text-violet-800">
+                className="text-xs font-medium text-brand-700 dark:text-brand-400 hover:underline">
                 Tümünü okundu işaretle
               </button>
             )}
@@ -132,24 +136,26 @@ export default function NotificationBell({ onNavigate }) {
             {loading ? (
               <div className="py-10 flex justify-center"><div className="spinner" /></div>
             ) : items.length === 0 ? (
-              <div className="py-10 text-center text-slate-400 text-sm">
+              <div className="py-10 text-center text-slate-400 dark:text-slate-500 text-sm">
                 <div className="text-3xl mb-2">📭</div>
                 Henüz bildirim yok
               </div>
             ) : (
               items.map(n => (
                 <button key={n.id} onClick={() => handleItemClick(n)}
-                  className={`w-full text-left px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors flex gap-3
-                    ${!n.isRead ? 'bg-violet-50/40' : ''}`}>
+                  className={`w-full text-left px-4 py-3 border-b transition-colors flex gap-3
+                              border-slate-50 hover:bg-slate-50
+                              dark:border-slate-800 dark:hover:bg-slate-800
+                              ${!n.isRead ? 'bg-brand-50/40 dark:bg-brand-900/20' : ''}`}>
                   <span className="text-lg flex-shrink-0">{TYPE_ICON[n.type] || '🔔'}</span>
                   <div className="min-w-0 flex-1">
-                    <div className={`text-sm ${!n.isRead ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>
+                    <div className={`text-sm ${!n.isRead ? 'font-semibold text-slate-800 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'}`}>
                       {n.title}
                     </div>
-                    {n.message && <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.message}</div>}
-                    <div className="text-[11px] text-slate-400 mt-1">{timeAgo(n.createdAt)}</div>
+                    {n.message && <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</div>}
+                    <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{timeAgo(n.createdAt)}</div>
                   </div>
-                  {!n.isRead && <span className="w-2 h-2 rounded-full bg-violet-500 flex-shrink-0 mt-1.5" />}
+                  {!n.isRead && <span className="w-2 h-2 rounded-full bg-brand-600 dark:bg-brand-400 flex-shrink-0 mt-1.5" />}
                 </button>
               ))
             )}

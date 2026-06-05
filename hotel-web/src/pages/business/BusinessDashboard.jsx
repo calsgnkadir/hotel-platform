@@ -251,7 +251,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
+        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white dark:bg-slate-900 z-10">
           <h2 className="text-lg font-bold text-slate-900">
             {isEdit ? 'İlanı Düzenle' : 'Yeni İlan Oluştur'}
           </h2>
@@ -333,7 +333,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
           {(() => {
             const todayStr = new Date().toISOString().split('T')[0]
             return (
-              <div className="border-2 border-violet-100 rounded-xl p-4 bg-violet-50/40 space-y-3">
+              <div className="border-2 border-brand-100 dark:border-brand-900/40 rounded-xl p-4 bg-brand-50/40 dark:bg-brand-900/20 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <label className="label !mb-0">Vardiyalar *</label>
@@ -341,7 +341,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
                       Adaylar bu vardiyalardan birine veya birkaçına başvurabilir
                     </p>
                   </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300">
                     {slots.length} vardiya
                   </span>
                 </div>
@@ -411,7 +411,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
                 </div>
 
                 <button type="button" onClick={addSlot}
-                  className="w-full py-2 text-sm font-semibold text-violet-700 bg-white border-2 border-dashed border-violet-300 rounded-lg hover:bg-violet-100 transition-colors">
+                  className="w-full py-2 text-sm font-semibold text-brand-700 dark:text-brand-400 bg-white border-2 border-dashed border-brand-400 dark:border-brand-600 rounded-lg hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors">
                   + Vardiya Ekle
                 </button>
               </div>
@@ -436,11 +436,11 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
             </p>
           </div>
 
-          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white py-3 -mx-6 px-6 border-t border-slate-100">
+          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white dark:bg-slate-900 py-3 -mx-6 px-6 border-t border-slate-100">
             <button type="button" onClick={onClose} className="btn-secondary flex-1">İptal</button>
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+              style={{ background: '#047857' }}>
               {loading
                 ? (isEdit ? 'Güncelleniyor...' : 'Oluşturuluyor...')
                 : (isEdit ? 'Güncelle' : 'İlan Oluştur →')}
@@ -486,7 +486,7 @@ function WorkingHoursEditor({ value, onChange }) {
                 <input type="checkbox"
                   checked={!h.closed}
                   onChange={e => updateDay(d.key, { closed: !e.target.checked })}
-                  className="w-4 h-4 accent-violet-600" />
+                  className="w-4 h-4 accent-brand-700" />
                 <span className={h.closed ? 'text-slate-400' : 'text-slate-700'}>
                   {h.closed ? 'Kapalı' : 'Açık'}
                 </span>
@@ -510,7 +510,7 @@ function WorkingHoursEditor({ value, onChange }) {
 
       <div className="flex justify-end mt-2">
         <button type="button" onClick={copyToAll}
-          className="text-xs text-violet-600 hover:text-violet-800 font-medium">
+          className="text-xs text-brand-700 dark:text-brand-400 hover:underline font-medium">
           ⎘ Pazartesi saatlerini tüm günlere uygula
         </button>
       </div>
@@ -560,7 +560,7 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
 
   return (
     <div className="card p-5 space-y-5">
-      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Görseller</h3>
+      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Görseller</h3>
 
       {/* Logo */}
       <div>
@@ -577,8 +577,8 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
           <div className="flex-1 space-y-2">
             <label className={`block px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
               ${logoUploading
-                ? 'bg-violet-50 text-violet-400 cursor-wait'
-                : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}>
+                ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-400 dark:text-brand-500 cursor-wait'
+                : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
               <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
                 onChange={handleLogoChange} disabled={logoUploading} />
               {logoUploading
@@ -676,7 +676,7 @@ function WorkersTab({ applications, onOpenMessages }) {
           <div className="text-xs text-slate-500 mt-0.5">Farklı Aday Çalıştı</div>
         </div>
         <div className="stat-card">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mb-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center mb-3">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                  strokeWidth={1.8} stroke="white" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round"
@@ -699,12 +699,12 @@ function WorkersTab({ applications, onOpenMessages }) {
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                       style={{ background: '#047857' }}>
                     {w.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <div className="font-semibold text-slate-800 truncate">{w.candidate?.fullName}</div>
+                  <div className="font-semibold text-slate-800 dark:text-slate-100 truncate">{w.candidate?.fullName}</div>
                   <div className="text-xs text-slate-500 mt-0.5">{w.candidate?.email}</div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
                     <span className="text-slate-600">⏱️ {w.totalHours.toFixed(1)} saat</span>
@@ -724,7 +724,7 @@ function WorkersTab({ applications, onOpenMessages }) {
                     onOpenMessages?.()
                   } catch (err) { toast.error(extractErrorMessage(err)) }
                 }}
-                className="text-xs px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors font-medium flex-shrink-0">
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium flex-shrink-0">
                 💬 Mesaj
               </button>
             </div>
@@ -866,7 +866,7 @@ function ProfileTab() {
 
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Temel Bilgiler</h3>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Temel Bilgiler</h3>
 
         <div>
           <label className="label">İşletme Adı *</label>
@@ -914,7 +914,7 @@ function ProfileTab() {
 
       {/* İletişim */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">İletişim</h3>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">İletişim</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -946,7 +946,7 @@ function ProfileTab() {
 
       {/* Çalışma saatleri */}
       <div className="card p-5 space-y-3">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Çalışma Saatleri</h3>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Çalışma Saatleri</h3>
         <WorkingHoursEditor
           value={parseWorkingHours(form.workingHours)}
           onChange={(struct) =>
@@ -959,7 +959,7 @@ function ProfileTab() {
       <div className="flex justify-end gap-3">
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', boxShadow: '0 3px 12px rgba(124,58,237,0.3)' }}>
+          style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.3)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
       </div>
@@ -1008,7 +1008,7 @@ function MyListingsTab() {
         <p className="text-sm text-slate-500">{listings.length} ilan</p>
         <button onClick={() => setFormTarget('new')}
           className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+          style={{ background: '#047857' }}>
           + Yeni İlan
         </button>
       </div>
@@ -1021,7 +1021,7 @@ function MyListingsTab() {
             <p className="text-sm text-slate-500 mt-1">İlk ilanınızı oluşturun</p>
             <button onClick={() => setFormTarget('new')}
               className="mt-4 px-4 py-2 text-sm font-semibold text-white rounded-lg"
-              style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+              style={{ background: '#047857' }}>
               İlan Oluştur
             </button>
           </div>
@@ -1033,7 +1033,7 @@ function MyListingsTab() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-slate-800">{listing.title}</h3>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">{listing.title}</h3>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                       listing.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' :
                       listing.status === 'PAUSED' ? 'bg-amber-50 text-amber-700' :
@@ -1061,7 +1061,7 @@ function MyListingsTab() {
                       ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}–${next.endTime?.slice(0, 5)}`
                       : null
                     return (
-                      <p className="text-xs text-violet-600 font-medium mt-0.5">
+                      <p className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-0.5">
                         🗓 {total} vardiya
                         {nextStr && ` · en yakın: ${nextStr}`}
                         {totalSeats > 0 && ` · ${filled}/${totalSeats} dolu`}
@@ -1075,7 +1075,7 @@ function MyListingsTab() {
                 <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => setFormTarget(listing)}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors font-medium">
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
                       Düzenle
                     </button>
                   )}
@@ -1230,8 +1230,8 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150
                   ${filter === f
                     ? 'text-white shadow-sm'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
-                style={filter === f ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+                style={style={filter === f ? { background: '#047857' } : {}}}>
                 {labels[f]} ({count})
               </button>
             )
@@ -1258,7 +1258,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
             </div>
           </div>
         ) : pageItems.map(app => (
-          <div key={app.id} className="card hover:border-violet-200 cursor-pointer transition-all"
+          <div key={app.id} className="card hover:border-brand-300 dark:hover:border-brand-700 cursor-pointer transition-all"
                onClick={() => setSelected(app)}>
             <div className="p-4 flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
@@ -1267,12 +1267,12 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                       style={{ background: '#047857' }}>
                     {app.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
                 <div>
-                  <div className="font-semibold text-slate-800">{app.candidate?.fullName}</div>
+                  <div className="font-semibold text-slate-800 dark:text-slate-100">{app.candidate?.fullName}</div>
                   <div className="text-xs text-slate-500">{app.candidate?.email}</div>
                   <div className="text-xs text-slate-400 mt-0.5">{app.listing?.title}</div>
                   <div className="text-xs text-slate-400">
@@ -1287,7 +1287,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   <button onClick={e => { e.stopPropagation(); handleReview(app.id) }}
                     disabled={actionLoading}
                     className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all"
-                    style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                    style={{ background: '#047857' }}>
                     İncelemeye Al
                   </button>
                 )}
@@ -1308,7 +1308,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
             <div className="flex items-center gap-2">
               <button onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={safePage === 0}
-                className="px-3 py-1.5 rounded-md bg-white border border-slate-200 hover:border-violet-300 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+                className="px-3 py-1.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
                 ← Önceki
               </button>
               <span className="font-semibold text-slate-700">
@@ -1316,7 +1316,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
               </span>
               <button onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
                 disabled={safePage >= pageCount - 1}
-                className="px-3 py-1.5 rounded-md bg-white border border-slate-200 hover:border-violet-300 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+                className="px-3 py-1.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
                 Sonraki →
               </button>
             </div>
@@ -1336,7 +1336,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                       className="w-14 h-14 rounded-full object-cover border border-slate-200 flex-shrink-0" />
                   ) : (
                     <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                         style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                         style={{ background: '#047857' }}>
                       {selected.candidate?.fullName?.charAt(0) || '?'}
                     </div>
                   )}
@@ -1371,7 +1371,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Müsaitlik Saatleri</h3>
                   <div className="flex flex-wrap gap-2">
                     {selected.availabilities.map((av, i) => (
-                      <span key={i} className="px-3 py-1.5 bg-violet-50 text-violet-700 text-xs font-medium rounded-lg border border-violet-200">
+                      <span key={i} className="px-3 py-1.5 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-xs font-medium rounded-lg border border-brand-200 dark:border-brand-800">
                         {av.dayOfWeek} · {av.startTime}–{av.endTime}
                       </span>
                     ))}
@@ -1413,7 +1413,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                             <div className="text-xs text-slate-400 truncate">{doc.originalFileName}</div>
                           </div>
                           <button onClick={() => handleViewDoc(doc)}
-                            className="text-xs font-semibold px-3 py-1.5 rounded-md bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors flex-shrink-0">
+                            className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-900/60 transition-colors flex-shrink-0">
                             Görüntüle
                           </button>
                         </div>
@@ -1462,7 +1462,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                       </select>
                       <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
                         className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all"
-                        style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                        style={{ background: '#047857' }}>
                         Talep Et
                       </button>
                     </div>
@@ -1544,7 +1544,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                     }
                   }}
                   className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
-                  style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                  style={{ background: '#047857' }}>
                   💬 Mesaj Gönder
                 </button>
               )}
@@ -1579,7 +1579,7 @@ function OverviewTab({ applications, onTabChange }) {
             svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z' },
           { label: 'Bekleyen',       value: pending,             color: 'from-amber-500 to-amber-600',
             svg: 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
-          { label: 'İnceleniyor',    value: reviewing,           color: 'from-violet-500 to-violet-600',
+          { label: 'İnceleniyor',    value: reviewing,           color: 'from-brand-600 to-brand-700',
             svg: 'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z' },
           { label: 'Kabul Edildi',   value: accepted,            color: 'from-emerald-500 to-emerald-600',
             svg: 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
@@ -1602,7 +1602,7 @@ function OverviewTab({ applications, onTabChange }) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="card p-4">
             <div className="text-xs text-slate-500 mb-1">Bu Ay</div>
-            <div className="text-2xl font-bold text-violet-600">
+            <div className="text-2xl font-bold text-brand-700 dark:text-brand-400">
               {stats.thisMonthApplications}
             </div>
             <div className="text-[10px] text-slate-400 mt-1">
@@ -1653,9 +1653,9 @@ function OverviewTab({ applications, onTabChange }) {
 
       <div className="card">
         <div className="card-header">
-          <h2 className="font-semibold text-slate-800">Son Başvurular</h2>
+          <h2 className="font-semibold text-slate-800 dark:text-slate-100">Son Başvurular</h2>
           <button onClick={() => onTabChange('applications')}
-            className="text-xs font-medium" style={{ color: '#7c3aed' }}>Tümünü Gör →</button>
+            className="text-xs font-medium" className="text-brand-700 dark:text-brand-400" style={{}}>Tümünü Gör →</button>
         </div>
         {applications.length === 0 ? (
           <div className="empty-state">
@@ -1677,7 +1677,7 @@ function OverviewTab({ applications, onTabChange }) {
                 {applications.slice(0, 5).map(app => (
                   <tr key={app.id}>
                     <td>
-                      <div className="font-medium text-slate-800">{app.candidate?.fullName}</div>
+                      <div className="font-medium text-slate-800 dark:text-slate-100">{app.candidate?.fullName}</div>
                       <div className="text-xs text-slate-400">{app.candidate?.email}</div>
                     </td>
                     <td className="hidden md:table-cell text-slate-600 text-sm">{app.listing?.title}</td>

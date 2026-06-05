@@ -59,7 +59,7 @@ function OverviewTab() {
   const cards = [
     { label: 'Toplam Kullanıcı', value: stats.totalUsers,         color: 'from-blue-500 to-blue-600',
       svg: 'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z' },
-    { label: 'Aday',             value: stats.candidates,         color: 'from-violet-500 to-violet-600',
+    { label: 'Aday',             value: stats.candidates,         color: 'from-brand-600 to-brand-700',
       svg: 'M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z' },
     { label: 'İşletme',          value: stats.businessOwners,     color: 'from-emerald-500 to-emerald-600',
       svg: 'M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21' },
@@ -145,7 +145,7 @@ function UserDetailModal({ user, onClose, onUpdated }) {
             </div>
             <span className={`text-xs font-semibold px-2 py-1 rounded-full
               ${isAdmin ? 'bg-amber-100 text-amber-700'
-                : isCandidate ? 'bg-violet-100 text-violet-700'
+                : isCandidate ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300'
                 : 'bg-emerald-100 text-emerald-700'}`}>
               {ROLE_LABELS[user.role]}
             </span>
@@ -274,8 +274,8 @@ function UsersTab() {
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                 ${roleFilter === f.value
                   ? 'text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
-              style={roleFilter === f.value ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+              style={roleFilter === f.value ? { background: '#047857' } : {}}>
               {f.label}
             </button>
           ))}
@@ -322,7 +322,7 @@ function UsersTab() {
                   <td>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
                       ${u.role === 'ADMIN' ? 'bg-amber-100 text-amber-700'
-                        : u.role === 'CANDIDATE' ? 'bg-violet-100 text-violet-700'
+                        : u.role === 'CANDIDATE' ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300'
                         : 'bg-emerald-100 text-emerald-700'}`}>
                       {ROLE_LABELS[u.role]}
                     </span>
@@ -344,7 +344,7 @@ function UsersTab() {
                   </td>
                   <td>
                     <button onClick={() => openDetail(u)}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-md bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors">
+                      className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-900/60 transition-colors">
                       Yönet
                     </button>
                   </td>
@@ -418,8 +418,8 @@ function ReportsTab() {
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
               ${statusFilter === f.value
                 ? 'text-white shadow-sm'
-                : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
-            style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+            style={statusFilter === f.value ? { background: '#047857' } : {}}>
             {f.label}
           </button>
         ))}
@@ -531,8 +531,8 @@ function AuditTab() {
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
               ${actionFilter === f.value
                 ? 'text-white shadow-sm'
-                : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
-            style={actionFilter === f.value ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+            style={actionFilter === f.value ? { background: '#047857' } : {}}>
             {f.label}
           </button>
         ))}

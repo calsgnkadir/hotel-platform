@@ -63,12 +63,11 @@ export default function RegisterPage() {
       <div className="auth-card" style={{ maxWidth: '500px' }}>
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
-               style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
-            <span className="text-2xl">🏨</span>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3 bg-brand-700">
+            <span className="text-white text-xl font-bold">A</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">AjansHotel'e Katıl</h1>
-          <p className="text-sm text-slate-500 mt-1">İstanbul'un otel iş platformu</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">AjansHotel'e Katıl</h1>
+          <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">İstanbul'un iş platformu</p>
         </div>
 
         {/* Step indicator */}
@@ -76,14 +75,13 @@ export default function RegisterPage() {
           {[1, 2].map(n => (
             <div key={n} className="flex items-center gap-2 flex-1">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors
-                ${step >= n ? 'text-white' : 'bg-slate-100 text-slate-400'}`}
-                   style={step >= n ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                ${step >= n ? 'bg-brand-700 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'}`}>
                 {n}
               </div>
-              {n < 2 && <div className={`flex-1 h-0.5 rounded transition-colors ${step > n ? 'bg-violet-400' : 'bg-slate-200'}`} />}
+              {n < 2 && <div className={`flex-1 h-0.5 rounded transition-colors ${step > n ? 'bg-brand-400' : 'bg-slate-200 dark:bg-slate-700'}`} />}
             </div>
           ))}
-          <span className="text-xs text-slate-500 ml-1">
+          <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">
             {step === 1 ? 'Hesap türü' : 'Bilgileriniz'}
           </span>
         </div>
@@ -97,22 +95,22 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => goToStep2(opt.value)}
                 className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200
-                           hover:border-violet-400 hover:bg-violet-50 transition-all duration-200 text-left group"
+                           hover:border-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/30 transition-all duration-200 text-left group"
               >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 bg-slate-100 group-hover:bg-violet-100 transition-colors">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 bg-slate-100 group-hover:bg-brand-100 dark:group-hover:bg-brand-900/50 transition-colors">
                   {opt.icon}
                 </div>
                 <div>
                   <div className="font-semibold text-slate-800">{opt.title}</div>
                   <div className="text-xs text-slate-500 mt-0.5">{opt.desc}</div>
                 </div>
-                <span className="ml-auto text-slate-400 group-hover:text-violet-500 transition-colors">→</span>
+                <span className="ml-auto text-slate-400 group-hover:text-brand-600 transition-colors">→</span>
               </button>
             ))}
 
             <p className="text-sm text-center text-slate-500 mt-4">
               Zaten hesabın var mı?{' '}
-              <Link to="/login" className="font-semibold hover:text-violet-700" style={{ color: '#7c3aed' }}>
+              <Link to="/login" className="font-semibold text-brand-700 dark:text-brand-400 hover:underline">
                 Giriş yap
               </Link>
             </p>
@@ -129,7 +127,7 @@ export default function RegisterPage() {
                 ← Geri
               </button>
               <span className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ background: '#f3e8ff', color: '#7c3aed' }}>
+                    style={{ background: '#d1fae5', color: '#047857' }}>
                 {selectedRole === 'CANDIDATE' ? '💼 Aday' : '🏨 İşletme Sahibi'}
               </span>
             </div>
@@ -207,8 +205,8 @@ export default function RegisterPage() {
                       <label key={value}
                         className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 cursor-pointer text-center transition-all
                           ${watch('businessType') === value
-                            ? 'border-violet-500 bg-violet-50'
-                            : 'border-slate-200 hover:border-violet-300'}`}
+                            ? 'border-brand-600 bg-brand-50 dark:bg-brand-900/30'
+                            : 'border-slate-200 dark:border-slate-700 hover:border-brand-400'}`}
                       >
                         <input type="radio" value={value}
                           {...register('businessType', { required: 'İşletme türü seçin' })}
@@ -216,7 +214,7 @@ export default function RegisterPage() {
                         <span className="text-lg">
                           {value === 'HOTEL' ? '🏨' : value === 'RESTAURANT' ? '🍽️' : '☕'}
                         </span>
-                        <span className={`text-xs font-semibold ${watch('businessType') === value ? 'text-violet-700' : 'text-slate-600'}`}>
+                        <span className={`text-xs font-semibold ${watch('businessType') === value ? 'text-brand-700' : 'text-slate-600 dark:text-slate-300'}`}>
                           {label}
                         </span>
                       </label>
@@ -282,13 +280,13 @@ export default function RegisterPage() {
 
             <p className="text-sm text-center text-slate-500">
               Zaten hesabın var mı?{' '}
-              <Link to="/login" className="font-semibold hover:text-violet-700" style={{ color: '#7c3aed' }}>
+              <Link to="/login" className="font-semibold text-brand-700 dark:text-brand-400 hover:underline">
                 Giriş yap
               </Link>
             </p>
             <p className="text-xs text-center text-slate-400 mt-2">
               Kayıt olarak{' '}
-              <Link to="/kvkk" className="underline hover:text-violet-600">
+              <Link to="/kvkk" className="underline hover:text-brand-700 dark:hover:text-brand-400">
                 KVKK Aydınlatma Metni
               </Link>
               'ni okuduğunu kabul edersin.

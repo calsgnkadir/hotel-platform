@@ -111,10 +111,10 @@ function ApplyModal({ listing, onClose, onSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
+        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white dark:bg-slate-900 z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
-                 style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                 style={{ background: '#047857' }}>
               {BUSINESS_TYPE_ICONS[listing.businessType] || '🏨'}
             </div>
             <div>
@@ -159,11 +159,11 @@ function ApplyModal({ listing, onClose, onSuccess }) {
                         ${full
                           ? 'border-slate-200 bg-slate-50 cursor-not-allowed opacity-60'
                           : selected
-                            ? 'border-violet-400 bg-violet-50 cursor-pointer shadow-sm'
-                            : 'border-slate-200 bg-white cursor-pointer hover:border-violet-300'}`}>
+                            ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 dark:border-brand-500 cursor-pointer shadow-sm'
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer hover:border-brand-400 dark:hover:border-brand-500'}`}>
                       <input type="checkbox" checked={selected} disabled={full}
                         onChange={() => toggleSlot(s.id, full)}
-                        className="w-4 h-4 accent-violet-600" />
+                        className="w-4 h-4 accent-brand-700" />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-slate-800">
                           📅 {dateLabel} · 🕐 {timeLabel}
@@ -179,7 +179,7 @@ function ApplyModal({ listing, onClose, onSuccess }) {
                 })}
               </div>
               {selectedSlotIds.length > 0 && (
-                <p className="text-xs text-violet-600 font-medium mt-2">
+                <p className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-2">
                   ✓ {selectedSlotIds.length} vardiya seçtin
                 </p>
               )}
@@ -201,10 +201,10 @@ function ApplyModal({ listing, onClose, onSuccess }) {
                     <label key={type}
                       className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-all
                         ${checked
-                          ? 'border-violet-400 bg-violet-50'
-                          : 'border-slate-200 hover:border-violet-300'}`}>
+                          ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 dark:border-brand-500'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
                       <input type="checkbox" checked={checked} onChange={() => toggleGrant(type)}
-                        className="w-4 h-4 accent-violet-600" />
+                        className="w-4 h-4 accent-brand-700" />
                       <span className="text-sm text-slate-700">{SENSITIVE_DOC_LABELS[type]}</span>
                     </label>
                   )
@@ -223,11 +223,11 @@ function ApplyModal({ listing, onClose, onSuccess }) {
           )}
 
           {/* Footer */}
-          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white py-3 -mx-6 px-6 border-t border-slate-100">
+          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white dark:bg-slate-900 py-3 -mx-6 px-6 border-t border-slate-100">
             <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm">İptal</button>
             <button type="submit" disabled={loading || !hasSlots}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', boxShadow: '0 3px 12px rgba(124,58,237,0.35)' }}>
+              style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
               {loading ? 'Gönderiliyor...' : 'Başvur →'}
             </button>
           </div>
@@ -252,10 +252,10 @@ function DetailModal({ listing, onClose, onApply }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
+        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white dark:bg-slate-900 z-10">
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
-                 style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                 style={{ background: '#047857' }}>
               {BUSINESS_TYPE_ICONS[listing.businessType] || '🏨'}
             </div>
             <div className="flex-1 min-w-0">
@@ -268,7 +268,7 @@ function DetailModal({ listing, onClose, onApply }) {
                 )}
               </div>
             </div>
-            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-violet-50 text-violet-700 flex-shrink-0">
+            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 flex-shrink-0">
               {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
             </span>
           </div>
@@ -354,7 +354,7 @@ function DetailModal({ listing, onClose, onApply }) {
                   return (
                     <div key={s.id}
                       className={`flex items-center justify-between rounded-lg px-3 py-2 border
-                        ${full ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-violet-50/50 border-violet-100'}`}>
+                        ${full ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-brand-50/60 dark:bg-brand-900/20 border-brand-100 dark:border-brand-900/40'}`}>
                       <div className="text-sm">
                         <span className="font-medium text-slate-800">📅 {dateLabel}</span>
                         <span className="text-slate-500 ml-2">🕐 {s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
@@ -372,7 +372,7 @@ function DetailModal({ listing, onClose, onApply }) {
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-slate-100 sticky bottom-0 bg-white items-center">
+        <div className="flex gap-3 p-6 border-t border-slate-100 sticky bottom-0 bg-white dark:bg-slate-900 items-center">
           <button onClick={() => setShowReport(true)}
             title="Bu ilanı bildir"
             className="text-sm px-3 py-2.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0">
@@ -381,7 +381,7 @@ function DetailModal({ listing, onClose, onApply }) {
           <button onClick={onClose} className="btn-secondary flex-1 text-sm">Kapat</button>
           <button onClick={() => { onApply(listing); onClose() }}
             className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', boxShadow: '0 3px 12px rgba(124,58,237,0.35)' }}>
+            style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
             Başvur →
           </button>
         </div>
@@ -407,20 +407,20 @@ function ListingCard({ listing, onApply, onDetail }) {
   return (
     <div
       onClick={() => onDetail(listing)}
-      className="card cursor-pointer hover:border-violet-200 hover:-translate-y-1 transition-all duration-200 group"
+      className="card cursor-pointer hover:border-brand-400 dark:hover:border-brand-500 hover:-translate-y-1 transition-all duration-200 group"
     >
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0 shadow-sm"
-               style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+               style={{ background: '#047857' }}>
             {BUSINESS_TYPE_ICONS[listing.businessType] || '🏨'}
           </div>
-          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-violet-50 text-violet-700">
+          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
             {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
           </span>
         </div>
 
-        <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2 group-hover:text-violet-700 transition-colors">
+        <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2 group-hover:text-brand-700 dark:text-brand-400 transition-colors">
           {listing.title}
         </h3>
         <div className="flex items-center gap-2 flex-wrap mt-0.5">
@@ -458,7 +458,7 @@ function ListingCard({ listing, onApply, onDetail }) {
             ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}`
             : null
           return (
-            <div className="text-xs text-violet-600 font-medium mt-1">
+            <div className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-1">
               🗓 {slots.length} vardiya
               {openCount === 0 && ' · ⚠ tümü dolu'}
               {openCount > 0 && nextStr && ` · ${nextStr}`}
@@ -473,14 +473,14 @@ function ListingCard({ listing, onApply, onDetail }) {
         <div className="flex gap-2 mt-4">
           <button
             onClick={(e) => { e.stopPropagation(); onDetail(listing) }}
-            className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-700 transition-all">
+            className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400 dark:hover:border-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-all">
             Detay
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onApply(listing) }}
             className="flex-1 py-2 px-3 text-sm font-semibold text-white rounded-lg
                        transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', boxShadow: '0 3px 12px rgba(124,58,237,0.3)' }}>
+            style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.3)' }}>
             Başvur
           </button>
         </div>
@@ -583,7 +583,7 @@ export default function ListingsPage({ onApplicationSubmitted }) {
           className="sm:hidden btn-secondary text-sm flex items-center gap-1.5">
           🔧 Filtreler
           {activeFilterCount > 0 && (
-            <span className="bg-violet-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+            <span className="bg-brand-700 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
               {activeFilterCount}
             </span>
           )}
@@ -651,8 +651,8 @@ export default function ListingsPage({ onApplicationSubmitted }) {
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                     ${active
                       ? 'text-white shadow-sm'
-                      : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
-                  style={active ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                      : 'bg-white text-slate-600 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+                  style={active ? { background: '#047857' } : {}}>
                   {p.label}
                 </button>
               )
@@ -685,8 +685,8 @@ export default function ListingsPage({ onApplicationSubmitted }) {
                 <button key={key} type="button" onClick={() => toggleShift(key)}
                   className={`p-2.5 rounded-lg border text-xs font-medium transition-all text-center
                     ${active
-                      ? 'border-violet-400 bg-violet-50 text-violet-700 shadow-sm'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300'}`}>
+                      ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-sm'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
                   <div>{s.icon} {s.label}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5 font-normal">{s.time}</div>
                 </button>
@@ -698,7 +698,7 @@ export default function ListingsPage({ onApplicationSubmitted }) {
         {activeFilterCount > 0 && (
           <div className="flex justify-end pt-1">
             <button onClick={clearFilters}
-              className="text-xs text-slate-500 hover:text-violet-600 font-medium">
+              className="text-xs text-slate-500 hover:text-brand-700 dark:text-brand-400 font-medium">
               ✕ Filtreleri temizle
             </button>
           </div>
@@ -715,7 +715,7 @@ export default function ListingsPage({ onApplicationSubmitted }) {
               {activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
             </p>
             {activeFilterCount > 0 ? (
-              <button onClick={clearFilters} className="mt-3 text-sm font-medium" style={{ color: '#7c3aed' }}>
+              <button onClick={clearFilters} className="mt-3 text-sm font-medium" className="text-brand-700 dark:text-brand-400" style={{}}>
                 Filtreleri temizle
               </button>
             ) : (

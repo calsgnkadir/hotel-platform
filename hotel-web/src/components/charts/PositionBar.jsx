@@ -10,7 +10,7 @@ const POSITION_LABELS = {
   SECURITY: 'Güvenlik',
 }
 
-const COLORS = ['#7c3aed', '#2563eb', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+const COLORS = ['#047857', '#0891b2', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
 /**
  * Pozisyona göre başvuru bar chart.

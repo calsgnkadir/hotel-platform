@@ -28,9 +28,9 @@ export default function DailyTrendLine({ data, title = 'Son 30 Gün Başvuru Tre
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart data={chartData} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
           <defs>
-            <linearGradient id="violetGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="#7c3aed" stopOpacity={0} />
+            <linearGradient id="brandGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#047857" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="#047857" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -42,8 +42,8 @@ export default function DailyTrendLine({ data, title = 'Son 30 Gün Başvuru Tre
             contentStyle={{ borderRadius: 8, fontSize: 12, border: '1px solid #e2e8f0' }}
             labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate || label}
             formatter={(v) => [`${v} başvuru`, '']} />
-          <Area type="monotone" dataKey="count" stroke="#7c3aed" strokeWidth={2}
-            fill="url(#violetGrad)" dot={false} activeDot={{ r: 4 }} />
+          <Area type="monotone" dataKey="count" stroke="#047857" strokeWidth={2}
+            fill="url(#brandGrad)" dot={false} activeDot={{ r: 4 }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

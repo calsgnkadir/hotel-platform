@@ -152,8 +152,7 @@ export default function GalleryEditor() {
             onChange={handleFiles} className="hidden" />
           <button onClick={() => fileInputRef.current?.click()}
             disabled={uploading || remaining <= 0}
-            className="text-xs font-semibold px-3 py-2 rounded-lg text-white disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+            className="text-xs font-semibold px-3 py-2 rounded-lg text-white disabled:opacity-50 bg-brand-700 hover:bg-brand-800 transition-colors">
             {uploading ? 'Yükleniyor...' : remaining > 0 ? '+ Foto Ekle' : 'Limit doldu'}
           </button>
         </div>
@@ -177,13 +176,12 @@ export default function GalleryEditor() {
               onDragStart={() => onDragStart(p.id)}
               onDragOver={onDragOver}
               onDrop={() => onDrop(p.id)}
-              className="relative group aspect-square rounded-lg overflow-hidden border-2 border-slate-200 hover:border-violet-300 cursor-move bg-slate-100">
+              className="relative group aspect-square rounded-lg overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-600 cursor-move bg-slate-100 dark:bg-slate-800">
               <img src={p.url} alt="" className="w-full h-full object-cover" loading="lazy" />
 
               {/* Kapak badge'i */}
               {p.isCover && (
-                <div className="absolute top-1 left-1 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-md"
-                     style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                <div className="absolute top-1 left-1 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-md bg-brand-700">
                   ⭐ Kapak
                 </div>
               )}

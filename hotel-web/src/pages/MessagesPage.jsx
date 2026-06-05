@@ -28,39 +28,38 @@ function ConversationItem({ conv, isActive, onClick }) {
   const initials = (conv.otherPartyName || '?').charAt(0).toUpperCase()
   return (
     <button onClick={onClick}
-      className={`w-full text-left px-3 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors
-        ${isActive ? 'bg-violet-50' : ''}`}>
+      className={`w-full text-left px-3 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors
+        ${isActive ? 'bg-brand-50 dark:bg-brand-900/30' : ''}`}>
       <div className="flex items-start gap-3">
         {conv.otherPartyAvatarUrl ? (
           <img src={conv.otherPartyAvatarUrl} alt={conv.otherPartyName}
             className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
         ) : (
           <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-               style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+               style={{ background: '#047857' }}>
             {initials}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <div className="font-semibold text-sm text-slate-800 truncate">
+            <div className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">
               {conv.otherPartyName}
             </div>
-            <div className="text-[10px] text-slate-400 flex-shrink-0">
+            <div className="text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0">
               {formatRelative(conv.lastMessageAt)}
             </div>
           </div>
           {conv.listingTitle && (
-            <div className="text-[10px] text-violet-600 truncate mt-0.5">
+            <div className="text-[10px] text-brand-700 dark:text-brand-400 truncate mt-0.5">
               {conv.listingTitle}
             </div>
           )}
           <div className="flex items-center justify-between gap-2 mt-1">
-            <div className={`text-xs truncate ${conv.unreadCount > 0 ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
-              {conv.lastMessagePreview || <span className="italic text-slate-400">Henüz mesaj yok</span>}
+            <div className={`text-xs truncate ${conv.unreadCount > 0 ? 'text-slate-800 dark:text-slate-100 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
+              {conv.lastMessagePreview || <span className="italic text-slate-400 dark:text-slate-500">Henüz mesaj yok</span>}
             </div>
             {conv.unreadCount > 0 && (
-              <span className="flex-shrink-0 text-[10px] font-bold text-white rounded-full px-1.5 min-w-[18px] text-center"
-                    style={{ background: '#7c3aed' }}>
+              <span className="flex-shrink-0 text-[10px] font-bold text-white rounded-full px-1.5 min-w-[18px] text-center bg-brand-700">
                 {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
               </span>
             )}
@@ -152,11 +151,11 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
   const initials = (conversation.otherPartyName || '?').charAt(0).toUpperCase()
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white">
+    <div className="flex-1 flex flex-col h-full bg-white dark:bg-slate-900">
       {/* Üst başlık */}
-      <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3 flex-shrink-0">
+      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 flex-shrink-0">
         <button onClick={onBack}
-          className="sm:hidden p-1 -ml-1 text-slate-500 hover:text-slate-700">
+          className="sm:hidden p-1 -ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -167,16 +166,16 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
             className="w-9 h-9 rounded-full object-cover border border-slate-200" />
         ) : (
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
-               style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+               style={{ background: '#047857' }}>
             {initials}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-slate-800 text-sm truncate">
+          <div className="font-semibold text-slate-800 dark:text-slate-100 text-sm truncate">
             {conversation.otherPartyName}
           </div>
           {conversation.listingTitle && (
-            <div className="text-xs text-violet-600 truncate">
+            <div className="text-xs text-brand-700 dark:text-brand-400 truncate">
               {conversation.listingTitle}
             </div>
           )}
@@ -184,7 +183,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       </div>
 
       {/* Mesaj akışı */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-slate-50">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-slate-50 dark:bg-slate-950">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="spinner" />
@@ -197,11 +196,10 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
           <div key={m.id} className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm shadow-sm
               ${m.mine
-                ? 'text-white rounded-br-md'
-                : 'bg-white text-slate-700 border border-slate-100 rounded-bl-md'}`}
-              style={m.mine ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                ? 'text-white rounded-br-md bg-brand-700'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-md'}`}>
               <div className="whitespace-pre-wrap break-words">{m.content}</div>
-              <div className={`text-[10px] mt-0.5 text-right ${m.mine ? 'text-white/70' : 'text-slate-400'}`}>
+              <div className={`text-[10px] mt-0.5 text-right ${m.mine ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'}`}>
                 {formatTime(m.sentAt)}{m.mine && m.isRead ? ' · görüldü' : ''}
               </div>
             </div>
@@ -211,14 +209,13 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       </div>
 
       {/* Kompozer */}
-      <form onSubmit={handleSend} className="px-3 py-3 border-t border-slate-100 flex gap-2 flex-shrink-0">
+      <form onSubmit={handleSend} className="px-3 py-3 border-t border-slate-100 dark:border-slate-800 flex gap-2 flex-shrink-0">
         <input type="text" value={draft} onChange={e => setDraft(e.target.value)}
           placeholder="Mesaj yaz..." maxLength={2000}
           className="input text-sm flex-1" disabled={sending} />
         <button type="submit"
           disabled={sending || !draft.trim()}
-          className="px-4 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50 flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+          className="px-4 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50 flex-shrink-0 bg-brand-700 hover:bg-brand-800 transition-colors">
           {sending ? '...' : 'Gönder'}
         </button>
       </form>
@@ -264,10 +261,10 @@ export default function MessagesPage() {
     <div className="card overflow-hidden" style={{ height: 'calc(100vh - 12rem)', minHeight: 480 }}>
       <div className="flex h-full">
         {/* Sol — Sohbet listesi */}
-        <div className={`${showListMobile ? 'flex' : 'hidden sm:flex'} flex-col w-full sm:w-80 sm:min-w-[20rem] border-r border-slate-100 bg-white`}>
-          <div className="px-4 py-3 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-slate-800">Mesajlar</h3>
-            <p className="text-[11px] text-slate-400">{conversations.length} sohbet</p>
+        <div className={`${showListMobile ? 'flex' : 'hidden sm:flex'} flex-col w-full sm:w-80 sm:min-w-[20rem] border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900`}>
+          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Mesajlar</h3>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500">{conversations.length} sohbet</p>
           </div>
           <div className="flex-1 overflow-y-auto">
             {loading ? (

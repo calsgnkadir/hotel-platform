@@ -86,14 +86,14 @@ export default function ChangePasswordCard() {
         <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
           <input type="checkbox" checked={showPasswords}
             onChange={e => setShowPasswords(e.target.checked)}
-            className="w-4 h-4 accent-violet-600" />
+            className="w-4 h-4 accent-brand-700" />
           Şifreleri göster
         </label>
 
         <div className="pt-2">
           <button type="submit" disabled={loading}
             className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', boxShadow: '0 3px 12px rgba(124,58,237,0.3)' }}>
+            style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.3)' }}>
             {loading ? 'Değiştiriliyor...' : 'Şifreyi Güncelle'}
           </button>
         </div>

@@ -154,8 +154,8 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                 ${statusFilter === f.value
                   ? 'text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'}`}
-              style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)' } : {}}>
+                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+              style={statusFilter === f.value ? { background: '#047857' } : {}}>
               {f.label} <span className="opacity-70">({count})</span>
             </button>
           )
@@ -173,11 +173,11 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
           <div className="p-4 flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0"
-                   style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                   style={{ background: '#047857' }}>
                 🏨
               </div>
               <div>
-                <div className="font-semibold text-slate-800">{app.listing?.title}</div>
+                <div className="font-semibold text-slate-800 dark:text-slate-100">{app.listing?.title}</div>
                 <div className="text-xs text-slate-500 mt-0.5">{app.listing?.businessName}</div>
                 <div className="text-xs text-slate-400 mt-1">
                   {new Date(app.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -199,7 +199,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
               {app.status === 'ACCEPTED' && (
                 <button onClick={() => handleStartChat(app)}
                   disabled={openingChatId === app.id}
-                  className="text-xs px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors font-medium disabled:opacity-50">
+                  className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium disabled:opacity-50">
                   {openingChatId === app.id ? 'Açılıyor...' : '💬 Mesaj Gönder'}
                 </button>
               )}
@@ -241,7 +241,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   const hasUploaded = uploadedTypes.has(dr.documentType)
                   return (
                     <div key={dr.id}
-                      className={`rounded-lg px-3 py-2.5 ${isPending ? 'bg-violet-50 border border-violet-200' : 'bg-slate-50'}`}>
+                      className={`rounded-lg px-3 py-2.5 ${isPending ? 'bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800' : 'bg-slate-50'}`}>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <span className="text-sm text-slate-700 font-medium">{label}</span>
                         {!isPending && (
@@ -352,7 +352,7 @@ function HistoryTab({ applications, onOpenMessages }) {
       {/* Özet stat kartları */}
       <div className="grid grid-cols-3 gap-3">
         <div className="stat-card">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mb-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center mb-3">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                  strokeWidth={1.8} stroke="white" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round"
@@ -407,11 +407,11 @@ function HistoryTab({ applications, onOpenMessages }) {
               <div className="p-4 flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                       style={{ background: '#047857' }}>
                     🏨
                   </div>
                   <div className="min-w-0">
-                    <div className="font-semibold text-slate-800 truncate">{app.listing?.title}</div>
+                    <div className="font-semibold text-slate-800 dark:text-slate-100 truncate">{app.listing?.title}</div>
                     <div className="text-xs text-slate-500 mt-0.5">{app.listing?.businessName}</div>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
                       <span className="text-slate-600">📅 {dateLabel}</span>
@@ -445,7 +445,7 @@ function HistoryTab({ applications, onOpenMessages }) {
                           onOpenMessages?.()
                         } catch (err) { toast.error(extractErrorMessage(err)) }
                       }}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors font-medium">
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
                       💬 Mesaj
                     </button>
                   )}
@@ -535,7 +535,7 @@ function DocumentsTab() {
   return (
     <div className="space-y-4">
       <div className="card">
-        <div className="card-header"><h2 className="font-semibold text-slate-800">Belge Yükle</h2></div>
+        <div className="card-header"><h2 className="font-semibold text-slate-800 dark:text-slate-100">Belge Yükle</h2></div>
         <div className="card-body">
           <div className="flex flex-col sm:flex-row gap-3">
             <select value={selectedType} onChange={e => setSelectedType(e.target.value)}
@@ -544,8 +544,8 @@ function DocumentsTab() {
             </select>
             <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
               border-2 border-dashed cursor-pointer text-sm font-medium transition-colors
-              ${uploading ? 'border-violet-300 bg-violet-50 text-violet-400 cursor-wait'
-                : 'border-slate-300 hover:border-violet-400 hover:bg-violet-50 text-slate-600 hover:text-violet-600'}`}>
+              ${uploading ? 'border-brand-400 dark:border-brand-600 bg-brand-50 dark:bg-brand-900/30 text-brand-400 dark:text-brand-500 cursor-wait'
+                : 'border-slate-300 hover:border-brand-500 dark:border-brand-500 hover:bg-brand-50 dark:bg-brand-900/30 text-slate-600 hover:text-brand-700 dark:text-brand-400'}`}>
               <input type="file" className="sr-only" onChange={handleUpload} disabled={uploading}
                 accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx,image/*,application/pdf"/>
               {uploading ? '⏳ Yükleniyor...' : '📎 Dosya Seç (PDF, JPG, PNG, WEBP, HEIC, DOC, max 15 MB)'}
@@ -556,7 +556,7 @@ function DocumentsTab() {
 
       <div className="card">
         <div className="card-header">
-          <h2 className="font-semibold text-slate-800">Belgelerim</h2>
+          <h2 className="font-semibold text-slate-800 dark:text-slate-100">Belgelerim</h2>
           <span className="text-xs text-slate-400">{documents.length} belge</span>
         </div>
         {documents.length === 0 ? (
@@ -597,7 +597,7 @@ function DocumentsTab() {
                     <td>
                       <div className="flex gap-2 justify-end">
                         <button onClick={() => hotelApi.viewDocument(doc.id)}
-                          className="text-xs px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors font-medium">
+                          className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
                           Görüntüle
                         </button>
                         <button onClick={() => handleDelete(doc.id)} className="btn-danger">Sil</button>
@@ -668,7 +668,7 @@ function OverviewTab({ user, applications, onTabChange }) {
             <div className="text-xs text-slate-500 mb-1">Ortalama Yanıt Süresi</div>
             {stats.avgResponseHours != null ? (
               <>
-                <div className="text-2xl font-bold text-violet-600">
+                <div className="text-2xl font-bold text-brand-700 dark:text-brand-400">
                   {stats.avgResponseHours.toFixed(1)}<span className="text-base">sa</span>
                 </div>
                 <div className="text-[10px] text-slate-400 mt-1">
@@ -704,14 +704,14 @@ function OverviewTab({ user, applications, onTabChange }) {
             svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6 9 2.25 2.25L19.5 12m-9.75 9h9.75c.621 0 1.125-.504 1.125-1.125V11.25c0-3-3.375-9-9-9H4.875c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h5.25' },
         ].map(action => (
           <button key={action.tab} onClick={() => onTabChange(action.tab)}
-            className="card text-left p-5 hover:border-violet-200 hover:-translate-y-0.5 transition-all duration-200 w-full">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center mb-3">
+            className="card text-left p-5 hover:border-brand-300 dark:hover:border-brand-700 hover:-translate-y-0.5 transition-all duration-200 w-full">
+            <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center mb-3">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    strokeWidth={1.8} stroke="white" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d={action.svg} />
               </svg>
             </div>
-            <div className="font-semibold text-slate-800 text-sm">{action.label}</div>
+            <div className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{action.label}</div>
             <div className="text-xs text-slate-500 mt-0.5">{action.desc}</div>
           </button>
         ))}
@@ -721,9 +721,9 @@ function OverviewTab({ user, applications, onTabChange }) {
       {applications.length > 0 && (
         <div className="card">
           <div className="card-header">
-            <h2 className="font-semibold text-slate-800">Son Başvurular</h2>
+            <h2 className="font-semibold text-slate-800 dark:text-slate-100">Son Başvurular</h2>
             <button onClick={() => onTabChange('applications')}
-              className="text-xs font-medium" style={{ color: '#7c3aed' }}>Tümü →</button>
+              className="text-xs font-medium" className="text-brand-700 dark:text-brand-400" style={{}}>Tümü →</button>
           </div>
           <div className="divide-y divide-slate-50">
             {applications.slice(0, 3).map(app => (
@@ -877,7 +877,7 @@ function ProfileTab() {
     <div className="space-y-5 max-w-3xl">
     {/* D7: Profil fotoğrafı — form'un dışında ayrı kart (kendi upload akışı) */}
     <div className="card p-5">
-      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Profil Fotoğrafı</h3>
+      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">Profil Fotoğrafı</h3>
       <div className="flex items-center gap-4">
         <div className="w-24 h-24 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
           {profile?.avatarUrl ? (
@@ -889,8 +889,8 @@ function ProfileTab() {
         <div className="flex-1 space-y-2">
           <label className={`block px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
             ${avatarUploading
-              ? 'bg-violet-50 text-violet-400 cursor-wait'
-              : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}>
+              ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-400 dark:text-brand-500 cursor-wait'
+              : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
             <input type="file" className="sr-only" accept="image/*,.heic,.heif"
               onChange={handleAvatarUpload} disabled={avatarUploading} />
             {avatarUploading
@@ -911,7 +911,7 @@ function ProfileTab() {
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Block 1: Temel Bilgiler */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Temel Bilgiler</h3>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Temel Bilgiler</h3>
 
         <div>
           <label className="label">Ad Soyad *</label>
@@ -958,7 +958,7 @@ function ProfileTab() {
 
       {/* Block 2: Eğitim */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Eğitim</h3>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Eğitim</h3>
 
         <div>
           <label className="label">Eğitim Durumu <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
@@ -971,7 +971,7 @@ function ProfileTab() {
 
       {/* Block 3: İş Tercihleri */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">İş Tercihleri</h3>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">İş Tercihleri</h3>
 
         <div>
           <label className="label">Müsaitlik Türü <span className="text-slate-400 font-normal">(birden fazla seçebilirsin)</span></label>
@@ -982,8 +982,8 @@ function ProfileTab() {
                 <button key={key} type="button" onClick={() => toggleSetField('availabilityTypes', key)}
                   className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all
                     ${active
-                      ? 'border-violet-400 bg-violet-50 text-violet-700 shadow-sm'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300'}`}>
+                      ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-sm'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
                   {label}
                 </button>
               )
@@ -1001,7 +1001,7 @@ function ProfileTab() {
 
       {/* Block 4: Diğer */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Diğer</h3>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Diğer</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -1018,7 +1018,7 @@ function ProfileTab() {
       {/* ADIM J: Bildirim tercihleri — ilgilendiği ilçeler + pozisyonlar */}
       <div className="card p-5 space-y-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Bildirim Tercihleri</h3>
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Bildirim Tercihleri</h3>
           <p className="text-xs text-slate-500 mt-1">
             🎯 İlgini çekebilecek yeni ilan açıldığında otomatik bildirim al. Hiçbirini seçmezsen bildirim yok.
           </p>
@@ -1032,10 +1032,10 @@ function ProfileTab() {
               return (
                 <label key={d}
                   className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs cursor-pointer
-                    ${active ? 'bg-violet-50 text-violet-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}>
+                    ${active ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}>
                   <input type="checkbox" checked={active}
                     onChange={() => toggleSetField('preferredDistricts', d)}
-                    className="w-3.5 h-3.5 accent-violet-600" />
+                    className="w-3.5 h-3.5 accent-brand-700" />
                   {d}
                 </label>
               )
@@ -1052,10 +1052,10 @@ function ProfileTab() {
               return (
                 <label key={value}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
-                    ${active ? 'border-violet-400 bg-violet-50 text-violet-700 font-medium' : 'border-slate-200 hover:border-violet-300'}`}>
+                    ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium' : 'border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
                   <input type="checkbox" checked={active}
                     onChange={() => toggleSetField('preferredPositions', value)}
-                    className="w-4 h-4 accent-violet-600" />
+                    className="w-4 h-4 accent-brand-700" />
                   {label}
                 </label>
               )
@@ -1068,7 +1068,7 @@ function ProfileTab() {
       <div className="flex justify-end">
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', boxShadow: '0 3px 12px rgba(124,58,237,0.3)' }}>
+          style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.3)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
       </div>

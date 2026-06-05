@@ -39,7 +39,7 @@ export default function MonthlyTrendBar({ data, title = 'Son 6 Ay Başvurular', 
             cursor={{ fill: '#f8fafc' }}
             labelFormatter={(label, payload) => `${label} ${payload?.[0]?.payload?.year || ''}`}
             formatter={(v) => [`${v} başvuru`, '']} />
-          <Bar dataKey="count" fill="#7c3aed" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="count" fill="#047857" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
