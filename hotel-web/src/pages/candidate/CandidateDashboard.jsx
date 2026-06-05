@@ -723,7 +723,7 @@ function OverviewTab({ user, applications, onTabChange }) {
           <div className="card-header">
             <h2 className="font-semibold text-slate-800 dark:text-slate-100">Son Başvurular</h2>
             <button onClick={() => onTabChange('applications')}
-              className="text-xs font-medium" className="text-brand-700 dark:text-brand-400" style={{}}>Tümü →</button>
+              className="text-xs font-medium text-brand-700 dark:text-brand-400">Tümü →</button>
           </div>
           <div className="divide-y divide-slate-50">
             {applications.slice(0, 3).map(app => (

@@ -1231,7 +1231,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   ${filter === f
                     ? 'text-white shadow-sm'
                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-                style={style={filter === f ? { background: '#047857' } : {}}}>
+                style={filter === f ? { background: '#047857' } : {}}>
                 {labels[f]} ({count})
               </button>
             )
@@ -1655,7 +1655,7 @@ function OverviewTab({ applications, onTabChange }) {
         <div className="card-header">
           <h2 className="font-semibold text-slate-800 dark:text-slate-100">Son Başvurular</h2>
           <button onClick={() => onTabChange('applications')}
-            className="text-xs font-medium" className="text-brand-700 dark:text-brand-400" style={{}}>Tümünü Gör →</button>
+            className="text-xs font-medium text-brand-700 dark:text-brand-400">Tümünü Gör →</button>
         </div>
         {applications.length === 0 ? (
           <div className="empty-state">

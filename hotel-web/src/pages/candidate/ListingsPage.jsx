@@ -715,7 +715,7 @@ export default function ListingsPage({ onApplicationSubmitted }) {
               {activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
             </p>
             {activeFilterCount > 0 ? (
-              <button onClick={clearFilters} className="mt-3 text-sm font-medium" className="text-brand-700 dark:text-brand-400" style={{}}>
+              <button onClick={clearFilters} className="mt-3 text-sm font-medium text-brand-700 dark:text-brand-400">
                 Filtreleri temizle
               </button>
             ) : (
