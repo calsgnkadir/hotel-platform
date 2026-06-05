@@ -7,6 +7,7 @@ const candidateNav = [
   { id: 'overview',      label: 'Genel Bakış' },
   { id: 'listings',      label: 'İlanlar' },
   { id: 'applications',  label: 'Başvurularım' },
+  { id: 'messages',      label: 'Mesajlar' },
   { id: 'documents',     label: 'Belgelerim' },
   { id: 'profile',       label: 'Profilim' },
 ]
@@ -15,6 +16,7 @@ const businessNav = [
   { id: 'overview',      label: 'Genel Bakış' },
   { id: 'mylistings',    label: 'İlanlarım' },
   { id: 'applications',  label: 'Gelen Başvurular' },
+  { id: 'messages',      label: 'Mesajlar' },
   { id: 'profile',       label: 'İşletme Profili' },
 ]
 

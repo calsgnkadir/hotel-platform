@@ -323,3 +323,50 @@ export async function adminGetStats() {
   const { data } = await api.get('/api/admin/stats')
   return data
 }
+
+/* ── Messaging (#76) ── */
+
+/** Sohbetlerim — PageResponse<ConversationDto> döner. */
+export async function getMyConversations({ page = 0, size = 20 } = {}) {
+  const { data } = await api.get('/api/messages/conversations', {
+    params: { page, size },
+  })
+  return data
+}
+
+/** Yeni sohbet başlat veya mevcudu döndür. otherPartyId zorunlu. */
+export async function startConversation({ otherPartyId, applicationId = null }) {
+  const { data } = await api.post('/api/messages/conversations', {
+    otherPartyId, applicationId,
+  })
+  return data  // ConversationDto
+}
+
+/** Sohbet mesajları — en yeniden eskiye sayfalı. */
+export async function getConversationMessages(conversationId, { page = 0, size = 50 } = {}) {
+  const { data } = await api.get(`/api/messages/conversations/${conversationId}/messages`, {
+    params: { page, size },
+  })
+  return data  // PageResponse<MessageDto>
+}
+
+/** Mesaj gönder. */
+export async function sendMessage(conversationId, content) {
+  const { data } = await api.post(
+    `/api/messages/conversations/${conversationId}/messages`,
+    { content }
+  )
+  return data  // MessageDto
+}
+
+/** Sohbete giriş — okundu işaretle. */
+export async function markConversationRead(conversationId) {
+  const { data } = await api.put(`/api/messages/conversations/${conversationId}/read`)
+  return data  // { updated: N }
+}
+
+/** Toplam okunmamış mesaj sayısı (badge için). */
+export async function getMessagesUnreadCount() {
+  const { data } = await api.get('/api/messages/unread-count')
+  return data?.unread ?? 0
+}

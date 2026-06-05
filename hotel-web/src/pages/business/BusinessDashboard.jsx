@@ -7,6 +7,7 @@ import ChangePasswordCard from '../../components/ChangePasswordCard'
 import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../utils/validation'
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
+import MessagesPage from '../MessagesPage'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -1013,7 +1014,7 @@ function MyListingsTab() {
 /* ── Applications Tab ── */
 const APPS_PAGE_SIZE = 15
 
-function ApplicationsTab({ applications, onRefresh }) {
+function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
   const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
@@ -1421,8 +1422,28 @@ function ApplicationsTab({ applications, onRefresh }) {
               )}
             </div>
 
-            <div className="px-6 pb-5">
-              <button onClick={() => setSelected(null)} className="btn-secondary text-sm">Kapat</button>
+            <div className="px-6 pb-5 flex gap-2">
+              <button onClick={() => setSelected(null)} className="btn-secondary text-sm flex-1">Kapat</button>
+              {/* #77: Adayla sohbet başlat */}
+              {selected.candidate?.id && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await hotelApi.startConversation({
+                        otherPartyId: selected.candidate.id,
+                        applicationId: selected.id,
+                      })
+                      setSelected(null)
+                      onOpenMessages?.()
+                    } catch (err) {
+                      toast.error(extractErrorMessage(err))
+                    }
+                  }}
+                  className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
+                  style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}>
+                  💬 Mesaj Gönder
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1540,7 +1561,8 @@ export default function BusinessDashboard() {
         <>
           {activeTab === 'overview'      && <OverviewTab applications={applications} onTabChange={setActiveTab} />}
           {activeTab === 'mylistings'    && <MyListingsTab />}
-          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={fetchApplications} />}
+          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={fetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
+          {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
         </>
       )}

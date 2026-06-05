@@ -5,6 +5,7 @@ import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import ListingsPage from './ListingsPage'
+import MessagesPage from '../MessagesPage'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
 import ReviewModal from '../../components/ReviewModal'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
@@ -64,10 +65,25 @@ const CAND_STATUS_FILTERS = [
 ]
 
 /* ── Applications Tab ── */
-function ApplicationsTab({ applications, onRefresh }) {
+function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
   const [respondingId, setRespondingId] = useState(null)
   const [myDocs, setMyDocs] = useState([])
   const [statusFilter, setStatusFilter] = useState('')
+  const [openingChatId, setOpeningChatId] = useState(null)
+
+  async function handleStartChat(app) {
+    const ownerId = app.listing?.businessOwnerId
+    if (!ownerId) return toast.error('İşletme bilgisi bulunamadı')
+    setOpeningChatId(app.id)
+    try {
+      await hotelApi.startConversation({ otherPartyId: ownerId, applicationId: app.id })
+      onOpenMessages?.()
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setOpeningChatId(null)
+    }
+  }
 
   // Aday'ın yüklediği belge tipleri — Onayla butonunu validate için
   useEffect(() => {
@@ -175,6 +191,14 @@ function ApplicationsTab({ applications, onRefresh }) {
                   disabled={withdrawingId === app.id}
                   className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium disabled:opacity-50">
                   {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal Et'}
+                </button>
+              )}
+              {/* #77: Kabul edilmiş başvuruda işletmeyle mesajlaş */}
+              {app.status === 'ACCEPTED' && (
+                <button onClick={() => handleStartChat(app)}
+                  disabled={openingChatId === app.id}
+                  className="text-xs px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors font-medium disabled:opacity-50">
+                  {openingChatId === app.id ? 'Açılıyor...' : '💬 Mesaj Gönder'}
                 </button>
               )}
               {/* R4 + R5: Sadece ACCEPTED + çalışma tamamlanmış başvuruda puanla */}
@@ -864,7 +888,8 @@ export default function CandidateDashboard() {
         <>
           {activeTab === 'overview'      && <OverviewTab user={user} applications={applications} onTabChange={setActiveTab} />}
           {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={fetchApplications} />}
-          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={fetchApplications} />}
+          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={fetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
+          {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'documents'     && <DocumentsTab />}
           {activeTab === 'profile'       && <ProfileTab />}
         </>

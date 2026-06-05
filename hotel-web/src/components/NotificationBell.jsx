@@ -12,6 +12,7 @@ const TYPE_ICON = {
   DOCUMENT_GRANTED:      '🔓',
   DOCUMENT_DENIED:       '🔒',
   MATCHING_LISTING:      '🎯',
+  NEW_MESSAGE:           '💬',
   GENERIC:               '🔔',
 }
 
