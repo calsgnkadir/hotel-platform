@@ -120,9 +120,15 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("candidateId") Long candidateId,
             @Param("since") LocalDateTime since);
 
-    /** Aday: ortalama yanıt süresi (saat). reviewedAt - createdAt. Null safe. */
+    /**
+     * Aday: ortalama yanıt süresi (saniye). reviewedAt - createdAt. Null safe.
+     * Hibernate 6.4'te FUNCTION() çağrısı dönüş tipini bilemediği için AVG'a
+     * tip ipucu vermek üzere CAST AS double ekledik. Aksi halde:
+     *   "Parameter 1 of function 'avg()' has type 'NUMERIC', but argument is of type 'java.lang.Object'"
+     */
     @Query("""
-        SELECT AVG(FUNCTION('TIMESTAMPDIFF', SECOND, a.createdAt, a.reviewedAt)) FROM Application a
+        SELECT AVG(CAST(FUNCTION('TIMESTAMPDIFF', SECOND, a.createdAt, a.reviewedAt) AS double))
+        FROM Application a
         WHERE a.candidate.id = :candidateId
           AND a.reviewedAt IS NOT NULL
     """)
