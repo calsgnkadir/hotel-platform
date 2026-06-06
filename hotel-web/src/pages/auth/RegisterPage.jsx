@@ -60,57 +60,69 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-bg">
-      <div className="auth-card" style={{ maxWidth: '500px' }}>
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3 bg-brand-700">
-            <span className="text-white text-xl font-bold">A</span>
+      {/* Neon üst hat */}
+      <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none" />
+
+      <div className="auth-card" style={{ maxWidth: '520px' }}>
+        {/* Header — logosuz */}
+        <div className="text-center mb-7">
+          <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-full px-3 py-1 mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow-pulse" />
+            <span className="text-[10px] uppercase tracking-widest text-slate-300">Ücretsiz Kayıt</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">AjansHotel'e Katıl</h1>
-          <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">İstanbul'un iş platformu</p>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight uppercase text-white">
+            <span className="block">AjansHotel'e</span>
+            <span className="block bg-gradient-to-r from-emerald-300 to-brand-500 bg-clip-text text-transparent">Katıl</span>
+          </h1>
+          <p className="text-[12px] text-slate-400 mt-3">İstanbul'un iş platformu</p>
         </div>
 
-        {/* Step indicator */}
+        {/* Step indicator — pill stili */}
         <div className="flex items-center gap-2 mb-6">
           {[1, 2].map(n => (
             <div key={n} className="flex items-center gap-2 flex-1">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors
-                ${step >= n ? 'bg-brand-700 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'}`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all
+                ${step >= n
+                  ? 'text-white shadow-glow-sm'
+                  : 'bg-slate-800 text-slate-500 border border-slate-700'}`}
+                style={step >= n ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
                 {n}
               </div>
-              {n < 2 && <div className={`flex-1 h-0.5 rounded transition-colors ${step > n ? 'bg-brand-400' : 'bg-slate-200 dark:bg-slate-700'}`} />}
+              {n < 2 && <div className={`flex-1 h-0.5 rounded transition-colors ${step > n ? 'bg-emerald-500' : 'bg-slate-700'}`} />}
             </div>
           ))}
-          <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">
-            {step === 1 ? 'Hesap türü' : 'Bilgileriniz'}
+          <span className="text-[10px] uppercase tracking-widest text-slate-500 ml-1 font-bold">
+            {step === 1 ? 'Tür' : 'Bilgi'}
           </span>
         </div>
 
-        {/* ── STEP 1: Role selection ── */}
+        {/* ── STEP 1: Role selection — pill kartlar ── */}
         {step === 1 && (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {ROLE_OPTIONS.map(opt => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => goToStep2(opt.value)}
-                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200
-                           hover:border-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/30 transition-all duration-200 text-left group"
+                className="w-full flex items-center gap-3 p-4 rounded-2xl border border-slate-800
+                           bg-slate-900/40 hover:bg-slate-900 hover:border-brand-600/60
+                           transition-all duration-200 text-left group"
               >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 bg-slate-100 group-hover:bg-brand-100 dark:group-hover:bg-brand-900/50 transition-colors">
-                  {opt.icon}
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black flex-shrink-0
+                                bg-slate-800 text-slate-500 group-hover:text-brand-300 transition-colors">
+                  {opt.value === 'CANDIDATE' ? '01' : '02'}
                 </div>
-                <div>
-                  <div className="font-semibold text-slate-800">{opt.title}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{opt.desc}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-sm text-white truncate">{opt.title}</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5 truncate">{opt.desc}</div>
                 </div>
-                <span className="ml-auto text-slate-400 group-hover:text-brand-600 transition-colors">→</span>
+                <span className="text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all">→</span>
               </button>
             ))}
 
-            <p className="text-sm text-center text-slate-500 mt-4">
+            <p className="text-[12px] text-center text-slate-400 mt-5">
               Zaten hesabın var mı?{' '}
-              <Link to="/login" className="font-semibold text-brand-700 dark:text-brand-400 hover:underline">
+              <Link to="/login" className="font-bold text-brand-400 hover:text-brand-300 transition-colors">
                 Giriş yap
               </Link>
             </p>
@@ -123,11 +135,10 @@ export default function RegisterPage() {
             {/* Back button + role badge */}
             <div className="flex items-center gap-2 mb-2">
               <button type="button" onClick={() => setStep(1)}
-                className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
+                className="text-[12px] font-semibold text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
                 ← Geri
               </button>
-              <span className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ background: '#d1fae5', color: '#047857' }}>
+              <span className="ml-auto text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full text-emerald-300 bg-emerald-950/40 border border-emerald-900/60">
                 {selectedRole === 'CANDIDATE' ? 'Aday' : 'İşletme Sahibi'}
               </span>
             </div>

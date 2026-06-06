@@ -114,7 +114,7 @@ function ApplyModal({ listing, onClose, onSuccess }) {
         <div className="p-6 border-b border-slate-100 sticky top-0 bg-white dark:bg-slate-900 z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
-                 style={{ background: '#047857' }}>
+                 style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div>
@@ -255,7 +255,7 @@ function DetailModal({ listing, onClose, onApply }) {
         <div className="p-6 border-b border-slate-100 sticky top-0 bg-white dark:bg-slate-900 z-10">
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
-                 style={{ background: '#047857' }}>
+                 style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div className="flex-1 min-w-0">
@@ -412,7 +412,7 @@ function ListingCard({ listing, onApply, onDetail }) {
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0 shadow-sm"
-               style={{ background: '#047857' }}>
+               style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
             {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
           </div>
           <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
@@ -652,7 +652,7 @@ export default function ListingsPage({ onApplicationSubmitted }) {
                     ${active
                       ? 'text-white shadow-sm'
                       : 'bg-white text-slate-600 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-                  style={active ? { background: '#047857' } : {}}>
+                  style={active ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
                   {p.label}
                 </button>
               )

@@ -275,7 +275,7 @@ function UsersTab() {
                 ${roleFilter === f.value
                   ? 'text-white shadow-sm'
                   : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={roleFilter === f.value ? { background: '#047857' } : {}}>
+              style={roleFilter === f.value ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
               {f.label}
             </button>
           ))}
@@ -419,7 +419,7 @@ function ReportsTab() {
               ${statusFilter === f.value
                 ? 'text-white shadow-sm'
                 : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={statusFilter === f.value ? { background: '#047857' } : {}}>
+            style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
             {f.label}
           </button>
         ))}
@@ -532,7 +532,7 @@ function AuditTab() {
               ${actionFilter === f.value
                 ? 'text-white shadow-sm'
                 : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={actionFilter === f.value ? { background: '#047857' } : {}}>
+            style={actionFilter === f.value ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
             {f.label}
           </button>
         ))}

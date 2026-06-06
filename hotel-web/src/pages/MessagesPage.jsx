@@ -36,7 +36,7 @@ function ConversationItem({ conv, isActive, onClick }) {
             className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
         ) : (
           <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-               style={{ background: '#047857' }}>
+               style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
             {initials}
           </div>
         )}
@@ -166,7 +166,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
             className="w-9 h-9 rounded-full object-cover border border-slate-200" />
         ) : (
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
-               style={{ background: '#047857' }}>
+               style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
             {initials}
           </div>
         )}

@@ -440,7 +440,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
             <button type="button" onClick={onClose} className="btn-secondary flex-1">İptal</button>
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60"
-              style={{ background: '#047857' }}>
+              style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
               {loading
                 ? (isEdit ? 'Güncelleniyor...' : 'Oluşturuluyor...')
                 : (isEdit ? 'Güncelle' : 'İlan Oluştur →')}
@@ -703,7 +703,7 @@ function WorkersTab({ applications, onOpenMessages }) {
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: '#047857' }}>
+                       style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
                     {w.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
@@ -963,7 +963,7 @@ function ProfileTab() {
       <div className="flex justify-end gap-3">
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
       </div>
@@ -1012,7 +1012,7 @@ function MyListingsTab() {
         <p className="text-sm text-slate-500">{listings.length} ilan</p>
         <button onClick={() => setFormTarget('new')}
           className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-all hover:-translate-y-0.5"
-          style={{ background: '#047857' }}>
+          style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
           + Yeni İlan
         </button>
       </div>
@@ -1024,7 +1024,7 @@ function MyListingsTab() {
             <p className="text-sm text-slate-500 mt-1">İlk ilanınızı oluşturun</p>
             <button onClick={() => setFormTarget('new')}
               className="mt-4 px-4 py-2 text-sm font-semibold text-white rounded-lg"
-              style={{ background: '#047857' }}>
+              style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
               İlan Oluştur
             </button>
           </div>
@@ -1234,7 +1234,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   ${filter === f
                     ? 'text-white shadow-sm'
                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-                style={filter === f ? { background: '#047857' } : {}}>
+                style={filter === f ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
                 {labels[f]} ({count})
               </button>
             )
@@ -1270,7 +1270,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: '#047857' }}>
+                       style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
                     {app.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
@@ -1290,7 +1290,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   <button onClick={e => { e.stopPropagation(); handleReview(app.id) }}
                     disabled={actionLoading}
                     className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all"
-                    style={{ background: '#047857' }}>
+                    style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
                     İncelemeye Al
                   </button>
                 )}
@@ -1339,7 +1339,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                       className="w-14 h-14 rounded-full object-cover border border-slate-200 flex-shrink-0" />
                   ) : (
                     <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                         style={{ background: '#047857' }}>
+                         style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
                       {selected.candidate?.fullName?.charAt(0) || '?'}
                     </div>
                   )}
@@ -1465,7 +1465,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                       </select>
                       <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
                         className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all"
-                        style={{ background: '#047857' }}>
+                        style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
                         Talep Et
                       </button>
                     </div>
@@ -1546,7 +1546,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                     }
                   }}
                   className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
-                  style={{ background: '#047857' }}>
+                  style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
                   Mesaj Gönder
                 </button>
               )}

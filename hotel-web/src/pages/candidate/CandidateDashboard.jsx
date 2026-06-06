@@ -154,7 +154,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                 ${statusFilter === f.value
                   ? 'text-white shadow-sm'
                   : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={statusFilter === f.value ? { background: '#047857' } : {}}>
+              style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
               {f.label} <span className="opacity-70">({count})</span>
             </button>
           )
@@ -1042,7 +1042,7 @@ function ProfileTab() {
       <div className="flex justify-end">
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
       </div>
