@@ -5,6 +5,7 @@ import { extractErrorMessage } from '../../api/client'
 import ReportModal from '../../components/ReportModal'
 import StarRating from '../../components/StarRating'
 import GalleryCarousel from '../../components/GalleryCarousel'
+import MapView from '../../components/MapView'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 
 const POSITION_LABELS = {
@@ -310,6 +311,23 @@ function DetailModal({ listing, onClose, onApply }) {
               </div>
             )}
           </div>
+
+          {/* #81: Konum haritası — sadece İstanbul ilçesi varsa */}
+          {listing.businessDistrict && (
+            <div>
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Konum</h3>
+              <MapView
+                district={listing.businessDistrict}
+                neighborhood={listing.businessNeighborhood}
+                title={listing.businessName}
+                height="220px"
+                zoom={13}
+              />
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2">
+                Harita, işletmenin {listing.businessDistrict} ilçe merkezine göre yaklaşık konumu gösterir.
+              </p>
+            </div>
+          )}
 
           {/* Description */}
           <div>

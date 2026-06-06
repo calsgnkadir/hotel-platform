@@ -57,3 +57,58 @@ export function neighborhoodsOf(district) {
   const list = ISTANBUL_NEIGHBORHOODS[district] || []
   return [...list].sort((a, b) => a.localeCompare(b, 'tr'))
 }
+
+/**
+ * #81: İstanbul 39 ilçe merkez koordinatları [lat, lng].
+ * Harita gösteriminde işletme/ilan ilçesine göre marker konumu için kullanılır.
+ * Kaynak: belediye merkezleri (yaklaşık).
+ */
+export const ISTANBUL_DISTRICT_COORDS = {
+  'Adalar':        [40.8760, 29.0990],
+  'Arnavutköy':    [41.1840, 28.7410],
+  'Ataşehir':      [40.9840, 29.1070],
+  'Avcılar':       [40.9780, 28.7210],
+  'Bağcılar':      [41.0400, 28.8570],
+  'Bahçelievler':  [40.9980, 28.8570],
+  'Bakırköy':      [40.9800, 28.8720],
+  'Başakşehir':    [41.0920, 28.7940],
+  'Bayrampaşa':    [41.0450, 28.9160],
+  'Beşiktaş':      [41.0430, 29.0070],
+  'Beykoz':        [41.1240, 29.0920],
+  'Beylikdüzü':    [40.9840, 28.6400],
+  'Beyoğlu':       [41.0340, 28.9780],
+  'Büyükçekmece':  [41.0200, 28.5850],
+  'Çatalca':       [41.1430, 28.4610],
+  'Çekmeköy':      [41.0380, 29.1960],
+  'Esenler':       [41.0430, 28.8820],
+  'Esenyurt':      [41.0290, 28.6810],
+  'Eyüpsultan':    [41.0480, 28.9370],
+  'Fatih':         [41.0200, 28.9490],
+  'Gaziosmanpaşa': [41.0690, 28.9100],
+  'Güngören':      [41.0250, 28.8730],
+  'Kadıköy':       [40.9900, 29.0290],
+  'Kağıthane':     [41.0850, 28.9750],
+  'Kartal':        [40.8900, 29.1930],
+  'Küçükçekmece':  [41.0000, 28.7760],
+  'Maltepe':       [40.9400, 29.1510],
+  'Pendik':        [40.8790, 29.2520],
+  'Sancaktepe':    [41.0000, 29.2320],
+  'Sarıyer':       [41.1710, 29.0570],
+  'Silivri':       [41.0770, 28.2470],
+  'Sultanbeyli':   [40.9620, 29.2650],
+  'Sultangazi':    [41.1080, 28.8710],
+  'Şile':          [41.1760, 29.6110],
+  'Şişli':         [41.0610, 28.9870],
+  'Tuzla':         [40.8340, 29.2980],
+  'Ümraniye':      [41.0240, 29.1220],
+  'Üsküdar':       [41.0260, 29.0150],
+  'Zeytinburnu':   [41.0050, 28.9010],
+}
+
+/** İlçe → [lat, lng] döner. Bilinmeyen ilçe için İstanbul merkezi (Beyoğlu). */
+export function coordsOfDistrict(district) {
+  return ISTANBUL_DISTRICT_COORDS[district] || [41.0082, 28.9784]  // Eminönü/İstanbul merkez
+}
+
+/** İstanbul'un yaklaşık merkez koordinatı (genel harita için). */
+export const ISTANBUL_CENTER = [41.0082, 28.9784]

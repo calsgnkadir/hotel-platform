@@ -9,6 +9,7 @@ import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSel
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import MessagesPage from '../MessagesPage'
 import GalleryEditor from '../../components/GalleryEditor'
+import MapView from '../../components/MapView'
 import StatusDonut from '../../components/charts/StatusDonut'
 import DailyTrendLine from '../../components/charts/DailyTrendLine'
 import PositionBar from '../../components/charts/PositionBar'
@@ -947,6 +948,22 @@ function ProfileTab() {
           </div>
         </div>
       </div>
+
+      {/* #81: Konum haritası — sadece ilçe seçilince */}
+      {form.district && (
+        <div className="card p-5 space-y-3">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Konum</h3>
+          <MapView
+            district={form.district}
+            neighborhood={form.neighborhood}
+            title={form.businessName}
+            height="260px"
+          />
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Aday'ların ilan detayında göreceği yaklaşık konum (ilçe merkezi).
+          </p>
+        </div>
+      )}
 
       {/* Çalışma saatleri */}
       <div className="card p-5 space-y-3">
