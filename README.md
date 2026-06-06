@@ -47,22 +47,29 @@ Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya 
 
 ## Ekran Görüntüleri
 
-> Görseller `docs/screenshots/` klasöründedir.
+> Görseller `docs/screenshots/` klasöründedir — headless Chrome ile prod'dan çekilmiştir.
+
+### Landing — Hibrit dark tema + Wordplay tarzı dev başlık + canlı leaderboard
+
+<p align="center"><img src="docs/screenshots/landing.png" alt="AjansHotel Landing" width="100%" /></p>
+
+### Auth — Giriş + Kayıt (pill butonlar, dark + neon yeşil)
 
 <table>
 <tr>
-<td width="50%"><b>Landing</b><br/><img src="docs/screenshots/landing.png" alt="Landing" /></td>
-<td width="50%"><b>Aday Paneli</b><br/><img src="docs/screenshots/candidate-overview.png" alt="Aday Genel Bakış" /></td>
-</tr>
-<tr>
-<td><b>İlan Detayı</b><br/><img src="docs/screenshots/listing-detail.png" alt="İlan Detayı" /></td>
-<td><b>Başvurular</b><br/><img src="docs/screenshots/business-applications.png" alt="İşletme Başvurular" /></td>
-</tr>
-<tr>
-<td><b>Mesajlaşma</b><br/><img src="docs/screenshots/messages.png" alt="Sohbet" /></td>
-<td><b>İstatistikler</b><br/><img src="docs/screenshots/stats.png" alt="Grafikler" /></td>
+<td width="50%"><b>Giriş</b><br/><img src="docs/screenshots/login.png" alt="Login" /></td>
+<td width="50%"><b>Kayıt — Rol Seçimi</b><br/><img src="docs/screenshots/register.png" alt="Register" /></td>
 </tr>
 </table>
+
+### KVKK — Aydınlatma metni
+
+<p align="center"><img src="docs/screenshots/kvkk.png" alt="KVKK" width="80%" /></p>
+
+> **Dashboard görselleri (aday/işletme/admin paneli):** Demo hesabıyla giriş yapıp ekran görüntüsü alabilirsin
+> — Railway backend açıkken `Ctrl+Shift+P → Capture full size screenshot` (Chrome DevTools).
+> Önerilen dosya adları: `candidate-overview.png`, `business-applications.png`, `listing-detail.png`,
+> `messages.png`, `stats.png`.
 
 ---
 
