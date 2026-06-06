@@ -14,11 +14,9 @@ export default function LandingPage() {
       {/* ───── Header ───── */}
       <header className="border-b border-slate-800/60 sticky top-0 z-30 bg-ink-900/85 backdrop-blur-lg">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-glow-sm">
-              <span className="text-white text-sm font-black">A</span>
-            </div>
-            <span className="font-bold text-sm tracking-tight">AjansHotel</span>
+          <Link to="/" className="flex items-baseline gap-2">
+            <span className="font-black text-base tracking-tight">AjansHotel</span>
+            <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-[13px] text-slate-400">
             <a href="#features" className="hover:text-white transition-colors">Özellikler</a>
@@ -186,11 +184,9 @@ export default function LandingPage() {
       {/* ───── Footer ───── */}
       <footer id="contact" className="border-t border-slate-800/60 py-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 text-[12px] text-slate-500">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
-              <span className="text-white text-[10px] font-black">A</span>
-            </div>
-            <span>AjansHotel · İstanbul · 2026</span>
+          <div className="flex items-baseline gap-2">
+            <span className="font-bold text-slate-300">AjansHotel</span>
+            <span className="text-[10px] uppercase tracking-widest text-slate-600">istanbul · 2026</span>
           </div>
           <div className="flex items-center gap-5">
             <Link to="/kvkk" className="hover:text-slate-200 transition-colors">KVKK</Link>

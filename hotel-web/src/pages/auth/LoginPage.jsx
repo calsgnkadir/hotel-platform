@@ -44,11 +44,9 @@ export default function LoginPage() {
 
       {/* Üst bar */}
       <header className="relative px-6 py-4 flex items-center justify-between border-b border-slate-800/60">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-glow-sm">
-            <span className="text-white text-sm font-black">A</span>
-          </div>
-          <span className="font-bold text-sm tracking-tight">AjansHotel</span>
+        <Link to="/" className="flex items-baseline gap-2">
+          <span className="font-black text-base tracking-tight">AjansHotel</span>
+          <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
         </Link>
         <ThemeToggle />
       </header>
