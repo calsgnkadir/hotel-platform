@@ -11,8 +11,7 @@ import ReviewModal from '../../components/ReviewModal'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
-import SettingsTab from '../../components/tabs/SettingsTab'
-import HelpTab from '../../components/tabs/HelpTab'
+// Ayarlar + Yardım header'daki ⚙ SettingsMenu'ye taşındı (sidebar'dan kaldırıldı)
 // #89 v2: Grafikler kaldırıldı (StatusDonut + MonthlyTrendBar) — sade görünüm tercih edildi
 
 const POSITION_LABELS = {
@@ -1071,8 +1070,6 @@ export default function CandidateDashboard() {
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'documents'     && <DocumentsTab />}
           {activeTab === 'profile'       && <ProfileTab />}
-          {activeTab === 'settings'      && <SettingsTab />}
-          {activeTab === 'help'          && <HelpTab />}
         </>
       )}
     </DashboardLayout>

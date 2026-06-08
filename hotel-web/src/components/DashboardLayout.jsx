@@ -2,14 +2,9 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
 import NotificationBell from './NotificationBell'
-// ThemeToggle Ayarlar sekmesine taşındı — header'da artık yok
+import SettingsMenu from './SettingsMenu'
 
-// Ortak alt sekmeler — her rolün sidebar'ının altında çıkar
-const commonBottomNav = [
-  { id: 'settings', label: 'Ayarlar' },
-  { id: 'help',     label: 'Yardım'  },
-]
-
+// Ayarlar + Yardım sidebar'dan kaldırıldı — header'daki ⚙ SettingsMenu'ye taşındı.
 const candidateNav = [
   { id: 'overview',      label: 'Genel Bakış' },
   { id: 'listings',      label: 'İlanlar' },
@@ -18,7 +13,6 @@ const candidateNav = [
   { id: 'messages',      label: 'Mesajlar' },
   { id: 'documents',     label: 'Belgelerim' },
   { id: 'profile',       label: 'Profilim' },
-  ...commonBottomNav,
 ]
 
 const businessNav = [
@@ -28,7 +22,6 @@ const businessNav = [
   { id: 'workers',       label: 'Bizde Çalışanlar' },
   { id: 'messages',      label: 'Mesajlar' },
   { id: 'profile',       label: 'İşletme Profili' },
-  ...commonBottomNav,
 ]
 
 const adminNav = [
@@ -36,7 +29,6 @@ const adminNav = [
   { id: 'users',    label: 'Kullanıcılar' },
   { id: 'reports',  label: 'Şikayetler' },
   { id: 'audit',    label: 'İşlem Geçmişi' },
-  ...commonBottomNav,
 ]
 
 export default function DashboardLayout({ children, activeTab, onTabChange }) {
@@ -136,6 +128,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
           <div className="flex items-center gap-1.5">
             <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
+            <SettingsMenu />
 
             {/* Role badge — küçük pill */}
             <div className={`hidden sm:flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ml-1
