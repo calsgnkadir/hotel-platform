@@ -118,25 +118,14 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               <h1 className="text-[13px] font-bold tracking-tight text-white leading-tight">
                 {navItems.find(n => n.id === activeTab)?.label || 'Panel'}
               </h1>
-              <p className="text-[9px] hidden sm:block text-slate-500 uppercase tracking-[0.18em] leading-tight mt-0.5">
-                {isAdmin ? 'Admin' : isCandidate ? 'Aday' : 'İşletme'} Paneli
-              </p>
+              {/* "ADAY/İŞLETME PANELİ" alt yazısı kaldırıldı — daha sade header */}
             </div>
           </div>
 
+          {/* Sağ blok: önce zil, sonra ayarlar (en sağda). Rol badge kaldırıldı. */}
           <div className="flex items-center gap-1.5">
             <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
             <SettingsMenu onTabChange={onTabChange} />
-
-            {/* Role badge — küçük pill */}
-            <div className={`hidden sm:flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ml-1
-              ${isAdmin
-                ? 'bg-amber-950/40 text-amber-300 border-amber-900/60'
-                : isCandidate
-                  ? 'bg-brand-900/40 text-brand-300 border-brand-900/60'
-                  : 'bg-emerald-950/40 text-emerald-300 border-emerald-900/60'}`}>
-              {isAdmin ? 'Admin' : isCandidate ? 'Aday' : 'İşletme'}
-            </div>
           </div>
         </header>
 
