@@ -4,15 +4,14 @@ import { useNavigate, Link } from 'react-router-dom'
 import NotificationBell from './NotificationBell'
 import SettingsMenu from './SettingsMenu'
 
-// Ayarlar + Yardım sidebar'dan kaldırıldı — header'daki ⚙ SettingsMenu'ye taşındı.
+// Ayarlar + Yardım + Profilim + Geçmiş İşlerim sidebar'dan kaldırıldı
+// → hepsi header'daki ⚙ SettingsMenu dropdown'una taşındı.
 const candidateNav = [
   { id: 'overview',      label: 'Genel Bakış' },
   { id: 'listings',      label: 'İlanlar' },
   { id: 'applications',  label: 'Başvurularım' },
-  { id: 'history',       label: 'Geçmiş İşlerim' },
   { id: 'messages',      label: 'Mesajlar' },
   { id: 'documents',     label: 'Belgelerim' },
-  { id: 'profile',       label: 'Profilim' },
 ]
 
 const businessNav = [
@@ -21,7 +20,6 @@ const businessNav = [
   { id: 'applications',  label: 'Gelen Başvurular' },
   { id: 'workers',       label: 'Bizde Çalışanlar' },
   { id: 'messages',      label: 'Mesajlar' },
-  { id: 'profile',       label: 'İşletme Profili' },
 ]
 
 const adminNav = [
@@ -128,7 +126,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
           <div className="flex items-center gap-1.5">
             <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
-            <SettingsMenu />
+            <SettingsMenu onTabChange={onTabChange} />
 
             {/* Role badge — küçük pill */}
             <div className={`hidden sm:flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ml-1

@@ -10,13 +10,22 @@ import toast from 'react-hot-toast'
  *
  * Sidebar'da Ayarlar/Yardım sekmeleri kaldırıldı; her şey buraya toplandı.
  */
-export default function SettingsMenu() {
+export default function SettingsMenu({ onTabChange }) {
   const [open, setOpen]   = useState(false)
   const [help, setHelp]   = useState(false)
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const ref = useRef(null)
+
+  // Profilim hem aday hem işletme'de var, label farklı
+  const isCandidate = user?.role === 'CANDIDATE'
+  const isBusiness  = user?.role === 'BUSINESS_OWNER'
+
+  function goTab(tabId) {
+    setOpen(false)
+    onTabChange?.(tabId)
+  }
 
   // Bildirim sustur (localStorage)
   const [muted, setMuted] = useState(() => {
@@ -90,6 +99,40 @@ export default function SettingsMenu() {
             </div>
             <ToggleSwitch checked={!muted} onChange={(v) => setMuted(!v)} />
           </div>
+
+          {/* Profilim — aday + işletme */}
+          {(isCandidate || isBusiness) && (
+            <button
+              type="button"
+              onClick={() => goTab('profile')}
+              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-slate-200
+                         hover:bg-slate-800/60 transition-colors border-b border-slate-800/60"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-slate-400">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              </svg>
+              <span>{isBusiness ? 'İşletme Profili' : 'Profilim'}</span>
+            </button>
+          )}
+
+          {/* Geçmiş İşlerim — sadece aday */}
+          {isCandidate && (
+            <button
+              type="button"
+              onClick={() => goTab('history')}
+              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-slate-200
+                         hover:bg-slate-800/60 transition-colors border-b border-slate-800/60"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-slate-400">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              <span>Geçmiş İşlerim</span>
+            </button>
+          )}
 
           {/* Yardım */}
           <button
