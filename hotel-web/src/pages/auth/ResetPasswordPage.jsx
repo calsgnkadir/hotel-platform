@@ -9,11 +9,6 @@ import ThemeToggle from '../../components/ThemeToggle'
 /**
  * #80: Reset link'inden geldikten sonra yeni şifre formu.
  * URL: /reset-password?token=ABC123
- *
- * Akış:
- *   1. Component mount → /validate?token=... → email döner veya hata
- *   2. Email göster + yeni şifre formu
- *   3. Submit → /confirm → başarı → /login'e yönlendir
  */
 export default function ResetPasswordPage() {
   const [params] = useSearchParams()
@@ -57,14 +52,15 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="auth-bg">
-      <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none" />
+    <div className="min-h-screen bg-ink-900 text-slate-100 flex flex-col relative overflow-hidden">
+      <div className="neon-strip" />
 
       <div aria-hidden className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[60%] h-96 rounded-full bg-brand-600/15 blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-emerald-500/10 blur-[100px]" />
       </div>
 
-      <header className="relative px-6 py-4 flex items-center justify-between border-b border-slate-800/60 w-full max-w-5xl mx-auto">
+      <header className="relative px-6 py-4 flex items-center justify-between border-b border-slate-800/60">
         <Link to="/" className="flex items-baseline gap-2">
           <span className="font-black text-base tracking-tight">AjansHotel</span>
           <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
@@ -72,7 +68,7 @@ export default function ResetPasswordPage() {
         <ThemeToggle />
       </header>
 
-      <main className="relative flex-1 flex items-center justify-center px-4 py-12 w-full">
+      <main className="relative flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
             <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-full px-3 py-1 mb-5">
