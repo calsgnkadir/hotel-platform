@@ -24,8 +24,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * #76: Mesajlaşma iş mantığı.
@@ -161,6 +164,101 @@ public class MessageService {
     }
 
     // ----------------------------------------------------------------
+    // Dosya/foto ekli mesaj gönder (chat refactor v2)
+    // ----------------------------------------------------------------
+    private static final Set<String> IMAGE_EXTS = Set.of("jpg", "jpeg", "png", "webp", "heic", "heif", "gif");
+
+    @Transactional
+    public MessageDto sendAttachment(Long conversationId, Long senderId, MultipartFile file, String caption) {
+        Conversation conv = getConversationForUser(conversationId, senderId);
+        User sender = userRepository.findById(senderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", senderId));
+
+        // Cloudinary'ye yükle, secure_url al
+        String url = fileStorageService.storeMessageAttachment(file, conv.getId());
+
+        // Tip belirle (image/file) — frontend render kararı için
+        String orig = file.getOriginalFilename() == null ? "dosya" : file.getOriginalFilename();
+        String ext = orig.contains(".") ? orig.substring(orig.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT) : "";
+        String type = IMAGE_EXTS.contains(ext) ? "image" : "file";
+
+        Message msg = Message.builder()
+                .conversation(conv)
+                .sender(sender)
+                .content(caption == null ? "" : caption.trim())
+                .attachmentUrl(url)
+                .attachmentType(type)
+                .attachmentName(orig)
+                .attachmentSize(file.getSize())
+                .isRead(false)
+                .build();
+        msg = messageRepository.save(msg);
+
+        conv.setLastMessageAt(msg.getSentAt());
+        conversationRepository.save(conv);
+
+        // Karşı tarafa bildirim
+        Long recipientId = conv.getCandidate().getId().equals(senderId)
+                ? conv.getBusinessOwner().getId()
+                : conv.getCandidate().getId();
+        String preview = "image".equals(type) ? "📷 Foto gönderdi" : "📎 " + orig;
+        notificationService.notify(recipientId,
+                NotificationType.NEW_MESSAGE,
+                "Yeni mesaj: " + sender.getFullName(),
+                preview,
+                "messages");
+
+        return toMessageDto(msg, senderId);
+    }
+
+    // ----------------------------------------------------------------
+    // Sohbet aç + ilk sistem mesajı (başvuru ile birlikte otomatik açılır)
+    // Public — ApplicationService'ten çağrılır.
+    // ----------------------------------------------------------------
+    @Transactional
+    public Conversation openConversationForApplication(Application application, String firstSystemMessage) {
+        User candidate     = application.getCandidate();
+        User businessOwner = application.getJobListing().getBusiness().getOwner();
+
+        Conversation conv = conversationRepository
+                .findByCandidateIdAndBusinessOwnerId(candidate.getId(), businessOwner.getId())
+                .orElseGet(() -> {
+                    Conversation c = Conversation.builder()
+                            .candidate(candidate)
+                            .businessOwner(businessOwner)
+                            .application(application)
+                            .build();
+                    return conversationRepository.save(c);
+                });
+
+        // Sistem mesajı — sender = aday (gerçek user ID lazım, NOT NULL constraint)
+        // Frontend "system" flag'ini sentAt + boş senderName'den de algılayabilir
+        // ama biz isRead=true vererek "bildirimsiz" kabul ediyoruz.
+        if (firstSystemMessage != null && !firstSystemMessage.isBlank()) {
+            Message sys = Message.builder()
+                    .conversation(conv)
+                    .sender(candidate)               // sistem mesajı aday tarafından gönderilmiş sayılır
+                    .content(firstSystemMessage.trim())
+                    .isRead(false)                    // işletme okunmamış gibi görsün
+                    .build();
+            sys = messageRepository.save(sys);
+            conv.setLastMessageAt(sys.getSentAt());
+            conversationRepository.save(conv);
+
+            // İşletmeye bildirim
+            notificationService.notify(businessOwner.getId(),
+                    NotificationType.NEW_MESSAGE,
+                    "Yeni başvuru: " + candidate.getFullName(),
+                    firstSystemMessage.length() > 100
+                            ? firstSystemMessage.substring(0, 100) + "…"
+                            : firstSystemMessage,
+                    "messages");
+        }
+
+        return conv;
+    }
+
+    // ----------------------------------------------------------------
     // Okundu işaretle (sohbete girince)
     // ----------------------------------------------------------------
     @Transactional
@@ -233,6 +331,11 @@ public class MessageService {
                 .sentAt(m.getSentAt())
                 .isRead(m.getIsRead())
                 .mine(mine)
+                .attachmentUrl(m.getAttachmentUrl())
+                .attachmentType(m.getAttachmentType())
+                .attachmentName(m.getAttachmentName())
+                .attachmentSize(m.getAttachmentSize())
+                .system(false)   // ileride explicit system message için ayrı flag eklenebilir
                 .build();
     }
 }

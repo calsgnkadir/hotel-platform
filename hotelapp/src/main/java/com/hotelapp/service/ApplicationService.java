@@ -37,6 +37,7 @@ public class ApplicationService {
     private final AuditLogService auditLogService;
     private final NotificationService notificationService;
     private final ReviewService reviewService;
+    private final MessageService messageService;  // chat refactor: auto-conversation
 
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
@@ -138,6 +139,15 @@ public class ApplicationService {
                 "Yeni başvuru",
                 candidate.getFullName() + " · " + listing.getTitle() + " ilanına başvurdu",
                 "applications");
+
+        // Chat refactor v2: Başvuru yapıldığı an otomatik mesajlaşma açılır.
+        // İlk mesaj (sistem) — aday tarafından gönderilmiş gibi görünür.
+        String firstMessage = "Merhaba! \"" + listing.getTitle() + "\" ilanınıza başvurdum. "
+                + "Detayları konuşmak isterim.";
+        if (request.getCoverLetter() != null && !request.getCoverLetter().isBlank()) {
+            firstMessage = request.getCoverLetter().trim();
+        }
+        messageService.openConversationForApplication(application, firstMessage);
 
         return toResponse(application);
     }

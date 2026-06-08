@@ -34,8 +34,27 @@ public class Message {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
+    // Mesaj metni — attachment'lı mesajda boş olabilir (sadece dosya)
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String content;
+    @Builder.Default
+    private String content = "";
+
+    // ── Attachment alanları (refactor v2: chat-only akış) ──
+    /** Cloudinary public URL (image/file/audio). null = sadece metin mesajı. */
+    @Column(name = "attachment_url", length = 500)
+    private String attachmentUrl;
+
+    /** image | file | audio  — frontend'in render kararı için */
+    @Column(name = "attachment_type", length = 20)
+    private String attachmentType;
+
+    /** Orijinal dosya adı (ör: cv.pdf) */
+    @Column(name = "attachment_name", length = 200)
+    private String attachmentName;
+
+    /** Bayt cinsinden boyut (UI'da KB/MB göstermek için) */
+    @Column(name = "attachment_size")
+    private Long attachmentSize;
 
     @Column(name = "sent_at", nullable = false)
     private LocalDateTime sentAt;

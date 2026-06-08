@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -79,6 +80,20 @@ public class MessageController {
             @PathVariable Long conversationId,
             @Valid @RequestBody MessageRequest req) {
         MessageDto dto = messageService.sendMessage(conversationId, currentUser.getId(), req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @Operation(summary = "Sohbete dosya/foto ekle (multipart). Metin opsiyonel.")
+    @PostMapping(value = "/conversations/{conversationId}/attachment",
+                 consumes = "multipart/form-data")
+    @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<MessageDto> sendAttachment(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long conversationId,
+            @RequestPart("file") MultipartFile file,
+            @RequestPart(value = "caption", required = false) String caption) {
+        MessageDto dto = messageService.sendAttachment(conversationId, currentUser.getId(), file, caption);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 

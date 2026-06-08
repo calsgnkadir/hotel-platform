@@ -85,6 +85,43 @@ public class FileStorageService {
     }
 
     // -----------------------------------------------------------------------
+    // #80v2 / chat refactor: Mesaj eki yükleme — image/file/audio
+    // Public CDN URL döner (DB'ye direkt URL kaydedilir — mesajlarda kullanım).
+    // -----------------------------------------------------------------------
+    public String storeMessageAttachment(MultipartFile file, Long conversationId) {
+        validate(file, ALLOWED_EXTENSIONS, MAX_FILE_SIZE,
+                "Kabul edilenler: PDF, JPG, JPEG, PNG, WEBP, HEIC, DOC, DOCX",
+                "Dosya çok büyük (%.1f MB). Maksimum 15 MB olmalı.");
+
+        String ext = getExtension(file.getOriginalFilename()).toLowerCase();
+        String resourceType = isImageExt(ext) ? "image" : "raw";
+        String folder = "ajanshotel/messages/" + conversationId;
+        String publicId = "image".equals(resourceType)
+                ? folder + "/" + UUID.randomUUID()
+                : folder + "/" + UUID.randomUUID() + "." + ext;
+
+        Map<String, Object> options = ObjectUtils.asMap(
+                "public_id", publicId,
+                "resource_type", resourceType,
+                "type", "upload",
+                "overwrite", true,
+                "use_filename", false,
+                "unique_filename", false
+        );
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader().upload(file.getBytes(), options);
+            String secureUrl = (String) result.get("secure_url");
+            log.info("Cloudinary mesaj eki yüklendi: {} (size={} KB)", publicId, file.getSize() / 1024);
+            // Direkt CDN URL'i döner — DB'ye direkt URL kaydedilir
+            return secureUrl;
+        } catch (IOException e) {
+            throw new BusinessRuleException("Cloudinary'ye yüklenemedi: " + e.getMessage());
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // İşletme görseli (logo/galeri) yükleme — PUBLIC, CDN'den direkt erişim
     // -----------------------------------------------------------------------
     public String storeBusinessImage(MultipartFile file, Long businessId, String subfolder) {
