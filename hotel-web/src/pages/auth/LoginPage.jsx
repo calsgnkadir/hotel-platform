@@ -90,7 +90,13 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="label">Şifre</label>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <label className="label !mb-0">Şifre</label>
+                  <Link to="/forgot-password"
+                    className="text-[11px] font-semibold text-brand-400 hover:text-brand-300 transition-colors">
+                    Şifremi unuttum
+                  </Link>
+                </div>
                 <input
                   type="password"
                   className="input"

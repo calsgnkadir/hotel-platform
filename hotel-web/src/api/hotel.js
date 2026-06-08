@@ -400,3 +400,23 @@ export async function getCandidateStats() {
   const { data } = await api.get('/api/candidate/stats')
   return data
 }
+
+// ── #80: Şifre sıfırlama ──
+
+/** Email'e sıfırlama linki gönderir. Bilinmeyen email olsa bile 200 döner (güvenlik). */
+export async function requestPasswordReset(email) {
+  const { data } = await api.post('/api/auth/password-reset/request', { email })
+  return data
+}
+
+/** Token'ı doğrular — UI'da reset formunu açmadan önce. */
+export async function validatePasswordResetToken(token) {
+  const { data } = await api.get('/api/auth/password-reset/validate', { params: { token } })
+  return data
+}
+
+/** Yeni şifreyi kaydeder, token'ı tüketir. */
+export async function confirmPasswordReset(token, newPassword) {
+  const { data } = await api.post('/api/auth/password-reset/confirm', { token, newPassword })
+  return data
+}

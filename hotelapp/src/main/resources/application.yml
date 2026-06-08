@@ -52,6 +52,23 @@ file:
 cloudinary:
   url: ${CLOUDINARY_URL:}
 
+# #80: Email (Resend) + frontend reset link base URL
+app:
+  # Frontend URL — reset linki için (https://hotel-platform-seven.vercel.app)
+  base-url: ${APP_BASE_URL:http://localhost:5173}
+
+  email:
+    resend:
+      # Resend API key — yoksa email "DEV MODE" log'a düşer (gerçek mail gitmez)
+      # https://resend.com/api-keys
+      api-key:  ${RESEND_API_KEY:}
+      # Resend default test domain: onboarding@resend.dev
+      # Kendi domain'in olunca buraya değiştir (DNS doğrulamadan sonra)
+      from:     ${RESEND_FROM:onboarding@resend.dev}
+      from-name: ${RESEND_FROM_NAME:AjansHotel}
+    password-reset:
+      expiry-hours: ${PWD_RESET_EXPIRY_HOURS:1}
+
 # Swagger UI — http://localhost:8080/swagger-ui.html
 springdoc:
   api-docs:
