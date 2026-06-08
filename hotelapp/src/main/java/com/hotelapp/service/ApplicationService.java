@@ -134,12 +134,9 @@ public class ApplicationService {
             }
         }
 
-        // Bildirim: işletme sahibine yeni başvuru
-        Long ownerId = listing.getBusiness().getOwner().getId();
-        notificationService.notify(ownerId, NotificationType.NEW_APPLICATION,
-                "Yeni başvuru",
-                candidate.getFullName() + " · " + listing.getTitle() + " ilanına başvurdu",
-                "applications");
+        // Chat refactor v2: NEW_APPLICATION bildirimi kaldırıldı.
+        // Yerine NEW_MESSAGE bildirimi (auto-conversation içinde) gönderilir.
+        // Eski enum durumunu korumak için kod silinmiyor, sadece tetikleyici.
 
         // Chat refactor v2: Başvuru yapıldığı an otomatik mesajlaşma açılır.
         // İlk mesaj (sistem) — aday tarafından gönderilmiş gibi görünür.
