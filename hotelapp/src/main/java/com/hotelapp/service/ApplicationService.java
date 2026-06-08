@@ -3,6 +3,7 @@ package com.hotelapp.service;
 import com.hotelapp.dto.*;
 import com.hotelapp.dto.ApplicationResponse.RequestedSlotDto;
 import com.hotelapp.entity.*;
+import com.hotelapp.entity.Conversation;
 import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.enums.NotificationType;
 import com.hotelapp.enums.DocumentRequestStatus;
@@ -147,9 +148,11 @@ public class ApplicationService {
         if (request.getCoverLetter() != null && !request.getCoverLetter().isBlank()) {
             firstMessage = request.getCoverLetter().trim();
         }
-        messageService.openConversationForApplication(application, firstMessage);
+        Conversation conv = messageService.openConversationForApplication(application, firstMessage);
 
-        return toResponse(application);
+        ApplicationResponse resp = toResponse(application);
+        resp.setConversationId(conv.getId());   // Frontend bunu kullanarak /messages?open=<id>'e yönlendirir
+        return resp;
     }
 
     // ----------------------------------------------------------------

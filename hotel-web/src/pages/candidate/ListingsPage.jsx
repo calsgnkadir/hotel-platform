@@ -46,61 +46,83 @@ function formatSalary(min, max) {
   return null
 }
 
-/* ── Apply Modal ── */
-function ApplyModal({ listing, onClose, onSuccess }) {
+/* ── Apply Modal (Chat refactor v2) ──
+   Akış:
+   1) Aday slotu seçer + ön yazı yazar + ekstra dosya (opsiyonel) seçer
+   2) "Başvur" → POST /applications → backend conversation açar + sistem mesajı atar
+   3) Seçili dosyalar conversation'a attachment mesajı olarak yüklenir
+   4) /candidate → mesajlar sekmesine yönlendir (conversationId query ile)
+*/
+function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   const [coverLetter, setCoverLetter] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Faz E3: Adayın seçtiği slotlar (id listesi)
   const [selectedSlotIds, setSelectedSlotIds] = useState([])
+  const [files, setFiles] = useState([])   // [{file, type}]
 
-  // Backend tarihe göre sıralı dönüyor; yine de güvenli ol
   const allSlots = [...(listing.shiftSlots || [])].sort((a, b) => {
     const c = (a.date || '').localeCompare(b.date || '')
     return c !== 0 ? c : (a.startTime || '').localeCompare(b.startTime || '')
   })
   const hasSlots = allSlots.length > 0
 
-  // Hassas belge izinleri (sadece kullanıcının yüklediği türler arasından seçilebilir)
-  const [myDocs, setMyDocs] = useState([])
-  const [grantedTypes, setGrantedTypes] = useState([])
-
-  useEffect(() => {
-    hotelApi.getMyDocuments().then(setMyDocs).catch(() => setMyDocs([]))
-  }, [])
-
-  // Kullanıcının yüklediği hassas belge tipleri (eşsiz)
-  const uploadedSensitiveTypes = [...new Set(
-    myDocs.map(d => d.type).filter(t => SENSITIVE_DOC_TYPES.includes(t))
-  )]
-
   function toggleSlot(id, full) {
-    if (full) return  // dolu slot toggle edilemez
+    if (full) return
     setSelectedSlotIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
-  function toggleGrant(type) {
-    setGrantedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])
+  function onFilesChange(e) {
+    const picked = Array.from(e.target.files || [])
+    const filtered = picked.filter(f => {
+      if (f.size > 15 * 1024 * 1024) {
+        toast.error(`${f.name} 15 MB'dan büyük — atlandı`)
+        return false
+      }
+      return true
+    })
+    setFiles(prev => [...prev, ...filtered])
+    e.target.value = ''   // aynı dosyayı tekrar seçebilmek için
+  }
+
+  function removeFile(idx) {
+    setFiles(prev => prev.filter((_, i) => i !== idx))
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
-
     if (hasSlots && selectedSlotIds.length === 0) {
       return toast.error('En az 1 vardiya seçmelisiniz')
     }
 
     setLoading(true)
     try {
-      await hotelApi.applyToListing({
+      // 1) Application gönder → backend conversation açar + sistem mesajı yazar
+      const appResp = await hotelApi.applyToListing({
         jobListingId: listing.id,
         coverLetter,
         slotIds: selectedSlotIds,
-        grantedSensitiveTypes: grantedTypes,
+        grantedSensitiveTypes: [],   // legacy alan — yeni akışta kullanılmaz
       })
-      toast.success('Başvurunuz gönderildi!')
-      onSuccess()
+
+      const convId = appResp.conversationId
+      // 2) Seçili dosyaları conversation'a attachment olarak yükle
+      if (convId && files.length > 0) {
+        toast.loading(`${files.length} belge yükleniyor...`, { id: 'upload' })
+        for (const f of files) {
+          try {
+            await hotelApi.sendMessageAttachment(convId, f, '')
+          } catch (err) {
+            toast.error(`${f.name} yüklenemedi: ${extractErrorMessage(err)}`, { id: f.name })
+          }
+        }
+        toast.dismiss('upload')
+      }
+
+      toast.success('Başvurun gönderildi! Mesajlaşma açıldı.')
+      onSuccess?.()
       onClose()
+      // 3) Mesajlaşma sekmesine yönlendir
+      onMessagesOpen?.(convId)
     } catch (err) {
       toast.error(extractErrorMessage(err))
     } finally {
@@ -191,37 +213,65 @@ function ApplyModal({ listing, onClose, onSuccess }) {
             </div>
           )}
 
-          {/* Belge izinleri — sadece kullanıcının yüklediği hassas belgeler için */}
-          {uploadedSensitiveTypes.length > 0 && (
-            <div>
-              <label className="label">Belge İzinleri <span className="text-slate-400 font-normal">(işletme talep etmeden görsün)</span></label>
-              <div className="space-y-2">
-                {uploadedSensitiveTypes.map(type => {
-                  const checked = grantedTypes.includes(type)
-                  return (
-                    <label key={type}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-all
-                        ${checked
-                          ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 dark:border-brand-500'
-                          : 'border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                      <input type="checkbox" checked={checked} onChange={() => toggleGrant(type)}
-                        className="w-4 h-4 accent-brand-700" />
-                      <span className="text-sm text-slate-700">{SENSITIVE_DOC_LABELS[type]}</span>
-                    </label>
-                  )
-                })}
-              </div>
-              <p className="text-xs text-slate-400 mt-1.5">
-                ⓘ CV, transkript ve öğrenci belgesi zaten herkese açık — izin gerekmez.
-              </p>
-            </div>
-          )}
+          {/* Chat refactor v2: Belge ekleme — başvuruyla beraber mesajlaşmaya yüklenir */}
+          <div>
+            <label className="label">
+              Belgeler / Fotoğraflar
+              <span className="text-slate-400 font-normal ml-1">(opsiyonel — CV, transkript, sertifika vb.)</span>
+            </label>
 
-          {uploadedSensitiveTypes.length === 0 && (
-            <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-500 border border-slate-200">
-              Hassas belge yüklemediysen "Belgelerim" sekmesinden ekleyebilir, başvuru sırasında işletmeye direkt izin verebilirsin.
-            </div>
-          )}
+            <label className="block cursor-pointer rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700
+                              hover:border-brand-400 dark:hover:border-brand-500 transition-colors
+                              bg-slate-50 dark:bg-slate-900/50 px-4 py-5 text-center">
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx"
+                onChange={onFilesChange}
+                className="hidden"
+              />
+              <div className="flex items-center justify-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                        d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+                </svg>
+                <span className="font-semibold">Dosya seç</span>
+                <span className="text-xs text-slate-400">PDF / JPG / PNG / DOC — her biri max 15 MB</span>
+              </div>
+            </label>
+
+            {/* Seçilen dosyalar listesi */}
+            {files.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                {files.map((f, i) => (
+                  <div key={i}
+                       className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg
+                                  border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                           strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-slate-500 shrink-0">
+                        <path strokeLinecap="round" strokeLinejoin="round"
+                              d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 3.75-3-3m0 0-3 3m3-3v11.25m6-2.25h.008v.008H15v-.008Zm0 0H4.5" />
+                      </svg>
+                      <span className="text-sm text-slate-700 dark:text-slate-200 truncate">{f.name}</span>
+                      <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                        {(f.size / 1024).toFixed(0)} KB
+                      </span>
+                    </div>
+                    <button type="button" onClick={() => removeFile(i)}
+                            className="text-red-500 hover:text-red-700 text-xs font-semibold shrink-0">
+                      Kaldır
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <p className="text-xs text-slate-400 mt-1.5">
+              ⓘ Belgelerin işletmeyle mesajlaşmada otomatik paylaşılır. Daha sonra mesajdan da ekleyebilirsin.
+            </p>
+          </div>
 
           {/* Footer */}
           <div className="flex gap-3 pt-2 sticky bottom-0 bg-white dark:bg-slate-900 py-3 -mx-6 px-6 border-t border-slate-100">
@@ -517,7 +567,7 @@ function ListingCard({ listing, onApply, onDetail }) {
 }
 
 /* ── Listings Page ── */
-export default function ListingsPage({ onApplicationSubmitted }) {
+export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen }) {
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
   const [applyTarget, setApplyTarget] = useState(null)
@@ -776,6 +826,7 @@ export default function ListingsPage({ onApplicationSubmitted }) {
           listing={applyTarget}
           onClose={() => setApplyTarget(null)}
           onSuccess={() => onApplicationSubmitted?.()}
+          onMessagesOpen={(convId) => onMessagesOpen?.(convId)}
         />
       )}
     </div>

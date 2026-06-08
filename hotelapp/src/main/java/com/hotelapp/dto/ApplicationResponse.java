@@ -35,6 +35,9 @@ public class ApplicationResponse {
     /** Faz E1: Adayın başvurduğu slot(lar) */
     private List<RequestedSlotDto> requestedSlots;
 
+    /** Chat refactor v2: Başvuruyla otomatik açılan conversation ID — frontend mesajlaşmaya yönlendirir */
+    private Long conversationId;
+
     @Data @Builder
     public static class CandidateSummary {
         private Long id;

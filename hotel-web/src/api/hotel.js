@@ -377,6 +377,19 @@ export async function sendMessage(conversationId, content) {
   return data  // MessageDto
 }
 
+/** Chat refactor v2: dosya/foto ekli mesaj gönder (multipart). */
+export async function sendMessageAttachment(conversationId, file, caption = '') {
+  const form = new FormData()
+  form.append('file', file)
+  if (caption) form.append('caption', caption)
+  const { data } = await api.post(
+    `/api/messages/conversations/${conversationId}/attachment`,
+    form,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  )
+  return data  // MessageDto with attachmentUrl/type/name/size
+}
+
 /** Sohbete giriş — okundu işaretle. */
 export async function markConversationRead(conversationId) {
   const { data } = await api.put(`/api/messages/conversations/${conversationId}/read`)

@@ -1064,7 +1064,7 @@ export default function CandidateDashboard() {
       ) : (
         <>
           {activeTab === 'overview'      && <OverviewTab user={user} applications={applications} onTabChange={setActiveTab} />}
-          {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={fetchApplications} />}
+          {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={fetchApplications} onMessagesOpen={() => setActiveTab('messages')} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={fetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
