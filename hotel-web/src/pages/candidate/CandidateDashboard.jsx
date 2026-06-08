@@ -11,8 +11,7 @@ import ReviewModal from '../../components/ReviewModal'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
-import StatusDonut from '../../components/charts/StatusDonut'
-import MonthlyTrendBar from '../../components/charts/MonthlyTrendBar'
+// #89 v2: Grafikler kaldırıldı (StatusDonut + MonthlyTrendBar) — sade görünüm tercih edildi
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -648,14 +647,6 @@ function OverviewTab({ user, applications, onTabChange }) {
           </div>
         ))}
       </div>
-
-      {/* #89: Grafikler */}
-      {stats && stats.totalApplications > 0 && (
-        <div className="grid lg:grid-cols-2 gap-4">
-          <StatusDonut data={stats.byStatus} />
-          <MonthlyTrendBar data={stats.monthlyTrend} />
-        </div>
-      )}
 
       {/* Quick Actions */}
       <div className="grid sm:grid-cols-3 gap-4">

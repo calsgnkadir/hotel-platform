@@ -10,9 +10,7 @@ import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import MessagesPage from '../MessagesPage'
 import GalleryEditor from '../../components/GalleryEditor'
 import MapView from '../../components/MapView'
-import StatusDonut from '../../components/charts/StatusDonut'
-import DailyTrendLine from '../../components/charts/DailyTrendLine'
-import PositionBar from '../../components/charts/PositionBar'
+// #89 v2: Grafikler kaldırıldı (StatusDonut + DailyTrendLine + PositionBar) — sade görünüm
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -1713,17 +1711,6 @@ function OverviewTab({ applications, onTabChange }) {
           </div>
         ))}
       </div>
-
-      {/* #89: Trendler */}
-      {stats && stats.totalApplications > 0 && (
-        <>
-          <DailyTrendLine data={stats.dailyTrend} />
-          <div className="grid lg:grid-cols-2 gap-4">
-            <StatusDonut data={stats.byStatus} />
-            <PositionBar data={stats.byPosition} />
-          </div>
-        </>
-      )}
 
       <div className="card">
         <div className="card-header">
