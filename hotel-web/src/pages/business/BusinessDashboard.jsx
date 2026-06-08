@@ -1690,18 +1690,14 @@ function OverviewTab({ applications, onTabChange }) {
 
   return (
     <div className="space-y-4">
-      {/* Stat strip — kompakt, logosuz */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+      {/* Stat strip — sade 4'lü (Bu Ay, Kabul %, Red %, Aktif İlan kaldırıldı) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {[
           { label: 'Toplam',      value: applications.length, dot: 'bg-blue-400' },
           { label: 'Bekleyen',    value: pending,             dot: 'bg-amber-400' },
           { label: 'İnceleniyor', value: reviewing,           dot: 'bg-brand-400' },
           { label: 'Kabul',       value: accepted,            dot: 'bg-emerald-400' },
-          stats && { label: 'Bu Ay',       value: stats.thisMonthApplications, dot: 'bg-brand-400' },
-          stats && { label: 'Kabul %',     value: `${Math.round((stats.acceptanceRate || 0) * 100)}%`, dot: 'bg-emerald-400' },
-          stats && { label: 'Red %',       value: `${Math.round((stats.rejectionRate || 0) * 100)}%`, dot: 'bg-red-400' },
-          stats && { label: 'Aktif İlan',  value: stats.activeListings, dot: 'bg-blue-400' },
-        ].filter(Boolean).map(s => (
+        ].map(s => (
           <div key={s.label} className="stat-card !p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
