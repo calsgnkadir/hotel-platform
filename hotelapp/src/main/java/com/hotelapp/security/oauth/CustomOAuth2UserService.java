@@ -6,6 +6,7 @@ import com.hotelapp.enums.Role;
 import com.hotelapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * #92: Google'dan dönen user bilgisini DB'ye işler.
@@ -32,6 +34,7 @@ import java.util.Optional;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -63,10 +66,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 log.info("[OAUTH] Mevcut GOOGLE kullanıcı giriş yaptı: userId={}", user.getId());
             }
         } else {
-            // Yeni kullanıcı — CANDIDATE rolüyle oluştur
+            // Yeni kullanıcı — CANDIDATE rolüyle oluştur.
+            // password DB'de NOT NULL — OAuth user'a kullanılamaz random BCrypt hash koy.
+            // (Kullanıcı isterse "şifremi unuttum" ile gerçek şifre belirleyebilir.)
+            String randomPassword = passwordEncoder.encode("OAUTH-" + UUID.randomUUID());
             user = User.builder()
                     .email(email)
-                    .password(null)                       // OAuth user — şifre yok
+                    .password(randomPassword)
                     .fullName(name)
                     .role(Role.CANDIDATE)
                     .provider(AuthProvider.GOOGLE)
