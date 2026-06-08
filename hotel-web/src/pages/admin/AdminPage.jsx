@@ -3,6 +3,8 @@ import DashboardLayout from '../../components/DashboardLayout'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
+import SettingsTab from '../../components/tabs/SettingsTab'
+import HelpTab from '../../components/tabs/HelpTab'
 
 /* ── Inline SVG helper (Heroicons stroke stili) ── */
 function Icon({ d, className = 'w-4 h-4', strokeWidth = 2 }) {
@@ -575,6 +577,8 @@ export default function AdminPage() {
       {activeTab === 'users'    && <UsersTab />}
       {activeTab === 'reports'  && <ReportsTab />}
       {activeTab === 'audit'    && <AuditTab />}
+      {activeTab === 'settings' && <SettingsTab />}
+      {activeTab === 'help'     && <HelpTab />}
     </DashboardLayout>
   )
 }

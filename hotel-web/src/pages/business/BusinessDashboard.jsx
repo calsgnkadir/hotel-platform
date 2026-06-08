@@ -10,6 +10,8 @@ import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import MessagesPage from '../MessagesPage'
 import GalleryEditor from '../../components/GalleryEditor'
 import MapView from '../../components/MapView'
+import SettingsTab from '../../components/tabs/SettingsTab'
+import HelpTab from '../../components/tabs/HelpTab'
 // #89 v2: Grafikler kaldırıldı (StatusDonut + DailyTrendLine + PositionBar) — sade görünüm
 
 const POSITION_LABELS = {
@@ -1787,6 +1789,8 @@ export default function BusinessDashboard() {
           {activeTab === 'workers'       && <WorkersTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
+          {activeTab === 'settings'      && <SettingsTab />}
+          {activeTab === 'help'          && <HelpTab />}
         </>
       )}
     </DashboardLayout>

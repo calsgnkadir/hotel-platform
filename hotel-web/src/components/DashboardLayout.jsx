@@ -2,7 +2,13 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
 import NotificationBell from './NotificationBell'
-import ThemeToggle from './ThemeToggle'
+// ThemeToggle Ayarlar sekmesine taşındı — header'da artık yok
+
+// Ortak alt sekmeler — her rolün sidebar'ının altında çıkar
+const commonBottomNav = [
+  { id: 'settings', label: 'Ayarlar' },
+  { id: 'help',     label: 'Yardım'  },
+]
 
 const candidateNav = [
   { id: 'overview',      label: 'Genel Bakış' },
@@ -12,6 +18,7 @@ const candidateNav = [
   { id: 'messages',      label: 'Mesajlar' },
   { id: 'documents',     label: 'Belgelerim' },
   { id: 'profile',       label: 'Profilim' },
+  ...commonBottomNav,
 ]
 
 const businessNav = [
@@ -21,6 +28,7 @@ const businessNav = [
   { id: 'workers',       label: 'Bizde Çalışanlar' },
   { id: 'messages',      label: 'Mesajlar' },
   { id: 'profile',       label: 'İşletme Profili' },
+  ...commonBottomNav,
 ]
 
 const adminNav = [
@@ -28,6 +36,7 @@ const adminNav = [
   { id: 'users',    label: 'Kullanıcılar' },
   { id: 'reports',  label: 'Şikayetler' },
   { id: 'audit',    label: 'İşlem Geçmişi' },
+  ...commonBottomNav,
 ]
 
 export default function DashboardLayout({ children, activeTab, onTabChange }) {
@@ -126,7 +135,6 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <ThemeToggle />
             <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
 
             {/* Role badge — küçük pill */}

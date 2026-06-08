@@ -33,14 +33,23 @@ function timeAgo(dateStr) {
  * Header'da zil ikonu + okunmamış sayacı + dropdown.
  * @param {function} onNavigate - bildirime tıklanınca sekme değiştirir (link string)
  */
+// Ayarlar sekmesinden gelen "mute" flag'ı
+function isMuted() {
+  try { return localStorage.getItem('ajanshotel.notifications.muted') === '1' }
+  catch { return false }
+}
+
 export default function NotificationBell({ onNavigate }) {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState([])
   const [unread, setUnread] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [muted, setMuted] = useState(isMuted())
   const ref = useRef(null)
 
   const fetchUnread = useCallback(async () => {
+    // Kullanıcı bildirimleri kapattıysa hiç istek atma
+    if (isMuted()) { setUnread(0); return }
     try {
       const count = await hotelApi.getUnreadNotificationCount()
       setUnread(count)
@@ -52,6 +61,18 @@ export default function NotificationBell({ onNavigate }) {
     fetchUnread()
     const interval = setInterval(fetchUnread, 30000)
     return () => clearInterval(interval)
+  }, [fetchUnread])
+
+  // Ayarlar'dan mute değişince anında uygula
+  useEffect(() => {
+    const handler = () => {
+      const m = isMuted()
+      setMuted(m)
+      if (m) setUnread(0)
+      else fetchUnread()
+    }
+    window.addEventListener('ajanshotel:notifications-muted-changed', handler)
+    return () => window.removeEventListener('ajanshotel:notifications-muted-changed', handler)
   }, [fetchUnread])
 
   // Dışına tıklayınca kapat
