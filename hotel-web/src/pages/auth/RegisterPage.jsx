@@ -6,6 +6,8 @@ import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
 import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../utils/validation'
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
+import BackButton from '../../components/BackButton'
+import ThemeToggle from '../../components/ThemeToggle'
 
 const ROLE_OPTIONS = [
   {
@@ -62,6 +64,14 @@ export default function RegisterPage() {
     <div className="auth-bg">
       {/* Neon üst hat */}
       <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none" />
+
+      {/* Geri butonu + tema toggle — sabit üst köşeler */}
+      <div className="fixed top-3 left-4 z-40">
+        <BackButton to="/login" label="Girişe Dön" />
+      </div>
+      <div className="fixed top-3 right-4 z-40">
+        <ThemeToggle />
+      </div>
 
       <div className="auth-card" style={{ maxWidth: '520px' }}>
         {/* Header — logosuz */}

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
 import ThemeToggle from '../../components/ThemeToggle'
+import BackButton from '../../components/BackButton'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -44,10 +45,14 @@ export default function LoginPage() {
 
       {/* Üst bar */}
       <header className="relative px-6 py-4 flex items-center justify-between border-b border-slate-800/60">
-        <Link to="/" className="flex items-baseline gap-2">
-          <span className="font-black text-base tracking-tight">AjansHotel</span>
-          <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <BackButton to="/" label="Ana Sayfa" />
+          <span className="hidden sm:block w-px h-5 bg-slate-700" />
+          <Link to="/" className="hidden sm:flex items-baseline gap-2">
+            <span className="font-black text-base tracking-tight">AjansHotel</span>
+            <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
+          </Link>
+        </div>
         <ThemeToggle />
       </header>
 

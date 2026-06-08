@@ -1,16 +1,19 @@
 import { Link } from 'react-router-dom'
+import BackButton from '../components/BackButton'
 
 export default function KvkkPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-10 px-4">
+      {/* Sabit sol üst geri butonu */}
+      <div className="fixed top-3 left-4 z-40">
+        <BackButton label="Geri" />
+      </div>
+
       <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-8 sm:p-10">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
             Kişisel Verilerin Korunması Aydınlatma Metni
           </h1>
-          <Link to="/login" className="text-sm text-brand-700 dark:text-brand-400 hover:underline font-medium">
-            ← Geri
-          </Link>
         </div>
 
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
