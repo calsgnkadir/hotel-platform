@@ -11,7 +11,7 @@ const candidateNav = [
   { id: 'listings',      label: 'İlanlar' },
   { id: 'applications',  label: 'Başvurularım' },
   { id: 'messages',      label: 'Mesajlar' },
-  { id: 'documents',     label: 'Belgelerim' },
+  // Belgelerim sekmesi kaldırıldı (chat-v2) — belgeler mesajlaşmada paylaşılır
 ]
 
 const businessNav = [

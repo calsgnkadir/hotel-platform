@@ -1068,7 +1068,7 @@ export default function CandidateDashboard() {
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={fetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
-          {activeTab === 'documents'     && <DocumentsTab />}
+          {/* Belgelerim sekmesi kaldırıldı — belgeler artık mesajlarda paylaşılır */}
           {activeTab === 'profile'       && <ProfileTab />}
         </>
       )}
