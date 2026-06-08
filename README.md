@@ -62,14 +62,24 @@ Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya 
 </tr>
 </table>
 
+### Aday Paneli — Hibrit dark dashboard + kompakt stat strip
+
+<p align="center"><img src="docs/screenshots/candidate-overview.png" alt="Aday Genel Bakış" width="100%" /></p>
+
+### İlan Detayı — Vardiya + ücret + **canlı harita** (#81)
+
+<p align="center"><img src="docs/screenshots/listing-detail.png" alt="İlan Detayı + Konum" width="100%" /></p>
+
+### Mesajlaşma — 5 saniye polling + listing context
+
+<p align="center"><img src="docs/screenshots/messages.png" alt="Sohbet" width="100%" /></p>
+
 ### KVKK — Aydınlatma metni
 
 <p align="center"><img src="docs/screenshots/kvkk.png" alt="KVKK" width="80%" /></p>
 
-> **Dashboard görselleri (aday/işletme/admin paneli):** Demo hesabıyla giriş yapıp ekran görüntüsü alabilirsin
-> — Railway backend açıkken `Ctrl+Shift+P → Capture full size screenshot` (Chrome DevTools).
-> Önerilen dosya adları: `candidate-overview.png`, `business-applications.png`, `listing-detail.png`,
-> `messages.png`, `stats.png`.
+> **İşletme paneli (`stats.png`, `business-applications.png`)** ileride eklenecek — demo işletme hesabıyla
+> Genel Bakış grafikleri ve Gelen Başvurular tablosu çekildiğinde bu listeye eklenir.
 
 ---
 
