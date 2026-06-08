@@ -66,6 +66,8 @@ public class BusinessService {
         business.setDistrict(req.getDistrict());
         business.setNeighborhood(req.getNeighborhood());
         business.setAddress(req.getAddress());
+        business.setLatitude(req.getLatitude());     // #81 v2: tam konum
+        business.setLongitude(req.getLongitude());
         business.setDescription(req.getDescription());
         business.setPhone(req.getPhone());
         business.setWebsite(req.getWebsite());
@@ -278,6 +280,8 @@ public class BusinessService {
                 .district(b.getDistrict())
                 .neighborhood(b.getNeighborhood())
                 .address(b.getAddress())
+                .latitude(b.getLatitude())
+                .longitude(b.getLongitude())
                 .description(b.getDescription())
                 .phone(b.getPhone())
                 .website(b.getWebsite())
@@ -309,6 +313,8 @@ public class BusinessService {
         private String district;
         private String neighborhood;
         private String address;
+        private java.math.BigDecimal latitude;
+        private java.math.BigDecimal longitude;
         private String description;
         private String phone;
         private String website;
@@ -331,6 +337,8 @@ public class BusinessService {
         private String district;
         private String neighborhood;
         private String address;
+        private java.math.BigDecimal latitude;
+        private java.math.BigDecimal longitude;
         private String description;
 
         /** İşletme telefonu — mobil veya sabit hat (0212/0216/...) ikisi de kabul. */

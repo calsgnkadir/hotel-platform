@@ -35,6 +35,13 @@ public class Business {
 
     private String address;
 
+    /** #81 v2: Tam konum koordinatı (işletme tarafından harita üzerinden işaretlenir). */
+    @Column(precision = 10, scale = 7)
+    private java.math.BigDecimal latitude;
+
+    @Column(precision = 10, scale = 7)
+    private java.math.BigDecimal longitude;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 

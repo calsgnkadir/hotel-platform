@@ -399,6 +399,10 @@ public class JobListingService {
                 .businessName(l.getBusiness().getName())
                 .businessType(l.getBusiness().getType().name())
                 .businessDistrict(l.getBusiness().getDistrict())
+                .businessNeighborhood(l.getBusiness().getNeighborhood())
+                .businessAddress(l.getBusiness().getAddress())
+                .businessLatitude(l.getBusiness().getLatitude())
+                .businessLongitude(l.getBusiness().getLongitude())
                 .businessAverageRating(reviewService.getBusinessRating(l.getBusiness().getId()).getAverageRating())
                 .businessReviewCount(reviewService.getBusinessRating(l.getBusiness().getId()).getReviewCount())
                 .createdAt(l.getCreatedAt())
@@ -470,6 +474,10 @@ public class JobListingService {
         private String businessName;
         private String businessType;
         private String businessDistrict;
+        private String businessNeighborhood;
+        private String businessAddress;
+        private BigDecimal businessLatitude;
+        private BigDecimal businessLongitude;
         // R3
         private Double businessAverageRating;
         private Long businessReviewCount;

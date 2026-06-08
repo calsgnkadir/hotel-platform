@@ -312,20 +312,29 @@ function DetailModal({ listing, onClose, onApply }) {
             )}
           </div>
 
-          {/* #81: Konum haritası — sadece İstanbul ilçesi varsa */}
+          {/* #81 v2: Konum — tam koordinat varsa onu, yoksa ilçe merkezi fallback */}
           {listing.businessDistrict && (
             <div>
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Konum</h3>
               <MapView
+                position={listing.businessLatitude != null && listing.businessLongitude != null
+                  ? [Number(listing.businessLatitude), Number(listing.businessLongitude)]
+                  : null}
                 district={listing.businessDistrict}
                 neighborhood={listing.businessNeighborhood}
                 title={listing.businessName}
-                height="220px"
-                zoom={13}
+                height="240px"
               />
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2">
-                Harita, işletmenin {listing.businessDistrict} ilçe merkezine göre yaklaşık konumu gösterir.
-              </p>
+              {listing.businessAddress && (
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                  {listing.businessAddress}
+                </p>
+              )}
+              {listing.businessLatitude == null && (
+                <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 italic">
+                  Yaklaşık konum — işletme henüz tam adresi haritada işaretlemedi.
+                </p>
+              )}
             </div>
           )}
 
