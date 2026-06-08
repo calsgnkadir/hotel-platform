@@ -44,6 +44,11 @@ export function AuthProvider({ children }) {
     setUser(userInfo)
   }
 
+  /** #92: Google OAuth callback'inden gelen veriyi persist eder. */
+  function loginFromOAuth(authResponse) {
+    persist(authResponse)
+  }
+
   const value = {
     user,
     loading,
@@ -53,6 +58,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    loginFromOAuth,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

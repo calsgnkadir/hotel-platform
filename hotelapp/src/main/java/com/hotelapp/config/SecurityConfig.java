@@ -2,6 +2,8 @@ package com.hotelapp.config;
 
 import com.hotelapp.security.JwtAuthFilter;
 import com.hotelapp.security.RateLimitFilter;
+import com.hotelapp.security.oauth.CustomOAuth2UserService;
+import com.hotelapp.security.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +33,10 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final RateLimitFilter rateLimitFilter;
     private final AuthenticationProvider authenticationProvider;
+
+    /** #92: Google OAuth — opsiyonel (env yoksa null) */
+    private final CustomOAuth2UserService oAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     /**
      * CORS izinli domain'ler — virgülle ayrılmış liste.
@@ -67,7 +73,9 @@ public class SecurityConfig {
                                 "/api/listings",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/oauth2/**",              // #92: Google OAuth flow
+                                "/login/oauth2/**"          // #92: Google callback
                         ).permitAll()
                         .requestMatchers("/api/candidate/**").hasRole("CANDIDATE")
                         .requestMatchers("/api/business/**").hasRole("BUSINESS_OWNER")
@@ -79,7 +87,13 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(rateLimitFilter, JwtAuthFilter.class);
+                .addFilterBefore(rateLimitFilter, JwtAuthFilter.class)
+
+                // #92: Google OAuth2 login flow
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
+                );
 
         return http.build();
     }

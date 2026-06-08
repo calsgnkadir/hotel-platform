@@ -33,8 +33,24 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    /**
+     * Şifre — local kayıtlı kullanıcılar için BCrypt hash.
+     * OAuth (Google) kullanıcıları için null olabilir (provider != LOCAL).
+     */
     private String password;
+
+    /**
+     * #92: Hesap nereden geldi — local form veya OAuth provider.
+     * Default LOCAL (mevcut kullanıcılar etkilenmesin).
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private com.hotelapp.enums.AuthProvider provider = com.hotelapp.enums.AuthProvider.LOCAL;
+
+    /** Provider tarafındaki user ID (Google: sub claim, ~21 char). */
+    @Column(length = 100)
+    private String providerId;
 
     @Column(nullable = false)
     private String fullName;

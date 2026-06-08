@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
 import ThemeToggle from '../../components/ThemeToggle'
 import BackButton from '../../components/BackButton'
+import GoogleSignInButton from '../../components/GoogleSignInButton'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -74,6 +75,16 @@ export default function LoginPage() {
           </div>
 
           <div className="auth-card">
+            {/* #92: Google ile giriş */}
+            <GoogleSignInButton label="Google ile Devam Et" />
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-5">
+              <span className="flex-1 h-px bg-slate-700" />
+              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">veya</span>
+              <span className="flex-1 h-px bg-slate-700" />
+            </div>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label className="label">E-posta</label>

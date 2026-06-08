@@ -8,6 +8,7 @@ import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../utils/validat
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 import BackButton from '../../components/BackButton'
 import ThemeToggle from '../../components/ThemeToggle'
+import GoogleSignInButton from '../../components/GoogleSignInButton'
 
 const ROLE_OPTIONS = [
   {
@@ -108,7 +109,16 @@ export default function RegisterPage() {
 
         {/* ── STEP 1: Role selection — pill kartlar ── */}
         {step === 1 && (
-          <div className="space-y-2.5">
+          <div className="space-y-3">
+            {/* #92: Google ile kayıt — direkt aday rolüyle açar */}
+            <GoogleSignInButton label="Google ile Aday Olarak Kayıt" />
+
+            <div className="flex items-center gap-3 py-1">
+              <span className="flex-1 h-px bg-slate-700" />
+              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">veya rol seç</span>
+              <span className="flex-1 h-px bg-slate-700" />
+            </div>
+
             {ROLE_OPTIONS.map(opt => (
               <button
                 key={opt.value}

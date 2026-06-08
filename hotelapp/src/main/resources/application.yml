@@ -42,6 +42,21 @@ jwt:
   secret: ${JWT_SECRET:dev-only-secret-key-at-least-32-characters-long-!!!}
   expiration: ${JWT_EXPIRATION:86400000}
 
+# #92: Google OAuth2 sign-in
+# Boş bırakırsan OAuth2 login bypass edilir (sadece local form çalışır).
+# Lokal: IntelliJ Run Config → Environment Variables ile
+# Prod: Railway env vars
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id:     ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope:         profile, email
+            redirect-uri:  "{baseUrl}/login/oauth2/code/{registrationId}"
+
 file:
   upload-dir: ${FILE_UPLOAD_DIR:./uploads}   # legacy, artık kullanılmıyor — Cloudinary kullanıyoruz
 
