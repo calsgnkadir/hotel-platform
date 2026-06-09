@@ -112,6 +112,11 @@ public class ApplicationService {
                     throw new BusinessRuleException(
                             "Seçtiğiniz slot dolu: " + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
                 }
+                // Chat-v2 bugfix: Geçmiş tarihli slot'a başvuru engellenir
+                if (slot.getDate() != null && slot.getDate().isBefore(java.time.LocalDate.now())) {
+                    throw new BusinessRuleException(
+                            "Bu vardiya geçmişte: " + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
+                }
                 selected.add(slot);
             }
             application.setRequestedSlots(selected);

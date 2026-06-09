@@ -66,8 +66,14 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   })
   const hasSlots = allSlots.length > 0
 
-  function toggleSlot(id, full) {
-    if (full) return
+  // Chat-v2 bugfix: bugünden önceki tarihler "geçti" sayılır
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const isPastSlot = (s) => (s.date || '') < todayStr
+  const futureSlots = allSlots.filter(s => !isPastSlot(s))
+  const hasFutureSlots = futureSlots.length > 0
+
+  function toggleSlot(id, full, past) {
+    if (full || past) return
     setSelectedSlotIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
@@ -171,6 +177,8 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
               <div className="space-y-1.5">
                 {allSlots.map(s => {
                   const full = s.full || (s.slotsFilled >= s.slotsNeeded)
+                  const past = isPastSlot(s)
+                  const disabled = full || past
                   const selected = selectedSlotIds.includes(s.id)
                   const dateLabel = new Date(s.date).toLocaleDateString('tr-TR', {
                     day: 'numeric', month: 'short', weekday: 'short',
@@ -179,22 +187,30 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                   return (
                     <label key={s.id}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all
-                        ${full
+                        ${disabled
                           ? 'border-slate-200 bg-slate-50 cursor-not-allowed opacity-60'
                           : selected
                             ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 dark:border-brand-500 cursor-pointer shadow-sm'
                             : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                      <input type="checkbox" checked={selected} disabled={full}
-                        onChange={() => toggleSlot(s.id, full)}
+                      <input type="checkbox" checked={selected} disabled={disabled}
+                        onChange={() => toggleSlot(s.id, full, past)}
                         className="w-4 h-4 accent-brand-700" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-slate-800">
+                        <div className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
                           {dateLabel} · {timeLabel}
+                          {past && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded
+                                             bg-slate-200 text-slate-600">
+                              Geçti
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-slate-500 mt-0.5">
-                          {full
-                            ? 'Bu vardiya doldu'
-                            : `${s.slotsFilled || 0}/${s.slotsNeeded} dolu — ${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
+                          {past
+                            ? 'Bu vardiya geçmişte — başvurulamaz'
+                            : full
+                              ? 'Bu vardiya doldu'
+                              : `${s.slotsFilled || 0}/${s.slotsNeeded} dolu — ${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
                         </div>
                       </div>
                     </label>
@@ -276,10 +292,10 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
           {/* Footer */}
           <div className="flex gap-3 pt-2 sticky bottom-0 bg-white dark:bg-slate-900 py-3 -mx-6 px-6 border-t border-slate-100">
             <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm">İptal</button>
-            <button type="submit" disabled={loading || !hasSlots}
+            <button type="submit" disabled={loading || !hasFutureSlots}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
               style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
-              {loading ? 'Gönderiliyor...' : 'Başvur →'}
+              {loading ? 'Gönderiliyor...' : !hasFutureSlots ? 'Süresi Doldu' : 'Başvur →'}
             </button>
           </div>
         </form>
@@ -298,6 +314,9 @@ function DetailModal({ listing, onClose, onApply }) {
     const c = (a.date || '').localeCompare(b.date || '')
     return c !== 0 ? c : (a.startTime || '').localeCompare(b.startTime || '')
   })
+  // Chat-v2: hiç gelecek slot yoksa "süresi doldu"
+  const detailTodayStr = new Date().toISOString().slice(0, 10)
+  const detailHasFuture = slots.some(s => (s.date || '') >= detailTodayStr)
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -456,10 +475,12 @@ function DetailModal({ listing, onClose, onApply }) {
             Bildir
           </button>
           <button onClick={onClose} className="btn-secondary flex-1 text-sm">Kapat</button>
-          <button onClick={() => { onApply(listing); onClose() }}
-            className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all hover:-translate-y-0.5"
+          <button
+            onClick={() => { if (detailHasFuture) { onApply(listing); onClose() } }}
+            disabled={!detailHasFuture}
+            className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
             style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
-            Başvur →
+            {detailHasFuture ? 'Başvur →' : 'Süresi Doldu'}
           </button>
         </div>
       </div>
