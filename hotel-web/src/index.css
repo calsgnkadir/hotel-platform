@@ -1,4 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Tema refactor v2 (Yön A — Hospitality Concierge):
+   Light-first, krem + teal + terracotta. Eski lacivert artık opsiyonel `.dark` toggle.
+
+   Tipografi:
+     - Inter (UI metin): 300/400/500/600/700/800/900
+     - Fraunces (display başlık, "concierge" hissi)
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,22 +17,29 @@ html, body, #root {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #0a0f1c;          /* dark-first: ink-900 */
-  color: #f1f5f9;
+  background: #faf7f2;          /* cream-100 — sıcak krem zemin */
+  color: #171513;                /* ink-900 — antrasit */
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s, color 0.2s;
 }
 
-:root:not(.dark) body {
-  background: #f8fafc;
-  color: #0f172a;
+/* Dark mode opsiyonel — kullanıcı toggle'larsa */
+.dark body {
+  background: #1f1c1a;
+  color: #faf7f2;
+}
+
+/* Display başlıklar — Fraunces serif */
+.font-display {
+  font-family: 'Fraunces', Georgia, serif;
+  font-feature-settings: "opsz" auto;
 }
 
 /* ────────────────────────────────────────────────────────────────
-   AUTH BG — dark-first
+   AUTH BG — Light + sıcak + warm spotlight
    ──────────────────────────────────────────────────────────────── */
 .auth-bg {
-  background: #0a0f1c;
+  background: #faf7f2;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -33,24 +47,25 @@ body {
   padding: 1.5rem;
   position: relative;
 }
-:root:not(.dark) .auth-bg {
-  background: #ffffff;
+.dark .auth-bg {
+  background: #1f1c1a;
 }
 
 .auth-card {
-  background: #0f172a;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: #ffffff;
+  border: 1px solid #ebe0cc;     /* cream-300 */
   border-radius: 1.25rem;
   padding: 2rem;
   width: 100%;
   max-width: 440px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 2px rgba(23, 21, 19, 0.04),
+              0 12px 40px rgba(15, 118, 110, 0.08);
   animation: slideUp 0.4s ease-out;
 }
-:root:not(.dark) .auth-card {
-  background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+.dark .auth-card {
+  background: #2a2522;
+  border-color: rgba(250, 247, 242, 0.10);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.40);
 }
 
 @keyframes slideUp {
@@ -59,291 +74,233 @@ body {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   FORM ELEMENTS — dark-first
+   FORM ELEMENTS — Light-first
    ──────────────────────────────────────────────────────────────── */
 .input {
   @apply w-full px-4 py-2.5 border rounded-xl text-sm transition-all duration-200
-         border-slate-700 bg-slate-900/60 text-slate-100 placeholder:text-slate-500
-         focus:bg-slate-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20
+         border-cream-300 bg-white text-ink-900 placeholder:text-ink-400
+         focus:outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-700/15
          disabled:opacity-60 disabled:cursor-not-allowed;
 }
-:root:not(.dark) .input {
-  @apply border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400
-         focus:bg-white focus:border-brand-600 focus:ring-brand-100;
+.dark .input {
+  @apply border-ink-700 bg-ink-800 text-cream-100 placeholder:text-ink-400
+         focus:bg-ink-800 focus:border-brand-400 focus:ring-brand-400/20;
 }
 
-/* ── Pill butonlar (StoryHell tarzı, rounded-full) ── */
+.label {
+  @apply block text-[11px] font-bold uppercase tracking-wider text-ink-600 mb-1.5;
+}
+.dark .label {
+  @apply text-cream-200;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   BUTONLAR — Pill, sıcak hissiyat
+   ──────────────────────────────────────────────────────────────── */
+
+/* PRIMARY: Terracotta CTA (vurgu, "harekete geç") */
 .btn-primary {
   @apply w-full py-3 px-6 font-semibold text-sm text-white rounded-full
          transition-all duration-200 active:scale-[0.97]
          disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
          inline-flex items-center justify-center gap-2;
-  background: linear-gradient(135deg, #047857, #10b981);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+  background: linear-gradient(135deg, #e07856 0%, #d05f3a 100%);
+  box-shadow: 0 2px 12px rgba(224, 120, 86, 0.30);
 }
-.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #065f46, #047857);
-  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.45);
+.btn-primary:hover {
+  background: linear-gradient(135deg, #d05f3a 0%, #b94a28 100%);
+  box-shadow: 0 4px 20px rgba(224, 120, 86, 0.40);
   transform: translateY(-1px);
 }
 
+/* SECONDARY: Teal outline (ikincil aksiyon) */
 .btn-secondary {
-  @apply w-full py-3 px-6 font-medium text-sm rounded-full border
+  @apply py-3 px-6 font-semibold text-sm rounded-full
          transition-all duration-200 active:scale-[0.97]
-         bg-slate-800/60 hover:bg-slate-800 text-slate-200 border-slate-700;
+         disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
+         inline-flex items-center justify-center gap-2
+         border-2 border-brand-700 text-brand-700 bg-transparent;
 }
-:root:not(.dark) .btn-secondary {
-  @apply bg-white hover:bg-slate-50 text-slate-700 border-slate-200;
+.btn-secondary:hover {
+  @apply bg-brand-50;
 }
-
-.btn-sm {
-  @apply px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 active:scale-95;
+.dark .btn-secondary {
+  @apply border-brand-400 text-brand-300;
 }
-
-.btn-danger {
-  @apply px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 active:scale-95
-         text-red-400 bg-red-950/40 hover:bg-red-950/60 border border-red-900;
-}
-:root:not(.dark) .btn-danger {
-  @apply text-red-600 bg-red-50 hover:bg-red-100 border-red-200;
+.dark .btn-secondary:hover {
+  @apply bg-brand-900/30;
 }
 
-.label {
-  @apply block text-xs font-semibold uppercase tracking-wider mb-1.5 text-slate-400;
+/* GHOST: Sadece text + hover bg */
+.btn-ghost {
+  @apply py-2 px-4 font-medium text-sm rounded-full
+         text-ink-700 bg-transparent transition-colors
+         hover:bg-cream-200 active:bg-cream-300;
 }
-:root:not(.dark) .label {
-  @apply text-slate-600;
-}
-
-.error-text {
-  @apply text-red-400 text-xs mt-1.5 flex items-center gap-1.5;
-}
-:root:not(.dark) .error-text {
-  @apply text-red-600;
+.dark .btn-ghost {
+  @apply text-cream-200 hover:bg-ink-700;
 }
 
-/* ────────────────────────────────────────────────────────────────
-   STATUS BADGES — pill, emoji'siz, sade
-   ──────────────────────────────────────────────────────────────── */
-.badge {
-  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide;
+/* DESTRUCTIVE: Kırmızı (silme, iptal) */
+.btn-destructive {
+  @apply py-2.5 px-5 font-semibold text-sm rounded-full text-white
+         transition-all active:scale-[0.97];
+  background: #b91c1c;
 }
-.badge::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
-  display: inline-block;
+.btn-destructive:hover {
+  background: #991b1b;
 }
-.badge-pending     { @apply bg-amber-950/40 text-amber-300 border border-amber-900/60; }
-.badge-pending::before     { background: #fbbf24; }
-.badge-reviewing   { @apply bg-blue-950/40 text-blue-300 border border-blue-900/60; }
-.badge-reviewing::before   { background: #60a5fa; }
-.badge-accepted    { @apply bg-emerald-950/40 text-emerald-300 border border-emerald-900/60; }
-.badge-accepted::before    { background: #34d399; }
-.badge-rejected    { @apply bg-red-950/40 text-red-300 border border-red-900/60; }
-.badge-rejected::before    { background: #f87171; }
-.badge-expired     { @apply bg-slate-800 text-slate-400 border border-slate-700; }
-.badge-expired::before     { background: #94a3b8; }
-
-:root:not(.dark) .badge-pending     { @apply bg-amber-50 text-amber-700 border-amber-200; }
-:root:not(.dark) .badge-reviewing   { @apply bg-blue-50 text-blue-700 border-blue-200; }
-:root:not(.dark) .badge-accepted    { @apply bg-emerald-50 text-emerald-700 border-emerald-200; }
-:root:not(.dark) .badge-rejected    { @apply bg-red-50 text-red-700 border-red-200; }
-:root:not(.dark) .badge-expired     { @apply bg-slate-100 text-slate-500 border-slate-200; }
 
 /* ────────────────────────────────────────────────────────────────
-   CARDS — dark-first, rounded-2xl, hover glow
+   CARD — Yeni: white bg + soft shadow + krem kenar
    ──────────────────────────────────────────────────────────────── */
 .card {
-  @apply rounded-2xl border transition-all duration-200
-         bg-slate-900 border-slate-800;
+  @apply rounded-2xl p-5 transition-all duration-200;
+  background: #ffffff;
+  border: 1px solid #ebe0cc;       /* cream-300 */
+  box-shadow: 0 1px 2px rgba(23, 21, 19, 0.03);
 }
 .card:hover {
-  border-color: rgba(16, 185, 129, 0.25);
+  border-color: #ddccae;            /* cream-400 */
 }
-:root:not(.dark) .card {
-  @apply bg-white border-slate-200 shadow-sm;
+.dark .card {
+  background: #2a2522;
+  border-color: rgba(250, 247, 242, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.20);
 }
 
 .card-header {
-  @apply px-6 py-4 border-b flex items-center justify-between border-slate-800;
+  @apply pb-3 mb-3 border-b border-cream-200;
 }
-:root:not(.dark) .card-header {
-  @apply border-slate-100;
-}
-
-.card-body {
-  @apply px-6 py-5;
-}
-
-.stat-card {
-  @apply rounded-2xl p-5 border transition-all duration-200
-         bg-slate-900 border-slate-800;
-}
-.stat-card:hover {
-  border-color: rgba(16, 185, 129, 0.30);
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
-}
-:root:not(.dark) .stat-card {
-  @apply bg-white border-slate-200 shadow-sm;
+.dark .card-header {
+  @apply border-ink-700;
 }
 
 /* ────────────────────────────────────────────────────────────────
-   TABLES — dark-first
+   BADGE — Sıcak palette
    ──────────────────────────────────────────────────────────────── */
-.table-container {
-  @apply overflow-x-auto rounded-2xl border border-slate-800;
+.badge {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider;
 }
-:root:not(.dark) .table-container {
-  @apply border-slate-200 shadow-sm;
-}
+.badge-pending   { @apply bg-amber-100 text-amber-800; }
+.badge-reviewing { @apply bg-brand-100 text-brand-800; }
+.badge-accepted  { @apply bg-emerald-100 text-emerald-800; }
+.badge-rejected  { @apply bg-red-100 text-red-800; }
+.badge-expired   { @apply bg-cream-300 text-ink-700; }
 
-.table {
-  @apply w-full text-sm;
-}
-
-.table th {
-  @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider border-b
-         bg-slate-900 text-slate-400 border-slate-800;
-}
-:root:not(.dark) .table th {
-  @apply bg-slate-50 text-slate-500 border-slate-200;
-}
-
-.table td {
-  @apply px-4 py-3.5 border-b text-slate-300 border-slate-800;
-}
-:root:not(.dark) .table td {
-  @apply text-slate-700 border-slate-100;
-}
-
-.table tbody tr {
-  @apply bg-slate-950;
-}
-:root:not(.dark) .table tbody tr {
-  @apply bg-white;
-}
-
-.table tbody tr:hover {
-  @apply bg-slate-900;
-}
-:root:not(.dark) .table tbody tr:hover {
-  @apply bg-slate-50;
-}
-
-.table tbody tr:last-child td {
-  @apply border-b-0;
-}
+.dark .badge-pending   { @apply bg-amber-950/40 text-amber-200; }
+.dark .badge-reviewing { @apply bg-brand-900/40 text-brand-200; }
+.dark .badge-accepted  { @apply bg-emerald-950/40 text-emerald-200; }
+.dark .badge-rejected  { @apply bg-red-950/40 text-red-200; }
+.dark .badge-expired   { @apply bg-ink-700 text-cream-200; }
 
 /* ────────────────────────────────────────────────────────────────
-   SIDEBAR NAV-LINK — pill stili
+   MODAL — Krem fond + beyaz card
    ──────────────────────────────────────────────────────────────── */
-.nav-link {
-  @apply flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-medium cursor-pointer
-         transition-all duration-150
-         text-slate-400 hover:text-white hover:bg-slate-800;
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(23, 21, 19, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
 }
-:root:not(.dark) .nav-link {
-  @apply text-slate-600 hover:text-slate-900 hover:bg-slate-100;
+.modal-content {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  width: 100%;
+  max-width: 540px;
+  box-shadow: 0 20px 60px rgba(23, 21, 19, 0.15);
+  animation: slideUp 0.3s ease-out;
 }
-
-.nav-link.active {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.08));
-  color: #34d399;
-  font-weight: 600;
-  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.25);
-}
-:root:not(.dark) .nav-link.active {
-  background: linear-gradient(135deg, rgba(4, 120, 87, 0.10), rgba(4, 120, 87, 0.04));
-  color: #047857;
-  box-shadow: inset 0 0 0 1px rgba(4, 120, 87, 0.20);
-}
-
-/* ────────────────────────────────────────────────────────────────
-   EMPTY STATE
-   ──────────────────────────────────────────────────────────────── */
-.empty-state {
-  @apply flex flex-col items-center justify-center py-16 text-center;
-}
-
-/* ────────────────────────────────────────────────────────────────
-   ANIMATIONS
-   ──────────────────────────────────────────────────────────────── */
-.fade-in {
-  animation: fadeIn 0.3s ease-out;
+.dark .modal-content {
+  background: #2a2522;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ────────────────────────────────────────────────────────────────
-   MODAL — dark-first
-   ──────────────────────────────────────────────────────────────── */
-.modal-overlay {
-  @apply fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4;
-  background: rgba(2, 6, 23, 0.75);
-  animation: fadeInOverlay 0.2s ease-out;
-}
-:root:not(.dark) .modal-overlay {
-  background: rgba(15, 23, 42, 0.5);
-}
-
-@keyframes fadeInOverlay {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
-.modal-content {
-  @apply rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto
-         bg-slate-900 text-slate-100 border border-slate-800;
-}
-:root:not(.dark) .modal-content {
-  @apply bg-white text-slate-800 border-0;
-}
-
-.modal-content {
-  animation: slideUpModal 0.25s ease-out;
-}
-
-@keyframes slideUpModal {
-  from { opacity: 0; transform: translateY(30px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+/* ────────────────────────────────────────────────────────────────
+   NEON STRIP — Üst hat, artık terracotta + teal
+   ──────────────────────────────────────────────────────────────── */
+.neon-strip {
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    #0f766e 20%,
+    #e07856 50%,
+    #0f766e 80%,
+    transparent 100%);
+  opacity: 0.85;
 }
 
 /* ────────────────────────────────────────────────────────────────
-   SPINNER — neon
+   ERROR TEXT
+   ──────────────────────────────────────────────────────────────── */
+.error-text {
+  @apply mt-1.5 text-xs text-red-600 flex items-center gap-1.5;
+}
+.dark .error-text {
+  @apply text-red-300;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   SPINNER
    ──────────────────────────────────────────────────────────────── */
 .spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(16, 185, 129, 0.15);
-  border-top-color: #10b981;
+  width: 28px; height: 28px;
+  border: 3px solid #ebe0cc;
+  border-top-color: #0f766e;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
-
+.dark .spinner {
+  border-color: rgba(250, 247, 242, 0.15);
+  border-top-color: #2dd4bf;
+}
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
 /* ────────────────────────────────────────────────────────────────
-   SCROLLBAR — dark-first
+   SCROLL — Sıcak ton
    ──────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #475569; }
-:root:not(.dark) ::-webkit-scrollbar-thumb { background: #cbd5e1; }
-:root:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+::-webkit-scrollbar {
+  width: 10px; height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #faf7f2;
+}
+::-webkit-scrollbar-thumb {
+  background: #ddccae;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c9b388;
+}
+.dark ::-webkit-scrollbar-track { background: #1f1c1a; }
+.dark ::-webkit-scrollbar-thumb { background: #544c45; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #766c61; }
 
 /* ────────────────────────────────────────────────────────────────
-   NEON TOP STRIP (Wordplay tarzı yeşil hat)
+   EMPTY STATE
    ──────────────────────────────────────────────────────────────── */
-.neon-strip {
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #10b981 30%, #34d399 50%, #10b981 70%, transparent 100%);
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+.empty-state {
+  @apply flex flex-col items-center justify-center text-center;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   ANIMATIONS (legacy support)
+   ──────────────────────────────────────────────────────────────── */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+.slide-up {
+  animation: slideUp 0.4s ease-out;
 }
