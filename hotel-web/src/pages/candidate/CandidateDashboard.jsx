@@ -155,7 +155,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                 ${statusFilter === f.value
                   ? 'text-white shadow-sm'
                   : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
+              style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
               {f.label} <span className="opacity-70">({count})</span>
             </button>
           )
@@ -203,7 +203,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
               {(app.status === 'PENDING' || app.status === 'REVIEWING' || app.status === 'ACCEPTED') && (
                 <button onClick={() => onOpenMessages?.(app.conversationId)}
                   className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
-                  style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
+                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                     <path strokeLinecap="round" strokeLinejoin="round"
@@ -883,7 +883,7 @@ function ProfileTab() {
       <div className="flex justify-end">
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
       </div>

@@ -266,7 +266,7 @@ function UsersTab() {
                 ${roleFilter === f.value
                   ? 'text-white shadow-sm'
                   : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={roleFilter === f.value ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
+              style={roleFilter === f.value ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
               {f.label}
             </button>
           ))}
@@ -410,7 +410,7 @@ function ReportsTab() {
               ${statusFilter === f.value
                 ? 'text-white shadow-sm'
                 : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
+            style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
             {f.label}
           </button>
         ))}
@@ -523,7 +523,7 @@ function AuditTab() {
               ${actionFilter === f.value
                 ? 'text-white shadow-sm'
                 : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={actionFilter === f.value ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
+            style={actionFilter === f.value ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
             {f.label}
           </button>
         ))}

@@ -143,7 +143,7 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
-                 style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
+                 style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div>
@@ -325,7 +325,7 @@ function DetailModal({ listing, onClose, onApply }) {
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
-                 style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
+                 style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div className="flex-1 min-w-0">
@@ -510,7 +510,7 @@ function ListingCard({ listing, onApply, onDetail }) {
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0 shadow-sm"
-               style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
+               style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
             {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
           </div>
           <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700">
@@ -578,7 +578,7 @@ function ListingCard({ listing, onApply, onDetail }) {
             onClick={(e) => { e.stopPropagation(); onApply(listing) }}
             className="flex-1 py-2 px-3 text-sm font-semibold text-white rounded-lg
                        transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
             Başvur
           </button>
         </div>
@@ -750,7 +750,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
                     ${active
                       ? 'text-white shadow-sm'
                       : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-                  style={active ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
+                  style={active ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
                   {p.label}
                 </button>
               )

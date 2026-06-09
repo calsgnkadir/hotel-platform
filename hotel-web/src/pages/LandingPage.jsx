@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 /**
  * Landing v3 — "Hospitality Concierge" tasarım dili:
  *  - Krem (#faf7f2) sıcak zemin
- *  - Derin petrol/teal (#0F766E) brand
- *  - Sıcak terracotta (#E07856) CTA + accent
+ *  - Derin petrol/teal (#6B21A8) brand
+ *  - Sıcak terracotta (#A855F7) CTA + accent
  *  - Inter (UI) + Fraunces (büyük başlıklar, "concierge" hissi)
  */
 export default function LandingPage() {
@@ -38,7 +38,7 @@ export default function LandingPage() {
             </Link>
             <Link to="/register"
               className="text-[13px] font-semibold px-4 py-1.5 rounded-full text-white shadow-terra-sm hover:shadow-terra transition-all hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #e07856 0%, #d05f3a 100%)' }}>
+              style={{ background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)' }}>
               Kayıt Ol
             </Link>
           </div>
@@ -78,7 +78,7 @@ export default function LandingPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <Link to="/register"
                   className="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-full text-white shadow-terra hover:-translate-y-0.5 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #e07856 0%, #d05f3a 100%)' }}>
+                  style={{ background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)' }}>
                   Hemen Başla
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                        strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
@@ -121,7 +121,7 @@ export default function LandingPage() {
                 <div className="bg-white rounded-3xl p-7 shadow-glow-lg border border-cream-300">
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-display text-xl"
-                         style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
+                         style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
                       O
                     </div>
                     <div>
@@ -135,7 +135,7 @@ export default function LandingPage() {
                     <ListingPreview pos="Bellboy" time="Hafta sonu · gece" wage="₺520/vardiya" />
                   </div>
                   <button className="w-full mt-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-terra-sm hover:shadow-terra transition-all"
-                          style={{ background: 'linear-gradient(135deg, #e07856 0%, #d05f3a 100%)' }}>
+                          style={{ background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)' }}>
                     3 vardiyaya başvur
                   </button>
                 </div>
@@ -170,32 +170,32 @@ export default function LandingPage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <Feature
-              icon="📋"
+              iconPath="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z"
               title="Vardiya bazlı başvuru"
               text="Tek bir ilana değil, çalışabileceğin spesifik vardiyalara başvurursun."
             />
             <Feature
-              icon="💬"
+              iconPath="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"
               title="Otomatik mesajlaşma"
               text="Başvur, mesajlaşma otomatik açılır. Belge ve fotoları sohbetten paylaş."
             />
             <Feature
-              icon="📞"
+              iconPath="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
               title="Sesli + görüntülü arama"
               text="Jitsi entegrasyonu ile mesaj kompozerinden tek tıkla arama başlat."
             />
             <Feature
-              icon="🗂"
+              iconPath="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
               title="Belge cüzdanı"
               text="CV, transkript, sertifika — bir kez yükle, her başvuruda otomatik paylaş."
             />
             <Feature
-              icon="🗺"
+              iconPath="m15 10.5-4.5-3v9l4.5-3m6.75 0a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z"
               title="İstanbul haritası"
               text="İlanları harita üzerinde keşfet, ulaşımına göre filtrele."
             />
             <Feature
-              icon="🔒"
+              iconPath="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
               title="KVKK koruması"
               text="Hassas belgelere işveren ancak senin onayınla erişebilir."
             />
@@ -216,7 +216,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link to="/register"
               className="inline-flex items-center gap-2 text-base font-semibold px-7 py-3.5 rounded-full text-white shadow-terra hover:-translate-y-0.5 transition-all"
-              style={{ background: 'linear-gradient(135deg, #e07856 0%, #d05f3a 100%)' }}>
+              style={{ background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)' }}>
               Hemen Kayıt Ol
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
@@ -251,10 +251,17 @@ export default function LandingPage() {
   )
 }
 
-function Feature({ icon, title, text }) {
+function Feature({ iconPath, title, text }) {
   return (
     <div className="card hover:-translate-y-1 hover:shadow-glow transition-all">
-      <div className="text-3xl mb-3">{icon}</div>
+      <div className="w-11 h-11 rounded-xl mb-4 grid place-items-center
+                      bg-gradient-to-br from-brand-100 to-brand-50
+                      border border-brand-200">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             strokeWidth={1.8} stroke="currentColor" className="w-5 h-5 text-brand-800">
+          <path strokeLinecap="round" strokeLinejoin="round" d={iconPath} />
+        </svg>
+      </div>
       <h3 className="font-display text-lg font-bold text-ink-900 mb-1.5">{title}</h3>
       <p className="text-sm text-ink-600 leading-relaxed">{text}</p>
     </div>

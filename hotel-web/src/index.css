@@ -59,7 +59,7 @@ body {
   width: 100%;
   max-width: 440px;
   box-shadow: 0 1px 2px rgba(23, 21, 19, 0.04),
-              0 12px 40px rgba(15, 118, 110, 0.08);
+              0 12px 40px rgba(107, 33, 168, 0.08);
   animation: slideUp 0.4s ease-out;
 }
 .dark .auth-card {
@@ -104,12 +104,12 @@ body {
          transition-all duration-200 active:scale-[0.97]
          disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
          inline-flex items-center justify-center gap-2;
-  background: linear-gradient(135deg, #e07856 0%, #d05f3a 100%);
-  box-shadow: 0 2px 12px rgba(224, 120, 86, 0.30);
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+  box-shadow: 0 2px 12px rgba(168, 85, 247, 0.30);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #d05f3a 0%, #b94a28 100%);
-  box-shadow: 0 4px 20px rgba(224, 120, 86, 0.40);
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.40);
   transform: translateY(-1px);
 }
 
@@ -233,9 +233,9 @@ body {
   height: 3px;
   background: linear-gradient(90deg,
     transparent 0%,
-    #0f766e 20%,
-    #e07856 50%,
-    #0f766e 80%,
+    #6b21a8 20%,
+    #a855f7 50%,
+    #6b21a8 80%,
     transparent 100%);
   opacity: 0.85;
 }
@@ -256,7 +256,7 @@ body {
 .spinner {
   width: 28px; height: 28px;
   border: 3px solid #ebe0cc;
-  border-top-color: #0f766e;
+  border-top-color: #6b21a8;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

@@ -56,7 +56,7 @@ export default function ReviewModal({ applicationId, title, onClose, onSuccess }
             <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm">İptal</button>
             <button type="submit" disabled={loading || rating < 1}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
+              style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
               {loading ? 'Gönderiliyor...' : 'Yorumu Gönder'}
             </button>
           </div>
