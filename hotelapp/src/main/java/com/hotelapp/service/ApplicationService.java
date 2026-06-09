@@ -39,6 +39,7 @@ public class ApplicationService {
     private final NotificationService notificationService;
     private final ReviewService reviewService;
     private final MessageService messageService;  // chat refactor: auto-conversation
+    private final ConversationRepository conversationRepository;  // chat-v2: response'a convId koymak için
 
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
@@ -533,6 +534,12 @@ public class ApplicationService {
                 .availabilities(avDtos)
                 .documentRequests(drDtos)
                 .requestedSlots(slotDtos)
+                // chat-v2: her başvuru için (aday, işletme sahibi) eşleşmesinin conversation ID'si
+                .conversationId(conversationRepository
+                        .findByCandidateIdAndBusinessOwnerId(
+                                app.getCandidate().getId(),
+                                business.getOwner().getId())
+                        .map(c -> c.getId()).orElse(null))
                 .build();
     }
 

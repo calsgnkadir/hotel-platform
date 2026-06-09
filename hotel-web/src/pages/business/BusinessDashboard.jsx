@@ -1402,14 +1402,17 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
               <div className="flex flex-col items-end gap-2">
                 <StatusBadge status={app.status} />
                 {app.noShow && <NoShowBadge />}
-                {app.status === 'PENDING' && (
-                  <button onClick={e => { e.stopPropagation(); handleReview(app.id) }}
-                    disabled={actionLoading}
-                    className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all"
-                    style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
-                    İncelemeye Al
-                  </button>
-                )}
+                {/* Chat-v2: 'İncelemeye Al' yerine direkt 'Mesajlaşmaya git' */}
+                <button onClick={e => { e.stopPropagation(); onOpenMessages?.(app.conversationId) }}
+                  className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
+                  style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                       strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                  </svg>
+                  Mesajlaşma
+                </button>
               </div>
             </div>
           </div>
@@ -1589,29 +1592,26 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                 })()}
               </div>
 
-              {selected.status === 'REVIEWING' && (
-                <div className="border-t border-slate-100 pt-4 space-y-3">
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Karar Ver</h3>
-                  <textarea
-                    value={note}
-                    onChange={e => setNote(e.target.value)}
-                    className="input resize-none h-20 text-sm"
-                    placeholder="Adaya iletilecek not (opsiyonel)..."
-                  />
-                  <div className="grid grid-cols-2 gap-3">
-                    <button onClick={() => handleDecision(selected.id, 'ACCEPTED')}
-                      disabled={actionLoading}
-                      className="py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors">
-                      Kabul Et
-                    </button>
-                    <button onClick={() => handleDecision(selected.id, 'REJECTED')}
-                      disabled={actionLoading}
-                      className="py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors">
-                      Reddet
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* Chat-v2: Kabul/Red butonları kaldırıldı.
+                  Karar mesajlaşmadan veriliyor — sade bilgi + büyük "Mesajlaşmaya Git" */}
+              <div className="border-t border-slate-100 pt-4 space-y-3">
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">İletişim</h3>
+                <p className="text-xs text-slate-500">
+                  Bu aday için otomatik mesajlaşma açıldı. Belgeleri inceleyip mülakat
+                  ayarlayabilir, karar mesajlaşmadan verilebilir.
+                </p>
+                <button
+                  onClick={() => onOpenMessages?.(selected.conversationId)}
+                  className="w-full py-2.5 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                  style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                       strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                  </svg>
+                  Mesajlaşmaya Git
+                </button>
+              </div>
 
               {/* No-show işaretleme — sadece ACCEPTED + henüz işaretlenmemiş */}
               {selected.status === 'ACCEPTED' && !selected.noShow && (

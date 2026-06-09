@@ -44,8 +44,9 @@ const SENSITIVE_DOC_TYPES_CAND = ['CRIMINAL_RECORD', 'HEALTH_CERTIFICATE', 'IDEN
 
 /* ── Status Badge ── */
 function StatusBadge({ status }) {
+  // Chat-v2: PENDING artık "mesajlaşma açık" — karar mesajdan veriliyor
   const map = {
-    PENDING:   { cls: 'badge-pending',   icon: '', label: 'Bekliyor' },
+    PENDING:   { cls: 'badge-accepted',  icon: '', label: 'Mesajlaşma açık' },
     REVIEWING: { cls: 'badge-reviewing', icon: '', label: 'İnceleniyor' },
     ACCEPTED:  { cls: 'badge-accepted',  icon: '', label: 'Kabul' },
     REJECTED:  { cls: 'badge-rejected',  icon: '', label: 'Red' },
@@ -198,12 +199,17 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal Et'}
                 </button>
               )}
-              {/* #77: Kabul edilmiş başvuruda işletmeyle mesajlaş */}
-              {app.status === 'ACCEPTED' && (
-                <button onClick={() => handleStartChat(app)}
-                  disabled={openingChatId === app.id}
-                  className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium disabled:opacity-50">
-                  {openingChatId === app.id ? 'Açılıyor...' : 'Mesaj Gönder'}
+              {/* Chat-v2: TÜM başvurularda "Mesajlaşmaya git" — eski ACCEPTED-only kısıtı kaldırıldı */}
+              {(app.status === 'PENDING' || app.status === 'REVIEWING' || app.status === 'ACCEPTED') && (
+                <button onClick={() => onOpenMessages?.(app.conversationId)}
+                  className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
+                  style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                       strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                  </svg>
+                  Mesajlaşma
                 </button>
               )}
               {/* R4 + R5: Sadece ACCEPTED + çalışma tamamlanmış başvuruda puanla */}
