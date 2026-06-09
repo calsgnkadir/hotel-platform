@@ -73,12 +73,26 @@ function ConversationItem({ conv, isActive, onClick }) {
   )
 }
 
+/* ── Jitsi call davet mesajı tanımlanır mı? ── */
+function parseCallInvite(content) {
+  if (!content) return null
+  // Format: "[CALL:audio]https://meet.jit.si/xxx"  veya  "[CALL:video]https://meet.jit.si/xxx"
+  const m = content.match(/^\[CALL:(audio|video)\]\s*(https?:\/\/[^\s]+)$/)
+  if (!m) return null
+  return { type: m[1], url: m[2] }
+}
+
 /* ── Tek mesaj balonu (attachment render dahil) ── */
 function MessageBubble({ m }) {
   const isImage = m.attachmentType === 'image'
   const isAudio = m.attachmentType === 'audio'
   const isFile  = m.attachmentType === 'file'
   const hasAttach = !!m.attachmentUrl
+
+  // Sesli/Görüntülü arama davet mesajı?
+  const call = !hasAttach ? parseCallInvite(m.content) : null
+  if (call) return <CallInviteBubble m={m} type={call.type} url={call.url} />
+
 
   return (
     <div className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
@@ -134,6 +148,58 @@ function MessageBubble({ m }) {
         <div className={`text-[10px] px-3 pb-1 text-right ${m.mine ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'}`}>
           {formatTime(m.sentAt)}{m.mine && m.isRead ? ' · görüldü' : ''}
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Jitsi arama daveti — özel mesaj balonu ── */
+function CallInviteBubble({ m, type, url }) {
+  const isVideo = type === 'video'
+  return (
+    <div className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
+      <div className={`max-w-[75%] rounded-2xl text-sm shadow-sm overflow-hidden border
+        ${m.mine
+          ? 'bg-brand-700 border-brand-600 text-white rounded-br-md'
+          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-bl-md'}`}>
+        <div className={`flex items-center gap-3 px-4 py-3 ${m.mine ? 'bg-brand-800/40' : 'bg-slate-100 dark:bg-slate-900/40'}`}>
+          <div className={`w-10 h-10 rounded-full grid place-items-center shrink-0
+                           ${m.mine ? 'bg-white/15' : 'bg-brand-500/20'}`}>
+            {isVideo ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+              </svg>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-sm">
+              {isVideo ? 'Görüntülü Arama' : 'Sesli Arama'}
+            </div>
+            <div className={`text-[11px] ${m.mine ? 'text-white/70' : 'text-slate-500'}`}>
+              {m.mine ? 'Sen davet ettin' : 'Sana davet'} · {formatTime(m.sentAt)}
+            </div>
+          </div>
+        </div>
+        <a href={url} target="_blank" rel="noopener noreferrer"
+           className={`flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold border-t
+                       ${m.mine
+                         ? 'bg-white text-brand-700 hover:bg-brand-50 border-white/20'
+                         : 'bg-brand-700 text-white hover:bg-brand-800 border-slate-200 dark:border-slate-700'}`}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+            <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+          </svg>
+          Aramaya Katıl
+        </a>
       </div>
     </div>
   )
@@ -307,6 +373,33 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     return `${m}:${ss}`
   }
 
+  // ── Jitsi sesli/görüntülü arama daveti ──
+  async function handleCall(type) {
+    if (sending || recording) return
+    // Rastgele room — tahmin edilemez, sohbet-bazlı isim
+    const slug = `ajanshotel-${conversation.id}-${Math.random().toString(36).slice(2, 10)}`
+    // Sesli arama için video muted: ?config.startWithVideoMuted=true
+    const baseUrl = `https://meet.jit.si/${slug}`
+    const callUrl = type === 'audio'
+      ? `${baseUrl}#config.startWithVideoMuted=true`
+      : baseUrl
+    const content = `[CALL:${type}]${callUrl}`
+    setSending(true)
+    try {
+      const msg = await hotelApi.sendMessage(conversation.id, content)
+      setMessages(prev => [...prev, msg])
+      lastSeenIdRef.current = msg.id
+      setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+      onMessageSent?.()
+      // Davet eden için aramayı hemen yeni tabda aç
+      window.open(callUrl, '_blank', 'noopener,noreferrer')
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setSending(false)
+    }
+  }
+
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
@@ -423,6 +516,36 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round"
                       d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+              </svg>
+            </button>
+
+            {/* Sesli arama (Jitsi) */}
+            <button type="button"
+                    onClick={() => handleCall('audio')}
+                    disabled={sending}
+                    title="Sesli arama başlat (Jitsi)"
+                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-100 dark:bg-slate-800
+                               hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-slate-600 dark:text-slate-300
+                               hover:text-emerald-700 disabled:opacity-50 transition-colors shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+              </svg>
+            </button>
+
+            {/* Görüntülü arama (Jitsi) */}
+            <button type="button"
+                    onClick={() => handleCall('video')}
+                    disabled={sending}
+                    title="Görüntülü arama başlat (Jitsi)"
+                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-100 dark:bg-slate-800
+                               hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-slate-600 dark:text-slate-300
+                               hover:text-emerald-700 disabled:opacity-50 transition-colors shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
             </button>
 
