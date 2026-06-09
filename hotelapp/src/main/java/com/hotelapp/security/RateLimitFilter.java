@@ -6,6 +6,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
@@ -13,29 +15,82 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * IP başına rate limiting — Bucket4j token bucket algoritması.
  *
- * Kurallar:
- *  - Auth endpointleri (/api/auth/**): 10 istek / dakika
- *    → brute-force şifre deneme saldırılarına karşı
- *  - Diğer tüm endpointler: 60 istek / dakika
- *    → genel API kötüye kullanımına karşı
+ * F0.3 (FAZ 0) — Güvenlik & memory düzeltmeleri:
+ *   1) X-Forwarded-For trusted proxy listesi
+ *      ESKİ: saldırgan rastgele 'X-Forwarded-For: 8.8.8.8' yollasa kendini farklı
+ *            IP gösterir → rate limit bypass.
+ *      YENİ: Sadece TRUSTED_PROXIES listesinden gelen X-Forwarded-For kabul edilir.
+ *            (Lokal: localhost; Prod: Railway gibi PaaS — env var TRUSTED_PROXIES ile ayar)
  *
- * Her IP için ayrı bucket tutulur (ConcurrentHashMap).
- * Uygulama restart'ta sıfırlanır — Redis entegrasyonu ileriki adımda.
+ *   2) Bucket eviction (memory leak fix)
+ *      ESKİ: ConcurrentHashMap hiç temizlenmiyordu → uzun çalışan instance şişerdi.
+ *            Saldırgan rastgele IP spoof'la map'i şişirebilirdi.
+ *      YENİ: Her bucket "last access" timestamp tutar. ScheduledExecutor 5 dk'da bir
+ *            10 dk'dan eski bucket'ları siler. Saldırgan 100k spoof'la bile
+ *            memory bloat etmez.
+ *
+ * Kurallar:
+ *  - Auth (/api/auth/**)  : 10 / dakika  (brute-force koruması)
+ *  - Diğer endpointler    : 60 / dakika
  */
 @Component
+@Slf4j
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    // IP → Bucket eşlemesi
-    private final Map<String, Bucket> authBuckets    = new ConcurrentHashMap<>();
-    private final Map<String, Bucket> generalBuckets = new ConcurrentHashMap<>();
+    // Bucket + son erişim zamanı — eviction için
+    private static class TimedBucket {
+        final Bucket bucket;
+        volatile long lastAccessNanos;
+        TimedBucket(Bucket b) { this.bucket = b; this.lastAccessNanos = System.nanoTime(); }
+    }
+
+    private final Map<String, TimedBucket> authBuckets    = new ConcurrentHashMap<>();
+    private final Map<String, TimedBucket> generalBuckets = new ConcurrentHashMap<>();
+
+    /**
+     * Trusted proxy IP'leri — bunlardan gelen X-Forwarded-For kabul edilir.
+     * application.yml: app.security.trusted-proxies=127.0.0.1,::1
+     * Prod (Railway): PaaS proxy IP aralığı eklenebilir.
+     */
+    @Value("${app.security.trusted-proxies:127.0.0.1,::1,0:0:0:0:0:0:0:1}")
+    private String trustedProxiesCsv;
+
+    private Set<String> trustedProxies;
+
+    /** Bucket eviction zamanlayıcısı */
+    private final ScheduledExecutorService evictor = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "rate-limit-evictor");
+        t.setDaemon(true);
+        return t;
+    });
+    private static final long IDLE_THRESHOLD_NANOS = TimeUnit.MINUTES.toNanos(10);
+
+    @Override
+    protected void initFilterBean() {
+        trustedProxies = new HashSet<>(Arrays.asList(trustedProxiesCsv.split("\\s*,\\s*")));
+        log.info("RateLimitFilter — trusted proxies: {}", trustedProxies);
+
+        // Her 5 dakikada bir 10 dk'dan eski bucket'ları sil
+        evictor.scheduleAtFixedRate(this::evictIdleBuckets, 5, 5, TimeUnit.MINUTES);
+    }
 
     @Override
     protected void doFilterInternal(
@@ -46,16 +101,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         String ip = extractIp(request);
         String path = request.getRequestURI();
+        boolean isAuth = path.startsWith("/api/auth");
 
-        Bucket bucket = path.startsWith("/api/auth")
-                ? authBuckets.computeIfAbsent(ip, k -> buildAuthBucket())
-                : generalBuckets.computeIfAbsent(ip, k -> buildGeneralBucket());
+        Map<String, TimedBucket> map = isAuth ? authBuckets : generalBuckets;
+        TimedBucket tb = map.computeIfAbsent(ip, k -> new TimedBucket(
+                isAuth ? buildAuthBucket() : buildGeneralBucket()));
+        tb.lastAccessNanos = System.nanoTime();
 
-        if (bucket.tryConsume(1)) {
-            // Token var, devam et
+        if (tb.bucket.tryConsume(1)) {
             filterChain.doFilter(request, response);
         } else {
-            // Token bitti → 429 Too Many Requests
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
@@ -68,7 +123,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
     }
 
-    // Auth: 10 istek / dakika (brute-force koruması)
     private Bucket buildAuthBucket() {
         Bandwidth limit = Bandwidth.builder()
                 .capacity(10)
@@ -77,7 +131,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
-    // Genel: 60 istek / dakika
     private Bucket buildGeneralBucket() {
         Bandwidth limit = Bandwidth.builder()
                 .capacity(60)
@@ -86,12 +139,57 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
-    // Proxy arkasındaysa gerçek IP'yi al (X-Forwarded-For)
+    /**
+     * Gerçek client IP'sini çöz.
+     *
+     * F0.3 fix: Sadece TRUSTED proxy'den gelen X-Forwarded-For'a güven.
+     *           Aksi takdirde saldırgan kolayca limit bypass eder.
+     */
     private String extractIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
+        String remote = request.getRemoteAddr();
+
+        // Eğer istek trusted proxy'den geliyorsa X-Forwarded-For'un en sol değerini al
+        if (remote != null && trustedProxies.contains(remote)) {
+            String fwd = request.getHeader("X-Forwarded-For");
+            if (fwd != null && !fwd.isBlank()) {
+                // En sol IP gerçek client. (X-Forwarded-For: client, proxy1, proxy2)
+                String candidate = fwd.split(",")[0].trim();
+                if (isValidIp(candidate)) return candidate;
+            }
         }
-        return request.getRemoteAddr();
+        return remote != null ? remote : "unknown";
+    }
+
+    private boolean isValidIp(String s) {
+        try {
+            InetAddress.getByName(s);
+            return true;
+        } catch (UnknownHostException e) {
+            return false;
+        }
+    }
+
+    /** 10 dk'dan eski bucket'ları sil (memory leak prevention) */
+    private void evictIdleBuckets() {
+        try {
+            long now = System.nanoTime();
+            int authRemoved = evict(authBuckets, now);
+            int generalRemoved = evict(generalBuckets, now);
+            if (authRemoved + generalRemoved > 0) {
+                log.debug("RateLimit eviction — auth: {}, general: {} (kalan: {} + {})",
+                        authRemoved, generalRemoved, authBuckets.size(), generalBuckets.size());
+            }
+        } catch (Exception ex) {
+            log.error("Bucket eviction hatası", ex);
+        }
+    }
+
+    private int evict(Map<String, TimedBucket> map, long now) {
+        List<String> toRemove = map.entrySet().stream()
+                .filter(e -> (now - e.getValue().lastAccessNanos) > IDLE_THRESHOLD_NANOS)
+                .map(Map.Entry::getKey)
+                .toList();
+        toRemove.forEach(map::remove);
+        return toRemove.size();
     }
 }
