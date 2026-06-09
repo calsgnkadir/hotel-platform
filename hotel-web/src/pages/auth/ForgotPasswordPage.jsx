@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ink-900 text-slate-100 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-cream-100 text-ink-900 flex flex-col relative overflow-hidden">
       {/* Neon üst hat */}
       <div className="neon-strip" />
 
@@ -36,13 +36,13 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Üst bar */}
-      <header className="relative px-6 py-4 flex items-center justify-between border-b border-slate-800/60">
+      <header className="relative px-6 py-4 flex items-center justify-between border-b border-cream-300">
         <div className="flex items-center gap-3">
           <BackButton to="/login" label="Girişe Dön" />
           <span className="hidden sm:block w-px h-5 bg-slate-700" />
           <Link to="/" className="hidden sm:flex items-baseline gap-2">
             <span className="font-black text-base tracking-tight">AjansHotel</span>
-            <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
+            <span className="text-[9px] uppercase tracking-[0.18em] text-ink-400">istanbul</span>
           </Link>
         </div>
         <ThemeToggle />
@@ -52,15 +52,15 @@ export default function ForgotPasswordPage() {
       <main className="relative flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-full px-3 py-1 mb-5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow-pulse" />
-              <span className="text-[11px] uppercase tracking-widest text-slate-300">Şifre Sıfırlama</span>
+            <div className="inline-flex items-center gap-2 bg-white border border-cream-300 rounded-full px-3 py-1 mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-terra-400 animate-glow-pulse" />
+              <span className="text-[11px] uppercase tracking-widest text-ink-700">Şifre Sıfırlama</span>
             </div>
             <h1 className="text-3xl font-black tracking-tight uppercase">
               <span className="block">Şifreni</span>
-              <span className="block bg-gradient-to-r from-emerald-300 to-brand-500 bg-clip-text text-transparent">Unuttun mu?</span>
+              <span className="block bg-gradient-to-r from-brand-700 to-terra-500 bg-clip-text text-transparent">Unuttun mu?</span>
             </h1>
-            <p className="text-[13px] text-slate-400 mt-3">
+            <p className="text-[13px] text-ink-500 mt-3">
               Email adresini gir, sıfırlama linki gönderelim.
             </p>
           </div>
@@ -69,18 +69,18 @@ export default function ForgotPasswordPage() {
             <div className="auth-card text-center space-y-4">
               <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     strokeWidth={2} stroke="currentColor" className="w-7 h-7 text-emerald-400">
+                     strokeWidth={2} stroke="currentColor" className="w-7 h-7 text-brand-700">
                   <path strokeLinecap="round" strokeLinejoin="round"
                     d="m4.5 12.75 6 6 9-13.5" />
                 </svg>
               </div>
               <h2 className="text-lg font-bold text-white">Email gönderildi</h2>
-              <p className="text-[13px] text-slate-400 leading-relaxed">
-                Eğer <span className="font-mono text-brand-400">{getValues('email')}</span> kayıtlı bir
+              <p className="text-[13px] text-ink-500 leading-relaxed">
+                Eğer <span className="font-mono text-brand-700">{getValues('email')}</span> kayıtlı bir
                 hesabaysa, birkaç dakika içinde inbox'una <strong className="text-white">"AjansHotel — Şifre Sıfırlama"</strong> başlıklı bir mail
                 gelecek. Spam klasörünü de kontrol et.
               </p>
-              <p className="text-[11px] text-slate-500 italic">
+              <p className="text-[11px] text-ink-400 italic">
                 Bağlantı 1 saat geçerli.
               </p>
               <Link to="/login" className="btn-secondary !w-auto inline-flex mt-2">
@@ -115,9 +115,9 @@ export default function ForgotPasswordPage() {
                 </button>
               </form>
 
-              <p className="text-[12px] text-center text-slate-400 mt-6">
+              <p className="text-[12px] text-center text-ink-500 mt-6">
                 Şifreni hatırladın mı?{' '}
-                <Link to="/login" className="font-bold text-brand-400 hover:text-brand-300 transition-colors">
+                <Link to="/login" className="font-bold text-brand-700 hover:text-brand-700 transition-colors">
                   Giriş yap
                 </Link>
               </p>

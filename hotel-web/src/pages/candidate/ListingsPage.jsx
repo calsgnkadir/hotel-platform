@@ -140,15 +140,15 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white dark:bg-slate-900 z-10">
+        <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
-                 style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                 style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900">{listing.title}</h2>
-              <p className="text-sm text-slate-500">{listing.businessName} · {listing.businessDistrict}</p>
+              <h2 className="text-lg font-bold text-ink-900">{listing.title}</h2>
+              <p className="text-sm text-ink-500">{listing.businessName} · {listing.businessDistrict}</p>
             </div>
           </div>
         </div>
@@ -156,7 +156,7 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Ön Yazı */}
           <div>
-            <label className="label">Ön Yazı <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+            <label className="label">Ön Yazı <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
             <textarea
               value={coverLetter}
               onChange={e => setCoverLetter(e.target.value)}
@@ -164,7 +164,7 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
               placeholder="Kendinizi kısaca tanıtın, neden bu pozisyonda çalışmak istediğinizi anlatın..."
               autoFocus
             />
-            <p className="text-xs text-slate-400 mt-1">{coverLetter.length} karakter</p>
+            <p className="text-xs text-ink-400 mt-1">{coverLetter.length} karakter</p>
           </div>
 
           {/* Faz E3: Slot seçimi (zorunlu — min 1) */}
@@ -172,7 +172,7 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             <div>
               <label className="label">
                 Vardiya Seçimi *
-                <span className="text-slate-400 font-normal ml-1">(çalışabileceğin günleri işaretle)</span>
+                <span className="text-ink-400 font-normal ml-1">(çalışabileceğin günleri işaretle)</span>
               </label>
               <div className="space-y-1.5">
                 {allSlots.map(s => {
@@ -188,15 +188,15 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                     <label key={s.id}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all
                         ${disabled
-                          ? 'border-slate-200 bg-slate-50 cursor-not-allowed opacity-60'
+                          ? 'border-cream-300 bg-cream-50 cursor-not-allowed opacity-60'
                           : selected
                             ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 dark:border-brand-500 cursor-pointer shadow-sm'
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                            : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 cursor-pointer hover:border-brand-400 dark:hover:border-brand-500'}`}>
                       <input type="checkbox" checked={selected} disabled={disabled}
                         onChange={() => toggleSlot(s.id, full, past)}
                         className="w-4 h-4 accent-brand-700" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
+                        <div className="text-sm font-medium text-ink-800 flex items-center gap-1.5">
                           {dateLabel} · {timeLabel}
                           {past && (
                             <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded
@@ -205,7 +205,7 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-slate-500 mt-0.5">
+                        <div className="text-xs text-ink-500 mt-0.5">
                           {past
                             ? 'Bu vardiya geçmişte — başvurulamaz'
                             : full
@@ -218,7 +218,7 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                 })}
               </div>
               {selectedSlotIds.length > 0 && (
-                <p className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-2">
+                <p className="text-xs text-brand-700 dark:text-brand-700 font-medium mt-2">
                   {selectedSlotIds.length} vardiya seçtin
                 </p>
               )}
@@ -233,12 +233,12 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
           <div>
             <label className="label">
               Belgeler / Fotoğraflar
-              <span className="text-slate-400 font-normal ml-1">(opsiyonel — CV, transkript, sertifika vb.)</span>
+              <span className="text-ink-400 font-normal ml-1">(opsiyonel — CV, transkript, sertifika vb.)</span>
             </label>
 
-            <label className="block cursor-pointer rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700
+            <label className="block cursor-pointer rounded-lg border-2 border-dashed border-slate-300 dark:border-ink-700
                               hover:border-brand-400 dark:hover:border-brand-500 transition-colors
-                              bg-slate-50 dark:bg-slate-900/50 px-4 py-5 text-center">
+                              bg-cream-50 dark:bg-ink-800/50 px-4 py-5 text-center">
               <input
                 type="file"
                 multiple
@@ -246,14 +246,14 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                 onChange={onFilesChange}
                 className="hidden"
               />
-              <div className="flex items-center justify-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <div className="flex items-center justify-center gap-2 text-sm text-slate-600 dark:text-ink-300">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                      strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
                   <path strokeLinecap="round" strokeLinejoin="round"
                         d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
                 </svg>
                 <span className="font-semibold">Dosya seç</span>
-                <span className="text-xs text-slate-400">PDF / JPG / PNG / DOC — her biri max 15 MB</span>
+                <span className="text-xs text-ink-400">PDF / JPG / PNG / DOC — her biri max 15 MB</span>
               </div>
             </label>
 
@@ -263,15 +263,15 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                 {files.map((f, i) => (
                   <div key={i}
                        className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg
-                                  border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                                  border border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800">
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                           strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-slate-500 shrink-0">
+                           strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-500 shrink-0">
                         <path strokeLinecap="round" strokeLinejoin="round"
                               d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 3.75-3-3m0 0-3 3m3-3v11.25m6-2.25h.008v.008H15v-.008Zm0 0H4.5" />
                       </svg>
-                      <span className="text-sm text-slate-700 dark:text-slate-200 truncate">{f.name}</span>
-                      <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                      <span className="text-sm text-ink-700 dark:text-cream-200 truncate">{f.name}</span>
+                      <span className="text-[10px] text-ink-400 font-mono shrink-0">
                         {(f.size / 1024).toFixed(0)} KB
                       </span>
                     </div>
@@ -284,13 +284,13 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
               </div>
             )}
 
-            <p className="text-xs text-slate-400 mt-1.5">
+            <p className="text-xs text-ink-400 mt-1.5">
               ⓘ Belgelerin işletmeyle mesajlaşmada otomatik paylaşılır. Daha sonra mesajdan da ekleyebilirsin.
             </p>
           </div>
 
           {/* Footer */}
-          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white dark:bg-slate-900 py-3 -mx-6 px-6 border-t border-slate-100">
+          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white dark:bg-ink-800 py-3 -mx-6 px-6 border-t border-cream-200">
             <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm">İptal</button>
             <button type="submit" disabled={loading || !hasFutureSlots}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
@@ -322,23 +322,23 @@ function DetailModal({ listing, onClose, onApply }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white dark:bg-slate-900 z-10">
+        <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
-                 style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                 style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">{listing.title}</h2>
+              <h2 className="text-lg font-bold text-ink-900 leading-tight">{listing.title}</h2>
               <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                <p className="text-sm text-slate-500">{listing.businessName}</p>
+                <p className="text-sm text-ink-500">{listing.businessName}</p>
                 {listing.businessReviewCount > 0 && (
                   <StarRating value={listing.businessAverageRating}
                     count={listing.businessReviewCount} size="sm" />
                 )}
               </div>
             </div>
-            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 flex-shrink-0">
+            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 flex-shrink-0">
               {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
             </span>
           </div>
@@ -352,31 +352,31 @@ function DetailModal({ listing, onClose, onApply }) {
 
           {/* Quick facts grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="bg-slate-50 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-slate-500 uppercase tracking-wider">İlçe</div>
-              <div className="text-sm font-semibold text-slate-700 mt-0.5">
+            <div className="bg-cream-50 rounded-lg p-3 text-center">
+              <div className="text-[10px] text-ink-500 uppercase tracking-wider">İlçe</div>
+              <div className="text-sm font-semibold text-ink-700 mt-0.5">
                 {listing.businessDistrict || '—'}
               </div>
             </div>
-            <div className="bg-slate-50 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-slate-500 uppercase tracking-wider">Pozisyon</div>
-              <div className="text-sm font-semibold text-slate-700 mt-0.5">
+            <div className="bg-cream-50 rounded-lg p-3 text-center">
+              <div className="text-[10px] text-ink-500 uppercase tracking-wider">Pozisyon</div>
+              <div className="text-sm font-semibold text-ink-700 mt-0.5">
                 {POSITION_LABELS[listing.position] || listing.position}
               </div>
             </div>
             {shift && (
-              <div className="bg-slate-50 rounded-lg p-3 text-center">
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Vardiya</div>
-                <div className="text-sm font-semibold text-slate-700 mt-0.5">
+              <div className="bg-cream-50 rounded-lg p-3 text-center">
+                <div className="text-[10px] text-ink-500 uppercase tracking-wider">Vardiya</div>
+                <div className="text-sm font-semibold text-ink-700 mt-0.5">
                   {shift.icon} {shift.label}
                 </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">{shift.time}</div>
+                <div className="text-[10px] text-ink-400 mt-0.5">{shift.time}</div>
               </div>
             )}
             {salary && (
-              <div className="bg-emerald-50 rounded-lg p-3 text-center">
-                <div className="text-[10px] text-emerald-600 uppercase tracking-wider">Ücret</div>
-                <div className="text-xs font-semibold text-emerald-700 mt-0.5 leading-tight">{salary}</div>
+              <div className="bg-brand-50 rounded-lg p-3 text-center">
+                <div className="text-[10px] text-brand-700 uppercase tracking-wider">Ücret</div>
+                <div className="text-xs font-semibold text-brand-700 mt-0.5 leading-tight">{salary}</div>
               </div>
             )}
           </div>
@@ -384,7 +384,7 @@ function DetailModal({ listing, onClose, onApply }) {
           {/* #81 v2: Konum — tam koordinat varsa onu, yoksa ilçe merkezi fallback */}
           {listing.businessDistrict && (
             <div>
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Konum</h3>
+              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Konum</h3>
               <MapView
                 position={listing.businessLatitude != null && listing.businessLongitude != null
                   ? [Number(listing.businessLatitude), Number(listing.businessLongitude)]
@@ -395,7 +395,7 @@ function DetailModal({ listing, onClose, onApply }) {
                 height="240px"
               />
               {listing.businessAddress && (
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-2">
                   {listing.businessAddress}
                 </p>
               )}
@@ -409,16 +409,16 @@ function DetailModal({ listing, onClose, onApply }) {
 
           {/* Description */}
           <div>
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Açıklama</h3>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+            <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Açıklama</h3>
+            <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-line">
               {listing.description}
             </p>
           </div>
 
           {listing.requirements && (
             <div>
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Gereksinimler</h3>
-              <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Gereksinimler</h3>
+              <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-line">
                 {listing.requirements}
               </p>
             </div>
@@ -426,8 +426,8 @@ function DetailModal({ listing, onClose, onApply }) {
 
           {hasDates && (
             <div>
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Kontrat Dönemi</h3>
-              <p className="text-sm text-slate-700">
+              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Kontrat Dönemi</h3>
+              <p className="text-sm text-ink-700">
                 {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 {listing.startDate && listing.endDate && ' — '}
                 {listing.endDate && new Date(listing.endDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -438,7 +438,7 @@ function DetailModal({ listing, onClose, onApply }) {
           {/* Faz E3: Vardiya listesi */}
           {slots.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">
                 Vardiyalar ({slots.length})
               </h3>
               <div className="space-y-1.5">
@@ -450,13 +450,13 @@ function DetailModal({ listing, onClose, onApply }) {
                   return (
                     <div key={s.id}
                       className={`flex items-center justify-between rounded-lg px-3 py-2 border
-                        ${full ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-brand-50/60 dark:bg-brand-900/20 border-brand-100 dark:border-brand-900/40'}`}>
+                        ${full ? 'bg-cream-50 border-cream-300 opacity-60' : 'bg-brand-50/60 dark:bg-brand-900/20 border-brand-100 dark:border-brand-900/40'}`}>
                       <div className="text-sm">
-                        <span className="font-medium text-slate-800">{dateLabel}</span>
-                        <span className="text-slate-500 ml-2">{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
+                        <span className="font-medium text-ink-800">{dateLabel}</span>
+                        <span className="text-ink-500 ml-2">{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
                       </div>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
-                        ${full ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                        ${full ? 'bg-red-50 text-red-600' : 'bg-brand-50 text-brand-700'}`}>
                         {full ? 'DOLU' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
                       </span>
                     </div>
@@ -468,10 +468,10 @@ function DetailModal({ listing, onClose, onApply }) {
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-slate-100 sticky bottom-0 bg-white dark:bg-slate-900 items-center">
+        <div className="flex gap-3 p-6 border-t border-cream-200 sticky bottom-0 bg-white dark:bg-ink-800 items-center">
           <button onClick={() => setShowReport(true)}
             title="Bu ilanı bildir"
-            className="text-sm px-3 py-2.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0">
+            className="text-sm px-3 py-2.5 rounded-lg text-ink-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0">
             Bildir
           </button>
           <button onClick={onClose} className="btn-secondary flex-1 text-sm">Kapat</button>
@@ -510,26 +510,26 @@ function ListingCard({ listing, onApply, onDetail }) {
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0 shadow-sm"
-               style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+               style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
             {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
           </div>
-          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
+          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700">
             {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
           </span>
         </div>
 
-        <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2 group-hover:text-brand-700 dark:text-brand-400 transition-colors">
+        <h3 className="font-bold text-ink-800 text-base leading-snug line-clamp-2 group-hover:text-brand-700 dark:text-brand-700 transition-colors">
           {listing.title}
         </h3>
         <div className="flex items-center gap-2 flex-wrap mt-0.5">
-          <p className="text-sm text-slate-500">{listing.businessName}</p>
+          <p className="text-sm text-ink-500">{listing.businessName}</p>
           {listing.businessReviewCount > 0 && (
             <StarRating value={listing.businessAverageRating}
               count={listing.businessReviewCount} size="xs" />
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-400 flex-wrap">
+        <div className="flex items-center gap-1.5 mt-2 text-xs text-ink-400 flex-wrap">
           <span>{listing.businessDistrict || 'İstanbul'}</span>
           <span>·</span>
           <span>{POSITION_LABELS[listing.position] || listing.position}</span>
@@ -542,7 +542,7 @@ function ListingCard({ listing, onApply, onDetail }) {
         </div>
 
         {salary && (
-          <div className="text-xs text-emerald-600 font-medium mt-1.5">
+          <div className="text-xs text-brand-700 font-medium mt-1.5">
             💰 {salary}
           </div>
         )}
@@ -556,7 +556,7 @@ function ListingCard({ listing, onApply, onDetail }) {
             ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}`
             : null
           return (
-            <div className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-1">
+            <div className="text-xs text-brand-700 dark:text-brand-700 font-medium mt-1">
               {slots.length} vardiya
               {openCount === 0 && ' · tümü dolu'}
               {openCount > 0 && nextStr && ` · ${nextStr}`}
@@ -564,21 +564,21 @@ function ListingCard({ listing, onApply, onDetail }) {
           )
         })()}
 
-        <p className="text-xs text-slate-500 mt-2 line-clamp-2">{listing.description}</p>
+        <p className="text-xs text-ink-500 mt-2 line-clamp-2">{listing.description}</p>
 
         <div className="flex-1" />
 
         <div className="flex gap-2 mt-4">
           <button
             onClick={(e) => { e.stopPropagation(); onDetail(listing) }}
-            className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400 dark:hover:border-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-all">
+            className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg border border-cream-300 dark:border-ink-700 text-slate-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500 hover:text-brand-700 dark:hover:text-brand-700 transition-all">
             Detay
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onApply(listing) }}
             className="flex-1 py-2 px-3 text-sm font-semibold text-white rounded-lg
                        transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
             Başvur
           </button>
         </div>
@@ -671,8 +671,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">İş İlanları</h2>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <h2 className="text-xl font-bold text-ink-900">İş İlanları</h2>
+          <p className="text-sm text-ink-500 mt-0.5">
             {loading ? '...' : `${listings.length} ilan`}
             {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
           </p>
@@ -689,13 +689,13 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       </div>
 
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></span>
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm pointer-events-none"></span>
         <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
           placeholder="İlan başlığında ara..."
           className="input pl-10 text-sm" />
         {keyword && (
           <button onClick={() => setKeyword('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm">
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-slate-600 text-sm">
             ✕
           </button>
         )}
@@ -704,28 +704,28 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       <div className={`card p-4 space-y-4 ${showFilters ? '' : 'hidden sm:block'}`}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">İlçe</label>
+            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">İlçe</label>
             <select value={district} onChange={e => setDistrict(e.target.value)} className="input text-sm">
               <option value="">Tümü</option>
               {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Pozisyon</label>
+            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">Pozisyon</label>
             <select value={position} onChange={e => setPosition(e.target.value)} className="input text-sm">
               <option value="">Tümü</option>
               {Object.entries(POSITION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Çalışma Türü</label>
+            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">Çalışma Türü</label>
             <select value={jobType} onChange={e => setJobType(e.target.value)} className="input text-sm">
               <option value="">Tümü</option>
               {Object.entries(JOB_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Min Ücret ₺</label>
+            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">Min Ücret ₺</label>
             <input type="number" value={minSalary} onChange={e => setMinSalary(e.target.value)}
               placeholder="5000" min="0" className="input text-sm" />
           </div>
@@ -733,7 +733,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
 
         {/* Faz E4: Tarih filtresi */}
         <div>
-          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">Tarih</label>
+          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-2">Tarih</label>
           <div className="flex flex-wrap gap-2">
             {[
               { key: '',         label: 'Tümü' },
@@ -749,8 +749,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                     ${active
                       ? 'text-white shadow-sm'
-                      : 'bg-white text-slate-600 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-                  style={active ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
+                      : 'bg-white text-slate-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+                  style={active ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
                   {p.label}
                 </button>
               )
@@ -759,13 +759,13 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           {datePreset === 'CUSTOM' && (
             <div className="grid grid-cols-2 gap-3 mt-3">
               <div>
-                <label className="text-xs text-slate-500">Başlangıç</label>
+                <label className="text-xs text-ink-500">Başlangıç</label>
                 <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                   className="input text-sm mt-1" />
               </div>
               <div>
-                <label className="text-xs text-slate-500">Bitiş</label>
+                <label className="text-xs text-ink-500">Bitiş</label>
                 <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
                   min={customFrom || new Date().toISOString().split('T')[0]}
                   className="input text-sm mt-1" />
@@ -775,7 +775,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">Vardiya</label>
+          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-2">Vardiya</label>
           <div className="grid grid-cols-3 gap-2">
             {Object.entries(SHIFT_INFO).map(([key, s]) => {
               const active = shifts.includes(key)
@@ -783,10 +783,10 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
                 <button key={key} type="button" onClick={() => toggleShift(key)}
                   className={`p-2.5 rounded-lg border text-xs font-medium transition-all text-center
                     ${active
-                      ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-sm'
-                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                      ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 shadow-sm'
+                      : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-slate-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
                   <div>{s.label}</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5 font-normal">{s.time}</div>
+                  <div className="text-[10px] text-ink-400 mt-0.5 font-normal">{s.time}</div>
                 </button>
               )
             })}
@@ -796,7 +796,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         {activeFilterCount > 0 && (
           <div className="flex justify-end pt-1">
             <button onClick={clearFilters}
-              className="text-xs text-slate-500 hover:text-brand-700 dark:text-brand-400 font-medium">
+              className="text-xs text-ink-500 hover:text-brand-700 dark:text-brand-700 font-medium">
               ✕ Filtreleri temizle
             </button>
           </div>
@@ -809,15 +809,15 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         <div className="card">
           <div className="empty-state py-16">
             <span className="text-5xl mb-4">{activeFilterCount > 0 ? '🔎' : ''}</span>
-            <p className="font-medium text-slate-700">
+            <p className="font-medium text-ink-700">
               {activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
             </p>
             {activeFilterCount > 0 ? (
-              <button onClick={clearFilters} className="mt-3 text-sm font-medium text-brand-700 dark:text-brand-400">
+              <button onClick={clearFilters} className="mt-3 text-sm font-medium text-brand-700 dark:text-brand-700">
                 Filtreleri temizle
               </button>
             ) : (
-              <p className="text-sm text-slate-500 mt-1">Daha sonra tekrar kontrol edin</p>
+              <p className="text-sm text-ink-500 mt-1">Daha sonra tekrar kontrol edin</p>
             )}
           </div>
         </div>

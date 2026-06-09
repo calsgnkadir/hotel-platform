@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ink-900 text-slate-100 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-cream-100 text-ink-900 flex flex-col relative overflow-hidden">
       <div className="neon-strip" />
 
       <div aria-hidden className="absolute inset-0 pointer-events-none">
@@ -61,13 +61,13 @@ export default function ResetPasswordPage() {
         <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-emerald-500/10 blur-[100px]" />
       </div>
 
-      <header className="relative px-6 py-4 flex items-center justify-between border-b border-slate-800/60">
+      <header className="relative px-6 py-4 flex items-center justify-between border-b border-cream-300">
         <div className="flex items-center gap-3">
           <BackButton to="/login" label="Girişe Dön" />
           <span className="hidden sm:block w-px h-5 bg-slate-700" />
           <Link to="/" className="hidden sm:flex items-baseline gap-2">
             <span className="font-black text-base tracking-tight">AjansHotel</span>
-            <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
+            <span className="text-[9px] uppercase tracking-[0.18em] text-ink-400">istanbul</span>
           </Link>
         </div>
         <ThemeToggle />
@@ -76,20 +76,20 @@ export default function ResetPasswordPage() {
       <main className="relative flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-full px-3 py-1 mb-5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow-pulse" />
-              <span className="text-[11px] uppercase tracking-widest text-slate-300">Yeni Şifre</span>
+            <div className="inline-flex items-center gap-2 bg-white border border-cream-300 rounded-full px-3 py-1 mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-terra-400 animate-glow-pulse" />
+              <span className="text-[11px] uppercase tracking-widest text-ink-700">Yeni Şifre</span>
             </div>
             <h1 className="text-3xl font-black tracking-tight uppercase">
               <span className="block">Şifreni</span>
-              <span className="block bg-gradient-to-r from-emerald-300 to-brand-500 bg-clip-text text-transparent">Yenile</span>
+              <span className="block bg-gradient-to-r from-brand-700 to-terra-500 bg-clip-text text-transparent">Yenile</span>
             </h1>
           </div>
 
           {validating ? (
             <div className="auth-card text-center py-10">
               <div className="spinner mx-auto" />
-              <p className="text-[12px] text-slate-400 mt-4">Bağlantı doğrulanıyor...</p>
+              <p className="text-[12px] text-ink-500 mt-4">Bağlantı doğrulanıyor...</p>
             </div>
           ) : error ? (
             <div className="auth-card text-center space-y-4">
@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
                 </svg>
               </div>
               <h2 className="text-lg font-bold text-white">Bağlantı geçersiz</h2>
-              <p className="text-[13px] text-slate-400">{error}</p>
+              <p className="text-[13px] text-ink-500">{error}</p>
               <Link to="/forgot-password" className="btn-secondary !w-auto inline-flex">
                 Yeni Talep Oluştur
               </Link>
@@ -109,17 +109,17 @@ export default function ResetPasswordPage() {
             <div className="auth-card text-center space-y-4">
               <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     strokeWidth={2} stroke="currentColor" className="w-7 h-7 text-emerald-400">
+                     strokeWidth={2} stroke="currentColor" className="w-7 h-7 text-brand-700">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                 </svg>
               </div>
               <h2 className="text-lg font-bold text-white">Şifre güncellendi</h2>
-              <p className="text-[13px] text-slate-400">Giriş sayfasına yönlendiriliyorsun...</p>
+              <p className="text-[13px] text-ink-500">Giriş sayfasına yönlendiriliyorsun...</p>
             </div>
           ) : (
             <div className="auth-card">
-              <p className="text-[12px] text-slate-400 mb-4 pb-4 border-b border-slate-800">
-                Hesap: <span className="font-mono text-brand-400">{email}</span>
+              <p className="text-[12px] text-ink-500 mb-4 pb-4 border-b border-cream-300">
+                Hesap: <span className="font-mono text-brand-700">{email}</span>
               </p>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>

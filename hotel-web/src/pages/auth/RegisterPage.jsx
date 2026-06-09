@@ -77,15 +77,15 @@ export default function RegisterPage() {
       <div className="auth-card" style={{ maxWidth: '520px' }}>
         {/* Header — logosuz */}
         <div className="text-center mb-7">
-          <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-full px-3 py-1 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow-pulse" />
-            <span className="text-[10px] uppercase tracking-widest text-slate-300">Ücretsiz Kayıt</span>
+          <div className="inline-flex items-center gap-2 bg-white border border-cream-300 rounded-full px-3 py-1 mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-terra-400 animate-glow-pulse" />
+            <span className="text-[10px] uppercase tracking-widest text-ink-700">Ücretsiz Kayıt</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight uppercase text-white">
             <span className="block">AjansHotel'e</span>
-            <span className="block bg-gradient-to-r from-emerald-300 to-brand-500 bg-clip-text text-transparent">Katıl</span>
+            <span className="block bg-gradient-to-r from-brand-700 to-terra-500 bg-clip-text text-transparent">Katıl</span>
           </h1>
-          <p className="text-[12px] text-slate-400 mt-3">İstanbul'un iş platformu</p>
+          <p className="text-[12px] text-ink-500 mt-3">İstanbul'un iş platformu</p>
         </div>
 
         {/* Step indicator — pill stili */}
@@ -95,14 +95,14 @@ export default function RegisterPage() {
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all
                 ${step >= n
                   ? 'text-white shadow-glow-sm'
-                  : 'bg-slate-800 text-slate-500 border border-slate-700'}`}
+                  : 'bg-cream-200 text-ink-400 border border-cream-300'}`}
                 style={step >= n ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
                 {n}
               </div>
               {n < 2 && <div className={`flex-1 h-0.5 rounded transition-colors ${step > n ? 'bg-emerald-500' : 'bg-slate-700'}`} />}
             </div>
           ))}
-          <span className="text-[10px] uppercase tracking-widest text-slate-500 ml-1 font-bold">
+          <span className="text-[10px] uppercase tracking-widest text-ink-400 ml-1 font-bold">
             {step === 1 ? 'Tür' : 'Bilgi'}
           </span>
         </div>
@@ -115,7 +115,7 @@ export default function RegisterPage() {
 
             <div className="flex items-center gap-3 py-1">
               <span className="flex-1 h-px bg-slate-700" />
-              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">veya rol seç</span>
+              <span className="text-[10px] uppercase tracking-widest text-ink-400 font-semibold">veya rol seç</span>
               <span className="flex-1 h-px bg-slate-700" />
             </div>
 
@@ -124,25 +124,25 @@ export default function RegisterPage() {
                 key={opt.value}
                 type="button"
                 onClick={() => goToStep2(opt.value)}
-                className="w-full flex items-center gap-3 p-4 rounded-2xl border border-slate-800
-                           bg-slate-900/40 hover:bg-slate-900 hover:border-brand-600/60
+                className="w-full flex items-center gap-3 p-4 rounded-2xl border border-cream-300
+                           bg-white/40 hover:bg-white hover:border-brand-600/60
                            transition-all duration-200 text-left group"
               >
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black flex-shrink-0
-                                bg-slate-800 text-slate-500 group-hover:text-brand-300 transition-colors">
+                                bg-cream-200 text-ink-400 group-hover:text-brand-700 transition-colors">
                   {opt.value === 'CANDIDATE' ? '01' : '02'}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="font-bold text-sm text-white truncate">{opt.title}</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5 truncate">{opt.desc}</div>
+                  <div className="text-[11px] text-ink-400 mt-0.5 truncate">{opt.desc}</div>
                 </div>
-                <span className="text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all">→</span>
+                <span className="text-slate-600 group-hover:text-brand-700 group-hover:translate-x-1 transition-all">→</span>
               </button>
             ))}
 
-            <p className="text-[12px] text-center text-slate-400 mt-5">
+            <p className="text-[12px] text-center text-ink-500 mt-5">
               Zaten hesabın var mı?{' '}
-              <Link to="/login" className="font-bold text-brand-400 hover:text-brand-300 transition-colors">
+              <Link to="/login" className="font-bold text-brand-700 hover:text-brand-700 transition-colors">
                 Giriş yap
               </Link>
             </p>
@@ -155,7 +155,7 @@ export default function RegisterPage() {
             {/* Back button + role badge */}
             <div className="flex items-center gap-2 mb-2">
               <button type="button" onClick={() => setStep(1)}
-                className="text-[12px] font-semibold text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+                className="text-[12px] font-semibold text-ink-500 hover:text-white flex items-center gap-1 transition-colors">
                 ← Geri
               </button>
               <span className="ml-auto text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full text-emerald-300 bg-emerald-950/40 border border-emerald-900/60">
@@ -192,7 +192,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="label">Telefon <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+              <label className="label">Telefon <span className="text-ink-500 font-normal">(opsiyonel)</span></label>
               <input type="tel" className="input" placeholder="0555 123 45 67" maxLength={14}
                 {...register('phone', {
                   validate: v => validateTurkeyPhone(v, { mobileOnly: true }) || true,
@@ -204,14 +204,14 @@ export default function RegisterPage() {
             {/* ── CANDIDATE extra fields ── */}
             {selectedRole === 'CANDIDATE' && (
               <div className="space-y-4 pt-2 border-t border-slate-100">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider pt-1">Aday Bilgileri</p>
+                <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider pt-1">Aday Bilgileri</p>
 
                 <div>
                   <label className="label">Şehir</label>
                   <select className="input" {...register('city')}>
                     <option value="Istanbul">İstanbul</option>
                   </select>
-                  <p className="text-xs text-slate-400 mt-1">Platform şu an İstanbul'a özeldir</p>
+                  <p className="text-xs text-ink-500 mt-1">Platform şu an İstanbul'a özeldir</p>
                 </div>
 
               </div>
@@ -220,7 +220,7 @@ export default function RegisterPage() {
             {/* ── BUSINESS_OWNER extra fields ── */}
             {selectedRole === 'BUSINESS_OWNER' && (
               <div className="space-y-4 pt-2 border-t border-slate-100">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider pt-1">İşletme Bilgileri</p>
+                <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider pt-1">İşletme Bilgileri</p>
 
                 <div>
                   <label className="label">İşletme Adı</label>
@@ -237,7 +237,7 @@ export default function RegisterPage() {
                         className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 cursor-pointer text-center transition-all
                           ${watch('businessType') === value
                             ? 'border-brand-600 bg-brand-50 dark:bg-brand-900/30'
-                            : 'border-slate-200 dark:border-slate-700 hover:border-brand-400'}`}
+                            : 'border-slate-200 dark:border-cream-300 hover:border-brand-400'}`}
                       >
                         <input type="radio" value={value}
                           {...register('businessType', { required: 'İşletme türü seçin' })}
@@ -245,7 +245,7 @@ export default function RegisterPage() {
                         <span className="text-lg">
                           {value === 'HOTEL' ? '' : value === 'RESTAURANT' ? '' : ''}
                         </span>
-                        <span className={`text-xs font-semibold ${watch('businessType') === value ? 'text-brand-700' : 'text-slate-600 dark:text-slate-300'}`}>
+                        <span className={`text-xs font-semibold ${watch('businessType') === value ? 'text-brand-700' : 'text-slate-600 dark:text-ink-700'}`}>
                           {label}
                         </span>
                       </label>
@@ -274,7 +274,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="label">İşletme Telefonu <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+                  <label className="label">İşletme Telefonu <span className="text-ink-500 font-normal">(opsiyonel)</span></label>
                   <input type="tel" className="input" placeholder="0212 555 12 34" maxLength={14}
                     {...register('businessPhone', {
                       validate: v => validateTurkeyPhone(v) || true,
@@ -284,12 +284,12 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="label">Website <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+                  <label className="label">Website <span className="text-ink-500 font-normal">(opsiyonel)</span></label>
                   <input type="url" className="input" placeholder="https://www.isletmem.com" {...register('website')} />
                 </div>
 
                 <div>
-                  <label className="label">Açıklama <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+                  <label className="label">Açıklama <span className="text-ink-500 font-normal">(opsiyonel)</span></label>
                   <textarea className="input resize-none h-20 text-sm"
                     placeholder="İşletmenizi kısaca tanıtın..."
                     {...register('description')} />
@@ -309,15 +309,15 @@ export default function RegisterPage() {
               ) : 'Hesap Oluştur →'}
             </button>
 
-            <p className="text-sm text-center text-slate-500">
+            <p className="text-sm text-center text-ink-400">
               Zaten hesabın var mı?{' '}
-              <Link to="/login" className="font-semibold text-brand-700 dark:text-brand-400 hover:underline">
+              <Link to="/login" className="font-semibold text-brand-700 dark:text-brand-700 hover:underline">
                 Giriş yap
               </Link>
             </p>
-            <p className="text-xs text-center text-slate-400 mt-2">
+            <p className="text-xs text-center text-ink-500 mt-2">
               Kayıt olarak{' '}
-              <Link to="/kvkk" className="underline hover:text-brand-700 dark:hover:text-brand-400">
+              <Link to="/kvkk" className="underline hover:text-brand-700 dark:hover:text-brand-700">
                 KVKK Aydınlatma Metni
               </Link>
               'ni okuduğunu kabul edersin.

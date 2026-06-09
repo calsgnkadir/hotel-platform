@@ -3,10 +3,15 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
-import ThemeToggle from '../../components/ThemeToggle'
 import BackButton from '../../components/BackButton'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
 
+/**
+ * Login v3 — Hospitality Concierge dili:
+ *  - Krem zemin + beyaz card
+ *  - Fraunces "giriş yap" başlığı
+ *  - Terracotta CTA
+ */
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -34,55 +39,48 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ink-900 text-slate-100 flex flex-col relative overflow-hidden">
-      {/* Neon üst hat */}
+    <div className="min-h-screen bg-cream-100 text-ink-900 flex flex-col relative overflow-hidden">
       <div className="neon-strip" />
 
-      {/* Arka plan spotlight */}
       <div aria-hidden className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[60%] h-96 rounded-full bg-brand-600/15 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-emerald-500/10 blur-[100px]" />
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[60%] h-96 rounded-full bg-terra-200/40 blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-brand-200/30 blur-[100px]" />
       </div>
 
-      {/* Üst bar */}
-      <header className="relative px-6 py-4 flex items-center justify-between border-b border-slate-800/60">
+      <header className="relative px-6 py-4 flex items-center justify-between border-b border-cream-300">
         <div className="flex items-center gap-3">
           <BackButton to="/" label="Ana Sayfa" />
-          <span className="hidden sm:block w-px h-5 bg-slate-700" />
+          <span className="hidden sm:block w-px h-5 bg-cream-300" />
           <Link to="/" className="hidden sm:flex items-baseline gap-2">
-            <span className="font-black text-base tracking-tight">AjansHotel</span>
-            <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
+            <span className="font-display font-bold text-base tracking-tight text-ink-900">AjansHotel</span>
+            <span className="text-[9px] uppercase tracking-[0.18em] text-ink-400">istanbul</span>
           </Link>
         </div>
-        <ThemeToggle />
       </header>
 
-      {/* İçerik */}
       <main className="relative flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-full px-3 py-1 mb-5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow-pulse" />
-              <span className="text-[11px] uppercase tracking-widest text-slate-300">Hoş Geldin</span>
+            <div className="inline-flex items-center gap-2 bg-white border border-cream-300 rounded-full px-3 py-1.5 mb-5 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-terra-400 animate-glow-pulse" />
+              <span className="text-[11px] uppercase tracking-widest text-ink-600 font-semibold">Hoş Geldin</span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight uppercase">
+            <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1]">
               <span className="block">Hesabına</span>
-              <span className="block bg-gradient-to-r from-emerald-300 to-brand-500 bg-clip-text text-transparent">Giriş Yap</span>
+              <span className="block text-brand-700 italic">giriş yap</span>
             </h1>
-            <p className="text-[13px] text-slate-400 mt-3">
+            <p className="text-sm text-ink-600 mt-4">
               Aday veya işletme hesabınla devam et.
             </p>
           </div>
 
           <div className="auth-card">
-            {/* #92: Google ile giriş */}
             <GoogleSignInButton label="Google ile Devam Et" />
 
-            {/* Divider */}
             <div className="flex items-center gap-3 my-5">
-              <span className="flex-1 h-px bg-slate-700" />
-              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">veya</span>
-              <span className="flex-1 h-px bg-slate-700" />
+              <span className="flex-1 h-px bg-cream-300" />
+              <span className="text-[10px] uppercase tracking-widest text-ink-400 font-semibold">veya</span>
+              <span className="flex-1 h-px bg-cream-300" />
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -109,7 +107,7 @@ export default function LoginPage() {
                 <div className="flex items-baseline justify-between mb-1.5">
                   <label className="label !mb-0">Şifre</label>
                   <Link to="/forgot-password"
-                    className="text-[11px] font-semibold text-brand-400 hover:text-brand-300 transition-colors">
+                    className="text-[11px] font-semibold text-brand-700 hover:text-brand-800 transition-colors">
                     Şifremi unuttum
                   </Link>
                 </div>
@@ -151,20 +149,19 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="text-[12px] text-center text-slate-400 mt-6">
+            <p className="text-[12px] text-center text-ink-500 mt-6">
               Hesabın yok mu?{' '}
-              <Link to="/register" className="font-bold text-brand-400 hover:text-brand-300 transition-colors">
+              <Link to="/register" className="font-bold text-terra-500 hover:text-terra-600 transition-colors">
                 Ücretsiz kayıt ol
               </Link>
             </p>
           </div>
 
-          {/* Demo bilgisi */}
-          <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-3">
+          <div className="mt-6 card !p-5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-brand-700 mb-3">
               Demo Hesaplar
             </p>
-            <div className="space-y-2 text-[12px] font-mono text-slate-400">
+            <div className="space-y-2 text-[12px] font-mono">
               <DemoRow k="Aday"     v="demo-aday1@test.com" />
               <DemoRow k="İşletme"  v="demo-isletme1@test.com" />
               <DemoRow k="Şifre"    v="Demo1234!" />
@@ -179,8 +176,8 @@ export default function LoginPage() {
 function DemoRow({ k, v }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-slate-500 uppercase tracking-wider text-[10px]">{k}</span>
-      <code className="text-slate-200">{v}</code>
+      <span className="text-ink-400 uppercase tracking-wider text-[10px]">{k}</span>
+      <code className="text-ink-800">{v}</code>
     </div>
   )
 }

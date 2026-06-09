@@ -9,20 +9,20 @@ export default function KvkkPage() {
         <BackButton label="Geri" />
       </div>
 
-      <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-8 sm:p-10">
+      <div className="max-w-3xl mx-auto bg-white dark:bg-white text-slate-800 dark:text-ink-800 rounded-2xl shadow-xl border border-slate-200 dark:border-cream-300 p-8 sm:p-10">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-ink-900">
             Kişisel Verilerin Korunması Aydınlatma Metni
           </h1>
         </div>
 
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+        <p className="text-sm text-ink-400 dark:text-ink-500 mb-6">
           Son güncelleme: 22 Mayıs 2026
         </p>
 
-        <div className="space-y-5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+        <div className="space-y-5 text-sm leading-relaxed text-slate-700 dark:text-ink-700">
           <section>
-            <h2 className="font-semibold text-base text-slate-900 dark:text-slate-100 mb-2">1. Veri Sorumlusu</h2>
+            <h2 className="font-semibold text-base text-slate-900 dark:text-ink-900 mb-2">1. Veri Sorumlusu</h2>
             <p>
               AjansHotel platformunun (bundan sonra "Platform") veri sorumlusu, platformu işleten
               kişi/kurumdur. Platform, otel ve aday arasında iş eşleştirmesi yapan bir çevrimiçi
@@ -31,7 +31,7 @@ export default function KvkkPage() {
           </section>
 
           <section>
-            <h2 className="font-semibold text-base text-slate-900 dark:text-slate-100 mb-2">2. Toplanan Kişisel Veriler</h2>
+            <h2 className="font-semibold text-base text-slate-900 dark:text-ink-900 mb-2">2. Toplanan Kişisel Veriler</h2>
             <ul className="list-disc pl-5 space-y-1">
               <li><b>Kimlik bilgileri:</b> Ad, soyad, doğum tarihi, cinsiyet (opsiyonel)</li>
               <li><b>İletişim bilgileri:</b> E-posta, telefon, adres, ilçe</li>
@@ -44,7 +44,7 @@ export default function KvkkPage() {
           </section>
 
           <section>
-            <h2 className="font-semibold text-base text-slate-900 dark:text-slate-100 mb-2">3. İşleme Amaçları</h2>
+            <h2 className="font-semibold text-base text-slate-900 dark:text-ink-900 mb-2">3. İşleme Amaçları</h2>
             <ul className="list-disc pl-5 space-y-1">
               <li>Platform üyelik ve kimlik doğrulama</li>
               <li>İş ilanı oluşturma, başvuru alma ve süreç yönetimi</li>
@@ -55,7 +55,7 @@ export default function KvkkPage() {
           </section>
 
           <section>
-            <h2 className="font-semibold text-base text-slate-900 dark:text-slate-100 mb-2">4. Hukuki Sebep</h2>
+            <h2 className="font-semibold text-base text-slate-900 dark:text-ink-900 mb-2">4. Hukuki Sebep</h2>
             <p>
               Verileriniz, KVKK m.5/2 uyarınca bir sözleşmenin kurulması ve ifası için zorunlu olması,
               meşru menfaat kapsamında ve açık rızanız ile işlenmektedir.
@@ -63,7 +63,7 @@ export default function KvkkPage() {
           </section>
 
           <section>
-            <h2 className="font-semibold text-base text-slate-900 dark:text-slate-100 mb-2">5. Veri Paylaşımı</h2>
+            <h2 className="font-semibold text-base text-slate-900 dark:text-ink-900 mb-2">5. Veri Paylaşımı</h2>
             <p>
               <b>Hassas belgeler</b> (adli sicil, sağlık raporu, kimlik) yalnızca senin açık iznin ile,
               başvurduğun işletmenin görüntülemesine açılır. Açık belgeler (CV, transkript, öğrenci belgesi)
@@ -75,7 +75,7 @@ export default function KvkkPage() {
           </section>
 
           <section>
-            <h2 className="font-semibold text-base text-slate-900 dark:text-slate-100 mb-2">6. KVKK Madde 11 Hakları</h2>
+            <h2 className="font-semibold text-base text-slate-900 dark:text-ink-900 mb-2">6. KVKK Madde 11 Hakları</h2>
             <p>Aşağıdaki haklara sahipsiniz:</p>
             <ul className="list-disc pl-5 space-y-1 mt-2">
               <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
@@ -88,7 +88,7 @@ export default function KvkkPage() {
           </section>
 
           <section>
-            <h2 className="font-semibold text-base text-slate-900 dark:text-slate-100 mb-2">7. İletişim</h2>
+            <h2 className="font-semibold text-base text-slate-900 dark:text-ink-900 mb-2">7. İletişim</h2>
             <p>
               KVKK kapsamındaki taleplerinizi platformun destek e-posta adresine iletebilirsiniz.
               Talebiniz en geç <b>30 gün</b> içinde değerlendirilir.
@@ -103,8 +103,8 @@ export default function KvkkPage() {
           </section>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
-          <Link to="/register" className="text-sm font-semibold text-brand-700 dark:text-brand-400 hover:underline">
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-cream-300 text-center">
+          <Link to="/register" className="text-sm font-semibold text-brand-700 dark:text-brand-700 hover:underline">
             Kayıt sayfasına dön →
           </Link>
         </div>
