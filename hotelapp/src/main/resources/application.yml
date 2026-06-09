@@ -17,12 +17,13 @@ spring:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: ${JPA_SHOW_SQL:false}
-    # open-in-view: true (default) — JSON serialization aşamasında lazy collection'ları
-    # yükleyebilmek için açık tutuyoruz. CandidateProfileDto içinde @ElementCollection
-    # field'lar (languages, availabilityTypes, preferredDistricts, preferredPositions)
-    # var; bunlar serialize edilirken Hibernate session lazım.
-    # NOT: Eager fetch'e geçirip bunu kapatabiliriz ileride (performans için).
-    open-in-view: true
+    # F0.13 — open-in-view artık FALSE default.
+    # ESKI: true → JSON serialization sırasında lazy load (anti-pattern, N+1 sorgular)
+    # YENI: false → DTO mapping transaction içinde tamamlanmalı (zaten öyle).
+    #       LazyInitializationException görürsen ilgili service method'una
+    #       @Transactional(readOnly=true) ekle veya @EntityGraph kullan.
+    # Hızlı geri dönüş için env var: OPEN_IN_VIEW=true
+    open-in-view: ${OPEN_IN_VIEW:false}
     properties:
       hibernate:
         format_sql: true
