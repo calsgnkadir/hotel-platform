@@ -373,6 +373,76 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     return `${m}:${ss}`
   }
 
+  // ── Drag & Drop dosya bırakma (ADIM 4) ──
+  const [isDragging, setIsDragging] = useState(false)
+  const dragCounterRef = useRef(0)  // nested dragenter/leave için sayaç
+
+  function handleDragEnter(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    // Sadece dosya sürükleniyorsa overlay aç (text/link sürüklemede açma)
+    const hasFiles = Array.from(e.dataTransfer?.types || []).includes('Files')
+    if (!hasFiles) return
+    dragCounterRef.current += 1
+    if (dragCounterRef.current === 1) setIsDragging(true)
+  }
+
+  function handleDragLeave(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounterRef.current -= 1
+    if (dragCounterRef.current <= 0) {
+      dragCounterRef.current = 0
+      setIsDragging(false)
+    }
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
+  }
+
+  async function handleDrop(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounterRef.current = 0
+    setIsDragging(false)
+    const dropped = Array.from(e.dataTransfer?.files || [])
+    if (dropped.length === 0 || sending || recording) return
+
+    // Boyut kontrolü — büyük dosyaları ele
+    const validFiles = dropped.filter(f => {
+      if (f.size > 15 * 1024 * 1024) {
+        toast.error(`${f.name} 15 MB'dan büyük — atlandı`)
+        return false
+      }
+      return true
+    })
+    if (validFiles.length === 0) return
+
+    setSending(true)
+    try {
+      // Sırayla upload — paralel yapsak server'ı zorlayabilir
+      for (const file of validFiles) {
+        try {
+          const msg = await hotelApi.sendMessageAttachment(conversation.id, file, '')
+          setMessages(prev => [...prev, msg])
+          lastSeenIdRef.current = msg.id
+        } catch (err) {
+          toast.error(`${file.name}: ${extractErrorMessage(err)}`)
+        }
+      }
+      setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+      onMessageSent?.()
+      if (validFiles.length > 1) {
+        toast.success(`${validFiles.length} dosya gönderildi`)
+      }
+    } finally {
+      setSending(false)
+    }
+  }
+
   // ── Jitsi sesli/görüntülü arama daveti ──
   async function handleCall(type) {
     if (sending || recording) return
@@ -411,7 +481,31 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
   const initials = (conversation.otherPartyName || '?').charAt(0).toUpperCase()
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white dark:bg-slate-900">
+    <div className="flex-1 flex flex-col h-full bg-white dark:bg-slate-900 relative"
+         onDragEnter={handleDragEnter}
+         onDragLeave={handleDragLeave}
+         onDragOver={handleDragOver}
+         onDrop={handleDrop}>
+      {/* Drag overlay — dosya sürüklenirken sohbet alanını kaplar */}
+      {isDragging && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none
+                        bg-brand-900/40 backdrop-blur-sm border-4 border-dashed border-brand-400 rounded-lg">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl px-8 py-6 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto text-brand-600 mb-2">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+            </svg>
+            <div className="text-base font-bold text-slate-800 dark:text-slate-100">
+              Dosyayı buraya bırak
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              PDF, JPG, PNG, MP3 — her biri max 15 MB
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Üst başlık */}
       <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 flex-shrink-0">
         <button onClick={onBack}
