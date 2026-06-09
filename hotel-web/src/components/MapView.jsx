@@ -27,7 +27,7 @@ const brandIcon = L.divIcon({
   html: `
     <div style="
       width: 32px; height: 32px;
-      background: linear-gradient(135deg, #047857, #10b981);
+      background: linear-gradient(135deg, #0f766e, #0d9488);
       border: 2px solid white;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
@@ -88,15 +88,15 @@ export default function MapView({
 
   if (!hasExact && !district && !editable) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 flex items-center justify-center"
+      <div className="rounded-2xl border border-cream-300 bg-slate-900/40 flex items-center justify-center"
            style={{ height }}>
-        <p className="text-xs text-slate-500 uppercase tracking-widest">Konum bilgisi yok</p>
+        <p className="text-xs text-ink-500 uppercase tracking-widest">Konum bilgisi yok</p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-slate-800 relative" style={{ height }}>
+    <div className="rounded-2xl overflow-hidden border border-cream-300 relative" style={{ height }}>
       <MapContainer
         center={coords}
         zoom={effectiveZoom}
@@ -112,8 +112,8 @@ export default function MapView({
         <Marker position={coords} icon={brandIcon}>
           <Popup>
             <div className="text-[12px]">
-              {title && <div className="font-bold text-slate-900 mb-0.5">{title}</div>}
-              <div className="text-slate-700">
+              {title && <div className="font-bold text-ink-900 mb-0.5">{title}</div>}
+              <div className="text-ink-700">
                 {district}{neighborhood ? ` · ${neighborhood}` : ''}
               </div>
               {isApprox && (
@@ -122,7 +122,7 @@ export default function MapView({
                 </div>
               )}
               {hasExact && (
-                <div className="text-[10px] text-emerald-700 mt-1">
+                <div className="text-[10px] text-brand-700 mt-1">
                   Tam konum: {coords[0].toFixed(5)}, {coords[1].toFixed(5)}
                 </div>
               )}
@@ -135,13 +135,13 @@ export default function MapView({
 
       {/* Düzenleme modunda kullanıcıya rehber */}
       {editable && (
-        <div className="absolute top-2 left-2 right-2 bg-ink-900/85 backdrop-blur-sm border border-emerald-500/30 text-emerald-300 text-[11px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full text-center pointer-events-none">
+        <div className="absolute top-2 left-2 right-2 bg-cream-100/85 backdrop-blur-sm border border-emerald-500/30 text-brand-700 text-[11px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full text-center pointer-events-none">
           Konumu seçmek için haritaya tıkla
         </div>
       )}
 
       {/* Sağ alt köşe — attribution (CartoDB + OSM zorunlu) */}
-      <div className="absolute bottom-1 right-1 text-[8px] text-slate-400/70 bg-ink-900/80 px-1.5 py-0.5 rounded backdrop-blur-sm">
+      <div className="absolute bottom-1 right-1 text-[8px] text-ink-400/70 bg-cream-100/80 px-1.5 py-0.5 rounded backdrop-blur-sm">
         © <a href="https://carto.com/attributions" target="_blank" rel="noreferrer" className="hover:text-white">CARTO</a>
         {' '}·{' '}
         © <a href="https://openstreetmap.org/copyright" target="_blank" rel="noreferrer" className="hover:text-white">OSM</a>

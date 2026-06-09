@@ -28,16 +28,16 @@ function ConversationItem({ conv, isActive, onClick }) {
   const initials = (conv.otherPartyName || '?').charAt(0).toUpperCase()
   return (
     <button onClick={onClick}
-      className={`w-full text-left px-3 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors
+      className={`w-full text-left px-3 py-3 border-b border-cream-200 dark:border-cream-300 hover:bg-cream-50 dark:hover:bg-slate-800 transition-colors
         ${isActive ? 'bg-brand-50 dark:bg-brand-900/30' : ''}`}>
       <div className="flex items-start gap-3">
         {conv.otherPartyAvatarUrl ? (
           <img src={conv.otherPartyAvatarUrl} alt={conv.otherPartyName}
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
         ) : (
-          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-slate-400 dark:text-slate-500">
+                 strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-ink-400 dark:text-ink-500">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
             </svg>
@@ -45,21 +45,21 @@ function ConversationItem({ conv, isActive, onClick }) {
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <div className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">
+            <div className="font-semibold text-sm text-ink-800 dark:text-ink-900 truncate">
               {conv.otherPartyName}
             </div>
-            <div className="text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0">
+            <div className="text-[10px] text-ink-400 dark:text-ink-500 flex-shrink-0">
               {formatRelative(conv.lastMessageAt)}
             </div>
           </div>
           {conv.listingTitle && (
-            <div className="text-[10px] text-brand-700 dark:text-brand-400 truncate mt-0.5">
+            <div className="text-[10px] text-brand-700 dark:text-brand-700 truncate mt-0.5">
               {conv.listingTitle}
             </div>
           )}
           <div className="flex items-center justify-between gap-2 mt-1">
-            <div className={`text-xs truncate ${conv.unreadCount > 0 ? 'text-slate-800 dark:text-slate-100 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
-              {conv.lastMessagePreview || <span className="italic text-slate-400 dark:text-slate-500">Henüz mesaj yok</span>}
+            <div className={`text-xs truncate ${conv.unreadCount > 0 ? 'text-ink-800 dark:text-ink-900 font-medium' : 'text-ink-500 dark:text-ink-400'}`}>
+              {conv.lastMessagePreview || <span className="italic text-ink-400 dark:text-ink-500">Henüz mesaj yok</span>}
             </div>
             {conv.unreadCount > 0 && (
               <span className="flex-shrink-0 text-[10px] font-bold text-white rounded-full px-1.5 min-w-[18px] text-center bg-brand-700">
@@ -99,20 +99,20 @@ function MessageBubble({ m }) {
       <div className={`max-w-[75%] rounded-2xl text-sm shadow-sm overflow-hidden
         ${m.mine
           ? 'text-white rounded-br-md bg-brand-700'
-          : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-md'}`}>
+          : 'bg-white dark:bg-ink-700 text-ink-700 dark:text-ink-800 border border-cream-200 dark:border-ink-700 rounded-bl-md'}`}>
 
         {/* Attachment */}
         {hasAttach && isImage && (
           <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer" className="block">
             <img src={m.attachmentUrl} alt={m.attachmentName || 'foto'}
-                 className="max-h-72 w-auto object-contain bg-slate-100 dark:bg-slate-900" />
+                 className="max-h-72 w-auto object-contain bg-cream-100 dark:bg-ink-800" />
           </a>
         )}
         {hasAttach && isAudio && (
-          <div className={`flex items-center gap-2 px-3 py-2.5 ${m.mine ? 'bg-brand-800/30' : 'bg-slate-100 dark:bg-slate-900/40'}`}>
+          <div className={`flex items-center gap-2 px-3 py-2.5 ${m.mine ? 'bg-brand-800/30' : 'bg-cream-100 dark:bg-ink-800/40'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  strokeWidth={1.8} stroke="currentColor"
-                 className={`w-5 h-5 shrink-0 ${m.mine ? 'text-white' : 'text-slate-500'}`}>
+                 className={`w-5 h-5 shrink-0 ${m.mine ? 'text-white' : 'text-ink-500'}`}>
               <path strokeLinecap="round" strokeLinejoin="round"
                     d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
             </svg>
@@ -121,17 +121,17 @@ function MessageBubble({ m }) {
         )}
         {hasAttach && isFile && (
           <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer"
-             className={`flex items-center gap-2 px-3 py-2.5 border-b ${m.mine ? 'border-white/20' : 'border-slate-200 dark:border-slate-700'}`}>
+             className={`flex items-center gap-2 px-3 py-2.5 border-b ${m.mine ? 'border-white/20' : 'border-cream-300 dark:border-ink-700'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  strokeWidth={1.8} stroke="currentColor"
-                 className={`w-5 h-5 shrink-0 ${m.mine ? 'text-white' : 'text-slate-500'}`}>
+                 className={`w-5 h-5 shrink-0 ${m.mine ? 'text-white' : 'text-ink-500'}`}>
               <path strokeLinecap="round" strokeLinejoin="round"
                     d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
             </svg>
             <div className="flex-1 min-w-0">
               <div className="font-semibold truncate text-[13px]">{m.attachmentName || 'Dosya'}</div>
               {m.attachmentSize && (
-                <div className={`text-[10px] ${m.mine ? 'text-white/70' : 'text-slate-400'}`}>
+                <div className={`text-[10px] ${m.mine ? 'text-white/70' : 'text-ink-400'}`}>
                   {(m.attachmentSize / 1024).toFixed(0)} KB · indirmek için tıkla
                 </div>
               )}
@@ -145,7 +145,7 @@ function MessageBubble({ m }) {
         )}
 
         {/* Zaman */}
-        <div className={`text-[10px] px-3 pb-1 text-right ${m.mine ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'}`}>
+        <div className={`text-[10px] px-3 pb-1 text-right ${m.mine ? 'text-white/70' : 'text-ink-400 dark:text-ink-500'}`}>
           {formatTime(m.sentAt)}{m.mine && m.isRead ? ' · görüldü' : ''}
         </div>
       </div>
@@ -161,8 +161,8 @@ function CallInviteBubble({ m, type, url }) {
       <div className={`max-w-[75%] rounded-2xl text-sm shadow-sm overflow-hidden border
         ${m.mine
           ? 'bg-brand-700 border-brand-600 text-white rounded-br-md'
-          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-bl-md'}`}>
-        <div className={`flex items-center gap-3 px-4 py-3 ${m.mine ? 'bg-brand-800/40' : 'bg-slate-100 dark:bg-slate-900/40'}`}>
+          : 'bg-white dark:bg-ink-700 border-cream-300 dark:border-ink-700 text-ink-700 dark:text-ink-800 rounded-bl-md'}`}>
+        <div className={`flex items-center gap-3 px-4 py-3 ${m.mine ? 'bg-brand-800/40' : 'bg-cream-100 dark:bg-ink-800/40'}`}>
           <div className={`w-10 h-10 rounded-full grid place-items-center shrink-0
                            ${m.mine ? 'bg-white/15' : 'bg-brand-500/20'}`}>
             {isVideo ? (
@@ -183,7 +183,7 @@ function CallInviteBubble({ m, type, url }) {
             <div className="font-semibold text-sm">
               {isVideo ? 'Görüntülü Arama' : 'Sesli Arama'}
             </div>
-            <div className={`text-[11px] ${m.mine ? 'text-white/70' : 'text-slate-500'}`}>
+            <div className={`text-[11px] ${m.mine ? 'text-white/70' : 'text-ink-500'}`}>
               {m.mine ? 'Sen davet ettin' : 'Sana davet'} · {formatTime(m.sentAt)}
             </div>
           </div>
@@ -192,7 +192,7 @@ function CallInviteBubble({ m, type, url }) {
            className={`flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold border-t
                        ${m.mine
                          ? 'bg-white text-brand-700 hover:bg-brand-50 border-white/20'
-                         : 'bg-brand-700 text-white hover:bg-brand-800 border-slate-200 dark:border-slate-700'}`}>
+                         : 'bg-brand-700 text-white hover:bg-brand-800 border-cream-300 dark:border-ink-700'}`}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                strokeWidth={2} stroke="currentColor" className="w-4 h-4">
             <path strokeLinecap="round" strokeLinejoin="round"
@@ -472,7 +472,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
+      <div className="flex-1 flex items-center justify-center text-ink-400 text-sm">
         Sohbet seçin
       </div>
     )
@@ -481,7 +481,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
   const initials = (conversation.otherPartyName || '?').charAt(0).toUpperCase()
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white dark:bg-slate-900 relative"
+    <div className="flex-1 flex flex-col h-full bg-white dark:bg-ink-800 relative"
          onDragEnter={handleDragEnter}
          onDragLeave={handleDragLeave}
          onDragOver={handleDragOver}
@@ -490,16 +490,16 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       {isDragging && (
         <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none
                         bg-brand-900/40 backdrop-blur-sm border-4 border-dashed border-brand-400 rounded-lg">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl px-8 py-6 text-center">
+          <div className="bg-white dark:bg-ink-700 rounded-2xl shadow-2xl px-8 py-6 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto text-brand-600 mb-2">
               <path strokeLinecap="round" strokeLinejoin="round"
                     d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
             </svg>
-            <div className="text-base font-bold text-slate-800 dark:text-slate-100">
+            <div className="text-base font-bold text-ink-800 dark:text-ink-900">
               Dosyayı buraya bırak
             </div>
-            <div className="text-xs text-slate-500 mt-1">
+            <div className="text-xs text-ink-500 mt-1">
               PDF, JPG, PNG, MP3 — her biri max 15 MB
             </div>
           </div>
@@ -507,9 +507,9 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       )}
 
       {/* Üst başlık */}
-      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 flex-shrink-0">
+      <div className="px-4 py-3 border-b border-cream-200 dark:border-cream-300 flex items-center gap-3 flex-shrink-0">
         <button onClick={onBack}
-          className="sm:hidden p-1 -ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+          className="sm:hidden p-1 -ml-1 text-ink-500 dark:text-ink-400 hover:text-ink-700 dark:hover:text-ink-800">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -517,22 +517,22 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
         </button>
         {conversation.otherPartyAvatarUrl ? (
           <img src={conversation.otherPartyAvatarUrl} alt={conversation.otherPartyName}
-            className="w-9 h-9 rounded-full object-cover border border-slate-200" />
+            className="w-9 h-9 rounded-full object-cover border border-cream-300" />
         ) : (
-          <div className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-slate-400 dark:text-slate-500">
+                 strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-ink-400 dark:text-ink-500">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
             </svg>
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-slate-800 dark:text-slate-100 text-sm truncate">
+          <div className="font-semibold text-ink-800 dark:text-ink-900 text-sm truncate">
             {conversation.otherPartyName}
           </div>
           {conversation.listingTitle && (
-            <div className="text-xs text-brand-700 dark:text-brand-400 truncate">
+            <div className="text-xs text-brand-700 dark:text-brand-700 truncate">
               {conversation.listingTitle}
             </div>
           )}
@@ -540,13 +540,13 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       </div>
 
       {/* Mesaj akışı */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-slate-50 dark:bg-slate-950">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-cream-50 dark:bg-ink-900">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="spinner" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-sm text-slate-400">
+          <div className="flex items-center justify-center h-full text-sm text-ink-400">
             Sohbete ilk mesajı sen yaz
           </div>
         ) : messages.map(m => <MessageBubble key={m.id} m={m} />)}
@@ -554,13 +554,13 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       </div>
 
       {/* Kompozer — dosya ekle + metin + sesli mesaj + gönder */}
-      <form onSubmit={handleSend} className="px-3 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 flex-shrink-0">
+      <form onSubmit={handleSend} className="px-3 py-3 border-t border-cream-200 dark:border-cream-300 flex items-center gap-2 flex-shrink-0">
         {/* Kayıt modu: özel UI */}
         {recording ? (
           <>
             <button type="button" onClick={() => stopRecording(true)}
-                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-200 dark:bg-slate-700
-                               text-slate-600 dark:text-slate-300 hover:bg-slate-300 transition-colors shrink-0"
+                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-200 dark:bg-slate-700
+                               text-ink-600 dark:text-ink-300 hover:bg-cream-300 transition-colors shrink-0"
                     title="İptal">
               ×
             </button>
@@ -569,7 +569,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
               <span className="text-sm text-red-700 dark:text-red-300 font-mono">
                 Kayıt {fmtDuration(recDuration)}
               </span>
-              <span className="text-[11px] text-slate-500 ml-auto">Göndermek için durdur</span>
+              <span className="text-[11px] text-ink-500 ml-auto">Göndermek için durdur</span>
             </div>
             <button type="button" onClick={() => stopRecording(false)}
                     disabled={sending}
@@ -588,8 +588,8 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={sending}
                     title="Dosya / Foto ekle"
-                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-100 dark:bg-slate-800
-                               hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300
+                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-100 dark:bg-ink-700
+                               hover:bg-cream-200 dark:hover:bg-slate-700 text-ink-600 dark:text-ink-300
                                disabled:opacity-50 transition-colors shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
@@ -603,8 +603,8 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                     onClick={startRecording}
                     disabled={sending}
                     title="Sesli mesaj kaydet"
-                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-100 dark:bg-slate-800
-                               hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300
+                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-100 dark:bg-ink-700
+                               hover:bg-cream-200 dark:hover:bg-slate-700 text-ink-600 dark:text-ink-300
                                disabled:opacity-50 transition-colors shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
@@ -618,9 +618,9 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                     onClick={() => handleCall('audio')}
                     disabled={sending}
                     title="Sesli arama başlat (Jitsi)"
-                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-100 dark:bg-slate-800
-                               hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-slate-600 dark:text-slate-300
-                               hover:text-emerald-700 disabled:opacity-50 transition-colors shrink-0">
+                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-100 dark:bg-ink-700
+                               hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-ink-600 dark:text-ink-300
+                               hover:text-brand-700 disabled:opacity-50 transition-colors shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -633,9 +633,9 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                     onClick={() => handleCall('video')}
                     disabled={sending}
                     title="Görüntülü arama başlat (Jitsi)"
-                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-100 dark:bg-slate-800
-                               hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-slate-600 dark:text-slate-300
-                               hover:text-emerald-700 disabled:opacity-50 transition-colors shrink-0">
+                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-100 dark:bg-ink-700
+                               hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-ink-600 dark:text-ink-300
+                               hover:text-brand-700 disabled:opacity-50 transition-colors shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -708,11 +708,11 @@ export default function MessagesPage() {
     <div className="card overflow-hidden" style={{ height: 'calc(100vh - 12rem)', minHeight: 480 }}>
       <div className="flex h-full">
         {/* Sol — Sohbet listesi */}
-        <div className={`${showListMobile ? 'flex' : 'hidden sm:flex'} flex-col w-full sm:w-80 sm:min-w-[20rem] border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900`}>
-          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 space-y-2">
+        <div className={`${showListMobile ? 'flex' : 'hidden sm:flex'} flex-col w-full sm:w-80 sm:min-w-[20rem] border-r border-cream-200 dark:border-cream-300 bg-white dark:bg-ink-800`}>
+          <div className="px-4 py-3 border-b border-cream-200 dark:border-cream-300 space-y-2">
             <div className="flex items-baseline justify-between gap-2">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Mesajlar</h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+              <h3 className="text-sm font-bold text-ink-800 dark:text-ink-900">Mesajlar</h3>
+              <p className="text-[11px] text-ink-400 dark:text-ink-500">
                 {filteredConvs.length}{search ? ` / ${conversations.length}` : ''} sohbet
               </p>
             </div>
@@ -723,7 +723,7 @@ export default function MessagesPage() {
                      className="input text-xs h-8 pl-7 pr-6" />
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={2} stroke="currentColor"
-                   className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                   className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none">
                 <path strokeLinecap="round" strokeLinejoin="round"
                       d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
               </svg>
@@ -731,7 +731,7 @@ export default function MessagesPage() {
                 <button type="button" onClick={() => setSearch('')}
                         title="Aramayı temizle"
                         className="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 grid place-items-center
-                                   text-slate-400 hover:text-slate-700">
+                                   text-ink-400 hover:text-ink-700">
                   ×
                 </button>
               )}
@@ -743,17 +743,17 @@ export default function MessagesPage() {
             ) : conversations.length === 0 ? (
               <div className="empty-state py-12 px-4 text-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-slate-300 mb-3 mx-auto">
+                     strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-ink-300 mb-3 mx-auto">
                   <path strokeLinecap="round" strokeLinejoin="round"
                     d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
                 </svg>
-                <p className="text-sm text-slate-500">Henüz sohbetin yok</p>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-sm text-ink-500">Henüz sohbetin yok</p>
+                <p className="text-xs text-ink-400 mt-1">
                   Bir ilana başvurduğunda işletmeyle otomatik sohbet açılır
                 </p>
               </div>
             ) : filteredConvs.length === 0 ? (
-              <div className="py-8 px-4 text-center text-sm text-slate-400">
+              <div className="py-8 px-4 text-center text-sm text-ink-400">
                 "{search}" araması için sonuç bulunamadı.
               </div>
             ) : filteredConvs.map(c => (

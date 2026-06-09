@@ -14,8 +14,8 @@ export default function ThemeToggle({ className = '' }) {
       title={isDark ? 'Açık moda geç' : 'Koyu moda geç'}
       aria-label={isDark ? 'Açık moda geç' : 'Koyu moda geç'}
       className={`w-8 h-8 rounded-full flex items-center justify-center transition-all
-        bg-slate-100 hover:bg-slate-200 text-slate-700
-        dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-200
+        bg-cream-100 hover:bg-cream-200 text-ink-700
+        dark:bg-ink-700/80 dark:hover:bg-slate-700 dark:text-ink-800
         hover:scale-105 active:scale-95
         ${className}`}>
       {/* Kontrast (yarı dolu daire) — özgün SVG */}

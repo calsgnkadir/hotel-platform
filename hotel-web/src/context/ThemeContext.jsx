@@ -1,15 +1,15 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
-const ThemeContext = createContext({ theme: 'light', toggle: () => {} })
+const ThemeContext = createContext({ theme: 'light', toggle: () => {}, toggleTheme: () => {} })
 
 const STORAGE_KEY = 'ajanshotel-theme'
 
 function getInitialTheme() {
-  if (typeof window === 'undefined') return 'dark'
+  if (typeof window === 'undefined') return 'light'
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved === 'light' || saved === 'dark') return saved
-  // Hibrit tasarım: default dark (Wordplay/StoryHell tarzı)
-  return 'dark'
+  // Theme v3 (Hospitality Concierge): default LIGHT
+  return 'light'
 }
 
 export function ThemeProvider({ children }) {
@@ -28,7 +28,7 @@ export function ThemeProvider({ children }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle, setTheme }}>
+    <ThemeContext.Provider value={{ theme, toggle, toggleTheme: toggle, setTheme }}>
       {children}
     </ThemeContext.Provider>
   )

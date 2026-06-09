@@ -20,8 +20,8 @@ export default function DailyTrendLine({ data, title = 'Son 30 Gün Başvuru Tre
   return (
     <div className="card p-5">
       <div className="flex items-baseline justify-between mb-1">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">{title}</h3>
-        <span className="text-xs text-slate-500">
+        <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider">{title}</h3>
+        <span className="text-xs text-ink-500">
           Toplam {total} · Tepe {peak}
         </span>
       </div>

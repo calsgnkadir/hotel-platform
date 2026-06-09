@@ -61,7 +61,7 @@ function OverviewTab() {
   const cards = [
     { label: 'Toplam Kullanıcı', value: stats.totalUsers,        dot: 'bg-blue-400' },
     { label: 'Aday',             value: stats.candidates,        dot: 'bg-brand-400' },
-    { label: 'İşletme',          value: stats.businessOwners,    dot: 'bg-emerald-400' },
+    { label: 'İşletme',          value: stats.businessOwners,    dot: 'bg-brand-500' },
     { label: 'Admin',            value: stats.admins,            dot: 'bg-amber-400' },
     { label: 'Banlı',            value: stats.bannedUsers,       dot: 'bg-red-400' },
     { label: 'İşletme Kayıtlı',  value: stats.totalBusinesses,   dot: 'bg-cyan-400' },
@@ -76,7 +76,7 @@ function OverviewTab() {
           <div key={c.label} className="stat-card !p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold truncate">{c.label}</span>
+              <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold truncate">{c.label}</span>
             </div>
             <div className="text-xl font-black text-white leading-none">{c.value}</div>
           </div>
@@ -128,16 +128,16 @@ function UserDetailModal({ user, onClose, onUpdated }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
+        <div className="p-6 border-b border-cream-200 sticky top-0 bg-white z-10">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">{user.fullName}</h2>
-              <p className="text-sm text-slate-500">{user.email}</p>
+              <h2 className="text-lg font-bold text-ink-900">{user.fullName}</h2>
+              <p className="text-sm text-ink-500">{user.email}</p>
             </div>
             <span className={`text-xs font-semibold px-2 py-1 rounded-full
               ${isAdmin ? 'bg-amber-100 text-amber-700'
-                : isCandidate ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300'
-                : 'bg-emerald-100 text-emerald-700'}`}>
+                : isCandidate ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700'
+                : 'bg-emerald-100 text-brand-700'}`}>
               {ROLE_LABELS[user.role]}
             </span>
           </div>
@@ -146,29 +146,29 @@ function UserDetailModal({ user, onClose, onUpdated }) {
         <div className="p-6 space-y-5">
           {/* Key facts */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="bg-slate-50 rounded-lg p-3 text-center">
-              <div className="text-xs text-slate-500">Strike Hakkı</div>
+            <div className="bg-cream-50 rounded-lg p-3 text-center">
+              <div className="text-xs text-ink-500">Strike Hakkı</div>
               <div className="text-sm font-semibold mt-0.5">{user.strikesRemaining ?? '—'}</div>
             </div>
-            <div className="bg-slate-50 rounded-lg p-3 text-center">
-              <div className="text-xs text-slate-500">İlçe</div>
+            <div className="bg-cream-50 rounded-lg p-3 text-center">
+              <div className="text-xs text-ink-500">İlçe</div>
               <div className="text-sm font-semibold mt-0.5">{user.district || '—'}</div>
             </div>
             {isCandidate && (
-              <div className="bg-slate-50 rounded-lg p-3 text-center">
-                <div className="text-xs text-slate-500">Başvuru</div>
+              <div className="bg-cream-50 rounded-lg p-3 text-center">
+                <div className="text-xs text-ink-500">Başvuru</div>
                 <div className="text-sm font-semibold mt-0.5">{user.applicationCount ?? 0}</div>
               </div>
             )}
             {user.role === 'BUSINESS_OWNER' && (
-              <div className="bg-slate-50 rounded-lg p-3 text-center">
-                <div className="text-xs text-slate-500">İlan</div>
+              <div className="bg-cream-50 rounded-lg p-3 text-center">
+                <div className="text-xs text-ink-500">İlan</div>
                 <div className="text-sm font-semibold mt-0.5">{user.listingCount ?? 0}</div>
               </div>
             )}
-            <div className={`rounded-lg p-3 text-center ${user.currentlyBanned ? 'bg-red-50' : 'bg-emerald-50'}`}>
-              <div className={`text-xs ${user.currentlyBanned ? 'text-red-600' : 'text-emerald-600'}`}>Durum</div>
-              <div className={`text-sm font-semibold mt-0.5 ${user.currentlyBanned ? 'text-red-700' : 'text-emerald-700'}`}>
+            <div className={`rounded-lg p-3 text-center ${user.currentlyBanned ? 'bg-red-50' : 'bg-brand-50'}`}>
+              <div className={`text-xs ${user.currentlyBanned ? 'text-red-600' : 'text-brand-700'}`}>Durum</div>
+              <div className={`text-sm font-semibold mt-0.5 ${user.currentlyBanned ? 'text-red-700' : 'text-brand-700'}`}>
                 {user.currentlyBanned ? 'Banlı' : 'Aktif'}
               </div>
             </div>
@@ -183,11 +183,11 @@ function UserDetailModal({ user, onClose, onUpdated }) {
 
           {/* Ban yönetimi — admin değilse */}
           {!isAdmin && (
-            <div className="border-t border-slate-100 pt-4">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Ban Yönetimi</h3>
+            <div className="border-t border-cream-200 pt-4">
+              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Ban Yönetimi</h3>
               {user.currentlyBanned ? (
                 <button onClick={handleUnban} disabled={actionLoading}
-                  className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-1.5">
+                  className="w-full py-2.5 rounded-lg bg-brand-700 hover:bg-emerald-700 text-white text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-1.5">
                   <Icon d={ICONS.check} className="w-4 h-4" /> Banı Kaldır
                 </button>
               ) : (
@@ -204,7 +204,7 @@ function UserDetailModal({ user, onClose, onUpdated }) {
           )}
 
           {/* Meta */}
-          <div className="border-t border-slate-100 pt-3 text-xs text-slate-400">
+          <div className="border-t border-cream-200 pt-3 text-xs text-ink-400">
             Kayıt: {user.createdAt ? new Date(user.createdAt).toLocaleString('tr-TR') : '—'} · ID: {user.id}
           </div>
         </div>
@@ -265,14 +265,14 @@ function UsersTab() {
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                 ${roleFilter === f.value
                   ? 'text-white shadow-sm'
-                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={roleFilter === f.value ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
+                  : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+              style={roleFilter === f.value ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
               {f.label}
             </button>
           ))}
         </div>
         <div className="relative flex-1 sm:max-w-xs sm:ml-auto">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none">
             <Icon d={ICONS.search} className="w-4 h-4" />
           </span>
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
@@ -286,8 +286,8 @@ function UsersTab() {
       ) : users.length === 0 ? (
         <div className="card">
           <div className="empty-state py-14">
-            <Icon d={ICONS.search} className="w-10 h-10 text-slate-300 mb-3" strokeWidth={1.5} />
-            <p className="text-slate-500 text-sm">Eşleşen kullanıcı yok</p>
+            <Icon d={ICONS.search} className="w-10 h-10 text-ink-300 mb-3" strokeWidth={1.5} />
+            <p className="text-ink-500 text-sm">Eşleşen kullanıcı yok</p>
           </div>
         </div>
       ) : (
@@ -307,14 +307,14 @@ function UsersTab() {
               {users.map(u => (
                 <tr key={u.id}>
                   <td>
-                    <div className="font-medium text-slate-800">{u.fullName}</div>
-                    <div className="text-xs text-slate-400">{u.email}</div>
+                    <div className="font-medium text-ink-800">{u.fullName}</div>
+                    <div className="text-xs text-ink-400">{u.email}</div>
                   </td>
                   <td>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
                       ${u.role === 'ADMIN' ? 'bg-amber-100 text-amber-700'
-                        : u.role === 'CANDIDATE' ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300'
-                        : 'bg-emerald-100 text-emerald-700'}`}>
+                        : u.role === 'CANDIDATE' ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700'
+                        : 'bg-emerald-100 text-brand-700'}`}>
                       {ROLE_LABELS[u.role]}
                     </span>
                   </td>
@@ -325,17 +325,17 @@ function UsersTab() {
                         <Icon d={ICONS.ban} className="w-3 h-3" /> Banlı
                       </span>
                     ) : (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-brand-700">
                         Aktif
                       </span>
                     )}
                   </td>
-                  <td className="hidden sm:table-cell text-xs text-slate-400">
+                  <td className="hidden sm:table-cell text-xs text-ink-400">
                     {u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '—'}
                   </td>
                   <td>
                     <button onClick={() => openDetail(u)}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-900/60 transition-colors">
+                      className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60 transition-colors">
                       Yönet
                     </button>
                   </td>
@@ -361,8 +361,8 @@ const REPORT_REASON_LABELS = {
 const REPORT_TYPE_LABELS = { LISTING: 'İlan', BUSINESS: 'İşletme', USER: 'Kullanıcı' }
 const REPORT_STATUS_META = {
   PENDING:   { cls: 'bg-amber-100 text-amber-700',     label: 'Bekliyor' },
-  RESOLVED:  { cls: 'bg-emerald-100 text-emerald-700', label: 'Çözüldü' },
-  DISMISSED: { cls: 'bg-slate-100 text-slate-500',     label: 'Reddedildi' },
+  RESOLVED:  { cls: 'bg-emerald-100 text-brand-700', label: 'Çözüldü' },
+  DISMISSED: { cls: 'bg-cream-100 text-ink-500',     label: 'Reddedildi' },
 }
 const REPORT_FILTERS = [
   { value: '',          label: 'Tümü' },
@@ -409,8 +409,8 @@ function ReportsTab() {
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
               ${statusFilter === f.value
                 ? 'text-white shadow-sm'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
+                : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+            style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
             {f.label}
           </button>
         ))}
@@ -421,8 +421,8 @@ function ReportsTab() {
       ) : reports.length === 0 ? (
         <div className="card">
           <div className="empty-state py-14">
-            <Icon d={ICONS.checkCircle} className="w-10 h-10 text-emerald-400 mb-3" strokeWidth={1.5} />
-            <p className="text-slate-500 text-sm">Şikayet yok</p>
+            <Icon d={ICONS.checkCircle} className="w-10 h-10 text-brand-700 mb-3" strokeWidth={1.5} />
+            <p className="text-ink-500 text-sm">Şikayet yok</p>
           </div>
         </div>
       ) : (
@@ -434,7 +434,7 @@ function ReportsTab() {
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cream-100 text-ink-600">
                         {REPORT_TYPE_LABELS[r.targetType] || r.targetType} #{r.targetId}
                       </span>
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600">
@@ -445,31 +445,31 @@ function ReportsTab() {
                       </span>
                     </div>
                     {r.description && (
-                      <p className="text-sm text-slate-700 mt-2">{r.description}</p>
+                      <p className="text-sm text-ink-700 mt-2">{r.description}</p>
                     )}
-                    <p className="text-xs text-slate-400 mt-1.5">
+                    <p className="text-xs text-ink-400 mt-1.5">
                       Şikayet eden: {r.reporterName} ({r.reporterEmail}) ·{' '}
                       {new Date(r.createdAt).toLocaleString('tr-TR')}
                     </p>
                     {r.adminNote && (
-                      <p className="text-xs text-slate-500 mt-1 italic">Admin notu: {r.adminNote}</p>
+                      <p className="text-xs text-ink-500 mt-1 italic">Admin notu: {r.adminNote}</p>
                     )}
                   </div>
 
                   {r.status === 'PENDING' && (
                     <div className="flex gap-2 flex-shrink-0">
                       <button onClick={() => handleStatus(r.id, 'RESOLVED')} disabled={actionId === r.id}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50 inline-flex items-center gap-1">
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-emerald-100 text-brand-700 hover:bg-emerald-200 disabled:opacity-50 inline-flex items-center gap-1">
                         <Icon d={ICONS.check} className="w-3.5 h-3.5" /> Çözüldü
                       </button>
                       <button onClick={() => handleStatus(r.id, 'DISMISSED')} disabled={actionId === r.id}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50 inline-flex items-center gap-1">
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-cream-100 text-ink-600 hover:bg-cream-200 disabled:opacity-50 inline-flex items-center gap-1">
                         <Icon d={ICONS.xmark} className="w-3.5 h-3.5" /> Reddet
                       </button>
                     </div>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-400 mt-2 inline-flex items-center gap-1">
+                <p className="text-[11px] text-ink-400 mt-2 inline-flex items-center gap-1">
                   <Icon d={ICONS.bulb} className="w-3.5 h-3.5 flex-shrink-0" />
                   İşlem için: Kullanıcılar sekmesinden ilgili kullanıcıyı bulup banlayabilirsin.
                 </p>
@@ -485,11 +485,11 @@ function ReportsTab() {
 /* ── Audit Log Tab (D4) ── */
 const ACTION_META = {
   BAN_USER:       { path: ICONS.ban,     label: 'Kullanıcı banlandı',  cls: 'bg-red-50 text-red-700' },
-  UNBAN_USER:     { path: ICONS.check,   label: 'Ban kaldırıldı',      cls: 'bg-emerald-50 text-emerald-700' },
+  UNBAN_USER:     { path: ICONS.check,   label: 'Ban kaldırıldı',      cls: 'bg-brand-50 text-brand-700' },
   MARK_NO_SHOW:   { path: ICONS.ban,     label: 'No-show işaretlendi',  cls: 'bg-amber-50 text-amber-700' },
   AUTO_BAN:       { path: ICONS.bolt,    label: 'Otomatik ban',         cls: 'bg-red-50 text-red-700' },
-  RESOLVE_REPORT: { path: ICONS.check,   label: 'Şikayet çözüldü',      cls: 'bg-emerald-50 text-emerald-700' },
-  DISMISS_REPORT: { path: ICONS.xmark,   label: 'Şikayet reddedildi',   cls: 'bg-slate-100 text-slate-500' },
+  RESOLVE_REPORT: { path: ICONS.check,   label: 'Şikayet çözüldü',      cls: 'bg-brand-50 text-brand-700' },
+  DISMISS_REPORT: { path: ICONS.xmark,   label: 'Şikayet reddedildi',   cls: 'bg-cream-100 text-ink-500' },
 }
 const AUDIT_FILTERS = [
   { value: '',             label: 'Tümü' },
@@ -522,8 +522,8 @@ function AuditTab() {
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
               ${actionFilter === f.value
                 ? 'text-white shadow-sm'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={actionFilter === f.value ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
+                : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+            style={actionFilter === f.value ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
             {f.label}
           </button>
         ))}
@@ -534,14 +534,14 @@ function AuditTab() {
       ) : logs.length === 0 ? (
         <div className="card">
           <div className="empty-state py-14">
-            <Icon d={ICONS.doc} className="w-10 h-10 text-slate-300 mb-3" strokeWidth={1.5} />
-            <p className="text-slate-500 text-sm">Henüz işlem kaydı yok</p>
+            <Icon d={ICONS.doc} className="w-10 h-10 text-ink-300 mb-3" strokeWidth={1.5} />
+            <p className="text-ink-500 text-sm">Henüz işlem kaydı yok</p>
           </div>
         </div>
       ) : (
         <div className="card divide-y divide-slate-50">
           {logs.map(l => {
-            const m = ACTION_META[l.action] || { path: ICONS.doc, label: l.action, cls: 'bg-slate-100 text-slate-600' }
+            const m = ACTION_META[l.action] || { path: ICONS.doc, label: l.action, cls: 'bg-cream-100 text-ink-600' }
             const isSystem = l.actorEmail === 'SYSTEM'
             return (
               <div key={l.id} className="px-4 py-3 flex items-start gap-3">
@@ -549,8 +549,8 @@ function AuditTab() {
                   <Icon d={m.path} className="w-3.5 h-3.5" /> {m.label}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-slate-700">{l.details}</div>
-                  <div className="text-xs text-slate-400 mt-0.5 inline-flex items-center gap-1">
+                  <div className="text-sm text-ink-700">{l.details}</div>
+                  <div className="text-xs text-ink-400 mt-0.5 inline-flex items-center gap-1">
                     <Icon d={isSystem ? ICONS.cpuChip : ICONS.user} className="w-3.5 h-3.5" />
                     {isSystem ? 'Sistem' : l.actorEmail}
                     {' · '}

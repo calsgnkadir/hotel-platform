@@ -63,8 +63,8 @@ export default function SettingsMenu({ onTabChange }) {
         type="button"
         onClick={() => setOpen(v => !v)}
         title="Ayarlar"
-        className="w-9 h-9 grid place-items-center rounded-full bg-slate-900/60 border border-slate-700/60
-                   text-slate-300 hover:text-white hover:border-brand-500/50 transition-colors"
+        className="w-9 h-9 grid place-items-center rounded-full bg-white border border-cream-300
+                   text-ink-600 hover:text-brand-700 hover:border-brand-500 transition-colors shadow-sm"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              strokeWidth={1.8} stroke="currentColor" className="w-4.5 h-4.5"
@@ -78,11 +78,11 @@ export default function SettingsMenu({ onTabChange }) {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-2 w-72 z-50 rounded-2xl border border-slate-700/70
-                        bg-slate-900/95 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-72 z-50 rounded-2xl border border-cream-300
+                        bg-white backdrop-blur-xl shadow-2xl overflow-hidden">
           {/* Tema */}
-          <div className="px-4 py-3 border-b border-slate-800/60">
-            <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Görünüm</div>
+          <div className="px-4 py-3 border-b border-cream-300">
+            <div className="text-[10px] uppercase tracking-widest text-ink-500 mb-2">Görünüm</div>
             <div className="flex items-center gap-1.5">
               <ThemePill active={theme === 'light'} label="Açık"
                 onClick={() => { if (theme !== 'light') toggleTheme() }} />
@@ -92,10 +92,10 @@ export default function SettingsMenu({ onTabChange }) {
           </div>
 
           {/* Bildirim */}
-          <div className="px-4 py-3 border-b border-slate-800/60 flex items-center justify-between gap-3">
+          <div className="px-4 py-3 border-b border-cream-300 flex items-center justify-between gap-3">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-0.5">Bildirimler</div>
-              <div className="text-[12px] text-slate-200">{muted ? 'Kapalı' : 'Açık'}</div>
+              <div className="text-[10px] uppercase tracking-widest text-ink-500 mb-0.5">Bildirimler</div>
+              <div className="text-[12px] text-ink-800">{muted ? 'Kapalı' : 'Açık'}</div>
             </div>
             <ToggleSwitch checked={!muted} onChange={(v) => setMuted(!v)} />
           </div>
@@ -105,11 +105,11 @@ export default function SettingsMenu({ onTabChange }) {
             <button
               type="button"
               onClick={() => goTab('profile')}
-              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-slate-200
-                         hover:bg-slate-800/60 transition-colors border-b border-slate-800/60"
+              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
+                         hover:bg-cream-200 transition-colors border-b border-cream-300"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-slate-400">
+                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
                 <path strokeLinecap="round" strokeLinejoin="round"
                       d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
               </svg>
@@ -122,11 +122,11 @@ export default function SettingsMenu({ onTabChange }) {
             <button
               type="button"
               onClick={() => goTab('history')}
-              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-slate-200
-                         hover:bg-slate-800/60 transition-colors border-b border-slate-800/60"
+              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
+                         hover:bg-cream-200 transition-colors border-b border-cream-300"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-slate-400">
+                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
                 <path strokeLinecap="round" strokeLinejoin="round"
                       d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
@@ -138,11 +138,11 @@ export default function SettingsMenu({ onTabChange }) {
           <button
             type="button"
             onClick={() => { setOpen(false); setHelp(true) }}
-            className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-slate-200
-                       hover:bg-slate-800/60 transition-colors border-b border-slate-800/60"
+            className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
+                       hover:bg-cream-200 transition-colors border-b border-cream-300"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-slate-400">
+                 strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
               <path strokeLinecap="round" strokeLinejoin="round"
                     d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
             </svg>
@@ -153,11 +153,11 @@ export default function SettingsMenu({ onTabChange }) {
           <Link
             to="/kvkk"
             onClick={() => setOpen(false)}
-            className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-slate-200
-                       hover:bg-slate-800/60 transition-colors border-b border-slate-800/60"
+            className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
+                       hover:bg-cream-200 transition-colors border-b border-cream-300"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-slate-400">
+                 strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
               <path strokeLinecap="round" strokeLinejoin="round"
                     d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
             </svg>
@@ -195,7 +195,7 @@ function ThemePill({ active, label, onClick }) {
       className={`flex-1 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors
         ${active
           ? 'bg-brand-500 text-white border-brand-500'
-          : 'bg-slate-800/60 text-slate-300 border-slate-700 hover:bg-slate-700/60'}`}
+          : 'bg-cream-200 text-ink-300 border-slate-700 hover:bg-slate-700/60'}`}
     >
       {label}
     </button>
@@ -231,14 +231,14 @@ function HelpModal({ onClose }) {
                    bg-slate-900 shadow-2xl"
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-cream-300 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-black tracking-tight">Yardım</h3>
-            <p className="text-[12px] text-slate-400">Sık sorulan sorular ve iletişim.</p>
+            <p className="text-[12px] text-ink-400">Sık sorulan sorular ve iletişim.</p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 grid place-items-center rounded-full text-slate-400
+            className="w-8 h-8 grid place-items-center rounded-full text-ink-400
                        hover:bg-slate-800 hover:text-white transition-colors"
           >
             ×
@@ -247,7 +247,7 @@ function HelpModal({ onClose }) {
 
         {/* SSS */}
         <div className="px-6 py-4">
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-3">
+          <div className="text-[10px] uppercase tracking-widest text-ink-500 mb-3">
             Sık Sorulan Sorular
           </div>
           <div className="divide-y divide-slate-800/60">
@@ -256,20 +256,20 @@ function HelpModal({ onClose }) {
         </div>
 
         {/* İletişim */}
-        <div className="px-6 py-4 border-t border-slate-800">
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-3">İletişim</div>
+        <div className="px-6 py-4 border-t border-cream-300">
+          <div className="text-[10px] uppercase tracking-widest text-ink-500 mb-3">İletişim</div>
           <div className="grid sm:grid-cols-2 gap-2">
             <a href="mailto:destek@ajanshotel.com"
-               className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl bg-slate-800/40 border border-slate-700/50
+               className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl bg-cream-100 border border-slate-700/50
                           hover:border-brand-500/40 transition-colors">
-              <span className="text-[10px] uppercase tracking-widest text-slate-500">E-posta</span>
-              <span className="font-mono text-[12px] text-slate-100">destek@ajanshotel.com</span>
+              <span className="text-[10px] uppercase tracking-widest text-ink-500">E-posta</span>
+              <span className="font-mono text-[12px] text-ink-900">destek@ajanshotel.com</span>
             </a>
             <a href="tel:+902120000000"
-               className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl bg-slate-800/40 border border-slate-700/50
+               className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl bg-cream-100 border border-slate-700/50
                           hover:border-brand-500/40 transition-colors">
-              <span className="text-[10px] uppercase tracking-widest text-slate-500">Telefon</span>
-              <span className="font-mono text-[12px] text-slate-100">+90 212 000 00 00</span>
+              <span className="text-[10px] uppercase tracking-widest text-ink-500">Telefon</span>
+              <span className="font-mono text-[12px] text-ink-900">+90 212 000 00 00</span>
             </a>
           </div>
         </div>
@@ -314,14 +314,14 @@ function FaqItem({ q, a }) {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between gap-3 text-left"
       >
-        <span className="font-semibold text-slate-100 text-[13px]">{q}</span>
+        <span className="font-semibold text-ink-900 text-[13px]">{q}</span>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              strokeWidth={2} stroke="currentColor"
-             className={`w-4 h-4 shrink-0 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}>
+             className={`w-4 h-4 shrink-0 text-ink-400 transition-transform ${open ? 'rotate-180' : ''}`}>
           <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
         </svg>
       </button>
-      {open && <p className="text-[12px] text-slate-300 mt-1.5 leading-relaxed">{a}</p>}
+      {open && <p className="text-[12px] text-ink-300 mt-1.5 leading-relaxed">{a}</p>}
     </div>
   )
 }

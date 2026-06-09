@@ -65,7 +65,7 @@ export default function DistrictNeighborhoodSelect({
           value={isOther ? OTHER : (isKnown ? neighborhood : '')}
           onChange={handleNeighborhoodChange}
           disabled={!district}
-          className="input disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed">
+          className="input disabled:bg-cream-50 disabled:text-ink-400 disabled:cursor-not-allowed">
           <option value="">{district ? '— Seçin —' : 'Önce ilçe seçin'}</option>
           {neighborhoods.map(n => (
             <option key={n} value={n}>{n}</option>

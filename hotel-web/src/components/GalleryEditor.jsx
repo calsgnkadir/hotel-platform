@@ -142,8 +142,8 @@ export default function GalleryEditor() {
     <div className="card p-5 space-y-4">
       <div className="flex items-start justify-between flex-wrap gap-2">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Galeri</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider">Galeri</h3>
+          <p className="text-xs text-ink-500 mt-0.5">
             {photos.length}/{MAX_PHOTOS} foto · sürükleyerek sırala · kapak yap
           </p>
         </div>
@@ -161,12 +161,12 @@ export default function GalleryEditor() {
       {photos.length === 0 ? (
         <div className="empty-state py-10 text-center">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-slate-300 mb-3 mx-auto">
+               strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-ink-300 mb-3 mx-auto">
             <path strokeLinecap="round" strokeLinejoin="round"
               d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
           </svg>
-          <p className="text-sm text-slate-500">Galeri boş</p>
-          <p className="text-xs text-slate-400 mt-1">İlk foto eklenince otomatik kapak olur</p>
+          <p className="text-sm text-ink-500">Galeri boş</p>
+          <p className="text-xs text-ink-400 mt-1">İlk foto eklenince otomatik kapak olur</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -176,7 +176,7 @@ export default function GalleryEditor() {
               onDragStart={() => onDragStart(p.id)}
               onDragOver={onDragOver}
               onDrop={() => onDrop(p.id)}
-              className="relative group aspect-square rounded-lg overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-600 cursor-move bg-slate-100 dark:bg-slate-800">
+              className="relative group aspect-square rounded-lg overflow-hidden border-2 border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-600 cursor-move bg-cream-100 dark:bg-ink-700">
               <img src={p.url} alt="" className="w-full h-full object-cover" loading="lazy" />
 
               {/* Kapak badge'i */}

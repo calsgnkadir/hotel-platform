@@ -31,7 +31,7 @@ export default function GalleryCarousel({ businessId, photos: externalPhotos, he
   }, [businessId, externalPhotos])
 
   if (loading) {
-    return <div className={`${height} rounded-lg bg-slate-100 animate-pulse`} />
+    return <div className={`${height} rounded-lg bg-cream-100 animate-pulse`} />
   }
 
   if (!photos.length) {
@@ -47,7 +47,7 @@ export default function GalleryCarousel({ businessId, photos: externalPhotos, he
   return (
     <>
       {/* Ana carousel */}
-      <div className={`relative ${height} rounded-lg overflow-hidden bg-slate-100 group`}>
+      <div className={`relative ${height} rounded-lg overflow-hidden bg-cream-100 group`}>
         <img src={current.url} alt=""
           onClick={() => setLightbox(true)}
           className="w-full h-full object-cover cursor-zoom-in" loading="lazy" />
@@ -56,14 +56,14 @@ export default function GalleryCarousel({ businessId, photos: externalPhotos, he
         {hasMultiple && (
           <>
             <button onClick={prev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/85 hover:bg-white text-slate-800 shadow flex items-center justify-center transition-opacity opacity-0 group-hover:opacity-100">
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/85 hover:bg-white text-ink-800 shadow flex items-center justify-center transition-opacity opacity-0 group-hover:opacity-100">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
               </svg>
             </button>
             <button onClick={next}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/85 hover:bg-white text-slate-800 shadow flex items-center justify-center transition-opacity opacity-0 group-hover:opacity-100">
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/85 hover:bg-white text-ink-800 shadow flex items-center justify-center transition-opacity opacity-0 group-hover:opacity-100">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />

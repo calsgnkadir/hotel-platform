@@ -44,28 +44,28 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-ink-900">
+    <div className="min-h-screen flex bg-cream-100">
       {/* Neon üst hat (ince) */}
       <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none" />
 
       {/* ── Sidebar ── */}
       <aside className={`
         fixed inset-y-0 left-0 z-40 w-56 flex flex-col transform transition-transform duration-300
-        bg-ink-900 border-r border-slate-800
+        bg-cream-100 border-r border-cream-300
         lg:relative lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Brand — logo'suz, sadece text */}
         <Link to="/" className="px-5 pt-5 pb-4 flex items-baseline gap-2">
-          <span className="text-[15px] font-black tracking-tight text-white">AjansHotel</span>
-          <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">istanbul</span>
+          <span className="font-display text-[16px] font-bold tracking-tight text-ink-900">AjansHotel</span>
+          <span className="text-[9px] uppercase tracking-[0.18em] text-ink-500">istanbul</span>
         </Link>
 
         {/* User Info — küçük + logosuz */}
-        <div className="px-3 pb-3 border-b border-slate-800">
-          <div className="rounded-xl px-3 py-2 bg-slate-900/60 border border-slate-800">
-            <div className="text-[12px] font-semibold truncate text-slate-200">{user?.fullName}</div>
-            <div className="text-[10px] truncate text-slate-500 mt-0.5">{user?.email}</div>
+        <div className="px-3 pb-3 border-b border-cream-300">
+          <div className="rounded-xl px-3 py-2 bg-white border border-cream-300">
+            <div className="text-[12px] font-semibold truncate text-ink-800">{user?.fullName}</div>
+            <div className="text-[10px] truncate text-ink-500 mt-0.5">{user?.email}</div>
           </div>
         </div>
 
@@ -80,16 +80,16 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
             >
               <span className="flex-1 truncate">{item.label}</span>
               {activeTab === item.id && (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow-pulse flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-glow-pulse flex-shrink-0" />
               )}
             </button>
           ))}
         </nav>
 
         {/* Logout */}
-        <div className="px-2.5 py-3 border-t border-slate-800">
+        <div className="px-2.5 py-3 border-t border-cream-300">
           <button onClick={handleLogout}
-            className="nav-link w-full text-left text-[12.5px] text-red-400 hover:bg-red-950/40 hover:text-red-300"
+            className="nav-link w-full text-left text-[12.5px] text-red-600 hover:bg-red-50 hover:text-red-700"
             style={{ padding: '0.5rem 0.85rem' }}>
             <span>Çıkış</span>
           </button>
@@ -106,23 +106,22 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar — sıkı + küçük */}
         <header className="px-4 lg:px-6 py-2.5 flex items-center justify-between sticky top-0.5 z-20
-                           bg-ink-900/85 backdrop-blur-lg border-b border-slate-800">
+                           bg-cream-100/85 backdrop-blur-lg border-b border-cream-300">
           <div className="flex items-center gap-2.5">
             <button onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-1.5 rounded-full hover:bg-slate-800 transition-colors">
-              <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              className="lg:hidden p-1.5 rounded-full hover:bg-cream-200 transition-colors">
+              <svg className="w-4 h-4 text-ink-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </button>
             <div>
-              <h1 className="text-[13px] font-bold tracking-tight text-white leading-tight">
+              <h1 className="font-display text-[15px] font-bold tracking-tight text-ink-900 leading-tight">
                 {navItems.find(n => n.id === activeTab)?.label || 'Panel'}
               </h1>
-              {/* "ADAY/İŞLETME PANELİ" alt yazısı kaldırıldı — daha sade header */}
             </div>
           </div>
 
-          {/* Sağ blok: önce zil, sonra ayarlar (en sağda). Rol badge kaldırıldı. */}
+          {/* Sağ blok: zil + ayarlar */}
           <div className="flex items-center gap-1.5">
             <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
             <SettingsMenu onTabChange={onTabChange} />
@@ -130,7 +129,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-3 lg:p-5 fade-in text-slate-300 text-[13px]">
+        <main className="flex-1 p-3 lg:p-5 fade-in text-ink-800 text-[13px]">
           {children}
         </main>
       </div>

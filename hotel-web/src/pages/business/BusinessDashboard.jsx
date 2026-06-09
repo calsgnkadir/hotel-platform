@@ -38,7 +38,7 @@ const SENSITIVE_DOC_TYPES_BIZ = [
 ]
 const DOC_REQ_STATUS_LABELS = {
   PENDING: { cls: 'bg-amber-50 text-amber-700',   label: 'Bekliyor' },
-  GRANTED: { cls: 'bg-emerald-50 text-emerald-700', label: 'İzin Verildi' },
+  GRANTED: { cls: 'bg-brand-50 text-brand-700', label: 'İzin Verildi' },
   DENIED:  { cls: 'bg-red-50 text-red-700',        label: 'Reddedildi' },
 }
 const BUSINESS_TYPE_LABELS = {
@@ -251,11 +251,11 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white dark:bg-slate-900 z-10">
-          <h2 className="text-lg font-bold text-slate-900">
+        <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
+          <h2 className="text-lg font-bold text-ink-900">
             {isEdit ? 'İlanı Düzenle' : 'Yeni İlan Oluştur'}
           </h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-ink-500">
             {isEdit ? 'Mevcut bilgileri güncelleyin' : 'Adayların göreceği iş ilanı'}
           </p>
         </div>
@@ -289,7 +289,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
                 <option key={v} value={v}>{l}</option>
               ))}
             </select>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-ink-400 mt-1">
               Adaylar bu kategoriye göre filtreleyebilir
             </p>
           </div>
@@ -309,7 +309,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
           </div>
 
           <div>
-            <label className="label">Gereksinimler <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+            <label className="label">Gereksinimler <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
             <textarea name="requirements" value={form.requirements} onChange={handleChange}
               className="input resize-none h-16 text-sm"
               placeholder="Deneyim, yaş, dil bilgisi vb..." />
@@ -323,7 +323,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
                 className="input" placeholder="15000" min="0" />
             </div>
             <div>
-              <label className="label">Max. Maaş ₺ <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+              <label className="label">Max. Maaş ₺ <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
               <input type="number" name="salaryMax" value={form.salaryMax} onChange={handleChange}
                 className="input" placeholder="25000" min="0" />
             </div>
@@ -337,11 +337,11 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
                 <div className="flex items-center justify-between">
                   <div>
                     <label className="label !mb-0">Vardiyalar *</label>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-ink-500 mt-0.5">
                       Adaylar bu vardiyalardan birine veya birkaçına başvurabilir
                     </p>
                   </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300">
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700">
                     {slots.length} vardiya
                   </span>
                 </div>
@@ -351,19 +351,19 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
                     const locked = (s.slotsFilled || 0) > 0  // kabul edilmiş başvuru var
                     return (
                       <div key={i}
-                        className="bg-white rounded-lg p-3 border border-slate-200 space-y-2 relative">
+                        className="bg-white rounded-lg p-3 border border-cream-300 space-y-2 relative">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-slate-500">
+                          <span className="text-xs font-semibold text-ink-500">
                             Vardiya #{i + 1}
                             {locked && (
-                              <span className="ml-2 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                              <span className="ml-2 text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
                                 {s.slotsFilled}/{s.slotsNeeded} dolu
                               </span>
                             )}
                           </span>
                           <div className="flex gap-1">
                             <button type="button" onClick={() => duplicateSlot(i)}
-                              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600"
+                              className="text-xs px-2 py-1 rounded bg-cream-100 hover:bg-cream-200 text-ink-600"
                               title="Bu vardiyayı çoğalt">
                               ⎘
                             </button>
@@ -380,19 +380,19 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                           <div className="col-span-2 sm:col-span-2">
-                            <label className="text-xs text-slate-500">Tarih</label>
+                            <label className="text-xs text-ink-500">Tarih</label>
                             <input type="date" value={s.date} min={todayStr}
                               onChange={e => updateSlot(i, { date: e.target.value })}
                               className="input text-sm !py-1.5" required />
                           </div>
                           <div>
-                            <label className="text-xs text-slate-500">Başlangıç</label>
+                            <label className="text-xs text-ink-500">Başlangıç</label>
                             <input type="time" value={s.startTime}
                               onChange={e => updateSlot(i, { startTime: e.target.value })}
                               className="input text-sm !py-1.5" required />
                           </div>
                           <div>
-                            <label className="text-xs text-slate-500">Bitiş</label>
+                            <label className="text-xs text-ink-500">Bitiş</label>
                             <input type="time" value={s.endTime}
                               onChange={e => updateSlot(i, { endTime: e.target.value })}
                               className="input text-sm !py-1.5" required />
@@ -400,7 +400,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
                         </div>
 
                         <div>
-                          <label className="text-xs text-slate-500">İhtiyaç sayısı (kaç aday)</label>
+                          <label className="text-xs text-ink-500">İhtiyaç sayısı (kaç aday)</label>
                           <input type="number" min="1" max="50" value={s.slotsNeeded}
                             onChange={e => updateSlot(i, { slotsNeeded: e.target.value })}
                             className="input text-sm !py-1.5 w-24" required />
@@ -411,7 +411,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
                 </div>
 
                 <button type="button" onClick={addSlot}
-                  className="w-full py-2 text-sm font-semibold text-brand-700 dark:text-brand-400 bg-white border-2 border-dashed border-brand-400 dark:border-brand-600 rounded-lg hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors">
+                  className="w-full py-2 text-sm font-semibold text-brand-700 dark:text-brand-700 bg-white border-2 border-dashed border-brand-400 dark:border-brand-600 rounded-lg hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors">
                   + Vardiya Ekle
                 </button>
               </div>
@@ -421,7 +421,7 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
           {/* Kontrat dönemi (opsiyonel — kalıcı pozisyon için) */}
           <div>
             <label className="label">
-              Kontrat Dönemi <span className="text-slate-400 font-normal">(opsiyonel — kalıcı/sezonluk için)</span>
+              Kontrat Dönemi <span className="text-ink-400 font-normal">(opsiyonel — kalıcı/sezonluk için)</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
               <input type="date" name="startDate" value={form.startDate}
@@ -431,16 +431,16 @@ function ListingFormModal({ listing, onClose, onSuccess }) {
                 onChange={handleChange} min={form.startDate || new Date().toISOString().split('T')[0]}
                 className="input" placeholder="Bitiş" />
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-ink-400 mt-1">
               İşin bütünüyle kapsadığı dönem (yukarıdaki vardiyalar bu dönem içinde olur)
             </p>
           </div>
 
-          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white dark:bg-slate-900 py-3 -mx-6 px-6 border-t border-slate-100">
+          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white dark:bg-ink-800 py-3 -mx-6 px-6 border-t border-cream-200">
             <button type="button" onClick={onClose} className="btn-secondary flex-1">İptal</button>
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+              style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
               {loading
                 ? (isEdit ? 'Güncelleniyor...' : 'Oluşturuluyor...')
                 : (isEdit ? 'Güncelle' : 'İlan Oluştur →')}
@@ -497,8 +497,8 @@ function BusinessLocationEditor({ district, neighborhood, businessName, address,
     <div className="card p-5 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Tam Konum</h3>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Tam Konum</h3>
+          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-0.5">
             {hasExact
               ? 'Aday\'lar ilan detayında bu tam konumu görür.'
               : 'Adresi yaz veya haritada tıklayarak işaretle. Aksi halde ilçe merkezi gösterilir.'}
@@ -506,7 +506,7 @@ function BusinessLocationEditor({ district, neighborhood, businessName, address,
         </div>
         {hasExact && (
           <button type="button" onClick={handleClear}
-            className="btn-sm bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 flex-shrink-0">
+            className="btn-sm bg-cream-100 hover:bg-cream-200 text-ink-700 dark:bg-ink-700 dark:hover:bg-slate-700 dark:text-ink-300 flex-shrink-0">
             Temizle
           </button>
         )}
@@ -538,8 +538,8 @@ function BusinessLocationEditor({ district, neighborhood, businessName, address,
       />
 
       {hasExact && (
-        <div className="flex items-center gap-2 text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        <div className="flex items-center gap-2 text-[11px] text-brand-700 dark:text-brand-700 font-mono">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
           {position[0].toFixed(5)}, {position[1].toFixed(5)}
         </div>
       )}
@@ -574,15 +574,15 @@ function WorkingHoursEditor({ value, onChange }) {
           const h = hours[d.key]
           return (
             <div key={d.key}
-              className="flex flex-wrap items-center gap-3 py-2 px-3 rounded-lg hover:bg-slate-50 transition-colors">
-              <div className="w-24 text-sm font-medium text-slate-700">{d.label}</div>
+              className="flex flex-wrap items-center gap-3 py-2 px-3 rounded-lg hover:bg-cream-50 transition-colors">
+              <div className="w-24 text-sm font-medium text-ink-700">{d.label}</div>
 
               <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none">
                 <input type="checkbox"
                   checked={!h.closed}
                   onChange={e => updateDay(d.key, { closed: !e.target.checked })}
                   className="w-4 h-4 accent-brand-700" />
-                <span className={h.closed ? 'text-slate-400' : 'text-slate-700'}>
+                <span className={h.closed ? 'text-ink-400' : 'text-ink-700'}>
                   {h.closed ? 'Kapalı' : 'Açık'}
                 </span>
               </label>
@@ -592,7 +592,7 @@ function WorkingHoursEditor({ value, onChange }) {
                   <input type="time" value={h.open}
                     onChange={e => updateDay(d.key, { open: e.target.value })}
                     className="input !py-1 text-sm w-24" />
-                  <span className="text-slate-400 text-sm">—</span>
+                  <span className="text-ink-400 text-sm">—</span>
                   <input type="time" value={h.close}
                     onChange={e => updateDay(d.key, { close: e.target.value })}
                     className="input !py-1 text-sm w-24" />
@@ -605,7 +605,7 @@ function WorkingHoursEditor({ value, onChange }) {
 
       <div className="flex justify-end mt-2">
         <button type="button" onClick={copyToAll}
-          className="text-xs text-brand-700 dark:text-brand-400 hover:underline font-medium">
+          className="text-xs text-brand-700 dark:text-brand-700 hover:underline font-medium">
           ⎘ Pazartesi saatlerini tüm günlere uygula
         </button>
       </div>
@@ -655,19 +655,19 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
 
   return (
     <div className="card p-5 space-y-5">
-      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Görseller</h3>
+      <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Görseller</h3>
 
       {/* Logo */}
       <div>
         <label className="label">Logo</label>
         <div className="flex items-center gap-4">
-          <div className="w-24 h-24 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-24 h-24 rounded-2xl bg-cream-50 dark:bg-ink-700 border-2 border-dashed border-cream-300 dark:border-ink-700 flex items-center justify-center overflow-hidden flex-shrink-0">
             {logoUrl ? (
               <img src={`${logoUrl}?v=${logoVersion}`} alt="Logo"
                    className="w-full h-full object-cover" />
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-slate-400 dark:text-slate-500">
+                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-ink-400 dark:text-ink-500">
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21" />
               </svg>
@@ -676,8 +676,8 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
           <div className="flex-1 space-y-2">
             <label className={`block px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
               ${logoUploading
-                ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-400 dark:text-brand-500 cursor-wait'
-                : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
+                ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait'
+                : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
               <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
                 onChange={handleLogoChange} disabled={logoUploading} />
               {logoUploading
@@ -690,7 +690,7 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
                 Logoyu Kaldır
               </button>
             )}
-            <p className="text-xs text-slate-400">Max 10 MB · JPG/PNG/WEBP/HEIC</p>
+            <p className="text-xs text-ink-400">Max 10 MB · JPG/PNG/WEBP/HEIC</p>
           </div>
         </div>
       </div>
@@ -744,12 +744,12 @@ function WorkersTab({ applications, onOpenMessages }) {
       <div className="card">
         <div className="empty-state py-16">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-slate-300 mb-3">
+               strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-ink-300 mb-3">
             <path strokeLinecap="round" strokeLinejoin="round"
               d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
           </svg>
-          <p className="font-medium text-slate-700">Henüz tamamlanmış çalışma yok</p>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="font-medium text-ink-700">Henüz tamamlanmış çalışma yok</p>
+          <p className="text-sm text-ink-500 mt-1">
             Kabul ettiğiniz adayların vardiya günü geçince burada toplanır
           </p>
         </div>
@@ -771,8 +771,8 @@ function WorkersTab({ applications, onOpenMessages }) {
                 d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
             </svg>
           </div>
-          <div className="text-2xl font-bold text-slate-900">{workers.length}</div>
-          <div className="text-xs text-slate-500 mt-0.5">Farklı Aday Çalıştı</div>
+          <div className="text-2xl font-bold text-ink-900">{workers.length}</div>
+          <div className="text-xs text-ink-500 mt-0.5">Farklı Aday Çalıştı</div>
         </div>
         <div className="stat-card">
           <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center mb-3">
@@ -782,8 +782,8 @@ function WorkersTab({ applications, onOpenMessages }) {
                 d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
           </div>
-          <div className="text-2xl font-bold text-slate-900">{totalHours.toFixed(0)}<span className="text-base">sa</span></div>
-          <div className="text-xs text-slate-500 mt-0.5">Toplam İş Saati</div>
+          <div className="text-2xl font-bold text-ink-900">{totalHours.toFixed(0)}<span className="text-base">sa</span></div>
+          <div className="text-xs text-ink-500 mt-0.5">Toplam İş Saati</div>
         </div>
       </div>
 
@@ -795,21 +795,21 @@ function WorkersTab({ applications, onOpenMessages }) {
               <div className="flex items-start gap-3 flex-1 min-w-0">
                 {w.candidate?.avatarUrl ? (
                   <img src={w.candidate.avatarUrl} alt={w.candidate.fullName}
-                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
+                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                       style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
                     {w.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <div className="font-semibold text-slate-800 dark:text-slate-100 truncate">{w.candidate?.fullName}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{w.candidate?.email}</div>
+                  <div className="font-semibold text-ink-800 dark:text-ink-900 truncate">{w.candidate?.fullName}</div>
+                  <div className="text-xs text-ink-500 mt-0.5">{w.candidate?.email}</div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
-                    <span className="text-slate-600">{w.totalHours.toFixed(1)} saat</span>
-                    <span className="text-slate-600">{w.jobCount} iş</span>
+                    <span className="text-ink-600">{w.totalHours.toFixed(1)} saat</span>
+                    <span className="text-ink-600">{w.jobCount} iş</span>
                     {w.lastDate && (
-                      <span className="text-slate-600">
+                      <span className="text-ink-600">
                         Son: {new Date(w.lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     )}
@@ -823,7 +823,7 @@ function WorkersTab({ applications, onOpenMessages }) {
                     onOpenMessages?.()
                   } catch (err) { toast.error(extractErrorMessage(err)) }
                 }}
-                className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium flex-shrink-0">
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium flex-shrink-0">
                 Mesaj
               </button>
             </div>
@@ -969,7 +969,7 @@ function ProfileTab() {
 
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Temel Bilgiler</h3>
+        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Temel Bilgiler</h3>
 
         <div>
           <label className="label">İşletme Adı *</label>
@@ -987,7 +987,7 @@ function ProfileTab() {
             </select>
           </div>
           <div>
-            <label className="label">Kategori <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+            <label className="label">Kategori <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
             <input type="text" name="category" value={form.category} onChange={handleChange}
               className="input" placeholder="5*, 4*, Boutique vb." />
           </div>
@@ -1002,13 +1002,13 @@ function ProfileTab() {
           } />
 
         <div>
-          <label className="label">Adres <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+          <label className="label">Adres <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
           <input type="text" name="address" value={form.address} onChange={handleChange}
             className="input" placeholder="Sokak, bina no, kat" />
         </div>
 
         <div>
-          <label className="label">Açıklama <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+          <label className="label">Açıklama <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
           <textarea name="description" value={form.description} onChange={handleChange}
             className="input resize-none h-24 text-sm"
             placeholder="İşletmenizi adaylara tanıtın..." />
@@ -1017,7 +1017,7 @@ function ProfileTab() {
 
       {/* İletişim */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">İletişim</h3>
+        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">İletişim</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -1066,7 +1066,7 @@ function ProfileTab() {
 
       {/* Çalışma saatleri */}
       <div className="card p-5 space-y-3">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Çalışma Saatleri</h3>
+        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Çalışma Saatleri</h3>
         <WorkingHoursEditor
           value={parseWorkingHours(form.workingHours)}
           onChange={(struct) =>
@@ -1079,7 +1079,7 @@ function ProfileTab() {
       <div className="flex justify-end gap-3">
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
       </div>
@@ -1125,10 +1125,10 @@ function MyListingsTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-slate-500">{listings.length} ilan</p>
+        <p className="text-sm text-ink-500">{listings.length} ilan</p>
         <button onClick={() => setFormTarget('new')}
           className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+          style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
           + Yeni İlan
         </button>
       </div>
@@ -1136,11 +1136,11 @@ function MyListingsTab() {
       {listings.length === 0 ? (
         <div className="card">
           <div className="empty-state py-14">
-            <p className="font-medium text-slate-700">Henüz ilanınız yok</p>
-            <p className="text-sm text-slate-500 mt-1">İlk ilanınızı oluşturun</p>
+            <p className="font-medium text-ink-700">Henüz ilanınız yok</p>
+            <p className="text-sm text-ink-500 mt-1">İlk ilanınızı oluşturun</p>
             <button onClick={() => setFormTarget('new')}
               className="mt-4 px-4 py-2 text-sm font-semibold text-white rounded-lg"
-              style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+              style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
               İlan Oluştur
             </button>
           </div>
@@ -1152,20 +1152,20 @@ function MyListingsTab() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">{listing.title}</h3>
+                    <h3 className="font-semibold text-ink-800 dark:text-ink-900">{listing.title}</h3>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      listing.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' :
+                      listing.status === 'ACTIVE' ? 'bg-brand-50 text-brand-700' :
                       listing.status === 'PAUSED' ? 'bg-amber-50 text-amber-700' :
-                      'bg-slate-100 text-slate-500'}`}>
+                      'bg-cream-100 text-ink-500'}`}>
                       {STATUS_LABELS[listing.status]}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-ink-500 mt-1">
                     {POSITION_LABELS[listing.position]} · {JOB_TYPE_LABELS[listing.jobType]}
                     {listing.shift && ` · ${SHIFT_SHORT[listing.shift]}`}
                   </p>
                   {(listing.salaryMin || listing.salaryMax) && (
-                    <p className="text-xs text-emerald-600 font-medium mt-0.5">
+                    <p className="text-xs text-brand-700 font-medium mt-0.5">
                       {listing.salaryMin?.toLocaleString('tr-TR')}
                       {listing.salaryMax && ` – ${listing.salaryMax.toLocaleString('tr-TR')}`} ₺
                     </p>
@@ -1180,21 +1180,21 @@ function MyListingsTab() {
                       ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}–${next.endTime?.slice(0, 5)}`
                       : null
                     return (
-                      <p className="text-xs text-brand-700 dark:text-brand-400 font-medium mt-0.5">
+                      <p className="text-xs text-brand-700 dark:text-brand-700 font-medium mt-0.5">
                         {total} vardiya
                         {nextStr && ` · en yakın: ${nextStr}`}
                         {totalSeats > 0 && ` · ${filled}/${totalSeats} dolu`}
                       </p>
                     )
                   })()}
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-ink-400 mt-0.5">
                     {new Date(listing.createdAt).toLocaleDateString('tr-TR')}
                   </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => setFormTarget(listing)}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
                       Düzenle
                     </button>
                   )}
@@ -1206,13 +1206,13 @@ function MyListingsTab() {
                   )}
                   {listing.status === 'PAUSED' && (
                     <button onClick={() => handleStatusChange(listing.id, 'ACTIVE')}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors font-medium">
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-emerald-100 transition-colors font-medium">
                       Aktifleştir
                     </button>
                   )}
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => handleStatusChange(listing.id, 'CLOSED')}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors font-medium">
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-cream-100 text-ink-600 hover:bg-cream-200 transition-colors font-medium">
                       Kapat
                     </button>
                   )}
@@ -1349,8 +1349,8 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150
                   ${filter === f
                     ? 'text-white shadow-sm'
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-                style={filter === f ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
+                    : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+                style={filter === f ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
                 {labels[f]} ({count})
               </button>
             )
@@ -1369,11 +1369,11 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
           <div className="card">
             <div className="empty-state py-12">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-slate-300 mb-3">
+                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-ink-300 mb-3">
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
               </svg>
-              <p className="text-slate-500 text-sm">Bu filtreye uyan başvuru yok</p>
+              <p className="text-ink-500 text-sm">Bu filtreye uyan başvuru yok</p>
             </div>
           </div>
         ) : pageItems.map(app => (
@@ -1383,18 +1383,18 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
               <div className="flex items-start gap-3">
                 {app.candidate?.avatarUrl ? (
                   <img src={app.candidate.avatarUrl} alt={app.candidate.fullName}
-                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-200" />
+                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                       style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
                     {app.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
                 <div>
-                  <div className="font-semibold text-slate-800 dark:text-slate-100">{app.candidate?.fullName}</div>
-                  <div className="text-xs text-slate-500">{app.candidate?.email}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">{app.listing?.title}</div>
-                  <div className="text-xs text-slate-400">
+                  <div className="font-semibold text-ink-800 dark:text-ink-900">{app.candidate?.fullName}</div>
+                  <div className="text-xs text-ink-500">{app.candidate?.email}</div>
+                  <div className="text-xs text-ink-400 mt-0.5">{app.listing?.title}</div>
+                  <div className="text-xs text-ink-400">
                     {new Date(app.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </div>
                 </div>
@@ -1405,7 +1405,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                 {/* Chat-v2: 'İncelemeye Al' yerine direkt 'Mesajlaşmaya git' */}
                 <button onClick={e => { e.stopPropagation(); onOpenMessages?.(app.conversationId) }}
                   className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
-                  style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                  style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                     <path strokeLinecap="round" strokeLinejoin="round"
@@ -1420,7 +1420,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
         {/* #84: Pagination footer */}
         {filtered.length > APPS_PAGE_SIZE && (
-          <div className="flex items-center justify-between gap-3 pt-2 px-1 text-xs text-slate-500">
+          <div className="flex items-center justify-between gap-3 pt-2 px-1 text-xs text-ink-500">
             <span>
               {filtered.length} sonuçtan {safePage * APPS_PAGE_SIZE + 1}
               {' – '}
@@ -1430,15 +1430,15 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
             <div className="flex items-center gap-2">
               <button onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={safePage === 0}
-                className="px-3 py-1.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+                className="px-3 py-1.5 rounded-md bg-white dark:bg-ink-800 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
                 ← Önceki
               </button>
-              <span className="font-semibold text-slate-700">
+              <span className="font-semibold text-ink-700">
                 {safePage + 1} / {pageCount}
               </span>
               <button onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
                 disabled={safePage >= pageCount - 1}
-                className="px-3 py-1.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+                className="px-3 py-1.5 rounded-md bg-white dark:bg-ink-800 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
                 Sonraki →
               </button>
             </div>
@@ -1450,21 +1450,21 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-b border-slate-100">
+            <div className="p-6 border-b border-cream-200">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   {selected.candidate?.avatarUrl ? (
                     <img src={selected.candidate.avatarUrl} alt={selected.candidate.fullName}
-                      className="w-14 h-14 rounded-full object-cover border border-slate-200 flex-shrink-0" />
+                      className="w-14 h-14 rounded-full object-cover border border-cream-300 flex-shrink-0" />
                   ) : (
                     <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                         style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                         style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
                       {selected.candidate?.fullName?.charAt(0) || '?'}
                     </div>
                   )}
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900">{selected.candidate?.fullName}</h2>
-                    <p className="text-sm text-slate-500">{selected.candidate?.email}</p>
+                    <h2 className="text-lg font-bold text-ink-900">{selected.candidate?.fullName}</h2>
+                    <p className="text-sm text-ink-500">{selected.candidate?.email}</p>
                   </div>
                 </div>
                 <StatusBadge status={selected.status} />
@@ -1473,16 +1473,16 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
             <div className="p-6 space-y-5">
               <div>
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">İlan</h3>
-                <div className="bg-slate-50 rounded-lg p-3 text-sm font-medium text-slate-700">
+                <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">İlan</h3>
+                <div className="bg-cream-50 rounded-lg p-3 text-sm font-medium text-ink-700">
                   {selected.listing?.title} · {selected.listing?.businessName}
                 </div>
               </div>
 
               {selected.coverLetter && (
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Ön Yazı</h3>
-                  <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 leading-relaxed">
+                  <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Ön Yazı</h3>
+                  <div className="bg-cream-50 rounded-lg p-4 text-sm text-ink-700 leading-relaxed">
                     {selected.coverLetter}
                   </div>
                 </div>
@@ -1490,10 +1490,10 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
               {selected.availabilities?.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Müsaitlik Saatleri</h3>
+                  <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Müsaitlik Saatleri</h3>
                   <div className="flex flex-wrap gap-2">
                     {selected.availabilities.map((av, i) => (
-                      <span key={i} className="px-3 py-1.5 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-xs font-medium rounded-lg border border-brand-200 dark:border-brand-800">
+                      <span key={i} className="px-3 py-1.5 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 text-xs font-medium rounded-lg border border-brand-200 dark:border-brand-800">
                         {av.dayOfWeek} · {av.startTime}–{av.endTime}
                       </span>
                     ))}
@@ -1503,7 +1503,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
               {selected.note && (
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Notunuz</h3>
+                  <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Notunuz</h3>
                   <div className="bg-amber-50 rounded-lg p-3 text-sm text-amber-700 border border-amber-200">
                     {selected.note}
                   </div>
@@ -1512,13 +1512,13 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
               {/* Görüntülenebilir Belgeler */}
               <div>
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">
                   Görüntülenebilir Belgeler
                 </h3>
                 {docsLoading ? (
-                  <p className="text-xs text-slate-400">Yükleniyor...</p>
+                  <p className="text-xs text-ink-400">Yükleniyor...</p>
                 ) : accessibleDocs.length === 0 ? (
-                  <p className="text-xs text-slate-400 mb-3">
+                  <p className="text-xs text-ink-400 mb-3">
                     Bu aday henüz belge yüklememiş veya hassas belgeler için izin yok.
                   </p>
                 ) : (
@@ -1529,13 +1529,13 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                       ) || doc.type
                       return (
                         <div key={doc.id}
-                          className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 gap-2">
+                          className="flex items-center justify-between bg-cream-50 rounded-lg px-3 py-2 gap-2">
                           <div className="min-w-0 flex-1">
-                            <div className="text-sm text-slate-700 font-medium truncate">{typeLabel}</div>
-                            <div className="text-xs text-slate-400 truncate">{doc.originalFileName}</div>
+                            <div className="text-sm text-ink-700 font-medium truncate">{typeLabel}</div>
+                            <div className="text-xs text-ink-400 truncate">{doc.originalFileName}</div>
                           </div>
                           <button onClick={() => handleViewDoc(doc)}
-                            className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-900/60 transition-colors flex-shrink-0">
+                            className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60 transition-colors flex-shrink-0">
                             Görüntüle
                           </button>
                         </div>
@@ -1547,16 +1547,16 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
               {/* Belge Talepleri */}
               <div>
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Belge Talepleri</h3>
+                <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Belge Talepleri</h3>
 
                 {selected.documentRequests?.length > 0 ? (
                   <div className="space-y-1.5 mb-3">
                     {selected.documentRequests.map(dr => {
                       const meta = SENSITIVE_DOC_TYPES_BIZ.find(t => t.type === dr.documentType)
-                      const statusMeta = DOC_REQ_STATUS_LABELS[dr.status] || { cls: 'bg-slate-100 text-slate-600', label: dr.status }
+                      const statusMeta = DOC_REQ_STATUS_LABELS[dr.status] || { cls: 'bg-cream-100 text-ink-600', label: dr.status }
                       return (
-                        <div key={dr.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
-                          <span className="text-sm text-slate-700">{meta?.label || dr.documentType}</span>
+                        <div key={dr.id} className="flex items-center justify-between bg-cream-50 rounded-lg px-3 py-2">
+                          <span className="text-sm text-ink-700">{meta?.label || dr.documentType}</span>
                           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusMeta.cls}`}>
                             {statusMeta.label}
                           </span>
@@ -1565,7 +1565,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400 mb-3">Henüz belge talep edilmemiş</p>
+                  <p className="text-xs text-ink-400 mb-3">Henüz belge talep edilmemiş</p>
                 )}
 
                 {/* Yeni talep — sadece sonuçlanmamış başvurularda */}
@@ -1573,7 +1573,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   const requestedTypes = new Set(selected.documentRequests?.map(dr => dr.documentType) || [])
                   const availableTypes = SENSITIVE_DOC_TYPES_BIZ.filter(t => !requestedTypes.has(t.type))
                   if (availableTypes.length === 0) {
-                    return <p className="text-xs text-slate-400">Tüm hassas belge tipleri zaten talep edilmiş.</p>
+                    return <p className="text-xs text-ink-400">Tüm hassas belge tipleri zaten talep edilmiş.</p>
                   }
                   return (
                     <div className="flex gap-2">
@@ -1584,7 +1584,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                       </select>
                       <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
                         className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all"
-                        style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                        style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
                         Talep Et
                       </button>
                     </div>
@@ -1594,16 +1594,16 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
               {/* Chat-v2: Kabul/Red butonları kaldırıldı.
                   Karar mesajlaşmadan veriliyor — sade bilgi + büyük "Mesajlaşmaya Git" */}
-              <div className="border-t border-slate-100 pt-4 space-y-3">
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">İletişim</h3>
-                <p className="text-xs text-slate-500">
+              <div className="border-t border-cream-200 pt-4 space-y-3">
+                <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">İletişim</h3>
+                <p className="text-xs text-ink-500">
                   Bu aday için otomatik mesajlaşma açıldı. Belgeleri inceleyip mülakat
                   ayarlayabilir, karar mesajlaşmadan verilebilir.
                 </p>
                 <button
                   onClick={() => onOpenMessages?.(selected.conversationId)}
                   className="w-full py-2.5 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                  style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
+                  style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                     <path strokeLinecap="round" strokeLinejoin="round"
@@ -1615,9 +1615,9 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
               {/* No-show işaretleme — sadece ACCEPTED + henüz işaretlenmemiş */}
               {selected.status === 'ACCEPTED' && !selected.noShow && (
-                <div className="border-t border-slate-100 pt-4 space-y-2">
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">İşe Gelme Durumu</h3>
-                  <p className="text-xs text-slate-500">
+                <div className="border-t border-cream-200 pt-4 space-y-2">
+                  <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">İşe Gelme Durumu</h3>
+                  <p className="text-xs text-ink-500">
                     Aday kabul edilen iş için işe gelmediyse aşağıdaki butonla işaretleyin.
                     Aday 3 kez işe gelmediğinde otomatik olarak 30 gün banlanır.
                   </p>
@@ -1631,7 +1631,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
               {/* No-show işaretlenmişse uyarı banner */}
               {selected.noShow && (
-                <div className="border-t border-slate-100 pt-4">
+                <div className="border-t border-cream-200 pt-4">
                   <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
                     <div>
                       <div className="font-semibold">No-show olarak işaretlendi</div>
@@ -1662,7 +1662,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                     }
                   }}
                   className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
-                  style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                  style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
                   Mesaj Gönder
                 </button>
               )}
@@ -1697,12 +1697,12 @@ function OverviewTab({ applications, onTabChange }) {
           { label: 'Toplam',      value: applications.length, dot: 'bg-blue-400' },
           { label: 'Bekleyen',    value: pending,             dot: 'bg-amber-400' },
           { label: 'İnceleniyor', value: reviewing,           dot: 'bg-brand-400' },
-          { label: 'Kabul',       value: accepted,            dot: 'bg-emerald-400' },
+          { label: 'Kabul',       value: accepted,            dot: 'bg-brand-500' },
         ].map(s => (
           <div key={s.label} className="stat-card !p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold truncate">{s.label}</span>
+              <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold truncate">{s.label}</span>
             </div>
             <div className="text-xl font-black text-white leading-none">{s.value}</div>
           </div>
@@ -1711,16 +1711,16 @@ function OverviewTab({ applications, onTabChange }) {
 
       <div className="card">
         <div className="card-header">
-          <h2 className="font-semibold text-slate-800 dark:text-slate-100">Son Başvurular</h2>
+          <h2 className="font-semibold text-ink-800 dark:text-ink-900">Son Başvurular</h2>
           <button onClick={() => onTabChange('applications')}
-            className="text-xs font-medium text-brand-700 dark:text-brand-400">Tümünü Gör →</button>
+            className="text-xs font-medium text-brand-700 dark:text-brand-700">Tümünü Gör →</button>
         </div>
         {applications.length === 0 ? (
           <div className="empty-state">
-            <p className="text-slate-500 text-sm">Henüz başvuru yok</p>
+            <p className="text-ink-500 text-sm">Henüz başvuru yok</p>
           </div>
         ) : (
-          <div className="table-container rounded-none border-0 border-t border-slate-100">
+          <div className="table-container rounded-none border-0 border-t border-cream-200">
             <table className="table">
               <thead>
                 <tr>
@@ -1734,12 +1734,12 @@ function OverviewTab({ applications, onTabChange }) {
                 {applications.slice(0, 5).map(app => (
                   <tr key={app.id}>
                     <td>
-                      <div className="font-medium text-slate-800 dark:text-slate-100">{app.candidate?.fullName}</div>
-                      <div className="text-xs text-slate-400">{app.candidate?.email}</div>
+                      <div className="font-medium text-ink-800 dark:text-ink-900">{app.candidate?.fullName}</div>
+                      <div className="text-xs text-ink-400">{app.candidate?.email}</div>
                     </td>
-                    <td className="hidden md:table-cell text-slate-600 text-sm">{app.listing?.title}</td>
+                    <td className="hidden md:table-cell text-ink-600 text-sm">{app.listing?.title}</td>
                     <td><StatusBadge status={app.status} /></td>
-                    <td className="hidden sm:table-cell text-slate-500 text-xs">
+                    <td className="hidden sm:table-cell text-ink-500 text-xs">
                       {new Date(app.createdAt).toLocaleDateString('tr-TR')}
                     </td>
                   </tr>

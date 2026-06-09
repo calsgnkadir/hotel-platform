@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children, roles = [] }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-500">Yükleniyor...</div>
+        <div className="text-ink-500">Yükleniyor...</div>
       </div>
     )
   }

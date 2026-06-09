@@ -51,10 +51,10 @@ export default function ReportModal({ targetType, targetId, targetLabel, onClose
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-        <div className="p-6 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-900">Bildir</h2>
+        <div className="p-6 border-b border-cream-200">
+          <h2 className="text-lg font-bold text-ink-900">Bildir</h2>
           {targetLabel && (
-            <p className="text-sm text-slate-500 mt-0.5 truncate">{targetLabel}</p>
+            <p className="text-sm text-ink-500 mt-0.5 truncate">{targetLabel}</p>
           )}
         </div>
 
@@ -65,12 +65,12 @@ export default function ReportModal({ targetType, targetId, targetLabel, onClose
               {REASONS.map(r => (
                 <label key={r.value}
                   className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-all
-                    ${reason === r.value ? 'border-red-400 bg-red-50' : 'border-slate-200 hover:border-red-300'}`}>
+                    ${reason === r.value ? 'border-red-400 bg-red-50' : 'border-cream-300 hover:border-red-300'}`}>
                   <input type="radio" name="reason" value={r.value}
                     checked={reason === r.value}
                     onChange={() => setReason(r.value)}
                     className="w-4 h-4 accent-red-600" />
-                  <span className="text-sm text-slate-700">{r.label}</span>
+                  <span className="text-sm text-ink-700">{r.label}</span>
                 </label>
               ))}
             </div>
@@ -81,7 +81,7 @@ export default function ReportModal({ targetType, targetId, targetLabel, onClose
               Açıklama
               {reason === 'OTHER'
                 ? <span className="text-red-500"> *</span>
-                : <span className="text-slate-400 font-normal"> (opsiyonel)</span>}
+                : <span className="text-ink-400 font-normal"> (opsiyonel)</span>}
             </label>
             <textarea value={description} onChange={e => setDescription(e.target.value)}
               className="input resize-none h-24 text-sm"

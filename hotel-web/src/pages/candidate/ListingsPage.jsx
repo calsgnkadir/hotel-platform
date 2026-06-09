@@ -200,7 +200,7 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                           {dateLabel} · {timeLabel}
                           {past && (
                             <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded
-                                             bg-slate-200 text-slate-600">
+                                             bg-cream-200 text-ink-600">
                               Geçti
                             </span>
                           )}
@@ -246,7 +246,7 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                 onChange={onFilesChange}
                 className="hidden"
               />
-              <div className="flex items-center justify-center gap-2 text-sm text-slate-600 dark:text-ink-300">
+              <div className="flex items-center justify-center gap-2 text-sm text-ink-600 dark:text-ink-300">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                      strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
                   <path strokeLinecap="round" strokeLinejoin="round"
@@ -571,7 +571,7 @@ function ListingCard({ listing, onApply, onDetail }) {
         <div className="flex gap-2 mt-4">
           <button
             onClick={(e) => { e.stopPropagation(); onDetail(listing) }}
-            className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg border border-cream-300 dark:border-ink-700 text-slate-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500 hover:text-brand-700 dark:hover:text-brand-700 transition-all">
+            className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg border border-cream-300 dark:border-ink-700 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500 hover:text-brand-700 dark:hover:text-brand-700 transition-all">
             Detay
           </button>
           <button
@@ -695,7 +695,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           className="input pl-10 text-sm" />
         {keyword && (
           <button onClick={() => setKeyword('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-slate-600 text-sm">
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600 text-sm">
             ✕
           </button>
         )}
@@ -749,7 +749,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                     ${active
                       ? 'text-white shadow-sm'
-                      : 'bg-white text-slate-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+                      : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
                   style={active ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
                   {p.label}
                 </button>
@@ -784,7 +784,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
                   className={`p-2.5 rounded-lg border text-xs font-medium transition-all text-center
                     ${active
                       ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 shadow-sm'
-                      : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-slate-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                      : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
                   <div>{s.label}</div>
                   <div className="text-[10px] text-ink-400 mt-0.5 font-normal">{s.time}</div>
                 </button>

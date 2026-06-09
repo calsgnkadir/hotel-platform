@@ -18,9 +18,9 @@ export default function BackButton({ to, label = 'Geri' }) {
   return (
     <button onClick={handleClick}
       className="inline-flex items-center gap-1.5 text-[12px] font-semibold
-                 text-slate-400 hover:text-white
+                 text-ink-400 hover:text-white
                  px-3 py-1.5 rounded-full
-                 hover:bg-slate-800/80 transition-colors
+                 hover:bg-cream-200 transition-colors
                  active:scale-95">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
            strokeWidth={2.2} stroke="currentColor" className="w-3.5 h-3.5">

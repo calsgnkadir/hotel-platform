@@ -30,8 +30,8 @@ export default function PositionBar({ data, title = 'Pozisyon Dağılımı', hei
   if (chartData.length === 0) {
     return (
       <div className="card p-5 h-full">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">{title}</h3>
-        <div className="flex items-center justify-center text-sm text-slate-400" style={{ height }}>
+        <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider mb-2">{title}</h3>
+        <div className="flex items-center justify-center text-sm text-ink-400" style={{ height }}>
           Henüz veri yok
         </div>
       </div>
@@ -40,7 +40,7 @@ export default function PositionBar({ data, title = 'Pozisyon Dağılımı', hei
 
   return (
     <div className="card p-5">
-      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">{title}</h3>
+      <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider mb-3">{title}</h3>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={chartData} layout="vertical"
           margin={{ top: 5, right: 16, left: 0, bottom: 0 }}>

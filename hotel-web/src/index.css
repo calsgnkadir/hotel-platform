@@ -296,6 +296,23 @@ body {
 }
 
 /* ────────────────────────────────────────────────────────────────
+   NAV LINK (sidebar items)
+   ──────────────────────────────────────────────────────────────── */
+.nav-link {
+  @apply rounded-lg flex items-center gap-2 transition-all duration-150
+         text-ink-600 hover:bg-cream-200 hover:text-ink-900;
+}
+.nav-link.active {
+  @apply bg-white text-ink-900 font-semibold shadow-sm border border-cream-300;
+}
+.dark .nav-link {
+  @apply text-cream-300 hover:bg-ink-700 hover:text-cream-100;
+}
+.dark .nav-link.active {
+  @apply bg-ink-700 text-cream-100 border-ink-700;
+}
+
+/* ────────────────────────────────────────────────────────────────
    ANIMATIONS (legacy support)
    ──────────────────────────────────────────────────────────────── */
 .fade-in {

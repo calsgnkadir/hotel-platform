@@ -136,7 +136,7 @@ export default function RegisterPage() {
                   <div className="font-bold text-sm text-white truncate">{opt.title}</div>
                   <div className="text-[11px] text-ink-400 mt-0.5 truncate">{opt.desc}</div>
                 </div>
-                <span className="text-slate-600 group-hover:text-brand-700 group-hover:translate-x-1 transition-all">→</span>
+                <span className="text-ink-600 group-hover:text-brand-700 group-hover:translate-x-1 transition-all">→</span>
               </button>
             ))}
 
@@ -245,7 +245,7 @@ export default function RegisterPage() {
                         <span className="text-lg">
                           {value === 'HOTEL' ? '' : value === 'RESTAURANT' ? '' : ''}
                         </span>
-                        <span className={`text-xs font-semibold ${watch('businessType') === value ? 'text-brand-700' : 'text-slate-600 dark:text-ink-700'}`}>
+                        <span className={`text-xs font-semibold ${watch('businessType') === value ? 'text-brand-700' : 'text-ink-600 dark:text-ink-700'}`}>
                           {label}
                         </span>
                       </label>

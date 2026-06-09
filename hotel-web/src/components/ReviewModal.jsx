@@ -34,19 +34,19 @@ export default function ReviewModal({ applicationId, title, onClose, onSuccess }
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-        <div className="p-6 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-900">Puanla</h2>
-          {title && <p className="text-sm text-slate-500 mt-0.5 truncate">{title}</p>}
+        <div className="p-6 border-b border-cream-200">
+          <h2 className="text-lg font-bold text-ink-900">Puanla</h2>
+          {title && <p className="text-sm text-ink-500 mt-0.5 truncate">{title}</p>}
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="text-center py-2">
             <StarRating value={rating} onChange={setRating} size="lg" />
-            <p className="text-sm text-slate-500 mt-2 h-5">{labels[rating] || 'Yıldıza tıkla'}</p>
+            <p className="text-sm text-ink-500 mt-2 h-5">{labels[rating] || 'Yıldıza tıkla'}</p>
           </div>
 
           <div>
-            <label className="label">Yorum <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+            <label className="label">Yorum <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
             <textarea value={comment} onChange={e => setComment(e.target.value)}
               className="input resize-none h-24 text-sm"
               placeholder="Deneyimini birkaç cümleyle anlat..." />
@@ -56,7 +56,7 @@ export default function ReviewModal({ applicationId, title, onClose, onSuccess }
             <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm">İptal</button>
             <button type="submit" disabled={loading || rating < 1}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
+              style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
               {loading ? 'Gönderiliyor...' : 'Yorumu Gönder'}
             </button>
           </div>

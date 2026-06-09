@@ -40,8 +40,8 @@ export default function ChangePasswordCard() {
   return (
     <div className="card p-5 space-y-4">
       <div>
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Şifre Değiştir</h3>
-        <p className="text-xs text-slate-500 mt-1">
+        <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider">Şifre Değiştir</h3>
+        <p className="text-xs text-ink-500 mt-1">
           Güvenliğiniz için zaman zaman şifrenizi yenileyin
         </p>
       </div>
@@ -79,11 +79,11 @@ export default function ChangePasswordCard() {
             <p className="text-xs text-red-600 mt-1">Şifreler eşleşmiyor</p>
           )}
           {confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 && (
-            <p className="text-xs text-emerald-600 mt-1">Şifreler eşleşiyor</p>
+            <p className="text-xs text-brand-700 mt-1">Şifreler eşleşiyor</p>
           )}
         </div>
 
-        <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-xs text-ink-600 cursor-pointer select-none">
           <input type="checkbox" checked={showPasswords}
             onChange={e => setShowPasswords(e.target.checked)}
             className="w-4 h-4 accent-brand-700" />
@@ -93,7 +93,7 @@ export default function ChangePasswordCard() {
         <div className="pt-2">
           <button type="submit" disabled={loading}
             className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
             {loading ? 'Değiştiriliyor...' : 'Şifreyi Güncelle'}
           </button>
         </div>

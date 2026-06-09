@@ -39,8 +39,8 @@ export default function StatusDonut({ data, title = 'Başvuru Durumu', height = 
   if (total === 0) {
     return (
       <div className="card p-5 h-full">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">{title}</h3>
-        <div className="flex items-center justify-center text-sm text-slate-400" style={{ height }}>
+        <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider mb-2">{title}</h3>
+        <div className="flex items-center justify-center text-sm text-ink-400" style={{ height }}>
           Henüz veri yok
         </div>
       </div>
@@ -49,7 +49,7 @@ export default function StatusDonut({ data, title = 'Başvuru Durumu', height = 
 
   return (
     <div className="card p-5">
-      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">{title}</h3>
+      <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider mb-3">{title}</h3>
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
           <Pie data={chartData} dataKey="value" nameKey="name"
@@ -64,8 +64,8 @@ export default function StatusDonut({ data, title = 'Başvuru Durumu', height = 
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
         </PieChart>
       </ResponsiveContainer>
-      <div className="text-center text-xs text-slate-500 mt-1">
-        Toplam <span className="font-bold text-slate-700">{total}</span> başvuru
+      <div className="text-center text-xs text-ink-500 mt-1">
+        Toplam <span className="font-bold text-ink-700">{total}</span> başvuru
       </div>
     </div>
   )

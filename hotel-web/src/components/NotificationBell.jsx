@@ -3,18 +3,18 @@ import * as hotelApi from '../api/hotel'
 
 // Her bildirim tipi için sol kenarda küçük renkli "dot" — emoji yerine sade gösterim
 const TYPE_COLOR = {
-  APPLICATION_ACCEPTED:  'bg-emerald-500',
+  APPLICATION_ACCEPTED:  'bg-brand-500',
   APPLICATION_REJECTED:  'bg-red-500',
   DOCUMENT_REQUEST:      'bg-blue-500',
   NO_SHOW_MARKED:        'bg-orange-500',
   AUTO_BANNED:           'bg-red-600',
   NEW_APPLICATION:       'bg-brand-600',
   APPLICATION_WITHDRAWN: 'bg-slate-400',
-  DOCUMENT_GRANTED:      'bg-emerald-500',
+  DOCUMENT_GRANTED:      'bg-brand-500',
   DOCUMENT_DENIED:       'bg-red-500',
   MATCHING_LISTING:      'bg-brand-600',
   NEW_MESSAGE:           'bg-blue-500',
-  GENERIC:               'bg-slate-500',
+  GENERIC:               'bg-cream-500',
 }
 
 function timeAgo(dateStr) {
@@ -124,8 +124,8 @@ export default function NotificationBell({ onNavigate }) {
     <div className="relative" ref={ref}>
       <button onClick={toggleOpen}
         className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all
-                   bg-slate-100 hover:bg-slate-200 text-slate-700
-                   dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-200
+                   bg-cream-100 hover:bg-cream-200 text-ink-700
+                   dark:bg-ink-700/80 dark:hover:bg-slate-700 dark:text-ink-800
                    hover:scale-105 active:scale-95"
         title="Bildirimler">
         {/* Inbox / kutucuk + dalga — özgün notification ikonu */}
@@ -143,13 +143,13 @@ export default function NotificationBell({ onNavigate }) {
 
       {open && (
         <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl shadow-xl z-50 overflow-hidden
-                        bg-white border border-slate-200
-                        dark:bg-slate-900 dark:border-slate-700">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-semibold text-sm text-slate-800 dark:text-slate-100">Bildirimler</span>
+                        bg-white border border-cream-300
+                        dark:bg-ink-800 dark:border-ink-700">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-cream-200 dark:border-cream-300">
+            <span className="font-semibold text-sm text-ink-800 dark:text-ink-900">Bildirimler</span>
             {unread > 0 && (
               <button onClick={handleMarkAll}
-                className="text-xs font-medium text-brand-700 dark:text-brand-400 hover:underline">
+                className="text-xs font-medium text-brand-700 dark:text-brand-700 hover:underline">
                 Tümünü okundu işaretle
               </button>
             )}
@@ -159,24 +159,24 @@ export default function NotificationBell({ onNavigate }) {
             {loading ? (
               <div className="py-10 flex justify-center"><div className="spinner" /></div>
             ) : items.length === 0 ? (
-              <div className="py-10 text-center text-slate-400 dark:text-slate-500 text-sm">
+              <div className="py-10 text-center text-ink-400 dark:text-ink-500 text-sm">
                 Henüz bildirim yok
               </div>
             ) : (
               items.map(n => (
                 <button key={n.id} onClick={() => handleItemClick(n)}
                   className={`w-full text-left px-4 py-3 border-b transition-colors flex gap-3 items-start
-                              border-slate-50 hover:bg-slate-50
-                              dark:border-slate-800 dark:hover:bg-slate-800
+                              border-slate-50 hover:bg-cream-50
+                              dark:border-cream-300 dark:hover:bg-slate-800
                               ${!n.isRead ? 'bg-brand-50/40 dark:bg-brand-900/20' : ''}`}>
                   {/* Sol: tip renkli küçük dot */}
                   <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${TYPE_COLOR[n.type] || 'bg-slate-400'}`} />
                   <div className="min-w-0 flex-1">
-                    <div className={`text-sm ${!n.isRead ? 'font-semibold text-slate-800 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'}`}>
+                    <div className={`text-sm ${!n.isRead ? 'font-semibold text-ink-800 dark:text-ink-900' : 'text-ink-600 dark:text-ink-300'}`}>
                       {n.title}
                     </div>
-                    {n.message && <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</div>}
-                    <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{timeAgo(n.createdAt)}</div>
+                    {n.message && <div className="text-xs text-ink-500 dark:text-ink-400 mt-0.5 line-clamp-2">{n.message}</div>}
+                    <div className="text-[11px] text-ink-400 dark:text-ink-500 mt-1">{timeAgo(n.createdAt)}</div>
                   </div>
                   {!n.isRead && <span className="w-2 h-2 rounded-full bg-brand-600 dark:bg-brand-400 flex-shrink-0 mt-1.5" />}
                 </button>

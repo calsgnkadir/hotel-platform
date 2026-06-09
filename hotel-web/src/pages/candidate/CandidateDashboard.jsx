@@ -131,8 +131,8 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
     return (
       <div className="card">
         <div className="empty-state">
-          <p className="font-medium text-slate-700">Henüz başvurunuz yok</p>
-          <p className="text-sm text-slate-500 mt-1">İlanlar bölümünden bir ilana başvurun</p>
+          <p className="font-medium text-ink-700">Henüz başvurunuz yok</p>
+          <p className="text-sm text-ink-500 mt-1">İlanlar bölümünden bir ilana başvurun</p>
         </div>
       </div>
     )
@@ -154,8 +154,8 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                 ${statusFilter === f.value
                   ? 'text-white shadow-sm'
-                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
+                  : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+              style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #0f766e, #0d9488)' } : {}}>
               {f.label} <span className="opacity-70">({count})</span>
             </button>
           )
@@ -165,25 +165,25 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
       {filtered.length === 0 ? (
         <div className="card">
           <div className="empty-state py-10">
-            <p className="text-sm text-slate-500">Bu filtrede başvuru yok</p>
+            <p className="text-sm text-ink-500">Bu filtrede başvuru yok</p>
           </div>
         </div>
       ) : filtered.map(app => (
         <div key={app.id} className="card">
           <div className="p-4 flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                      strokeWidth={1.5} stroke="currentColor"
-                     className="w-6 h-6 text-slate-400 dark:text-slate-500">
+                     className="w-6 h-6 text-ink-400 dark:text-ink-500">
                   <path strokeLinecap="round" strokeLinejoin="round"
                     d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                 </svg>
               </div>
               <div>
-                <div className="font-semibold text-slate-800 dark:text-slate-100">{app.listing?.title}</div>
-                <div className="text-xs text-slate-500 mt-0.5">{app.listing?.businessName}</div>
-                <div className="text-xs text-slate-400 mt-1">
+                <div className="font-semibold text-ink-800 dark:text-ink-900">{app.listing?.title}</div>
+                <div className="text-xs text-ink-500 mt-0.5">{app.listing?.businessName}</div>
+                <div className="text-xs text-ink-400 mt-1">
                   {new Date(app.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </div>
               </div>
@@ -203,7 +203,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
               {(app.status === 'PENDING' || app.status === 'REVIEWING' || app.status === 'ACCEPTED') && (
                 <button onClick={() => onOpenMessages?.(app.conversationId)}
                   className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
-                  style={{ background: 'linear-gradient(135deg, #047857, #10b981)' }}>
+                  style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                     <path strokeLinecap="round" strokeLinejoin="round"
@@ -223,7 +223,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                     Puanla
                   </button>
                 ) : (
-                  <span className="text-[10px] text-slate-400 italic"
+                  <span className="text-[10px] text-ink-400 italic"
                     title="Vardiya günü geçince puanlayabilirsiniz">
                     Çalışma sonrası puanlanır
                   </span>
@@ -242,7 +242,7 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
           {app.documentRequests?.length > 0 && (
             <div className="px-4 pb-4">
-              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Belge Talepleri</div>
+              <div className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Belge Talepleri</div>
               <div className="space-y-2">
                 {app.documentRequests.map(dr => {
                   const label = DOC_TYPE_LABELS[dr.documentType] || dr.documentType
@@ -250,12 +250,12 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                   const hasUploaded = uploadedTypes.has(dr.documentType)
                   return (
                     <div key={dr.id}
-                      className={`rounded-lg px-3 py-2.5 ${isPending ? 'bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800' : 'bg-slate-50'}`}>
+                      className={`rounded-lg px-3 py-2.5 ${isPending ? 'bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800' : 'bg-cream-50'}`}>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span className="text-sm text-slate-700 font-medium">{label}</span>
+                        <span className="text-sm text-ink-700 font-medium">{label}</span>
                         {!isPending && (
                           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                            dr.status === 'GRANTED' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+                            dr.status === 'GRANTED' ? 'bg-brand-50 text-brand-700' : 'bg-red-50 text-red-700'
                           }`}>
                             {dr.status === 'GRANTED' ? 'İzin Verdin' : 'Reddettin'}
                           </span>
@@ -272,12 +272,12 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
                             <button onClick={() => handleRespond(dr.id, true)}
                               disabled={respondingId === dr.id || !hasUploaded}
                               title={!hasUploaded ? 'Önce bu belgeyi yükle' : ''}
-                              className="flex-1 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                              className="flex-1 py-1.5 rounded-md bg-brand-700 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                               İzin Ver
                             </button>
                             <button onClick={() => handleRespond(dr.id, false)}
                               disabled={respondingId === dr.id}
-                              className="flex-1 py-1.5 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold transition-colors disabled:opacity-50">
+                              className="flex-1 py-1.5 rounded-md bg-cream-200 hover:bg-cream-300 text-ink-700 text-xs font-semibold transition-colors disabled:opacity-50">
                               Reddet
                             </button>
                           </div>
@@ -343,12 +343,12 @@ function HistoryTab({ applications, onOpenMessages }) {
       <div className="card">
         <div className="empty-state py-16">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-slate-300 mb-3">
+               strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-ink-300 mb-3">
             <path strokeLinecap="round" strokeLinejoin="round"
               d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
           </svg>
-          <p className="font-medium text-slate-700">Henüz tamamlanmış işin yok</p>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="font-medium text-ink-700">Henüz tamamlanmış işin yok</p>
+          <p className="text-sm text-ink-500 mt-1">
             Kabul edilmiş bir başvurun olup vardiya günü geçtiğinde burada görünür
           </p>
         </div>
@@ -363,23 +363,23 @@ function HistoryTab({ applications, onOpenMessages }) {
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
-            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Toplam Çalışma</span>
+            <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">Toplam Çalışma</span>
           </div>
-          <div className="text-xl font-black text-white leading-none">{totalHours.toFixed(0)}<span className="text-sm font-bold text-slate-400">sa</span></div>
+          <div className="text-xl font-black text-white leading-none">{totalHours.toFixed(0)}<span className="text-sm font-bold text-ink-400">sa</span></div>
         </div>
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Farklı İşletme</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
+            <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">Farklı İşletme</span>
           </div>
           <div className="text-xl font-black text-white leading-none">{uniqueBusinesses}</div>
         </div>
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Verilen Puan</span>
+            <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">Verilen Puan</span>
           </div>
-          <div className="text-xl font-black text-white leading-none">{reviewedCount}<span className="text-sm font-bold text-slate-400">/{completed.length}</span></div>
+          <div className="text-xl font-black text-white leading-none">{reviewedCount}<span className="text-sm font-bold text-ink-400">/{completed.length}</span></div>
         </div>
       </div>
 
@@ -403,27 +403,27 @@ function HistoryTab({ applications, onOpenMessages }) {
             <div key={app.id} className="card">
               <div className="p-4 flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                          strokeWidth={1.5} stroke="currentColor"
-                         className="w-6 h-6 text-slate-400 dark:text-slate-500">
+                         className="w-6 h-6 text-ink-400 dark:text-ink-500">
                       <path strokeLinecap="round" strokeLinejoin="round"
                         d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                     </svg>
                   </div>
                   <div className="min-w-0">
-                    <div className="font-semibold text-slate-800 dark:text-slate-100 truncate">{app.listing?.title}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{app.listing?.businessName}</div>
+                    <div className="font-semibold text-ink-800 dark:text-ink-900 truncate">{app.listing?.title}</div>
+                    <div className="text-xs text-ink-500 mt-0.5">{app.listing?.businessName}</div>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
-                      <span className="text-slate-600">{dateLabel}</span>
-                      <span className="text-slate-600">{hours.toFixed(1)} saat</span>
-                      <span className="text-slate-600">{POSITION_LABELS[app.listing?.position] || app.listing?.position}</span>
+                      <span className="text-ink-600">{dateLabel}</span>
+                      <span className="text-ink-600">{hours.toFixed(1)} saat</span>
+                      <span className="text-ink-600">{POSITION_LABELS[app.listing?.position] || app.listing?.position}</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
                   {app.candidateReviewedBusiness ? (
-                    <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">
+                    <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-brand-50 text-brand-700 inline-flex items-center gap-1">
                       Puanladın
                     </span>
                   ) : (
@@ -446,7 +446,7 @@ function HistoryTab({ applications, onOpenMessages }) {
                           onOpenMessages?.()
                         } catch (err) { toast.error(extractErrorMessage(err)) }
                       }}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
                       Mesaj
                     </button>
                   )}
@@ -488,12 +488,12 @@ function OverviewTab({ user, applications, onTabChange }) {
         {[
           { label: 'Başvuru',  value: applications.length, dot: 'bg-blue-400' },
           { label: 'Bekleyen', value: pending,             dot: 'bg-amber-400' },
-          { label: 'Kabul',    value: accepted,            dot: 'bg-emerald-400' },
+          { label: 'Kabul',    value: accepted,            dot: 'bg-brand-500' },
         ].map(s => (
           <div key={s.label} className="stat-card !p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{s.label}</span>
+              <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">{s.label}</span>
             </div>
             <div className="text-xl font-black text-white leading-none">{s.value}</div>
           </div>
@@ -515,13 +515,13 @@ function OverviewTab({ user, applications, onTabChange }) {
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg border border-slate-700 group-hover:border-brand-500/60 flex items-center justify-center flex-shrink-0 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-400 transition-colors">
+                     strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5 text-ink-400 group-hover:text-brand-700 transition-colors">
                   <path strokeLinecap="round" strokeLinejoin="round" d={action.svg} />
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-white text-[12px] truncate">{action.label}</div>
-                <div className="text-[10px] text-slate-500 truncate mt-0.5">{action.desc}</div>
+                <div className="text-[10px] text-ink-500 truncate mt-0.5">{action.desc}</div>
               </div>
             </div>
           </button>
@@ -532,16 +532,16 @@ function OverviewTab({ user, applications, onTabChange }) {
       {applications.length > 0 && (
         <div className="card">
           <div className="card-header">
-            <h2 className="font-semibold text-slate-800 dark:text-slate-100">Son Başvurular</h2>
+            <h2 className="font-semibold text-ink-800 dark:text-ink-900">Son Başvurular</h2>
             <button onClick={() => onTabChange('applications')}
-              className="text-xs font-medium text-brand-700 dark:text-brand-400">Tümü →</button>
+              className="text-xs font-medium text-brand-700 dark:text-brand-700">Tümü →</button>
           </div>
           <div className="divide-y divide-slate-50">
             {applications.slice(0, 3).map(app => (
               <div key={app.id} className="px-5 py-3.5 flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-medium text-slate-700">{app.listing?.title}</div>
-                  <div className="text-xs text-slate-400">{app.listing?.businessName}</div>
+                  <div className="text-sm font-medium text-ink-700">{app.listing?.title}</div>
+                  <div className="text-xs text-ink-400">{app.listing?.businessName}</div>
                 </div>
                 <StatusBadge status={app.status} />
               </div>
@@ -688,14 +688,14 @@ function ProfileTab() {
     <div className="space-y-5 max-w-5xl mx-auto">
     {/* D7: Profil fotoğrafı — form'un dışında ayrı kart (kendi upload akışı) */}
     <div className="card p-5">
-      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">Profil Fotoğrafı</h3>
+      <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider mb-4">Profil Fotoğrafı</h3>
       <div className="flex items-center gap-4">
-        <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="w-24 h-24 rounded-full bg-cream-100 dark:bg-ink-700 border-2 border-cream-300 dark:border-ink-700 flex items-center justify-center overflow-hidden flex-shrink-0">
           {profile?.avatarUrl ? (
             <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-slate-400 dark:text-slate-500">
+                 strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-ink-400 dark:text-ink-500">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
             </svg>
@@ -704,8 +704,8 @@ function ProfileTab() {
         <div className="flex-1 space-y-2">
           <label className={`block px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
             ${avatarUploading
-              ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-400 dark:text-brand-500 cursor-wait'
-              : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
+              ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait'
+              : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
             <input type="file" className="sr-only" accept="image/*,.heic,.heif"
               onChange={handleAvatarUpload} disabled={avatarUploading} />
             {avatarUploading
@@ -718,7 +718,7 @@ function ProfileTab() {
               Fotoyu Kaldır
             </button>
           )}
-          <p className="text-xs text-slate-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
+          <p className="text-xs text-ink-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
         </div>
       </div>
     </div>
@@ -726,7 +726,7 @@ function ProfileTab() {
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Block 1: Temel Bilgiler */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Temel Bilgiler</h3>
+        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Temel Bilgiler</h3>
 
         <div>
           <label className="label">Ad Soyad *</label>
@@ -735,9 +735,9 @@ function ProfileTab() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="label">E-posta <span className="text-slate-400 font-normal">(değiştirilemez)</span></label>
+            <label className="label">E-posta <span className="text-ink-400 font-normal">(değiştirilemez)</span></label>
             <input type="email" value={profile?.email || ''} disabled
-              className="input bg-slate-50 text-slate-500 cursor-not-allowed" />
+              className="input bg-cream-50 text-ink-500 cursor-not-allowed" />
           </div>
           <div>
             <label className="label">Telefon</label>
@@ -757,7 +757,7 @@ function ProfileTab() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="label">Doğum Tarihi <span className="text-slate-400 font-normal text-[10px]">(16-65 yaş)</span></label>
+            <label className="label">Doğum Tarihi <span className="text-ink-400 font-normal text-[10px]">(16-65 yaş)</span></label>
             <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange}
               {...birthDateBounds()} className="input" />
           </div>
@@ -773,10 +773,10 @@ function ProfileTab() {
 
       {/* Block 2: Eğitim */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Eğitim</h3>
+        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Eğitim</h3>
 
         <div>
-          <label className="label">Eğitim Durumu <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+          <label className="label">Eğitim Durumu <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
           <select name="education" value={form.education} onChange={handleChange} className="input">
             <option value="">Seçin</option>
             {Object.entries(EDUCATION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -786,10 +786,10 @@ function ProfileTab() {
 
       {/* Block 3: İş Tercihleri */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">İş Tercihleri</h3>
+        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">İş Tercihleri</h3>
 
         <div>
-          <label className="label">Müsaitlik Türü <span className="text-slate-400 font-normal">(birden fazla seçebilirsin)</span></label>
+          <label className="label">Müsaitlik Türü <span className="text-ink-400 font-normal">(birden fazla seçebilirsin)</span></label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {Object.entries(AVAILABILITY_LABELS).map(([key, label]) => {
               const active = form.availabilityTypes.includes(key)
@@ -797,8 +797,8 @@ function ProfileTab() {
                 <button key={key} type="button" onClick={() => toggleSetField('availabilityTypes', key)}
                   className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all
                     ${active
-                      ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-sm'
-                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                      ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 shadow-sm'
+                      : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
                   {label}
                 </button>
               )
@@ -807,7 +807,7 @@ function ProfileTab() {
         </div>
 
         <div>
-          <label className="label">Önceki Deneyim <span className="text-slate-400 font-normal">(opsiyonel)</span></label>
+          <label className="label">Önceki Deneyim <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
           <textarea name="previousExperience" value={form.previousExperience} onChange={handleChange}
             className="input resize-none h-24 text-sm"
             placeholder="Daha önce çalıştığın yerler, pozisyonlar, kazandığın deneyimler..." />
@@ -816,7 +816,7 @@ function ProfileTab() {
 
       {/* Block 4: Diğer */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Diğer</h3>
+        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Diğer</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -833,21 +833,21 @@ function ProfileTab() {
       {/* ADIM J: Bildirim tercihleri — ilgilendiği ilçeler + pozisyonlar */}
       <div className="card p-5 space-y-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Bildirim Tercihleri</h3>
-          <p className="text-xs text-slate-500 mt-1">
+          <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Bildirim Tercihleri</h3>
+          <p className="text-xs text-ink-500 mt-1">
             İlgini çekebilecek yeni ilan açıldığında otomatik bildirim al. Hiçbirini seçmezsen bildirim yok.
           </p>
         </div>
 
         <div>
           <label className="label">İlgilendiğin İlçeler</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto p-2 border border-slate-200 rounded-lg">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto p-2 border border-cream-300 rounded-lg">
             {ISTANBUL_DISTRICTS.map(d => {
               const active = form.preferredDistricts.includes(d)
               return (
                 <label key={d}
                   className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs cursor-pointer
-                    ${active ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}>
+                    ${active ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'text-ink-600 hover:bg-cream-50'}`}>
                   <input type="checkbox" checked={active}
                     onChange={() => toggleSetField('preferredDistricts', d)}
                     className="w-3.5 h-3.5 accent-brand-700" />
@@ -856,7 +856,7 @@ function ProfileTab() {
               )
             })}
           </div>
-          <p className="text-xs text-slate-400 mt-1">{form.preferredDistricts.length} ilçe seçili</p>
+          <p className="text-xs text-ink-400 mt-1">{form.preferredDistricts.length} ilçe seçili</p>
         </div>
 
         <div>
@@ -867,7 +867,7 @@ function ProfileTab() {
               return (
                 <label key={value}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
-                    ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium' : 'border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                    ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
                   <input type="checkbox" checked={active}
                     onChange={() => toggleSetField('preferredPositions', value)}
                     className="w-4 h-4 accent-brand-700" />
@@ -876,14 +876,14 @@ function ProfileTab() {
               )
             })}
           </div>
-          <p className="text-xs text-slate-400 mt-1">{form.preferredPositions.length} pozisyon seçili</p>
+          <p className="text-xs text-ink-400 mt-1">{form.preferredPositions.length} pozisyon seçili</p>
         </div>
       </div>
 
       <div className="flex justify-end">
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #0f766e, #0d9488)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
       </div>

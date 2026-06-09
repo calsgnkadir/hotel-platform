@@ -16,8 +16,8 @@ export default function GoogleSignInButton({ label = 'Continue with Google' }) {
     <a
       href={`${API_BASE}/oauth2/authorization/google`}
       className="w-full inline-flex items-center justify-center gap-2.5 py-3 px-6 rounded-full
-                 bg-white hover:bg-slate-100 text-slate-900
-                 border border-slate-300 shadow-sm
+                 bg-white hover:bg-cream-100 text-ink-900
+                 border border-cream-300 shadow-sm
                  font-semibold text-[13px] transition-all
                  active:scale-[0.98]">
       <GoogleLogo />

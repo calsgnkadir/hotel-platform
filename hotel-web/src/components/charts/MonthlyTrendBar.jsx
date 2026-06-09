@@ -25,8 +25,8 @@ export default function MonthlyTrendBar({ data, title = 'Son 6 Ay Başvurular', 
   return (
     <div className="card p-5">
       <div className="flex items-baseline justify-between mb-1">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">{title}</h3>
-        <span className="text-xs text-slate-500">Toplam {total}</span>
+        <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider">{title}</h3>
+        <span className="text-xs text-ink-500">Toplam {total}</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={chartData} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
