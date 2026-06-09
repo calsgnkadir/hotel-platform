@@ -76,6 +76,7 @@ function ConversationItem({ conv, isActive, onClick }) {
 /* ── Tek mesaj balonu (attachment render dahil) ── */
 function MessageBubble({ m }) {
   const isImage = m.attachmentType === 'image'
+  const isAudio = m.attachmentType === 'audio'
   const isFile  = m.attachmentType === 'file'
   const hasAttach = !!m.attachmentUrl
 
@@ -92,6 +93,17 @@ function MessageBubble({ m }) {
             <img src={m.attachmentUrl} alt={m.attachmentName || 'foto'}
                  className="max-h-72 w-auto object-contain bg-slate-100 dark:bg-slate-900" />
           </a>
+        )}
+        {hasAttach && isAudio && (
+          <div className={`flex items-center gap-2 px-3 py-2.5 ${m.mine ? 'bg-brand-800/30' : 'bg-slate-100 dark:bg-slate-900/40'}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 strokeWidth={1.8} stroke="currentColor"
+                 className={`w-5 h-5 shrink-0 ${m.mine ? 'text-white' : 'text-slate-500'}`}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+            </svg>
+            <audio controls preload="metadata" src={m.attachmentUrl} className="h-8 max-w-[200px]" />
+          </div>
         )}
         {hasAttach && isFile && (
           <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer"
@@ -221,6 +233,80 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     }
   }
 
+  // ── Sesli mesaj kaydı (MediaRecorder API) ──
+  const [recording, setRecording] = useState(false)
+  const [recDuration, setRecDuration] = useState(0)
+  const recorderRef = useRef(null)
+  const recChunksRef = useRef([])
+  const recTimerRef = useRef(null)
+
+  async function startRecording() {
+    if (sending || recording) return
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm'
+      const recorder = new MediaRecorder(stream, { mimeType: mime })
+      recChunksRef.current = []
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) recChunksRef.current.push(e.data)
+      }
+      recorder.onstop = async () => {
+        // Stream kapat
+        stream.getTracks().forEach(t => t.stop())
+        clearInterval(recTimerRef.current)
+        const blob = new Blob(recChunksRef.current, { type: mime })
+        if (blob.size < 1000) {
+          toast.error('Kayıt çok kısa')
+          return
+        }
+        const file = new File([blob], `ses-${Date.now()}.webm`, { type: mime })
+        setSending(true)
+        try {
+          const msg = await hotelApi.sendMessageAttachment(conversation.id, file, '')
+          setMessages(prev => [...prev, msg])
+          lastSeenIdRef.current = msg.id
+          setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+          onMessageSent?.()
+        } catch (err) {
+          toast.error(extractErrorMessage(err))
+        } finally {
+          setSending(false)
+        }
+      }
+      recorderRef.current = recorder
+      recorder.start()
+      setRecording(true)
+      setRecDuration(0)
+      recTimerRef.current = setInterval(() => setRecDuration(d => d + 1), 1000)
+    } catch (err) {
+      toast.error('Mikrofon izni reddedildi veya kullanılamıyor')
+      console.error(err)
+    }
+  }
+
+  function stopRecording(cancel = false) {
+    if (!recording) return
+    setRecording(false)
+    const r = recorderRef.current
+    if (cancel) {
+      // İptal: ondataavailable'ı yutarız
+      recChunksRef.current = []
+      r.onstop = () => {
+        r.stream?.getTracks().forEach(t => t.stop())
+        clearInterval(recTimerRef.current)
+      }
+    }
+    r.stop()
+  }
+
+  function fmtDuration(s) {
+    const m = Math.floor(s / 60)
+    const ss = String(s % 60).padStart(2, '0')
+    return `${m}:${ss}`
+  }
+
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
@@ -280,34 +366,76 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
         <div ref={scrollAnchorRef} />
       </div>
 
-      {/* Kompozer — dosya ekle + metin + gönder */}
+      {/* Kompozer — dosya ekle + metin + sesli mesaj + gönder */}
       <form onSubmit={handleSend} className="px-3 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 flex-shrink-0">
-        {/* Dosya ekle butonu */}
-        <input ref={fileInputRef} type="file"
-               accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx"
-               onChange={handleAttach} className="hidden" />
-        <button type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={sending}
-                title="Dosya / Foto ekle"
-                className="w-10 h-10 grid place-items-center rounded-full bg-slate-100 dark:bg-slate-800
-                           hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300
-                           disabled:opacity-50 transition-colors shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round"
-                  d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
-          </svg>
-        </button>
+        {/* Kayıt modu: özel UI */}
+        {recording ? (
+          <>
+            <button type="button" onClick={() => stopRecording(true)}
+                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-200 dark:bg-slate-700
+                               text-slate-600 dark:text-slate-300 hover:bg-slate-300 transition-colors shrink-0"
+                    title="İptal">
+              ×
+            </button>
+            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-sm text-red-700 dark:text-red-300 font-mono">
+                Kayıt {fmtDuration(recDuration)}
+              </span>
+              <span className="text-[11px] text-slate-500 ml-auto">Göndermek için durdur</span>
+            </div>
+            <button type="button" onClick={() => stopRecording(false)}
+                    disabled={sending}
+                    className="px-4 py-2 rounded-lg text-white text-sm font-semibold flex-shrink-0
+                               bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-50">
+              Durdur ↑
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Dosya ekle butonu */}
+            <input ref={fileInputRef} type="file"
+                   accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx,.mp3,.m4a,.ogg,.wav,.webm"
+                   onChange={handleAttach} className="hidden" />
+            <button type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={sending}
+                    title="Dosya / Foto ekle"
+                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-100 dark:bg-slate-800
+                               hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300
+                               disabled:opacity-50 transition-colors shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+              </svg>
+            </button>
 
-        <input type="text" value={draft} onChange={e => setDraft(e.target.value)}
-          placeholder="Mesaj yaz..." maxLength={2000}
-          className="input text-sm flex-1" disabled={sending} />
-        <button type="submit"
-          disabled={sending || !draft.trim()}
-          className="px-4 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50 flex-shrink-0 bg-brand-700 hover:bg-brand-800 transition-colors">
-          {sending ? '...' : 'Gönder'}
-        </button>
+            {/* Sesli mesaj kayıt başlat */}
+            <button type="button"
+                    onClick={startRecording}
+                    disabled={sending}
+                    title="Sesli mesaj kaydet"
+                    className="w-10 h-10 grid place-items-center rounded-full bg-slate-100 dark:bg-slate-800
+                               hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300
+                               disabled:opacity-50 transition-colors shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+              </svg>
+            </button>
+
+            <input type="text" value={draft} onChange={e => setDraft(e.target.value)}
+              placeholder="Mesaj yaz..." maxLength={2000}
+              className="input text-sm flex-1" disabled={sending} />
+            <button type="submit"
+              disabled={sending || !draft.trim()}
+              className="px-4 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50 flex-shrink-0 bg-brand-700 hover:bg-brand-800 transition-colors">
+              {sending ? '...' : 'Gönder'}
+            </button>
+          </>
+        )}
       </form>
     </div>
   )

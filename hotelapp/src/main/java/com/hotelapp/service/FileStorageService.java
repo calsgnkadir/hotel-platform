@@ -34,7 +34,9 @@ public class FileStorageService {
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             "pdf",
             "jpg", "jpeg", "png", "webp", "heic", "heif",
-            "doc", "docx"
+            "doc", "docx",
+            // Chat-v2: sesli mesaj (voice note) için
+            "mp3", "m4a", "ogg", "wav", "webm"
     );
 
     // Sadece görsel — işletme logo/galeri
@@ -94,7 +96,14 @@ public class FileStorageService {
                 "Dosya çok büyük (%.1f MB). Maksimum 15 MB olmalı.");
 
         String ext = getExtension(file.getOriginalFilename()).toLowerCase();
-        String resourceType = isImageExt(ext) ? "image" : "raw";
+        // Cloudinary resource_type:
+        //   image: jpg/png/webp...
+        //   video: mp3/m4a/ogg/wav/webm (audio dahil)
+        //   raw:   pdf/doc/docx
+        String resourceType;
+        if (isImageExt(ext))      resourceType = "image";
+        else if (isAudioExt(ext)) resourceType = "video";
+        else                      resourceType = "raw";
         String folder = "ajanshotel/messages/" + conversationId;
         String publicId = "image".equals(resourceType)
                 ? folder + "/" + UUID.randomUUID()
@@ -276,6 +285,11 @@ public class FileStorageService {
 
     private boolean isImageExt(String ext) {
         return ALLOWED_IMAGE_EXTENSIONS.contains(ext);
+    }
+
+    private static final Set<String> AUDIO_EXTENSIONS = Set.of("mp3", "m4a", "ogg", "wav", "webm");
+    private boolean isAudioExt(String ext) {
+        return AUDIO_EXTENSIONS.contains(ext);
     }
 
     /**

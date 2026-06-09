@@ -167,6 +167,7 @@ public class MessageService {
     // Dosya/foto ekli mesaj gönder (chat refactor v2)
     // ----------------------------------------------------------------
     private static final Set<String> IMAGE_EXTS = Set.of("jpg", "jpeg", "png", "webp", "heic", "heif", "gif");
+    private static final Set<String> AUDIO_EXTS = Set.of("mp3", "m4a", "ogg", "wav", "webm");
 
     @Transactional
     public MessageDto sendAttachment(Long conversationId, Long senderId, MultipartFile file, String caption) {
@@ -180,7 +181,10 @@ public class MessageService {
         // Tip belirle (image/file) — frontend render kararı için
         String orig = file.getOriginalFilename() == null ? "dosya" : file.getOriginalFilename();
         String ext = orig.contains(".") ? orig.substring(orig.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT) : "";
-        String type = IMAGE_EXTS.contains(ext) ? "image" : "file";
+        String type;
+        if (IMAGE_EXTS.contains(ext))      type = "image";
+        else if (AUDIO_EXTS.contains(ext)) type = "audio";
+        else                                type = "file";
 
         Message msg = Message.builder()
                 .conversation(conv)
@@ -201,7 +205,10 @@ public class MessageService {
         Long recipientId = conv.getCandidate().getId().equals(senderId)
                 ? conv.getBusinessOwner().getId()
                 : conv.getCandidate().getId();
-        String preview = "image".equals(type) ? "📷 Foto gönderdi" : "📎 " + orig;
+        String preview;
+        if ("image".equals(type))      preview = "📷 Foto gönderdi";
+        else if ("audio".equals(type)) preview = "🎙 Sesli mesaj";
+        else                            preview = "📎 " + orig;
         notificationService.notify(recipientId,
                 NotificationType.NEW_MESSAGE,
                 "Yeni mesaj: " + sender.getFullName(),
