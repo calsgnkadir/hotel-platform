@@ -502,8 +502,8 @@ function OverviewTab({ user, applications, onTabChange }) {
             svg: 'M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z' },
           { label: 'Başvurularım',     tab: 'applications', desc: 'Başvuru durumlarını takip et',
             svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z' },
-          { label: 'Belgelerim',       tab: 'documents',    desc: 'CV, transkript ve diğerleri',
-            svg: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6 9 2.25 2.25L19.5 12m-9.75 9h9.75c.621 0 1.125-.504 1.125-1.125V11.25c0-3-3.375-9-9-9H4.875c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h5.25' },
+          { label: 'Mesajlarım',       tab: 'messages',     desc: 'İşletmelerle sohbet et',
+            svg: 'M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z' },
         ].map(action => (
           <button key={action.tab} onClick={() => onTabChange(action.tab)}
             className="card text-left p-3 hover:border-brand-600/50 hover:-translate-y-0.5 transition-all duration-200 w-full group">
@@ -515,8 +515,8 @@ function OverviewTab({ user, applications, onTabChange }) {
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-semibold text-white text-[12px] truncate">{action.label}</div>
-                <div className="text-[10px] text-ink-500 truncate mt-0.5">{action.desc}</div>
+                <div className="font-semibold text-ink-900 dark:text-cream-100 text-[12px] truncate">{action.label}</div>
+                <div className="text-[10px] text-ink-500 dark:text-cream-300 truncate mt-0.5">{action.desc}</div>
               </div>
             </div>
           </button>
