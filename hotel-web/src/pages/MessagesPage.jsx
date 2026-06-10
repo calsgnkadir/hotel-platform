@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import { keys } from '../lib/queryClient'
 
 /** Mesaj zamanını dilbilime yakın formatla. */
 function formatRelative(iso) {
@@ -208,54 +210,57 @@ function CallInviteBubble({ m, type, url }) {
 /* ── Sohbet penceresi (sağ panel) ── */
 function ChatWindow({ conversation, onBack, onMessageSent }) {
   const { user } = useAuth()
-  const [messages, setMessages] = useState([])
-  const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [draft, setDraft] = useState('')
   const fileInputRef = useRef(null)
   const lastSeenIdRef = useRef(0)
   const scrollAnchorRef = useRef(null)
+  const queryClient = useQueryClient()
 
-  const fetchMessages = useCallback(async (silent = false) => {
-    if (!conversation) return
-    if (!silent) setLoading(true)
-    try {
-      const data = await hotelApi.getConversationMessages(conversation.id, { size: 100 })
-      const list = (data?.content ?? []).slice().reverse()  // eskiden yeniye
-      setMessages(list)
-      // Yeni mesaj geldiyse okundu işaretle
-      const newest = list[list.length - 1]
-      if (newest && newest.id !== lastSeenIdRef.current) {
-        lastSeenIdRef.current = newest.id
-        if (!newest.mine && !newest.isRead) {
-          hotelApi.markConversationRead(conversation.id).then(() => onMessageSent?.())
-        }
-        // Aşağıya scroll
-        setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+  // F0.10 Aşama 3 — Mesajlar useQuery + 5sn polling
+  // Cache key: conversationId — sohbet değişince cache ayrı
+  const { data: messagesData, isLoading: loading } = useQuery({
+    queryKey: keys.conversations.messages(conversation?.id),
+    queryFn: () => hotelApi.getConversationMessages(conversation.id, { size: 100 }),
+    enabled: !!conversation,
+    refetchInterval: conversation ? POLL_INTERVAL : false,
+    refetchOnWindowFocus: true,
+    staleTime: 2000,   // 2sn — yeni mesaj geldikten sonra hemen fresh
+  })
+
+  // Backend page'i son→eski. UI eski→yeni istiyor.
+  const messages = (messagesData?.content ?? []).slice().reverse()
+
+  // Yeni mesaj geldiyse: okundu işaretle + scroll
+  useEffect(() => {
+    if (!conversation || messages.length === 0) return
+    const newest = messages[messages.length - 1]
+    if (newest && newest.id !== lastSeenIdRef.current) {
+      lastSeenIdRef.current = newest.id
+      if (!newest.mine && !newest.isRead) {
+        hotelApi.markConversationRead(conversation.id).then(() => onMessageSent?.()).catch(() => {})
       }
-    } catch (err) {
-      if (!silent) toast.error(extractErrorMessage(err))
-    } finally {
-      if (!silent) setLoading(false)
+      setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
     }
-  }, [conversation, onMessageSent])
+  }, [messages, conversation, onMessageSent])
 
-  // İlk yükleme + sohbet değişimi
+  // Sohbet değiştiğinde: lastSeen reset + okundu işaretle
   useEffect(() => {
     lastSeenIdRef.current = 0
-    fetchMessages()
-    // Sohbete girince okundu işaretle
     if (conversation) {
       hotelApi.markConversationRead(conversation.id).catch(() => {})
     }
-  }, [conversation?.id])  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [conversation?.id])
 
-  // 5 sn polling
-  useEffect(() => {
+  // Yeni mesajı cache'in başına ekle (optimistic update — anında UI'a yansır)
+  // Backend page'i en yeniden eskiye sıralıyor → content[0] en yeni
+  function appendMsg(msg) {
     if (!conversation) return
-    const t = setInterval(() => fetchMessages(true), POLL_INTERVAL)
-    return () => clearInterval(t)
-  }, [conversation, fetchMessages])
+    queryClient.setQueryData(keys.conversations.messages(conversation.id), (old) => {
+      if (!old) return { content: [msg] }
+      return { ...old, content: [msg, ...old.content] }
+    })
+  }
 
   async function handleSend(e) {
     e.preventDefault()
@@ -264,7 +269,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     setSending(true)
     try {
       const msg = await hotelApi.sendMessage(conversation.id, content)
-      setMessages(prev => [...prev, msg])
+      appendMsg(msg)
       setDraft('')
       lastSeenIdRef.current = msg.id
       setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
@@ -287,7 +292,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     setSending(true)
     try {
       const msg = await hotelApi.sendMessageAttachment(conversation.id, file, draft.trim())
-      setMessages(prev => [...prev, msg])
+      appendMsg(msg)
       setDraft('')
       lastSeenIdRef.current = msg.id
       setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
@@ -331,7 +336,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
         setSending(true)
         try {
           const msg = await hotelApi.sendMessageAttachment(conversation.id, file, '')
-          setMessages(prev => [...prev, msg])
+          appendMsg(msg)
           lastSeenIdRef.current = msg.id
           setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
           onMessageSent?.()
@@ -427,7 +432,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       for (const file of validFiles) {
         try {
           const msg = await hotelApi.sendMessageAttachment(conversation.id, file, '')
-          setMessages(prev => [...prev, msg])
+          appendMsg(msg)
           lastSeenIdRef.current = msg.id
         } catch (err) {
           toast.error(`${file.name}: ${extractErrorMessage(err)}`)
@@ -457,7 +462,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     setSending(true)
     try {
       const msg = await hotelApi.sendMessage(conversation.id, content)
-      setMessages(prev => [...prev, msg])
+      appendMsg(msg)
       lastSeenIdRef.current = msg.id
       setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
       onMessageSent?.()
@@ -660,11 +665,20 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
 
 /* ── Ana sayfa ── */
 export default function MessagesPage() {
-  const [conversations, setConversations] = useState([])
-  const [loading, setLoading] = useState(true)
   const [activeId, setActiveId] = useState(null)
   const [showListMobile, setShowListMobile] = useState(true)
   const [search, setSearch] = useState('')
+  const queryClient = useQueryClient()
+
+  // F0.10 Aşama 3 — Conversations useQuery + 5sn polling
+  const { data: convData, isLoading: loading } = useQuery({
+    queryKey: keys.conversations.list(),
+    queryFn: () => hotelApi.getMyConversations({ size: 50 }),
+    refetchInterval: POLL_INTERVAL,
+    refetchOnWindowFocus: true,
+    staleTime: 2000,
+  })
+  const conversations = convData?.content ?? []
 
   // Arama: kişi adı + listingTitle + son mesaj preview üzerinden filtrele
   const filteredConvs = (() => {
@@ -677,25 +691,10 @@ export default function MessagesPage() {
     )
   })()
 
-  const fetchConversations = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true)
-    try {
-      const data = await hotelApi.getMyConversations({ size: 50 })
-      setConversations(data?.content ?? [])
-    } catch (err) {
-      if (!silent) toast.error(extractErrorMessage(err))
-    } finally {
-      if (!silent) setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { fetchConversations() }, [fetchConversations])
-
-  // Liste polling — 5 sn (yeni sohbet/yeni mesaj preview için)
-  useEffect(() => {
-    const t = setInterval(() => fetchConversations(true), POLL_INTERVAL)
-    return () => clearInterval(t)
-  }, [fetchConversations])
+  // Yeni mesaj gönderildiğinde sohbet listesini refetch et (lastMessage preview için)
+  function refetchConvs() {
+    queryClient.invalidateQueries({ queryKey: keys.conversations.list() })
+  }
 
   const active = conversations.find(c => c.id === activeId) || null
 
@@ -769,7 +768,7 @@ export default function MessagesPage() {
           <ChatWindow
             conversation={active}
             onBack={() => setShowListMobile(true)}
-            onMessageSent={() => fetchConversations(true)} />
+            onMessageSent={refetchConvs} />
         </div>
       </div>
     </div>
