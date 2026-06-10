@@ -24,8 +24,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        # F0.5+ — N+1 önleme: lazy collection/proxy fetch 20'lik batch'lerde yapılır.
+        # Önce: her başvuru için 8 SQL (7 başvuru = 56 SQL!)
+        # Sonra: her tip için 1 SQL (7 application = ~8 SQL toplam)
+        # Etki: 6-7x daha az DB sorgusu — log temizlenir, response hızlanır.
+        default_batch_fetch_size: 20
         # dialect belirtilmedi — Hibernate JDBC bağlantısından otomatik algılar (MySQLDialect)
-        # Hibernate'in temporal tipler için kullanacağı zaman dilimi.
         # LocalDate'in java.sql.Date'e dönüşümünde 1 gün kaymayı önler.
         jdbc:
           time_zone: Europe/Istanbul
@@ -104,3 +108,7 @@ logging:
   level:
     com.hotelapp: ${LOG_LEVEL:INFO}
     org.springframework.security: ${LOG_LEVEL_SECURITY:WARN}
+    # F0.5+ — Hibernate SQL log default WARN (eskiden DEBUG => terminal şişiyordu)
+    # Debug istersen env ile: LOG_LEVEL_HIBERNATE=DEBUG
+    org.hibernate.SQL: ${LOG_LEVEL_HIBERNATE:WARN}
+    org.hibernate.orm.jdbc.bind: WARN
