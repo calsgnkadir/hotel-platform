@@ -17,13 +17,10 @@ spring:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: ${JPA_SHOW_SQL:false}
-    # F0.13 — open-in-view artık FALSE default.
-    # ESKI: true → JSON serialization sırasında lazy load (anti-pattern, N+1 sorgular)
-    # YENI: false → DTO mapping transaction içinde tamamlanmalı (zaten öyle).
-    #       LazyInitializationException görürsen ilgili service method'una
-    #       @Transactional(readOnly=true) ekle veya @EntityGraph kullan.
-    # Hızlı geri dönüş için env var: OPEN_IN_VIEW=true
-    open-in-view: ${OPEN_IN_VIEW:false}
+    # F0.13 — open-in-view env-driven (geçici default: true).
+    # Kalıcı çözüm: tüm service method'larına @Transactional(readOnly=true) eklenince
+    # tekrar false yapılacak. Şu an migration aşamasında.
+    open-in-view: ${OPEN_IN_VIEW:true}
     properties:
       hibernate:
         format_sql: true
