@@ -1681,13 +1681,8 @@ function OverviewTab({ applications, onTabChange }) {
   const reviewing = applications.filter(a => a.status === 'REVIEWING').length
   const accepted  = applications.filter(a => a.status === 'ACCEPTED').length
 
-  // #89: Backend stats
-  const [stats, setStats] = useState(null)
-  useEffect(() => {
-    hotelApi.getBusinessStats()
-      .then(setStats)
-      .catch(() => setStats(null))
-  }, [])
+  // #89 cleanup: Backend stats çağrısı kaldırıldı (recharts gitti, sonucu kullanılmıyordu)
+  // Stat strip applications prop'undan hesaplanıyor.
 
   return (
     <div className="space-y-4">

@@ -473,13 +473,8 @@ function OverviewTab({ user, applications, onTabChange }) {
   const accepted  = applications.filter(a => a.status === 'ACCEPTED').length
   const pending   = applications.filter(a => a.status === 'PENDING').length
 
-  // #89: Backend stats
-  const [stats, setStats] = useState(null)
-  useEffect(() => {
-    hotelApi.getCandidateStats()
-      .then(setStats)
-      .catch(() => setStats(null))
-  }, [])
+  // #89 cleanup: Backend stats çağrısı kaldırıldı (recharts gitti, sonucu kullanılmıyordu)
+  // Kabul Oranı + Yanıt Süresi de zaten silindi. UI applications prop'undan hesaplıyor.
 
   return (
     <div className="space-y-4">
