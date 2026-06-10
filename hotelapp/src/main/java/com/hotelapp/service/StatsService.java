@@ -110,10 +110,12 @@ public class StatsService {
     // Helpers
     // ────────────────────────────────────────────────
 
-    /** Object[]{enum/string, Long} → BucketDto listesi. */
+    /** Object[]{enum/string, Long} → BucketDto listesi. (null-safe) */
     private List<BucketDto> toBuckets(List<Object[]> rows) {
+        if (rows == null || rows.isEmpty()) return new ArrayList<>();
         List<BucketDto> list = new ArrayList<>(rows.size());
         for (Object[] row : rows) {
+            if (row == null || row.length < 2 || row[1] == null) continue;
             String key = row[0] == null ? "UNKNOWN" : row[0].toString();
             long count = ((Number) row[1]).longValue();
             list.add(new BucketDto(key, count));
@@ -123,8 +125,13 @@ public class StatsService {
 
     private Map<LocalDate, Long> toDateMap(List<Object[]> rows) {
         Map<LocalDate, Long> m = new HashMap<>();
+        if (rows == null || rows.isEmpty()) return m;
         for (Object[] row : rows) {
-            LocalDate d = (LocalDate) row[0];
+            if (row == null || row.length < 2 || row[0] == null || row[1] == null) continue;
+            // Hibernate 6 dönüş tipi java.sql.Date olabilir — defensive cast
+            LocalDate d = row[0] instanceof java.sql.Date sqlDate
+                    ? sqlDate.toLocalDate()
+                    : (LocalDate) row[0];
             m.put(d, ((Number) row[1]).longValue());
         }
         return m;
@@ -132,7 +139,9 @@ public class StatsService {
 
     private Map<String, Long> toMonthMap(List<Object[]> rows) {
         Map<String, Long> m = new HashMap<>();
+        if (rows == null || rows.isEmpty()) return m;
         for (Object[] row : rows) {
+            if (row == null || row.length < 2 || row[0] == null || row[1] == null) continue;
             m.put(row[0].toString(), ((Number) row[1]).longValue());
         }
         return m;
