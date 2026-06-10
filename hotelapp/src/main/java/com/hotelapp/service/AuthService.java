@@ -30,6 +30,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;  // F0.2
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -46,6 +47,9 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
+        // F0.2: refresh token üret (cookie'ye konacak)
+        String refreshToken = refreshTokenService.createForUser(user);
 
         if (request.getRole() == Role.BUSINESS_OWNER) {
             Business business = Business.builder()
@@ -64,6 +68,7 @@ public class AuthService {
 
         return AuthResponse.builder()
                 .token(jwtService.generateToken(user))
+                .refreshToken(refreshToken)
                 .userId(user.getId())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
@@ -79,13 +84,41 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", request.getEmail()));
 
+        // F0.2: refresh token üret
+        String refreshToken = refreshTokenService.createForUser(user);
+
         return AuthResponse.builder()
                 .token(jwtService.generateToken(user))
+                .refreshToken(refreshToken)
                 .userId(user.getId())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole())
                 .build();
+    }
+
+    /**
+     * F0.2 — Refresh token kullanarak yeni access token al.
+     * Cookie'den gelen raw token validate edilir + rotate edilir.
+     */
+    @Transactional
+    public AuthResponse refresh(String rawRefreshToken) {
+        var result = refreshTokenService.validateAndRotate(rawRefreshToken);
+        User user = result.user();
+        return AuthResponse.builder()
+                .token(jwtService.generateToken(user))
+                .refreshToken(result.newRawRefreshToken())
+                .userId(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole())
+                .build();
+    }
+
+    /** F0.2 — Logout: refresh token revoke */
+    @Transactional
+    public void logout(String rawRefreshToken) {
+        refreshTokenService.revoke(rawRefreshToken);
     }
 
     /**

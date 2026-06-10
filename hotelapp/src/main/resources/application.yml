@@ -54,8 +54,10 @@ spring:
             redirect-uri:  "{baseUrl}/login/oauth2/code/{registrationId}"
 
 jwt:
+  # F0.2 — access token kısaltıldı: 24 saat → 15 dakika (refresh ile yenilenir)
+  # Geri dönüş için env: JWT_EXPIRATION=86400000
   secret: ${JWT_SECRET:dev-only-secret-key-at-least-32-characters-long-!!!}
-  expiration: ${JWT_EXPIRATION:86400000}
+  expiration: ${JWT_EXPIRATION:900000}    # 15 dk
 
 file:
   upload-dir: ${FILE_UPLOAD_DIR:./uploads}   # legacy, artık kullanılmıyor — Cloudinary kullanıyoruz
@@ -67,8 +69,14 @@ file:
 cloudinary:
   url: ${CLOUDINARY_URL:}
 
-# #80: Email (Resend) + frontend reset link base URL
+# app — F0.2 cookie/proxy güvenliği + #80 base URL + email
 app:
+  # F0.2 — Cookie & proxy güvenliği
+  security:
+    trusted-proxies: ${TRUSTED_PROXIES:127.0.0.1,::1,0:0:0:0:0:0:0:1}
+    cookie-secure: ${COOKIE_SECURE:false}      # Prod'da true (HTTPS only)
+    cookie-samesite: ${COOKIE_SAMESITE:Lax}    # Cross-origin için 'None' (Vercel+Railway)
+
   # Frontend URL — reset linki için (https://hotel-platform-seven.vercel.app)
   base-url: ${APP_BASE_URL:http://localhost:5173}
 
