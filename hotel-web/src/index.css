@@ -23,92 +23,35 @@ body {
   transition: background-color 0.2s, color 0.2s;
 }
 
-/* Dark mode — koyu mor tema (purple-950 zemin)
-   Eski kahverengi #1f1c1a yerine: #1a0b2e (deep purple)
-   Card/header: bir ton açık (#2d1450 / purple-900)
-   Border: mor şeffaf */
+/* Dark mode opsiyonel — kullanıcı toggle'larsa */
 .dark body {
-  background: #1a0b2e;          /* en koyu mor */
-  color: #f3e8ff;                /* brand-100 — krem yerine mor-beyaz */
+  background: #1f1c1a;
+  color: #faf7f2;
 }
-.dark .auth-bg,
-.dark .min-h-screen {
-  background: #1a0b2e !important;
+
+/* Quick Action kartları — light ve dark ikisinde de MOR vurgu */
+.quick-action-card {
+  background: linear-gradient(135deg, #6b21a8 0%, #7e22ce 100%) !important;
+  border: 1px solid rgba(168, 85, 247, 0.30) !important;
+  color: #faf5ff !important;
 }
-/* Sidebar + header background mor */
-.dark aside,
-.dark header {
-  background: #1a0b2e !important;
-  border-color: rgba(168, 85, 247, 0.20) !important;
+.quick-action-card:hover {
+  background: linear-gradient(135deg, #7e22ce 0%, #9333ea 100%) !important;
+  border-color: rgba(216, 180, 254, 0.50) !important;
+  box-shadow: 0 4px 20px rgba(107, 33, 168, 0.30) !important;
 }
-/* Card'lar — bir ton açık */
-.dark .card,
-.dark .auth-card,
-.dark .modal-content {
-  background: #2d1450 !important;
-  border-color: rgba(168, 85, 247, 0.25) !important;
+.quick-action-card .qa-icon-box {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25) !important;
 }
-.dark .card:hover {
-  border-color: rgba(168, 85, 247, 0.50) !important;
+.quick-action-card .qa-icon-box svg {
+  color: #faf5ff !important;
 }
-/* Input + form elementleri */
-.dark .input {
-  background: #1f0d3a !important;
-  border-color: rgba(168, 85, 247, 0.30) !important;
-  color: #f3e8ff !important;
+.quick-action-card .qa-label {
+  color: #faf5ff !important;
 }
-.dark .input::placeholder {
-  color: #a78bfa !important;
-}
-.dark .input:focus {
-  border-color: #a855f7 !important;
-}
-/* Sidebar nav link active state */
-.dark .nav-link {
-  color: #d8b4fe !important;
-}
-.dark .nav-link:hover {
-  background: rgba(168, 85, 247, 0.15) !important;
-  color: #f3e8ff !important;
-}
-.dark .nav-link.active {
-  background: rgba(168, 85, 247, 0.25) !important;
-  color: #f3e8ff !important;
-  border-color: rgba(168, 85, 247, 0.40) !important;
-}
-/* Header/sidebar border + ayraçlar */
-.dark .border-cream-200,
-.dark .border-cream-300,
-.dark .border-cream-400 {
-  border-color: rgba(168, 85, 247, 0.20) !important;
-}
-/* Text renkleri */
-.dark .text-ink-900,
-.dark .text-ink-800,
-.dark .text-ink-700 {
-  color: #f3e8ff !important;
-}
-.dark .text-ink-600,
-.dark .text-ink-500 {
-  color: #c4b5fd !important;
-}
-.dark .text-ink-400,
-.dark .text-ink-300 {
-  color: #a78bfa !important;
-}
-/* Background utilityler */
-.dark .bg-white,
-.dark .bg-cream-50,
-.dark .bg-cream-100 {
-  background: #2d1450 !important;
-}
-.dark .bg-cream-200,
-.dark .bg-cream-300 {
-  background: #3b1a64 !important;
-}
-/* Hover bg'leri */
-.dark [class*="hover:bg-cream-"]:hover {
-  background: rgba(168, 85, 247, 0.15) !important;
+.quick-action-card .qa-desc {
+  color: #e9d5ff !important;
 }
 
 /* Display başlıklar — Fraunces serif */

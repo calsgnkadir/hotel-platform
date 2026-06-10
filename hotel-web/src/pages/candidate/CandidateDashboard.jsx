@@ -506,17 +506,17 @@ function OverviewTab({ user, applications, onTabChange }) {
             svg: 'M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z' },
         ].map(action => (
           <button key={action.tab} onClick={() => onTabChange(action.tab)}
-            className="card text-left p-3 hover:border-brand-600/50 hover:-translate-y-0.5 transition-all duration-200 w-full group">
+            className="quick-action-card rounded-2xl text-left p-3 hover:-translate-y-0.5 transition-all duration-200 w-full">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg border border-slate-700 group-hover:border-brand-500/60 flex items-center justify-center flex-shrink-0 transition-colors">
+              <div className="qa-icon-box w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5 text-ink-400 group-hover:text-brand-700 transition-colors">
+                     strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d={action.svg} />
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-semibold text-ink-900 dark:text-cream-100 text-[12px] truncate">{action.label}</div>
-                <div className="text-[10px] text-ink-500 dark:text-cream-300 truncate mt-0.5">{action.desc}</div>
+                <div className="qa-label font-semibold text-[12px] truncate">{action.label}</div>
+                <div className="qa-desc text-[10px] truncate mt-0.5">{action.desc}</div>
               </div>
             </div>
           </button>
