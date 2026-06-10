@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import * as authApi from '../api/auth'
+import api from '../api/client'
 
 const AuthContext = createContext(null)
 
@@ -31,7 +32,10 @@ export function AuthProvider({ children }) {
     return data
   }
 
-  function logout() {
+  async function logout() {
+    // F0.2: Backend'i bilgilendir → refresh token DB'de revoke + cookie sil
+    // Network hatası olsa bile lokal temizlik mutlaka yapılır (finally değil await + try)
+    try { await api.post('/api/auth/logout') } catch { /* sessiz */ }
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)
