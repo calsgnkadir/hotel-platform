@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
+import { keys } from '../lib/queryClient'
 
 // Her bildirim tipi için sol kenarda küçük renkli "dot" — emoji yerine sade gösterim
 const TYPE_COLOR = {
@@ -42,38 +44,38 @@ function isMuted() {
 export default function NotificationBell({ onNavigate }) {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState([])
-  const [unread, setUnread] = useState(0)
   const [loading, setLoading] = useState(false)
   const [muted, setMuted] = useState(isMuted())
   const ref = useRef(null)
+  const queryClient = useQueryClient()
 
-  const fetchUnread = useCallback(async () => {
-    // Kullanıcı bildirimleri kapattıysa hiç istek atma
-    if (isMuted()) { setUnread(0); return }
-    try {
-      const count = await hotelApi.getUnreadNotificationCount()
-      setUnread(count)
-    } catch { /* sessiz */ }
-  }, [])
-
-  // İlk yükleme + 30sn polling
-  useEffect(() => {
-    fetchUnread()
-    const interval = setInterval(fetchUnread, 30000)
-    return () => clearInterval(interval)
-  }, [fetchUnread])
+  // F0.10 — react-query ile unread count: tab focus'ta otomatik refetch,
+  // 30sn polling, mute durumunda enabled=false (request yok)
+  const { data: unread = 0 } = useQuery({
+    queryKey: keys.notifications.unreadCount(),
+    queryFn: () => hotelApi.getUnreadNotificationCount(),
+    enabled: !muted,
+    refetchInterval: muted ? false : 30_000,
+    refetchOnWindowFocus: true,
+    staleTime: 10_000,
+  })
 
   // Ayarlar'dan mute değişince anında uygula
   useEffect(() => {
     const handler = () => {
       const m = isMuted()
       setMuted(m)
-      if (m) setUnread(0)
-      else fetchUnread()
+      if (m) {
+        // Mute olunca cache'i temizle
+        queryClient.setQueryData(keys.notifications.unreadCount(), 0)
+      } else {
+        // Mute kapanınca anında refetch
+        queryClient.invalidateQueries({ queryKey: keys.notifications.unreadCount() })
+      }
     }
     window.addEventListener('ajanshotel:notifications-muted-changed', handler)
     return () => window.removeEventListener('ajanshotel:notifications-muted-changed', handler)
-  }, [fetchUnread])
+  }, [queryClient])
 
   // Dışına tıklayınca kapat
   useEffect(() => {
