@@ -12,103 +12,15 @@ import GalleryEditor from '../../components/GalleryEditor'
 import MapView from '../../components/MapView'
 // Ayarlar + Yardım header'daki ⚙ SettingsMenu'ye taşındı (sidebar'dan kaldırıldı)
 // #89 v2: Grafikler kaldırıldı (StatusDonut + DailyTrendLine + PositionBar) — sade görünüm
+// #9 (FAZ 0) — Refactor: sabitler + helpers + Badges artık ayrı dosyalarda
 
-const POSITION_LABELS = {
-  WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
-  RECEPTION: 'Resepsiyon', KITCHEN_STAFF: 'Mutfak Personeli', BELLBOY: 'Bellboy', SECURITY: 'Güvenlik',
-}
-const JOB_TYPE_LABELS = {
-  PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı',
-}
-const SHIFT_LABELS = {
-  MORNING: 'Sabah (08:00–16:00)',
-  EVENING: 'Akşam (16:00–24:00)',
-  NIGHT:   'Gece (22:00–08:00)',
-}
-const SHIFT_SHORT = {
-  MORNING: 'Sabah',
-  EVENING: 'Akşam',
-  NIGHT:   'Gece',
-}
-const STATUS_LABELS = { ACTIVE: 'Aktif', PAUSED: 'Durduruldu', CLOSED: 'Kapatıldı' }
-const SENSITIVE_DOC_TYPES_BIZ = [
-  { type: 'CRIMINAL_RECORD',    label: 'Adli Sicil' },
-  { type: 'HEALTH_CERTIFICATE', label: 'Sağlık Raporu' },
-  { type: 'IDENTITY_DOCUMENT',  label: 'Kimlik Fotokopisi' },
-]
-const DOC_REQ_STATUS_LABELS = {
-  PENDING: { cls: 'bg-amber-50 text-amber-700',   label: 'Bekliyor' },
-  GRANTED: { cls: 'bg-brand-50 text-brand-700', label: 'İzin Verildi' },
-  DENIED:  { cls: 'bg-red-50 text-red-700',        label: 'Reddedildi' },
-}
-const BUSINESS_TYPE_LABELS = {
-  HOTEL: 'Otel',
-  RESTAURANT: 'Restoran',
-  CAFE: 'Kafe',
-}
-const WEEKDAYS = [
-  { key: 'MONDAY',    label: 'Pazartesi' },
-  { key: 'TUESDAY',   label: 'Salı' },
-  { key: 'WEDNESDAY', label: 'Çarşamba' },
-  { key: 'THURSDAY',  label: 'Perşembe' },
-  { key: 'FRIDAY',    label: 'Cuma' },
-  { key: 'SATURDAY',  label: 'Cumartesi' },
-  { key: 'SUNDAY',    label: 'Pazar' },
-]
-
-const DEFAULT_HOURS = WEEKDAYS.reduce((acc, d) => {
-  acc[d.key] = { open: '09:00', close: '18:00', closed: false }
-  return acc
-}, {})
-
-/**
- * Backend'deki TEXT alanından struct elde et.
- * Eski format (serbest text) → null döner, çağıran DEFAULT_HOURS kullanır.
- */
-function parseWorkingHours(text) {
-  if (!text) return null
-  try {
-    const parsed = JSON.parse(text)
-    if (typeof parsed !== 'object' || parsed === null) return null
-    const result = {}
-    for (const d of WEEKDAYS) {
-      const entry = parsed[d.key]
-      result[d.key] = entry && typeof entry === 'object'
-        ? {
-            open:   entry.open   || '09:00',
-            close:  entry.close  || '18:00',
-            closed: !!entry.closed,
-          }
-        : { open: '09:00', close: '18:00', closed: true }
-    }
-    return result
-  } catch {
-    return null
-  }
-}
-
-/* ── Status Badge ── */
-function StatusBadge({ status }) {
-  const map = {
-    PENDING:   { cls: 'badge-pending',   icon: '', label: 'Bekliyor' },
-    REVIEWING: { cls: 'badge-reviewing', icon: '', label: 'İnceleniyor' },
-    ACCEPTED:  { cls: 'badge-accepted',  icon: '', label: 'Kabul Edildi' },
-    REJECTED:  { cls: 'badge-rejected',  icon: '', label: 'Reddedildi' },
-    EXPIRED:   { cls: 'badge-expired',   icon: '', label: 'Süresi Doldu' },
-    WITHDRAWN: { cls: 'badge-expired',   icon: '', label: 'Aday İptal Etti' },
-  }
-  const s = map[status] || { cls: 'badge-pending', icon: '?', label: status }
-  return <span className={`badge ${s.cls}`}>{s.label}</span>
-}
-
-/* ── No-show Badge ── */
-function NoShowBadge() {
-  return (
-    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-      İşe Gelmedi
-    </span>
-  )
-}
+import {
+  POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_LABELS, SHIFT_SHORT, STATUS_LABELS,
+  SENSITIVE_DOC_TYPES_BIZ, DOC_REQ_STATUS_LABELS, BUSINESS_TYPE_LABELS,
+  WEEKDAYS, DEFAULT_HOURS,
+} from './lib/constants'
+import { parseWorkingHours, shiftHoursBiz } from './lib/helpers'
+import { StatusBadge, NoShowBadge } from './components/Badges'
 
 /* ── Listing Form Modal (create + edit) ── */
 function ListingFormModal({ listing, onClose, onSuccess }) {
@@ -701,15 +613,7 @@ function MediaBlock({ logoUrl, logoVersion, photos, onLogoUpload, onLogoDelete, 
 }
 
 /* ── Workers Tab (#78) — Bizde çalışan adaylar ── */
-
-function shiftHoursBiz(startTime, endTime) {
-  if (!startTime || !endTime) return 0
-  const [sh, sm] = startTime.split(':').map(Number)
-  const [eh, em] = endTime.split(':').map(Number)
-  let mins = (eh * 60 + em) - (sh * 60 + sm)
-  if (mins < 0) mins += 24 * 60
-  return mins / 60
-}
+// shiftHoursBiz artık lib/helpers'da
 
 function WorkersTab({ applications, onOpenMessages }) {
   // Aday başına grupla: { candidateId -> { candidate, totalHours, jobCount, lastDate, applications[] } }
