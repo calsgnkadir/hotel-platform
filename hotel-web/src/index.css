@@ -29,30 +29,7 @@ body {
   color: #faf7f2;
 }
 
-/* Quick Action kartları — light ve dark ikisinde de MOR vurgu */
-.quick-action-card {
-  background: linear-gradient(135deg, #6b21a8 0%, #7e22ce 100%) !important;
-  border: 1px solid rgba(168, 85, 247, 0.30) !important;
-  color: #faf5ff !important;
-}
-.quick-action-card:hover {
-  background: linear-gradient(135deg, #7e22ce 0%, #9333ea 100%) !important;
-  border-color: rgba(216, 180, 254, 0.50) !important;
-  box-shadow: 0 4px 20px rgba(107, 33, 168, 0.30) !important;
-}
-.quick-action-card .qa-icon-box {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.25) !important;
-}
-.quick-action-card .qa-icon-box svg {
-  color: #faf5ff !important;
-}
-.quick-action-card .qa-label {
-  color: #faf5ff !important;
-}
-.quick-action-card .qa-desc {
-  color: #e9d5ff !important;
-}
+/* Quick Action kartları artık genel .card stilini kullanıyor — özel override yok */
 
 /* Display başlıklar — Fraunces serif */
 .font-display {
@@ -177,28 +154,70 @@ body {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   CARD — Yeni: white bg + soft shadow + krem kenar
+   CARD — TÜM kartlar mor (light + dark farkı YOK)
+   Arka plan zemin: light krem, dark lacivert; KART ise her zaman mor.
    ──────────────────────────────────────────────────────────────── */
 .card {
   @apply rounded-2xl p-5 transition-all duration-200;
-  background: #ffffff;
-  border: 1px solid #ebe0cc;       /* cream-300 */
-  box-shadow: 0 1px 2px rgba(23, 21, 19, 0.03);
+  background: linear-gradient(135deg, #4c1d95 0%, #3b0764 100%);  /* derin mor gradient */
+  border: 1px solid rgba(168, 85, 247, 0.30);
+  color: #f3e8ff;  /* açık mor metin (text default) */
+  box-shadow: 0 2px 12px rgba(107, 33, 168, 0.15);
 }
 .card:hover {
-  border-color: #ddccae;            /* cream-400 */
+  border-color: rgba(216, 180, 254, 0.50);
+  box-shadow: 0 4px 20px rgba(107, 33, 168, 0.30);
 }
+/* dark mode'da aynı mor gradient (override) */
 .dark .card {
-  background: #2a2522;
-  border-color: rgba(250, 247, 242, 0.08);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.20);
+  background: linear-gradient(135deg, #4c1d95 0%, #3b0764 100%);
+  border-color: rgba(168, 85, 247, 0.40);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 .card-header {
-  @apply pb-3 mb-3 border-b border-cream-200;
+  @apply pb-3 mb-3;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.25);
 }
 .dark .card-header {
-  @apply border-ink-700;
+  border-color: rgba(168, 85, 247, 0.30);
+}
+
+/* Card içindeki text renkleri — mor zeminle uyumlu */
+.card .label,
+.card label {
+  color: #c4b5fd !important;  /* mor-pembe label */
+}
+.card input,
+.card select,
+.card textarea {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border-color: rgba(168, 85, 247, 0.35) !important;
+  color: #faf5ff !important;
+}
+.card input::placeholder,
+.card textarea::placeholder {
+  color: rgba(216, 180, 254, 0.60) !important;
+}
+.card input:focus,
+.card select:focus,
+.card textarea:focus {
+  border-color: #d946ef !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+/* Card içindeki tüm metin override — light/dark aynı */
+.card .text-ink-900,
+.card .text-ink-800,
+.card .text-ink-700 {
+  color: #faf5ff !important;
+}
+.card .text-ink-600,
+.card .text-ink-500 {
+  color: #d8b4fe !important;
+}
+.card .text-ink-400,
+.card .text-ink-300 {
+  color: #c4b5fd !important;
 }
 
 /* ────────────────────────────────────────────────────────────────
