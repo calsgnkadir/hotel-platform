@@ -113,10 +113,14 @@ public class ApplicationService {
                     throw new BusinessRuleException(
                             "Seçtiğiniz slot dolu: " + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
                 }
-                // Chat-v2 bugfix: Geçmiş tarihli slot'a başvuru engellenir
-                if (slot.getDate() != null && slot.getDate().isBefore(java.time.LocalDate.now())) {
-                    throw new BusinessRuleException(
-                            "Bu vardiya geçmişte: " + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
+                // F0/bugfix: Slot başlama anı geçmişse engellenir (tarih + saat birlikte)
+                // ESKİ: sadece tarih kontrolü → bugün başlamış ama henüz bitmemiş vardiyaya başvuru kabul oluyordu.
+                if (slot.getDate() != null && slot.getStartTime() != null) {
+                    java.time.LocalDateTime slotStart = java.time.LocalDateTime.of(slot.getDate(), slot.getStartTime());
+                    if (slotStart.isBefore(java.time.LocalDateTime.now())) {
+                        throw new BusinessRuleException(
+                                "Bu vardiya başladı/geçti: " + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
+                    }
                 }
                 selected.add(slot);
             }

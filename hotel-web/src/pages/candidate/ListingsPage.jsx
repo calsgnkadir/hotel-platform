@@ -68,7 +68,18 @@ function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
 
   // Chat-v2 bugfix: bugünden önceki tarihler "geçti" sayılır
   const todayStr = new Date().toISOString().slice(0, 10)
-  const isPastSlot = (s) => (s.date || '') < todayStr
+  // F0/bugfix: TARİH değil, başlangıç DateTime'a göre kontrol.
+  // Bugün başlayan ama saat geçmiş vardiyaya başvuru engellenir.
+  function isPastSlot(s) {
+    if (!s.date) return false
+    if (s.date < todayStr) return true                  // dünden eski → geçmiş
+    if (s.date > todayStr) return false                 // yarın+ → gelecek
+    // Bugünse saat karşılaştır
+    if (!s.startTime) return false                      // saat yoksa kabul
+    const startHHMM = String(s.startTime).slice(0, 5)   // 14:00:00 → 14:00
+    const nowHHMM = new Date().toTimeString().slice(0, 5)
+    return startHHMM <= nowHHMM
+  }
   const futureSlots = allSlots.filter(s => !isPastSlot(s))
   const hasFutureSlots = futureSlots.length > 0
 
