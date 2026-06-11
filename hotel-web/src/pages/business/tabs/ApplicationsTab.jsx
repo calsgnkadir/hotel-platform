@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 import { SENSITIVE_DOC_TYPES_BIZ, DOC_REQ_STATUS_LABELS } from '../lib/constants'
 import { StatusBadge, NoShowBadge } from '../components/Badges'
+import EmptyState from '../../../components/EmptyState'
 
 const APPS_PAGE_SIZE = 15
 
@@ -113,14 +114,15 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="card">
-            <div className="empty-state py-12">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-ink-300 mb-3">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-              </svg>
-              <p className="text-ink-500 text-sm">Bu filtreye uyan başvuru yok</p>
-            </div>
+            <EmptyState
+              type="applications"
+              title={applications.length === 0 ? 'Henüz başvuru yok' : 'Bu filtreye uyan başvuru yok'}
+              description={applications.length === 0
+                ? 'İlan oluşturduğunuzda buraya adaylardan başvurular düşecek.'
+                : 'Filtreleri değiştirerek farklı kriterlerde aratın.'}
+              ctaLabel={applications.length > 0 ? 'Tüm Başvurular' : null}
+              onCta={() => { setFilter('ALL'); setSearch('') }}
+            />
           </div>
         ) : pageItems.map(app => (
           <div key={app.id} className="card hover:border-brand-300 dark:hover:border-brand-700 cursor-pointer transition-all"

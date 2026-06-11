@@ -6,6 +6,7 @@ import { extractErrorMessage } from '../../../api/client'
 import { keys } from '../../../lib/queryClient'
 import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_SHORT, STATUS_LABELS } from '../lib/constants'
 import ListingFormModal from '../modals/ListingFormModal'
+import EmptyState from '../../../components/EmptyState'
 
 /* ── My Listings Tab — FAZ 0/#10 react-query ── */
 export default function MyListingsTab() {
@@ -48,15 +49,13 @@ export default function MyListingsTab() {
 
       {listings.length === 0 ? (
         <div className="card">
-          <div className="empty-state py-14">
-            <p className="font-medium text-ink-700">Henüz ilanınız yok</p>
-            <p className="text-sm text-ink-500 mt-1">İlk ilanınızı oluşturun</p>
-            <button onClick={() => setFormTarget('new')}
-              className="mt-4 px-4 py-2 text-sm font-semibold text-white rounded-lg"
-              style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
-              İlan Oluştur
-            </button>
-          </div>
+          <EmptyState
+            type="listings"
+            title="Henüz ilanınız yok"
+            description="İlk ilanınızı oluşturun ve adayları sizinle iletişime geçirmeye davet edin."
+            ctaLabel="İlk İlanı Oluştur"
+            onCta={() => setFormTarget('new')}
+          />
         </div>
       ) : (
         <div className="space-y-3">

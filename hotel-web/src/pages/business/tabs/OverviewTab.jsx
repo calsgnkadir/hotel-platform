@@ -1,4 +1,5 @@
 import { StatusBadge } from '../components/Badges'
+import EmptyState from '../../../components/EmptyState'
 
 /* ── Overview Tab ── */
 export default function OverviewTab({ applications, onTabChange }) {
@@ -33,9 +34,14 @@ export default function OverviewTab({ applications, onTabChange }) {
             className="text-xs font-medium text-brand-700 dark:text-brand-700">Tümünü Gör →</button>
         </div>
         {applications.length === 0 ? (
-          <div className="empty-state">
-            <p className="text-ink-500 text-sm">Henüz başvuru yok</p>
-          </div>
+          <EmptyState
+            type="applications"
+            title="Henüz başvuru yok"
+            description="İlan oluşturduğunuzda buraya adaylardan başvurular düşecek."
+            ctaLabel="İlan Oluştur"
+            onCta={() => onTabChange('mylistings')}
+            compact
+          />
         ) : (
           <div className="table-container rounded-none border-0 border-t border-cream-200">
             <table className="table">

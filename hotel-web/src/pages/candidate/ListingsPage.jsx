@@ -9,6 +9,7 @@ import ReportModal from '../../components/ReportModal'
 import StarRating from '../../components/StarRating'
 import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
+import EmptyState from '../../components/EmptyState'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 
 const POSITION_LABELS = {
@@ -844,19 +845,15 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         <div className="flex justify-center py-16"><div className="spinner" /></div>
       ) : listings.length === 0 ? (
         <div className="card">
-          <div className="empty-state py-16">
-            <span className="text-5xl mb-4">{activeFilterCount > 0 ? '🔎' : ''}</span>
-            <p className="font-medium text-ink-700">
-              {activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
-            </p>
-            {activeFilterCount > 0 ? (
-              <button onClick={clearFilters} className="mt-3 text-sm font-medium text-brand-700 dark:text-brand-700">
-                Filtreleri temizle
-              </button>
-            ) : (
-              <p className="text-sm text-ink-500 mt-1">Daha sonra tekrar kontrol edin</p>
-            )}
-          </div>
+          <EmptyState
+            type="listings"
+            title={activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
+            description={activeFilterCount > 0
+              ? 'Filtreleri değiştir veya temizleyerek daha fazla ilan görebilirsin.'
+              : 'Daha sonra tekrar kontrol et — yeni ilanlar her gün eklenir.'}
+            ctaLabel={activeFilterCount > 0 ? 'Filtreleri Temizle' : null}
+            onCta={clearFilters}
+          />
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

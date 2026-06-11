@@ -2,6 +2,7 @@ import * as hotelApi from '../../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 import { shiftHoursBiz } from '../lib/helpers'
+import EmptyState from '../../../components/EmptyState'
 
 /* ── Workers Tab (#78) — Bizde çalışan adaylar ── */
 export default function WorkersTab({ applications, onOpenMessages }) {
@@ -35,17 +36,11 @@ export default function WorkersTab({ applications, onOpenMessages }) {
   if (workers.length === 0) {
     return (
       <div className="card">
-        <div className="empty-state py-16">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-ink-300 mb-3">
-            <path strokeLinecap="round" strokeLinejoin="round"
-              d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-          </svg>
-          <p className="font-medium text-ink-700">Henüz tamamlanmış çalışma yok</p>
-          <p className="text-sm text-ink-500 mt-1">
-            Kabul ettiğiniz adayların vardiya günü geçince burada toplanır
-          </p>
-        </div>
+        <EmptyState
+          type="workers"
+          title="Henüz tamamlanmış çalışma yok"
+          description="Kabul ettiğiniz adayların vardiya günü geçince burada otomatik olarak toplanır."
+        />
       </div>
     )
   }

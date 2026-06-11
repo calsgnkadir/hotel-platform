@@ -10,6 +10,7 @@ import ListingsPage from './ListingsPage'
 import MessagesPage from '../MessagesPage'
 import ProfileCompletenessCard from '../../components/ProfileCompletenessCard'
 import { calculateCandidateCompleteness } from '../../lib/profileCompleteness'
+import EmptyState from '../../components/EmptyState'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
 import ReviewModal from '../../components/ReviewModal'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
@@ -134,10 +135,13 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
   if (applications.length === 0) {
     return (
       <div className="card">
-        <div className="empty-state">
-          <p className="font-medium text-ink-700">Henüz başvurunuz yok</p>
-          <p className="text-sm text-ink-500 mt-1">İlanlar bölümünden bir ilana başvurun</p>
-        </div>
+        <EmptyState
+          type="applications"
+          title="Henüz başvurunuz yok"
+          description="İlanlar sekmesinden size uygun bir ilana başvurun. İlk başvurunuz dakikalar içinde işverene ulaşır."
+          ctaLabel="İlanları Keşfet"
+          onCta={() => onTabChange?.('listings')}
+        />
       </div>
     )
   }
@@ -168,9 +172,14 @@ function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
 
       {filtered.length === 0 ? (
         <div className="card">
-          <div className="empty-state py-10">
-            <p className="text-sm text-ink-500">Bu filtrede başvuru yok</p>
-          </div>
+          <EmptyState
+            type="applications"
+            title="Bu filtrede başvuru yok"
+            description="Farklı bir durum seçerek diğer başvurularını görebilirsin."
+            ctaLabel="Tümünü Göster"
+            onCta={() => setStatusFilter(null)}
+            compact
+          />
         </div>
       ) : filtered.map(app => (
         <div key={app.id} className="card">
@@ -345,17 +354,11 @@ function HistoryTab({ applications, onOpenMessages }) {
   if (completed.length === 0) {
     return (
       <div className="card">
-        <div className="empty-state py-16">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-ink-300 mb-3">
-            <path strokeLinecap="round" strokeLinejoin="round"
-              d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-          </svg>
-          <p className="font-medium text-ink-700">Henüz tamamlanmış işin yok</p>
-          <p className="text-sm text-ink-500 mt-1">
-            Kabul edilmiş bir başvurun olup vardiya günü geçtiğinde burada görünür
-          </p>
-        </div>
+        <EmptyState
+          type="history"
+          title="Henüz tamamlanmış işin yok"
+          description="Kabul edilmiş bir başvurun olup vardiya günü geçtiğinde burada görünür. İlk işini bitirdiğinde toplam saatin ve değerlendirmen otomatik düşer."
+        />
       </div>
     )
   }
