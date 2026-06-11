@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigInteger;
 import java.net.URI;
 import java.security.*;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.*;
 import java.time.Instant;
 import java.util.Arrays;
