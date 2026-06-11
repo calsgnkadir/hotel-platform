@@ -6,6 +6,8 @@ import toast from 'react-hot-toast'
 import MessagesPage from '../MessagesPage'
 import { keys } from '../../lib/queryClient'
 import { SkeletonList } from '../../components/Skeleton'
+import { useAuth } from '../../context/AuthContext'
+import OnboardingWizard, { shouldShowOnboarding } from '../../components/OnboardingWizard'
 
 // FAZ 0/#9 — Tüm tab'lar ayrı dosyalarda
 import OverviewTab from './tabs/OverviewTab'
@@ -16,6 +18,8 @@ import ProfileTab from './tabs/ProfileTab'
 
 export default function BusinessDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
+  const { user } = useAuth()
+  const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding(user?.id))
   const queryClient = useQueryClient()
 
   // FAZ 0/#10 (Aşama 4) — useQuery: cache + auto-refetch + invalidation
@@ -47,6 +51,9 @@ export default function BusinessDashboard() {
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
         </>
+      )}
+      {showOnboarding && (
+        <OnboardingWizard user={user} onClose={() => setShowOnboarding(false)} onTabChange={setActiveTab} />
       )}
     </DashboardLayout>
   )

@@ -12,6 +12,7 @@ import ProfileCompletenessCard from '../../components/ProfileCompletenessCard'
 import { calculateCandidateCompleteness } from '../../lib/profileCompleteness'
 import EmptyState from '../../components/EmptyState'
 import { SkeletonList } from '../../components/Skeleton'
+import OnboardingWizard, { shouldShowOnboarding } from '../../components/OnboardingWizard'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
 import ReviewModal from '../../components/ReviewModal'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
@@ -910,6 +911,7 @@ function ProfileTab() {
 export default function CandidateDashboard() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
+  const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding(user?.id))
   const queryClient = useQueryClient()
 
   // FAZ 0/#10 (Aşama 4) — useQuery
@@ -938,6 +940,9 @@ export default function CandidateDashboard() {
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
         </>
+      )}
+      {showOnboarding && (
+        <OnboardingWizard user={user} onClose={() => setShowOnboarding(false)} onTabChange={setActiveTab} />
       )}
     </DashboardLayout>
   )
