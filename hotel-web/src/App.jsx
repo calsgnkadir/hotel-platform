@@ -74,7 +74,8 @@ export default function App() {
       </AuthProvider>
     </BrowserRouter>
     </ThemeProvider>
-    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />}
+    {/* React Query Devtools — sadece DEV. Buton 'top-right' (sol alt Cikis butonunu kapatmasin). */}
+    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" />}
     </QueryClientProvider>
   )
 }
