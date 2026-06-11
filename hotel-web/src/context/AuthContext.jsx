@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import * as authApi from '../api/auth'
 import api from '../api/client'
 import { wsConnect, wsDisconnect } from '../lib/websocket'
+import { presenceInit, presenceSubscribe, presenceUnsubscribe } from '../lib/presence'
 
 const AuthContext = createContext(null)
 
@@ -16,6 +17,9 @@ export function AuthProvider({ children }) {
         setUser(JSON.parse(savedUser))
         // FAZ 1/#12 — page reload sonrası user mevcutsa WS bağlan
         wsConnect()
+        // FAZ 1/#60 — Online presence init + sub
+        presenceInit()
+        presenceSubscribe()
       } catch {
         localStorage.removeItem('user')
       }
@@ -38,7 +42,8 @@ export function AuthProvider({ children }) {
   async function logout() {
     // F0.2: Backend'i bilgilendir → refresh token DB'de revoke + cookie sil
     try { await api.post('/api/auth/logout') } catch { /* sessiz */ }
-    wsDisconnect()  // FAZ 1/#12
+    presenceUnsubscribe()
+    wsDisconnect()
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)
@@ -49,7 +54,9 @@ export function AuthProvider({ children }) {
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(userInfo))
     setUser(userInfo)
-    wsConnect()  // FAZ 1/#12 — login sonrası WS bağlan
+    wsConnect()
+    // FAZ 1/#60 — Presence (WS bağlandıktan sonra init/sub)
+    setTimeout(() => { presenceInit(); presenceSubscribe() }, 800)
   }
 
   /** #92: Google OAuth callback'inden gelen veriyi persist eder. */

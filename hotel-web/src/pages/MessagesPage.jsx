@@ -8,6 +8,7 @@ import { keys } from '../lib/queryClient'
 import EmptyState from '../components/EmptyState'
 import { SkeletonConversationList, SkeletonMessages } from '../components/Skeleton'
 import { wsSubscribe, wsPublish } from '../lib/websocket'
+import { useOnline } from '../lib/presence'
 
 /** Mesaj zamanını dilbilime yakın formatla. */
 function formatRelative(iso) {
@@ -30,24 +31,31 @@ const POLL_INTERVAL = 5000  // 5 sn
 
 /* ── Tek sohbet öğesi (sol panel) ── */
 function ConversationItem({ conv, isActive, onClick }) {
-  const initials = (conv.otherPartyName || '?').charAt(0).toUpperCase()
+  const online = useOnline(conv.otherPartyId)  // FAZ 1/#60
   return (
     <button onClick={onClick}
       className={`w-full text-left px-3 py-3 border-b border-cream-200 dark:border-cream-300 hover:bg-cream-50 dark:hover:bg-slate-800 transition-colors
         ${isActive ? 'bg-brand-50 dark:bg-brand-900/30' : ''}`}>
       <div className="flex items-start gap-3">
-        {conv.otherPartyAvatarUrl ? (
-          <img src={conv.otherPartyAvatarUrl} alt={conv.otherPartyName}
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
-        ) : (
-          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-ink-400 dark:text-ink-500">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-            </svg>
-          </div>
-        )}
+        <div className="relative flex-shrink-0">
+          {conv.otherPartyAvatarUrl ? (
+            <img src={conv.otherPartyAvatarUrl} alt={conv.otherPartyName}
+              className="w-10 h-10 rounded-full object-cover border border-cream-300" />
+          ) : (
+            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-ink-400 dark:text-ink-500">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+              </svg>
+            </div>
+          )}
+          {/* FAZ 1/#60 — Online dot sağ alt */}
+          {online && (
+            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white"
+                  title="Çevrimiçi" />
+          )}
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <div className="font-semibold text-sm text-ink-800 dark:text-ink-900 truncate">
@@ -841,6 +849,7 @@ export default function MessagesPage() {
 /* FAZ 1/#48 — 3. sütun: sohbet detay paneli (xl+ ekranlarda) */
 function ConversationDetailPanel({ conversation }) {
   const c = conversation
+  const online = useOnline(c?.otherPartyId)  // FAZ 1/#60
   const startedDays = c?.createdAt
     ? Math.floor((Date.now() - new Date(c.createdAt).getTime()) / 86400000)
     : null
@@ -864,6 +873,13 @@ function ConversationDetailPanel({ conversation }) {
           </div>
         )}
         <h3 className="font-bold text-base text-ink-900 truncate">{c.otherPartyName}</h3>
+        {/* FAZ 1/#60 — Online/offline durum */}
+        <div className="flex items-center justify-center gap-1.5 mt-1">
+          <span className={`w-2 h-2 rounded-full ${online ? 'bg-green-500' : 'bg-cream-300'}`} />
+          <span className="text-xs text-ink-500">
+            {online ? 'Çevrimiçi' : 'Çevrimdışı'}
+          </span>
+        </div>
         {c.otherPartyRole && (
           <p className="text-xs text-ink-500 mt-0.5">
             {c.otherPartyRole === 'BUSINESS_OWNER' ? 'İşletme' : 'Aday'}
