@@ -28,6 +28,7 @@ import java.util.Base64;
  *
  * Eger config'te bos ise startup'ta auto-generate + log basar (dev kullanim icin).
  */
+// MANUEL JWT - jjwt aud array yapiyordu, FCM string istiyor.
 @Service
 @Slf4j
 public class VapidService {
@@ -112,6 +113,8 @@ public class VapidService {
             String sigB64 = b64url(joseSig);
 
             String jwt = signingInput + "." + sigB64;
+            // DEBUG: payload'un dogru sekilde yazildigini gormek icin (tek seferlik)
+            log.info("[VAPID-DEBUG] payload={}", payloadJson);
             return "vapid t=" + jwt + ", k=" + publicKeyForHeader;
         } catch (Exception e) {
             throw new RuntimeException("VAPID JWT olusturulamadi: " + e.getMessage(), e);
