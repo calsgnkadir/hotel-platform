@@ -13,6 +13,7 @@ import { calculateCandidateCompleteness } from '../../lib/profileCompleteness'
 import EmptyState from '../../components/EmptyState'
 import { SkeletonList } from '../../components/Skeleton'
 import OnboardingWizard, { shouldShowOnboarding } from '../../components/OnboardingWizard'
+import AvatarCropModal from '../../components/AvatarCropModal'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
 import ReviewModal from '../../components/ReviewModal'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
@@ -590,30 +591,18 @@ function ProfileTab() {
       .finally(() => setLoading(false))
   }, [])
 
-  // D7: Avatar upload/delete
+  // D7 + FAZ 1/#54 — Avatar: drag-drop + crop modal
   const [avatarUploading, setAvatarUploading] = useState(false)
-  async function handleAvatarUpload(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const [cropOpen, setCropOpen] = useState(false)
 
-    const MAX = 5 * 1024 * 1024
-    if (file.size > MAX) {
-      toast.error(`Foto çok büyük (${(file.size/1024/1024).toFixed(1)} MB). Maksimum 5 MB.`)
-      e.target.value = ''; return
-    }
-    const ext = (file.name.split('.').pop() || '').toLowerCase()
-    if (!['jpg','jpeg','png','webp','heic','heif'].includes(ext)) {
-      toast.error(`'.${ext}' desteklenmiyor. JPG/PNG/WEBP/HEIC kullanın.`)
-      e.target.value = ''; return
-    }
-
+  async function handleCroppedAvatar(file) {
     setAvatarUploading(true)
     try {
       const updated = await hotelApi.uploadCandidateAvatar(file)
       setProfile(updated)
       toast.success('Profil fotoğrafı güncellendi')
     } catch (err) { toast.error(extractErrorMessage(err)) }
-    finally { setAvatarUploading(false); e.target.value = '' }
+    finally { setAvatarUploading(false) }
   }
 
   async function handleAvatarDelete() {
@@ -714,16 +703,16 @@ function ProfileTab() {
           )}
         </div>
         <div className="flex-1 space-y-2">
-          <label className={`block px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
-            ${avatarUploading
-              ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait'
-              : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
-            <input type="file" className="sr-only" accept="image/*,.heic,.heif"
-              onChange={handleAvatarUpload} disabled={avatarUploading} />
+          <button type="button" onClick={() => setCropOpen(true)} disabled={avatarUploading}
+            className={`block w-full px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
+              ${avatarUploading
+                ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait'
+                : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
             {avatarUploading
               ? 'Yükleniyor...'
               : (profile?.avatarUrl ? 'Fotoyu Değiştir' : 'Foto Yükle')}
-          </label>
+          </button>
+          <AvatarCropModal open={cropOpen} onClose={() => setCropOpen(false)} onConfirm={handleCroppedAvatar} />
           {profile?.avatarUrl && (
             <button type="button" onClick={handleAvatarDelete}
               className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">
