@@ -90,9 +90,12 @@ public class VapidService {
         try {
             URI uri = URI.create(endpoint);
             String aud = uri.getScheme() + "://" + uri.getHost();
+            // FCM 'invalid aud claim' verdi: jjwt .audience().add() bunu array yapiyor
+            // (aud: ["..."]). FCM tek string istiyor -> .claim("aud", string)
+            // ile manuel set ediyoruz.
             String jwt = Jwts.builder()
                     .header().add("typ", "JWT").and()
-                    .audience().add(aud).and()
+                    .claim("aud", aud)
                     .expiration(Date.from(Instant.now().plusSeconds(12 * 3600))) // 12h
                     .subject(subject)
                     .signWith(privateKey, Jwts.SIG.ES256)
