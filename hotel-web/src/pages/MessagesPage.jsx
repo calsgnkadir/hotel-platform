@@ -252,8 +252,11 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       queryClient.invalidateQueries({ queryKey: keys.conversations.list() })
       queryClient.invalidateQueries({ queryKey: keys.conversations.unreadCount() })
     })
-    const subTyping = wsSubscribe('/user/queue/typing', (payload) => {
+    // FIX: User-destination yerine topic broadcast (Spring SimpUserRegistry sorununu bypass).
+    const subTyping = wsSubscribe(`/topic/typing.${conversation.id}`, (payload) => {
       console.log('[WS] Typing alindi:', payload)
+      // Kendi yazdigimizi gozardi et (sonsuz loop'tan kacin)
+      if (payload?.userId === user?.id) return
       if (payload?.conversationId !== conversation.id) return
       setOtherTyping(true)
       clearTimeout(typingTimeoutRef.current)

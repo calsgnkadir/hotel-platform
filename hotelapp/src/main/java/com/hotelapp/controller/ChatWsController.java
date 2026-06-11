@@ -65,21 +65,17 @@ public class ChatWsController {
             return;
         }
 
-        boolean iAmCandidate = sender.getId().equals(candidateId);
-        User recipient = iAmCandidate ? conv.getBusinessOwner() : conv.getCandidate();
-
         TypingPayload payload = new TypingPayload(
                 conversationId,
                 sender.getId(),
                 sender.getFullName()
         );
-        // FIX: convertAndSendToUser, userId'yi Principal.getName() ile eslestirir.
-        // Bizim Principal.getName() = email, bu yuzden id yerine EMAIL kullaniyoruz.
-        log.info("[TYPING] push: from={} to={} ({}) conv={}",
-                 sender.getId(), recipient.getId(), recipient.getEmail(), conversationId);
-        messagingTemplate.convertAndSendToUser(
-                recipient.getEmail(),
-                "/queue/typing",
+        // BASIT COZUM: User-destination yerine TOPIC broadcast.
+        // /topic/typing.{conversationId} → her iki taraf da sub olur.
+        // Frontend kendi senderId == myUserId ise gormezden gelir (sonsuz loop yok).
+        log.info("[TYPING] broadcast: from={} conv={}", sender.getId(), conversationId);
+        messagingTemplate.convertAndSend(
+                "/topic/typing." + conversationId,
                 payload
         );
     }
