@@ -8,6 +8,7 @@ import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_SHORT, STATUS_LABELS } from '..
 import ListingFormModal from '../modals/ListingFormModal'
 import EmptyState from '../../../components/EmptyState'
 import { SkeletonList } from '../../../components/Skeleton'
+import { formatSalary } from '../../../lib/salary'  // FAZ 2/#25
 
 /* ── My Listings Tab — FAZ 0/#10 react-query ── */
 export default function MyListingsTab() {
@@ -77,12 +78,12 @@ export default function MyListingsTab() {
                     {POSITION_LABELS[listing.position]} · {JOB_TYPE_LABELS[listing.jobType]}
                     {listing.shift && ` · ${SHIFT_SHORT[listing.shift]}`}
                   </p>
-                  {(listing.salaryMin || listing.salaryMax) && (
-                    <p className="text-xs text-brand-700 font-medium mt-0.5">
-                      {listing.salaryMin?.toLocaleString('tr-TR')}
-                      {listing.salaryMax && ` – ${listing.salaryMax.toLocaleString('tr-TR')}`} ₺
-                    </p>
-                  )}
+                  {(() => {
+                    const s = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
+                    return s ? (
+                      <p className="text-xs text-brand-700 font-medium mt-0.5">{s}</p>
+                    ) : null
+                  })()}
                   {/* Faz E2: slot özeti */}
                   {listing.shiftSlots?.length > 0 && (() => {
                     const total      = listing.shiftSlots.length

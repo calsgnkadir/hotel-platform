@@ -22,6 +22,8 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
     requirements: listing?.requirements || '',
     salaryMin:    listing?.salaryMin    ?? '',
     salaryMax:    listing?.salaryMax    ?? '',
+    salaryType:    listing?.salaryType    ?? 'HOURLY',  // FAZ 2/#25 default saatlik
+    tipsIncluded:  listing?.tipsIncluded  ?? false,
     startDate:    listing?.startDate    || '',
     endDate:      listing?.endDate      || '',
   })
@@ -69,11 +71,14 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
 
     if (!form.title.trim())       return toast.error('İlan başlığı zorunlu')
     if (!form.description.trim()) return toast.error('Açıklama zorunlu')
-    if (!form.salaryMin)          return toast.error('Min. ücret zorunlu')
+    // FAZ 2/#25 - NEGOTIABLE'da min ucret opsiyonel
+    if (form.salaryType !== 'NEGOTIABLE' && !form.salaryMin) {
+      return toast.error('Min. ücret zorunlu (veya tipi "Görüşülecek" yap)')
+    }
 
-    const min = parseFloat(form.salaryMin)
+    const min = form.salaryMin ? parseFloat(form.salaryMin) : null
     const max = form.salaryMax ? parseFloat(form.salaryMax) : null
-    if (max !== null && max < min) {
+    if (min !== null && max !== null && max < min) {
       return toast.error('Max. ücret min. ücretten küçük olamaz')
     }
 
@@ -111,8 +116,10 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
         title:       form.title.trim(),
         description: form.description.trim(),
         requirements: form.requirements.trim() || null,
-        salaryMin:   min,
-        salaryMax:   max,
+        salaryMin:    min,
+        salaryMax:    max,
+        salaryType:   form.salaryType || 'HOURLY',
+        tipsIncluded: !!form.tipsIncluded,
         startDate:   form.startDate || null,
         endDate:     form.endDate || null,
         shiftStart:  null,
@@ -205,18 +212,58 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
               placeholder="Deneyim, yaş, dil bilgisi vb..." />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="label">Min. Maaş ₺ *</label>
-              <input type="number" name="salaryMin" value={form.salaryMin} onChange={handleChange}
-                className="input" placeholder="15000" min="0" />
-            </div>
-            <div>
-              <label className="label">Max. Maaş ₺ <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-              <input type="number" name="salaryMax" value={form.salaryMax} onChange={handleChange}
-                className="input" placeholder="25000" min="0" />
+          {/* FAZ 2/#25 - Ucret tipi seffafligi */}
+          <div>
+            <label className="label">Ücret tipi *</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { v: 'HOURLY',     l: 'Saatlik' },
+                { v: 'DAILY',      l: 'Günlük'  },
+                { v: 'MONTHLY',    l: 'Aylık'   },
+                { v: 'NEGOTIABLE', l: 'Görüşülecek' },
+              ].map(opt => (
+                <button key={opt.v} type="button"
+                  onClick={() => setForm(f => ({ ...f, salaryType: opt.v }))}
+                  className={`text-xs font-semibold py-2 px-2 rounded-lg border-2 transition ${
+                    form.salaryType === opt.v
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white dark:bg-ink-800 border-ink-200 dark:border-ink-700 text-ink-600 dark:text-ink-300 hover:border-brand-300'
+                  }`}>
+                  {opt.l}
+                </button>
+              ))}
             </div>
           </div>
+
+          {form.salaryType !== 'NEGOTIABLE' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">Min. Ücret ₺ *</label>
+                <input type="number" name="salaryMin" value={form.salaryMin} onChange={handleChange}
+                  className="input"
+                  placeholder={form.salaryType === 'HOURLY' ? '150' : form.salaryType === 'DAILY' ? '1500' : '20000'}
+                  min="0" />
+              </div>
+              <div>
+                <label className="label">Max. Ücret ₺ <span className="text-ink-400 font-normal">(ops.)</span></label>
+                <input type="number" name="salaryMax" value={form.salaryMax} onChange={handleChange}
+                  className="input"
+                  placeholder={form.salaryType === 'HOURLY' ? '200' : form.salaryType === 'DAILY' ? '2000' : '30000'}
+                  min="0" />
+              </div>
+            </div>
+          )}
+
+          {/* Bahsis seffafligi - garson/servis icin onemli */}
+          <label className="flex items-center gap-2 cursor-pointer select-none p-2 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/20">
+            <input type="checkbox" name="tipsIncluded"
+              checked={!!form.tipsIncluded}
+              onChange={(e) => setForm(f => ({ ...f, tipsIncluded: e.target.checked }))}
+              className="w-4 h-4 accent-brand-600" />
+            <span className="text-sm text-ink-700 dark:text-ink-200">
+              💰 Bahşiş (servis bedeli) ek olarak verilir
+            </span>
+          </label>
 
           {/* Faz E2: Vardiya slotları */}
           {(() => {

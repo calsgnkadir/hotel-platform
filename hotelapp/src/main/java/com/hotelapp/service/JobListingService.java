@@ -6,6 +6,7 @@ import com.hotelapp.entity.ShiftSlot;
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.ListingStatus;
 import com.hotelapp.enums.Position;
+import com.hotelapp.enums.SalaryType;
 import com.hotelapp.enums.Shift;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
@@ -145,6 +146,8 @@ public class JobListingService {
                 .requirements(request.getRequirements())
                 .salaryMin(request.getSalaryMin())
                 .salaryMax(request.getSalaryMax())
+                .salaryType(request.getSalaryType())     // FAZ 2/#25
+                .tipsIncluded(request.getTipsIncluded()) // FAZ 2/#25
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .shiftStart(request.getShiftStart())
@@ -293,6 +296,8 @@ public class JobListingService {
         listing.setRequirements(request.getRequirements());
         listing.setSalaryMin(request.getSalaryMin());
         listing.setSalaryMax(request.getSalaryMax());
+        listing.setSalaryType(request.getSalaryType());     // FAZ 2/#25
+        listing.setTipsIncluded(request.getTipsIncluded()); // FAZ 2/#25
         listing.setStartDate(request.getStartDate());
         listing.setEndDate(request.getEndDate());
         listing.setShiftStart(request.getShiftStart());
@@ -389,6 +394,8 @@ public class JobListingService {
                 .requirements(l.getRequirements())
                 .salaryMin(l.getSalaryMin())
                 .salaryMax(l.getSalaryMax())
+                .salaryType(l.getSalaryType() != null ? l.getSalaryType().name() : null) // FAZ 2/#25
+                .tipsIncluded(l.getTipsIncluded())                                       // FAZ 2/#25
                 .startDate(l.getStartDate())
                 .endDate(l.getEndDate())
                 .shiftStart(l.getShiftStart())
@@ -422,6 +429,9 @@ public class JobListingService {
         private String requirements;
         private BigDecimal salaryMin;
         private BigDecimal salaryMax;
+        // FAZ 2/#25 — Ucret seffafligi
+        private SalaryType salaryType;
+        private Boolean tipsIncluded;
         private LocalDate startDate;
         private LocalDate endDate;
         private LocalTime shiftStart;
@@ -464,6 +474,9 @@ public class JobListingService {
         private String requirements;
         private BigDecimal salaryMin;
         private BigDecimal salaryMax;
+        // FAZ 2/#25 — Ucret tipi seffafligi
+        private String salaryType;     // HOURLY/DAILY/MONTHLY/NEGOTIABLE veya null
+        private Boolean tipsIncluded;  // true = bahsis dahil
         private LocalDate startDate;
         private LocalDate endDate;
         private LocalTime shiftStart;

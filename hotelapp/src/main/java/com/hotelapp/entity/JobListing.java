@@ -3,6 +3,7 @@ package com.hotelapp.entity;
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.ListingStatus;
 import com.hotelapp.enums.Position;
+import com.hotelapp.enums.SalaryType;
 import com.hotelapp.enums.Shift;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,6 +50,16 @@ public class JobListing {
 
     private BigDecimal salaryMin;
     private BigDecimal salaryMax;
+
+    // FAZ 2/#25 — Ucret seffafligi: HOURLY/DAILY/MONTHLY/NEGOTIABLE.
+    // Eski ilanlar null kalir, frontend "Aylik" varsayar.
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private SalaryType salaryType;
+
+    // Garson/servis personeli icin bahsis (tip) seffafligi.
+    // null = belirsiz, true = bahsis dahil (ek kazanc), false = sadece sabit ucret
+    private Boolean tipsIncluded;
 
     // For seasonal/daily jobs
     private LocalDate startDate;

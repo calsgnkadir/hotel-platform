@@ -17,6 +17,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { coordsOfDistrict, ISTANBUL_CENTER } from '../data/istanbul'
+import { formatSalary } from '../lib/salary'  // FAZ 2/#25
 
 function makeIcon(size = 32, hot = false) {
   const grad = hot
@@ -87,7 +88,7 @@ function FlyTo() {
   return null
 }
 
-function formatSalary(min, max) {
+function _legacyFormatSalary(min, max) {
   if (!min && !max) return null
   const fmt = (n) => Number(n).toLocaleString('tr-TR')
   if (min && max) return `${fmt(min)} – ${fmt(max)} ₺`
@@ -160,9 +161,9 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
                     {p.listing.businessDistrict || 'İstanbul'}
                     {p.approx && <span className="italic"> (yaklaşık)</span>}
                   </div>
-                  {formatSalary(p.listing.salaryMin, p.listing.salaryMax) && (
+                  {formatSalary(p.listing.salaryMin, p.listing.salaryMax, p.listing.salaryType, p.listing.tipsIncluded) && (
                     <div className="font-semibold" style={{ color: '#7e22ce' }}>
-                      {formatSalary(p.listing.salaryMin, p.listing.salaryMax)}
+                      {formatSalary(p.listing.salaryMin, p.listing.salaryMax, p.listing.salaryType, p.listing.tipsIncluded)}
                     </div>
                   )}
                   <button

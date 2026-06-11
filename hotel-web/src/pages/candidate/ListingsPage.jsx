@@ -14,6 +14,7 @@ import { SkeletonListingGrid } from '../../components/Skeleton'
 import ListingsMapView from '../../components/ListingsMapView'
 import BottomSheet from '../../components/BottomSheet'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
+import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -46,12 +47,7 @@ const SENSITIVE_DOC_LABELS = {
 }
 const SENSITIVE_DOC_TYPES = Object.keys(SENSITIVE_DOC_LABELS)
 
-function formatSalary(min, max) {
-  if (min && max) return `${min.toLocaleString('tr-TR')} – ${max.toLocaleString('tr-TR')} ₺`
-  if (min)        return `${min.toLocaleString('tr-TR')} ₺ den itibaren`
-  if (max)        return `${max.toLocaleString('tr-TR')} ₺ ye kadar`
-  return null
-}
+// FAZ 2/#25 — formatSalary ortak helper'a tasindi (lib/salary.js)
 
 /* ── Apply Modal (Chat refactor v2) ──
    Akış:
@@ -326,7 +322,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
 function DetailModal({ listing, onClose, onApply }) {
   const [showReport, setShowReport] = useState(false)
   const shift = listing.shift ? SHIFT_INFO[listing.shift] : null
-  const salary = formatSalary(listing.salaryMin, listing.salaryMax)
+  const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const hasDates = listing.startDate || listing.endDate
   const slots = [...(listing.shiftSlots || [])].sort((a, b) => {
     const c = (a.date || '').localeCompare(b.date || '')
@@ -518,7 +514,7 @@ function DetailModal({ listing, onClose, onApply }) {
 /* ── Listing Card ── */
 function ListingCard({ listing, onApply, onDetail }) {
   const shift = listing.shift ? SHIFT_INFO[listing.shift] : null
-  const salary = formatSalary(listing.salaryMin, listing.salaryMax)
+  const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
 
   // FAZ 1/#46: Hero alan üstte — büyük gradient + işletme letter (foto-merkezli his)
   const businessLetter = BUSINESS_TYPE_LETTER[listing.businessType] || listing.businessName?.charAt(0) || '?'

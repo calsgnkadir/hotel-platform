@@ -15,6 +15,7 @@ import MapView from '../../components/MapView'
 import toast from 'react-hot-toast'
 import { useState } from 'react'
 import { ApplyModal } from './ListingsPage'
+import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -27,13 +28,6 @@ const SHIFT_INFO = {
   EVENING: { label: 'Akşam', icon: '🌆', time: '16:00–24:00' },
   NIGHT:   { label: 'Gece',  icon: '🌙', time: '22:00–08:00' },
   FLEXIBLE:{ label: 'Esnek', icon: '⏰', time: 'Esnek saatler' },
-}
-
-function formatSalary(min, max) {
-  if (!min && !max) return null
-  const fmt = (n) => Number(n).toLocaleString('tr-TR')
-  if (min && max) return `${fmt(min)} – ${fmt(max)} ₺`
-  return `${fmt(min || max)} ₺`
 }
 
 export default function ListingDetailPage() {
@@ -74,7 +68,7 @@ export default function ListingDetailPage() {
   }
 
   const shift = listing.shift ? SHIFT_INFO[listing.shift] : null
-  const salary = formatSalary(listing.salaryMin, listing.salaryMax)
+  const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const hasDates = listing.startDate || listing.endDate
   const slots = [...(listing.shiftSlots || [])].sort((a, b) => {
     const c = (a.date || '').localeCompare(b.date || '')
