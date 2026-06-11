@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import * as authApi from '../api/auth'
 import api from '../api/client'
+import { wsConnect, wsDisconnect } from '../lib/websocket'
 
 const AuthContext = createContext(null)
 
@@ -13,6 +14,8 @@ export function AuthProvider({ children }) {
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser))
+        // FAZ 1/#12 — page reload sonrası user mevcutsa WS bağlan
+        wsConnect()
       } catch {
         localStorage.removeItem('user')
       }
@@ -34,8 +37,8 @@ export function AuthProvider({ children }) {
 
   async function logout() {
     // F0.2: Backend'i bilgilendir → refresh token DB'de revoke + cookie sil
-    // Network hatası olsa bile lokal temizlik mutlaka yapılır (finally değil await + try)
     try { await api.post('/api/auth/logout') } catch { /* sessiz */ }
+    wsDisconnect()  // FAZ 1/#12
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)
@@ -46,6 +49,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(userInfo))
     setUser(userInfo)
+    wsConnect()  // FAZ 1/#12 — login sonrası WS bağlan
   }
 
   /** #92: Google OAuth callback'inden gelen veriyi persist eder. */

@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { keys } from '../lib/queryClient'
 import EmptyState from '../components/EmptyState'
 import { SkeletonConversationList, SkeletonMessages } from '../components/Skeleton'
+import { wsSubscribe, wsPublish } from '../lib/websocket'
 
 /** Mesaj zamanını dilbilime yakın formatla. */
 function formatRelative(iso) {
@@ -219,16 +220,44 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
   const scrollAnchorRef = useRef(null)
   const queryClient = useQueryClient()
 
-  // F0.10 Aşama 3 — Mesajlar useQuery + 5sn polling
-  // Cache key: conversationId — sohbet değişince cache ayrı
+  // F0.10 + FAZ 1/#12 — Mesajlar useQuery
+  // WS push olunca anlık invalidate. Polling fallback 30sn'ye çekildi.
   const { data: messagesData, isLoading: loading } = useQuery({
     queryKey: keys.conversations.messages(conversation?.id),
     queryFn: () => hotelApi.getConversationMessages(conversation.id, { size: 100 }),
     enabled: !!conversation,
-    refetchInterval: conversation ? POLL_INTERVAL : false,
+    refetchInterval: conversation ? 30000 : false,  // WS fail durumunda fallback
     refetchOnWindowFocus: true,
-    staleTime: 2000,   // 2sn — yeni mesaj geldikten sonra hemen fresh
+    staleTime: 2000,
   })
+
+  // FAZ 1/#12 — WS: yeni mesaj gelince anlık cache invalidate
+  // FAZ 1/#60 — Karşı taraf 'yazıyor' sinyali
+  const [otherTyping, setOtherTyping] = useState(false)
+  const typingTimeoutRef = useRef(null)
+
+  useEffect(() => {
+    if (!conversation) return
+    const subMsg = wsSubscribe('/user/queue/messages', (payload) => {
+      if (payload?.conversationId === conversation.id) {
+        queryClient.invalidateQueries({ queryKey: keys.conversations.messages(conversation.id) })
+      }
+      // Her durumda sohbet listesi de yenilensin (preview/lastMessageAt)
+      queryClient.invalidateQueries({ queryKey: keys.conversations.list() })
+      queryClient.invalidateQueries({ queryKey: keys.conversations.unreadCount() })
+    })
+    const subTyping = wsSubscribe('/user/queue/typing', (payload) => {
+      if (payload?.conversationId !== conversation.id) return
+      setOtherTyping(true)
+      clearTimeout(typingTimeoutRef.current)
+      typingTimeoutRef.current = setTimeout(() => setOtherTyping(false), 3000)
+    })
+    return () => {
+      subMsg.unsubscribe()
+      subTyping.unsubscribe()
+      clearTimeout(typingTimeoutRef.current)
+    }
+  }, [conversation?.id, queryClient])
 
   // Backend page'i son→eski. UI eski→yeni istiyor.
   const messages = (messagesData?.content ?? []).slice().reverse()
@@ -555,6 +584,17 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
             Sohbete ilk mesajı sen yaz
           </div>
         ) : messages.map(m => <MessageBubble key={m.id} m={m} />)}
+        {/* FAZ 1/#60 — Karşı taraf yazıyor göstergesi */}
+        {otherTyping && (
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-ink-500 fade-in">
+            <span className="flex gap-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+            </span>
+            <span>{conversation?.otherPartyName || 'Karşı taraf'} yazıyor...</span>
+          </div>
+        )}
         <div ref={scrollAnchorRef} />
       </div>
 
@@ -648,7 +688,14 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
               </svg>
             </button>
 
-            <input type="text" value={draft} onChange={e => setDraft(e.target.value)}
+            <input type="text" value={draft}
+              onChange={e => {
+                setDraft(e.target.value)
+                // FAZ 1/#60 — Yazıyor sinyali (her tuş vuruşunda; backend timeout 3sn)
+                if (conversation?.id) {
+                  wsPublish(`/app/chat.typing/${conversation.id}`, {})
+                }
+              }}
               placeholder="Mesaj yaz..." maxLength={2000}
               className="input text-sm flex-1" disabled={sending} />
             <button type="submit"
@@ -670,11 +717,12 @@ export default function MessagesPage() {
   const [search, setSearch] = useState('')
   const queryClient = useQueryClient()
 
-  // F0.10 Aşama 3 — Conversations useQuery + 5sn polling
+  // F0.10 + FAZ 1/#12 — Conversations useQuery
+  // WS push olunca anlık invalidate. Polling 60sn fallback.
   const { data: convData, isLoading: loading } = useQuery({
     queryKey: keys.conversations.list(),
     queryFn: () => hotelApi.getMyConversations({ size: 50 }),
-    refetchInterval: POLL_INTERVAL,
+    refetchInterval: 60000,
     refetchOnWindowFocus: true,
     staleTime: 2000,
   })

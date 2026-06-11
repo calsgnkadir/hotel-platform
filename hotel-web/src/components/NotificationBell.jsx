@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
 import { keys } from '../lib/queryClient'
+import { wsSubscribe } from '../lib/websocket'
 
 // Her bildirim tipi için sol kenarda küçük renkli "dot" — emoji yerine sade gösterim
 const TYPE_COLOR = {
@@ -49,16 +50,30 @@ export default function NotificationBell({ onNavigate }) {
   const ref = useRef(null)
   const queryClient = useQueryClient()
 
-  // F0.10 — react-query ile unread count: tab focus'ta otomatik refetch,
-  // 30sn polling, mute durumunda enabled=false (request yok)
+  // F0.10 + FAZ 1/#22 — react-query unread count
+  // WS push olduğunda 30sn polling yerine anlık invalidate (aşağıda).
+  // Polling 60sn'ye çekildi (WS fail durumunda fallback).
   const { data: unread = 0 } = useQuery({
     queryKey: keys.notifications.unreadCount(),
     queryFn: () => hotelApi.getUnreadNotificationCount(),
     enabled: !muted,
-    refetchInterval: muted ? false : 30_000,
+    refetchInterval: muted ? false : 60_000,
     refetchOnWindowFocus: true,
     staleTime: 10_000,
   })
+
+  // FAZ 1/#22 — WS sub: yeni bildirim → cache invalidate + dropdown açıksa liste refresh
+  useEffect(() => {
+    if (muted) return
+    const sub = wsSubscribe('/user/queue/notifications', () => {
+      queryClient.invalidateQueries({ queryKey: keys.notifications.unreadCount() })
+      // Dropdown açıksa liste de yenilensin (görsel tutarlılık)
+      if (open) {
+        hotelApi.listNotifications(20).then(setItems).catch(() => {})
+      }
+    })
+    return () => sub.unsubscribe()
+  }, [muted, queryClient, open])
 
   // Ayarlar'dan mute değişince anında uygula
   useEffect(() => {
