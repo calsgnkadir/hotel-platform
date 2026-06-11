@@ -1,28 +1,27 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
+import { keys } from '../../../lib/queryClient'
 import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_SHORT, STATUS_LABELS } from '../lib/constants'
 import ListingFormModal from '../modals/ListingFormModal'
 
-/* ── My Listings Tab ── */
+/* ── My Listings Tab — FAZ 0/#10 react-query ── */
 export default function MyListingsTab() {
-  const [listings, setListings] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [formTarget, setFormTarget] = useState(null)  // null=closed, 'new'=create, object=edit
+  const [formTarget, setFormTarget] = useState(null)
+  const queryClient = useQueryClient()
 
-  const fetchListings = useCallback(async () => {
-    try {
-      const data = await hotelApi.getMyListings()
-      setListings(data)
-    } catch {
-      toast.error('İlanlar yüklenemedi')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  // useQuery — cache 30sn, otomatik refetch on mount
+  const { data: listings = [], isLoading, error } = useQuery({
+    queryKey: ['my-listings'],
+    queryFn: () => hotelApi.getMyListings(),
+  })
 
-  useEffect(() => { fetchListings() }, [fetchListings])
+  if (error) toast.error('İlanlar yüklenemedi')
+
+  const fetchListings = () =>
+    queryClient.invalidateQueries({ queryKey: ['my-listings'] })
 
   async function handleStatusChange(listingId, status) {
     try {
@@ -34,7 +33,7 @@ export default function MyListingsTab() {
     }
   }
 
-  if (loading) return <div className="flex justify-center py-12"><div className="spinner"/></div>
+  if (isLoading) return <div className="flex justify-center py-12"><div className="spinner"/></div>
 
   return (
     <div className="space-y-4">

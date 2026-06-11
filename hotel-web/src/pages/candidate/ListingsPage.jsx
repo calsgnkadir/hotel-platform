@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
+import { keys } from '../../lib/queryClient'
 import ReportModal from '../../components/ReportModal'
 import StarRating from '../../components/StarRating'
 import GalleryCarousel from '../../components/GalleryCarousel'
@@ -598,10 +600,8 @@ function ListingCard({ listing, onApply, onDetail }) {
   )
 }
 
-/* ── Listings Page ── */
+/* ── Listings Page — FAZ 0/#10 (Aşama 4) react-query ── */
 export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen }) {
-  const [listings, setListings] = useState([])
-  const [loading, setLoading] = useState(true)
   const [applyTarget, setApplyTarget] = useState(null)
   const [detailTarget, setDetailTarget] = useState(null)
   const [showFilters, setShowFilters] = useState(false)  // mobile toggle
@@ -648,20 +648,19 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     return () => clearTimeout(t)
   }, [keyword])
 
-  useEffect(() => {
-    setLoading(true)
-    hotelApi.getListings({
-      position, jobType, shifts, district, minSalary,
-      keyword: debouncedKeyword,
-      dateFrom: dateRange.dateFrom,
-      dateTo:   dateRange.dateTo,
-    })
-      .then(setListings)
-      .catch(() => toast.error('İlanlar yüklenemedi'))
-      .finally(() => setLoading(false))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position, jobType, shifts, district, minSalary, debouncedKeyword,
-      datePreset, customFrom, customTo])
+  // FAZ 0/#10 — useQuery: filtreler dependency, otomatik refetch + cache
+  const filters = {
+    position, jobType, shifts, district, minSalary,
+    keyword: debouncedKeyword,
+    dateFrom: dateRange.dateFrom,
+    dateTo:   dateRange.dateTo,
+  }
+  const { data: listings = [], isLoading: loading, error } = useQuery({
+    queryKey: keys.listings.list(filters),
+    queryFn: () => hotelApi.getListings(filters),
+    keepPreviousData: true,  // filtre değişirken eski listeyi göster (UX)
+  })
+  if (error) toast.error('İlanlar yüklenemedi')
 
   function toggleShift(shift) {
     setShifts(prev => prev.includes(shift) ? prev.filter(s => s !== shift) : [...prev, shift])

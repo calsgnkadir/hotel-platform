@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import DashboardLayout from '../../components/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
+import { keys } from '../../lib/queryClient'
 import ListingsPage from './ListingsPage'
 import MessagesPage from '../MessagesPage'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
@@ -895,37 +897,34 @@ function ProfileTab() {
 export default function CandidateDashboard() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
-  const [applications, setApplications] = useState([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  const fetchApplications = useCallback(async () => {
-    try {
-      const data = await hotelApi.getMyApplications()
-      // #84: Backend artık PageResponse döner → içeriği çıkar
-      setApplications(Array.isArray(data) ? data : (data?.content ?? []))
-    } catch {
-      // Fail silently on overview — errors shown per-tab
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  // FAZ 0/#10 (Aşama 4) — useQuery
+  const { data, isLoading } = useQuery({
+    queryKey: keys.applications.candidate(),
+    queryFn: async () => {
+      const res = await hotelApi.getMyApplications()
+      return Array.isArray(res) ? res : (res?.content ?? [])
+    },
+  })
+  const applications = data ?? []
 
-  useEffect(() => { fetchApplications() }, [fetchApplications])
+  const refetchApplications = () =>
+    queryClient.invalidateQueries({ queryKey: keys.applications.candidate() })
 
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
-      {loading ? (
+      {isLoading ? (
         <div className="flex items-center justify-center h-64">
           <div className="spinner"></div>
         </div>
       ) : (
         <>
           {activeTab === 'overview'      && <OverviewTab user={user} applications={applications} onTabChange={setActiveTab} />}
-          {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={fetchApplications} onMessagesOpen={() => setActiveTab('messages')} />}
-          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={fetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
+          {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={refetchApplications} onMessagesOpen={() => setActiveTab('messages')} />}
+          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
-          {/* Belgelerim sekmesi kaldırıldı — belgeler artık mesajlarda paylaşılır */}
           {activeTab === 'profile'       && <ProfileTab />}
         </>
       )}
