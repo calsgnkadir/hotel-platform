@@ -48,9 +48,9 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       {/* Neon üst hat (ince) */}
       <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none" />
 
-      {/* ── Sidebar ── */}
+      {/* ── Sidebar — FAZ 1/#40: 224 → 240px (w-56 → w-60) ── */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-56 flex flex-col transform transition-transform duration-300
+        fixed inset-y-0 left-0 z-40 w-60 flex flex-col transform transition-transform duration-300
         bg-cream-100 border-r border-cream-300
         lg:relative lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -69,14 +69,14 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-2.5 py-3 space-y-0.5">
+        {/* Nav — #42: nefes alma artirildi */}
+        <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map(item => (
             <button
               key={item.id}
               onClick={() => { onTabChange?.(item.id); setSidebarOpen(false) }}
-              className={`nav-link w-full text-left text-[12.5px] ${activeTab === item.id ? 'active' : ''}`}
-              style={{ padding: '0.5rem 0.85rem' }}
+              className={`nav-link w-full text-left text-[13px] ${activeTab === item.id ? 'active' : ''}`}
+              style={{ padding: '0.625rem 1rem' }}
             >
               <span className="flex-1 truncate">{item.label}</span>
               {activeTab === item.id && (
@@ -109,8 +109,8 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
       {/* ── Main Content ── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar — sıkı + küçük */}
-        <header className="px-4 lg:px-6 py-2.5 flex items-center justify-between sticky top-0.5 z-20
+        {/* Top Bar — #42: padding artirildi */}
+        <header className="px-4 lg:px-6 py-3 flex items-center justify-between sticky top-0.5 z-20
                            bg-cream-100/85 backdrop-blur-lg border-b border-cream-300">
           <div className="flex items-center gap-2.5">
             <button onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -133,8 +133,8 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 p-3 lg:p-5 fade-in text-ink-800 text-[13px]">
+        {/* Page Content — #42: padding ve text size artirildi (3→4 / 5→6 / 13→14) */}
+        <main className="flex-1 p-4 lg:p-6 fade-in text-ink-800 text-[14px]">
           {children}
         </main>
       </div>
