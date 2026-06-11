@@ -763,13 +763,111 @@ export default function MessagesPage() {
           </div>
         </div>
 
-        {/* Sağ — Aktif sohbet */}
-        <div className={`${!showListMobile ? 'flex' : 'hidden sm:flex'} flex-1 flex-col`}>
+        {/* Orta — Aktif sohbet */}
+        <div className={`${!showListMobile ? 'flex' : 'hidden sm:flex'} flex-1 flex-col min-w-0`}>
           <ChatWindow
             conversation={active}
             onBack={() => setShowListMobile(true)}
             onMessageSent={refetchConvs} />
         </div>
+
+        {/* Sağ — Detay paneli (FAZ 1/#48 — sadece desktop xl+) */}
+        {active && (
+          <ConversationDetailPanel conversation={active} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* FAZ 1/#48 — 3. sütun: sohbet detay paneli (xl+ ekranlarda) */
+function ConversationDetailPanel({ conversation }) {
+  const c = conversation
+  const startedDays = c?.createdAt
+    ? Math.floor((Date.now() - new Date(c.createdAt).getTime()) / 86400000)
+    : null
+  const startedLabel = startedDays == null ? '—'
+    : startedDays === 0 ? 'Bugün'
+    : startedDays === 1 ? 'Dün'
+    : startedDays < 7 ? `${startedDays} gün önce`
+    : new Date(c.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  return (
+    <div className="hidden xl:flex flex-col w-72 min-w-[18rem] border-l border-cream-200 dark:border-cream-300 bg-white dark:bg-ink-800">
+      {/* Avatar + isim header */}
+      <div className="px-5 py-6 border-b border-cream-200 dark:border-cream-300 text-center">
+        {c.otherPartyAvatarUrl ? (
+          <img src={c.otherPartyAvatarUrl} alt={c.otherPartyName}
+               className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-2 border-cream-300" />
+        ) : (
+          <div className="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold"
+               style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+            {c.otherPartyName?.charAt(0) || '?'}
+          </div>
+        )}
+        <h3 className="font-bold text-base text-ink-900 truncate">{c.otherPartyName}</h3>
+        {c.otherPartyRole && (
+          <p className="text-xs text-ink-500 mt-0.5">
+            {c.otherPartyRole === 'BUSINESS_OWNER' ? 'İşletme' : 'Aday'}
+          </p>
+        )}
+      </div>
+
+      {/* İlan bilgisi */}
+      {c.listingTitle && (
+        <div className="px-5 py-4 border-b border-cream-200 dark:border-cream-300">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">İlan</div>
+          <div className="text-sm font-semibold text-ink-800 mb-2 line-clamp-2">{c.listingTitle}</div>
+          {c.listingId && (
+            <a href={`/listings/${c.listingId}`} target="_blank" rel="noreferrer"
+               className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 hover:underline">
+              İlana Git
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Sohbet istatistik */}
+      <div className="px-5 py-4 border-b border-cream-200 dark:border-cream-300">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Sohbet</div>
+        <div className="space-y-1.5 text-xs text-ink-700">
+          <div className="flex justify-between">
+            <span className="text-ink-500">Başladı:</span>
+            <span className="font-medium">{startedLabel}</span>
+          </div>
+          {c.lastMessageAt && (
+            <div className="flex justify-between">
+              <span className="text-ink-500">Son mesaj:</span>
+              <span className="font-medium">{formatRelative(c.lastMessageAt)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Hızlı eylemler */}
+      <div className="px-5 py-4 space-y-2 flex-1">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-1">Hızlı İşlemler</div>
+        <button className="w-full text-left text-xs text-ink-600 hover:text-brand-700 hover:bg-cream-50 px-3 py-2 rounded-lg flex items-center gap-2 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+            <path strokeLinecap="round" strokeLinejoin="round"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          Mesajlarda Ara
+        </button>
+        <button className="w-full text-left text-xs text-ink-600 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg flex items-center gap-2 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+            <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          </svg>
+          Bildir
+        </button>
       </div>
     </div>
   )
