@@ -114,6 +114,8 @@ public class CandidateProfileService {
     // Mapping
     // ----------------------------------------------------------------
     private CandidateProfileDto toDto(User u) {
+        // F0.13 — open-in-view:false ile uyumlu: lazy collection'lari transaction
+        // ICINDE initialize edip kopyala (Jackson serialize ederken proxy patlamasin).
         return CandidateProfileDto.builder()
                 .id(u.getId())
                 .email(u.getEmail())
@@ -126,16 +128,16 @@ public class CandidateProfileService {
                 .birthDate(u.getBirthDate())
                 .gender(u.getGender())
                 .education(u.getEducation())
-                .languages(u.getLanguages())
-                .availabilityTypes(u.getAvailabilityTypes())
+                .languages(u.getLanguages() != null ? new HashSet<>(u.getLanguages()) : new HashSet<>())
+                .availabilityTypes(u.getAvailabilityTypes() != null ? new HashSet<>(u.getAvailabilityTypes()) : new HashSet<>())
                 .previousExperience(u.getPreviousExperience())
                 .smokes(u.getSmokes())
                 .hasLicense(u.getHasLicense())
                 .avatarUrl(u.getAvatarPath() != null
                         ? fileStorageService.publicUrl(u.getAvatarPath())
                         : null)
-                .preferredDistricts(u.getPreferredDistricts())
-                .preferredPositions(u.getPreferredPositions())
+                .preferredDistricts(u.getPreferredDistricts() != null ? new HashSet<>(u.getPreferredDistricts()) : new HashSet<>())
+                .preferredPositions(u.getPreferredPositions() != null ? new HashSet<>(u.getPreferredPositions()) : new HashSet<>())
                 .build();
     }
 
