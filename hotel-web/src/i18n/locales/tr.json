@@ -1,0 +1,101 @@
+{
+  "common": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "close": "Kapat",
+    "back": "Geri",
+    "next": "İleri",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "yes": "Evet",
+    "no": "Hayır",
+    "loading": "Yükleniyor...",
+    "search": "Ara",
+    "filters": "Filtreler",
+    "all": "Tümü",
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "tomorrow": "Yarın",
+    "thisWeek": "Bu Hafta",
+    "weekend": "Hafta Sonu",
+    "custom": "Özel"
+  },
+  "nav": {
+    "overview": "Genel Bakış",
+    "listings": "İlanlar",
+    "myListings": "İlanlarım",
+    "applications": "Başvurularım",
+    "incomingApplications": "Gelen Başvurular",
+    "workers": "Bizde Çalışanlar",
+    "messages": "Mesajlar",
+    "profile": "Profilim",
+    "settings": "Ayarlar",
+    "logout": "Çıkış Yap",
+    "users": "Kullanıcılar",
+    "reports": "Şikayetler",
+    "audit": "İşlem Geçmişi"
+  },
+  "auth": {
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "email": "E-posta",
+    "password": "Şifre",
+    "forgotPassword": "Şifremi unuttum",
+    "noAccount": "Hesabın yok mu?",
+    "haveAccount": "Hesabın var mı?",
+    "loggingIn": "Giriş yapılıyor...",
+    "googleSignIn": "Google ile devam et",
+    "or": "veya",
+    "fullName": "Ad Soyad",
+    "iAmCandidate": "Aday olarak",
+    "iAmBusiness": "İşletme olarak"
+  },
+  "landing": {
+    "heroTitle": "İstanbul'un en güvenilir otel ve restoran iş platformu",
+    "heroSubtitle": "Otel, restoran ve kafelerde iş arıyor veya personel mi arıyorsunuz? AjansHotel buluşturur.",
+    "ctaCandidate": "Aday Olarak Başla",
+    "ctaBusiness": "İşletme Olarak Başla"
+  },
+  "push": {
+    "promptTitle": "Anlık bildirimler",
+    "promptBody": "Tarayıcı kapalıyken bile yeni mesaj ve başvuru bildirimlerini al.",
+    "enable": "Etkinleştir",
+    "later": "Şimdi değil",
+    "enabled": "Bildirimler etkin — tarayıcı kapalı bile bildirim alırsın",
+    "denied": "Bildirim izni reddedildi"
+  },
+  "listings": {
+    "title": "İş İlanları",
+    "viewOnMap": "Haritada Gör",
+    "noListings": "Henüz aktif ilan yok",
+    "noFilteredListings": "Filtrelere uyan ilan yok",
+    "clearFilters": "Filtreleri Temizle",
+    "apply": "Başvur",
+    "details": "Detay",
+    "expired": "Süresi Doldu",
+    "district": "İlçe",
+    "position": "Pozisyon",
+    "jobType": "Çalışma Türü",
+    "minSalary": "Min Ücret",
+    "shift": "Vardiya",
+    "date": "Tarih"
+  },
+  "messages": {
+    "title": "Mesajlar",
+    "noConversations": "Henüz sohbetin yok",
+    "selectConversation": "Sohbet seçin",
+    "typeMessage": "Mesaj yaz...",
+    "send": "Gönder",
+    "typing": "yazıyor...",
+    "online": "Çevrimiçi",
+    "offline": "Çevrimdışı",
+    "searchPlaceholder": "Kişi, ilan veya mesaj ara..."
+  },
+  "profile": {
+    "completeness": "Profil Doluluk",
+    "missingFields": "Eksik {{count}} alan:",
+    "uploadPhoto": "Foto Yükle",
+    "changePhoto": "Fotoyu Değiştir",
+    "removePhoto": "Fotoyu Kaldır"
+  }
+}

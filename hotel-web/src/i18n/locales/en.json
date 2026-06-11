@@ -1,0 +1,101 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "delete": "Delete",
+    "edit": "Edit",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading...",
+    "search": "Search",
+    "filters": "Filters",
+    "all": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This Week",
+    "weekend": "Weekend",
+    "custom": "Custom"
+  },
+  "nav": {
+    "overview": "Overview",
+    "listings": "Listings",
+    "myListings": "My Listings",
+    "applications": "My Applications",
+    "incomingApplications": "Incoming Applications",
+    "workers": "Our Workers",
+    "messages": "Messages",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "users": "Users",
+    "reports": "Reports",
+    "audit": "Audit Log"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "loggingIn": "Signing in...",
+    "googleSignIn": "Continue with Google",
+    "or": "or",
+    "fullName": "Full Name",
+    "iAmCandidate": "As Candidate",
+    "iAmBusiness": "As Business"
+  },
+  "landing": {
+    "heroTitle": "Istanbul's most trusted hotel & restaurant job platform",
+    "heroSubtitle": "Looking for a job at hotels, restaurants and cafés, or hiring staff? AjansHotel connects you.",
+    "ctaCandidate": "Get Started as Candidate",
+    "ctaBusiness": "Get Started as Business"
+  },
+  "push": {
+    "promptTitle": "Instant notifications",
+    "promptBody": "Get new message and application notifications even when your browser is closed.",
+    "enable": "Enable",
+    "later": "Not now",
+    "enabled": "Notifications enabled — you'll receive alerts even when browser is closed",
+    "denied": "Notification permission denied"
+  },
+  "listings": {
+    "title": "Job Listings",
+    "viewOnMap": "View on Map",
+    "noListings": "No active listings yet",
+    "noFilteredListings": "No listings match your filters",
+    "clearFilters": "Clear Filters",
+    "apply": "Apply",
+    "details": "Details",
+    "expired": "Expired",
+    "district": "District",
+    "position": "Position",
+    "jobType": "Job Type",
+    "minSalary": "Min Salary",
+    "shift": "Shift",
+    "date": "Date"
+  },
+  "messages": {
+    "title": "Messages",
+    "noConversations": "No conversations yet",
+    "selectConversation": "Select a conversation",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "typing": "typing...",
+    "online": "Online",
+    "offline": "Offline",
+    "searchPlaceholder": "Search person, listing or message..."
+  },
+  "profile": {
+    "completeness": "Profile Completeness",
+    "missingFields": "{{count}} fields missing:",
+    "uploadPhoto": "Upload Photo",
+    "changePhoto": "Change Photo",
+    "removePhoto": "Remove Photo"
+  }
+}

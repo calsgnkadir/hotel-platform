@@ -1,38 +1,39 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
 import NotificationBell from './NotificationBell'
 import SettingsMenu from './SettingsMenu'
+import LanguageSwitcher from './LanguageSwitcher'
 
-// Ayarlar + Yardım + Profilim + Geçmiş İşlerim sidebar'dan kaldırıldı
-// → hepsi header'daki ⚙ SettingsMenu dropdown'una taşındı.
+// FAZ 1/#36 — Nav item id'leri i18n key'lerine map'lenir.
 const candidateNav = [
-  { id: 'overview',      label: 'Genel Bakış' },
-  { id: 'listings',      label: 'İlanlar' },
-  { id: 'applications',  label: 'Başvurularım' },
-  { id: 'messages',      label: 'Mesajlar' },
-  // Belgelerim sekmesi kaldırıldı (chat-v2) — belgeler mesajlaşmada paylaşılır
+  { id: 'overview',      tKey: 'nav.overview' },
+  { id: 'listings',      tKey: 'nav.listings' },
+  { id: 'applications',  tKey: 'nav.applications' },
+  { id: 'messages',      tKey: 'nav.messages' },
 ]
 
 const businessNav = [
-  { id: 'overview',      label: 'Genel Bakış' },
-  { id: 'mylistings',    label: 'İlanlarım' },
-  { id: 'applications',  label: 'Gelen Başvurular' },
-  { id: 'workers',       label: 'Bizde Çalışanlar' },
-  { id: 'messages',      label: 'Mesajlar' },
+  { id: 'overview',      tKey: 'nav.overview' },
+  { id: 'mylistings',    tKey: 'nav.myListings' },
+  { id: 'applications',  tKey: 'nav.incomingApplications' },
+  { id: 'workers',       tKey: 'nav.workers' },
+  { id: 'messages',      tKey: 'nav.messages' },
 ]
 
 const adminNav = [
-  { id: 'overview', label: 'Genel Bakış' },
-  { id: 'users',    label: 'Kullanıcılar' },
-  { id: 'reports',  label: 'Şikayetler' },
-  { id: 'audit',    label: 'İşlem Geçmişi' },
+  { id: 'overview', tKey: 'nav.overview' },
+  { id: 'users',    tKey: 'nav.users' },
+  { id: 'reports',  tKey: 'nav.reports' },
+  { id: 'audit',    tKey: 'nav.audit' },
 ]
 
 export default function DashboardLayout({ children, activeTab, onTabChange }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { t } = useTranslation()
 
   const isCandidate = user?.role === 'CANDIDATE'
   const isAdmin = user?.role === 'ADMIN'
@@ -78,7 +79,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               className={`nav-link w-full text-left text-[13px] ${activeTab === item.id ? 'active' : ''}`}
               style={{ padding: '0.625rem 1rem' }}
             >
-              <span className="flex-1 truncate">{item.label}</span>
+              <span className="flex-1 truncate">{item.tKey ? t(item.tKey) : item.label}</span>
               {activeTab === item.id && (
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-glow-pulse flex-shrink-0" />
               )}
@@ -96,7 +97,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
             </svg>
-            <span>Çıkış Yap</span>
+            <span>{t('nav.logout')}</span>
           </button>
         </div>
       </aside>
@@ -121,13 +122,17 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
             </button>
             <div>
               <h1 className="font-display text-[15px] font-bold tracking-tight text-ink-900 leading-tight">
-                {navItems.find(n => n.id === activeTab)?.label || 'Panel'}
+                {(() => {
+                  const item = navItems.find(n => n.id === activeTab)
+                  return item ? (item.tKey ? t(item.tKey) : item.label) : 'Panel'
+                })()}
               </h1>
             </div>
           </div>
 
-          {/* Sağ blok: zil + ayarlar */}
+          {/* Sağ blok: dil + zil + ayarlar */}
           <div className="flex items-center gap-1.5">
+            <LanguageSwitcher />
             <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
             <SettingsMenu onTabChange={onTabChange} />
           </div>
@@ -160,7 +165,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                   <path strokeLinecap="round" strokeLinejoin="round" d={icon} />
                 </svg>
                 <span className={`text-[10px] font-semibold mt-0.5 transition-colors ${isActive ? 'text-brand-700' : 'text-ink-500'}`}>
-                  {item.label}
+                  {item.tKey ? t(item.tKey) : item.label}
                 </span>
               </button>
             )

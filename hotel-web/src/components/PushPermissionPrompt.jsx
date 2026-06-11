@@ -5,6 +5,7 @@
  * Kullanıcı reddederse veya kabul ederse bir daha sorulmaz.
  */
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { isPushSupported, getPermission, requestPermission, subscribeUser } from '../lib/webpush'
 
@@ -12,6 +13,7 @@ const STORAGE_KEY = 'push-prompt-shown-v1'
 
 export default function PushPermissionPrompt() {
   const [show, setShow] = useState(false)
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (!isPushSupported()) return
@@ -28,14 +30,14 @@ export default function PushPermissionPrompt() {
     try {
       const perm = await requestPermission()
       if (perm !== 'granted') {
-        toast('Bildirim izni reddedildi')
+        toast(t('push.denied'))
         return
       }
       await subscribeUser()
-      toast.success('Bildirimler etkin — tarayıcı kapalı bile bildirim alırsın')
+      toast.success(t('push.enabled'))
     } catch (e) {
       console.warn('[Push] subscribe failed:', e?.message)
-      toast.error('Bildirim ayarlanamadı: ' + (e?.message || 'Bilinmeyen hata'))
+      toast.error('Push setup failed: ' + (e?.message || ''))
     }
   }
 
@@ -56,21 +58,21 @@ export default function PushPermissionPrompt() {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-sm mb-0.5" style={{ color: '#3b0764' }}>
-              Anlık bildirimler
+              {t('push.promptTitle')}
             </h3>
             <p className="text-xs mb-3" style={{ color: '#6b21a8' }}>
-              Tarayıcı kapalıyken bile yeni mesaj ve başvuru bildirimlerini al.
+              {t('push.promptBody')}
             </p>
             <div className="flex gap-2">
               <button onClick={enable}
                 className="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
                 style={{ background: 'linear-gradient(135deg, #a855f7, #7e22ce)' }}>
-                Etkinleştir
+                {t('push.enable')}
               </button>
               <button onClick={later}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold"
                 style={{ background: 'rgba(255,255,255,0.50)', color: '#6b21a8' }}>
-                Şimdi değil
+                {t('push.later')}
               </button>
             </div>
           </div>
