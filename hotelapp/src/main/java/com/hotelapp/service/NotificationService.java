@@ -30,6 +30,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#22 — WS push
+    private final WebPushService webPushService;             // FAZ 1/#23 — Browser push
 
     /**
      * Bildirim oluştur. REQUIRES_NEW ile kendi tx'ında çalışır — başarısız olursa
@@ -52,7 +53,6 @@ public class NotificationService {
             n = notificationRepository.save(n);
 
             // FAZ 1/#22 — WebSocket push: kullanıcıya anında bildirim
-            // FIX: convertAndSendToUser → Principal.getName() = EMAIL (id degil)
             try {
                 messagingTemplate.convertAndSendToUser(
                         recipient.getEmail(),
@@ -61,6 +61,18 @@ public class NotificationService {
                 );
             } catch (Exception wsErr) {
                 log.warn("WS notify push failed: {}", wsErr.getMessage());
+            }
+
+            // FAZ 1/#23 — Web Push (browser kapalıyken bile bildirim)
+            try {
+                java.util.Map<String, String> payload = new java.util.HashMap<>();
+                payload.put("title", title);
+                payload.put("body",  message);
+                if (link != null) payload.put("link", link);
+                payload.put("notificationId", String.valueOf(n.getId()));
+                webPushService.sendToUser(recipientId, payload);
+            } catch (Exception pushErr) {
+                log.warn("Web Push notify failed: {}", pushErr.getMessage());
             }
         } catch (Exception e) {
             log.warn("Bildirim oluşturulamadı: type={} recipient={} - {}", type, recipientId, e.getMessage());

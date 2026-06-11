@@ -16,6 +16,7 @@ import BusinessDashboard from './pages/business/BusinessDashboard'
 import AdminPage from './pages/admin/AdminPage'
 import KvkkPage from './pages/KvkkPage'
 import ListingDetailPage from './pages/candidate/ListingDetailPage'
+import PushPermissionPrompt from './components/PushPermissionPrompt'
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
+        <PushPermissionPrompt />
 
         <Routes>
           {/* Public */}

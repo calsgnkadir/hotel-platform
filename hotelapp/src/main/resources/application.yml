@@ -93,6 +93,17 @@ app:
     password-reset:
       expiry-hours: ${PWD_RESET_EXPIRY_HOURS:1}
 
+  # FAZ 1/#23 — Web Push (VAPID)
+  # Key uretmek icin:
+  #   1. https://web-push-codelab.glitch.me/  (kolay)
+  #   2. Veya CLI: web-push generate-vapid-keys --json
+  # Bos birakirsa: Web Push devre disi (log warning), WS push calismaya devam eder
+  push:
+    vapid:
+      public-key:  ${VAPID_PUBLIC_KEY:}
+      private-key: ${VAPID_PRIVATE_KEY:}
+      subject:     ${VAPID_SUBJECT:mailto:admin@ajanshotel.com}
+
 # Swagger UI — http://localhost:8080/swagger-ui.html
 springdoc:
   api-docs:
