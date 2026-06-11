@@ -85,9 +85,16 @@ function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessa
   })
 
   const [respondingId, setRespondingId] = useState(null)
-  const [myDocs, setMyDocs] = useState([])
   const [statusFilter, setStatusFilter] = useState('')
   const [openingChatId, setOpeningChatId] = useState(null)
+
+  // FIX: useQuery ile cache (her tab geçişinde fetch tetiklenip 429 olmasın)
+  const { data: myDocs = [] } = useQuery({
+    queryKey: keys.documents.my(),
+    queryFn: () => hotelApi.getMyDocuments(),
+    staleTime: 60 * 1000,  // 60sn cache — tab değişiminde tekrar fetch yok
+    retry: 0,
+  })
 
   async function handleStartChat(app) {
     const ownerId = app.listing?.businessOwnerId
@@ -102,11 +109,6 @@ function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessa
       setOpeningChatId(null)
     }
   }
-
-  // Aday'ın yüklediği belge tipleri — Onayla butonunu validate için
-  useEffect(() => {
-    hotelApi.getMyDocuments().then(setMyDocs).catch(() => setMyDocs([]))
-  }, [applications])  // başvuru güncellenince belgeler de yeniden okunsun
 
   const uploadedTypes = new Set(myDocs.map(d => d.type))
 
