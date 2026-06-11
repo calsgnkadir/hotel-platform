@@ -11,6 +11,8 @@ import { parseWorkingHours } from '../lib/helpers'
 import BusinessLocationEditor from '../components/BusinessLocationEditor'
 import WorkingHoursEditor from '../components/WorkingHoursEditor'
 import MediaBlock from '../components/MediaBlock'
+import ProfileCompletenessCard from '../../../components/ProfileCompletenessCard'
+import { calculateBusinessCompleteness } from '../../../lib/profileCompleteness'
 
 /* ── Profile Tab ── */
 export default function ProfileTab() {
@@ -127,8 +129,15 @@ export default function ProfileTab() {
   if (loading) return <div className="flex justify-center py-16"><div className="spinner" /></div>
   if (!form) return null
 
+  // FAZ 1/#34 — Profil doluluk hesaplama (anlık, form state'inden)
+  const completeness = calculateBusinessCompleteness(
+    { ...form, logoUrl },
+    { hasPhoto: photos.length > 0 }
+  )
+
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
+    <ProfileCompletenessCard data={completeness} />
     <form onSubmit={handleSubmit} className="space-y-5">
       <MediaBlock
         logoUrl={logoUrl}

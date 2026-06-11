@@ -8,6 +8,8 @@ import { extractErrorMessage } from '../../api/client'
 import { keys } from '../../lib/queryClient'
 import ListingsPage from './ListingsPage'
 import MessagesPage from '../MessagesPage'
+import ProfileCompletenessCard from '../../components/ProfileCompletenessCard'
+import { calculateCandidateCompleteness } from '../../lib/profileCompleteness'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
 import ReviewModal from '../../components/ReviewModal'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
@@ -682,8 +684,15 @@ function ProfileTab() {
   if (loading) return <div className="flex justify-center py-16"><div className="spinner" /></div>
   if (!form) return null
 
+  // FAZ 1/#34 — Profil doluluk anlık hesap
+  const completeness = calculateCandidateCompleteness(
+    { ...form, avatarUrl: profile?.avatarUrl, about: profile?.about, experienceYears: profile?.experienceYears },
+    { hasDocument: (profile?.documents?.length ?? 0) > 0 }
+  )
+
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
+    <ProfileCompletenessCard data={completeness} />
     {/* D7: Profil fotoğrafı — form'un dışında ayrı kart (kendi upload akışı) */}
     <div className="card p-5">
       <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider mb-4">Profil Fotoğrafı</h3>
