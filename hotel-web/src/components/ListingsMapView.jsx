@@ -80,18 +80,10 @@ function FitToBounds({ points }) {
   return null
 }
 
-function FlyTo({ target }) {
-  const map = useMap()
-  useEffect(() => {
-    if (!isValidLatLng(target) || !map) return
-    try {
-      const currentZoom = map.getZoom()
-      const safeZoom = Number.isFinite(currentZoom) ? Math.max(currentZoom, 14) : 14
-      map.flyTo(target, safeZoom, { duration: 0.6 })
-    } catch (e) {
-      console.warn('[Map] FlyTo failed:', e?.message)
-    }
-  }, [target, map])
+// FlyTo kaldırıldı — Leaflet iç requestAnimationFrame'lerde NaN üretiyor,
+// try/catch ile durdurulamıyor (sonsuz frame loop). Highlight sadece
+// marker icon değişikliği ile gösteriliyor (hot vs normal).
+function FlyTo() {
   return null
 }
 
@@ -185,7 +177,7 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
           )
         })}
         <FitToBounds points={points} />
-        {highlightedPoint && <FlyTo target={highlightedPoint.coords} />}
+        {/* FlyTo kaldırıldı (Leaflet NaN crash) - sadece marker icon hot/normal */}
       </MapContainer>
 
       {/* Toplam ilan etiketi */}
