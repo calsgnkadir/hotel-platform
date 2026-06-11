@@ -1,0 +1,71 @@
+import { StatusBadge } from '../components/Badges'
+
+/* ── Overview Tab ── */
+export default function OverviewTab({ applications, onTabChange }) {
+  const pending   = applications.filter(a => a.status === 'PENDING').length
+  const reviewing = applications.filter(a => a.status === 'REVIEWING').length
+  const accepted  = applications.filter(a => a.status === 'ACCEPTED').length
+
+  return (
+    <div className="space-y-4">
+      {/* Stat strip — sade 4'lü */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        {[
+          { label: 'Toplam',      value: applications.length, dot: 'bg-blue-400' },
+          { label: 'Bekleyen',    value: pending,             dot: 'bg-amber-400' },
+          { label: 'İnceleniyor', value: reviewing,           dot: 'bg-brand-400' },
+          { label: 'Kabul',       value: accepted,            dot: 'bg-brand-500' },
+        ].map(s => (
+          <div key={s.label} className="stat-card !p-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+              <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold truncate">{s.label}</span>
+            </div>
+            <div className="text-xl font-black text-white leading-none">{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <h2 className="font-semibold text-ink-800 dark:text-ink-900">Son Başvurular</h2>
+          <button onClick={() => onTabChange('applications')}
+            className="text-xs font-medium text-brand-700 dark:text-brand-700">Tümünü Gör →</button>
+        </div>
+        {applications.length === 0 ? (
+          <div className="empty-state">
+            <p className="text-ink-500 text-sm">Henüz başvuru yok</p>
+          </div>
+        ) : (
+          <div className="table-container rounded-none border-0 border-t border-cream-200">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Aday</th>
+                  <th className="hidden md:table-cell">İlan</th>
+                  <th>Durum</th>
+                  <th className="hidden sm:table-cell">Tarih</th>
+                </tr>
+              </thead>
+              <tbody>
+                {applications.slice(0, 5).map(app => (
+                  <tr key={app.id}>
+                    <td>
+                      <div className="font-medium text-ink-800 dark:text-ink-900">{app.candidate?.fullName}</div>
+                      <div className="text-xs text-ink-400">{app.candidate?.email}</div>
+                    </td>
+                    <td className="hidden md:table-cell text-ink-600 text-sm">{app.listing?.title}</td>
+                    <td><StatusBadge status={app.status} /></td>
+                    <td className="hidden sm:table-cell text-ink-500 text-xs">
+                      {new Date(app.createdAt).toLocaleDateString('tr-TR')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

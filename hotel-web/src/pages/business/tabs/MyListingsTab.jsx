@@ -1,0 +1,149 @@
+import { useState, useEffect, useCallback } from 'react'
+import * as hotelApi from '../../../api/hotel'
+import toast from 'react-hot-toast'
+import { extractErrorMessage } from '../../../api/client'
+import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_SHORT, STATUS_LABELS } from '../lib/constants'
+import ListingFormModal from '../modals/ListingFormModal'
+
+/* ── My Listings Tab ── */
+export default function MyListingsTab() {
+  const [listings, setListings] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [formTarget, setFormTarget] = useState(null)  // null=closed, 'new'=create, object=edit
+
+  const fetchListings = useCallback(async () => {
+    try {
+      const data = await hotelApi.getMyListings()
+      setListings(data)
+    } catch {
+      toast.error('İlanlar yüklenemedi')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchListings() }, [fetchListings])
+
+  async function handleStatusChange(listingId, status) {
+    try {
+      await hotelApi.updateListingStatus(listingId, status)
+      toast.success('İlan durumu güncellendi')
+      fetchListings()
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    }
+  }
+
+  if (loading) return <div className="flex justify-center py-12"><div className="spinner"/></div>
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <p className="text-sm text-ink-500">{listings.length} ilan</p>
+        <button onClick={() => setFormTarget('new')}
+          className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-all hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+          + Yeni İlan
+        </button>
+      </div>
+
+      {listings.length === 0 ? (
+        <div className="card">
+          <div className="empty-state py-14">
+            <p className="font-medium text-ink-700">Henüz ilanınız yok</p>
+            <p className="text-sm text-ink-500 mt-1">İlk ilanınızı oluşturun</p>
+            <button onClick={() => setFormTarget('new')}
+              className="mt-4 px-4 py-2 text-sm font-semibold text-white rounded-lg"
+              style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+              İlan Oluştur
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {listings.map(listing => (
+            <div key={listing.id} className="card p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-ink-800 dark:text-ink-900">{listing.title}</h3>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      listing.status === 'ACTIVE' ? 'bg-brand-50 text-brand-700' :
+                      listing.status === 'PAUSED' ? 'bg-amber-50 text-amber-700' :
+                      'bg-cream-100 text-ink-500'}`}>
+                      {STATUS_LABELS[listing.status]}
+                    </span>
+                  </div>
+                  <p className="text-xs text-ink-500 mt-1">
+                    {POSITION_LABELS[listing.position]} · {JOB_TYPE_LABELS[listing.jobType]}
+                    {listing.shift && ` · ${SHIFT_SHORT[listing.shift]}`}
+                  </p>
+                  {(listing.salaryMin || listing.salaryMax) && (
+                    <p className="text-xs text-brand-700 font-medium mt-0.5">
+                      {listing.salaryMin?.toLocaleString('tr-TR')}
+                      {listing.salaryMax && ` – ${listing.salaryMax.toLocaleString('tr-TR')}`} ₺
+                    </p>
+                  )}
+                  {/* Faz E2: slot özeti */}
+                  {listing.shiftSlots?.length > 0 && (() => {
+                    const total      = listing.shiftSlots.length
+                    const next       = listing.shiftSlots[0]
+                    const totalSeats = listing.shiftSlots.reduce((sum, s) => sum + (s.slotsNeeded || 0), 0)
+                    const filled     = listing.shiftSlots.reduce((sum, s) => sum + (s.slotsFilled || 0), 0)
+                    const nextStr = next
+                      ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}–${next.endTime?.slice(0, 5)}`
+                      : null
+                    return (
+                      <p className="text-xs text-brand-700 dark:text-brand-700 font-medium mt-0.5">
+                        {total} vardiya
+                        {nextStr && ` · en yakın: ${nextStr}`}
+                        {totalSeats > 0 && ` · ${filled}/${totalSeats} dolu`}
+                      </p>
+                    )
+                  })()}
+                  <p className="text-xs text-ink-400 mt-0.5">
+                    {new Date(listing.createdAt).toLocaleDateString('tr-TR')}
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
+                  {listing.status !== 'CLOSED' && (
+                    <button onClick={() => setFormTarget(listing)}
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
+                      Düzenle
+                    </button>
+                  )}
+                  {listing.status === 'ACTIVE' && (
+                    <button onClick={() => handleStatusChange(listing.id, 'PAUSED')}
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
+                      Durdur
+                    </button>
+                  )}
+                  {listing.status === 'PAUSED' && (
+                    <button onClick={() => handleStatusChange(listing.id, 'ACTIVE')}
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-emerald-100 transition-colors font-medium">
+                      Aktifleştir
+                    </button>
+                  )}
+                  {listing.status !== 'CLOSED' && (
+                    <button onClick={() => handleStatusChange(listing.id, 'CLOSED')}
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-cream-100 text-ink-600 hover:bg-cream-200 transition-colors font-medium">
+                      Kapat
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {formTarget && (
+        <ListingFormModal
+          listing={formTarget === 'new' ? null : formTarget}
+          onClose={() => setFormTarget(null)}
+          onSuccess={fetchListings}
+        />
+      )}
+    </div>
+  )
+}

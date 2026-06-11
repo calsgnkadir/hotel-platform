@@ -1,0 +1,422 @@
+import { useState, useEffect } from 'react'
+import * as hotelApi from '../../../api/hotel'
+import toast from 'react-hot-toast'
+import { extractErrorMessage } from '../../../api/client'
+import { SENSITIVE_DOC_TYPES_BIZ, DOC_REQ_STATUS_LABELS } from '../lib/constants'
+import { StatusBadge, NoShowBadge } from '../components/Badges'
+
+const APPS_PAGE_SIZE = 15
+
+/* ── Applications Tab ── */
+export default function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
+  const [filter, setFilter] = useState('ALL')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(0)
+  const [selected, setSelected] = useState(null)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [accessibleDocs, setAccessibleDocs] = useState([])
+  const [docsLoading, setDocsLoading] = useState(false)
+  const [requestingType, setRequestingType] = useState('')
+
+  // Modal açıldığında veya selected güncellendiğinde, erişilebilir belgeleri yükle
+  useEffect(() => {
+    if (!selected) { setAccessibleDocs([]); return }
+    setDocsLoading(true)
+    hotelApi.getApplicationDocuments(selected.id)
+      .then(setAccessibleDocs)
+      .catch(() => setAccessibleDocs([]))
+      .finally(() => setDocsLoading(false))
+  }, [selected?.id, selected?.documentRequests?.length])
+
+  async function handleViewDoc(doc) {
+    try {
+      await hotelApi.viewDocument(doc.id)
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    }
+  }
+
+  // #84: status filtresi + aday adı araması
+  const filtered = applications.filter(a => {
+    if (filter !== 'ALL' && a.status !== filter) return false
+    if (search.trim()) {
+      const name = (a.candidate?.fullName || '').toLowerCase()
+      if (!name.includes(search.trim().toLowerCase())) return false
+    }
+    return true
+  })
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / APPS_PAGE_SIZE))
+  const safePage = Math.min(page, pageCount - 1)
+  const pageItems = filtered.slice(safePage * APPS_PAGE_SIZE, safePage * APPS_PAGE_SIZE + APPS_PAGE_SIZE)
+
+  async function handleNoShow(appId) {
+    if (!confirm('Bu adayı NO-SHOW olarak işaretlemek istediğinize emin misiniz?\n\nBu işlem geri alınamaz. Adayın strike hakkı 1 düşecek, sıfıra inerse 30 gün otomatik banlanacak.')) {
+      return
+    }
+    setActionLoading(true)
+    try {
+      const result = await hotelApi.markNoShow(appId)
+      if (result.autoBanned) {
+        const banDate = new Date(result.bannedUntil).toLocaleDateString('tr-TR')
+        toast.success(`No-show işaretlendi. Aday otomatik olarak ${banDate} tarihine kadar banlandı.`, { duration: 5000 })
+      } else {
+        toast.success(`No-show işaretlendi. Adayın kalan strike hakkı: ${result.candidateStrikesRemaining}`)
+      }
+      setSelected(result.application)
+      onRefresh()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
+  async function handleRequestDoc() {
+    if (!requestingType || !selected) return
+    setActionLoading(true)
+    try {
+      const updated = await hotelApi.requestDocument(selected.id, requestingType)
+      toast.success('Belge talebi gönderildi')
+      setRequestingType('')
+      setSelected(updated)
+      onRefresh()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Filtre + arama */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {['ALL', 'PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED'].map(f => {
+            const labels = { ALL: 'Tümü', PENDING: 'Bekleyen', REVIEWING: 'İnceleniyor', ACCEPTED: 'Kabul', REJECTED: 'Red' }
+            const count = f === 'ALL' ? applications.length : applications.filter(a => a.status === f).length
+            return (
+              <button key={f} onClick={() => { setFilter(f); setPage(0) }}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150
+                  ${filter === f
+                    ? 'text-white shadow-sm'
+                    : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
+                style={filter === f ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+                {labels[f]} ({count})
+              </button>
+            )
+          })}
+        </div>
+        <div className="relative flex-1 sm:max-w-xs sm:ml-auto">
+          <input type="text" value={search}
+            onChange={e => { setSearch(e.target.value); setPage(0) }}
+            placeholder="Aday adı ara..." className="input text-sm" />
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="space-y-3">
+        {filtered.length === 0 ? (
+          <div className="card">
+            <div className="empty-state py-12">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-ink-300 mb-3">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>
+              <p className="text-ink-500 text-sm">Bu filtreye uyan başvuru yok</p>
+            </div>
+          </div>
+        ) : pageItems.map(app => (
+          <div key={app.id} className="card hover:border-brand-300 dark:hover:border-brand-700 cursor-pointer transition-all"
+               onClick={() => setSelected(app)}>
+            <div className="p-4 flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                {app.candidate?.avatarUrl ? (
+                  <img src={app.candidate.avatarUrl} alt={app.candidate.fullName}
+                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                       style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                    {app.candidate?.fullName?.charAt(0) || '?'}
+                  </div>
+                )}
+                <div>
+                  <div className="font-semibold text-ink-800 dark:text-ink-900">{app.candidate?.fullName}</div>
+                  <div className="text-xs text-ink-500">{app.candidate?.email}</div>
+                  <div className="text-xs text-ink-400 mt-0.5">{app.listing?.title}</div>
+                  <div className="text-xs text-ink-400">
+                    {new Date(app.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <StatusBadge status={app.status} />
+                {app.noShow && <NoShowBadge />}
+                {/* Chat-v2: 'İncelemeye Al' yerine direkt 'Mesajlaşmaya git' */}
+                <button onClick={e => { e.stopPropagation(); onOpenMessages?.(app.conversationId) }}
+                  className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
+                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                       strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                  </svg>
+                  Mesajlaşma
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* #84: Pagination footer */}
+        {filtered.length > APPS_PAGE_SIZE && (
+          <div className="flex items-center justify-between gap-3 pt-2 px-1 text-xs text-ink-500">
+            <span>
+              {filtered.length} sonuçtan {safePage * APPS_PAGE_SIZE + 1}
+              {' – '}
+              {Math.min((safePage + 1) * APPS_PAGE_SIZE, filtered.length)}
+              {' arası'}
+            </span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={safePage === 0}
+                className="px-3 py-1.5 rounded-md bg-white dark:bg-ink-800 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+                ← Önceki
+              </button>
+              <span className="font-semibold text-ink-700">
+                {safePage + 1} / {pageCount}
+              </span>
+              <button onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
+                disabled={safePage >= pageCount - 1}
+                className="px-3 py-1.5 rounded-md bg-white dark:bg-ink-800 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+                Sonraki →
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Detail Modal */}
+      {selected && (
+        <div className="modal-overlay" onClick={() => setSelected(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-cream-200">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  {selected.candidate?.avatarUrl ? (
+                    <img src={selected.candidate.avatarUrl} alt={selected.candidate.fullName}
+                      className="w-14 h-14 rounded-full object-cover border border-cream-300 flex-shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+                         style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                      {selected.candidate?.fullName?.charAt(0) || '?'}
+                    </div>
+                  )}
+                  <div>
+                    <h2 className="text-lg font-bold text-ink-900">{selected.candidate?.fullName}</h2>
+                    <p className="text-sm text-ink-500">{selected.candidate?.email}</p>
+                  </div>
+                </div>
+                <StatusBadge status={selected.status} />
+              </div>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div>
+                <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">İlan</h3>
+                <div className="bg-cream-50 rounded-lg p-3 text-sm font-medium text-ink-700">
+                  {selected.listing?.title} · {selected.listing?.businessName}
+                </div>
+              </div>
+
+              {selected.coverLetter && (
+                <div>
+                  <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Ön Yazı</h3>
+                  <div className="bg-cream-50 rounded-lg p-4 text-sm text-ink-700 leading-relaxed">
+                    {selected.coverLetter}
+                  </div>
+                </div>
+              )}
+
+              {selected.availabilities?.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Müsaitlik Saatleri</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selected.availabilities.map((av, i) => (
+                      <span key={i} className="px-3 py-1.5 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 text-xs font-medium rounded-lg border border-brand-200 dark:border-brand-800">
+                        {av.dayOfWeek} · {av.startTime}–{av.endTime}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selected.note && (
+                <div>
+                  <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Notunuz</h3>
+                  <div className="bg-amber-50 rounded-lg p-3 text-sm text-amber-700 border border-amber-200">
+                    {selected.note}
+                  </div>
+                </div>
+              )}
+
+              {/* Görüntülenebilir Belgeler */}
+              <div>
+                <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">
+                  Görüntülenebilir Belgeler
+                </h3>
+                {docsLoading ? (
+                  <p className="text-xs text-ink-400">Yükleniyor...</p>
+                ) : accessibleDocs.length === 0 ? (
+                  <p className="text-xs text-ink-400 mb-3">
+                    Bu aday henüz belge yüklememiş veya hassas belgeler için izin yok.
+                  </p>
+                ) : (
+                  <div className="space-y-1.5 mb-3">
+                    {accessibleDocs.map(doc => {
+                      const typeLabel = (
+                        SENSITIVE_DOC_TYPES_BIZ.find(t => t.type === doc.type)?.label
+                      ) || doc.type
+                      return (
+                        <div key={doc.id}
+                          className="flex items-center justify-between bg-cream-50 rounded-lg px-3 py-2 gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm text-ink-700 font-medium truncate">{typeLabel}</div>
+                            <div className="text-xs text-ink-400 truncate">{doc.originalFileName}</div>
+                          </div>
+                          <button onClick={() => handleViewDoc(doc)}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60 transition-colors flex-shrink-0">
+                            Görüntüle
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Belge Talepleri */}
+              <div>
+                <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Belge Talepleri</h3>
+
+                {selected.documentRequests?.length > 0 ? (
+                  <div className="space-y-1.5 mb-3">
+                    {selected.documentRequests.map(dr => {
+                      const meta = SENSITIVE_DOC_TYPES_BIZ.find(t => t.type === dr.documentType)
+                      const statusMeta = DOC_REQ_STATUS_LABELS[dr.status] || { cls: 'bg-cream-100 text-ink-600', label: dr.status }
+                      return (
+                        <div key={dr.id} className="flex items-center justify-between bg-cream-50 rounded-lg px-3 py-2">
+                          <span className="text-sm text-ink-700">{meta?.label || dr.documentType}</span>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusMeta.cls}`}>
+                            {statusMeta.label}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-ink-400 mb-3">Henüz belge talep edilmemiş</p>
+                )}
+
+                {/* Yeni talep — sadece sonuçlanmamış başvurularda */}
+                {['PENDING', 'REVIEWING'].includes(selected.status) && (() => {
+                  const requestedTypes = new Set(selected.documentRequests?.map(dr => dr.documentType) || [])
+                  const availableTypes = SENSITIVE_DOC_TYPES_BIZ.filter(t => !requestedTypes.has(t.type))
+                  if (availableTypes.length === 0) {
+                    return <p className="text-xs text-ink-400">Tüm hassas belge tipleri zaten talep edilmiş.</p>
+                  }
+                  return (
+                    <div className="flex gap-2">
+                      <select value={requestingType} onChange={e => setRequestingType(e.target.value)}
+                        className="input text-sm flex-1">
+                        <option value="">Belge tipi seç...</option>
+                        {availableTypes.map(t => <option key={t.type} value={t.type}>{t.label}</option>)}
+                      </select>
+                      <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
+                        className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all"
+                        style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                        Talep Et
+                      </button>
+                    </div>
+                  )
+                })()}
+              </div>
+
+              {/* Chat-v2: Kabul/Red butonları kaldırıldı.
+                  Karar mesajlaşmadan veriliyor — sade bilgi + büyük "Mesajlaşmaya Git" */}
+              <div className="border-t border-cream-200 pt-4 space-y-3">
+                <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">İletişim</h3>
+                <p className="text-xs text-ink-500">
+                  Bu aday için otomatik mesajlaşma açıldı. Belgeleri inceleyip mülakat
+                  ayarlayabilir, karar mesajlaşmadan verilebilir.
+                </p>
+                <button
+                  onClick={() => onOpenMessages?.(selected.conversationId)}
+                  className="w-full py-2.5 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                       strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                  </svg>
+                  Mesajlaşmaya Git
+                </button>
+              </div>
+
+              {/* No-show işaretleme — sadece ACCEPTED + henüz işaretlenmemiş */}
+              {selected.status === 'ACCEPTED' && !selected.noShow && (
+                <div className="border-t border-cream-200 pt-4 space-y-2">
+                  <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">İşe Gelme Durumu</h3>
+                  <p className="text-xs text-ink-500">
+                    Aday kabul edilen iş için işe gelmediyse aşağıdaki butonla işaretleyin.
+                    Aday 3 kez işe gelmediğinde otomatik olarak 30 gün banlanır.
+                  </p>
+                  <button onClick={() => handleNoShow(selected.id)}
+                    disabled={actionLoading}
+                    className="w-full py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors disabled:opacity-60">
+                    Aday İşe Gelmedi (No-Show) Olarak İşaretle
+                  </button>
+                </div>
+              )}
+
+              {/* No-show işaretlenmişse uyarı banner */}
+              {selected.noShow && (
+                <div className="border-t border-cream-200 pt-4">
+                  <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
+                    <div>
+                      <div className="font-semibold">No-show olarak işaretlendi</div>
+                      <div className="text-xs text-red-600 mt-0.5">
+                        Bu aday kabul edilen iş için işe gelmediğini bildirdiniz. Strike hakkı düşürüldü.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 pb-5 flex gap-2">
+              <button onClick={() => setSelected(null)} className="btn-secondary text-sm flex-1">Kapat</button>
+              {/* #77: Adayla sohbet başlat */}
+              {selected.candidate?.id && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await hotelApi.startConversation({
+                        otherPartyId: selected.candidate.id,
+                        applicationId: selected.id,
+                      })
+                      setSelected(null)
+                      onOpenMessages?.()
+                    } catch (err) {
+                      toast.error(extractErrorMessage(err))
+                    }
+                  }}
+                  className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
+                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                  Mesaj Gönder
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  )
+}
