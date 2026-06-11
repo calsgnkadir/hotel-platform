@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { queryClient } from './lib/queryClient'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
@@ -74,8 +73,6 @@ export default function App() {
       </AuthProvider>
     </BrowserRouter>
     </ThemeProvider>
-    {/* React Query Devtools — sadece DEV. Buton 'top-right' (sol alt Cikis butonunu kapatmasin). */}
-    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" />}
     </QueryClientProvider>
   )
 }
