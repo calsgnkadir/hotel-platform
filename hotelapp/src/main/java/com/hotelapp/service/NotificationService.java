@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#22 — WS push
 
     /**
      * Bildirim oluştur. REQUIRES_NEW ile kendi tx'ında çalışır — başarısız olursa
@@ -47,7 +49,18 @@ public class NotificationService {
                     .isRead(false)
                     .createdAt(LocalDateTime.now())
                     .build();
-            notificationRepository.save(n);
+            n = notificationRepository.save(n);
+
+            // FAZ 1/#22 — WebSocket push: kullanıcıya anında bildirim
+            try {
+                messagingTemplate.convertAndSendToUser(
+                        recipientId.toString(),
+                        "/queue/notifications",
+                        toDto(n)
+                );
+            } catch (Exception wsErr) {
+                log.warn("WS notify push failed: {}", wsErr.getMessage());
+            }
         } catch (Exception e) {
             log.warn("Bildirim oluşturulamadı: type={} recipient={} - {}", type, recipientId, e.getMessage());
         }

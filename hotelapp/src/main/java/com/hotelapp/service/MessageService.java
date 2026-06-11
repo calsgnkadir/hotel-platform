@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +49,7 @@ public class MessageService {
     private final ApplicationRepository applicationRepository;
     private final NotificationService notificationService;
     private final FileStorageService fileStorageService;
+    private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#12 — WS broadcast
 
     // ----------------------------------------------------------------
     // Sohbet listesi (sayfalı, son mesaja göre azalan)
@@ -160,7 +162,10 @@ public class MessageService {
                 preview,
                 "messages");
 
-        return toMessageDto(msg, senderId);
+        // FAZ 1/#12 — WebSocket broadcast: konuşmadaki diğer tarafa anında ulaştır
+        MessageDto senderView = toMessageDto(msg, senderId);
+        broadcastMessage(conv, msg, senderId, recipientId);
+        return senderView;
     }
 
     // ----------------------------------------------------------------
@@ -215,7 +220,10 @@ public class MessageService {
                 preview,
                 "messages");
 
-        return toMessageDto(msg, senderId);
+        // FAZ 1/#12 — WebSocket broadcast
+        MessageDto senderView = toMessageDto(msg, senderId);
+        broadcastMessage(conv, msg, senderId, recipientId);
+        return senderView;
     }
 
     // ----------------------------------------------------------------
@@ -281,6 +289,42 @@ public class MessageService {
     public long countUnread(Long userId) {
         return messageRepository.countUnreadForUser(userId);
     }
+
+    // ----------------------------------------------------------------
+    // FAZ 1/#12 — WebSocket broadcast helper
+    // ----------------------------------------------------------------
+
+    /**
+     * Mesajı her iki tarafa anında push. Her taraf kendi viewerId'sine göre
+     * 'mine' flag'i farklı görür — bu yüzden 2 ayrı convertAndSendToUser çağırıyoruz.
+     *
+     * Frontend sub: /user/queue/messages → conversationId payload'ta var,
+     * client kendi aktif conversation'a göre filtreler.
+     */
+    private void broadcastMessage(Conversation conv, Message msg, Long senderId, Long recipientId) {
+        try {
+            MessageDto forSender    = toMessageDto(msg, senderId);
+            MessageDto forRecipient = toMessageDto(msg, recipientId);
+
+            // Payload: conversationId + message DTO
+            messagingTemplate.convertAndSendToUser(
+                    senderId.toString(),
+                    "/queue/messages",
+                    new WsMessagePayload(conv.getId(), forSender)
+            );
+            messagingTemplate.convertAndSendToUser(
+                    recipientId.toString(),
+                    "/queue/messages",
+                    new WsMessagePayload(conv.getId(), forRecipient)
+            );
+        } catch (Exception e) {
+            // WS arızası mesaj kaydetmeyi etkilemesin — log + devam
+            log.warn("WS broadcast failed for conv={}: {}", conv.getId(), e.getMessage());
+        }
+    }
+
+    /** Frontend için basit wrapper. */
+    public record WsMessagePayload(Long conversationId, MessageDto message) {}
 
     // ----------------------------------------------------------------
     // Helpers

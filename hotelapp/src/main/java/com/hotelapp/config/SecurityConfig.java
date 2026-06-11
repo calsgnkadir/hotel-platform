@@ -75,7 +75,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/oauth2/**",              // #92: Google OAuth flow
-                                "/login/oauth2/**"          // #92: Google callback
+                                "/login/oauth2/**",         // #92: Google callback
+                                "/ws/**"                    // FAZ 1/#12 — WS handshake (auth STOMP CONNECT'te yapilir)
                         ).permitAll()
                         .requestMatchers("/api/candidate/**").hasRole("CANDIDATE")
                         .requestMatchers("/api/business/**").hasRole("BUSINESS_OWNER")
