@@ -14,6 +14,7 @@ import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
 import toast from 'react-hot-toast'
 import { useState } from 'react'
+import { ApplyModal } from './ListingsPage'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -40,6 +41,7 @@ export default function ListingDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [applying] = useState(false)
+  const [applyOpen, setApplyOpen] = useState(false)  // ApplyModal state
 
   const { data: listing, isLoading, error } = useQuery({
     queryKey: keys.listings.detail(id),
@@ -98,9 +100,7 @@ export default function ListingDetailPage() {
       toast.error('Başvurabilmek için aday hesabı gerek')
       return
     }
-    // Şimdilik ilanlar sayfasına yönlendir + apply modal otomatik açılsın
-    // Sonraki iterasyon: ApplyModal'ı ayrı component yap + burada direkt aç
-    navigate(`/candidate?tab=listings&apply=${id}`)
+    setApplyOpen(true)  // ApplyModal direkt aç
   }
 
   return (
@@ -281,6 +281,16 @@ export default function ListingDetailPage() {
           </button>
         </div>
       </main>
+
+      {/* ApplyModal - başvur butonuna basınca açılır */}
+      {applyOpen && (
+        <ApplyModal
+          listing={listing}
+          onClose={() => setApplyOpen(false)}
+          onSuccess={() => setApplyOpen(false)}
+          onMessagesOpen={() => navigate('/candidate?tab=messages')}
+        />
+      )}
     </div>
   )
 }

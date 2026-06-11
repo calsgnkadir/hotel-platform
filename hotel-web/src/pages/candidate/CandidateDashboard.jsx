@@ -76,7 +76,14 @@ const CAND_STATUS_FILTERS = [
 ]
 
 /* ── Applications Tab ── */
-function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
+function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessages, onTabChange }) {
+  // Süresi geçen + tamamlanmış işler "Başvurularım"da görünmez (Geçmiş İşlerim'e gider)
+  const applications = (rawApplications || []).filter(a => {
+    if (a.status === 'EXPIRED') return false
+    if (a.workCompleted) return false  // tamamlanmış: Geçmiş İşlerim'de
+    return true
+  })
+
   const [respondingId, setRespondingId] = useState(null)
   const [myDocs, setMyDocs] = useState([])
   const [statusFilter, setStatusFilter] = useState('')

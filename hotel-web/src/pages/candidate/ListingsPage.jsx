@@ -60,7 +60,7 @@ function formatSalary(min, max) {
    3) Seçili dosyalar conversation'a attachment mesajı olarak yüklenir
    4) /candidate → mesajlar sekmesine yönlendir (conversationId query ile)
 */
-function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
+export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   const [coverLetter, setCoverLetter] = useState('')
   const [loading, setLoading] = useState(false)
 
