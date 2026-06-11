@@ -1,6 +1,5 @@
 package com.hotelapp.service;
 
-import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
@@ -15,7 +15,6 @@ import java.security.spec.*;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Date;
 
 /**
  * FAZ 1/#23 — VAPID (RFC 8292) — Pure Java.
@@ -90,20 +89,80 @@ public class VapidService {
         try {
             URI uri = URI.create(endpoint);
             String aud = uri.getScheme() + "://" + uri.getHost();
-            // FCM 'invalid aud claim' verdi: jjwt .audience().add() bunu array yapiyor
-            // (aud: ["..."]). FCM tek string istiyor -> .claim("aud", string)
-            // ile manuel set ediyoruz.
-            String jwt = Jwts.builder()
-                    .header().add("typ", "JWT").and()
-                    .claim("aud", aud)
-                    .expiration(Date.from(Instant.now().plusSeconds(12 * 3600))) // 12h
-                    .subject(subject)
-                    .signWith(privateKey, Jwts.SIG.ES256)
-                    .compact();
+            long exp = Instant.now().plusSeconds(12 * 3600).getEpochSecond();
+
+            // MANUEL JWT — jjwt .audience().add()/.claim("aud") ikisi de
+            // 'aud' claim'i array yapiyordu, FCM reddediyordu.
+            // Burada payload JSON'unu elle olusturup garantiliyoruz: aud = string.
+            String headerJson  = "{\"typ\":\"JWT\",\"alg\":\"ES256\"}";
+            String payloadJson = String.format(
+                    "{\"aud\":\"%s\",\"exp\":%d,\"sub\":\"%s\"}",
+                    escape(aud), exp, escape(subject));
+
+            String headerB64  = b64url(headerJson.getBytes(StandardCharsets.UTF_8));
+            String payloadB64 = b64url(payloadJson.getBytes(StandardCharsets.UTF_8));
+            String signingInput = headerB64 + "." + payloadB64;
+
+            // JCE built-in ECDSA-SHA256 imzala (DER format doner)
+            Signature sig = Signature.getInstance("SHA256withECDSA");
+            sig.initSign(privateKey);
+            sig.update(signingInput.getBytes(StandardCharsets.UTF_8));
+            byte[] derSig = sig.sign();
+            byte[] joseSig = derToJose(derSig);  // JWT spec JOSE format: R||S 64 byte
+            String sigB64 = b64url(joseSig);
+
+            String jwt = signingInput + "." + sigB64;
             return "vapid t=" + jwt + ", k=" + publicKeyForHeader;
         } catch (Exception e) {
             throw new RuntimeException("VAPID JWT olusturulamadi: " + e.getMessage(), e);
         }
+    }
+
+    /** JSON string icindeki ozel karakterleri escape et (basit, " ve \). */
+    private static String escape(String s) {
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    /**
+     * JCE'nin DER-encoded ECDSA imzasini (SEQUENCE{ INTEGER R, INTEGER S })
+     * JWT spec'inin istegidigi JOSE formatina cevirir: R||S, sabit 64-byte.
+     */
+    private static byte[] derToJose(byte[] der) {
+        // DER: 0x30 totalLen 0x02 rLen R 0x02 sLen S
+        if (der.length < 8 || der[0] != 0x30) {
+            throw new IllegalArgumentException("Beklenmedik DER format");
+        }
+        int offset = 2;                     // 0x30 + totalLen byte
+        if ((der[1] & 0x80) != 0) offset += (der[1] & 0x7F);  // uzun form (genelde kisa)
+
+        if (der[offset] != 0x02) throw new IllegalArgumentException("R icin INTEGER bekleniyor");
+        int rLen = der[offset + 1];
+        int rStart = offset + 2;
+        byte[] r = Arrays.copyOfRange(der, rStart, rStart + rLen);
+
+        int sOffset = rStart + rLen;
+        if (der[sOffset] != 0x02) throw new IllegalArgumentException("S icin INTEGER bekleniyor");
+        int sLen = der[sOffset + 1];
+        int sStart = sOffset + 2;
+        byte[] s = Arrays.copyOfRange(der, sStart, sStart + sLen);
+
+        byte[] rPadded = toFixed32(r);
+        byte[] sPadded = toFixed32(s);
+        byte[] out = new byte[64];
+        System.arraycopy(rPadded, 0, out, 0, 32);
+        System.arraycopy(sPadded, 0, out, 32, 32);
+        return out;
+    }
+
+    private static byte[] toFixed32(byte[] src) {
+        if (src.length == 32) return src;
+        if (src.length == 33 && src[0] == 0) return Arrays.copyOfRange(src, 1, 33); // leading zero
+        if (src.length < 32) {
+            byte[] out = new byte[32];
+            System.arraycopy(src, 0, out, 32 - src.length, src.length);
+            return out;
+        }
+        throw new IllegalArgumentException("R/S 32 byte'i asti: " + src.length);
     }
 
     // ─── helpers ─────────────────────────────────────────────────────────
