@@ -62,14 +62,20 @@ function isValidLatLng(p) {
 function FitToBounds({ points }) {
   const map = useMap()
   useEffect(() => {
-    if (!points.length) return
-    const validCoords = points.map(p => p.coords).filter(isValidLatLng)
-    if (validCoords.length === 0) return
-    const bounds = L.latLngBounds(validCoords)
-    if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 })
+    if (!points.length || !map) return
+    try {
+      const validCoords = points.map(p => p.coords).filter(isValidLatLng)
+      if (validCoords.length === 0) return
+      const bounds = L.latLngBounds(validCoords)
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 })
+      }
+      setTimeout(() => {
+        try { map.invalidateSize() } catch {}
+      }, 100)
+    } catch (e) {
+      console.warn('[Map] FitToBounds failed:', e?.message)
     }
-    setTimeout(() => map.invalidateSize(), 100)
   }, [points, map])
   return null
 }
@@ -77,8 +83,13 @@ function FitToBounds({ points }) {
 function FlyTo({ target }) {
   const map = useMap()
   useEffect(() => {
-    if (isValidLatLng(target)) {
-      map.flyTo(target, Math.max(map.getZoom(), 14), { duration: 0.6 })
+    if (!isValidLatLng(target) || !map) return
+    try {
+      const currentZoom = map.getZoom()
+      const safeZoom = Number.isFinite(currentZoom) ? Math.max(currentZoom, 14) : 14
+      map.flyTo(target, safeZoom, { duration: 0.6 })
+    } catch (e) {
+      console.warn('[Map] FlyTo failed:', e?.message)
     }
   }, [target, map])
   return null
