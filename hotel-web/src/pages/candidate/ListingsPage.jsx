@@ -756,32 +756,119 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       </div>
 
       <div className={`card p-4 space-y-4 ${showFilters ? '' : 'hidden sm:block'}`}>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div>
-            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">İlçe</label>
-            <select value={district} onChange={e => setDistrict(e.target.value)} className="input text-sm">
-              <option value="">Tümü</option>
-              {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
+        {/* FAZ 2/#45 — Aktif filtre rozet + temizle */}
+        {(() => {
+          const activeCount = [district, position, jobType, minSalary, datePreset]
+            .filter(v => v && v !== '').length
+          if (activeCount === 0) return null
+          return (
+            <div className="flex items-center justify-between bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg px-3 py-2">
+              <span className="text-xs font-semibold text-brand-700 dark:text-brand-300">
+                🎯 {activeCount} filtre aktif
+              </span>
+              <button onClick={() => {
+                setDistrict(''); setPosition(''); setJobType(''); setMinSalary(''); setDatePreset('')
+              }} className="text-xs font-bold text-brand-700 dark:text-brand-300 hover:underline">
+                Temizle ✕
+              </button>
+            </div>
+          )
+        })()}
+
+        {/* İlçe — dropdown (39 ilçe pill chip mantıksız) */}
+        <div>
+          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">İlçe</label>
+          <select value={district} onChange={e => setDistrict(e.target.value)} className="input text-sm">
+            <option value="">Tüm İstanbul</option>
+            {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+
+        {/* Pozisyon — pill chips (Airbnb tarzı, single select) */}
+        <div>
+          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-2">Pozisyon</label>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setPosition('')}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                position === ''
+                  ? 'text-white shadow-sm'
+                  : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
+              }`}
+              style={position === '' ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+              Tümü
+            </button>
+            {Object.entries(POSITION_LABELS).map(([v, l]) => {
+              const active = position === v
+              return (
+                <button key={v} type="button" onClick={() => setPosition(active ? '' : v)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    active ? 'text-white shadow-sm'
+                           : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
+                  }`}
+                  style={active ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+                  {l}
+                </button>
+              )
+            })}
           </div>
-          <div>
-            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">Pozisyon</label>
-            <select value={position} onChange={e => setPosition(e.target.value)} className="input text-sm">
-              <option value="">Tümü</option>
-              {Object.entries(POSITION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
+        </div>
+
+        {/* Çalışma Türü — pill chips */}
+        <div>
+          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-2">Çalışma Türü</label>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setJobType('')}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                jobType === ''
+                  ? 'text-white shadow-sm'
+                  : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
+              }`}
+              style={jobType === '' ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+              Tümü
+            </button>
+            {Object.entries(JOB_TYPE_LABELS).map(([v, l]) => {
+              const active = jobType === v
+              return (
+                <button key={v} type="button" onClick={() => setJobType(active ? '' : v)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    active ? 'text-white shadow-sm'
+                           : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
+                  }`}
+                  style={active ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+                  {l}
+                </button>
+              )
+            })}
           </div>
-          <div>
-            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">Çalışma Türü</label>
-            <select value={jobType} onChange={e => setJobType(e.target.value)} className="input text-sm">
-              <option value="">Tümü</option>
-              {Object.entries(JOB_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
+        </div>
+
+        {/* Min Ücret — range slider + preset chips */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider">Min Ücret</label>
+            <span className="text-sm font-bold text-brand-700 dark:text-brand-300">
+              {minSalary ? `${Number(minSalary).toLocaleString('tr-TR')} ₺+` : 'Tümü'}
+            </span>
           </div>
-          <div>
-            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">Min Ücret ₺</label>
-            <input type="number" value={minSalary} onChange={e => setMinSalary(e.target.value)}
-              placeholder="5000" min="0" className="input text-sm" />
+          <input type="range" min="0" max="50000" step="1000"
+            value={minSalary || 0}
+            onChange={e => setMinSalary(e.target.value === '0' ? '' : e.target.value)}
+            className="w-full accent-brand-600 cursor-pointer" />
+          <div className="flex flex-wrap gap-2 mt-2">
+            {[0, 5000, 10000, 15000, 20000, 30000].map(v => {
+              const active = (v === 0 ? minSalary === '' : Number(minSalary) === v)
+              return (
+                <button key={v} type="button"
+                  onClick={() => setMinSalary(v === 0 ? '' : String(v))}
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
+                    active ? 'text-white shadow-sm'
+                           : 'bg-white text-ink-500 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
+                  }`}
+                  style={active ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+                  {v === 0 ? 'Tümü' : `${v / 1000}K+`}
+                </button>
+              )
+            })}
           </div>
         </div>
 
