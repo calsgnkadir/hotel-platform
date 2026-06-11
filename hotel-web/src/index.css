@@ -365,3 +365,8 @@ body {
 .slide-up {
   animation: slideUp 0.4s ease-out;
 }
+/* FAZ 1/#51 — Skeleton shimmer effect */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

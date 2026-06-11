@@ -7,6 +7,7 @@ import { keys } from '../../../lib/queryClient'
 import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_SHORT, STATUS_LABELS } from '../lib/constants'
 import ListingFormModal from '../modals/ListingFormModal'
 import EmptyState from '../../../components/EmptyState'
+import { SkeletonList } from '../../../components/Skeleton'
 
 /* ── My Listings Tab — FAZ 0/#10 react-query ── */
 export default function MyListingsTab() {
@@ -34,7 +35,7 @@ export default function MyListingsTab() {
     }
   }
 
-  if (isLoading) return <div className="flex justify-center py-12"><div className="spinner"/></div>
+  if (isLoading) return <SkeletonList count={4} />
 
   return (
     <div className="space-y-4">

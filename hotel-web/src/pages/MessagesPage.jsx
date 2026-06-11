@@ -5,6 +5,8 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { keys } from '../lib/queryClient'
+import EmptyState from '../components/EmptyState'
+import { SkeletonConversationList, SkeletonMessages } from '../components/Skeleton'
 
 /** Mesaj zamanını dilbilime yakın formatla. */
 function formatRelative(iso) {
@@ -547,9 +549,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       {/* Mesaj akışı */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-cream-50 dark:bg-ink-900">
         {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="spinner" />
-          </div>
+          <SkeletonMessages count={5} />
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-sm text-ink-400">
             Sohbete ilk mesajı sen yaz
@@ -736,9 +736,9 @@ export default function MessagesPage() {
               )}
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto p-2">
             {loading ? (
-              <div className="flex items-center justify-center py-12"><div className="spinner" /></div>
+              <SkeletonConversationList count={4} />
             ) : conversations.length === 0 ? (
               <div className="empty-state py-12 px-4 text-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

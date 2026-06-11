@@ -5,6 +5,7 @@ import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import MessagesPage from '../MessagesPage'
 import { keys } from '../../lib/queryClient'
+import { SkeletonList } from '../../components/Skeleton'
 
 // FAZ 0/#9 — Tüm tab'lar ayrı dosyalarda
 import OverviewTab from './tabs/OverviewTab'
@@ -36,9 +37,7 @@ export default function BusinessDashboard() {
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="spinner"></div>
-        </div>
+        <SkeletonList count={5} />
       ) : (
         <>
           {activeTab === 'overview'      && <OverviewTab applications={applications} onTabChange={setActiveTab} />}

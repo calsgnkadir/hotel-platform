@@ -10,6 +10,7 @@ import StarRating from '../../components/StarRating'
 import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
 import EmptyState from '../../components/EmptyState'
+import { SkeletonListingGrid } from '../../components/Skeleton'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 
 const POSITION_LABELS = {
@@ -842,7 +843,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><div className="spinner" /></div>
+        <SkeletonListingGrid count={6} />
       ) : listings.length === 0 ? (
         <div className="card">
           <EmptyState

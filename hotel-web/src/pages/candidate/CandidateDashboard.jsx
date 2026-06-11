@@ -11,6 +11,7 @@ import MessagesPage from '../MessagesPage'
 import ProfileCompletenessCard from '../../components/ProfileCompletenessCard'
 import { calculateCandidateCompleteness } from '../../lib/profileCompleteness'
 import EmptyState from '../../components/EmptyState'
+import { SkeletonList } from '../../components/Skeleton'
 import ChangePasswordCard from '../../components/ChangePasswordCard'
 import ReviewModal from '../../components/ReviewModal'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../utils/validation'
@@ -927,9 +928,7 @@ export default function CandidateDashboard() {
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="spinner"></div>
-        </div>
+        <SkeletonList count={4} />
       ) : (
         <>
           {activeTab === 'overview'      && <OverviewTab user={user} applications={applications} onTabChange={setActiveTab} />}
