@@ -4,7 +4,6 @@ import com.hotelapp.entity.PushSubscription;
 import com.hotelapp.repository.PushSubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,10 +38,14 @@ public class WebPushService {
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
-    /** Tum aboneliklere push gonder (async — bildirim akisi blokladmasin). */
-    @Async
-    @Transactional
+    /** Tum aboneliklere push gonder. Yeni thread'de fire-forget (caller transaction'i bloklamaz). */
+    @Transactional(readOnly = true)
     public void sendToUser(Long userId) {
+        // Fire-forget: yeni thread, ana request'i bloklamaz, hata yutulur.
+        new Thread(() -> doSend(userId), "push-send-" + userId).start();
+    }
+
+    private void doSend(Long userId) {
         List<PushSubscription> subs = subscriptionRepository.findAllByUserId(userId);
         for (PushSubscription sub : subs) {
             try {
