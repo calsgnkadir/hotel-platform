@@ -262,9 +262,10 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     })
     // FIX: User-destination yerine topic broadcast (Spring SimpUserRegistry sorununu bypass).
     const subTyping = wsSubscribe(`/topic/typing.${conversation.id}`, (payload) => {
-      console.log('[WS] Typing alindi:', payload)
-      // Kendi yazdigimizi gozardi et (sonsuz loop'tan kacin)
-      if (payload?.userId === user?.id) return
+      // FIX: Number() normalize — kendi yazdigimizi gozardi et (id tip uyumsuzlugu)
+      const myId = Number(user?.id)
+      const fromId = Number(payload?.userId)
+      if (myId && fromId && myId === fromId) return
       if (payload?.conversationId !== conversation.id) return
       setOtherTyping(true)
       clearTimeout(typingTimeoutRef.current)
