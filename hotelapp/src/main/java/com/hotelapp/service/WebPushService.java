@@ -73,7 +73,14 @@ public class WebPushService {
                 .header("Urgency", "normal")
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
-        HttpResponse<Void> res = http.send(req, HttpResponse.BodyHandlers.discarding());
+        // Body capture: 403/410 vs gelirse FCM sebep aciklamasi log'a dussun
+        HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() >= 400) {
+            log.warn("Push HTTP {} - endpoint={} body={}",
+                    res.statusCode(),
+                    endpoint.substring(0, Math.min(60, endpoint.length())),
+                    res.body());
+        }
         return res.statusCode();
     }
 }

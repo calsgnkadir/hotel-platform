@@ -100,7 +100,8 @@ app:
     vapid:
       public-key:  ${VAPID_PUBLIC_KEY:}     # 65-byte uncompressed, Base64URL no-padding
       private-key: ${VAPID_PRIVATE_KEY:}    # 32-byte, Base64URL no-padding
-      subject:     ${VAPID_SUBJECT:mailto:noreply@ajanshotel.local}
+      # NOT: FCM .local TLD'sini reddeder (403). Gercek bir email/domain kullan.
+      subject:     ${VAPID_SUBJECT:mailto:calisgankadircan@gmail.com}
 
 # Swagger UI — http://localhost:8080/swagger-ui.html
 springdoc:
