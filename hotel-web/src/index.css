@@ -375,3 +375,9 @@ body {
   0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+
+/* FAZ 1/#56 — Bottom Sheet slide-up animation */
+@keyframes sheet-up {
+  from { transform: translateY(100%); opacity: 0.5; }
+  to   { transform: translateY(0); opacity: 1; }
+}
