@@ -15,16 +15,18 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('push', (event) => {
+  // FAZ 1/#23 — Pure Java VAPID + payload-less push.
+  // Backend body göndermez (encryption tabaka atlandı), generic mesaj göster.
   let data = {}
-  try { data = event.data ? event.data.json() : {} } catch { data = { title: 'AjansHotel', body: event.data?.text() || '' } }
+  try { data = event.data ? event.data.json() : {} } catch { data = {} }
 
   const title = data.title || 'AjansHotel'
   const options = {
-    body: data.body || '',
+    body: data.body || 'Yeni bir bildirim var — kontrol et.',
     icon: '/favicon.svg',
     badge: '/favicon.svg',
     data: { link: data.link || '/', notificationId: data.notificationId },
-    tag: data.notificationId ? `notif-${data.notificationId}` : undefined,
+    tag: data.notificationId ? `notif-${data.notificationId}` : 'ajanshotel-generic',
     renotify: false,
   }
   event.waitUntil(self.registration.showNotification(title, options))

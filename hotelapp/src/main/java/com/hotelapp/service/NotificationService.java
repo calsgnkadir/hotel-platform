@@ -30,7 +30,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#22 — WS push
-    // FAZ 1/#23 — WebPushService gecici devre disi (Maven cakismasi)
+    private final WebPushService webPushService;            // FAZ 1/#23 — Web Push (pure Java)
 
     /**
      * Bildirim oluştur. REQUIRES_NEW ile kendi tx'ında çalışır — başarısız olursa
@@ -63,8 +63,12 @@ public class NotificationService {
                 log.warn("WS notify push failed: {}", wsErr.getMessage());
             }
 
-            // FAZ 1/#23 — Web Push gecici devre disi (Maven cakismasi)
-            // WS push hala calisiyor (yukaridaki messagingTemplate)
+            // FAZ 1/#23 — Web Push (async, tab kapali bile bildirim gelir)
+            try {
+                webPushService.sendToUser(recipient.getId());
+            } catch (Exception pushErr) {
+                log.warn("Web push send failed: {}", pushErr.getMessage());
+            }
         } catch (Exception e) {
             log.warn("Bildirim oluşturulamadı: type={} recipient={} - {}", type, recipientId, e.getMessage());
         }

@@ -1,0 +1,76 @@
+package com.hotelapp.service;
+
+import com.hotelapp.entity.PushSubscription;
+import com.hotelapp.repository.PushSubscriptionRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.List;
+
+/**
+ * FAZ 1/#23 — Push gonderici.
+ *
+ * MVP: payload encryption YOK (Bouncycastle/AES-GCM tabaka gerekmesin).
+ * - HTTP POST body bos
+ * - Service worker'a "push" event tetikleyicisi gider
+ * - Service worker payload yoksa /api/notifications endpoint'inden son okunmamis bildirimi cekip gosterir
+ *
+ * Push server hata kodlari:
+ *  - 410 Gone / 404 Not Found  => abonelik artik gecersiz, sil
+ *  - 413 Payload Too Large     => N/A (body bos)
+ *  - 429 Too Many Requests     => retry-after sonra denenebilir (su an yutuyoruz)
+ */
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class WebPushService {
+
+    private final VapidService vapidService;
+    private final PushSubscriptionRepository subscriptionRepository;
+    private final HttpClient http = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
+
+    /** Tum aboneliklere push gonder (async — bildirim akisi blokladmasin). */
+    @Async
+    @Transactional
+    public void sendToUser(Long userId) {
+        List<PushSubscription> subs = subscriptionRepository.findAllByUserId(userId);
+        for (PushSubscription sub : subs) {
+            try {
+                int status = pushOne(sub);
+                if (status == 404 || status == 410) {
+                    log.info("Push abonelik artik gecersiz, siliniyor: id={}", sub.getId());
+                    subscriptionRepository.delete(sub);
+                } else if (status >= 400) {
+                    log.warn("Push fail: id={} status={}", sub.getId(), status);
+                }
+            } catch (Exception e) {
+                log.warn("Push gonderim hatasi: id={} - {}", sub.getId(), e.getMessage());
+            }
+        }
+    }
+
+    private int pushOne(PushSubscription sub) throws Exception {
+        String endpoint = sub.getEndpoint();
+        String auth = vapidService.buildAuthHeader(endpoint);
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .timeout(Duration.ofSeconds(8))
+                .header("Authorization", auth)
+                .header("TTL", "60")              // sn
+                .header("Urgency", "normal")
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+        HttpResponse<Void> res = http.send(req, HttpResponse.BodyHandlers.discarding());
+        return res.statusCode();
+    }
+}

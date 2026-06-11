@@ -93,7 +93,14 @@ app:
     password-reset:
       expiry-hours: ${PWD_RESET_EXPIRY_HOURS:1}
 
-  # FAZ 1/#23 — Web Push gecici devre disi (Maven dependency conflict)
+  # FAZ 1/#23 — Web Push (VAPID) — Pure Java, BouncyCastle YOK.
+  # Key'ler bos ise startup'ta auto-generate edilir + log'a basilir (dev icin).
+  # Prod: env vars ile set et (key'leri kaybetme — yeniden uretirsen abone uyumsuz olur).
+  push:
+    vapid:
+      public-key:  ${VAPID_PUBLIC_KEY:}     # 65-byte uncompressed, Base64URL no-padding
+      private-key: ${VAPID_PRIVATE_KEY:}    # 32-byte, Base64URL no-padding
+      subject:     ${VAPID_SUBJECT:mailto:noreply@ajanshotel.local}
 
 # Swagger UI — http://localhost:8080/swagger-ui.html
 springdoc:
