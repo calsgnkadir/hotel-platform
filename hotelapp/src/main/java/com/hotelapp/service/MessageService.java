@@ -306,19 +306,22 @@ public class MessageService {
             MessageDto forSender    = toMessageDto(msg, senderId);
             MessageDto forRecipient = toMessageDto(msg, recipientId);
 
-            // Payload: conversationId + message DTO
+            // FIX: convertAndSendToUser → Principal.getName() ile eslestirir.
+            // Principal.getName() = EMAIL (id degil).
+            User sender    = conv.getCandidate().getId().equals(senderId) ? conv.getCandidate() : conv.getBusinessOwner();
+            User recipient = conv.getCandidate().getId().equals(recipientId) ? conv.getCandidate() : conv.getBusinessOwner();
+
             messagingTemplate.convertAndSendToUser(
-                    senderId.toString(),
+                    sender.getEmail(),
                     "/queue/messages",
                     new WsMessagePayload(conv.getId(), forSender)
             );
             messagingTemplate.convertAndSendToUser(
-                    recipientId.toString(),
+                    recipient.getEmail(),
                     "/queue/messages",
                     new WsMessagePayload(conv.getId(), forRecipient)
             );
         } catch (Exception e) {
-            // WS arızası mesaj kaydetmeyi etkilemesin — log + devam
             log.warn("WS broadcast failed for conv={}: {}", conv.getId(), e.getMessage());
         }
     }

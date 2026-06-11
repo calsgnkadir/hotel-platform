@@ -65,16 +65,20 @@ public class ChatWsController {
             return;
         }
 
-        Long recipientId = sender.getId().equals(candidateId) ? ownerId : candidateId;
+        boolean iAmCandidate = sender.getId().equals(candidateId);
+        User recipient = iAmCandidate ? conv.getBusinessOwner() : conv.getCandidate();
 
         TypingPayload payload = new TypingPayload(
                 conversationId,
                 sender.getId(),
                 sender.getFullName()
         );
-        log.info("[TYPING] push: from={} to={} conv={}", sender.getId(), recipientId, conversationId);
+        // FIX: convertAndSendToUser, userId'yi Principal.getName() ile eslestirir.
+        // Bizim Principal.getName() = email, bu yuzden id yerine EMAIL kullaniyoruz.
+        log.info("[TYPING] push: from={} to={} ({}) conv={}",
+                 sender.getId(), recipient.getId(), recipient.getEmail(), conversationId);
         messagingTemplate.convertAndSendToUser(
-                recipientId.toString(),
+                recipient.getEmail(),
                 "/queue/typing",
                 payload
         );

@@ -52,9 +52,10 @@ public class NotificationService {
             n = notificationRepository.save(n);
 
             // FAZ 1/#22 — WebSocket push: kullanıcıya anında bildirim
+            // FIX: convertAndSendToUser → Principal.getName() = EMAIL (id degil)
             try {
                 messagingTemplate.convertAndSendToUser(
-                        recipientId.toString(),
+                        recipient.getEmail(),
                         "/queue/notifications",
                         toDto(n)
                 );
