@@ -63,6 +63,7 @@ public class DocumentService {
         return toDto(document);
     }
 
+    @Transactional(readOnly = true)
     public List<DocumentDto> listMyDocuments(Long candidateId) {
         return documentRepository.findAllByStudentId(candidateId)
                 .stream().map(this::toDto).toList();
@@ -81,6 +82,7 @@ public class DocumentService {
         documentRepository.delete(document);
     }
 
+    @Transactional(readOnly = true)
     public List<DocumentDto> getPublicDocuments(Long candidateId) {
         return documentRepository.findAllByStudentIdAndIsSensitiveFalse(candidateId)
                 .stream().map(this::toDto).toList();
@@ -116,6 +118,7 @@ public class DocumentService {
      * Belgeye erişim kontrolü yapar ve Cloudinary signed URL döner.
      * Caller (controller) bu URL'ye 302 redirect eder.
      */
+    @Transactional(readOnly = true)
     public String getDownloadUrl(Long documentId, Long requesterId, boolean isBusinessOwner) {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Belge", documentId));
