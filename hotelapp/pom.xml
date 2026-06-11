@@ -38,17 +38,10 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
-        <!-- FAZ 1/#23 — Web Push (VAPID, browser notification) -->
-        <dependency>
-            <groupId>nl.martijndwars</groupId>
-            <artifactId>web-push</artifactId>
-            <version>5.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.78.1</version>
-        </dependency>
+        <!-- FAZ 1/#23 — Web Push (VAPID) — gecici devre disi.
+             nl.martijndwars:web-push spring-data-jpa ile cakistirdi (BouncyCastle conflict).
+             Ileride alternatif kutuphane veya runtime VAPID generator ile tekrar denenecek. -->
+
 
         <!-- Security -->
         <dependency>

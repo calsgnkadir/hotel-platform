@@ -76,8 +76,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/oauth2/**",              // #92: Google OAuth flow
                                 "/login/oauth2/**",         // #92: Google callback
-                                "/ws/**",                   // FAZ 1/#12 — WS handshake (auth STOMP CONNECT'te yapilir)
-                                "/api/push/vapid-public-key" // FAZ 1/#23 — Anon erisilebilir (kullanici izin oncesi)
+                                "/ws/**"                    // FAZ 1/#12 — WS handshake (auth STOMP CONNECT'te yapilir)
                         ).permitAll()
                         .requestMatchers("/api/candidate/**").hasRole("CANDIDATE")
                         .requestMatchers("/api/business/**").hasRole("BUSINESS_OWNER")

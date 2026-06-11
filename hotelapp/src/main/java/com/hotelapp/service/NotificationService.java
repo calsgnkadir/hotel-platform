@@ -30,7 +30,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#22 — WS push
-    private final WebPushService webPushService;             // FAZ 1/#23 — Browser push
+    // FAZ 1/#23 — WebPushService gecici devre disi (Maven cakismasi)
 
     /**
      * Bildirim oluştur. REQUIRES_NEW ile kendi tx'ında çalışır — başarısız olursa
@@ -63,17 +63,8 @@ public class NotificationService {
                 log.warn("WS notify push failed: {}", wsErr.getMessage());
             }
 
-            // FAZ 1/#23 — Web Push (browser kapalıyken bile bildirim)
-            try {
-                java.util.Map<String, String> payload = new java.util.HashMap<>();
-                payload.put("title", title);
-                payload.put("body",  message);
-                if (link != null) payload.put("link", link);
-                payload.put("notificationId", String.valueOf(n.getId()));
-                webPushService.sendToUser(recipientId, payload);
-            } catch (Exception pushErr) {
-                log.warn("Web Push notify failed: {}", pushErr.getMessage());
-            }
+            // FAZ 1/#23 — Web Push gecici devre disi (Maven cakismasi)
+            // WS push hala calisiyor (yukaridaki messagingTemplate)
         } catch (Exception e) {
             log.warn("Bildirim oluşturulamadı: type={} recipient={} - {}", type, recipientId, e.getMessage());
         }
