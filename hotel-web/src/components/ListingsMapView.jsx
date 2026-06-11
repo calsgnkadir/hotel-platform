@@ -51,11 +51,21 @@ function makeIcon(size = 32, hot = false) {
 const normalIcon = makeIcon(32, false)
 const hotIcon    = makeIcon(40, true)
 
+// FIX: NaN guard — Leaflet flyTo'ya NaN koordinat verilince crash.
+function isValidLatLng(p) {
+  return Array.isArray(p) && p.length === 2
+    && typeof p[0] === 'number' && typeof p[1] === 'number'
+    && !isNaN(p[0]) && !isNaN(p[1])
+    && Math.abs(p[0]) <= 90 && Math.abs(p[1]) <= 180
+}
+
 function FitToBounds({ points }) {
   const map = useMap()
   useEffect(() => {
     if (!points.length) return
-    const bounds = L.latLngBounds(points.map(p => p.coords))
+    const validCoords = points.map(p => p.coords).filter(isValidLatLng)
+    if (validCoords.length === 0) return
+    const bounds = L.latLngBounds(validCoords)
     if (bounds.isValid()) {
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 })
     }
@@ -67,7 +77,9 @@ function FitToBounds({ points }) {
 function FlyTo({ target }) {
   const map = useMap()
   useEffect(() => {
-    if (target) map.flyTo(target, Math.max(map.getZoom(), 14), { duration: 0.6 })
+    if (isValidLatLng(target)) {
+      map.flyTo(target, Math.max(map.getZoom(), 14), { duration: 0.6 })
+    }
   }, [target, map])
   return null
 }
@@ -80,15 +92,17 @@ function formatSalary(min, max) {
 }
 
 export default function ListingsMapView({ listings = [], highlightedId, onMarkerClick }) {
-  // Her ilanı bir noktaya çevir (lat/lng yoksa ilçe merkezi)
+  // Her ilanı bir noktaya çevir (lat/lng yoksa ilçe merkezi).
+  // NaN/invalid koordinatlı ilanlar atlanır (haritaya konmaz).
   const points = useMemo(() => {
     return listings.map(l => {
+      const lat = Number(l.businessLatitude)
+      const lng = Number(l.businessLongitude)
       let coords
-      if (l.businessLatitude != null && l.businessLongitude != null) {
-        coords = [Number(l.businessLatitude), Number(l.businessLongitude)]
+      if (!isNaN(lat) && !isNaN(lng) && l.businessLatitude != null && l.businessLongitude != null) {
+        coords = [lat, lng]
       } else if (l.businessDistrict) {
         const c = coordsOfDistrict(l.businessDistrict)
-        // Aynı ilçedeki ilanlar üst üste binmesin — küçük random offset
         coords = c ? [c[0] + (Math.random() - 0.5) * 0.005,
                       c[1] + (Math.random() - 0.5) * 0.005]
                    : ISTANBUL_CENTER
@@ -96,9 +110,9 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
         coords = ISTANBUL_CENTER
       }
       return { listing: l, coords, approx: l.businessLatitude == null }
-    })
+    }).filter(p => isValidLatLng(p.coords))  // NaN/invalid'ları at
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listings.length])  // points sadece liste sayısı değişince yeniden hesap
+  }, [listings.length])
 
   const highlightedPoint = points.find(p => p.listing.id === highlightedId)
 
