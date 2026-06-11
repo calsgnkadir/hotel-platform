@@ -253,6 +253,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       queryClient.invalidateQueries({ queryKey: keys.conversations.unreadCount() })
     })
     const subTyping = wsSubscribe('/user/queue/typing', (payload) => {
+      console.log('[WS] Typing alindi:', payload)
       if (payload?.conversationId !== conversation.id) return
       setOtherTyping(true)
       clearTimeout(typingTimeoutRef.current)

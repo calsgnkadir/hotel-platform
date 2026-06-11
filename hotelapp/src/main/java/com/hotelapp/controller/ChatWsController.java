@@ -39,20 +39,29 @@ public class ChatWsController {
      */
     @MessageMapping("/chat.typing/{conversationId}")
     public void onTyping(@DestinationVariable Long conversationId, Principal principal) {
-        if (principal == null) return;
+        log.info("[TYPING] received: conv={} principal={}", conversationId,
+                 principal == null ? "NULL" : principal.getName());
+        if (principal == null) {
+            log.warn("[TYPING] principal NULL — STOMP CONNECT auth basarisiz olmus");
+            return;
+        }
 
-        // principal.getName() → email (userDetails.getUsername())
         User sender = userRepository.findByEmail(principal.getName()).orElse(null);
-        if (sender == null) return;
+        if (sender == null) {
+            log.warn("[TYPING] sender bulunamadi: {}", principal.getName());
+            return;
+        }
 
         Conversation conv = conversationRepository.findById(conversationId).orElse(null);
-        if (conv == null) return;
+        if (conv == null) {
+            log.warn("[TYPING] conversation bulunamadi: {}", conversationId);
+            return;
+        }
 
-        // Yetki: gönderen bu sohbetin tarafı olmalı
         Long candidateId = conv.getCandidate().getId();
         Long ownerId     = conv.getBusinessOwner().getId();
         if (!sender.getId().equals(candidateId) && !sender.getId().equals(ownerId)) {
-            log.warn("Typing broadcast unauthorized: user={} conv={}", sender.getId(), conversationId);
+            log.warn("[TYPING] unauthorized: user={} conv={}", sender.getId(), conversationId);
             return;
         }
 
@@ -63,6 +72,7 @@ public class ChatWsController {
                 sender.getId(),
                 sender.getFullName()
         );
+        log.info("[TYPING] push: from={} to={} conv={}", sender.getId(), recipientId, conversationId);
         messagingTemplate.convertAndSendToUser(
                 recipientId.toString(),
                 "/queue/typing",

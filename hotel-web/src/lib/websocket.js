@@ -126,12 +126,16 @@ export function wsSubscribe(destination, callback) {
  * Client → server publish (örn: typing sinyali).
  */
 export function wsPublish(destination, body = {}) {
-  if (!client || !connected) return
+  if (!client || !connected) {
+    console.warn('[WS] Publish atlandi - baglanti yok:', destination)
+    return
+  }
   try {
     client.publish({
       destination,
       body: JSON.stringify(body),
     })
+    console.log('[WS] Publish:', destination)
   } catch (e) {
     console.warn('[WS] Publish failed:', e?.message)
   }
