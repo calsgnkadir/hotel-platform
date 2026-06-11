@@ -515,34 +515,64 @@ function ListingCard({ listing, onApply, onDetail }) {
   const shift = listing.shift ? SHIFT_INFO[listing.shift] : null
   const salary = formatSalary(listing.salaryMin, listing.salaryMax)
 
+  // FAZ 1/#46: Hero alan üstte — büyük gradient + işletme letter (foto-merkezli his)
+  const businessLetter = BUSINESS_TYPE_LETTER[listing.businessType] || listing.businessName?.charAt(0) || '?'
+
   return (
     <div
       onClick={() => onDetail(listing)}
-      className="card cursor-pointer hover:border-brand-400 dark:hover:border-brand-500 hover:-translate-y-1 transition-all duration-200 group"
+      className="card cursor-pointer hover:-translate-y-1 transition-all duration-200 group overflow-hidden !p-0"
     >
-      <div className="p-5 flex flex-col h-full">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0 shadow-sm"
-               style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
-            {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
-          </div>
-          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700">
-            {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
-          </span>
+      {/* HERO — foto-merkezli üst alan (#46) */}
+      <div className="relative h-32 w-full flex items-center justify-center overflow-hidden"
+           style={{
+             background: `
+               linear-gradient(135deg, #4c1d95 0%, #7e22ce 50%, #a855f7 100%),
+               radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 50%)
+             `,
+           }}>
+        {/* Dekoratif daireler */}
+        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20"
+             style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
+        <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full opacity-15"
+             style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
+
+        {/* Büyük işletme harfi */}
+        <div className="text-white font-black opacity-90 relative z-10"
+             style={{ fontSize: '4rem', textShadow: '0 4px 20px rgba(0,0,0,0.3)', fontFamily: '"Fraunces", serif' }}>
+          {businessLetter}
         </div>
 
-        <h3 className="font-bold text-ink-800 text-base leading-snug line-clamp-2 group-hover:text-brand-700 dark:text-brand-700 transition-colors">
+        {/* Job type chip — sağ üst */}
+        <span className="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md"
+              style={{ background: 'rgba(255,255,255,0.25)', color: '#fff' }}>
+          {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
+        </span>
+
+        {/* Salary chip — sol alt (öne çıkar) */}
+        {salary && (
+          <span className="absolute bottom-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-md"
+                style={{ background: 'rgba(0,0,0,0.40)', color: '#fff' }}>
+            {salary}
+          </span>
+        )}
+      </div>
+
+      {/* CONTENT */}
+      <div className="p-4 flex flex-col">
+        <h3 className="font-bold text-base leading-snug line-clamp-2 group-hover:opacity-90 transition-opacity"
+            style={{ color: '#faf5ff' }}>
           {listing.title}
         </h3>
-        <div className="flex items-center gap-2 flex-wrap mt-0.5">
-          <p className="text-sm text-ink-500">{listing.businessName}</p>
+        <div className="flex items-center gap-2 flex-wrap mt-1">
+          <p className="text-sm" style={{ color: '#d8b4fe' }}>{listing.businessName}</p>
           {listing.businessReviewCount > 0 && (
             <StarRating value={listing.businessAverageRating}
               count={listing.businessReviewCount} size="xs" />
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 mt-2 text-xs text-ink-400 flex-wrap">
+        <div className="flex items-center gap-1.5 mt-2 text-xs flex-wrap" style={{ color: '#c4b5fd' }}>
           <span>{listing.businessDistrict || 'İstanbul'}</span>
           <span>·</span>
           <span>{POSITION_LABELS[listing.position] || listing.position}</span>
@@ -554,12 +584,6 @@ function ListingCard({ listing, onApply, onDetail }) {
           )}
         </div>
 
-        {salary && (
-          <div className="text-xs text-brand-700 font-medium mt-1.5">
-            💰 {salary}
-          </div>
-        )}
-
         {/* Faz E3: slot özeti */}
         {listing.shiftSlots?.length > 0 && (() => {
           const slots = [...listing.shiftSlots].sort((a, b) => (a.date || '').localeCompare(b.date || ''))
@@ -569,7 +593,7 @@ function ListingCard({ listing, onApply, onDetail }) {
             ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}`
             : null
           return (
-            <div className="text-xs text-brand-700 dark:text-brand-700 font-medium mt-1">
+            <div className="text-xs font-medium mt-1.5" style={{ color: '#fbbf24' }}>
               {slots.length} vardiya
               {openCount === 0 && ' · tümü dolu'}
               {openCount > 0 && nextStr && ` · ${nextStr}`}
@@ -577,22 +601,21 @@ function ListingCard({ listing, onApply, onDetail }) {
           )
         })()}
 
-        <p className="text-xs text-ink-500 mt-2 line-clamp-2">{listing.description}</p>
-
-        <div className="flex-1" />
+        <p className="text-xs mt-2 line-clamp-2" style={{ color: '#d8b4fe', opacity: 0.85 }}>{listing.description}</p>
 
         <div className="flex gap-2 mt-4">
           <button
             onClick={(e) => { e.stopPropagation(); onDetail(listing) }}
-            className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg border border-cream-300 dark:border-ink-700 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500 hover:text-brand-700 dark:hover:text-brand-700 transition-all">
+            className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all"
+            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(216,180,254,0.30)' }}>
             Detay
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onApply(listing) }}
-            className="flex-1 py-2 px-3 text-sm font-semibold text-white rounded-lg
+            className="flex-1 py-2 px-3 text-sm font-bold text-white rounded-lg
                        transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
-            Başvur
+            style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', boxShadow: '0 4px 16px rgba(168,85,247,0.40)' }}>
+            Başvur →
           </button>
         </div>
       </div>
