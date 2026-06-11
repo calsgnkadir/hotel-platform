@@ -251,7 +251,7 @@ body {
   background: rgba(23, 21, 19, 0.45);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  z-index: 50;
+  z-index: 1000;  /* Leaflet MapContainer default 400 - modal her zaman ustte */
   display: flex;
   align-items: center;
   justify-content: center;
