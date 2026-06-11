@@ -158,66 +158,71 @@ body {
    Arka plan zemin: light krem, dark lacivert; KART ise her zaman mor.
    ──────────────────────────────────────────────────────────────── */
 .card {
-  @apply rounded-2xl p-6 transition-all duration-200;  /* #42: p-5 → p-6 (nefes alma) */
-  background: linear-gradient(135deg, #4c1d95 0%, #3b0764 100%);  /* derin mor gradient */
-  border: 1px solid rgba(168, 85, 247, 0.30);
-  color: #f3e8ff;  /* açık mor metin (text default) */
-  box-shadow: 0 2px 12px rgba(107, 33, 168, 0.15);
+  @apply rounded-2xl p-6 transition-all duration-200;
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);  /* AÇIK MOR — purple-100 → purple-200 */
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #3b0764;  /* KOYU MOR metin — kontrast garantili */
+  box-shadow: 0 2px 12px rgba(107, 33, 168, 0.12);
 }
 .card:hover {
-  border-color: rgba(216, 180, 254, 0.50);
-  box-shadow: 0 4px 20px rgba(107, 33, 168, 0.30);
+  border-color: rgba(168, 85, 247, 0.60);
+  box-shadow: 0 4px 20px rgba(107, 33, 168, 0.20);
 }
-/* dark mode'da aynı mor gradient (override) */
+/* dark mode'da da aynı açık mor (kullanıcı isteği: heryerde açık mor) */
 .dark .card {
-  background: linear-gradient(135deg, #4c1d95 0%, #3b0764 100%);
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
   border-color: rgba(168, 85, 247, 0.40);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
+  color: #3b0764;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
 .card-header {
-  @apply pb-4 mb-4;  /* #42: 3→4 (nefes alma) */
-  border-bottom: 1px solid rgba(168, 85, 247, 0.25);
+  @apply pb-4 mb-4;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.20);
 }
 .dark .card-header {
-  border-color: rgba(168, 85, 247, 0.30);
+  border-color: rgba(124, 58, 237, 0.25);
 }
 
-/* Card içindeki text renkleri — mor zeminle uyumlu */
+/* Card içindeki text — açık mor zemin + KOYU MOR yazı (okunabilir) */
 .card .label,
 .card label {
-  color: #c4b5fd !important;  /* mor-pembe label */
+  color: #6b21a8 !important;  /* purple-800 — orta koyu mor */
 }
 .card input,
 .card select,
 .card textarea {
-  background: rgba(0, 0, 0, 0.25) !important;
-  border-color: rgba(168, 85, 247, 0.35) !important;
-  color: #faf5ff !important;
+  background: rgba(255, 255, 255, 0.70) !important;  /* yarı şeffaf beyaz */
+  border-color: rgba(168, 85, 247, 0.45) !important;
+  color: #3b0764 !important;  /* koyu mor yazı */
 }
 .card input::placeholder,
 .card textarea::placeholder {
-  color: rgba(216, 180, 254, 0.60) !important;
+  color: rgba(107, 33, 168, 0.45) !important;
 }
 .card input:focus,
 .card select:focus,
 .card textarea:focus {
-  border-color: #d946ef !important;
-  background: rgba(0, 0, 0, 0.35) !important;
+  border-color: #a855f7 !important;
+  background: rgba(255, 255, 255, 0.90) !important;
 }
-/* Card içindeki tüm metin override — light/dark aynı */
+/* Card içindeki tüm metin override — light/dark AYNI (açık mor zemin + koyu mor yazı) */
 .card .text-ink-900,
 .card .text-ink-800,
 .card .text-ink-700 {
-  color: #faf5ff !important;
+  color: #3b0764 !important;   /* deep purple */
 }
 .card .text-ink-600,
 .card .text-ink-500 {
-  color: #d8b4fe !important;
+  color: #6b21a8 !important;   /* purple-800 */
 }
 .card .text-ink-400,
 .card .text-ink-300 {
-  color: #c4b5fd !important;
+  color: #7e22ce !important;   /* purple-700 */
+}
+/* Beyaz text override (önceden mor zemine göre yazılmıştı, şimdi koyu olmalı) */
+.card .text-white {
+  color: #3b0764 !important;
 }
 
 /* ────────────────────────────────────────────────────────────────

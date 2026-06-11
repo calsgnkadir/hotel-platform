@@ -101,10 +101,16 @@ function MessageBubble({ m }) {
 
   return (
     <div className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
+      {/* Tüm balonlar açık mor (kullanici isteği). Mine biraz daha koyu (purple-300), karşı taraf en açık (purple-100). */}
       <div className={`max-w-[75%] rounded-2xl text-sm shadow-sm overflow-hidden
-        ${m.mine
-          ? 'text-white rounded-br-md bg-brand-700'
-          : 'bg-white dark:bg-ink-700 text-ink-700 dark:text-ink-800 border border-cream-200 dark:border-ink-700 rounded-bl-md'}`}>
+        ${m.mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
+        style={{
+          background: m.mine
+            ? 'linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%)'   /* purple-300 → purple-400 */
+            : 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)',   /* purple-100 → purple-200 */
+          color: '#3b0764',  /* koyu mor yazı — kontrast garantili */
+          border: '1px solid rgba(168, 85, 247, 0.35)',
+        }}>
 
         {/* Attachment */}
         {hasAttach && isImage && (
@@ -150,7 +156,7 @@ function MessageBubble({ m }) {
         )}
 
         {/* Zaman */}
-        <div className={`text-[10px] px-3 pb-1 text-right ${m.mine ? 'text-white/70' : 'text-ink-400 dark:text-ink-500'}`}>
+        <div className="text-[10px] px-3 pb-1 text-right" style={{ color: 'rgba(59, 7, 100, 0.60)' }}>
           {formatTime(m.sentAt)}{m.mine && m.isRead ? ' · görüldü' : ''}
         </div>
       </div>
