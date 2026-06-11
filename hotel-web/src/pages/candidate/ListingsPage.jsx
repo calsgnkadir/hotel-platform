@@ -11,6 +11,8 @@ import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
 import EmptyState from '../../components/EmptyState'
 import { SkeletonListingGrid } from '../../components/Skeleton'
+import ListingsMapView from '../../components/ListingsMapView'
+import BottomSheet from '../../components/BottomSheet'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 
 const POSITION_LABELS = {
@@ -626,11 +628,13 @@ function ListingCard({ listing, onApply, onDetail }) {
   )
 }
 
-/* ── Listings Page — FAZ 0/#10 + FAZ 1/#47 ── */
+/* ── Listings Page — FAZ 0/#10 + FAZ 1/#47 + FAZ 1/#30 split + harita ── */
 export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen }) {
   const navigate = useNavigate()
   const [applyTarget, setApplyTarget] = useState(null)
-  const [showFilters, setShowFilters] = useState(false)  // mobile toggle
+  const [showFilters, setShowFilters] = useState(false)
+  const [highlightedId, setHighlightedId] = useState(null)   // FAZ 1/#30
+  const [mobileMapOpen, setMobileMapOpen] = useState(false)  // FAZ 1/#30 mobil
 
   // #47: Detay artık modal değil, kendi route'a navigate
   const openDetail = (listing) => navigate(`/listings/${listing.id}`)
@@ -707,7 +711,9 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     (datePreset ? 1 : 0)
 
   return (
-    <div className="space-y-4">
+    <div className="xl:grid xl:grid-cols-5 xl:gap-4 space-y-4 xl:space-y-0">
+      {/* SOL PANEL — header + filtre + liste */}
+      <div className="xl:col-span-3 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-ink-900">İş İlanları</h2>
@@ -716,15 +722,28 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
           </p>
         </div>
-        <button onClick={() => setShowFilters(s => !s)}
-          className="sm:hidden btn-secondary text-sm flex items-center gap-1.5">
-          🔧 Filtreler
-          {activeFilterCount > 0 && (
-            <span className="bg-brand-700 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
+        <div className="flex gap-2">
+          {/* FAZ 1/#30 — Mobile: 'Haritada Gör' (xl'de zaten yan tarafta) */}
+          <button onClick={() => setMobileMapOpen(true)}
+            className="xl:hidden text-sm font-semibold px-3 py-2 rounded-lg text-white flex items-center gap-1.5"
+            style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+            </svg>
+            Haritada Gör
+          </button>
+          <button onClick={() => setShowFilters(s => !s)}
+            className="sm:hidden btn-secondary text-sm flex items-center gap-1.5">
+            🔧 Filtreler
+            {activeFilterCount > 0 && (
+              <span className="bg-brand-700 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="relative">
@@ -857,19 +876,65 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           />
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 xl:grid-cols-2 lg:grid-cols-3 gap-4">
           {listings.map(listing => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              onApply={setApplyTarget}
-              onDetail={openDetail}
-            />
+            <div key={listing.id}
+              onMouseEnter={() => setHighlightedId(listing.id)}
+              onMouseLeave={() => setHighlightedId(null)}>
+              <ListingCard
+                listing={listing}
+                onApply={setApplyTarget}
+                onDetail={openDetail}
+              />
+            </div>
           ))}
         </div>
       )}
+      </div>  {/* SOL PANEL kapanış */}
 
-      {/* #47 — Detail modal kaldırıldı, kendi route'a yönlendiriyoruz (/listings/:id) */}
+      {/* SAĞ PANEL — Harita (xl+ ekranda sticky) */}
+      <aside className="hidden xl:block xl:col-span-2">
+        <div className="sticky top-4" style={{ height: 'calc(100vh - 6rem)' }}>
+          {!loading && listings.length > 0 && (
+            <ListingsMapView
+              listings={listings}
+              highlightedId={highlightedId}
+              onMarkerClick={openDetail}
+            />
+          )}
+          {!loading && listings.length === 0 && (
+            <div className="card h-full flex items-center justify-center text-center">
+              <div>
+                <p className="text-sm font-semibold mb-1" style={{ color: '#3b0764' }}>
+                  Filtreye uyan ilan yok
+                </p>
+                <p className="text-xs" style={{ color: '#6b21a8' }}>
+                  Filtreleri değiştir, harita yeniden çizilir.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Mobile harita: BottomSheet */}
+      <BottomSheet open={mobileMapOpen} onClose={() => setMobileMapOpen(false)} title="İlanlar Haritada" maxHeight="80vh">
+        <div style={{ height: '60vh' }}>
+          {listings.length > 0 ? (
+            <ListingsMapView
+              listings={listings}
+              highlightedId={highlightedId}
+              onMarkerClick={(l) => { setMobileMapOpen(false); openDetail(l) }}
+            />
+          ) : (
+            <div className="text-center text-sm py-12" style={{ color: '#6b21a8' }}>
+              Gösterilecek ilan yok
+            </div>
+          )}
+        </div>
+      </BottomSheet>
+
+      {/* #47 — Detail kendi route */}
 
       {applyTarget && (
         <ApplyModal
