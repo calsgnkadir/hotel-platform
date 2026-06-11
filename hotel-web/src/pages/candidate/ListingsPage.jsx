@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
@@ -623,11 +624,14 @@ function ListingCard({ listing, onApply, onDetail }) {
   )
 }
 
-/* ── Listings Page — FAZ 0/#10 (Aşama 4) react-query ── */
+/* ── Listings Page — FAZ 0/#10 + FAZ 1/#47 ── */
 export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen }) {
+  const navigate = useNavigate()
   const [applyTarget, setApplyTarget] = useState(null)
-  const [detailTarget, setDetailTarget] = useState(null)
   const [showFilters, setShowFilters] = useState(false)  // mobile toggle
+
+  // #47: Detay artık modal değil, kendi route'a navigate
+  const openDetail = (listing) => navigate(`/listings/${listing.id}`)
 
   // Filter state
   const [keyword, setKeyword] = useState('')
@@ -861,19 +865,13 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
               key={listing.id}
               listing={listing}
               onApply={setApplyTarget}
-              onDetail={setDetailTarget}
+              onDetail={openDetail}
             />
           ))}
         </div>
       )}
 
-      {detailTarget && (
-        <DetailModal
-          listing={detailTarget}
-          onClose={() => setDetailTarget(null)}
-          onApply={setApplyTarget}
-        />
-      )}
+      {/* #47 — Detail modal kaldırıldı, kendi route'a yönlendiriyoruz (/listings/:id) */}
 
       {applyTarget && (
         <ApplyModal

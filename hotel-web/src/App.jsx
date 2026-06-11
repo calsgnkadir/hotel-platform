@@ -16,6 +16,7 @@ import CandidateDashboard from './pages/candidate/CandidateDashboard'
 import BusinessDashboard from './pages/business/BusinessDashboard'
 import AdminPage from './pages/admin/AdminPage'
 import KvkkPage from './pages/KvkkPage'
+import ListingDetailPage from './pages/candidate/ListingDetailPage'
 
 export default function App() {
   return (
@@ -34,6 +35,9 @@ export default function App() {
           <Route path="/reset-password"  element={<ResetPasswordPage />} />
           <Route path="/oauth-success"   element={<OAuthSuccessPage />} />
           <Route path="/kvkk"            element={<KvkkPage />} />
+
+          {/* FAZ 1/#47 — Public listing detail (paylasilabilir URL) */}
+          <Route path="/listings/:id"    element={<ListingDetailPage />} />
 
           {/* Candidate panel */}
           <Route
