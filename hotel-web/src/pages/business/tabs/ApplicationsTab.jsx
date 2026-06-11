@@ -83,6 +83,23 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
     finally { setActionLoading(false) }
   }
 
+  // Chat-v2'de kaldirildiydi, geri eklendi: isletme modal'dan direkt karar verebilir
+  async function handleDecide(decision) {
+    if (!selected) return
+    const confirmMsg = decision === 'ACCEPTED'
+      ? 'Bu adayi KABUL etmek istediginize emin misiniz?\n\nAday bildirim alacak ve calismaya baslayabilecek.'
+      : 'Bu adayi REDDETMEK istediginize emin misiniz?\n\nAday bildirim alacak. Karari sonra degistiremezsiniz.'
+    if (!confirm(confirmMsg)) return
+    setActionLoading(true)
+    try {
+      const updated = await hotelApi.reviewApplication(selected.id, decision)
+      toast.success(decision === 'ACCEPTED' ? 'Aday kabul edildi' : 'Aday reddedildi')
+      setSelected(updated)
+      onRefresh()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
   return (
     <div className="space-y-4">
       {/* Filtre + arama */}
@@ -340,18 +357,35 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                 })()}
               </div>
 
-              {/* Chat-v2: Kabul/Red butonları kaldırıldı.
-                  Karar mesajlaşmadan veriliyor — sade bilgi + büyük "Mesajlaşmaya Git" */}
+              {/* KARAR — PENDING / REVIEWING durumda Kabul / Red butonlari */}
+              {['PENDING', 'REVIEWING'].includes(selected.status) && (
+                <div className="border-t border-cream-200 pt-4 space-y-3">
+                  <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">Karar</h3>
+                  <p className="text-xs text-ink-500">
+                    Belgeleri ve mesajlasmayi inceledikten sonra karar verin. Bu islem geri alinmaz.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
+                      className="py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                      style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                      ✓ Kabul Et
+                    </button>
+                    <button onClick={() => handleDecide('REJECTED')} disabled={actionLoading}
+                      className="py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                      style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
+                      ✗ Reddet
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Iletisim — mesajlasmaya git (her durumda) */}
               <div className="border-t border-cream-200 pt-4 space-y-3">
                 <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">İletişim</h3>
-                <p className="text-xs text-ink-500">
-                  Bu aday için otomatik mesajlaşma açıldı. Belgeleri inceleyip mülakat
-                  ayarlayabilir, karar mesajlaşmadan verilebilir.
-                </p>
                 <button
                   onClick={() => onOpenMessages?.(selected.conversationId)}
                   className="w-full py-2.5 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
+                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 3px 12px rgba(126,34,206,0.35)' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                     <path strokeLinecap="round" strokeLinejoin="round"
