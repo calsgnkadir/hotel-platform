@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import LoadingScreen from './LoadingScreen'  // FAZ 3 — tutarli loading UI
 
 /**
  * Kullanım:
@@ -15,11 +16,7 @@ export default function ProtectedRoute({ children, roles = [] }) {
 
   // Auth context hâlâ localStorage'dan okuyorsa bekle
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-ink-500">Yükleniyor...</div>
-      </div>
-    )
+    return <LoadingScreen label="Oturum kontrol ediliyor" />
   }
 
   // Giriş yapılmamışsa login'e yönlendir, geldiği yolu state'te taşı

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /listings/
+Disallow: /candidate/
+Disallow: /business/
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://hotel-platform-seven.vercel.app/sitemap.xml
