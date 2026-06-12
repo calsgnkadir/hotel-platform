@@ -100,6 +100,34 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
     finally { setActionLoading(false) }
   }
 
+  // FAZ 2/#32 — Favori toggle
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [favLoading, setFavLoading] = useState(false)
+
+  useEffect(() => {
+    if (!selected?.candidate?.id) { setIsFavorited(false); return }
+    hotelApi.checkFavorite(selected.candidate.id)
+      .then(setIsFavorited)
+      .catch(() => setIsFavorited(false))
+  }, [selected?.candidate?.id])
+
+  async function handleToggleFavorite() {
+    if (!selected?.candidate?.id) return
+    setFavLoading(true)
+    try {
+      if (isFavorited) {
+        await hotelApi.removeFavorite(selected.candidate.id)
+        setIsFavorited(false)
+        toast.success('Favoriden kaldirildi')
+      } else {
+        await hotelApi.addFavorite(selected.candidate.id, null)
+        setIsFavorited(true)
+        toast.success('⭐ Favorilere eklendi - "Favori Adaylar" sekmesinden eris')
+      }
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setFavLoading(false) }
+  }
+
   // FAZ 2/#28 — HOLD'a al (24 saat aday cevap versin)
   async function handleHold() {
     if (!selected) return
@@ -246,7 +274,20 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                     <p className="text-sm text-ink-500">{selected.candidate?.email}</p>
                   </div>
                 </div>
-                <StatusBadge status={selected.status} />
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* FAZ 2/#32 - Favori toggle */}
+                  <button onClick={handleToggleFavorite} disabled={favLoading}
+                    title={isFavorited ? 'Favoriden kaldir' : 'Favorilere ekle'}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5 disabled:opacity-50 ${
+                      isFavorited
+                        ? 'text-white shadow-md'
+                        : 'bg-cream-100 dark:bg-ink-800 text-ink-500 hover:bg-amber-50 hover:text-amber-600'
+                    }`}
+                    style={isFavorited ? { background: 'linear-gradient(135deg, #f59e0b, #d97706)' } : {}}>
+                    {isFavorited ? '⭐' : '☆'}
+                  </button>
+                  <StatusBadge status={selected.status} />
+                </div>
               </div>
             </div>
 

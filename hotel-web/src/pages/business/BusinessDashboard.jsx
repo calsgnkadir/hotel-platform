@@ -14,6 +14,7 @@ import OverviewTab from './tabs/OverviewTab'
 import MyListingsTab from './tabs/MyListingsTab'
 import ApplicationsTab from './tabs/ApplicationsTab'
 import WorkersTab from './tabs/WorkersTab'
+import FavoritesTab from './tabs/FavoritesTab'  // FAZ 2/#32
 import ProfileTab from './tabs/ProfileTab'
 
 export default function BusinessDashboard() {
@@ -48,6 +49,7 @@ export default function BusinessDashboard() {
           {activeTab === 'mylistings'    && <MyListingsTab />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'workers'       && <WorkersTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
+          {activeTab === 'favorites'     && <FavoritesTab onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
         </>

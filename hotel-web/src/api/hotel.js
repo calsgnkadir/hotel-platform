@@ -236,6 +236,27 @@ export async function respondToHold(applicationId, accept) {
   return data
 }
 
+// FAZ 2/#32 — Talent pool / favoriler
+export async function addFavorite(candidateId, note) {
+  const { data } = await api.post(`/api/business/favorites/${candidateId}`, { note: note || null })
+  return data
+}
+export async function removeFavorite(candidateId) {
+  await api.delete(`/api/business/favorites/${candidateId}`)
+}
+export async function listFavorites() {
+  const { data } = await api.get('/api/business/favorites')
+  return data
+}
+export async function checkFavorite(candidateId) {
+  const { data } = await api.get(`/api/business/favorites/${candidateId}/check`)
+  return data.favorited
+}
+export async function getMyFavoritedCount() {
+  const { data } = await api.get('/api/candidate/favorited-count')
+  return data.count
+}
+
 export async function markNoShow(applicationId) {
   const { data } = await api.put(`/api/business/applications/${applicationId}/no-show`)
   return data  // { application, candidateStrikesRemaining, autoBanned, bannedUntil }
