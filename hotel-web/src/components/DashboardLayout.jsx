@@ -20,7 +20,9 @@ const businessNav = [
   { id: 'mylistings',    tKey: 'nav.myListings' },
   { id: 'applications',  tKey: 'nav.incomingApplications' },
   { id: 'workers',       tKey: 'nav.workers' },
-  { id: 'favorites',     tKey: 'nav.favorites' },  // FAZ 2/#32
+  // FAZ 2/#32 — Favori Adaylar sekmesi sidebar'dan kaldirildi (kullanici istegi).
+  //            Backend endpoint'leri ve modal'daki ⭐ toggle butonu calismaya devam ediyor.
+  //            Sonradan baska bir tetikleyici (DirectInvite v2 vs.) ile geri eklenebilir.
   { id: 'messages',      tKey: 'nav.messages' },
 ]
 

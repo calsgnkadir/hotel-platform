@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 import * as authApi from '../api/auth'
 import api from '../api/client'
 import { wsConnect, wsDisconnect } from '../lib/websocket'
@@ -53,7 +54,10 @@ export function AuthProvider({ children }) {
     const { token, ...userInfo } = authResponse
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(userInfo))
-    setUser(userInfo)
+    // FIX: flushSync ile setUser senkron commit edilir. Aksi halde await login()
+    // sonrasi navigate yapilirsa ProtectedRoute user'i hala null gorur ve
+    // /login'e geri atar. "Bazen tek seferde girilemiyor" bug'inin sebebi buydu.
+    flushSync(() => setUser(userInfo))
     wsConnect()
     // FAZ 1/#60 — Presence (WS bağlandıktan sonra init/sub)
     setTimeout(() => { presenceInit(); presenceSubscribe() }, 800)
