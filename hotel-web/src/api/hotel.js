@@ -219,6 +219,17 @@ export async function reviewApplication(applicationId, decision, note) {
   return data
 }
 
+// FAZ 2/#28 — Direkt rezervasyon / HOLD
+export async function holdApplication(applicationId) {
+  const { data } = await api.put(`/api/business/applications/${applicationId}/hold`)
+  return data
+}
+
+export async function respondToHold(applicationId, accept) {
+  const { data } = await api.put(`/api/candidate/applications/${applicationId}/respond-hold?accept=${accept}`)
+  return data
+}
+
 export async function markNoShow(applicationId) {
   const { data } = await api.put(`/api/business/applications/${applicationId}/no-show`)
   return data  // { application, candidateStrikesRemaining, autoBanned, bannedUntil }

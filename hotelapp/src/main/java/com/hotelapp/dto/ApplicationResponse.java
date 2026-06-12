@@ -21,6 +21,8 @@ public class ApplicationResponse {
     private LocalDateTime createdAt;
     private String note;
     private boolean noShow;
+    /** FAZ 2/#28: HOLD durumundaysa aday cevap deadline'i (24h) */
+    private LocalDateTime holdDeadline;
     /** R5: tüm vardiyalar geçmişte mi (puanlanabilir mi) */
     private boolean workCompleted;
     /** #78: Aday bu başvuru için işletmeye puan verdi mi? */

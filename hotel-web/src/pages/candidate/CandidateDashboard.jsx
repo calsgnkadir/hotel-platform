@@ -56,6 +56,7 @@ function StatusBadge({ status }) {
   const map = {
     PENDING:   { cls: 'badge-accepted',  icon: '', label: 'Mesajlaşma açık' },
     REVIEWING: { cls: 'badge-reviewing', icon: '', label: 'İnceleniyor' },
+    HELD:      { cls: 'badge-reviewing', icon: '⏳', label: 'HOLD — Cevap Bekleniyor' },  // FAZ 2/#28
     ACCEPTED:  { cls: 'badge-accepted',  icon: '', label: 'Kabul' },
     REJECTED:  { cls: 'badge-rejected',  icon: '', label: 'Red' },
     EXPIRED:   { cls: 'badge-expired',   icon: '', label: 'Süresi Doldu' },
@@ -70,6 +71,7 @@ const CAND_STATUS_FILTERS = [
   { value: '',          label: 'Tümü' },
   { value: 'PENDING',   label: 'Bekleyen' },
   { value: 'REVIEWING', label: 'İnceleniyor' },
+  { value: 'HELD',      label: 'HOLD ⏳' },   // FAZ 2/#28
   { value: 'ACCEPTED',  label: 'Kabul' },
   { value: 'REJECTED',  label: 'Red' },
   { value: 'WITHDRAWN', label: 'İptal' },
@@ -144,6 +146,25 @@ function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessa
     }
   }
 
+  // FAZ 2/#28 — HELD basvuruya aday cevabi
+  const [holdRespondingId, setHoldRespondingId] = useState(null)
+  async function handleHoldRespond(appId, accept) {
+    const msg = accept
+      ? 'Bu isi ONAYLAMAK istediginize emin misiniz?\n\nBaglayici bir kabul olusturacaktir.'
+      : 'Bu HOLDU REDDETMEK istediginize emin misiniz?\n\nIsletme baska bir aday secebilir.'
+    if (!confirm(msg)) return
+    setHoldRespondingId(appId)
+    try {
+      await hotelApi.respondToHold(appId, accept)
+      toast.success(accept ? 'Onaylandi! Isletmeyle iletisime devam et.' : 'HOLD reddedildi.')
+      onRefresh?.()
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setHoldRespondingId(null)
+    }
+  }
+
   if (applications.length === 0) {
     return (
       <div className="card">
@@ -215,6 +236,30 @@ function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessa
             </div>
             <div className="flex flex-col items-end gap-2">
               <StatusBadge status={app.status} />
+              {/* FAZ 2/#28 - HELD: aday Onayla / Reddet (24 saat icinde) */}
+              {app.status === 'HELD' && (
+                <div className="flex flex-col items-end gap-1.5">
+                  {app.holdDeadline && (
+                    <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400">
+                      ⏳ {new Date(app.holdDeadline).toLocaleString('tr-TR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
+                    </span>
+                  )}
+                  <div className="flex gap-1.5">
+                    <button onClick={() => handleHoldRespond(app.id, true)}
+                      disabled={holdRespondingId === app.id}
+                      className="text-xs px-2.5 py-1.5 rounded-lg text-white font-bold transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                      style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                      ✓ Onayla
+                    </button>
+                    <button onClick={() => handleHoldRespond(app.id, false)}
+                      disabled={holdRespondingId === app.id}
+                      className="text-xs px-2.5 py-1.5 rounded-lg text-white font-bold transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                      style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
+                      ✗ Reddet
+                    </button>
+                  </div>
+                </div>
+              )}
               {/* D6: Sadece PENDING/REVIEWING başvurular iptal edilebilir.
                   ACCEPTED ise iptal yasak — backend "iletişime geçin" mesajı döner. */}
               {(app.status === 'PENDING' || app.status === 'REVIEWING') && (

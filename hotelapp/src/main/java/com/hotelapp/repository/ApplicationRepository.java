@@ -24,6 +24,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Query("SELECT a FROM Application a WHERE a.status = 'PENDING' AND a.deadline < :now")
     List<Application> findExpiredApplications(LocalDateTime now);
 
+    // FAZ 2/#28 — Suresi gecmis HOLD'lar (scheduler her 5 dakika EXPIRED yapar)
+    List<Application> findByStatusAndHoldDeadlineBefore(ApplicationStatus status, LocalDateTime deadline);
+
     // ----------------------------------------------------------------
     // #84: Sayfalanmış + filtrelenebilir sorgular
     // Tüm filtre parametreleri opsiyonel (:param IS NULL OR ...) deseniyle.

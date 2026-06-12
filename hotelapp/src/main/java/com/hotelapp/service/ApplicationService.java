@@ -228,9 +228,11 @@ public class ApplicationService {
         Application application = getApplicationForBusinessOwner(applicationId, ownerId);
 
         ApplicationStatus current = application.getStatus();
+        // FAZ 2/#28: HELD durumdaysa isletme yine karar verebilir (HOLD'dan vazgec)
         if (current == ApplicationStatus.ACCEPTED
                 || current == ApplicationStatus.REJECTED
-                || current == ApplicationStatus.EXPIRED) {
+                || current == ApplicationStatus.EXPIRED
+                || current == ApplicationStatus.WITHDRAWN) {
             throw new BusinessRuleException("Bu başvuru zaten sonuçlandırılmış: " + current);
         }
 
@@ -274,6 +276,80 @@ public class ApplicationService {
         }
 
         return toResponse(application);
+    }
+
+    // ----------------------------------------------------------------
+    // FAZ 2/#28 — BUSINESS OWNER: Basvuruyu HOLD'a al (24 saat aday cevap versin)
+    // ----------------------------------------------------------------
+    @Transactional
+    public ApplicationResponse holdApplication(Long applicationId, Long ownerId) {
+        Application app = getApplicationForBusinessOwner(applicationId, ownerId);
+        ApplicationStatus s = app.getStatus();
+        if (s != ApplicationStatus.PENDING && s != ApplicationStatus.REVIEWING) {
+            throw new BusinessRuleException("Yalniz PENDING/REVIEWING basvuru HOLD'a alinabilir. Mevcut: " + s);
+        }
+        app.setStatus(ApplicationStatus.HELD);
+        app.setHoldDeadline(LocalDateTime.now().plusHours(24));
+        applicationRepository.save(app);
+
+        // Adaya bildirim: 24 saat icinde cevap vermesi gerek
+        Long candidateId = app.getCandidate().getId();
+        String listingTitle = app.getJobListing().getTitle();
+        notificationService.notify(candidateId, NotificationType.APPLICATION_ACCEPTED,
+                "İşletme seni tutmak istiyor ⏳",
+                listingTitle + " ilanı için 24 saat içinde Onayla veya Reddet seç.",
+                "applications");
+        return toResponse(app);
+    }
+
+    // ----------------------------------------------------------------
+    // FAZ 2/#28 — CANDIDATE: HELD durumuna cevap ver (Onayla/Reddet)
+    // ----------------------------------------------------------------
+    @Transactional
+    public ApplicationResponse respondToHold(Long applicationId, Long candidateId, boolean accept) {
+        Application app = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
+        if (!app.getCandidate().getId().equals(candidateId)) {
+            throw new UnauthorizedException("Bu başvuru size ait değil");
+        }
+        if (app.getStatus() != ApplicationStatus.HELD) {
+            throw new BusinessRuleException("Sadece HOLD durumundaki basvuruya cevap verilebilir. Mevcut: " + app.getStatus());
+        }
+        if (app.getHoldDeadline() != null && LocalDateTime.now().isAfter(app.getHoldDeadline())) {
+            // Suresi gecmis - scheduler EXPIRED yapacak ama burada da tutarli olalim
+            app.setStatus(ApplicationStatus.EXPIRED);
+            applicationRepository.save(app);
+            throw new BusinessRuleException("HOLD süresi dolmuş — başvuru sona erdi");
+        }
+
+        if (accept) {
+            // ACCEPTED'e gec + slot kapasiteleri guncelle
+            if (app.getRequestedSlots() != null) {
+                for (ShiftSlot slot : app.getRequestedSlots()) {
+                    if (slot.isFull()) {
+                        throw new BusinessRuleException(
+                                "Slot kapasitesi dolduğu için kabul edilemez: "
+                                + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
+                    }
+                    slot.setSlotsFilled(slot.getSlotsFilled() + 1);
+                    shiftSlotRepository.save(slot);
+                }
+            }
+            app.setStatus(ApplicationStatus.ACCEPTED);
+        } else {
+            app.setStatus(ApplicationStatus.WITHDRAWN);
+        }
+        applicationRepository.save(app);
+
+        // Isletmeye bildirim
+        Long ownerId = app.getJobListing().getBusiness().getOwner().getId();
+        String listingTitle = app.getJobListing().getTitle();
+        notificationService.notify(ownerId,
+                accept ? NotificationType.APPLICATION_ACCEPTED : NotificationType.APPLICATION_WITHDRAWN,
+                accept ? "Aday HOLD'u onayladı ✅" : "Aday HOLD'u reddetti",
+                "\"" + listingTitle + "\" — aday cevabını verdi.",
+                "applications");
+        return toResponse(app);
     }
 
     // ----------------------------------------------------------------
@@ -522,6 +598,7 @@ public class ApplicationService {
                 .createdAt(app.getCreatedAt())
                 .note(app.getNote())
                 .noShow(app.isNoShow())
+                .holdDeadline(app.getHoldDeadline())  // FAZ 2/#28
                 .workCompleted(reviewService.isWorkCompleted(app))
                 .candidateReviewedBusiness(reviewService.hasCandidateReviewedBusiness(app.getId()))
                 .candidate(buildCandidateSummary(app.getCandidate()))

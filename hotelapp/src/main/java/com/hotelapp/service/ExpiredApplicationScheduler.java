@@ -33,4 +33,19 @@ public class ExpiredApplicationScheduler {
         applicationRepository.saveAll(expired);
         log.info("Toplam {} başvuru EXPIRED olarak işaretlendi.", expired.size());
     }
+
+    // FAZ 2/#28 — Her 5 dakikada bir suresi gecmis HOLD basvurularini EXPIRED yap
+    @Scheduled(fixedDelay = 5 * 60 * 1000)
+    @Transactional
+    public void expireOverdueHolds() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Application> overdue = applicationRepository
+                .findByStatusAndHoldDeadlineBefore(ApplicationStatus.HELD, now);
+        if (overdue.isEmpty()) return;
+        overdue.forEach(app -> {
+            app.setStatus(ApplicationStatus.EXPIRED);
+            log.info("HOLD süresi doldu, EXPIRED. ID: {}", app.getId());
+        });
+        applicationRepository.saveAll(overdue);
+    }
 }

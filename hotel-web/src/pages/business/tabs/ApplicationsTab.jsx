@@ -100,6 +100,20 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
     finally { setActionLoading(false) }
   }
 
+  // FAZ 2/#28 — HOLD'a al (24 saat aday cevap versin)
+  async function handleHold() {
+    if (!selected) return
+    if (!confirm('Bu adayi 24 saat HOLD\'a almak istediginize emin misiniz?\n\nAday 24 saat icinde Onayla/Reddet secmezse basvuru otomatik dusucek.\n\nBu, adayin gercek niyetini test eden bir adimdir.')) return
+    setActionLoading(true)
+    try {
+      const updated = await hotelApi.holdApplication(selected.id)
+      toast.success('Aday HOLD\'a alindi - 24 saat bekleniyor')
+      setSelected(updated)
+      onRefresh()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
   return (
     <div className="space-y-4">
       {/* Filtre + arama */}
@@ -357,21 +371,35 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                 })()}
               </div>
 
-              {/* KARAR — PENDING / REVIEWING durumda Kabul / Red butonlari */}
-              {['PENDING', 'REVIEWING'].includes(selected.status) && (
+              {/* KARAR — PENDING / REVIEWING / HELD durumda butonlar */}
+              {['PENDING', 'REVIEWING', 'HELD'].includes(selected.status) && (
                 <div className="border-t border-cream-200 pt-4 space-y-3">
                   <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">Karar</h3>
-                  <p className="text-xs text-ink-500">
-                    Belgeleri ve mesajlasmayi inceledikten sonra karar verin. Bu islem geri alinmaz.
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
+                  {selected.status === 'HELD' ? (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                      ⏳ HOLD aktif — aday {selected.holdDeadline ? new Date(selected.holdDeadline).toLocaleString('tr-TR') : 'belirsiz'} 'a kadar cevap vermeli
+                    </p>
+                  ) : (
+                    <p className="text-xs text-ink-500">
+                      Belgeleri ve mesajlasmayi inceledikten sonra karar verin. Bu islem geri alinmaz.
+                    </p>
+                  )}
+                  <div className="grid grid-cols-3 gap-2">
                     <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
-                      className="py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                      className="py-2.5 rounded-lg text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
                       style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
-                      ✓ Kabul Et
+                      ✓ Kabul
                     </button>
+                    {/* FAZ 2/#28 - HOLD butonu sadece PENDING/REVIEWING'de */}
+                    {selected.status !== 'HELD' && (
+                      <button onClick={handleHold} disabled={actionLoading}
+                        className="py-2.5 rounded-lg text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                        style={{ background: 'linear-gradient(135deg, #d97706, #b45309)' }}>
+                        ⏳ HOLD 24sa
+                      </button>
+                    )}
                     <button onClick={() => handleDecide('REJECTED')} disabled={actionLoading}
-                      className="py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                      className={`py-2.5 rounded-lg text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 ${selected.status === 'HELD' ? 'col-span-2' : ''}`}
                       style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
                       ✗ Reddet
                     </button>

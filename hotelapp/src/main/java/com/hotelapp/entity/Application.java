@@ -55,6 +55,11 @@ public class Application {
     private LocalDateTime updatedAt;
     private LocalDateTime reviewedAt;
 
+    // FAZ 2/#28 — Direkt rezervasyon / HOLD
+    // Isletme HOLD'a aldiginda aday 24 saat icinde Onayla/Reddet secmeli.
+    // Cevap yoksa scheduler EXPIRED'a cevirir.
+    private LocalDateTime holdDeadline;
+
     // Faz E1 öncesi: keyfi haftalık müsaitlik. Yeni akış slot kullanır;
     // bu liste eski başvurularda kalır ama yeni başvurularda boş kalır.
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)

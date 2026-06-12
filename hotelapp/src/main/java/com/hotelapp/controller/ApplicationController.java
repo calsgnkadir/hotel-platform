@@ -124,6 +124,29 @@ public class ApplicationController {
                 applicationService.startReview(applicationId, currentUser.getId()));
     }
 
+    @Operation(summary = "FAZ 2/#28: Başvuruyu HOLD'a al — 24 saat içinde aday cevap verir")
+    @PutMapping("/api/business/applications/{applicationId}/hold")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApplicationResponse> hold(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long applicationId) {
+        return ResponseEntity.ok(
+                applicationService.holdApplication(applicationId, currentUser.getId()));
+    }
+
+    @Operation(summary = "FAZ 2/#28: HOLD'daki başvuruya cevap ver (true=Onayla, false=Reddet)")
+    @PutMapping("/api/candidate/applications/{applicationId}/respond-hold")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApplicationResponse> respondToHold(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long applicationId,
+            @RequestParam boolean accept) {
+        return ResponseEntity.ok(
+                applicationService.respondToHold(applicationId, currentUser.getId(), accept));
+    }
+
     @Operation(summary = "Başvuruyu sonuçlandır (ACCEPTED/REJECTED) — sadece BUSINESS_OWNER")
     @PutMapping("/api/business/applications/{applicationId}/decide")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
