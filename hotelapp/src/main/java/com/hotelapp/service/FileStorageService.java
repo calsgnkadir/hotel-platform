@@ -3,6 +3,7 @@ package com.hotelapp.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.hotelapp.exception.BusinessRuleException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,8 @@ public class FileStorageService {
     // -----------------------------------------------------------------------
     // Aday belge yükleme
     // -----------------------------------------------------------------------
+    // FAZ 2/#18: Cloudinary down/yavaslarsa devre acilir, yukleme hatasi clean dondurulur
+    @CircuitBreaker(name = "cloudinary", fallbackMethod = "storeFallback")
     public String store(MultipartFile file, Long studentId) {
         validate(file, ALLOWED_EXTENSIONS, MAX_FILE_SIZE,
                 "Kabul edilenler: PDF, JPG, JPEG, PNG, WEBP, HEIC, DOC, DOCX",
@@ -84,6 +87,15 @@ public class FileStorageService {
         } catch (IOException e) {
             throw new BusinessRuleException("Cloudinary'ye yüklenemedi: " + e.getMessage());
         }
+    }
+
+    /** FAZ 2/#18 - Cloudinary circuit breaker fallback */
+    @SuppressWarnings("unused")
+    private String storeFallback(MultipartFile file, Long studentId, Throwable t) {
+        log.warn("[STORE][CB-FALLBACK] Cloudinary devre disi - studentId={} sebep={}",
+                studentId, t.getMessage());
+        throw new BusinessRuleException(
+                "Dosya yukleme servisi su an kullanilamiyor — lutfen birkac dakika sonra tekrar dene.");
     }
 
     // -----------------------------------------------------------------------

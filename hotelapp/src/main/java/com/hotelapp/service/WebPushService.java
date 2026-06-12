@@ -2,6 +2,7 @@ package com.hotelapp.service;
 
 import com.hotelapp.entity.PushSubscription;
 import com.hotelapp.repository.PushSubscriptionRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,6 +63,8 @@ public class WebPushService {
         }
     }
 
+    // FAZ 2/#18: FCM/Mozilla push server cevap vermiyorsa devre acilir
+    @CircuitBreaker(name = "webpush", fallbackMethod = "pushFallback")
     private int pushOne(PushSubscription sub) throws Exception {
         String endpoint = sub.getEndpoint();
         String auth = vapidService.buildAuthHeader(endpoint);
@@ -82,5 +85,13 @@ public class WebPushService {
                     res.body());
         }
         return res.statusCode();
+    }
+
+    /** FAZ 2/#18 - Circuit breaker fallback: push server down ise sessizce 0 don */
+    @SuppressWarnings("unused")
+    private int pushFallback(PushSubscription sub, Throwable t) {
+        log.warn("[PUSH][CB-FALLBACK] Push server devre disi - id={} sebep={}",
+                sub.getId(), t.getMessage());
+        return 0;  // 0 = fallback, retry yapilmaz, abone silinmez
     }
 }

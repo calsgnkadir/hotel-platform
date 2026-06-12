@@ -93,6 +93,35 @@ app:
     password-reset:
       expiry-hours: ${PWD_RESET_EXPIRY_HOURS:1}
 
+  # FAZ 2/#18 — Resilience4j Circuit Breaker config.
+  # 3 instance: cloudinary, resend (email), webpush (FCM)
+  # Hata oranı %50 ası asarsa devre acilir, 30sn HALF-OPEN denemesi
+  resilience4j:
+    circuitbreaker:
+      configs:
+        default:
+          slidingWindowSize: 10
+          minimumNumberOfCalls: 5
+          failureRateThreshold: 50
+          waitDurationInOpenState: 30s
+          permittedNumberOfCallsInHalfOpenState: 3
+          slowCallDurationThreshold: 10s
+          slowCallRateThreshold: 50
+          registerHealthIndicator: true
+          automaticTransitionFromOpenToHalfOpenEnabled: true
+      instances:
+        cloudinary:
+          baseConfig: default
+        resend:
+          baseConfig: default
+        webpush:
+          baseConfig: default
+          slowCallDurationThreshold: 8s  # push HTTP timeout 8s
+    timelimiter:
+      configs:
+        default:
+          timeoutDuration: 10s
+
   # FAZ 1/#23 — Web Push (VAPID) — Pure Java, BouncyCastle YOK.
   # Key'ler bos ise startup'ta auto-generate edilir + log'a basilir (dev icin).
   # Prod: env vars ile set et (key'leri kaybetme — yeniden uretirsen abone uyumsuz olur).
@@ -102,6 +131,20 @@ app:
       private-key: ${VAPID_PRIVATE_KEY:}    # 32-byte, Base64URL no-padding
       # NOT: FCM .local TLD'sini reddeder (403). Gercek bir email/domain kullan.
       subject:     ${VAPID_SUBJECT:mailto:calisgankadircan@gmail.com}
+
+# FAZ 2/#18 — Actuator (health + circuit breaker durumu)
+# Production'da sadece /health public, diger endpoint'ler protected
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers
+  endpoint:
+    health:
+      show-details: when-authorized   # detay sadece auth'a
+  health:
+    circuitbreakers:
+      enabled: true
 
 # Swagger UI — http://localhost:8080/swagger-ui.html
 springdoc:

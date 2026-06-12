@@ -1,5 +1,6 @@
 package com.hotelapp.service;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -42,8 +43,10 @@ public class EmailService {
 
     /**
      * Email gönderir. Asenkron değil — controller thread'inde çalışır.
-     * Hata durumunda exception fırlatır; çağıran handle eder.
+     * FAZ 2/#18: Resend down/yavaslarsa devre acilir, fallback log atip sessiz kalir
+     * (kullanici reset isteyebilir, login akisi blok olmaz).
      */
+    @CircuitBreaker(name = "resend", fallbackMethod = "sendFallback")
     public void send(String toEmail, String subject, String htmlBody) {
         // Dev fallback: API key yoksa log'a yaz
         if (apiKey == null || apiKey.isBlank()) {
@@ -74,6 +77,14 @@ public class EmailService {
             log.error("[EMAIL] Gönderim hatası: to={} hata={}", toEmail, e.getMessage());
             throw new RuntimeException("Email gönderilemedi: " + e.getMessage(), e);
         }
+    }
+
+    /** FAZ 2/#18 - Circuit breaker fallback: Resend down ise sessiz log */
+    @SuppressWarnings("unused")
+    private void sendFallback(String toEmail, String subject, String htmlBody, Throwable t) {
+        log.warn("[EMAIL][CB-FALLBACK] Resend devre disi/timeout - to={} subject={} sebep={}",
+                toEmail, subject, t.getMessage());
+        // Email yutuldu - kullanici tekrar deneyebilir. Login akisini bloklamiyoruz.
     }
 
     /** Şifre sıfırlama email içeriğini hazırlar (HTML template). */
