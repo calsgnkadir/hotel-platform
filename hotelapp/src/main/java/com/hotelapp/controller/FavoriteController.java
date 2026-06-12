@@ -69,8 +69,10 @@ public class FavoriteController {
     @GetMapping("/api/candidate/favorited-count")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<Map<String, Long>> getMyFavoritedCount(@AuthenticationPrincipal User currentUser) {
-        return ResponseEntity.ok(Map.of("count",
-                favoriteService.countFavoritedBy(currentUser.getId())));
+        long count = currentUser != null ? favoriteService.countFavoritedBy(currentUser.getId()) : 0L;
+        Map<String, Long> body = new java.util.HashMap<>();
+        body.put("count", count);  // Map.of null kabul etmez, HashMap kullaniyoruz (defensive)
+        return ResponseEntity.ok(body);
     }
 
     @Data
