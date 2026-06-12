@@ -257,6 +257,22 @@ export async function getMyFavoritedCount() {
   return data.count
 }
 
+// FAZ 2/#21 — Geo-fenced clock-in/out
+export async function clockIn(applicationId, lat, lng) {
+  const { data } = await api.post(`/api/candidate/work-sessions/${applicationId}/clock-in`, { lat, lng })
+  return data
+}
+export async function clockOut(applicationId, lat, lng) {
+  const { data } = await api.post(`/api/candidate/work-sessions/${applicationId}/clock-out`, { lat, lng })
+  return data
+}
+export async function getActiveSession(applicationId) {
+  try {
+    const res = await api.get(`/api/candidate/work-sessions/${applicationId}/active`)
+    return res.status === 204 ? null : res.data
+  } catch { return null }
+}
+
 export async function markNoShow(applicationId) {
   const { data } = await api.put(`/api/business/applications/${applicationId}/no-show`)
   return data  // { application, candidateStrikesRemaining, autoBanned, bannedUntil }

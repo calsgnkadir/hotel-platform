@@ -146,6 +146,41 @@ function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessa
     }
   }
 
+  // FAZ 2/#21 — Mesai (clock-in/out)
+  const [clockingId, setClockingId] = useState(null)
+  const [activeSessions, setActiveSessions] = useState({})  // {appId: WorkSessionDto}
+
+  useEffect(() => {
+    // Mesai durumu yenilenmesi: ACCEPTED + !workCompleted basvurularin acik session'lari
+    const targets = (applications || []).filter(a => a.status === 'ACCEPTED' && !a.workCompleted)
+    Promise.all(targets.map(a => hotelApi.getActiveSession(a.id).then(s => [a.id, s])))
+      .then(pairs => {
+        const m = {}; pairs.forEach(([id, s]) => { if (s) m[id] = s })
+        setActiveSessions(m)
+      })
+      .catch(() => {})
+  }, [applications])
+
+  async function handleClockToggle(appId) {
+    setClockingId(appId)
+    try {
+      const { getCurrentPosition } = await import('../../lib/geolocation')
+      const pos = await getCurrentPosition()
+      const active = activeSessions[appId]
+      if (active) {
+        const updated = await hotelApi.clockOut(appId, pos.lat, pos.lng)
+        toast.success(`Mesai bitti — ${updated.durationMinutes} dakika`)
+        setActiveSessions(p => { const n = { ...p }; delete n[appId]; return n })
+      } else {
+        const created = await hotelApi.clockIn(appId, pos.lat, pos.lng)
+        toast.success(`Mesai başladı — işyerinden ${created.clockInDistanceMeters} m`)
+        setActiveSessions(p => ({ ...p, [appId]: created }))
+      }
+    } catch (err) {
+      toast.error(err?.message || extractErrorMessage(err))
+    } finally { setClockingId(null) }
+  }
+
   // FAZ 2/#28 — HELD basvuruya aday cevabi
   const [holdRespondingId, setHoldRespondingId] = useState(null)
   async function handleHoldRespond(appId, accept) {
@@ -280,6 +315,22 @@ function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessa
                           d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
                   </svg>
                   Mesajlaşma
+                </button>
+              )}
+              {/* FAZ 2/#21 — Mesai (clock-in/out) sadece ACCEPTED + !workCompleted */}
+              {app.status === 'ACCEPTED' && !app.workCompleted && (
+                <button onClick={() => handleClockToggle(app.id)}
+                  disabled={clockingId === app.id}
+                  title="Konum izni gerek - işyerine en fazla 200m mesafede ol"
+                  className="text-xs px-2.5 py-1.5 rounded-lg font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                  style={{
+                    background: activeSessions[app.id]
+                      ? 'linear-gradient(135deg, #dc2626, #b91c1c)'
+                      : 'linear-gradient(135deg, #16a34a, #15803d)'
+                  }}>
+                  {clockingId === app.id
+                    ? '📍 Konum...'
+                    : activeSessions[app.id] ? '⏹ Mesaiyi Bitir' : '▶ Mesaiye Başla'}
                 </button>
               )}
               {/* R4 + R5: Sadece ACCEPTED + çalışma tamamlanmış başvuruda puanla */}

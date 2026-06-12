@@ -9,7 +9,7 @@
  *  - notification click: tab odaklanir veya yeni acilir
  */
 
-const CACHE_VERSION = 'ajanshotel-v2'  // FAZ 2/#32 fix - bump version, force eski cache temizle
+const CACHE_VERSION = 'ajanshotel-v3'  // FAZ 2/#21 GPS clock-in
 const APP_SHELL = [
   '/',
   '/favicon.svg',
