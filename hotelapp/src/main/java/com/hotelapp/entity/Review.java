@@ -37,7 +37,15 @@ public class Review {
     private String byRole;   // "CANDIDATE" veya "BUSINESS"
 
     @Column(nullable = false)
-    private Integer rating;  // 1-5
+    private Integer rating;  // 1-5 (ortalama veya tek puan, geri uyumluluk)
+
+    // FAZ 2/#26 — Multi-attribute rating (4 boyut, her biri 1-5, null olabilir)
+    // byRole=CANDIDATE: aspect1=Yonetim, aspect2=Odeme, aspect3=Cal.Kosullari, aspect4=Ekip
+    // byRole=BUSINESS:  aspect1=Devamlilik, aspect2=Caliskanlik, aspect3=Iletisim, aspect4=Tutum
+    private Integer aspect1;
+    private Integer aspect2;
+    private Integer aspect3;
+    private Integer aspect4;
 
     @Column(columnDefinition = "TEXT")
     private String comment;

@@ -260,9 +260,10 @@ export async function viewDocument(documentId) {
 }
 
 /* ── Yorum (Review) endpoints ── */
-export async function createReview(applicationId, rating, comment) {
+// FAZ 2/#26 — 4 aspect destegi: rating tamam, aspects = { aspect1..4 }
+export async function createReview(applicationId, rating, comment, aspects = {}) {
   const { data } = await api.post(`/api/applications/${applicationId}/reviews`,
-    { rating, comment })
+    { rating, comment, ...aspects })
   return data
 }
 

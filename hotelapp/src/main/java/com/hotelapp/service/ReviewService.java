@@ -61,10 +61,22 @@ public class ReviewService {
             throw new BusinessRuleException("Bu başvuru için zaten yorum yaptınız");
         });
 
+        // FAZ 2/#26 - 4 aspect verilmis ise rating'i ortalamalari yap
+        Integer effectiveRating = req.getRating();
+        if (req.getAspect1() != null && req.getAspect2() != null
+                && req.getAspect3() != null && req.getAspect4() != null) {
+            int sum = req.getAspect1() + req.getAspect2() + req.getAspect3() + req.getAspect4();
+            effectiveRating = Math.round(sum / 4f);
+        }
+
         Review review = Review.builder()
                 .application(application)
                 .byRole(byRole)
-                .rating(req.getRating())
+                .rating(effectiveRating)
+                .aspect1(req.getAspect1())  // FAZ 2/#26
+                .aspect2(req.getAspect2())
+                .aspect3(req.getAspect3())
+                .aspect4(req.getAspect4())
                 .comment(req.getComment())
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -156,6 +168,10 @@ public class ReviewService {
                 .reviewerName(reviewerName)
                 .revieweeName(revieweeName)
                 .rating(r.getRating())
+                .aspect1(r.getAspect1())  // FAZ 2/#26
+                .aspect2(r.getAspect2())
+                .aspect3(r.getAspect3())
+                .aspect4(r.getAspect4())
                 .comment(r.getComment())
                 .createdAt(r.getCreatedAt())
                 .build();
@@ -172,6 +188,12 @@ public class ReviewService {
         private String reviewerName;
         private String revieweeName;
         private Integer rating;
+        // FAZ 2/#26 - 4 aspect (CANDIDATE: yonetim/odeme/calisma/ekip,
+        // BUSINESS: devamlilik/caliskanlik/iletisim/tutum)
+        private Integer aspect1;
+        private Integer aspect2;
+        private Integer aspect3;
+        private Integer aspect4;
         private String comment;
         private LocalDateTime createdAt;
     }
@@ -188,10 +210,17 @@ public class ReviewService {
 
     @Data
     public static class CreateReviewRequest {
-        @NotNull(message = "Puan zorunlu")
+        // FAZ 2/#26: rating opsiyonel oldu (4 aspect doluysa ortalama hesaplanir)
         @Min(value = 1, message = "Puan en az 1 olmalı")
         @Max(value = 5, message = "Puan en fazla 5 olmalı")
         private Integer rating;
+
+        // 4 boyut puanlama, hepsi opsiyonel (geri uyumluluk)
+        @Min(1) @Max(5) private Integer aspect1;
+        @Min(1) @Max(5) private Integer aspect2;
+        @Min(1) @Max(5) private Integer aspect3;
+        @Min(1) @Max(5) private Integer aspect4;
+
         private String comment;
     }
 }
