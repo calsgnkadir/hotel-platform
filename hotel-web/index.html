@@ -2,11 +2,30 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>AjansHotel — İstanbul'un İş Platformu</title>
     <meta name="description" content="İstanbul'daki hotel, restoran ve kafelerde günlük/aylık iş arayan adaylarla işletmeleri buluşturan platform." />
-    <meta name="theme-color" content="#6b21a8" />
+
+    <!-- FAZ 2/#8 — PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#7e22ce" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AjansHotel" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Microsoft Tile -->
+    <meta name="msapplication-TileColor" content="#7e22ce" />
+
+    <!-- Open Graph (sosyal paylasim) -->
+    <meta property="og:title" content="AjansHotel — İstanbul'un İş Platformu" />
+    <meta property="og:description" content="Otel, restoran, kafe yarı zamanlı işleri için modern platform." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/favicon.svg" />
   </head>
   <body>
     <div id="root"></div>

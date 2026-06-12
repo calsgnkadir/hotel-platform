@@ -1,0 +1,51 @@
+{
+  "name": "AjansHotel — İstanbul'un İş Platformu",
+  "short_name": "AjansHotel",
+  "description": "Otel, restoran, kafe yarı zamanlı işleri — adaylar ve işletmeler için modern platform.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0612",
+  "theme_color": "#7e22ce",
+  "lang": "tr",
+  "dir": "ltr",
+  "categories": ["business", "lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "İlanları Keşfet",
+      "short_name": "İlanlar",
+      "description": "Aktif iş ilanlarını gör",
+      "url": "/candidate?tab=listings",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Başvurularım",
+      "short_name": "Başvurular",
+      "description": "Başvuru durumlarımı gör",
+      "url": "/candidate?tab=applications",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Mesajlar",
+      "short_name": "Mesajlar",
+      "description": "Sohbetlerimi aç",
+      "url": "/candidate?tab=messages",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}

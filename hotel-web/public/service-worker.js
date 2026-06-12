@@ -1,17 +1,67 @@
 /**
  * FAZ 1/#23 — Web Push Service Worker
+ * FAZ 2/#8  — PWA offline cache + install/activate hooks
  *
- * Push event'lerini yakalar, browser notification gösterir.
- * Notification tıklanınca app'i ilgili sayfaya yönlendirir.
+ * Strateji:
+ *  - precache: app shell (index.html, favicon, manifest)
+ *  - runtime cache: GET istekleri network-first, fail durumunda cache
+ *  - push event: payload yoksa generic mesaj (FAZ 1)
+ *  - notification click: tab odaklanir veya yeni acilir
  */
 
-self.addEventListener('install', () => {
-  // Yeni SW hemen aktif olsun (eski'ye sarılma)
+const CACHE_VERSION = 'ajanshotel-v1'
+const APP_SHELL = [
+  '/',
+  '/favicon.svg',
+  '/manifest.json',
+]
+
+self.addEventListener('install', (event) => {
+  // FAZ 2/#8 — App shell'i precache
+  event.waitUntil(
+    caches.open(CACHE_VERSION).then(cache => cache.addAll(APP_SHELL)).catch(() => {})
+  )
   self.skipWaiting()
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim())
+  // FAZ 2/#8 — Eski versiyon cache'leri temizle
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_VERSION).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  )
+})
+
+// FAZ 2/#8 — Fetch handler: network-first GET, fallback to cache
+self.addEventListener('fetch', (event) => {
+  const req = event.request
+  // Sadece GET ve same-origin
+  if (req.method !== 'GET') return
+  const url = new URL(req.url)
+  if (url.origin !== self.location.origin) return
+  // API request'lerini cache'leme (her seferinde fresh)
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/ws/')) return
+
+  event.respondWith(
+    fetch(req)
+      .then(res => {
+        // Basarili response'u cache'e koy (klon gerek, body bir kez okunabilir)
+        if (res && res.status === 200 && res.type === 'basic') {
+          const resClone = res.clone()
+          caches.open(CACHE_VERSION).then(c => c.put(req, resClone)).catch(() => {})
+        }
+        return res
+      })
+      .catch(() => {
+        // Offline: cache'den dene, navigasyon ise index.html dön (SPA fallback)
+        return caches.match(req).then(cached => {
+          if (cached) return cached
+          if (req.mode === 'navigate') return caches.match('/')
+          return new Response('Offline', { status: 503, statusText: 'Offline' })
+        })
+      })
+  )
 })
 
 self.addEventListener('push', (event) => {

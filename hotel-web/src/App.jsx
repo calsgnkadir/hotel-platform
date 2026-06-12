@@ -16,8 +16,10 @@ import BusinessDashboard from './pages/business/BusinessDashboard'
 import AdminPage from './pages/admin/AdminPage'
 import KvkkPage from './pages/KvkkPage'
 import ListingDetailPage from './pages/candidate/ListingDetailPage'
-// FAZ 1/#23 — Push prompt gecici devre disi (backend hazir olunca tekrar acilir)
-// import PushPermissionPrompt from './components/PushPermissionPrompt'
+// FAZ 1/#23 — Web Push prompt (pure Java VAPID, in-app calisiyor)
+import PushPermissionPrompt from './components/PushPermissionPrompt'
+// FAZ 2/#8 — PWA install prompt
+import InstallPrompt from './components/InstallPrompt'
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
+        <PushPermissionPrompt />  {/* FAZ 1/#23 — Web Push */}
+        <InstallPrompt />          {/* FAZ 2/#8 — PWA install */}
 
         <Routes>
           {/* Public */}
