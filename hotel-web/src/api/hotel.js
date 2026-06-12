@@ -196,6 +196,12 @@ export async function deleteDocument(documentId) {
   await api.delete(`/api/documents/${documentId}`)
 }
 
+// FAZ 2/#33 — Sertifika cüzdanı: belge önizleme URL'i (Cloudinary)
+export async function getDocumentUrl(documentId) {
+  const { data } = await api.get(`/api/documents/${documentId}/url`)
+  return data.url || data
+}
+
 /* ── Application endpoints (Business owner) ── */
 // #84: Sayfalı + filtreli. opts: { status, listingId, q, page, size }
 // PageResponse döner: { content, page, size, totalElements, totalPages, first, last }
