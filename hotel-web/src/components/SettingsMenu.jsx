@@ -12,7 +12,6 @@ import toast from 'react-hot-toast'
  */
 export default function SettingsMenu({ onTabChange }) {
   const [open, setOpen]   = useState(false)
-  const [help, setHelp]   = useState(false)
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
@@ -135,9 +134,9 @@ export default function SettingsMenu({ onTabChange }) {
           )}
 
           {/* Yardım */}
-          <button
-            type="button"
-            onClick={() => { setOpen(false); setHelp(true) }}
+          <Link
+            to="/yardim"
+            onClick={() => setOpen(false)}
             className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
                        hover:bg-cream-200 transition-colors border-b border-cream-300"
           >
@@ -146,8 +145,8 @@ export default function SettingsMenu({ onTabChange }) {
               <path strokeLinecap="round" strokeLinejoin="round"
                     d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
             </svg>
-            <span>Yardım & SSS</span>
-          </button>
+            <span>Yardım & Destek</span>
+          </Link>
 
           {/* KVKK */}
           <Link
@@ -181,8 +180,6 @@ export default function SettingsMenu({ onTabChange }) {
         </div>
       )}
 
-      {/* Yardım Modal */}
-      {help && <HelpModal onClose={() => setHelp(false)} />}
     </div>
   )
 }
@@ -218,110 +215,3 @@ function ToggleSwitch({ checked, onChange }) {
   )
 }
 
-/* ──────────────── Yardım Modal ──────────────── */
-function HelpModal({ onClose }) {
-  return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700
-                   bg-slate-900 shadow-2xl"
-      >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-cream-300 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-black tracking-tight">Yardım</h3>
-            <p className="text-[12px] text-ink-400">Sık sorulan sorular ve iletişim.</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 grid place-items-center rounded-full text-ink-400
-                       hover:bg-slate-800 hover:text-white transition-colors"
-          >
-            ×
-          </button>
-        </div>
-
-        {/* SSS */}
-        <div className="px-6 py-4">
-          <div className="text-[10px] uppercase tracking-widest text-ink-500 mb-3">
-            Sık Sorulan Sorular
-          </div>
-          <div className="divide-y divide-slate-800/60">
-            {FAQS.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
-          </div>
-        </div>
-
-        {/* İletişim */}
-        <div className="px-6 py-4 border-t border-cream-300">
-          <div className="text-[10px] uppercase tracking-widest text-ink-500 mb-3">İletişim</div>
-          <div className="grid sm:grid-cols-2 gap-2">
-            <a href="mailto:destek@ajanshotel.com"
-               className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl bg-cream-100 border border-slate-700/50
-                          hover:border-brand-500/40 transition-colors">
-              <span className="text-[10px] uppercase tracking-widest text-ink-500">E-posta</span>
-              <span className="font-mono text-[12px] text-ink-900">destek@ajanshotel.com</span>
-            </a>
-            <a href="tel:+902120000000"
-               className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl bg-cream-100 border border-slate-700/50
-                          hover:border-brand-500/40 transition-colors">
-              <span className="text-[10px] uppercase tracking-widest text-ink-500">Telefon</span>
-              <span className="font-mono text-[12px] text-ink-900">+90 212 000 00 00</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const FAQS = [
-  {
-    q: 'Bir ilana başvurduktan sonra ne olur?',
-    a: 'İşletme başvurunu inceler. Onaylarsa "Kabul" durumuna geçer, mesajlaşma sekmesinden iletişime geçebilirsiniz. Reddedilirse "Red" olarak görürsünüz.',
-  },
-  {
-    q: 'Belgelerimi yüklemek zorunda mıyım?',
-    a: 'Hayır, başvurmak için zorunlu değildir. Ama CV, transkript ve hassas belgeleri yüklersen başvurularının daha hızlı değerlendirilmesini sağlarsın.',
-  },
-  {
-    q: 'Şifremi unuttum, ne yapmalıyım?',
-    a: 'Giriş sayfasında "Şifremi unuttum" linkine tıkla. Email adresini gir, sıfırlama linki gönderilir. Link 1 saat geçerlidir.',
-  },
-  {
-    q: 'Google ile giriş yapıyorum, şifrem var mı?',
-    a: 'Hayır. İstersen "Şifremi unuttum" akışıyla bir şifre belirleyebilir, sonradan hem Google hem normal şifre ile giriş yapabilirsin.',
-  },
-  {
-    q: 'Bir kullanıcıyı nasıl şikayet ederim?',
-    a: 'İlgili kullanıcının profilinde veya başvurusunda ⚠ Şikayet Et butonu olur. Sebebi açıklayıp gönder. Yönetici 24 saat içinde inceler.',
-  },
-  {
-    q: 'Bildirimleri nasıl kapatırım?',
-    a: 'Bu ayar menüsünden "Bildirimler" toggle\'ını kapat. Zil ikonunda artık yeni bildirim görmezsin.',
-  },
-]
-
-function FaqItem({ q, a }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div className="py-2.5">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-3 text-left"
-      >
-        <span className="font-semibold text-ink-900 text-[13px]">{q}</span>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             strokeWidth={2} stroke="currentColor"
-             className={`w-4 h-4 shrink-0 text-ink-400 transition-transform ${open ? 'rotate-180' : ''}`}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-        </svg>
-      </button>
-      {open && <p className="text-[12px] text-ink-300 mt-1.5 leading-relaxed">{a}</p>}
-    </div>
-  )
-}

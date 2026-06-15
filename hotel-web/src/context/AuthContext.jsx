@@ -28,6 +28,16 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [])
 
+  // FAZ 5.1 — Hibrit tema: BIZ koyu (Dark Concierge), CAND/default acik (Hospitality SaaS).
+  // body[data-role] attribute'una gore tokens.css'teki semantic variables override edilir.
+  useEffect(() => {
+    if (user?.role === 'BUSINESS_OWNER') {
+      document.body.setAttribute('data-role', 'business')
+    } else {
+      document.body.removeAttribute('data-role')
+    }
+  }, [user?.role])
+
   async function login(email, password) {
     const data = await authApi.login(email, password)
     persist(data)

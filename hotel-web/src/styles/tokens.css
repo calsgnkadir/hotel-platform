@@ -1,0 +1,121 @@
+/*
+ * FAZ 5.1 — Design Tokens (Hibrit Tema)
+ *
+ * Iki rol = iki mood:
+ *   - CAND (default)       → "Hospitality SaaS" : krem + zumrut accent, sicak/light
+ *   - BIZ  (data-role="business") → "Dark Concierge" : koyu + mor glow, premium-luxury
+ *
+ * Mor brand backbone (--accent-action) iki temada da korunur — kimlik degismez.
+ *
+ * Kullanim: dogrudan utility class yazmak yerine semantic token kullan
+ *   background: var(--bg-surface);
+ *   color: var(--text-primary);
+ *   border-color: var(--border-subtle);
+ *
+ * Mevcut Tailwind utilities (bg-brand-800, text-ink-900) calismaya devam eder —
+ * yeni component'lerde token'lar tercih edilir, eski component'ler kademeli gecer.
+ */
+
+:root {
+  /* ================== HOSPITALITY SAAS (CAND default) ================== */
+
+  /* Surface — beyaz + krem katmanlar */
+  --bg-app:        #fdfbf7;  /* sayfa zemini (cream-50) */
+  --bg-surface:    #ffffff;  /* kart, modal */
+  --bg-elevated:   #ffffff;  /* dropdown, popover */
+  --bg-subtle:     #faf7f2;  /* highlight, hover (cream-100) */
+  --bg-muted:      #f4ede2;  /* secondary surface (cream-200) */
+
+  /* Border */
+  --border-subtle: #ebe0cc;  /* cream-300 */
+  --border-strong: #d8b4fe;  /* brand-300 — mor vurgu */
+
+  /* Text */
+  --text-primary:   #171513;  /* ink-900 */
+  --text-secondary: #3d3631;  /* ink-600 */
+  --text-muted:     #766c61;  /* ink-400 */
+  --text-inverse:   #ffffff;
+
+  /* Accent — Mor brand (degismez) */
+  --accent-action:        #6b21a8;  /* brand-800 — primary CTA */
+  --accent-action-hover:  #581c87;  /* brand-900 */
+  --accent-action-soft:   #f3e8ff;  /* brand-100 — soft bg */
+  --accent-action-glow:   0 4px 20px rgba(107, 33, 168, 0.22);
+
+  /* Accent — Zumrut (Yon 1 imzasi) */
+  --accent-positive:       #10b981;  /* emerald-500 */
+  --accent-positive-hover: #059669;
+  --accent-positive-soft:  #d1fae5;
+  --accent-positive-text:  #065f46;
+
+  /* Status */
+  --accent-warning:    #d97706;
+  --accent-warning-bg: #fef3c7;
+  --accent-danger:     #dc2626;
+  --accent-danger-bg:  #fee2e2;
+  --accent-info:       #0891b2;
+  --accent-info-bg:    #cffafe;
+}
+
+/* ================== DARK CONCIERGE (BIZ) ==================
+ * Body'de data-role="business" set edildiginde otomatik aktive olur.
+ * Tum semantic tokens override edilir — utility'ler ayni kalir.
+ */
+[data-role="business"] {
+  /* Surface — koyu mor + slate */
+  --bg-app:        #0f0a1e;  /* deep indigo-purple */
+  --bg-surface:    #1a1330;  /* card */
+  --bg-elevated:   #241b3e;  /* dropdown */
+  --bg-subtle:     #2a2050;  /* hover */
+  --bg-muted:      #1a1330;
+
+  /* Border */
+  --border-subtle: #2d2055;  /* dim purple line */
+  --border-strong: #a855f7;  /* brand-500 — mor glow */
+
+  /* Text */
+  --text-primary:   #f8f6f4;  /* near-white */
+  --text-secondary: #cfc8c0;  /* ink-200 */
+  --text-muted:     #a9a097;  /* ink-300 */
+  --text-inverse:   #171513;
+
+  /* Accent — Mor glow (Yon 2 imzasi) */
+  --accent-action:        #a855f7;  /* brand-500 — parlak */
+  --accent-action-hover:  #c084fc;  /* brand-400 — daha parlak */
+  --accent-action-soft:   rgba(168, 85, 247, 0.12);
+  --accent-action-glow:   0 0 24px rgba(168, 85, 247, 0.45);  /* neon glow */
+
+  /* Accent — Magenta (BIZ icin pozitif/CTA vurgu) */
+  --accent-positive:       #d946ef;  /* terra-500 magenta */
+  --accent-positive-hover: #e879f9;
+  --accent-positive-soft:  rgba(217, 70, 239, 0.15);
+  --accent-positive-text:  #f0abfc;
+
+  /* Status — daha doygun, koyu zemine uygun */
+  --accent-warning:    #fbbf24;
+  --accent-warning-bg: rgba(251, 191, 36, 0.12);
+  --accent-danger:     #f87171;
+  --accent-danger-bg:  rgba(248, 113, 113, 0.12);
+  --accent-info:       #22d3ee;
+  --accent-info-bg:    rgba(34, 211, 238, 0.12);
+}
+
+/* ================== HELPERS ================== */
+
+/* Sayfa zemini — App.jsx body veya main'e uygulanir */
+body, .role-app-bg {
+  background: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Token-bazli yardimci sinif'lar — kademeli gecis icin */
+.surface       { background: var(--bg-surface); }
+.surface-elev  { background: var(--bg-elevated); }
+.text-token    { color: var(--text-primary); }
+.text-token-2  { color: var(--text-secondary); }
+.text-token-3  { color: var(--text-muted); }
+.border-token  { border-color: var(--border-subtle); }
+.accent-bg     { background: var(--accent-action); }
+.accent-text   { color: var(--accent-action); }
+.accent-glow   { box-shadow: var(--accent-action-glow); }

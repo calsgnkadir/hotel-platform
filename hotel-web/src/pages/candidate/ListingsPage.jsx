@@ -12,7 +12,6 @@ import MapView from '../../components/MapView'
 import EmptyState from '../../components/EmptyState'
 import { SkeletonListingGrid } from '../../components/Skeleton'
 import ListingsMapView from '../../components/ListingsMapView'
-import BottomSheet from '../../components/BottomSheet'
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
 
@@ -630,7 +629,6 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   const [applyTarget, setApplyTarget] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
   const [highlightedId, setHighlightedId] = useState(null)   // FAZ 1/#30
-  const [mobileMapOpen, setMobileMapOpen] = useState(false)  // FAZ 1/#30 mobil
 
   // #47: Detay artık modal değil, kendi route'a navigate
   const openDetail = (listing) => navigate(`/listings/${listing.id}`)
@@ -719,17 +717,6 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           </p>
         </div>
         <div className="flex gap-2">
-          {/* FAZ 1/#30 — Mobile: 'Haritada Gör' (xl'de zaten yan tarafta) */}
-          <button onClick={() => setMobileMapOpen(true)}
-            className="xl:hidden text-sm font-semibold px-3 py-2 rounded-lg text-white flex items-center gap-1.5"
-            style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
-            </svg>
-            Haritada Gör
-          </button>
           <button onClick={() => setShowFilters(s => !s)}
             className="sm:hidden btn-secondary text-sm flex items-center gap-1.5">
             🔧 Filtreler
@@ -949,7 +936,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       ) : listings.length === 0 ? (
         <div className="card">
           <EmptyState
-            type="listings"
+            type={activeFilterCount > 0 ? 'search' : 'listings'}
             title={activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
             description={activeFilterCount > 0
               ? 'Filtreleri değiştir veya temizleyerek daha fazla ilan görebilirsin.'
@@ -1000,22 +987,6 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         </div>
       </aside>
 
-      {/* Mobile harita: BottomSheet */}
-      <BottomSheet open={mobileMapOpen} onClose={() => setMobileMapOpen(false)} title="İlanlar Haritada" maxHeight="80vh">
-        <div style={{ height: '60vh' }}>
-          {listings.length > 0 ? (
-            <ListingsMapView
-              listings={listings}
-              highlightedId={highlightedId}
-              onMarkerClick={(l) => { setMobileMapOpen(false); openDetail(l) }}
-            />
-          ) : (
-            <div className="text-center text-sm py-12" style={{ color: '#6b21a8' }}>
-              Gösterilecek ilan yok
-            </div>
-          )}
-        </div>
-      </BottomSheet>
 
       {/* #47 — Detail kendi route */}
 

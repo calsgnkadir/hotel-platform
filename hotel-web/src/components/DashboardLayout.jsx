@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import NotificationBell from './NotificationBell'
 import SettingsMenu from './SettingsMenu'
 import LanguageSwitcher from './LanguageSwitcher'
+import EmailVerifyBanner from './EmailVerifyBanner'
 
 // FAZ 1/#36 — Nav item id'leri i18n key'lerine map'lenir.
 const candidateNav = [
@@ -51,10 +52,10 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   return (
     <div className="min-h-screen flex bg-cream-100">
       {/* Neon üst hat (ince) */}
-      <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none" />
+      <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none no-print" />
 
       {/* ── Sidebar — FAZ 1/#40: 224 → 240px (w-56 → w-60) ── */}
-      <aside className={`
+      <aside id="main-nav-sidebar" aria-label="Yan menü" className={`
         fixed inset-y-0 left-0 z-40 w-60 flex flex-col transform transition-transform duration-300
         bg-cream-100 border-r border-cream-300
         lg:relative lg:translate-x-0
@@ -75,13 +76,14 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         </div>
 
         {/* Nav — #42: nefes alma artirildi */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Ana navigasyon">
           {navItems.map(item => (
             <button
               key={item.id}
               onClick={() => { onTabChange?.(item.id); setSidebarOpen(false) }}
               className={`nav-link w-full text-left text-[13px] ${activeTab === item.id ? 'active' : ''}`}
               style={{ padding: '0.625rem 1rem' }}
+              aria-current={activeTab === item.id ? 'page' : undefined}
             >
               <span className="flex-1 truncate">{item.tKey ? t(item.tKey) : item.label}</span>
               {activeTab === item.id && (
@@ -119,8 +121,11 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                            bg-cream-100/85 backdrop-blur-lg border-b border-cream-300">
           <div className="flex items-center gap-2.5">
             <button onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-1.5 rounded-full hover:bg-cream-200 transition-colors">
-              <svg className="w-4 h-4 text-ink-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              className="lg:hidden p-1.5 rounded-full hover:bg-cream-200 transition-colors"
+              aria-label={sidebarOpen ? 'Menüyü kapat' : 'Menüyü aç'}
+              aria-expanded={sidebarOpen}
+              aria-controls="main-nav-sidebar">
+              <svg className="w-4 h-4 text-ink-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </button>
@@ -144,8 +149,12 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
         {/* Page Content — #42: padding ve text size artirildi (3→4 / 5→6 / 13→14)
             #41: pb-20 lg:pb-6 → mobilde bottom tab bar icin alt padding */}
-        <main className="flex-1 p-4 lg:p-6 pb-20 lg:pb-6 fade-in text-ink-800 text-[14px]">
-          {children}
+        <main className="flex-1 pb-20 lg:pb-6 fade-in text-ink-800 text-[14px]">
+          {/* FAZ 4.4 — Email doğrulanmamışsa banner */}
+          <EmailVerifyBanner />
+          <div className="p-4 lg:p-6">
+            {children}
+          </div>
         </main>
       </div>
 

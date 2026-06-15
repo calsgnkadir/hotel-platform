@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
+import './styles/tokens.css'  // FAZ 5.1 — semantic design tokens (hibrit tema)
 import './i18n'  // FAZ 1/#36 — i18n init
 
 // FAZ 2/#8 — Service Worker register (PWA offline cache + push handler)

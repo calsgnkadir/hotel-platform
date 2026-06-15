@@ -55,3 +55,9 @@ hotel-platform/
 untitled/
 
 .claude/
+
+# Local email preview dump (Resend dev)
+hotelapp/preview/
+
+# Bash test scripts (local-only — IntelliJ/manual)
+test-*.sh

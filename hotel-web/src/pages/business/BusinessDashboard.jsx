@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import DashboardLayout from '../../components/DashboardLayout'
 import * as hotelApi from '../../api/hotel'
@@ -17,9 +18,25 @@ import WorkersTab from './tabs/WorkersTab'
 import FavoritesTab from './tabs/FavoritesTab'  // FAZ 2/#32
 import ProfileTab from './tabs/ProfileTab'
 
+const VALID_TABS = ['overview','mylistings','applications','workers','favorites','profile','messages']
+
 export default function BusinessDashboard() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const [params, setParams] = useSearchParams()
+  // FAZ 5.3 — CommandPalette ?tab=… ile derin link
+  const initialTab = VALID_TABS.includes(params.get('tab')) ? params.get('tab') : 'overview'
+  const [activeTab, _setActiveTab] = useState(initialTab)
   const { user } = useAuth()
+
+  useEffect(() => {
+    const t = params.get('tab')
+    if (t && VALID_TABS.includes(t) && t !== activeTab) _setActiveTab(t)
+  }, [params])
+
+  function setActiveTab(t) {
+    _setActiveTab(t)
+    setParams({ tab: t }, { replace: true })
+  }
+
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding(user?.id))
   const queryClient = useQueryClient()
 
@@ -44,7 +61,8 @@ export default function BusinessDashboard() {
       {isLoading ? (
         <SkeletonList count={5} />
       ) : (
-        <>
+        /* FAZ 3 — Tab degisiminde sade fade-in. key={activeTab} animasyonu re-tetikler. */
+        <div key={activeTab} className="page-enter">
           {activeTab === 'overview'      && <OverviewTab applications={applications} onTabChange={setActiveTab} />}
           {activeTab === 'mylistings'    && <MyListingsTab />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
@@ -52,7 +70,7 @@ export default function BusinessDashboard() {
           {activeTab === 'favorites'     && <FavoritesTab onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
-        </>
+        </div>
       )}
       {showOnboarding && (
         <OnboardingWizard user={user} onClose={() => setShowOnboarding(false)} onTabChange={setActiveTab} />
