@@ -4,6 +4,27 @@ import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_LABELS } from '../lib/constants'
 import useFocusTrap from '../../../lib/useFocusTrap'
+import {
+  DndContext,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+function genSlotUid() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  return 'sl-' + Math.random().toString(36).slice(2) + Date.now().toString(36)
+}
 
 /**
  * #9 refactor: BusinessDashboard'tan extract edildi.
@@ -29,10 +50,11 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
     endDate:      listing?.endDate      || '',
   })
 
-  // Faz E2: Slot listesi (date+start+end+slotsNeeded)
+  // Faz E2: Slot listesi (date+start+end+slotsNeeded). FAZ 5.5b: _uid drag-drop icin stable id.
   const [slots, setSlots] = useState(() => {
     if (listing?.shiftSlots?.length) {
       return listing.shiftSlots.map(s => ({
+        _uid:        genSlotUid(),
         id:          s.id ?? null,
         date:        s.date || '',
         startTime:   s.startTime ? s.startTime.slice(0, 5) : '',
@@ -41,7 +63,7 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
         slotsFilled: s.slotsFilled ?? 0,
       }))
     }
-    return [{ id: null, date: '', startTime: '', endTime: '', slotsNeeded: 1, slotsFilled: 0 }]
+    return [{ _uid: genSlotUid(), id: null, date: '', startTime: '', endTime: '', slotsNeeded: 1, slotsFilled: 0 }]
   })
 
   function handleChange(e) {
@@ -53,7 +75,7 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
   }
 
   function addSlot() {
-    setSlots(prev => [...prev, { id: null, date: '', startTime: '', endTime: '', slotsNeeded: 1, slotsFilled: 0 }])
+    setSlots(prev => [...prev, { _uid: genSlotUid(), id: null, date: '', startTime: '', endTime: '', slotsNeeded: 1, slotsFilled: 0 }])
   }
 
   function removeSlot(i) {
@@ -62,8 +84,24 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
 
   function duplicateSlot(i) {
     setSlots(prev => {
-      const copy = { ...prev[i], id: null, slotsFilled: 0 }
+      const copy = { ...prev[i], _uid: genSlotUid(), id: null, slotsFilled: 0 }
       return [...prev.slice(0, i + 1), copy, ...prev.slice(i + 1)]
+    })
+  }
+
+  // FAZ 5.5b: drag-drop ile slot siralama
+  const slotSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+  function handleSlotDragEnd(e) {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
+    setSlots(prev => {
+      const from = prev.findIndex(s => s._uid === active.id)
+      const to   = prev.findIndex(s => s._uid === over.id)
+      if (from < 0 || to < 0) return prev
+      return arrayMove(prev, from, to)
     })
   }
 
@@ -288,69 +326,24 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
                   </span>
                 </div>
 
-                <div className="space-y-2">
-                  {slots.map((s, i) => {
-                    const locked = (s.slotsFilled || 0) > 0
-                    return (
-                      <div key={i}
-                        className="bg-white rounded-lg p-3 border border-cream-300 space-y-2 relative">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-ink-500">
-                            Vardiya #{i + 1}
-                            {locked && (
-                              <span className="ml-2 text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
-                                {s.slotsFilled}/{s.slotsNeeded} dolu
-                              </span>
-                            )}
-                          </span>
-                          <div className="flex gap-1">
-                            <button type="button" onClick={() => duplicateSlot(i)}
-                              className="text-xs px-2 py-1 rounded bg-cream-100 hover:bg-cream-200 text-ink-600"
-                              title="Bu vardiyayı çoğalt">
-                              ⎘
-                            </button>
-                            {slots.length > 1 && (
-                              <button type="button" onClick={() => removeSlot(i)}
-                                disabled={locked}
-                                className="text-xs px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
-                                title={locked ? 'Bu slota kabul edilmiş aday var, silinemez' : 'Sil'}>
-                                ✕
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                          <div className="col-span-2 sm:col-span-2">
-                            <label className="text-xs text-ink-500">Tarih</label>
-                            <input type="date" value={s.date} min={todayStr}
-                              onChange={e => updateSlot(i, { date: e.target.value })}
-                              className="input text-sm !py-1.5" required />
-                          </div>
-                          <div>
-                            <label className="text-xs text-ink-500">Başlangıç</label>
-                            <input type="time" value={s.startTime}
-                              onChange={e => updateSlot(i, { startTime: e.target.value })}
-                              className="input text-sm !py-1.5" required />
-                          </div>
-                          <div>
-                            <label className="text-xs text-ink-500">Bitiş</label>
-                            <input type="time" value={s.endTime}
-                              onChange={e => updateSlot(i, { endTime: e.target.value })}
-                              className="input text-sm !py-1.5" required />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-xs text-ink-500">İhtiyaç sayısı (kaç aday)</label>
-                          <input type="number" min="1" max="50" value={s.slotsNeeded}
-                            onChange={e => updateSlot(i, { slotsNeeded: e.target.value })}
-                            className="input text-sm !py-1.5 w-24" required />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+                <DndContext sensors={slotSensors} collisionDetection={closestCenter} onDragEnd={handleSlotDragEnd}>
+                  <SortableContext items={slots.map(s => s._uid)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-2">
+                      {slots.map((s, i) => (
+                        <SortableSlot
+                          key={s._uid}
+                          slot={s}
+                          index={i}
+                          totalCount={slots.length}
+                          todayStr={todayStr}
+                          onUpdate={(patch) => updateSlot(i, patch)}
+                          onDuplicate={() => duplicateSlot(i)}
+                          onRemove={() => removeSlot(i)}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
 
                 <button type="button" onClick={addSlot}
                   className="w-full py-2 text-sm font-semibold text-brand-700 dark:text-brand-700 bg-white border-2 border-dashed border-brand-400 dark:border-brand-600 rounded-lg hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors">
@@ -388,6 +381,105 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  )
+}
+
+/* FAZ 5.5b — Tek slot satiri (drag handle ile sortable) */
+function SortableSlot({ slot, index, totalCount, todayStr, onUpdate, onDuplicate, onRemove }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: slot._uid })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.55 : 1,
+    zIndex: isDragging ? 30 : 'auto',
+    boxShadow: isDragging ? '0 12px 30px rgba(126, 34, 206, 0.35)' : undefined,
+  }
+
+  const locked = (slot.slotsFilled || 0) > 0
+
+  return (
+    <div ref={setNodeRef} style={style}
+      className="bg-white rounded-lg p-3 border border-cream-300 space-y-2 relative">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {/* Drag handle */}
+          <button type="button"
+            {...attributes}
+            {...listeners}
+            aria-label={`Vardiya ${index + 1} sürükle`}
+            className="cursor-grab active:cursor-grabbing touch-none px-1.5 py-1 rounded text-ink-400 hover:bg-cream-100 hover:text-brand-700 transition-colors"
+            title="Sürükle ve sırala">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <circle cx="7"  cy="5"  r="1.4" />
+              <circle cx="13" cy="5"  r="1.4" />
+              <circle cx="7"  cy="10" r="1.4" />
+              <circle cx="13" cy="10" r="1.4" />
+              <circle cx="7"  cy="15" r="1.4" />
+              <circle cx="13" cy="15" r="1.4" />
+            </svg>
+          </button>
+          <span className="text-xs font-semibold text-ink-500">
+            Vardiya #{index + 1}
+            {locked && (
+              <span className="ml-2 text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
+                {slot.slotsFilled}/{slot.slotsNeeded} dolu
+              </span>
+            )}
+          </span>
+        </div>
+        <div className="flex gap-1">
+          <button type="button" onClick={onDuplicate}
+            className="text-xs px-2 py-1 rounded bg-cream-100 hover:bg-cream-200 text-ink-600"
+            title="Bu vardiyayı çoğalt">
+            ⎘
+          </button>
+          {totalCount > 1 && (
+            <button type="button" onClick={onRemove}
+              disabled={locked}
+              className="text-xs px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
+              title={locked ? 'Bu slota kabul edilmiş aday var, silinemez' : 'Sil'}>
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="col-span-2 sm:col-span-2">
+          <label className="text-xs text-ink-500">Tarih</label>
+          <input type="date" value={slot.date} min={todayStr}
+            onChange={e => onUpdate({ date: e.target.value })}
+            className="input text-sm !py-1.5" required />
+        </div>
+        <div>
+          <label className="text-xs text-ink-500">Başlangıç</label>
+          <input type="time" value={slot.startTime}
+            onChange={e => onUpdate({ startTime: e.target.value })}
+            className="input text-sm !py-1.5" required />
+        </div>
+        <div>
+          <label className="text-xs text-ink-500">Bitiş</label>
+          <input type="time" value={slot.endTime}
+            onChange={e => onUpdate({ endTime: e.target.value })}
+            className="input text-sm !py-1.5" required />
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs text-ink-500">İhtiyaç sayısı (kaç aday)</label>
+        <input type="number" min="1" max="50" value={slot.slotsNeeded}
+          onChange={e => onUpdate({ slotsNeeded: e.target.value })}
+          className="input text-sm !py-1.5 w-24" required />
       </div>
     </div>
   )
