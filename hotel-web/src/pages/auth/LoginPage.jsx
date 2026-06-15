@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
 import BackButton from '../../components/BackButton'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
+import HeroHeading from '../../components/HeroHeading'
 
 /**
  * Login v3 — Hospitality Concierge dili:
@@ -39,48 +40,45 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 text-ink-900 flex flex-col relative overflow-hidden">
-      <div className="neon-strip" />
+    <div className="min-h-screen relative overflow-hidden" style={{ background: '#0a0612' }}>
+      {/* Calm radial halo arka plan */}
+      <div aria-hidden className="absolute inset-0 pointer-events-none"
+           style={{
+             background:
+               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(107, 33, 168, 0.20) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(217, 70, 239, 0.10) 0%, transparent 60%)',
+           }} />
 
-      <div aria-hidden className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[60%] h-96 rounded-full bg-terra-200/40 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-brand-200/30 blur-[100px]" />
+      {/* Geri butonu — sol üst, sabit */}
+      <div className="absolute top-4 left-4 z-30">
+        <BackButton to="/" label="Geri" />
       </div>
 
-      <header className="relative px-6 py-4 flex items-center justify-between border-b border-cream-300">
-        <div className="flex items-center gap-3">
-          <BackButton to="/" label="Ana Sayfa" />
-          <span className="hidden sm:block w-px h-5 bg-cream-300" />
-          <Link to="/" className="hidden sm:flex items-baseline gap-2">
-            <span className="font-display font-bold text-base tracking-tight text-ink-900">AjansHotel</span>
-            <span className="text-[9px] uppercase tracking-[0.18em] text-ink-400">istanbul</span>
-          </Link>
-        </div>
-      </header>
-
-      <main className="relative flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-white border border-cream-300 rounded-full px-3 py-1.5 mb-5 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-terra-400 animate-glow-pulse" />
-              <span className="text-[11px] uppercase tracking-widest text-ink-600 font-semibold">Hoş Geldin</span>
+      {/* 2-sutun split-screen */}
+      <div className="relative z-10 min-h-screen grid lg:grid-cols-2">
+        {/* SOL — Form */}
+        <main className="flex items-center justify-center px-4 sm:px-10 py-16">
+          <div className="w-full max-w-sm">
+            <div className="mb-8">
+              <Link to="/" className="inline-flex items-baseline gap-2 mb-10">
+                <span className="font-bebas font-bold text-2xl tracking-wider text-white">AJANSHOTEL</span>
+                <span className="text-[9px] uppercase tracking-[0.18em]" style={{ color: '#c4b5fd' }}>istanbul</span>
+              </Link>
+              <HeroHeading size="sm" align="left" className="hero-glow !leading-none">
+                <span className="text-white">Giriş Yap</span>
+              </HeroHeading>
+              <p className="text-sm mt-3" style={{ color: '#a5b4fc' }}>
+                Kaldığın yerden devam et.
+              </p>
             </div>
-            <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1]">
-              <span className="block">Hesabına</span>
-              <span className="block text-brand-700 italic">giriş yap</span>
-            </h1>
-            <p className="text-sm text-ink-600 mt-4">
-              Aday veya işletme hesabınla devam et.
-            </p>
-          </div>
 
-          <div className="auth-card">
+            <div className="space-y-5">
             <GoogleSignInButton label="Google ile Devam Et" />
 
             <div className="flex items-center gap-3 my-5">
-              <span className="flex-1 h-px bg-cream-300" />
-              <span className="text-[10px] uppercase tracking-widest text-ink-400 font-semibold">veya</span>
-              <span className="flex-1 h-px bg-cream-300" />
+              <span className="flex-1 h-px" style={{ background: 'rgba(168, 85, 247, 0.2)' }} />
+              <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#a5b4fc' }}>veya</span>
+              <span className="flex-1 h-px" style={{ background: 'rgba(168, 85, 247, 0.2)' }} />
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -96,10 +94,7 @@ export default function LoginPage() {
                   })}
                 />
                 {errors.email && (
-                  <p className="error-text">
-                    <WarningIcon />
-                    {errors.email.message}
-                  </p>
+                  <p className="error-text">{errors.email.message}</p>
                 )}
               </div>
 
@@ -121,10 +116,7 @@ export default function LoginPage() {
                   })}
                 />
                 {errors.password && (
-                  <p className="error-text">
-                    <WarningIcon />
-                    {errors.password.message}
-                  </p>
+                  <p className="error-text">{errors.password.message}</p>
                 )}
               </div>
 
@@ -149,26 +141,97 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="text-[12px] text-center text-ink-500 mt-6">
+            <p className="text-[12px] text-center mt-6" style={{ color: '#c4b5fd' }}>
               Hesabın yok mu?{' '}
-              <Link to="/register" className="font-bold text-terra-700 hover:text-terra-800 transition-colors">
+              <Link to="/register" className="font-bold transition-colors hover:underline"
+                    style={{ color: '#e879f9' }}>
                 Ücretsiz kayıt ol
               </Link>
             </p>
           </div>
 
-          <div className="mt-6 card !p-5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-brand-700 mb-3">
+          <div className="mt-8 rounded-xl p-4 border"
+               style={{ background: 'rgba(168, 85, 247, 0.05)', borderColor: 'rgba(168, 85, 247, 0.12)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#c4b5fd' }}>
               Demo Hesaplar
             </p>
-            <div className="space-y-2 text-[12px] font-mono">
+            <div className="space-y-1.5 text-[12px] font-mono">
               <DemoRow k="Aday"     v="demo-aday1@test.com" />
               <DemoRow k="İşletme"  v="demo-isletme1@test.com" />
               <DemoRow k="Şifre"    v="Demo1234!" />
             </div>
           </div>
-        </div>
-      </main>
+          </div>
+        </main>
+
+        {/* SAĞ — Hospitality value-prop paneli (kendi orijinal kompozisyon) */}
+        <aside className="hidden lg:flex relative items-center justify-center px-12 py-16 border-l"
+               style={{ borderColor: 'rgba(168, 85, 247, 0.10)' }}>
+          {/* Sag panel'e ozel halo */}
+          <div aria-hidden className="absolute inset-0 pointer-events-none"
+               style={{
+                 background:
+                   'radial-gradient(circle 500px at 60% 40%, rgba(168, 85, 247, 0.14) 0%, transparent 60%),' +
+                   'radial-gradient(circle 400px at 30% 80%, rgba(217, 70, 239, 0.10) 0%, transparent 60%)',
+               }} />
+
+          <div className="relative z-10 max-w-md">
+            {/* Canli rozet */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-8"
+                 style={{ background: 'rgba(217, 70, 239, 0.10)', border: '1px solid rgba(217, 70, 239, 0.25)' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#e879f9' }} />
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#f0abfc' }}>
+                İstanbul Canlı
+              </span>
+            </div>
+
+            {/* Buyuk Bebas baslik */}
+            <HeroHeading size="lg" align="left" className="!leading-[0.92]">
+              <span className="block text-white">Şehrin</span>
+              <span className="block hero-glow" style={{
+                background: 'linear-gradient(135deg, #c084fc 0%, #d946ef 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>Vardiyası</span>
+              <span className="block text-white">Hiç Durmuyor</span>
+            </HeroHeading>
+
+            <p className="mt-6 mb-10 text-sm leading-relaxed" style={{ color: '#c4b5fd' }}>
+              Otel, restoran, kafe — sabah müsait olduğun saatler birinin
+              akşam doldurmaya çalıştığı bir vardiya. Aradaki köprü AjansHotel.
+            </p>
+
+            {/* 3 stat row — Bebas + ince mor cizgi */}
+            <div className="space-y-5">
+              {[
+                { num: '127',   label: 'Aday bu hafta vardiyaya çıktı' },
+                { num: '8 sa',  label: 'Ortalama ilk eşleşme süresi' },
+                { num: '%94',   label: 'Başvuru sonrası memnuniyet (son 30 gün)' },
+              ].map((s, i) => (
+                <div key={i} className="flex items-baseline gap-4 pb-4"
+                     style={{ borderBottom: i < 2 ? '1px solid rgba(168, 85, 247, 0.12)' : 'none' }}>
+                  <span className="font-bebas text-4xl tracking-wider"
+                        style={{
+                          color: '#ffffff',
+                          textShadow: '0 0 18px rgba(168, 85, 247, 0.35)',
+                          minWidth: '90px',
+                        }}>
+                    {s.num}
+                  </span>
+                  <span className="text-xs uppercase tracking-wider" style={{ color: '#a5b4fc' }}>
+                    {s.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Imza */}
+            <p className="mt-12 text-[10px] uppercase tracking-[0.3em]" style={{ color: '#7c3aed' }}>
+              AjansHotel · İstanbul Hospitality Network
+            </p>
+          </div>
+        </aside>
+      </div>
     </div>
   )
 }

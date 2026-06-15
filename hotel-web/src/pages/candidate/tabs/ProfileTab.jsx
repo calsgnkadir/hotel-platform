@@ -163,22 +163,78 @@ export default function ProfileTab() {
         <hr style={{ margin: '8pt 0', border: 0, borderTop: '1px solid #ccc' }} />
       </div>
 
-      <ProfileCompletenessCard data={completeness} />
-
-      <div className="card p-5">
-        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider mb-4">Profil Fotoğrafı</h3>
-        <div className="flex items-center gap-4">
-          <div className="w-24 h-24 rounded-full bg-cream-100 dark:bg-ink-700 border-2 border-cream-300 dark:border-ink-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+      {/* FAZ 5.4 — Identity + quick actions: 2-kolon ust bolum */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* SOL — Identity card */}
+        <div className="card p-6 lg:col-span-1 flex flex-col items-center text-center">
+          <div className="w-28 h-28 rounded-full flex items-center justify-center overflow-hidden mb-4 relative"
+               style={{ background: 'rgba(168, 85, 247, 0.10)', border: '2px solid rgba(168, 85, 247, 0.25)' }}>
             {profile?.avatarUrl ? (
               <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
                    loading="lazy" decoding="async"
                    className="w-full h-full object-cover" />
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-ink-400 dark:text-ink-500">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-              </svg>
+              <span className="font-bebas text-5xl tracking-wider"
+                    style={{ color: '#c084fc', textShadow: '0 0 16px rgba(168, 85, 247, 0.4)' }}>
+                {(profile?.fullName || 'A').charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <h2 className="font-bebas text-2xl tracking-wider uppercase text-white mb-1">
+            {profile?.fullName || 'Aday'}
+          </h2>
+          <p className="text-xs mb-3" style={{ color: '#a5b4fc' }}>
+            {profile?.email || ''}
+          </p>
+          <div className="w-full pt-3 mt-1 border-t" style={{ borderColor: 'rgba(168, 85, 247, 0.15)' }}>
+            <div className="flex items-center justify-between text-[11px]">
+              <span style={{ color: '#a5b4fc' }}>ÜYE OLDU</span>
+              <span className="font-semibold" style={{ color: '#e9d5ff' }}>
+                {profile?.createdAt
+                  ? new Date(profile.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
+                  : '—'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* SAĞ — Profil tamamlama + Email durum */}
+        <div className="lg:col-span-2 space-y-4">
+          <ProfileCompletenessCard data={completeness} />
+
+          {/* Email durum kartı */}
+          <div className="card p-5 flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#a5b4fc' }}>
+                Email Doğrulama
+              </p>
+              <p className="font-bebas text-xl tracking-wider mt-1 uppercase"
+                 style={{ color: profile?.emailVerifiedAt ? '#d8b4fe' : '#fbbf24' }}>
+                {profile?.emailVerifiedAt ? 'Doğrulandı' : 'Beklemede'}
+              </p>
+            </div>
+            <span className="w-3 h-3 rounded-full"
+                  style={{
+                    background: profile?.emailVerifiedAt ? '#a855f7' : '#fbbf24',
+                    boxShadow: `0 0 12px ${profile?.emailVerifiedAt ? 'rgba(168,85,247,0.6)' : 'rgba(251,191,36,0.6)'}`,
+                  }} />
+          </div>
+        </div>
+      </div>
+
+      <div className="card p-5">
+        <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#e9d5ff' }}>Profil Fotoğrafı</h3>
+        <div className="flex items-center gap-4">
+          <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+               style={{ background: 'rgba(168, 85, 247, 0.10)', border: '2px solid rgba(168, 85, 247, 0.20)' }}>
+            {profile?.avatarUrl ? (
+              <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
+                   loading="lazy" decoding="async"
+                   className="w-full h-full object-cover" />
+            ) : (
+              <span className="font-bebas text-4xl tracking-wider" style={{ color: '#c084fc' }}>
+                {(profile?.fullName || 'A').charAt(0).toUpperCase()}
+              </span>
             )}
           </div>
           <div className="flex-1 space-y-2">

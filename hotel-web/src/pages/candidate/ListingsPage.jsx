@@ -749,14 +749,15 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             .filter(v => v && v !== '').length
           if (activeCount === 0) return null
           return (
-            <div className="flex items-center justify-between bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg px-3 py-2">
-              <span className="text-xs font-semibold text-brand-700 dark:text-brand-300">
-                🎯 {activeCount} filtre aktif
+            <div className="flex items-center justify-between rounded-lg px-3 py-2"
+                 style={{ background: 'rgba(168, 85, 247, 0.10)', border: '1px solid rgba(168, 85, 247, 0.25)' }}>
+              <span className="text-xs font-bebas tracking-wider uppercase" style={{ color: '#d8b4fe' }}>
+                {activeCount} FİLTRE AKTİF
               </span>
               <button onClick={() => {
                 setDistrict(''); setPosition(''); setJobType(''); setMinSalary(''); setDatePreset('')
-              }} className="text-xs font-bold text-brand-700 dark:text-brand-300 hover:underline">
-                Temizle ✕
+              }} className="text-xs font-bold hover:underline" style={{ color: '#e879f9' }}>
+                Temizle
               </button>
             </div>
           )

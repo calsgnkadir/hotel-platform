@@ -1,0 +1,20 @@
+/* FAZ 5.4 — DarkVeil canvas: parent kaplama, pointer-events kapali (icerik tikalanabilir kalsin) */
+.darkveil-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* prefers-reduced-motion: shader baslamadi, static gradient fallback */
+@media (prefers-reduced-motion: reduce) {
+  .darkveil-canvas {
+    background: radial-gradient(ellipse at top left,
+      rgba(107, 33, 168, 0.35) 0%,
+      rgba(15, 10, 30, 0.95) 50%,
+      rgba(2, 3, 12, 1) 100%);
+  }
+}

@@ -6,6 +6,7 @@ import * as hotelApi from '../../api/hotel'
 import { extractErrorMessage } from '../../api/client'
 import ThemeToggle from '../../components/ThemeToggle'
 import BackButton from '../../components/BackButton'
+import DarkVeil from '../../components/DarkVeil'
 
 /**
  * #80: Şifremi unuttum — email girilir, link gönderilir.
@@ -25,9 +26,16 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 text-ink-900 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: '#0a0618' }}>
+      {/* FAZ 5.4 — DarkVeil */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <DarkVeil hueShift={285} noiseIntensity={0.02} speed={0.4} warpAmount={0.3} />
+      </div>
+      <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
+           style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(10,6,24,0.7) 90%)' }} />
+
       {/* Neon üst hat */}
-      <div className="neon-strip" />
+      <div className="relative z-10 neon-strip" />
 
       {/* Arka plan spotlight */}
       <div aria-hidden className="absolute inset-0 pointer-events-none">

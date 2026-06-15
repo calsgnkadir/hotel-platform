@@ -6,92 +6,48 @@
  *   - BIZ  (data-role="business") → "Dark Concierge" : koyu + mor glow, premium-luxury
  *
  * Mor brand backbone (--accent-action) iki temada da korunur — kimlik degismez.
- *
- * Kullanim: dogrudan utility class yazmak yerine semantic token kullan
- *   background: var(--bg-surface);
- *   color: var(--text-primary);
- *   border-color: var(--border-subtle);
- *
- * Mevcut Tailwind utilities (bg-brand-800, text-ink-900) calismaya devam eder —
- * yeni component'lerde token'lar tercih edilir, eski component'ler kademeli gecer.
  */
+
+/* FAZ 5.4 — WordPlay benchmark: Bebas Neue display fontu (stratejik vurgu).
+ * display=swap → FOIT yok, CLS minimum. */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
 :root {
-  /* ================== HOSPITALITY SAAS (CAND default) ================== */
+  /* ================== DARK CONCIERGE — GLOBAL DEFAULT ================== */
+  /* FAZ 5.4 — WordPlay benchmark: tum uygulama premium dark + mor neon glow.
+   * Eski "hibrit" yaklasim (CAND acik / BIZ koyu) iptal — kullanici tum
+   * uygulamanin dark+premium olmasini istedi. */
 
-  /* Surface — beyaz + krem katmanlar */
-  --bg-app:        #fdfbf7;  /* sayfa zemini (cream-50) */
-  --bg-surface:    #ffffff;  /* kart, modal */
-  --bg-elevated:   #ffffff;  /* dropdown, popover */
-  --bg-subtle:     #faf7f2;  /* highlight, hover (cream-100) */
-  --bg-muted:      #f4ede2;  /* secondary surface (cream-200) */
+  /* Surface — koyu mor + indigo katmanlar (Landing hero ile ayni mood) */
+  --bg-app:        #0a0618;  /* sayfa zemini — derin indigo */
+  --bg-surface:    #15102e;  /* kart, modal */
+  --bg-elevated:   #1f1740;  /* dropdown, popover */
+  --bg-subtle:     #1a1438;  /* hover, secondary */
+  --bg-muted:      #15102e;
 
-  /* Border */
-  --border-subtle: #ebe0cc;  /* cream-300 */
-  --border-strong: #d8b4fe;  /* brand-300 — mor vurgu */
+  /* Border — mor accent line */
+  --border-subtle: rgba(168, 85, 247, 0.18);
+  --border-strong: #a855f7;
 
-  /* Text */
-  --text-primary:   #171513;  /* ink-900 */
-  --text-secondary: #3d3631;  /* ink-600 */
-  --text-muted:     #766c61;  /* ink-400 */
-  --text-inverse:   #ffffff;
-
-  /* Accent — Mor brand (degismez) */
-  --accent-action:        #6b21a8;  /* brand-800 — primary CTA */
-  --accent-action-hover:  #581c87;  /* brand-900 */
-  --accent-action-soft:   #f3e8ff;  /* brand-100 — soft bg */
-  --accent-action-glow:   0 4px 20px rgba(107, 33, 168, 0.22);
-
-  /* Accent — Zumrut (Yon 1 imzasi) */
-  --accent-positive:       #10b981;  /* emerald-500 */
-  --accent-positive-hover: #059669;
-  --accent-positive-soft:  #d1fae5;
-  --accent-positive-text:  #065f46;
-
-  /* Status */
-  --accent-warning:    #d97706;
-  --accent-warning-bg: #fef3c7;
-  --accent-danger:     #dc2626;
-  --accent-danger-bg:  #fee2e2;
-  --accent-info:       #0891b2;
-  --accent-info-bg:    #cffafe;
-}
-
-/* ================== DARK CONCIERGE (BIZ) ==================
- * Body'de data-role="business" set edildiginde otomatik aktive olur.
- * Tum semantic tokens override edilir — utility'ler ayni kalir.
- */
-[data-role="business"] {
-  /* Surface — koyu mor + slate */
-  --bg-app:        #0f0a1e;  /* deep indigo-purple */
-  --bg-surface:    #1a1330;  /* card */
-  --bg-elevated:   #241b3e;  /* dropdown */
-  --bg-subtle:     #2a2050;  /* hover */
-  --bg-muted:      #1a1330;
-
-  /* Border */
-  --border-subtle: #2d2055;  /* dim purple line */
-  --border-strong: #a855f7;  /* brand-500 — mor glow */
-
-  /* Text */
+  /* Text — beyaz/mor tonlar */
   --text-primary:   #f8f6f4;  /* near-white */
-  --text-secondary: #cfc8c0;  /* ink-200 */
-  --text-muted:     #a9a097;  /* ink-300 */
-  --text-inverse:   #171513;
+  --text-secondary: #d8b4fe;  /* light purple — okunur */
+  --text-muted:     #a5b4fc;  /* faded indigo */
+  --text-inverse:   #0a0618;
 
-  /* Accent — Mor glow (Yon 2 imzasi) */
-  --accent-action:        #a855f7;  /* brand-500 — parlak */
-  --accent-action-hover:  #c084fc;  /* brand-400 — daha parlak */
-  --accent-action-soft:   rgba(168, 85, 247, 0.12);
-  --accent-action-glow:   0 0 24px rgba(168, 85, 247, 0.45);  /* neon glow */
+  /* Accent — Mor brand (parlak, neon vurgulu) */
+  --accent-action:        #a855f7;  /* brand-500 parlak */
+  --accent-action-hover:  #c084fc;  /* brand-400 daha parlak */
+  --accent-action-soft:   rgba(168, 85, 247, 0.15);
+  --accent-action-glow:   0 0 24px rgba(168, 85, 247, 0.45);
 
-  /* Accent — Magenta (BIZ icin pozitif/CTA vurgu) */
+  /* Accent — Magenta (CTA + pozitif vurgu) */
   --accent-positive:       #d946ef;  /* terra-500 magenta */
   --accent-positive-hover: #e879f9;
   --accent-positive-soft:  rgba(217, 70, 239, 0.15);
   --accent-positive-text:  #f0abfc;
 
-  /* Status — daha doygun, koyu zemine uygun */
+  /* Status — doygun, koyu zemine uygun */
   --accent-warning:    #fbbf24;
   --accent-warning-bg: rgba(251, 191, 36, 0.12);
   --accent-danger:     #f87171;
@@ -99,6 +55,9 @@
   --accent-info:       #22d3ee;
   --accent-info-bg:    rgba(34, 211, 238, 0.12);
 }
+
+/* FAZ 5.4 — Eski hibrit role-based override (data-role="business") iptal edildi.
+ * Tum uygulama tek dark theme'de calisir. */
 
 /* ================== HELPERS ================== */
 
@@ -119,3 +78,42 @@ body, .role-app-bg {
 .accent-bg     { background: var(--accent-action); }
 .accent-text   { color: var(--accent-action); }
 .accent-glow   { box-shadow: var(--accent-action-glow); }
+
+/* ================== FAZ 5.4 — WordPlay benchmark helpers ================== */
+
+/* Bebas display utility — Tailwind'in font-bebas class'i ile esdeger */
+.font-bebas {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-display: swap;
+  letter-spacing: 0.02em;
+}
+
+/* Hero baslik glow gardrobu — mor brand uyumlu (textShadow layered) */
+.hero-glow {
+  text-shadow:
+    0 0 10px rgba(168, 85, 247, 0.5),
+    0 0 24px rgba(147, 51, 234, 0.35),
+    0 0 40px rgba(107, 33, 168, 0.25);
+}
+
+/* CTA buton double-glow */
+.cta-glow {
+  box-shadow: 0 0 5px #6b21a8, 0 0 20px rgba(147, 51, 234, 0.6);
+}
+.cta-glow:hover {
+  box-shadow: 0 0 8px #9333ea, 0 0 28px rgba(168, 85, 247, 0.8);
+}
+
+/* "Cam" katman — DarkVeil arka plan uzerinde icerik gozlukse */
+.glass-panel {
+  background: rgba(15, 10, 30, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(168, 85, 247, 0.18);
+}

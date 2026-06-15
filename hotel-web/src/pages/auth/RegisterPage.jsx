@@ -9,6 +9,7 @@ import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSel
 import BackButton from '../../components/BackButton'
 import ThemeToggle from '../../components/ThemeToggle'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
+import DarkVeil from '../../components/DarkVeil'
 
 const ROLE_OPTIONS = [
   {
@@ -62,7 +63,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="auth-bg">
+    <div className="auth-bg relative overflow-hidden" style={{ background: '#0a0618' }}>
+      {/* FAZ 5.4 — DarkVeil arka plan + vinyet */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <DarkVeil hueShift={285} noiseIntensity={0.02} speed={0.4} warpAmount={0.3} />
+      </div>
+      <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
+           style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(10,6,24,0.7) 90%)' }} />
+
       {/* Neon üst hat */}
       <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none" />
 
@@ -74,7 +82,7 @@ export default function RegisterPage() {
         <ThemeToggle />
       </div>
 
-      <div className="auth-card" style={{ maxWidth: '520px' }}>
+      <div className="auth-card relative z-10" style={{ maxWidth: '520px' }}>
         {/* Header — logosuz */}
         <div className="text-center mb-7">
           <div className="inline-flex items-center gap-2 bg-white border border-cream-300 rounded-full px-3 py-1 mb-4">

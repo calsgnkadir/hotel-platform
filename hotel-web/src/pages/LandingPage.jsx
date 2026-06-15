@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom'
+import DarkVeil from '../components/DarkVeil'
+import HeroHeading from '../components/HeroHeading'
+import RotatingText from '../components/RotatingText'
 
 /**
  * Landing v3 — "Hospitality Concierge" tasarım dili:
@@ -6,6 +9,9 @@ import { Link } from 'react-router-dom'
  *  - Derin petrol/teal (#6B21A8) brand
  *  - Sıcak terracotta (#A855F7) CTA + accent
  *  - Inter (UI) + Fraunces (büyük başlıklar, "concierge" hissi)
+ *
+ * FAZ 5.4: Hero section "dark island" — DarkVeil WebGL shader + Bebas Neue
+ * + RotatingText (Garson/Resepsiyon/...). Sayfanın geri kalanı krem temada kalır.
  */
 export default function LandingPage() {
   return (
@@ -45,105 +51,136 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ───── Hero ───── */}
-      <section className="relative overflow-hidden">
-        {/* Sıcak spotlight blob arka plan */}
-        <div aria-hidden className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-[5%] w-[55%] h-[450px] rounded-full bg-terra-200/40 blur-[120px]" />
-          <div className="absolute top-[40%] right-[-5%] w-[40%] h-[400px] rounded-full bg-brand-200/30 blur-[100px]" />
-        </div>
+      {/* ───── Hero (FAZ 5.4 — Dark Island) ───── */}
+      <section className="relative overflow-hidden" style={{ background: '#0a0618', minHeight: '92vh' }}>
+        {/* FAZ 5.4 — WebGL CPPN shader arka plan, mor brand'e hue-shift */}
+        <DarkVeil hueShift={285} noiseIntensity={0.025} speed={0.45} warpAmount={0.35} />
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
+        {/* Hafif vinyet — kenar koyu, merkez aydinlik */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none z-[1]"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, transparent 0%, rgba(10,6,24,0.65) 90%)',
+          }}
+        />
+
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32 lg:py-36">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
-            {/* Sol: başlık + CTA */}
+            {/* Sol: baslik + CTA */}
             <div className="lg:col-span-7 animate-fade-up">
-              <div className="inline-flex items-center gap-2 bg-white border border-cream-300 rounded-full px-3 py-1.5 mb-7 shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-terra-400 animate-glow-pulse" />
-                <span className="text-[11px] uppercase tracking-widest text-ink-600 font-semibold">
+              <div className="inline-flex items-center gap-2 glass-panel rounded-full px-3 py-1.5 mb-7">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-glow-pulse" />
+                <span className="text-[11px] uppercase tracking-widest font-semibold"
+                      style={{ color: '#e9d5ff' }}>
                   Yeni Sezon Açık
                 </span>
               </div>
 
-              <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] mb-6">
-                İstanbul'un
-                <span className="block text-brand-700 italic">hospitality</span>
-                <span className="block">iş eşleştirmesi</span>
-              </h1>
+              {/* Hero baslik — Bebas Neue + stratejik vurgu */}
+              <HeroHeading
+                size="xl"
+                align="left"
+                className="mb-3 hero-glow"
+              >
+                <span className="block text-white">İstanbul'un</span>
+                <span className="block">
+                  <span style={{
+                    background: 'linear-gradient(135deg, #c084fc 0%, #d946ef 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    filter: 'drop-shadow(0 0 24px rgba(217, 70, 239, 0.45))',
+                  }}>
+                    Hospitality
+                  </span>
+                </span>
+                <span className="block text-white">platformu</span>
+              </HeroHeading>
 
-              <p className="text-lg text-ink-600 max-w-xl leading-relaxed mb-9">
+              {/* RotatingText alt baslik */}
+              <div className="flex flex-wrap items-baseline gap-2 mb-7 mt-4 font-bebas uppercase tracking-wider text-3xl sm:text-4xl text-white/85">
+                <span>Bugün</span>
+                <RotatingText
+                  texts={['GARSON', 'RESEPSIYON', 'BELLBOY', 'KAT HİZMETLERİ', 'BARİSTA']}
+                  rotationInterval={2200}
+                  className="text-brand-400 font-bebas"
+                />
+                <span>arıyor.</span>
+              </div>
+
+              <p className="text-base sm:text-lg leading-relaxed mb-9 max-w-xl"
+                 style={{ color: '#d8b4fe' }}>
                 Hotel, restoran ve kafelerde günlük, sezonluk veya sürekli iş arıyorsan
                 doğru yerdesin. Vardiya seç, başvur, mesajlaş — gerisini bize bırak.
               </p>
 
               <div className="flex flex-wrap items-center gap-3">
-                <Link to="/register"
-                  className="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-full text-white shadow-terra hover:-translate-y-0.5 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)' }}>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-2 text-sm font-bold px-7 py-3 rounded-full text-white cta-glow transition-all hover:-translate-y-0.5"
+                  style={{
+                    background: 'linear-gradient(135deg, #a855f7 0%, #d946ef 100%)',
+                  }}
+                >
                   Hemen Başla
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                        strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                   </svg>
                 </Link>
-                <a href="#features"
-                  className="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-full border-2 border-brand-700 text-brand-700 hover:bg-brand-50 transition-colors">
+                <a
+                  href="#features"
+                  className="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-full glass-panel hover:bg-white/10 transition-colors"
+                  style={{ color: '#e9d5ff' }}
+                >
                   Nasıl çalışır?
                 </a>
               </div>
 
               {/* Trust strip */}
-              <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs text-ink-500">
-                <span className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-brand-700" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
-                  </svg>
-                  KVKK uyumlu
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-brand-700" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
-                  </svg>
-                  Belge cüzdanı
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-brand-700" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
-                  </svg>
-                  Otomatik mesajlaşma
-                </span>
+              <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs"
+                   style={{ color: '#c4b5fd' }}>
+                {['KVKK uyumlu', 'Belge cüzdanı', 'Otomatik mesajlaşma'].map(label => (
+                  <span key={label} className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"
+                         style={{ color: '#a855f7' }}>
+                      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+                    </svg>
+                    {label}
+                  </span>
+                ))}
               </div>
             </div>
 
-            {/* Sağ: görsel kart */}
+            {/* Sag: gorsel kart — glass panel uzerinde */}
             <div className="lg:col-span-5 hidden lg:block animate-fade-up" style={{ animationDelay: '0.2s' }}>
-              <div className="relative">
-                {/* Ana kart */}
-                <div className="bg-white rounded-3xl p-7 shadow-glow-lg border border-cream-300">
+              <div className="relative animate-float-y">
+                <div className="glass-panel rounded-3xl p-7 shadow-glow-lg">
                   <div className="flex items-center gap-3 mb-5">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-display text-xl"
-                         style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bebas text-2xl tracking-wider"
+                         style={{ background: 'linear-gradient(135deg, #6b21a8, #d946ef)' }}>
                       O
                     </div>
                     <div>
-                      <div className="font-display text-base font-bold text-ink-900">Conrad İstanbul</div>
-                      <div className="text-xs text-ink-500">Beşiktaş · 5 yıldız</div>
+                      <div className="font-display text-base font-bold text-white">Conrad İstanbul</div>
+                      <div className="text-xs" style={{ color: '#c4b5fd' }}>Beşiktaş · 5 yıldız</div>
                     </div>
                   </div>
                   <div className="space-y-2.5">
-                    <ListingPreview pos="Garson" time="Cumartesi · 18:00–02:00" wage="₺550/vardiya" />
-                    <ListingPreview pos="Resepsiyon" time="Pazar · 08:00–16:00" wage="₺480/vardiya" />
-                    <ListingPreview pos="Bellboy" time="Hafta sonu · gece" wage="₺520/vardiya" />
+                    <ListingPreview pos="Garson" time="Cumartesi · 18:00–02:00" wage="₺550/vardiya" dark />
+                    <ListingPreview pos="Resepsiyon" time="Pazar · 08:00–16:00" wage="₺480/vardiya" dark />
+                    <ListingPreview pos="Bellboy" time="Hafta sonu · gece" wage="₺520/vardiya" dark />
                   </div>
-                  <button className="w-full mt-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-terra-sm hover:shadow-terra transition-all"
-                          style={{ background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)' }}>
+                  <button className="w-full mt-5 py-2.5 rounded-full text-white text-sm font-semibold cta-glow transition-all"
+                          style={{ background: 'linear-gradient(135deg, #a855f7 0%, #d946ef 100%)' }}>
                     3 vardiyaya başvur
                   </button>
                 </div>
 
-                {/* Floating badge */}
-                <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl px-4 py-3 shadow-glow border border-cream-300 hidden xl:flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
-                  <span className="text-xs font-semibold text-ink-700">Aday yazıyor...</span>
+                <div className="absolute -bottom-4 -left-4 glass-panel rounded-2xl px-4 py-3 shadow-glow hidden xl:flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-brand-400 animate-pulse" />
+                  <span className="text-xs font-semibold text-white">Aday yazıyor…</span>
                 </div>
               </div>
             </div>
@@ -268,7 +305,19 @@ function Feature({ iconPath, title, text }) {
   )
 }
 
-function ListingPreview({ pos, time, wage }) {
+function ListingPreview({ pos, time, wage, dark = false }) {
+  if (dark) {
+    return (
+      <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl"
+           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(168,85,247,0.18)' }}>
+        <div className="min-w-0">
+          <div className="font-semibold text-sm text-white truncate">{pos}</div>
+          <div className="text-[11px] truncate" style={{ color: '#c4b5fd' }}>{time}</div>
+        </div>
+        <div className="text-sm font-bold shrink-0" style={{ color: '#e879f9' }}>{wage}</div>
+      </div>
+    )
+  }
   return (
     <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-cream-50 border border-cream-200">
       <div className="min-w-0">

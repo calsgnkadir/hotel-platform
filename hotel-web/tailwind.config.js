@@ -10,6 +10,8 @@ export default {
       fontFamily: {
         sans:    ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         display: ['Fraunces', 'Georgia', 'serif'],
+        // FAZ 5.4 — WordPlay benchmark: stratejik kelime vurgusu icin
+        bebas:   ['"Bebas Neue"', 'Impact', 'sans-serif'],
       },
       colors: {
         // ── PRIMARY: Derin mor (regal/lüks tonu)
@@ -86,11 +88,39 @@ export default {
           '0%, 100%': { boxShadow: '0 0 0 0 rgba(107, 33, 168, 0.30)' },
           '50%':       { boxShadow: '0 0 0 10px rgba(107, 33, 168, 0)' },
         },
+        // FAZ 5.4 — WordPlay benchmark keyframes (mor brand'imize uyarlanmis)
+        // textShadow 3 mor ton arasinda gecis — hero baslik icin neon his
+        textGlow: {
+          '0%':   { textShadow: '0 0 5px #6b21a8, 0 0 15px #9333ea, 0 0 20px #a855f7' },
+          '50%':  { textShadow: '0 0 8px #d946ef, 0 0 20px #c084fc, 0 0 30px #7e22ce' },
+          '100%': { textShadow: '0 0 10px #581c87, 0 0 25px #c084fc, 0 0 35px #6b21a8' },
+        },
+        // -10px ile +10px arasinda nazikce kaymasi
+        floatY: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%':       { transform: 'translateY(-10px)' },
+        },
+        // Background gradient'i 15sn boyunca konum degistirir — sayfa nefes alir
+        gradientXY: {
+          '0%, 100%': { backgroundSize: '400% 400%', backgroundPosition: 'left center' },
+          '50%':       { backgroundSize: '200% 200%', backgroundPosition: 'right center' },
+        },
+        // Decorative ikon icin — scale + 360deg rotate
+        sparkle: {
+          '0%':   { transform: 'scale(1) rotate(0deg)' },
+          '50%':  { transform: 'scale(1.2) rotate(180deg)' },
+          '100%': { transform: 'scale(1) rotate(360deg)' },
+        },
       },
       animation: {
         shimmer:     'shimmer 1.5s infinite',
         'fade-up':   'fadeUp 0.6s ease-out',
         'glow-pulse': 'glowPulse 2s infinite',
+        // FAZ 5.4 — WordPlay benchmark
+        'text-glow':   'textGlow 2s ease-in-out infinite alternate',
+        'float-y':     'floatY 3s ease-in-out infinite',
+        'gradient-xy': 'gradientXY 15s ease infinite',
+        sparkle:       'sparkle 10s linear infinite',
       },
       boxShadow: {
         // Mor glow tonları (eski teal/terra yerine)
@@ -99,6 +129,10 @@ export default {
         'glow-lg':  '0 8px 32px rgba(107, 33, 168, 0.35)',
         'terra-sm': '0 2px 12px rgba(217, 70, 239, 0.20)',
         'terra':    '0 4px 20px rgba(217, 70, 239, 0.30)',
+        // FAZ 5.4 — WordPlay benchmark: double-layer neon glow CTA butonlar icin
+        'purple-glow':  '0 0 5px #6b21a8, 0 0 20px #9333ea',
+        'magenta-glow': '0 0 5px #d946ef, 0 0 20px #e879f9',
+        'soft-glow':    '0 0 5px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.3)',
       },
     },
   },

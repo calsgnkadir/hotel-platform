@@ -97,18 +97,19 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
   return (
     <div className="space-y-3">
-      {/* Status filtre pill'leri */}
-      <div className="flex gap-1.5 flex-wrap">
+      {/* Status filtre — chip pattern (FAZ 5.4) */}
+      <div className="flex gap-2 flex-wrap">
         {CAND_STATUS_FILTERS.map(f => {
           const count = f.value ? applications.filter(a => a.status === f.value).length : applications.length
+          const isActive = statusFilter === f.value
           return (
             <button key={f.value} onClick={() => setStatusFilter(f.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
-                ${statusFilter === f.value
-                  ? 'text-white shadow-sm'
-                  : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
-              {f.label} <span className="opacity-70">({count})</span>
+              className={`chip ${isActive ? 'is-active' : ''}`}>
+              <span className="font-bebas text-[13px] tracking-wider uppercase">{f.label}</span>
+              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${isActive ? 'bg-black/25' : ''}`}
+                    style={!isActive ? { background: 'rgba(168, 85, 247, 0.18)', color: '#d8b4fe' } : {}}>
+                {count}
+              </span>
             </button>
           )
         })}

@@ -6,6 +6,7 @@ import * as hotelApi from '../../api/hotel'
 import { extractErrorMessage } from '../../api/client'
 import ThemeToggle from '../../components/ThemeToggle'
 import BackButton from '../../components/BackButton'
+import DarkVeil from '../../components/DarkVeil'
 
 /**
  * #80: Reset link'inden geldikten sonra yeni şifre formu.
@@ -53,13 +54,15 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 text-ink-900 flex flex-col relative overflow-hidden">
-      <div className="neon-strip" />
-
-      <div aria-hidden className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[60%] h-96 rounded-full bg-brand-600/15 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-emerald-500/10 blur-[100px]" />
+    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: '#0a0618' }}>
+      {/* FAZ 5.4 — DarkVeil */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <DarkVeil hueShift={285} noiseIntensity={0.02} speed={0.4} warpAmount={0.3} />
       </div>
+      <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
+           style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(10,6,24,0.7) 90%)' }} />
+
+      <div className="relative z-10 neon-strip" />
 
       <header className="relative px-6 py-4 flex items-center justify-between border-b border-cream-300">
         <div className="flex items-center gap-3">
