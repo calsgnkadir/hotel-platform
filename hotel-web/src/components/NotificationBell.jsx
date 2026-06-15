@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
 import { keys } from '../lib/queryClient'
 import { wsSubscribe } from '../lib/websocket'
+import useWsConnected from '../lib/useWsConnected'
+import EmptyState from './EmptyState'
 
 // Her bildirim tipi için sol kenarda küçük renkli "dot" — emoji yerine sade gösterim
 const TYPE_COLOR = {
@@ -49,15 +51,15 @@ export default function NotificationBell({ onNavigate }) {
   const [muted, setMuted] = useState(isMuted())
   const ref = useRef(null)
   const queryClient = useQueryClient()
+  const wsOk = useWsConnected()  // FAZ 4.8 — WS bağlıyken polling KAPALI
 
   // F0.10 + FAZ 1/#22 — react-query unread count
-  // WS push olduğunda 30sn polling yerine anlık invalidate (aşağıda).
-  // Polling 60sn'ye çekildi (WS fail durumunda fallback).
+  // WS aktifken push gelir, polling devreye girmez. WS koparsa 60sn fallback.
   const { data: unread = 0 } = useQuery({
     queryKey: keys.notifications.unreadCount(),
     queryFn: () => hotelApi.getUnreadNotificationCount(),
     enabled: !muted,
-    refetchInterval: muted ? false : 60_000,
+    refetchInterval: (muted || wsOk) ? false : 60_000,
     refetchOnWindowFocus: true,
     staleTime: 10_000,
   })
@@ -69,7 +71,7 @@ export default function NotificationBell({ onNavigate }) {
       queryClient.invalidateQueries({ queryKey: keys.notifications.unreadCount() })
       // Dropdown açıksa liste de yenilensin (görsel tutarlılık)
       if (open) {
-        hotelApi.listNotifications(20).then(setItems).catch(() => {})
+        hotelApi.getNotifications(20).then(setItems).catch(() => {})
       }
     })
     return () => sub.unsubscribe()
@@ -144,7 +146,10 @@ export default function NotificationBell({ onNavigate }) {
                    bg-cream-100 hover:bg-cream-200 text-ink-700
                    dark:bg-ink-700/80 dark:hover:bg-slate-700 dark:text-ink-800
                    hover:scale-105 active:scale-95"
-        title="Bildirimler">
+        title="Bildirimler"
+        aria-label={unread > 0 ? `Bildirimler — ${unread} okunmamış` : 'Bildirimler'}
+        aria-haspopup="true"
+        aria-expanded={open}>
         {/* Inbox / kutucuk + dalga — özgün notification ikonu */}
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4"
              fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -176,9 +181,12 @@ export default function NotificationBell({ onNavigate }) {
             {loading ? (
               <div className="py-10 flex justify-center"><div className="spinner" /></div>
             ) : items.length === 0 ? (
-              <div className="py-10 text-center text-ink-400 dark:text-ink-500 text-sm">
-                Henüz bildirim yok
-              </div>
+              <EmptyState
+                type="notifications"
+                compact
+                title="Henüz bildirim yok"
+                description="Yeni başvuru, mesaj veya eşleşen ilan olduğunda burada görünür."
+              />
             ) : (
               items.map(n => (
                 <button key={n.id} onClick={() => handleItemClick(n)}

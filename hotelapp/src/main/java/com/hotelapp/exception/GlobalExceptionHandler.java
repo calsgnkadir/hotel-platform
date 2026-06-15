@@ -96,6 +96,17 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, "Endpoint bulunamadı: " + ex.getRequestURL());
     }
 
+    // FAZ 4.7 — 409 — Optimistic lock catch (eszamanli iki update'in birincisi
+    // gectiyse, ikinci kullaniciya "tekrar dene" diyelim, "sistem hatasi" demeyelim)
+    @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, Object>> handleOptimisticLock(
+            org.springframework.dao.OptimisticLockingFailureException ex) {
+        log.info("Optimistic lock catch: {}", ex.getMessage());
+        return build(HttpStatus.CONFLICT,
+                "Bu kayıt aynı anda başka biri tarafından güncellendi. " +
+                "Lütfen sayfayı yenileyip tekrar deneyin.");
+    }
+
     // 409 — DB constraint ihlali (unique key, foreign key vs)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleIntegrity(DataIntegrityViolationException ex) {

@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import * as hotelApi from '../../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 import { SENSITIVE_DOC_TYPES_BIZ, DOC_REQ_STATUS_LABELS } from '../lib/constants'
 import { StatusBadge, NoShowBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
+import cldImg, { ImgSize } from '../../../lib/cldImg'
+import useFocusTrap from '../../../lib/useFocusTrap'
 
 const APPS_PAGE_SIZE = 15
 
@@ -14,6 +16,8 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [selected, setSelected] = useState(null)
+  const detailDialogRef = useRef(null)
+  useFocusTrap(detailDialogRef, !!selected, () => setSelected(null))
   const [actionLoading, setActionLoading] = useState(false)
   const [accessibleDocs, setAccessibleDocs] = useState([])
   const [docsLoading, setDocsLoading] = useState(false)
@@ -189,7 +193,8 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             <div className="p-4 flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
                 {app.candidate?.avatarUrl ? (
-                  <img src={app.candidate.avatarUrl} alt={app.candidate.fullName}
+                  <img src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })} alt={app.candidate.fullName}
+                    loading="lazy" decoding="async"
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
@@ -256,12 +261,15 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
       {/* Detail Modal */}
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div ref={detailDialogRef}
+               role="dialog" aria-modal="true" aria-labelledby="application-detail-title"
+               className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="p-6 border-b border-cream-200">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   {selected.candidate?.avatarUrl ? (
-                    <img src={selected.candidate.avatarUrl} alt={selected.candidate.fullName}
+                    <img src={cldImg(selected.candidate.avatarUrl, { w: ImgSize.avatarMd })} alt={selected.candidate.fullName}
+                      loading="lazy" decoding="async"
                       className="w-14 h-14 rounded-full object-cover border border-cream-300 flex-shrink-0" />
                   ) : (
                     <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
@@ -270,15 +278,24 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                     </div>
                   )}
                   <div>
-                    <h2 className="text-lg font-bold text-ink-900">{selected.candidate?.fullName}</h2>
+                    <h2 id="application-detail-title" className="text-lg font-bold text-ink-900">{selected.candidate?.fullName}</h2>
                     <p className="text-sm text-ink-500">{selected.candidate?.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* FAZ 3 — Print: basvuru detayi yazdir */}
+                  <button onClick={() => window.print()}
+                    title="Yazdir"
+                    className="no-print w-9 h-9 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5
+                               bg-cream-100 dark:bg-ink-800 text-ink-500 hover:bg-brand-50 hover:text-brand-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z" />
+                    </svg>
+                  </button>
                   {/* FAZ 2/#32 - Favori toggle */}
                   <button onClick={handleToggleFavorite} disabled={favLoading}
                     title={isFavorited ? 'Favoriden kaldir' : 'Favorilere ekle'}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5 disabled:opacity-50 ${
+                    className={`no-print w-9 h-9 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5 disabled:opacity-50 ${
                       isFavorited
                         ? 'text-white shadow-md'
                         : 'bg-cream-100 dark:bg-ink-800 text-ink-500 hover:bg-amber-50 hover:text-amber-600'

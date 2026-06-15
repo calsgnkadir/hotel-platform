@@ -4,8 +4,8 @@
    Tipografi:
      - Inter (UI metin): 300/400/500/600/700/800/900
      - Fraunces (display başlık, "concierge" hissi)
-*/
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap');
+   Not: Google Fonts artik index.html'de preconnect+preload pattern ile
+   non-blocking yukleniyor (FAZ 3/#A4 perf). Eski @import render-blocking idi. */
 
 @tailwind base;
 @tailwind components;
@@ -380,4 +380,155 @@ body {
 @keyframes sheet-up {
   from { transform: translateY(100%); opacity: 0.5; }
   to   { transform: translateY(0); opacity: 1; }
+}
+
+/* ────────────────────────────────────────────────────────────────
+   FAZ 3 — Page transition (route degisiminde sade fade-in)
+   App.jsx Routes'una key={location.pathname} verilen icerikte uygulanir.
+   ──────────────────────────────────────────────────────────────── */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: pageEnter 220ms ease-out;
+  /* GPU layer hint — transition sirasinda layout reflow olmaz */
+  will-change: opacity, transform;
+}
+/* Animation bittikten sonra will-change'i geri al (uzun sureli GPU layer gereksiz) */
+.page-enter { animation-fill-mode: both; }
+
+/* ────────────────────────────────────────────────────────────────
+   FAZ 3 — prefers-reduced-motion (A11y)
+   Sistemde "azaltilmis hareket" tercihi varsa tum animasyon/transition
+   suresini neredeyse sifira indir. Boylece denge bozuklugu/migren olan
+   kullanicilarda sayfa "siciramaz". WCAG 2.3.3 onerisi.
+   ──────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   FAZ 3 — A11y: Global focus-visible outline
+   Mouse ile tiklayinca degil, klavye/Tab navigasyonunda gorunur.
+   Var olan ":focus" hic outline gostermiyordu → klavye kullaniciler
+   icin "neredeyim" bilgisi yoktu (WCAG 2.4.7 fail).
+   ════════════════════════════════════════════════════════════════ */
+
+*:focus-visible {
+  outline: 2px solid #9333ea;        /* brand-600 mor */
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Buton/link gibi zaten radius'lu olanlarda outline kendi koselerini takip etsin */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #9333ea;
+  outline-offset: 2px;
+}
+/* Modal overlay focus alminca outline gosterme (sadece kendisi container) */
+.modal-overlay:focus-visible { outline: none; }
+
+/* ════════════════════════════════════════════════════════════════
+   FAZ 3 — PRINT STYLESHEET
+   Kullanim:
+     - .no-print     : ekranda gozukur, yazdirmada gizlenir (buton/sidebar/FAB)
+     - .print-only   : ekranda gizli, yazdirmada gorunur (URL footer, sayfa baslik)
+     - .print-card   : print'te border + page-break korumasi
+   ════════════════════════════════════════════════════════════════ */
+
+.print-only { display: none; }
+
+@media print {
+  /* ── Global temizlik: koyu tema/gradient/shadow renkleri normalize et */
+  html, body, #root {
+    background: #fff !important;
+    color: #000 !important;
+    margin: 0;
+    padding: 0;
+  }
+  * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ── Gizlenecek elemanlar */
+  .no-print,
+  nav,
+  aside,
+  footer,
+  iframe,
+  .leaflet-container,            /* harita yazdirma uygun degil */
+  button:not(.print-keep) {
+    display: none !important;
+  }
+
+  /* ── Print-only ogeleri ac */
+  .print-only { display: block !important; }
+
+  /* ── Modal: overlay'i akisa al (fixed kaldirilir, ikinci sayfa kayar) */
+  .modal-overlay {
+    position: static !important;
+    background: none !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  .modal-content {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+    animation: none !important;
+  }
+
+  /* ── Card'lara hafif border (ekranda gradient'e dayaniyordu) */
+  .card, .print-card {
+    border: 1px solid #ccc !important;
+    border-radius: 6px !important;
+    page-break-inside: avoid;
+  }
+
+  /* ── Sayfa kenar boslugu + boyut */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  /* ── Page-break ipuclari */
+  h1, h2, h3 { page-break-after: avoid; }
+  img, table, ul, ol, blockquote { page-break-inside: avoid; }
+  tr { page-break-inside: avoid; }
+  p { orphans: 3; widows: 3; }
+
+  /* ── External link'lerin URL'ini parantez icinde ekle (CV/profil icin yararli) */
+  a[href^="http"]:not(.no-print-url)::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #555 !important;
+    word-wrap: break-word;
+  }
+
+  /* ── Form input'lar print'te readable */
+  input, textarea, select {
+    border: 1px solid #999 !important;
+    background: #fff !important;
+  }
+
+  /* ── Toast bildirimler kapali */
+  [role="status"], [aria-live] { display: none !important; }
 }

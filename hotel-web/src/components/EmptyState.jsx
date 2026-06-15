@@ -5,7 +5,11 @@
  * Kullanım:
  *   <EmptyState type="applications" title="..." description="..." ctaLabel="..." onCta={...} />
  *
- * Type seçenekleri: applications, listings, messages, workers, history, generic
+ * Type seçenekleri: applications, listings, messages, workers, history,
+ *                   favorites, search, notifications, generic
+ *
+ * FAZ 3/Empty-state — yeni tipler (favorites, search, notifications) +
+ * light/dark tema uyumlu typography (eski hardcoded acik renk light'ta gorunmuyordu).
  */
 
 const ILLUSTRATIONS = {
@@ -138,6 +142,76 @@ const ILLUSTRATIONS = {
     </svg>
   ),
 
+  // ⭐ Favoriler — kalp + yıldız parıltıları
+  favorites: (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
+      <defs>
+        <linearGradient id="emp-fav-grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#a855f7" />
+          <stop offset="100%" stopColor="#7e22ce" />
+        </linearGradient>
+      </defs>
+      <circle cx="35" cy="40" r="5" fill="#d8b4fe" opacity="0.3" />
+      <circle cx="170" cy="120" r="6" fill="#a855f7" opacity="0.3" />
+      {/* Kalp */}
+      <path d="M 100 130 C 60 100 50 75 60 60 C 70 45 90 50 100 70 C 110 50 130 45 140 60 C 150 75 140 100 100 130 Z"
+            fill="url(#emp-fav-grad)" stroke="#7e22ce" strokeWidth="2" strokeLinejoin="round" />
+      {/* Yıldız parıltıları */}
+      <path d="M 50 30 L 53 38 L 61 38 L 55 43 L 57 51 L 50 46 L 43 51 L 45 43 L 39 38 L 47 38 Z"
+            fill="#fbbf24" />
+      <path d="M 160 45 L 162 51 L 168 51 L 163 55 L 165 61 L 160 57 L 155 61 L 157 55 L 152 51 L 158 51 Z"
+            fill="#fbbf24" opacity="0.8" />
+      <circle cx="155" cy="90" r="3" fill="#fbbf24" opacity="0.7" />
+      <circle cx="40" cy="105" r="3" fill="#fbbf24" opacity="0.7" />
+    </svg>
+  ),
+
+  // 🔎 Search — filtre sonucu yok
+  search: (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
+      <defs>
+        <linearGradient id="emp-srch-grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#a855f7" />
+          <stop offset="100%" stopColor="#7e22ce" />
+        </linearGradient>
+      </defs>
+      <circle cx="35" cy="30" r="5" fill="#d8b4fe" opacity="0.4" />
+      <circle cx="175" cy="40" r="4" fill="#a855f7" opacity="0.3" />
+      {/* Mercek */}
+      <circle cx="85" cy="70" r="35" fill="#fff" stroke="url(#emp-srch-grad)" strokeWidth="4" />
+      <line x1="110" y1="95" x2="140" y2="125" stroke="url(#emp-srch-grad)" strokeWidth="6" strokeLinecap="round" />
+      {/* X işareti — sonuç yok */}
+      <line x1="73" y1="58" x2="97" y2="82" stroke="#dc2626" strokeWidth="3.5" strokeLinecap="round" opacity="0.7" />
+      <line x1="97" y1="58" x2="73" y2="82" stroke="#dc2626" strokeWidth="3.5" strokeLinecap="round" opacity="0.7" />
+      {/* Tozlar */}
+      <circle cx="50" cy="120" r="2" fill="#c4b5fd" opacity="0.6" />
+      <circle cx="155" cy="110" r="2" fill="#c4b5fd" opacity="0.6" />
+      <circle cx="130" cy="50" r="2" fill="#c4b5fd" opacity="0.6" />
+    </svg>
+  ),
+
+  // 🔔 Notifications — zil + sessiz
+  notifications: (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
+      <defs>
+        <linearGradient id="emp-notif-grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#a855f7" />
+          <stop offset="100%" stopColor="#7e22ce" />
+        </linearGradient>
+      </defs>
+      <circle cx="35" cy="40" r="5" fill="#d8b4fe" opacity="0.3" />
+      <circle cx="170" cy="120" r="6" fill="#a855f7" opacity="0.3" />
+      {/* Zil */}
+      <path d="M 100 35 C 95 35 90 38 90 45 C 75 50 70 65 70 85 L 70 105 L 60 115 L 60 120 L 140 120 L 140 115 L 130 105 L 130 85 C 130 65 125 50 110 45 C 110 38 105 35 100 35 Z"
+            fill="#fff" stroke="url(#emp-notif-grad)" strokeWidth="3" strokeLinejoin="round" />
+      <circle cx="100" cy="130" r="6" fill="url(#emp-notif-grad)" />
+      {/* Sessizlik Z'leri */}
+      <text x="145" y="60" fontSize="14" fill="#a855f7" fontWeight="bold" opacity="0.6">z</text>
+      <text x="155" y="48" fontSize="18" fill="#a855f7" fontWeight="bold" opacity="0.8">z</text>
+      <text x="168" y="32" fontSize="22" fill="#a855f7" fontWeight="bold">Z</text>
+    </svg>
+  ),
+
   // 📦 Generic — boş kutu
   generic: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
@@ -172,15 +246,15 @@ export default function EmptyState({
   const illustration = ILLUSTRATIONS[type] || ILLUSTRATIONS.generic
 
   return (
-    <div className={`flex flex-col items-center text-center ${compact ? 'py-8' : 'py-12'}`}>
+    <div className={`flex flex-col items-center text-center ${compact ? 'py-8' : 'py-12'} px-4`}>
       <div className="mb-4">{illustration}</div>
       {title && (
-        <h3 className="font-bold text-lg mb-1" style={{ color: '#faf5ff' }}>
+        <h3 className="font-bold text-lg mb-1 text-ink-900 dark:text-cream-50">
           {title}
         </h3>
       )}
       {description && (
-        <p className="text-sm max-w-md mb-5" style={{ color: '#d8b4fe' }}>
+        <p className="text-sm max-w-md mb-5 text-ink-600 dark:text-ink-300">
           {description}
         </p>
       )}
@@ -195,8 +269,9 @@ export default function EmptyState({
           )}
           {ctaSecondaryLabel && (
             <button onClick={onCtaSecondary}
-              className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all"
-              style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(216,180,254,0.30)' }}>
+              className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all
+                         bg-cream-100 hover:bg-cream-200 text-ink-700 border border-cream-300
+                         dark:bg-ink-800 dark:hover:bg-ink-700 dark:text-cream-100 dark:border-ink-600">
               {ctaSecondaryLabel}
             </button>
           )}

@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../api/hotel'
 import { extractErrorMessage } from '../api/client'
+import useFocusTrap from '../lib/useFocusTrap'
 
 const REASONS = [
   { value: 'FAKE',          label: 'Sahte / gerçek değil' },
@@ -48,11 +49,18 @@ export default function ReportModal({ targetType, targetId, targetLabel, onClose
     }
   }
 
+  const dialogRef = useRef(null)
+  useFocusTrap(dialogRef, true, onClose)
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+      <div ref={dialogRef}
+           role="dialog"
+           aria-modal="true"
+           aria-labelledby="report-modal-title"
+           className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
         <div className="p-6 border-b border-cream-200">
-          <h2 className="text-lg font-bold text-ink-900">Bildir</h2>
+          <h2 id="report-modal-title" className="text-lg font-bold text-ink-900">Bildir</h2>
           {targetLabel && (
             <p className="text-sm text-ink-500 mt-0.5 truncate">{targetLabel}</p>
           )}

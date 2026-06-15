@@ -3,6 +3,7 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 import { shiftHoursBiz } from '../lib/helpers'
 import EmptyState from '../../../components/EmptyState'
+import cldImg, { ImgSize } from '../../../lib/cldImg'
 
 /* ── Workers Tab (#78) — Bizde çalışan adaylar ── */
 export default function WorkersTab({ applications, onOpenMessages }) {
@@ -82,7 +83,8 @@ export default function WorkersTab({ applications, onOpenMessages }) {
             <div className="p-4 flex items-start justify-between gap-3">
               <div className="flex items-start gap-3 flex-1 min-w-0">
                 {w.candidate?.avatarUrl ? (
-                  <img src={w.candidate.avatarUrl} alt={w.candidate.fullName}
+                  <img src={cldImg(w.candidate.avatarUrl, { w: ImgSize.avatarSm })} alt={w.candidate.fullName}
+                    loading="lazy" decoding="async"
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"

@@ -151,7 +151,7 @@ export default function LoginPage() {
 
             <p className="text-[12px] text-center text-ink-500 mt-6">
               Hesabın yok mu?{' '}
-              <Link to="/register" className="font-bold text-terra-500 hover:text-terra-600 transition-colors">
+              <Link to="/register" className="font-bold text-terra-700 hover:text-terra-800 transition-colors">
                 Ücretsiz kayıt ol
               </Link>
             </p>

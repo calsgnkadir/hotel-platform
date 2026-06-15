@@ -10,6 +10,7 @@
  * Parent: onConfirm(file) → mevcut upload API'sini çağırır.
  */
 import { useRef, useState, useCallback } from 'react'
+import useFocusTrap from '../lib/useFocusTrap'
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 import toast from 'react-hot-toast'
@@ -134,16 +135,21 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
     }
   }
 
+  const dialogRef = useRef(null)
+  useFocusTrap(dialogRef, open, () => { reset(); onClose() })
+
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-[55] flex items-center justify-center p-4"
          style={{ background: 'rgba(15, 8, 35, 0.75)', backdropFilter: 'blur(6px)' }}
          onClick={() => { reset(); onClose() }}>
-      <div className="card max-w-lg w-full p-0 overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div ref={dialogRef}
+           role="dialog" aria-modal="true" aria-labelledby="avatar-crop-title"
+           className="card max-w-lg w-full p-0 overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="px-5 py-4 border-b border-cream-200 dark:border-cream-300">
-          <h3 className="font-bold text-base" style={{ color: '#faf5ff' }}>Profil Fotoğrafı</h3>
+          <h3 id="avatar-crop-title" className="font-bold text-base" style={{ color: '#faf5ff' }}>Profil Fotoğrafı</h3>
           <p className="text-xs mt-0.5" style={{ color: '#c4b5fd' }}>
             Foto yükle → kare bölgeyi sürükle → kullan.
           </p>

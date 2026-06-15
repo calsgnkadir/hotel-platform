@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../api/hotel'
 import { extractErrorMessage } from '../api/client'
 import StarRating from './StarRating'
+import useFocusTrap from '../lib/useFocusTrap'
 
 /**
  * FAZ 2/#26 — Multi-attribute rating (4 boyut).
@@ -44,12 +45,17 @@ export default function ReviewModal({ applicationId, title, onClose, onSuccess }
     finally { setLoading(false) }
   }
 
+  const dialogRef = useRef(null)
+  useFocusTrap(dialogRef, true, onClose)
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+      <div ref={dialogRef}
+           role="dialog" aria-modal="true" aria-labelledby="review-modal-title"
+           className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
         <div className="p-5 border-b border-cream-200 dark:border-ink-700 flex items-center justify-between">
           <div className="min-w-0">
-            <h2 className="text-lg font-bold text-ink-900 dark:text-ink-100">İşletmeyi Puanla</h2>
+            <h2 id="review-modal-title" className="text-lg font-bold text-ink-900 dark:text-ink-100">İşletmeyi Puanla</h2>
             {title && <p className="text-sm text-ink-500 mt-0.5 truncate">{title}</p>}
           </div>
           {avg && (

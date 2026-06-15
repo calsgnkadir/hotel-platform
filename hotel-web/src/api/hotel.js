@@ -273,6 +273,17 @@ export async function getActiveSession(applicationId) {
   } catch { return null }
 }
 
+// FAZ 4 hotfix — N+1 / 429 fix: tek call ile birden cok basvurunun aktif mesai durumu
+export async function getActiveSessionsBatch(applicationIds) {
+  if (!applicationIds || applicationIds.length === 0) return {}
+  try {
+    const { data } = await api.get('/api/candidate/work-sessions/active-batch', {
+      params: { ids: applicationIds.join(',') },
+    })
+    return data || {}
+  } catch { return {} }
+}
+
 export async function markNoShow(applicationId) {
   const { data } = await api.put(`/api/business/applications/${applicationId}/no-show`)
   return data  // { application, candidateStrikesRemaining, autoBanned, bannedUntil }

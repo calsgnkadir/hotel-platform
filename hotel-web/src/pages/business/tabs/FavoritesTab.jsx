@@ -11,6 +11,7 @@ import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import EmptyState from '../../../components/EmptyState'
+import cldImg, { ImgSize } from '../../../lib/cldImg'
 
 export default function FavoritesTab({ onOpenMessages }) {
   const [favorites, setFavorites] = useState([])
@@ -92,7 +93,8 @@ export default function FavoritesTab({ onOpenMessages }) {
       {favorites.map(f => (
         <div key={f.id} className="card p-4 flex items-center gap-3">
           {f.candidateAvatarUrl ? (
-            <img src={f.candidateAvatarUrl} alt={f.candidateName}
+            <img src={cldImg(f.candidateAvatarUrl, { w: ImgSize.avatarSm })} alt={f.candidateName}
+              loading="lazy" decoding="async"
               className="w-12 h-12 rounded-full object-cover border border-cream-300 flex-shrink-0" />
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"

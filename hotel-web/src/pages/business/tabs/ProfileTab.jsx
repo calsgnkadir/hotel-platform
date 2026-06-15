@@ -100,24 +100,42 @@ export default function ProfileTab() {
 
     setSaving(true)
     try {
+      // Tum string trim'lerini null'a guvenli yap — backend null donerse setForm spread
+      // sonrasi field null olur, bir sonraki kaydet'te ".trim()" patlardi.
+      const s = (v) => (v || '').trim()
       const payload = {
-        name:         form.name.trim(),
+        name:         s(form.name),
         type:         form.type,
         district:     form.district || null,
-        neighborhood: form.neighborhood?.trim() || null,
-        address:      form.address.trim() || null,
+        neighborhood: s(form.neighborhood) || null,
+        address:      s(form.address) || null,
         latitude:     form.latitude  ?? null,
         longitude:    form.longitude ?? null,
-        description:  form.description.trim() || null,
-        phone:        form.phone.trim() || null,
-        website:      form.website.trim() || null,
-        category:     form.category.trim() || null,
-        instagram:    form.instagram.trim() || null,
-        facebook:     form.facebook.trim() || null,
-        workingHours: form.workingHours.trim() || null,
+        description:  s(form.description) || null,
+        phone:        s(form.phone) || null,
+        website:      s(form.website) || null,
+        category:     s(form.category) || null,
+        instagram:    s(form.instagram) || null,
+        facebook:     s(form.facebook) || null,
+        workingHours: s(form.workingHours) || null,
       }
       const data = await hotelApi.updateBusinessProfile(payload)
-      setForm(prev => ({ ...prev, ...data }))
+      // Backend'in null donen string field'larini bos string'e normalize et —
+      // controlled input'lar uncontrolled'a duser yoksa, ".trim()" crash eder.
+      setForm(prev => ({
+        ...prev,
+        ...data,
+        name:         data.name ?? '',
+        neighborhood: data.neighborhood ?? '',
+        address:      data.address ?? '',
+        description:  data.description ?? '',
+        phone:        data.phone ?? '',
+        website:      data.website ?? '',
+        category:     data.category ?? '',
+        instagram:    data.instagram ?? '',
+        facebook:     data.facebook ?? '',
+        workingHours: data.workingHours ?? '',
+      }))
       toast.success('Profil güncellendi!')
     } catch (err) {
       toast.error(extractErrorMessage(err))

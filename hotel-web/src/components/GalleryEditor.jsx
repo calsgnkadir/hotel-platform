@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import * as hotelApi from '../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../api/client'
+import cldImg, { ImgSize } from '../lib/cldImg'
 
 const MAX_PHOTOS = 10
 const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']
@@ -177,7 +178,9 @@ export default function GalleryEditor() {
               onDragOver={onDragOver}
               onDrop={() => onDrop(p.id)}
               className="relative group aspect-square rounded-lg overflow-hidden border-2 border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-600 cursor-move bg-cream-100 dark:bg-ink-700">
-              <img src={p.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+              <img src={cldImg(p.url, { w: ImgSize.thumb })} alt=""
+                className="w-full h-full object-cover"
+                loading="lazy" decoding="async" />
 
               {/* Kapak badge'i */}
               {p.isCover && (

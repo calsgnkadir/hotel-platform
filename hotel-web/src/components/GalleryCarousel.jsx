@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import * as hotelApi from '../api/hotel'
+import cldImg, { ImgSize } from '../lib/cldImg'
 
 /**
  * Aday tarafı — bir işletmenin galerisini carousel olarak gösterir.
@@ -48,9 +49,10 @@ export default function GalleryCarousel({ businessId, photos: externalPhotos, he
     <>
       {/* Ana carousel */}
       <div className={`relative ${height} rounded-lg overflow-hidden bg-cream-100 group`}>
-        <img src={current.url} alt=""
+        <img src={cldImg(current.url, { w: ImgSize.card })} alt=""
           onClick={() => setLightbox(true)}
-          className="w-full h-full object-cover cursor-zoom-in" loading="lazy" />
+          className="w-full h-full object-cover cursor-zoom-in"
+          loading="lazy" decoding="async" />
 
         {/* Sol/sağ oklar */}
         {hasMultiple && (
@@ -89,8 +91,9 @@ export default function GalleryCarousel({ businessId, photos: externalPhotos, he
       {lightbox && (
         <div onClick={() => setLightbox(false)}
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 cursor-zoom-out">
-          <img src={current.url} alt=""
+          <img src={cldImg(current.url, { w: ImgSize.hero })} alt=""
             className="max-h-full max-w-full object-contain"
+            decoding="async"
             onClick={e => e.stopPropagation()} />
           {hasMultiple && (
             <>

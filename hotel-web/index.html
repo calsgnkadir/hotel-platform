@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>AjansHotel — İstanbul'un İş Platformu</title>
+
+    <!-- FAZ 3/#A4 — Google Fonts preconnect + non-blocking load
+         CSS @import (src/index.css) render-blocking idi; buraya tasindi.
+         preconnect: DNS/TLS handshake'i HTML yuklenirken paralel basliyor.
+         preload+onload swap: stylesheet indirilirken sayfa render kilitlenmiyor. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap"
+          onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+      <link rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" />
+    </noscript>
     <meta name="description" content="İstanbul'daki hotel, restoran ve kafelerde günlük/aylık iş arayan adaylarla işletmeleri buluşturan platform." />
 
     <!-- FAZ 2/#8 — PWA -->

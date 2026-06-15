@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_LABELS } from '../lib/constants'
+import useFocusTrap from '../../../lib/useFocusTrap'
 
 /**
  * #9 refactor: BusinessDashboard'tan extract edildi.
@@ -148,11 +149,16 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
     }
   }
 
+  const dialogRef = useRef(null)
+  useFocusTrap(dialogRef, true, onClose)
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div ref={dialogRef}
+           role="dialog" aria-modal="true" aria-labelledby="listing-form-title"
+           className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
-          <h2 className="text-lg font-bold text-ink-900">
+          <h2 id="listing-form-title" className="text-lg font-bold text-ink-900">
             {isEdit ? 'İlanı Düzenle' : 'Yeni İlan Oluştur'}
           </h2>
           <p className="text-sm text-ink-500">

@@ -78,8 +78,10 @@ public class SecurityConfig {
                                 "/login/oauth2/**",         // #92: Google callback
                                 "/ws/**",                   // FAZ 1/#12 — WS handshake (auth STOMP CONNECT'te yapilir)
                                 "/api/push/vapid-public-key",// FAZ 1/#23 — public VAPID key (subscribe oncesi)
-                                "/actuator/health",         // FAZ 2/#18 — basic health check (public)
-                                "/actuator/info"            // FAZ 2/#18 — info (public, hassas degil)
+                                "/actuator/health",          // FAZ 2/#18 — basic health check (public)
+                                "/actuator/health/**",       // FAZ 4.2 — liveness + readiness probes
+                                "/actuator/info",             // FAZ 2/#18 — info (public, hassas degil)
+                                "/api/dev/**"                // FAZ 4.4 — DEV-only test (@Profile("dev"))
                         ).permitAll()
                         .requestMatchers("/api/candidate/**").hasRole("CANDIDATE")
                         .requestMatchers("/api/business/**").hasRole("BUSINESS_OWNER")

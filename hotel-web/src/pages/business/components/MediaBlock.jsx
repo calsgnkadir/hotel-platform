@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import cldImg, { ImgSize } from '../../../lib/cldImg'
 
 /**
  * İşletme logosu ve galeri yönetimi (logo upload/delete).
@@ -57,7 +58,8 @@ export default function MediaBlock({
         <div className="flex items-center gap-4">
           <div className="w-24 h-24 rounded-2xl bg-cream-50 dark:bg-ink-700 border-2 border-dashed border-cream-300 dark:border-ink-700 flex items-center justify-center overflow-hidden flex-shrink-0">
             {logoUrl ? (
-              <img src={`${logoUrl}?v=${logoVersion}`} alt="Logo"
+              <img src={`${cldImg(logoUrl, { w: ImgSize.avatarLg })}?v=${logoVersion}`} alt="Logo"
+                   loading="lazy" decoding="async"
                    className="w-full h-full object-cover" />
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
