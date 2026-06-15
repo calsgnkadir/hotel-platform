@@ -7,6 +7,9 @@ import { StatusBadge, NoShowBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import useFocusTrap from '../../../lib/useFocusTrap'
+import ApplicationsKanban from '../components/ApplicationsKanban'
+
+const VIEW_STORAGE_KEY = 'biz-applications-view'
 
 const APPS_PAGE_SIZE = 15
 
@@ -16,6 +19,12 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [selected, setSelected] = useState(null)
+  const [view, setView] = useState(() => {
+    try { return localStorage.getItem(VIEW_STORAGE_KEY) || 'list' } catch { return 'list' }
+  })
+  useEffect(() => {
+    try { localStorage.setItem(VIEW_STORAGE_KEY, view) } catch {}
+  }, [view])
   const detailDialogRef = useRef(null)
   useFocusTrap(detailDialogRef, !!selected, () => setSelected(null))
   const [actionLoading, setActionLoading] = useState(false)
@@ -171,9 +180,50 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             onChange={e => { setSearch(e.target.value); setPage(0) }}
             placeholder="Aday adı ara..." className="input text-sm" />
         </div>
+        {/* FAZ 5.5 — Liste / Kanban view toggle */}
+        <div className="inline-flex rounded-full p-1 self-start"
+             style={{ background: 'rgba(15, 10, 30, 0.55)', border: '1px solid rgba(168, 85, 247, 0.18)' }}>
+          {[
+            { id: 'list',   label: 'Liste' },
+            { id: 'kanban', label: 'Kanban' },
+          ].map(v => (
+            <button key={v.id} onClick={() => setView(v.id)}
+              className="px-3 py-1 rounded-full text-[11px] font-bebas tracking-widest uppercase transition-all"
+              style={view === v.id
+                ? { background: 'linear-gradient(135deg, #6b21a8, #9333ea)', color: '#fff', boxShadow: '0 0 12px rgba(168,85,247,0.40)' }
+                : { color: '#c4b5fd' }}>
+              {v.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* List */}
+      {/* FAZ 5.5 — Kanban gorunumu */}
+      {view === 'kanban' && (
+        applications.length === 0 ? (
+          <div className="card">
+            <EmptyState
+              type="applications"
+              title="Henüz başvuru yok"
+              description="İlan oluşturduğunuzda buraya adaylardan başvurular düşecek."
+            />
+          </div>
+        ) : (
+          <ApplicationsKanban
+            applications={applications.filter(a => {
+              if (!search.trim()) return true
+              const name = (a.candidate?.fullName || '').toLowerCase()
+              return name.includes(search.trim().toLowerCase())
+            })}
+            onRefresh={onRefresh}
+            onCardClick={(app) => setSelected(app)}
+            onOpenMessages={(convId) => onOpenMessages?.(convId)}
+          />
+        )
+      )}
+
+      {/* List view */}
+      {view === 'list' && (
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="card">
@@ -257,6 +307,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
           </div>
         )}
       </div>
+      )}
 
       {/* Detail Modal */}
       {selected && (
