@@ -772,63 +772,21 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           </select>
         </div>
 
-        {/* Pozisyon — pill chips (Airbnb tarzı, single select) */}
-        <div>
-          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-2">Pozisyon</label>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => setPosition('')}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                position === ''
-                  ? 'text-white shadow-sm'
-                  : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
-              }`}
-              style={position === '' ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
-              Tümü
-            </button>
-            {Object.entries(POSITION_LABELS).map(([v, l]) => {
-              const active = position === v
-              return (
-                <button key={v} type="button" onClick={() => setPosition(active ? '' : v)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                    active ? 'text-white shadow-sm'
-                           : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
-                  }`}
-                  style={active ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
-                  {l}
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        {/* Pozisyon — FilterChipGroup */}
+        <FilterChipGroup
+          label="Pozisyon"
+          value={position}
+          onChange={setPosition}
+          items={Object.entries(POSITION_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+        />
 
-        {/* Çalışma Türü — pill chips */}
-        <div>
-          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-2">Çalışma Türü</label>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => setJobType('')}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                jobType === ''
-                  ? 'text-white shadow-sm'
-                  : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
-              }`}
-              style={jobType === '' ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
-              Tümü
-            </button>
-            {Object.entries(JOB_TYPE_LABELS).map(([v, l]) => {
-              const active = jobType === v
-              return (
-                <button key={v} type="button" onClick={() => setJobType(active ? '' : v)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                    active ? 'text-white shadow-sm'
-                           : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
-                  }`}
-                  style={active ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
-                  {l}
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        {/* Çalışma Türü — FilterChipGroup */}
+        <FilterChipGroup
+          label="Çalışma Türü"
+          value={jobType}
+          onChange={setJobType}
+          items={Object.entries(JOB_TYPE_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+        />
 
         {/* Min Ücret — range slider + preset chips */}
         <div>
@@ -842,49 +800,33 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             value={minSalary || 0}
             onChange={e => setMinSalary(e.target.value === '0' ? '' : e.target.value)}
             className="w-full accent-brand-600 cursor-pointer" />
-          <div className="flex flex-wrap gap-2 mt-2">
-            {[0, 5000, 10000, 15000, 20000, 30000].map(v => {
-              const active = (v === 0 ? minSalary === '' : Number(minSalary) === v)
-              return (
-                <button key={v} type="button"
-                  onClick={() => setMinSalary(v === 0 ? '' : String(v))}
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
-                    active ? 'text-white shadow-sm'
-                           : 'bg-white text-ink-500 border border-cream-300 dark:border-ink-700 hover:border-brand-400'
-                  }`}
-                  style={active ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
-                  {v === 0 ? 'Tümü' : `${v / 1000}K+`}
-                </button>
-              )
-            })}
+          <div className="mt-2">
+            <FilterChipGroup
+              label=""
+              value={minSalary}
+              onChange={(v) => setMinSalary(v)}
+              items={[5000, 10000, 15000, 20000, 30000].map(v => ({
+                value: String(v),
+                label: `${v / 1000}K+`,
+              }))}
+            />
           </div>
         </div>
 
         {/* Faz E4: Tarih filtresi */}
         <div>
-          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-2">Tarih</label>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { key: '',         label: 'Tümü' },
-              { key: 'TODAY',    label: 'Bugün' },
-              { key: 'TOMORROW', label: 'Yarın' },
-              { key: 'WEEK',     label: 'Bu Hafta' },
-              { key: 'WEEKEND',  label: 'Haftasonu' },
-              { key: 'CUSTOM',   label: 'Özel...' },
-            ].map(p => {
-              const active = datePreset === p.key
-              return (
-                <button key={p.key || 'all'} type="button" onClick={() => setDatePreset(p.key)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
-                    ${active
-                      ? 'text-white shadow-sm'
-                      : 'bg-white text-ink-600 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-                  style={active ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
-                  {p.label}
-                </button>
-              )
-            })}
-          </div>
+          <FilterChipGroup
+            label="Tarih"
+            value={datePreset}
+            onChange={setDatePreset}
+            items={[
+              { value: 'TODAY',    label: 'Bugün' },
+              { value: 'TOMORROW', label: 'Yarın' },
+              { value: 'WEEK',     label: 'Bu Hafta' },
+              { value: 'WEEKEND',  label: 'Haftasonu' },
+              { value: 'CUSTOM',   label: 'Özel...' },
+            ]}
+          />
           {datePreset === 'CUSTOM' && (
             <div className="grid grid-cols-2 gap-3 mt-3">
               <div>
@@ -903,24 +845,18 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           )}
         </div>
 
-        <div>
-          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-2">Vardiya</label>
-          <div className="grid grid-cols-3 gap-2">
-            {Object.entries(SHIFT_INFO).map(([key, s]) => {
-              const active = shifts.includes(key)
-              return (
-                <button key={key} type="button" onClick={() => toggleShift(key)}
-                  className={`p-2.5 rounded-lg border text-xs font-medium transition-all text-center
-                    ${active
-                      ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 shadow-sm'
-                      : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                  <div>{s.label}</div>
-                  <div className="text-[10px] text-ink-400 mt-0.5 font-normal">{s.time}</div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        <FilterChipGroup
+          label="Vardiya"
+          value={shifts}
+          onChange={setShifts}
+          multi
+          layout="grid-3"
+          items={Object.entries(SHIFT_INFO).map(([key, s]) => ({
+            value: key,
+            label: s.label,
+            sub: s.time,
+          }))}
+        />
 
         {activeFilterCount > 0 && (
           <div className="flex justify-end pt-1">
@@ -1000,5 +936,83 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         />
       )}
     </div>
+  )
+}
+
+/* FAZ 5.13 — Reusable filter chip group (Bebas label + dark glass chips) */
+function FilterChipGroup({
+  label,
+  value,
+  onChange,
+  items,
+  allLabel = 'Tümü',
+  multi = false,
+  layout = 'flex',  // 'flex' | 'grid-3'
+}) {
+  const isActive = (v) => (multi
+    ? Array.isArray(value) && value.includes(v)
+    : value === v)
+
+  function handleClick(v) {
+    if (multi) {
+      const arr = Array.isArray(value) ? value : []
+      onChange(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v])
+    } else {
+      onChange(value === v ? '' : v)
+    }
+  }
+
+  const wrapperClass = layout === 'grid-3'
+    ? 'grid grid-cols-3 gap-2'
+    : 'flex flex-wrap gap-2'
+
+  return (
+    <div>
+      <label className="block mb-2 font-bebas text-xs tracking-[0.2em] uppercase"
+             style={{ color: '#c4b5fd' }}>
+        {label}
+      </label>
+      <div className={wrapperClass}>
+        {!multi && (
+          <FilterChip active={!value} onClick={() => onChange('')}>
+            {allLabel}
+          </FilterChip>
+        )}
+        {items.map(it => (
+          <FilterChip key={it.value} active={isActive(it.value)}
+                      sub={it.sub} onClick={() => handleClick(it.value)}>
+            {it.label}
+          </FilterChip>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function FilterChip({ active, sub, onClick, children }) {
+  const style = active
+    ? {
+        background: 'linear-gradient(135deg, #6b21a8 0%, #9333ea 100%)',
+        color: '#ffffff',
+        border: '1px solid transparent',
+        boxShadow: '0 0 14px rgba(168, 85, 247, 0.40)',
+      }
+    : {
+        background: 'rgba(20, 14, 38, 0.65)',
+        color: '#d8b4fe',
+        border: '1px solid rgba(168, 85, 247, 0.18)',
+      }
+  return (
+    <button type="button" onClick={onClick}
+      className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all hover:-translate-y-0.5"
+      style={style}>
+      <div>{children}</div>
+      {sub && (
+        <div className="text-[10px] mt-0.5 font-normal"
+             style={{ opacity: 0.75 }}>
+          {sub}
+        </div>
+      )}
+    </button>
   )
 }
