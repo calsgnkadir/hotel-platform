@@ -61,8 +61,13 @@ export default function FavoritesTab({ onOpenMessages }) {
       <div className="card">
         <EmptyState
           type="favorites"
-          title="Henuz favori adayin yok"
-          description="Gelen Basvurular sekmesinde bir adayi acip sag ust kosedeki yildiza tikla. Burada talent pool'unu yonetebilirsin."
+          title="Talent Pool'un boş"
+          description="Beğendiğin adayları buraya topla, sonraki ilanda hızlıca eriş:"
+          steps={[
+            { label: 'Gelen Başvurular > adaya gir', hint: 'Aday kartına tıklayıp detay modali aç' },
+            { label: 'Sağ üstte yıldıza tıkla',     hint: 'Anında favoriler listesine eklenir' },
+            { label: 'Yeni ilan açtığında',          hint: 'Talent Pool tek tuşla davet etmen için burada' },
+          ]}
         />
       </div>
     )

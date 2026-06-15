@@ -39,8 +39,13 @@ export default function WorkersTab({ applications, onOpenMessages }) {
       <div className="card">
         <EmptyState
           type="workers"
-          title="Henüz tamamlanmış çalışma yok"
-          description="Kabul ettiğiniz adayların vardiya günü geçince burada otomatik olarak toplanır."
+          title="Bizde çalışan yok"
+          description="3 adımda ekibinin geçmişi burada birikir:"
+          steps={[
+            { label: 'Adayı KABUL et',         hint: 'Gelen Başvurular > Kanban\'da kartı "Kabul" kolonuna sürükle' },
+            { label: 'Vardiya günü geçsin',    hint: 'Sistem aday için saat + tarih otomatik hesaplar' },
+            { label: 'Burada görünür',         hint: 'Toplam saat, kaç vardiya, son çalışma tarihi' },
+          ]}
         />
       </div>
     )

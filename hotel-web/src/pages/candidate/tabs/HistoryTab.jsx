@@ -29,8 +29,13 @@ export default function HistoryTab({ applications, onOpenMessages }) {
       <div className="card">
         <EmptyState
           type="history"
-          title="Henüz tamamlanmış işin yok"
-          description="Kabul edilmiş bir başvurun olup vardiya günü geçtiğinde burada görünür. İlk işini bitirdiğinde toplam saatin ve değerlendirmen otomatik düşer."
+          title="Geçmiş işin yok"
+          description="İlk vardiyanı tamamladıktan sonra geçmişin burada birikir:"
+          steps={[
+            { label: 'Başvurun kabul edilsin',  hint: 'Başvurularım sekmesinden takip et' },
+            { label: 'Vardiya günü geç',         hint: 'Saat + tarih otomatik kayda alınır' },
+            { label: 'İşletmeyi puanla',         hint: 'Burada toplam saat + verdiğin puanlar görünür' },
+          ]}
         />
       </div>
     )

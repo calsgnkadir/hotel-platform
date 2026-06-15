@@ -82,8 +82,13 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
       <div className="card">
         <EmptyState
           type="applications"
-          title="Henüz başvurunuz yok"
-          description="İlanlar sekmesinden size uygun bir ilana başvurun. İlk başvurunuz dakikalar içinde işverene ulaşır."
+          title="Henüz başvurun yok"
+          description="3 adımda ilk vardiyana çık:"
+          steps={[
+            { label: 'İlanları Keşfet',  hint: 'Pozisyon / vardiya / ilçeye göre filtrele' },
+            { label: 'Başvur',           hint: 'Hangi vardiyalara müsaitsen seç, ön yazı yaz' },
+            { label: 'Mesajlaşmaya başla', hint: 'İşletme sana yazınca burada takip et' },
+          ]}
           ctaLabel="İlanları Keşfet"
           onCta={() => onTabChange?.('listings')}
         />

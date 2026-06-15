@@ -242,22 +242,56 @@ export default function EmptyState({
   ctaSecondaryLabel,
   onCtaSecondary,
   compact = false,
+  steps,  // FAZ 5.7 — egitsel "ne yapmali" 3-adim listesi (string[] veya {label, hint?}[])
 }) {
   const illustration = ILLUSTRATIONS[type] || ILLUSTRATIONS.generic
+  const normalizedSteps = Array.isArray(steps)
+    ? steps.map(s => typeof s === 'string' ? { label: s } : s)
+    : null
 
   return (
     <div className={`flex flex-col items-center text-center ${compact ? 'py-8' : 'py-12'} px-4`}>
       <div className="mb-4">{illustration}</div>
       {title && (
-        <h3 className="font-bold text-lg mb-1 text-ink-900 dark:text-cream-50">
+        <h3 className="font-bebas text-2xl tracking-wider uppercase mb-1"
+            style={{ color: '#ffffff', textShadow: '0 0 12px rgba(168,85,247,0.30)' }}>
           {title}
         </h3>
       )}
       {description && (
-        <p className="text-sm max-w-md mb-5 text-ink-600 dark:text-ink-300">
+        <p className="text-sm max-w-md mb-5" style={{ color: '#c4b5fd' }}>
           {description}
         </p>
       )}
+
+      {/* FAZ 5.7 — numarali egitsel adimlar */}
+      {normalizedSteps && normalizedSteps.length > 0 && (
+        <ol className="w-full max-w-md text-left mb-5 space-y-2">
+          {normalizedSteps.map((s, i) => (
+            <li key={i} className="flex items-start gap-3 rounded-xl px-3 py-2.5"
+                style={{
+                  background: 'rgba(20, 14, 38, 0.55)',
+                  border: '1px solid rgba(168, 85, 247, 0.18)',
+                }}>
+              <span className="font-bebas text-lg tracking-wider flex-shrink-0 w-7 text-center"
+                    style={{ color: '#e879f9', textShadow: '0 0 8px rgba(217,70,239,0.40)' }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold" style={{ color: '#ede9fe' }}>
+                  {s.label}
+                </div>
+                {s.hint && (
+                  <div className="text-[11px] mt-0.5" style={{ color: '#a5b4fc' }}>
+                    {s.hint}
+                  </div>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+
       {(ctaLabel || ctaSecondaryLabel) && (
         <div className="flex flex-wrap gap-2 justify-center">
           {ctaLabel && (
@@ -269,9 +303,12 @@ export default function EmptyState({
           )}
           {ctaSecondaryLabel && (
             <button onClick={onCtaSecondary}
-              className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all
-                         bg-cream-100 hover:bg-cream-200 text-ink-700 border border-cream-300
-                         dark:bg-ink-800 dark:hover:bg-ink-700 dark:text-cream-100 dark:border-ink-600">
+              className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all"
+              style={{
+                background: 'rgba(20, 14, 38, 0.65)',
+                color: '#d8b4fe',
+                border: '1px solid rgba(168, 85, 247, 0.20)',
+              }}>
               {ctaSecondaryLabel}
             </button>
           )}

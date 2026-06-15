@@ -53,8 +53,13 @@ export default function MyListingsTab() {
         <div className="card">
           <EmptyState
             type="listings"
-            title="Henüz ilanınız yok"
-            description="İlk ilanınızı oluşturun ve adayları sizinle iletişime geçirmeye davet edin."
+            title="Henüz ilanın yok"
+            description="3 adımda ilk ilanın yayında olsun:"
+            steps={[
+              { label: 'Pozisyon + ücret',  hint: 'Garson, komi, resepsiyon... saatlik veya günlük' },
+              { label: 'Vardiya slotu ekle', hint: 'Tarih + saat + kaç kişi gerekli — istediğin kadar slot' },
+              { label: 'Yayınla',            hint: 'Tercih ettiğin adaylara otomatik bildirim gider' },
+            ]}
             ctaLabel="İlk İlanı Oluştur"
             onCta={() => setFormTarget('new')}
           />

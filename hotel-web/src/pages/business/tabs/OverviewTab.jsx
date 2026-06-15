@@ -37,8 +37,13 @@ export default function OverviewTab({ applications, onTabChange }) {
           <EmptyState
             type="applications"
             title="Henüz başvuru yok"
-            description="İlan oluşturduğunuzda buraya adaylardan başvurular düşecek."
-            ctaLabel="İlan Oluştur"
+            description="3 adımda ilk adayını al:"
+            steps={[
+              { label: 'İlanlarım sekmesine git', hint: 'Yayında olan ilanın var mı kontrol et' },
+              { label: 'Yeni ilan oluştur',       hint: 'Pozisyon + vardiya slotu + ücret bilgisi' },
+              { label: 'Adaylar başvurunca',      hint: 'Gelen Başvurular > Kanban\'da sürükle-bırak ile yönet' },
+            ]}
+            ctaLabel="İlanlarıma Git"
             onCta={() => onTabChange('mylistings')}
             compact
           />
