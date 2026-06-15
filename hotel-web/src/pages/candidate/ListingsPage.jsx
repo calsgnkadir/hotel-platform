@@ -689,10 +689,6 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   })
   if (error) toast.error('İlanlar yüklenemedi')
 
-  function toggleShift(shift) {
-    setShifts(prev => prev.includes(shift) ? prev.filter(s => s !== shift) : [...prev, shift])
-  }
-
   function clearFilters() {
     setKeyword(''); setPosition(''); setJobType('')
     setDistrict(''); setMinSalary(''); setShifts([])
@@ -968,10 +964,12 @@ function FilterChipGroup({
 
   return (
     <div>
-      <label className="block mb-2 font-bebas text-xs tracking-[0.2em] uppercase"
-             style={{ color: '#c4b5fd' }}>
-        {label}
-      </label>
+      {label && (
+        <label className="block mb-2 font-bebas text-xs tracking-[0.2em] uppercase"
+               style={{ color: '#c4b5fd' }}>
+          {label}
+        </label>
+      )}
       <div className={wrapperClass}>
         {!multi && (
           <FilterChip active={!value} onClick={() => onChange('')}>
