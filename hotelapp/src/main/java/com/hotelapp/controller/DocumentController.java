@@ -34,7 +34,7 @@ public class DocumentController {
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<DocumentDto> upload(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestParam("file") MultipartFile file,
             @RequestParam("type") DocumentType type) {
         return ResponseEntity.ok(documentService.upload(currentUser.getId(), file, type));
@@ -43,7 +43,7 @@ public class DocumentController {
     @Operation(summary = "Belgelerimi listele — sadece CANDIDATE")
     @GetMapping("/my")
     @PreAuthorize("hasRole('CANDIDATE')")
-    public ResponseEntity<List<DocumentDto>> myDocuments(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<List<DocumentDto>> myDocuments(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(documentService.listMyDocuments(currentUser.getId()));
     }
 
@@ -51,7 +51,7 @@ public class DocumentController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<Map<String, String>> delete(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id) {
         documentService.deleteDocument(id, currentUser.getId());
         return ResponseEntity.ok(Map.of("message", "Belge silindi"));
@@ -71,7 +71,7 @@ public class DocumentController {
     @GetMapping("/{id}/download")
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
     public ResponseEntity<Void> download(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id) {
         boolean isBusinessOwner = currentUser.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_BUSINESS_OWNER"));
@@ -89,7 +89,7 @@ public class DocumentController {
     @GetMapping("/{id}/url")
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
     public ResponseEntity<Map<String, String>> getDownloadUrl(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id) {
         boolean isBusinessOwner = currentUser.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_BUSINESS_OWNER"));

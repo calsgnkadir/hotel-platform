@@ -28,21 +28,21 @@ public class NotificationController {
     @Operation(summary = "Bildirimlerimi listele (son N)")
     @GetMapping
     public ResponseEntity<List<NotificationDto>> list(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestParam(required = false, defaultValue = "20") int limit) {
         return ResponseEntity.ok(notificationService.list(currentUser.getId(), limit));
     }
 
     @Operation(summary = "Okunmamış bildirim sayısı")
     @GetMapping("/unread-count")
-    public ResponseEntity<Map<String, Long>> unreadCount(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<Map<String, Long>> unreadCount(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(Map.of("count", notificationService.countUnread(currentUser.getId())));
     }
 
     @Operation(summary = "Bir bildirimi okundu işaretle")
     @PutMapping("/{id}/read")
     public ResponseEntity<Void> markRead(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id) {
         notificationService.markRead(id, currentUser.getId());
         return ResponseEntity.noContent().build();
@@ -50,7 +50,7 @@ public class NotificationController {
 
     @Operation(summary = "Tüm bildirimleri okundu işaretle")
     @PutMapping("/read-all")
-    public ResponseEntity<Void> markAllRead(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<Void> markAllRead(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         notificationService.markAllRead(currentUser.getId());
         return ResponseEntity.noContent().build();
     }

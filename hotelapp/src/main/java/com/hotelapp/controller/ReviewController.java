@@ -30,7 +30,7 @@ public class ReviewController {
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ReviewDto> create(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId,
             @Valid @RequestBody CreateReviewRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)

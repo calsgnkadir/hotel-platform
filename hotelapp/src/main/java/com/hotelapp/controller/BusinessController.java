@@ -69,7 +69,7 @@ public class BusinessController {
     @GetMapping("/api/business/profile")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<BusinessDto> getMyProfile(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<BusinessDto> getMyProfile(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(businessService.getMyProfile(currentUser.getId()));
     }
 
@@ -78,7 +78,7 @@ public class BusinessController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<BusinessDto> updateMyProfile(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @Valid @RequestBody ProfileUpdateRequest request) {
         return ResponseEntity.ok(businessService.updateMyProfile(currentUser.getId(), request));
     }
@@ -88,7 +88,7 @@ public class BusinessController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<BusinessDto> uploadLogo(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(businessService.uploadLogo(currentUser.getId(), file));
     }
@@ -97,7 +97,7 @@ public class BusinessController {
     @DeleteMapping("/api/business/logo")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<Void> deleteLogo(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<Void> deleteLogo(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         businessService.deleteLogo(currentUser.getId());
         return ResponseEntity.noContent().build();
     }
@@ -106,7 +106,7 @@ public class BusinessController {
     @GetMapping("/api/business/photos")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<List<PhotoDto>> getMyGallery(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<List<PhotoDto>> getMyGallery(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(businessService.getMyGalleryPhotos(currentUser.getId()));
     }
 
@@ -115,7 +115,7 @@ public class BusinessController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PhotoDto> uploadGalleryPhoto(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(businessService.uploadGalleryPhoto(currentUser.getId(), file));
@@ -126,7 +126,7 @@ public class BusinessController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> deleteGalleryPhoto(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long photoId) {
         businessService.deleteGalleryPhoto(currentUser.getId(), photoId);
         return ResponseEntity.noContent().build();
@@ -140,7 +140,7 @@ public class BusinessController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<PhotoDto>> reorderGallery(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestBody List<Long> orderedPhotoIds) {
         return ResponseEntity.ok(
                 businessService.reorderGallery(currentUser.getId(), orderedPhotoIds));
@@ -151,7 +151,7 @@ public class BusinessController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PhotoDto> setCoverPhoto(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long photoId) {
         return ResponseEntity.ok(
                 businessService.setCoverPhoto(currentUser.getId(), photoId));

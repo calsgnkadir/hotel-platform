@@ -37,7 +37,7 @@ public class MessageController {
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<ConversationDto>> myConversations(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PageableDefault(size = 20, sort = "lastMessageAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
         return ResponseEntity.ok(
@@ -52,7 +52,7 @@ public class MessageController {
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ConversationDto> startConversation(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @Valid @RequestBody StartConversationRequest req) {
         ConversationDto dto = messageService.startConversation(currentUser.getId(), req);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
@@ -63,7 +63,7 @@ public class MessageController {
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<MessageDto>> getMessages(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long conversationId,
             @PageableDefault(size = 50, sort = "sentAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
@@ -76,7 +76,7 @@ public class MessageController {
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<MessageDto> sendMessage(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long conversationId,
             @Valid @RequestBody MessageRequest req) {
         MessageDto dto = messageService.sendMessage(conversationId, currentUser.getId(), req);
@@ -89,7 +89,7 @@ public class MessageController {
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<MessageDto> sendAttachment(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long conversationId,
             @RequestPart("file") MultipartFile file,
             @RequestPart(value = "caption", required = false) String caption) {
@@ -102,7 +102,7 @@ public class MessageController {
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Map<String, Integer>> markRead(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long conversationId) {
         int updated = messageService.markRead(conversationId, currentUser.getId());
         return ResponseEntity.ok(Map.of("updated", updated));
@@ -113,7 +113,7 @@ public class MessageController {
     @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Map<String, Long>> unreadCount(
-            @AuthenticationPrincipal User currentUser) {
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(Map.of("unread", messageService.countUnread(currentUser.getId())));
     }
 }

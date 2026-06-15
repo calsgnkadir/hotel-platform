@@ -19,6 +19,19 @@ let client = null
 let connected = false
 let pendingSubs = []  // bağlanmadan önce sub ister isen, buraya kuyruğa al
 
+// FAZ 4.8 — Bağlantı durumu için listener registry.
+// React tarafında useWsConnected() bunu izler; WS aktif olunca polling kapanır.
+const statusListeners = new Set()
+function notifyStatus() {
+  statusListeners.forEach(cb => { try { cb(connected) } catch {} })
+}
+export function wsOnStatusChange(cb) {
+  statusListeners.add(cb)
+  // İlk subscribe'da mevcut durumu hemen ver (state init için)
+  try { cb(connected) } catch {}
+  return () => statusListeners.delete(cb)
+}
+
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '')
 const WS_URL = `${BASE_URL}/ws`
 
@@ -60,6 +73,7 @@ export function wsConnect() {
         })
       })
       pendingSubs = []
+      notifyStatus()  // React hooks'ları haberdar et → polling kapanır
     },
 
     onStompError: (frame) => {
@@ -73,6 +87,15 @@ export function wsConnect() {
     onDisconnect: () => {
       connected = false
       console.log('[WS] Bağlantı kesildi')
+      notifyStatus()  // React hooks'ları haberdar et → polling devreye girer
+    },
+
+    onWebSocketClose: () => {
+      // SockJS transport kapanışı — onDisconnect her zaman tetiklenmez
+      if (connected) {
+        connected = false
+        notifyStatus()
+      }
     },
   })
 

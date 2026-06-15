@@ -26,7 +26,7 @@ public class CandidateController {
     @GetMapping("/api/candidate/profile")
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<CandidateProfileDto> getMyProfile(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<CandidateProfileDto> getMyProfile(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(candidateProfileService.getMyProfile(currentUser.getId()));
     }
 
@@ -35,7 +35,7 @@ public class CandidateController {
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<CandidateProfileDto> updateMyProfile(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @Valid @RequestBody ProfileUpdateRequest request) {
         return ResponseEntity.ok(candidateProfileService.updateMyProfile(currentUser.getId(), request));
     }
@@ -45,7 +45,7 @@ public class CandidateController {
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<CandidateProfileDto> uploadAvatar(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(candidateProfileService.uploadAvatar(currentUser.getId(), file));
     }
@@ -54,7 +54,7 @@ public class CandidateController {
     @DeleteMapping("/api/candidate/avatar")
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<Void> deleteAvatar(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<Void> deleteAvatar(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         candidateProfileService.deleteAvatar(currentUser.getId());
         return ResponseEntity.noContent().build();
     }

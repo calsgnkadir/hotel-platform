@@ -55,7 +55,7 @@ public class JobListingController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<ListingResponse>> myListings(
-            @AuthenticationPrincipal User currentUser) {
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(jobListingService.getMyListings(currentUser.getId()));
     }
 
@@ -64,7 +64,7 @@ public class JobListingController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ListingResponse> createListing(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @Valid @RequestBody ListingRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(jobListingService.createListing(currentUser.getId(), request));
@@ -75,7 +75,7 @@ public class JobListingController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ListingResponse> updateStatus(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id,
             @RequestParam ListingStatus status) {
         return ResponseEntity.ok(jobListingService.updateStatus(id, currentUser.getId(), status));
@@ -90,10 +90,11 @@ public class JobListingController {
 
     @Operation(summary = "İlanı düzenle — sadece BUSINESS_OWNER (sahibi)")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    // FAZ 4.9 — Method-level: bu ilan gerçekten benim mi?
+    @PreAuthorize("hasRole('BUSINESS_OWNER') and @securityChecks.isListingOwner(#p1)")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ListingResponse> updateListing(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id,
             @Valid @RequestBody ListingRequest request) {
         return ResponseEntity.ok(jobListingService.updateListing(id, currentUser.getId(), request));

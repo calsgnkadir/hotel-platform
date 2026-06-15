@@ -26,4 +26,7 @@ public class AuthResponse {
     private String email;
     private String fullName;
     private Role role;
+
+    /** FAZ 4.4 — Email dogrulanmis mi? Frontend banner gostermek icin. */
+    private boolean emailVerified;
 }

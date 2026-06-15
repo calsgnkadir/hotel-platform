@@ -27,7 +27,7 @@ public class ReportController {
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ReportDto> createReport(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @Valid @RequestBody CreateReportRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(reportService.createReport(currentUser.getId(), request));

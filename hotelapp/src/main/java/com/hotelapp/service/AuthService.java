@@ -15,6 +15,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,11 +25,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
     private final BusinessRepository businessRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final EmailTemplates emailTemplates;
+    private final EmailVerificationService emailVerificationService;
+
+    @Value("${app.base-url:http://localhost:5173}")
+    private String baseUrl;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;  // F0.2
@@ -66,6 +75,23 @@ public class AuthService {
             businessRepository.save(business);
         }
 
+        // FAZ 3 — Welcome email (sessiz fail; register akisini bloklamasin)
+        try {
+            String dashboardUrl = baseUrl + (request.getRole() == Role.BUSINESS_OWNER ? "/business" : "/candidate");
+            String html = emailTemplates.welcome(user.getFullName(), user.getRole().name(), dashboardUrl);
+            emailService.send(user.getEmail(), "AjansHotel'e Hoş Geldin! 👋", html);
+        } catch (Exception ex) {
+            log.warn("[WELCOME-EMAIL] Gonderilemedi (yok sayildi): user={} sebep={}",
+                    user.getEmail(), ex.getMessage());
+        }
+
+        // FAZ 4.4 — Email dogrulama token'i + mail (sessiz fail)
+        try {
+            emailVerificationService.sendVerification(user);
+        } catch (Exception ex) {
+            log.warn("[EMAIL-VERIFY] Initial send failed user={} sebep={}", user.getEmail(), ex.getMessage());
+        }
+
         return AuthResponse.builder()
                 .token(jwtService.generateToken(user))
                 .refreshToken(refreshToken)
@@ -73,6 +99,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole())
+                .emailVerified(user.isEmailVerified())
                 .build();
     }
 
@@ -94,6 +121,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole())
+                .emailVerified(user.isEmailVerified())
                 .build();
     }
 
@@ -112,6 +140,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole())
+                .emailVerified(user.isEmailVerified())
                 .build();
     }
 
@@ -150,6 +179,10 @@ public class AuthService {
 
         @NotBlank(message = "Yeni şifre zorunlu")
         @Size(min = 8, message = "Yeni şifre en az 8 karakter olmalı")
+        @jakarta.validation.constraints.Pattern(
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
+            message = "Şifre en az 1 harf ve 1 rakam içermeli"
+        )
         private String newPassword;
     }
 }

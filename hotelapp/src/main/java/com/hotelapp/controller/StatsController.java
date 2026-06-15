@@ -25,7 +25,7 @@ public class StatsController {
     @GetMapping("/api/business/stats")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<BusinessStatsDto> businessStats(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<BusinessStatsDto> businessStats(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(statsService.getBusinessStats(currentUser.getId()));
     }
 
@@ -33,7 +33,7 @@ public class StatsController {
     @GetMapping("/api/candidate/stats")
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<CandidateStatsDto> candidateStats(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<CandidateStatsDto> candidateStats(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(statsService.getCandidateStats(currentUser.getId()));
     }
 }

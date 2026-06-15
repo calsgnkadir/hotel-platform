@@ -27,6 +27,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
@@ -34,12 +35,16 @@ public class ApplicationService {
     private final JobListingRepository jobListingRepository;
     private final DocumentRequestRepository documentRequestRepository;
     private final ShiftSlotRepository shiftSlotRepository;
-    private final FileStorageService fileStorageService;
     private final AuditLogService auditLogService;
     private final NotificationService notificationService;
-    private final ReviewService reviewService;
     private final MessageService messageService;  // chat refactor: auto-conversation
-    private final ConversationRepository conversationRepository;  // chat-v2: response'a convId koymak için
+    private final EmailService emailService;
+    private final EmailTemplates emailTemplates;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher; // FAZ 4.11 - no-show async
+    private final ApplicationMapper applicationMapper; // FAZ 4.5 - god class temizligi (toResponse + buildCandidateSummary)
+
+    @org.springframework.beans.factory.annotation.Value("${app.base-url:http://localhost:5173}")
+    private String baseUrl;
 
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
@@ -157,7 +162,7 @@ public class ApplicationService {
         }
         Conversation conv = messageService.openConversationForApplication(application, firstMessage);
 
-        ApplicationResponse resp = toResponse(application);
+        ApplicationResponse resp = applicationMapper.toResponse(application);
         resp.setConversationId(conv.getId());   // Frontend bunu kullanarak /messages?open=<id>'e yönlendirir
         return resp;
     }
@@ -168,7 +173,7 @@ public class ApplicationService {
     @Transactional(readOnly = true)
     public List<ApplicationResponse> getCandidateApplications(Long candidateId) {
         return applicationRepository.findAllByCandidateId(candidateId)
-                .stream().map(this::toResponse).toList();
+                .stream().map(applicationMapper::toResponse).toList();
     }
 
     /** #84: Aday başvuruları — sayfalı + opsiyonel status filtresi. */
@@ -177,7 +182,7 @@ public class ApplicationService {
             Long candidateId, ApplicationStatus status, Pageable pageable) {
         return PageResponse.of(
                 applicationRepository.searchCandidateApplications(candidateId, status, pageable),
-                this::toResponse);
+                applicationMapper::toResponse);
     }
 
     // ----------------------------------------------------------------
@@ -188,7 +193,7 @@ public class ApplicationService {
         List<Application> applications = (status != null)
                 ? applicationRepository.findAllByJobListing_Business_OwnerIdAndStatus(ownerId, status)
                 : applicationRepository.findAllByJobListing_Business_OwnerId(ownerId);
-        return applications.stream().map(this::toResponse).toList();
+        return applications.stream().map(applicationMapper::toResponse).toList();
     }
 
     /** #84: İşletme başvuruları — sayfalı + status/ilan/arama filtreleri. */
@@ -198,7 +203,7 @@ public class ApplicationService {
         String normalizedQ = (q != null && !q.isBlank()) ? q.trim() : null;
         return PageResponse.of(
                 applicationRepository.searchBusinessApplications(ownerId, status, listingId, normalizedQ, pageable),
-                this::toResponse);
+                applicationMapper::toResponse);
     }
 
     // ----------------------------------------------------------------
@@ -217,7 +222,7 @@ public class ApplicationService {
         application.setStatus(ApplicationStatus.REVIEWING);
         application.setReviewedAt(LocalDateTime.now());
         applicationRepository.save(application);
-        return toResponse(application);
+        return applicationMapper.toResponse(application);
     }
 
     // ----------------------------------------------------------------
@@ -263,19 +268,42 @@ public class ApplicationService {
         // Bildirim: adaya kabul/red
         Long candidateId = application.getCandidate().getId();
         String listingTitle = application.getJobListing().getTitle();
+        String candidateEmail = application.getCandidate().getEmail();
+        String candidateName = application.getCandidate().getFullName();
+        String businessName = application.getJobListing().getBusiness().getName();
+
         if (request.getDecision() == ApplicationStatus.ACCEPTED) {
             notificationService.notify(candidateId, NotificationType.APPLICATION_ACCEPTED,
                     "Başvurun kabul edildi 🎉",
                     listingTitle + " ilanına başvurun kabul edildi!",
                     "applications");
+            // FAZ 3 — Email: kabul (sessiz fail)
+            try {
+                String html = emailTemplates.applicationAccepted(
+                        candidateName, listingTitle, businessName, baseUrl + "/candidate");
+                emailService.send(candidateEmail, "🎉 Başvurun kabul edildi — " + listingTitle, html);
+            } catch (Exception ex) {
+                log.warn("[ACCEPT-EMAIL] Gonderilemedi (yok sayildi): app={} sebep={}",
+                        applicationId, ex.getMessage());
+            }
         } else {
             notificationService.notify(candidateId, NotificationType.APPLICATION_REJECTED,
                     "Başvurun reddedildi",
                     listingTitle + " ilanına başvurun maalesef reddedildi.",
                     "applications");
+            // FAZ 3 — Email: red (yumusak ton)
+            try {
+                String html = emailTemplates.applicationRejected(
+                        candidateName, listingTitle, businessName,
+                        request.getNote(), baseUrl + "/candidate");
+                emailService.send(candidateEmail, "Başvurun yanıtlandı — " + listingTitle, html);
+            } catch (Exception ex) {
+                log.warn("[REJECT-EMAIL] Gonderilemedi (yok sayildi): app={} sebep={}",
+                        applicationId, ex.getMessage());
+            }
         }
 
-        return toResponse(application);
+        return applicationMapper.toResponse(application);
     }
 
     // ----------------------------------------------------------------
@@ -299,7 +327,7 @@ public class ApplicationService {
                 "İşletme seni tutmak istiyor ⏳",
                 listingTitle + " ilanı için 24 saat içinde Onayla veya Reddet seç.",
                 "applications");
-        return toResponse(app);
+        return applicationMapper.toResponse(app);
     }
 
     // ----------------------------------------------------------------
@@ -349,7 +377,7 @@ public class ApplicationService {
                 accept ? "Aday HOLD'u onayladı ✅" : "Aday HOLD'u reddetti",
                 "\"" + listingTitle + "\" — aday cevabını verdi.",
                 "applications");
-        return toResponse(app);
+        return applicationMapper.toResponse(app);
     }
 
     // ----------------------------------------------------------------
@@ -392,7 +420,7 @@ public class ApplicationService {
                         + application.getJobListing().getTitle() + " başvurusunu iptal etti",
                 "applications");
 
-        return toResponse(application);
+        return applicationMapper.toResponse(application);
     }
 
     // ----------------------------------------------------------------
@@ -437,30 +465,22 @@ public class ApplicationService {
         userRepository.save(candidate);
         applicationRepository.save(application);
 
-        // D4: Audit log — no-show (işletme) + otomatik ban (sistem)
-        auditLogService.log(ownerId, "MARK_NO_SHOW", "APPLICATION", applicationId,
-                "Aday " + candidate.getEmail() + " no-show işaretlendi. Kalan strike: "
-                        + candidate.getStrikesRemaining());
-        if (autoBanned) {
-            auditLogService.logSystem("AUTO_BAN", "USER", candidate.getId(),
-                    "3 strike → " + candidate.getEmail() + " otomatik 30 gün banlandı (bitiş: " + bannedUntil + ")");
-        }
-
-        // Bildirim: adaya no-show (ve banlandıysa ekstra)
-        notificationService.notify(candidate.getId(), NotificationType.NO_SHOW_MARKED,
-                "İşe gelmedin olarak işaretlendin",
-                application.getJobListing().getTitle() + " için no-show işaretlendin. Kalan strike hakkın: "
-                        + candidate.getStrikesRemaining(),
-                "applications");
-        if (autoBanned) {
-            notificationService.notify(candidate.getId(), NotificationType.AUTO_BANNED,
-                    "Hesabın geçici olarak askıya alındı",
-                    "Çok sayıda no-show nedeniyle hesabın " + bannedUntil.toLocalDate() + " tarihine kadar askıya alındı.",
-                    null);
-        }
+        // FAZ 4.11 — Side effect'ler (audit log + bildirim) async + AFTER_COMMIT.
+        // NoShowEventListener bu event'i ayri thread'de handle eder.
+        eventPublisher.publishEvent(new com.hotelapp.event.NoShowMarkedEvent(
+                ownerId,
+                applicationId,
+                candidate.getId(),
+                candidate.getEmail(),
+                candidate.getFullName(),
+                application.getJobListing().getTitle(),
+                candidate.getStrikesRemaining(),
+                autoBanned,
+                bannedUntil
+        ));
 
         return NoShowResult.builder()
-                .application(toResponse(application))
+                .application(applicationMapper.toResponse(application))
                 .candidateStrikesRemaining(candidate.getStrikesRemaining())
                 .autoBanned(autoBanned)
                 .bannedUntil(bannedUntil)
@@ -504,7 +524,7 @@ public class ApplicationService {
                         + dto.getDocumentType().name() + " belgesi istedi",
                 "applications");
 
-        return toResponse(application);
+        return applicationMapper.toResponse(application);
     }
 
     // ----------------------------------------------------------------
@@ -551,91 +571,5 @@ public class ApplicationService {
         return application;
     }
 
-    // ----------------------------------------------------------------
-    // Entity → DTO
-    // ----------------------------------------------------------------
-    private ApplicationResponse toResponse(Application app) {
-        List<ApplicationResponse.AvailabilityDto> avDtos = app.getAvailabilities().stream()
-                .map(av -> ApplicationResponse.AvailabilityDto.builder()
-                        .dayOfWeek(av.getDayOfWeek())
-                        .startTime(av.getStartTime())
-                        .endTime(av.getEndTime())
-                        .build())
-                .toList();
-
-        List<ApplicationResponse.DocumentRequestDto> drDtos = app.getDocumentRequests().stream()
-                .map(dr -> ApplicationResponse.DocumentRequestDto.builder()
-                        .id(dr.getId())
-                        .documentType(dr.getDocumentType().name())
-                        .status(dr.getStatus().name())
-                        .requestedAt(dr.getRequestedAt())
-                        .build())
-                .toList();
-
-        // Faz E1: Adayın başvurduğu slotlar (tarih+saate göre sıralı)
-        List<RequestedSlotDto> slotDtos = (app.getRequestedSlots() == null) ? List.of()
-                : app.getRequestedSlots().stream()
-                    .sorted((a, b) -> {
-                        int c = a.getDate().compareTo(b.getDate());
-                        return c != 0 ? c : a.getStartTime().compareTo(b.getStartTime());
-                    })
-                    .map(s -> RequestedSlotDto.builder()
-                            .id(s.getId())
-                            .date(s.getDate())
-                            .startTime(s.getStartTime())
-                            .endTime(s.getEndTime())
-                            .build())
-                    .toList();
-
-        JobListing listing = app.getJobListing();
-        Business business = listing.getBusiness();
-
-        return ApplicationResponse.builder()
-                .id(app.getId())
-                .status(app.getStatus())
-                .coverLetter(app.getCoverLetter())
-                .deadline(app.getDeadline())
-                .createdAt(app.getCreatedAt())
-                .note(app.getNote())
-                .noShow(app.isNoShow())
-                .holdDeadline(app.getHoldDeadline())  // FAZ 2/#28
-                .workCompleted(reviewService.isWorkCompleted(app))
-                .candidateReviewedBusiness(reviewService.hasCandidateReviewedBusiness(app.getId()))
-                .candidate(buildCandidateSummary(app.getCandidate()))
-                .listing(ApplicationResponse.ListingSummary.builder()
-                        .id(listing.getId())
-                        .title(listing.getTitle())
-                        .position(listing.getPosition().name())
-                        .jobType(listing.getJobType().name())
-                        .businessId(business.getId())
-                        .businessName(business.getName())
-                        .businessType(business.getType().name())
-                        .businessOwnerId(business.getOwner().getId())  // #77 mesajlaşma
-                        .build())
-                .availabilities(avDtos)
-                .documentRequests(drDtos)
-                .requestedSlots(slotDtos)
-                // chat-v2: her başvuru için (aday, işletme sahibi) eşleşmesinin conversation ID'si
-                .conversationId(conversationRepository
-                        .findByCandidateIdAndBusinessOwnerId(
-                                app.getCandidate().getId(),
-                                business.getOwner().getId())
-                        .map(c -> c.getId()).orElse(null))
-                .build();
-    }
-
-    /** Aday özeti — avatar + rating dahil */
-    private ApplicationResponse.CandidateSummary buildCandidateSummary(User candidate) {
-        var rating = reviewService.getCandidateRating(candidate.getId());
-        return ApplicationResponse.CandidateSummary.builder()
-                .id(candidate.getId())
-                .fullName(candidate.getFullName())
-                .email(candidate.getEmail())
-                .avatarUrl(candidate.getAvatarPath() != null
-                        ? fileStorageService.publicUrl(candidate.getAvatarPath())
-                        : null)
-                .averageRating(rating.getAverageRating())
-                .reviewCount(rating.getReviewCount())
-                .build();
-    }
+    // FAZ 4.5 — Entity -> DTO donusumu ApplicationMapper'a tasindi (god class temizligi).
 }

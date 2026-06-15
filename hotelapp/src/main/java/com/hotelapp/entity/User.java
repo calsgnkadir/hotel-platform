@@ -7,15 +7,10 @@ import com.hotelapp.enums.Language;
 import com.hotelapp.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -24,7 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User implements UserDetails {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -77,6 +72,19 @@ public class User implements UserDetails {
     @Column(nullable = false)
     @Builder.Default
     private boolean enabled = true;
+
+    /**
+     * FAZ 4.4 — Email dogrulamasi yapildigi an. null = henuz dogrulanmadi.
+     * OAuth kullanicilari (provider != LOCAL) icin otomatik dolu kabul edilir
+     * (helper isEmailVerified() kontrolu yapar).
+     */
+    private LocalDateTime emailVerifiedAt;
+
+    /** FAZ 4.4 — Email dogrulanmis mi? OAuth icin daima true. */
+    public boolean isEmailVerified() {
+        return emailVerifiedAt != null
+                || (provider != null && provider != com.hotelapp.enums.AuthProvider.LOCAL);
+    }
 
     // ================================================================
     // CANDIDATE PROFILE FIELDS (Faz C1)
@@ -161,25 +169,4 @@ public class User implements UserDetails {
         updatedAt = LocalDateTime.now();
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired()     { return true; }
-
-    @Override
-    public boolean isAccountNonLocked()      { return bannedUntil == null || bannedUntil.isBefore(LocalDateTime.now()); }
-
-    @Override
-    public boolean isCredentialsNonExpired() { return true; }
-
-    @Override
-    public boolean isEnabled()               { return enabled; }
 }

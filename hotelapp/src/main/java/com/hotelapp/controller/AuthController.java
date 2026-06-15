@@ -3,9 +3,9 @@ package com.hotelapp.controller;
 import com.hotelapp.dto.AuthResponse;
 import com.hotelapp.dto.LoginRequest;
 import com.hotelapp.dto.RegisterRequest;
-import com.hotelapp.entity.User;
 import com.hotelapp.service.AuthService;
 import com.hotelapp.service.AuthService.ChangePasswordRequest;
+import com.hotelapp.service.EmailVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -33,6 +33,8 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final EmailVerificationService emailVerificationService;
+    private final com.hotelapp.repository.UserRepository userRepository;
 
     /** Cookie adı — frontend bilmek zorunda değil, tarayıcı otomatik gönderir */
     private static final String REFRESH_COOKIE = "refreshToken";
@@ -102,10 +104,36 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Map<String, String>> changePassword(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(currentUser.getId(), request);
         return ResponseEntity.ok(Map.of("message", "Şifreniz başarıyla değiştirildi"));
+    }
+
+    // ─── FAZ 4.4 Email verification ─────────────────────────────────
+
+    @Operation(summary = "Email dogrulama linki — token kullan",
+               description = "Mail'den gelen tek-kullanimlik token. Basariyla dogrularsa user.emailVerifiedAt set edilir.")
+    @GetMapping("/verify-email")
+    public ResponseEntity<Map<String, String>> verifyEmail(@RequestParam("token") String token) {
+        emailVerificationService.verify(token);
+        return ResponseEntity.ok(Map.of("message", "Email başarıyla doğrulandı."));
+    }
+
+    @Operation(summary = "Email dogrulama mailini tekrar gonder",
+               description = "Authenticated kullanici. Token expired/lost durumlari icin.")
+    @PostMapping("/resend-verification")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Map<String, String>> resendVerification(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
+        com.hotelapp.entity.User user = userRepository.findById(currentUser.getId())
+                .orElseThrow();
+        if (user.isEmailVerified()) {
+            return ResponseEntity.ok(Map.of("message", "Email zaten doğrulanmış."));
+        }
+        emailVerificationService.sendVerification(user);
+        return ResponseEntity.ok(Map.of("message", "Doğrulama maili gönderildi."));
     }
 
     // ─── F0.2 Cookie helpers ─────────────────────────────────────────

@@ -15,7 +15,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * FAZ 2/#21 — Geo-fenced clock-in/out endpoint'leri.
@@ -33,7 +35,7 @@ public class WorkSessionController {
     @Operation(summary = "Mesaiye basla — GPS koordinati ile (200m fence)")
     @PostMapping("/{applicationId}/clock-in")
     public ResponseEntity<WorkSessionDto> clockIn(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId,
             @org.springframework.web.bind.annotation.RequestBody GeoBody body) {
         return ResponseEntity.ok(workSessionService.clockIn(
@@ -43,7 +45,7 @@ public class WorkSessionController {
     @Operation(summary = "Mesaiyi bitir — GPS koordinati ile")
     @PostMapping("/{applicationId}/clock-out")
     public ResponseEntity<WorkSessionDto> clockOut(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId,
             @org.springframework.web.bind.annotation.RequestBody GeoBody body) {
         return ResponseEntity.ok(workSessionService.clockOut(
@@ -53,16 +55,37 @@ public class WorkSessionController {
     @Operation(summary = "Acik (henuz bitmemis) mesai var mi?")
     @GetMapping("/{applicationId}/active")
     public ResponseEntity<WorkSessionDto> getActive(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId) {
         WorkSessionDto active = workSessionService.getActiveSession(currentUser.getId(), applicationId);
         return active != null ? ResponseEntity.ok(active) : ResponseEntity.noContent().build();
     }
 
+    /**
+     * FAZ 4 hotfix — N+1 ve rate-limit (429) fix.
+     * Frontend her ACCEPTED basvuru icin ayri /active call yapiyordu (8 paralel call = 429).
+     * Batch endpoint tek query ile cevaplar: { appId: WorkSessionDto | null }.
+     */
+    @Operation(summary = "Birden cok basvuru icin acik mesai durumu — tek call")
+    @GetMapping("/active-batch")
+    public ResponseEntity<Map<Long, WorkSessionDto>> activeBatch(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @RequestParam("ids") List<Long> applicationIds) {
+        Map<Long, WorkSessionDto> result = new HashMap<>();
+        if (applicationIds == null || applicationIds.isEmpty()) {
+            return ResponseEntity.ok(result);
+        }
+        for (Long appId : applicationIds) {
+            WorkSessionDto s = workSessionService.getActiveSession(currentUser.getId(), appId);
+            if (s != null) result.put(appId, s);
+        }
+        return ResponseEntity.ok(result);
+    }
+
     @Operation(summary = "Bir basvurunun tum mesai kayitlari (gecmis)")
     @GetMapping("/{applicationId}")
     public ResponseEntity<List<WorkSessionDto>> list(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(workSessionService.listForApplication(applicationId, currentUser.getId()));
     }

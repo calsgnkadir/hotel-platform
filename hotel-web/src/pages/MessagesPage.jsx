@@ -5,9 +5,11 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { keys } from '../lib/queryClient'
+import cldImg, { ImgSize } from '../lib/cldImg'
 import EmptyState from '../components/EmptyState'
 import { SkeletonConversationList, SkeletonMessages } from '../components/Skeleton'
 import { wsSubscribe, wsPublish } from '../lib/websocket'
+import useWsConnected, { useWsReconnectInvalidate } from '../lib/useWsConnected'
 import { useOnline } from '../lib/presence'
 
 /** Mesaj zamanını dilbilime yakın formatla. */
@@ -27,8 +29,6 @@ function formatTime(iso) {
   return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
 }
 
-const POLL_INTERVAL = 5000  // 5 sn
-
 /* ── Tek sohbet öğesi (sol panel) ── */
 function ConversationItem({ conv, isActive, onClick }) {
   const online = useOnline(conv.otherPartyId)  // FAZ 1/#60
@@ -39,7 +39,8 @@ function ConversationItem({ conv, isActive, onClick }) {
       <div className="flex items-start gap-3">
         <div className="relative flex-shrink-0">
           {conv.otherPartyAvatarUrl ? (
-            <img src={conv.otherPartyAvatarUrl} alt={conv.otherPartyName}
+            <img src={cldImg(conv.otherPartyAvatarUrl, { w: ImgSize.avatarSm })} alt={conv.otherPartyName}
+              loading="lazy" decoding="async"
               className="w-10 h-10 rounded-full object-cover border border-cream-300" />
           ) : (
             <div className="w-10 h-10 rounded-full flex items-center justify-center bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
@@ -123,7 +124,8 @@ function MessageBubble({ m }) {
         {/* Attachment */}
         {hasAttach && isImage && (
           <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer" className="block">
-            <img src={m.attachmentUrl} alt={m.attachmentName || 'foto'}
+            <img src={cldImg(m.attachmentUrl, { w: ImgSize.card })} alt={m.attachmentName || 'foto'}
+                 loading="lazy" decoding="async"
                  className="max-h-72 w-auto object-contain bg-cream-100 dark:bg-ink-800" />
           </a>
         )}
@@ -233,14 +235,15 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
   const lastSeenIdRef = useRef(0)
   const scrollAnchorRef = useRef(null)
   const queryClient = useQueryClient()
+  const wsOk = useWsConnected()  // FAZ 4.8 — WS bağlıyken polling KAPALI
 
   // F0.10 + FAZ 1/#12 — Mesajlar useQuery
-  // WS push olunca anlık invalidate. Polling fallback 30sn'ye çekildi.
+  // WS aktifken push gelir; sadece WS kopuksa 30sn fallback polling devreye girer.
   const { data: messagesData, isLoading: loading } = useQuery({
     queryKey: keys.conversations.messages(conversation?.id),
     queryFn: () => hotelApi.getConversationMessages(conversation.id, { size: 100 }),
     enabled: !!conversation,
-    refetchInterval: conversation ? 30000 : false,  // WS fail durumunda fallback
+    refetchInterval: conversation && !wsOk ? 30000 : false,
     refetchOnWindowFocus: true,
     staleTime: 2000,
   })
@@ -571,7 +574,8 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
           </svg>
         </button>
         {conversation.otherPartyAvatarUrl ? (
-          <img src={conversation.otherPartyAvatarUrl} alt={conversation.otherPartyName}
+          <img src={cldImg(conversation.otherPartyAvatarUrl, { w: ImgSize.avatarSm })} alt={conversation.otherPartyName}
+            loading="lazy" decoding="async"
             className="w-9 h-9 rounded-full object-cover border border-cream-300" />
         ) : (
           <div className="w-9 h-9 rounded-full flex items-center justify-center bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
@@ -735,13 +739,20 @@ export default function MessagesPage() {
   const [showListMobile, setShowListMobile] = useState(true)
   const [search, setSearch] = useState('')
   const queryClient = useQueryClient()
+  const wsOk = useWsConnected()  // FAZ 4.8
+
+  // FAZ 4.8 — WS reconnect olunca tek seferlik catch-up
+  useWsReconnectInvalidate([
+    keys.conversations.list(),
+    keys.conversations.unreadCount(),
+  ])
 
   // F0.10 + FAZ 1/#12 — Conversations useQuery
-  // WS push olunca anlık invalidate. Polling 60sn fallback.
+  // WS aktifken push gelir; WS koparsa 60sn fallback polling.
   const { data: convData, isLoading: loading } = useQuery({
     queryKey: keys.conversations.list(),
     queryFn: () => hotelApi.getMyConversations({ size: 50 }),
-    refetchInterval: 60000,
+    refetchInterval: wsOk ? false : 60000,
     refetchOnWindowFocus: true,
     staleTime: 2000,
   })
@@ -865,7 +876,8 @@ function ConversationDetailPanel({ conversation }) {
       {/* Avatar + isim header */}
       <div className="px-5 py-6 border-b border-cream-200 dark:border-cream-300 text-center">
         {c.otherPartyAvatarUrl ? (
-          <img src={c.otherPartyAvatarUrl} alt={c.otherPartyName}
+          <img src={cldImg(c.otherPartyAvatarUrl, { w: ImgSize.avatarMd })} alt={c.otherPartyName}
+               loading="lazy" decoding="async"
                className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-2 border-cream-300" />
         ) : (
           <div className="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold"

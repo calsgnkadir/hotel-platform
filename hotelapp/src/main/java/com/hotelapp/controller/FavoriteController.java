@@ -31,7 +31,7 @@ public class FavoriteController {
     @PostMapping("/api/business/favorites/{candidateId}")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     public ResponseEntity<FavoriteDto> addFavorite(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long candidateId,
             @RequestBody(required = false) FavoriteNoteDto body) {
         String note = body != null ? body.getNote() : null;
@@ -42,7 +42,7 @@ public class FavoriteController {
     @DeleteMapping("/api/business/favorites/{candidateId}")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     public ResponseEntity<Void> removeFavorite(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long candidateId) {
         favoriteService.removeFavorite(currentUser.getId(), candidateId);
         return ResponseEntity.noContent().build();
@@ -51,7 +51,7 @@ public class FavoriteController {
     @Operation(summary = "Tum favori adaylarimi listele")
     @GetMapping("/api/business/favorites")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
-    public ResponseEntity<List<FavoriteDto>> listFavorites(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<List<FavoriteDto>> listFavorites(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(favoriteService.listFavorites(currentUser.getId()));
     }
 
@@ -59,7 +59,7 @@ public class FavoriteController {
     @GetMapping("/api/business/favorites/{candidateId}/check")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     public ResponseEntity<Map<String, Boolean>> isFavorite(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long candidateId) {
         return ResponseEntity.ok(Map.of("favorited",
                 favoriteService.isFavorited(currentUser.getId(), candidateId)));
@@ -68,7 +68,7 @@ public class FavoriteController {
     @Operation(summary = "Aday: kac isletme tarafindan favorilenmisim? (motivasyon)")
     @GetMapping("/api/candidate/favorited-count")
     @PreAuthorize("hasRole('CANDIDATE')")
-    public ResponseEntity<Map<String, Long>> getMyFavoritedCount(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<Map<String, Long>> getMyFavoritedCount(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         long count = currentUser != null ? favoriteService.countFavoritedBy(currentUser.getId()) : 0L;
         Map<String, Long> body = new java.util.HashMap<>();
         body.put("count", count);  // Map.of null kabul etmez, HashMap kullaniyoruz (defensive)

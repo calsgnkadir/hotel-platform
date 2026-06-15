@@ -76,6 +76,12 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails);
     }
 
+    // FAZ 4.6 — User overload: AuthService gibi UserDetails contract'i olmayan
+    // entity'lerden cagri icin. User'i UserPrincipal'a wrap ederek delegelisir.
+    public String generateToken(com.hotelapp.entity.User user) {
+        return generateToken(new HashMap<>(), new UserPrincipal(user));
+    }
+
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
                 .claims(extraClaims)

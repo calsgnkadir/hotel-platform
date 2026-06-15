@@ -13,7 +13,8 @@ import com.hotelapp.service.ReportService.ReportDto;
 import com.hotelapp.service.ReportService.UpdateReportStatusRequest;
 import com.hotelapp.service.AuditLogService;
 import com.hotelapp.service.AuditLogService.AuditLogDto;
-import com.hotelapp.entity.User;
+import com.hotelapp.event.AuditLoggedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +38,7 @@ public class AdminController {
     private final AdminService adminService;
     private final ReportService reportService;
     private final AuditLogService auditLogService;
+    private final ApplicationEventPublisher eventPublisher; // FAZ 4.10
 
     // ================================================================
     // İşlem geçmişi (D4 audit log)
@@ -64,14 +66,14 @@ public class AdminController {
     @Operation(summary = "Şikayet durumunu güncelle (RESOLVED/DISMISSED)")
     @PutMapping("/reports/{id}/status")
     public ResponseEntity<ReportDto> updateReportStatus(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id,
             @Valid @RequestBody UpdateReportStatusRequest request) {
         ReportDto result = reportService.updateStatus(id, request.getStatus(), request.getAdminNote());
-        auditLogService.log(currentUser.getId(),
+        eventPublisher.publishEvent(AuditLoggedEvent.user(currentUser.getId(),
                 request.getStatus().name().equals("RESOLVED") ? "RESOLVE_REPORT" : "DISMISS_REPORT",
                 "REPORT", id,
-                "Şikayet #" + id + " → " + request.getStatus());
+                "Şikayet #" + id + " → " + request.getStatus()));
         return ResponseEntity.ok(result);
     }
 
@@ -100,23 +102,23 @@ public class AdminController {
     @Operation(summary = "Kullanıcıyı banla (gün cinsinden süre)")
     @PutMapping("/users/{id}/ban")
     public ResponseEntity<UserSummary> ban(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id,
             @Valid @RequestBody BanRequest request) {
         UserSummary result = adminService.ban(id, request.getDays());
-        auditLogService.log(currentUser.getId(), "BAN_USER", "USER", id,
-                request.getDays() + " gün ban (" + result.getEmail() + ")");
+        eventPublisher.publishEvent(AuditLoggedEvent.user(currentUser.getId(), "BAN_USER", "USER", id,
+                request.getDays() + " gün ban (" + result.getEmail() + ")"));
         return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "Banı kaldır")
     @PutMapping("/users/{id}/unban")
     public ResponseEntity<UserSummary> unban(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id) {
         UserSummary result = adminService.unban(id);
-        auditLogService.log(currentUser.getId(), "UNBAN_USER", "USER", id,
-                "Ban kaldırıldı (" + result.getEmail() + ")");
+        eventPublisher.publishEvent(AuditLoggedEvent.user(currentUser.getId(), "UNBAN_USER", "USER", id,
+                "Ban kaldırıldı (" + result.getEmail() + ")"));
         return ResponseEntity.ok(result);
     }
 

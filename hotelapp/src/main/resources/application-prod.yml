@@ -1,15 +1,37 @@
-# Production profili — Railway deploy
+# Production profili — Railway/Render/Fly deploy
 # Çalıştırmak için ENV: SPRING_PROFILES_ACTIVE=prod
 #
-# ⚠ Bu yml secret içermez. Tüm hassas değerler Railway env vars'dan gelir:
+# ⚠ Bu yml secret içermez. Tüm hassas değerler env vars'dan gelir:
 #   DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD, JWT_SECRET
-#   APP_CORS_ALLOWED_ORIGINS  (örn: https://hotel-platform.vercel.app)
+#   APP_CORS_ALLOWED_ORIGINS, CLOUDINARY_URL, RESEND_API_KEY,
+#   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, GOOGLE_CLIENT_ID/SECRET
 
-# #92: Railway proxy arkasındaki HTTPS scheme'i tanı — OAuth redirect URI https:// olsun
+# ════════════════════════════════════════════════════════════════
+# SERVER
+# ════════════════════════════════════════════════════════════════
 server:
+  # #92: Railway proxy arkasındaki HTTPS scheme'i tanı — OAuth redirect URI https:// olsun
   forward-headers-strategy: framework
 
+  # FAZ 4.2 — Graceful shutdown:
+  # SIGTERM gelince yeni request kabul etmez, devam edenler 25 sn'de bitmeli.
+  # Pod restart/scale-down sırasında yarım request 502'ye dönmez.
+  shutdown: graceful
+
+  # Düşük heap (Railway 512MB) için Tomcat thread tuning.
+  # Default 200 thread × her biri ~512 KB stack = ~100 MB → fazla.
+  tomcat:
+    threads:
+      max:          ${SERVER_THREADS_MAX:50}
+      min-spare:    ${SERVER_THREADS_MIN:5}
+    accept-count:   ${SERVER_ACCEPT_COUNT:100}
+    connection-timeout: 20000   # 20 sn — yavaş client'lar pool tutmasın
+
 spring:
+  # FAZ 4.2 — SIGTERM sonrası shutdown için maksimum bekleme
+  lifecycle:
+    timeout-per-shutdown-phase: 25s
+
   datasource:
     # Tarih kayması fix: connectionTimeZone + forceConnectionTimeZoneToSession + preserveInstants=false
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=true&serverTimezone=Europe/Istanbul&connectionTimeZone=Europe/Istanbul&forceConnectionTimeZoneToSession=true&preserveInstants=false&allowPublicKeyRetrieval=true
@@ -17,21 +39,34 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
     # HikariCP — düşük trafik için bağlantı havuzunu küçült (RAM tasarrufu)
+    # FAZ 4.2 — keepalive + max-lifetime suspend/network drop sonrası stale conn yok
     hikari:
-      maximum-pool-size: 3      # Varsayılan 10 — küçük app için 3 yeter
-      minimum-idle: 1           # Varsayılan 10 — boşken sadece 1 bağlantı tut
-      idle-timeout: 60000       # 1 dk
-      max-lifetime: 600000      # 10 dk
-      connection-timeout: 20000 # 20 sn
+      maximum-pool-size:     ${DB_POOL_MAX:5}
+      minimum-idle:          ${DB_POOL_MIN:1}
+      idle-timeout:          120000     # 2 dk
+      max-lifetime:          600000     # 10 dk: conn'ları zorla rotate
+      keepalive-time:        60000      # 60 sn idle ping
+      connection-timeout:    20000
+      validation-timeout:    5000
+      connection-test-query: SELECT 1
+      # Pool çöktüğünde daha hızlı yeni conn yarat (default 30 sn)
+      leak-detection-threshold: 60000
 
   jpa:
     hibernate:
-      ddl-auto: update     # İlk deploy'da tabloları yaratır, sonrasında schema değişiklikleri uygular
-    show-sql: false        # Prod'da SQL loglanmasın
+      # ⚠⚠ DİKKAT — FAZ 4.3 Flyway eklendikten sonra MUTLAKA "validate"'e çevir.
+      # "update" Hibernate'in entity diff'inden DDL üretmesi demek — prod'da:
+      #   - Yanlış sütun rename (silinen+yenisi sıfırdan oluşturulur → veri kaybı)
+      #   - Concurrent migration race condition
+      #   - Çift backend pod'unda çakışan DDL
+      # Geçici çare: "validate" (Flyway gerekir) veya "none" (manuel SQL).
+      ddl-auto:    ${JPA_DDL_AUTO:update}
+    show-sql:      false
+    open-in-view:  false   # F0.13 — Hibernate session servlet thread'inde açık kalmasın
     properties:
       hibernate:
         format_sql: false
-        # Hibernate temporal tipler için zaman dilimi — LocalDate 1 gün geri kaymayı önler
+        default_batch_fetch_size: 20   # N+1 fix
         jdbc:
           time_zone: Europe/Istanbul
 
@@ -41,24 +76,77 @@ spring:
       max-file-size: 20MB
       max-request-size: 25MB
 
-# CORS — Vercel domain'i env var ile gelir
+# ════════════════════════════════════════════════════════════════
+# CORS
+# ════════════════════════════════════════════════════════════════
 app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
 
-# File uploads — Cloudinary'ye geçildi (Railway ephemeral disk veri kaybı sorunu)
+# ════════════════════════════════════════════════════════════════
+# STORAGE
+# ════════════════════════════════════════════════════════════════
 file:
-  upload-dir: ${FILE_UPLOAD_DIR:./uploads}   # legacy, artık kullanılmıyor
+  upload-dir: ${FILE_UPLOAD_DIR:./uploads}   # legacy, artık kullanılmıyor — Cloudinary
 
-# Cloudinary — kalıcı dosya/foto storage (Railway env var)
 cloudinary:
   url: ${CLOUDINARY_URL}
 
-# Logging — prod'da gürültü azalt
+# ════════════════════════════════════════════════════════════════
+# FAZ 4.2 — ACTUATOR (production-grade health + metrics)
+# ════════════════════════════════════════════════════════════════
+# - /actuator/health PUBLIC (Railway/Render healthcheck için)
+# - Diğer endpoint'ler authenticated (admin)
+# - show-details: when-authorized → DB up/down bilgisi sadece auth'a
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers
+  endpoint:
+    health:
+      show-details:    when-authorized
+      show-components: when-authorized
+      probes:
+        # Spring Boot 3.x — Kubernetes-style liveness + readiness ayrılır
+        # /actuator/health/liveness  → app yaşıyor mu (JVM çökme)
+        # /actuator/health/readiness → trafiği kabul edebilir mi (DB up + cache hot)
+        enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+# Build/git info /actuator/info'da görünür (build sırasında doldurulur)
+info:
+  app:
+    name: AjansHotel
+    version: ${APP_VERSION:dev}
+  java:
+    version: ${java.version}
+
+# ════════════════════════════════════════════════════════════════
+# LOGGING — prod'da gürültü azalt
+# ════════════════════════════════════════════════════════════════
 logging:
   level:
     root: INFO
     com.hotelapp: INFO
     org.springframework.security: WARN
     org.hibernate: WARN
+    org.hibernate.SQL: WARN
     com.zaxxer.hikari: WARN
+  pattern:
+    # Korelasyon için trace ID — Spring 3.2 micrometer-tracing entegrasyonu olmadan
+    # request başına unique correlation log üretmek için pattern.console'a [%X{...}] ekle
+    console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"

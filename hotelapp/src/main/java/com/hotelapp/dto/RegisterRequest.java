@@ -6,6 +6,7 @@ import com.hotelapp.validation.TurkeyPhone;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -19,7 +20,16 @@ public class RegisterRequest {
     @NotBlank
     private String email;
 
+    /**
+     * FAZ 4.4 — Sifre politikasi:
+     *   - En az 8 karakter
+     *   - En az 1 harf (a-zA-Z) + en az 1 rakam (0-9)
+     */
     @Size(min = 8, message = "Şifre en az 8 karakter olmalı")
+    @Pattern(
+        regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
+        message = "Şifre en az 1 harf ve 1 rakam içermeli"
+    )
     private String password;
 
     @NotNull(message = "Rol seçimi zorunlu")

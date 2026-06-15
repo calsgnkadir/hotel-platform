@@ -47,7 +47,7 @@ public class ApplicationController {
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<ApplicationResponse>> myApplications(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestParam(required = false) ApplicationStatus status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(
@@ -59,7 +59,7 @@ public class ApplicationController {
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApplicationResponse> createApplication(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @Valid @RequestBody ApplicationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(applicationService.createApplication(currentUser.getId(), request));
@@ -70,10 +70,11 @@ public class ApplicationController {
             description = "Sadece PENDING veya REVIEWING durumdaki başvurular iptal edilebilir. ACCEPTED ise iptal yapılamaz."
     )
     @PutMapping("/api/candidate/applications/{applicationId}/withdraw")
-    @PreAuthorize("hasRole('CANDIDATE')")
+    // FAZ 4.9 — Method-level: sadece kendi basvurusunu iptal edebilir
+    @PreAuthorize("hasRole('CANDIDATE') and @securityChecks.isApplicationCandidate(#p1)")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApplicationResponse> withdrawApplication(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(
                 applicationService.withdrawApplication(applicationId, currentUser.getId()));
@@ -84,7 +85,7 @@ public class ApplicationController {
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> respondToDocumentRequest(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long requestId,
             @RequestParam boolean grant) {
         applicationService.respondToDocumentRequest(requestId, currentUser.getId(), grant);
@@ -104,7 +105,7 @@ public class ApplicationController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<ApplicationResponse>> businessApplications(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestParam(required = false) ApplicationStatus status,
             @RequestParam(required = false) Long listingId,
             @RequestParam(required = false) String q,
@@ -118,7 +119,7 @@ public class ApplicationController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApplicationResponse> startReview(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(
                 applicationService.startReview(applicationId, currentUser.getId()));
@@ -129,7 +130,7 @@ public class ApplicationController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApplicationResponse> hold(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(
                 applicationService.holdApplication(applicationId, currentUser.getId()));
@@ -140,7 +141,7 @@ public class ApplicationController {
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApplicationResponse> respondToHold(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId,
             @RequestParam boolean accept) {
         return ResponseEntity.ok(
@@ -149,10 +150,11 @@ public class ApplicationController {
 
     @Operation(summary = "Başvuruyu sonuçlandır (ACCEPTED/REJECTED) — sadece BUSINESS_OWNER")
     @PutMapping("/api/business/applications/{applicationId}/decide")
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    // FAZ 4.9 — Method-level: role + bu basvuru gerçekten benim isletmeme mi ait?
+    @PreAuthorize("hasRole('BUSINESS_OWNER') and @securityChecks.isApplicationBusinessOwner(#p1)")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApplicationResponse> decide(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId,
             @Valid @RequestBody ReviewRequest request) {
         return ResponseEntity.ok(
@@ -164,10 +166,11 @@ public class ApplicationController {
             description = "Adayın strike hakkı 1 düşer. Hak sıfıra inerse aday 30 gün otomatik banlanır ve hakları 3'e resetlenir."
     )
     @PutMapping("/api/business/applications/{applicationId}/no-show")
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    // FAZ 4.9 — Method-level: bu basvuru benim isletmeme mi ait?
+    @PreAuthorize("hasRole('BUSINESS_OWNER') and @securityChecks.isApplicationBusinessOwner(#p1)")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<NoShowResult> markNoShow(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(
                 applicationService.markNoShow(applicationId, currentUser.getId()));
@@ -178,7 +181,7 @@ public class ApplicationController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApplicationResponse> requestDocument(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId,
             @Valid @RequestBody DocRequestCreate dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -190,7 +193,7 @@ public class ApplicationController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<DocumentDto>> getAccessibleDocs(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(documentService.getAccessibleDocsForApplication(applicationId, currentUser.getId()));
     }

@@ -1,8 +1,8 @@
 package com.hotelapp.controller;
 
 import com.hotelapp.entity.PushSubscription;
-import com.hotelapp.entity.User;
 import com.hotelapp.repository.PushSubscriptionRepository;
+import com.hotelapp.security.UserPrincipal;
 import com.hotelapp.service.VapidService;
 import jakarta.transaction.Transactional;
 import lombok.Data;
@@ -33,16 +33,16 @@ public class PushController {
     /** Yeni abonelik kaydet (ayni endpoint varsa update). */
     @PostMapping("/subscribe")
     @Transactional
-    public ResponseEntity<Void> subscribe(@AuthenticationPrincipal User user,
+    public ResponseEntity<Void> subscribe(@AuthenticationPrincipal UserPrincipal currentUser,
                                           @RequestBody SubscriptionDto body) {
-        if (user == null || body == null || body.endpoint == null) {
+        if (currentUser == null || body == null || body.endpoint == null) {
             return ResponseEntity.badRequest().build();
         }
         PushSubscription sub = repo.findByEndpoint(body.endpoint)
                 .orElseGet(() -> PushSubscription.builder()
                         .endpoint(body.endpoint)
                         .build());
-        sub.setUser(user);
+        sub.setUser(currentUser.getUser());
         sub.setP256dh(body.p256dh);
         sub.setAuthSecret(body.auth);
         repo.save(sub);
