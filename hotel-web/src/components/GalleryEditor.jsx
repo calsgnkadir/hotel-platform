@@ -3,15 +3,32 @@ import * as hotelApi from '../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../api/client'
 import cldImg, { ImgSize } from '../lib/cldImg'
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 const MAX_PHOTOS = 10
 const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']
 const MAX_SIZE = 10 * 1024 * 1024  // 10 MB
 
 /**
- * İşletme galerisi editörü.
- * - Çoklu yükleme (file input multiple)
- * - HTML5 drag-drop ile sıralama
+ * Isletme galerisi editoru.
+ * - Coklu yukleme (file input multiple)
+ * - @dnd-kit ile masaustu + mobil drag-drop siralama (FAZ 5.5c)
  * - Her foto: kapak yap, sil
  * - Limit: 10 foto, max 10 MB her biri
  */
@@ -21,7 +38,6 @@ export default function GalleryEditor() {
   const [uploading, setUploading] = useState(false)
   const [busyId, setBusyId] = useState(null)
   const fileInputRef = useRef(null)
-  const dragId = useRef(null)
 
   const fetchPhotos = useCallback(async () => {
     try {
@@ -50,7 +66,7 @@ export default function GalleryEditor() {
   async function handleFiles(e) {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
-    e.target.value = ''  // tekrar aynı dosyayı seçebilsin
+    e.target.value = ''
 
     const remaining = MAX_PHOTOS - photos.length
     if (files.length > remaining) {
@@ -80,7 +96,7 @@ export default function GalleryEditor() {
     setBusyId(photoId)
     try {
       await hotelApi.deleteBusinessPhoto(photoId)
-      await fetchPhotos()  // kapak/sıralama otomatik güncellenmiş olabilir
+      await fetchPhotos()
       toast.success('Foto silindi')
     } catch (err) {
       toast.error(extractErrorMessage(err))
@@ -102,30 +118,30 @@ export default function GalleryEditor() {
     }
   }
 
-  // ── Drag-drop sıralama ──
-  function onDragStart(id) { dragId.current = id }
-  function onDragOver(e) { e.preventDefault() }
+  // FAZ 5.5c — @dnd-kit ile siralama
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
-  async function onDrop(targetId) {
-    const sourceId = dragId.current
-    dragId.current = null
-    if (!sourceId || sourceId === targetId) return
+  async function handleDragEnd(e) {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
 
-    const srcIdx = photos.findIndex(p => p.id === sourceId)
-    const tgtIdx = photos.findIndex(p => p.id === targetId)
-    if (srcIdx < 0 || tgtIdx < 0) return
+    const from = photos.findIndex(p => p.id === active.id)
+    const to   = photos.findIndex(p => p.id === over.id)
+    if (from < 0 || to < 0) return
 
-    const next = photos.slice()
-    const [moved] = next.splice(srcIdx, 1)
-    next.splice(tgtIdx, 0, moved)
-    setPhotos(next)  // optimistic UI
+    const next = arrayMove(photos, from, to)
+    setPhotos(next)  // optimistic
 
     try {
       const updated = await hotelApi.reorderBusinessPhotos(next.map(p => p.id))
       setPhotos(updated)
     } catch (err) {
       toast.error(extractErrorMessage(err))
-      fetchPhotos()  // hata durumunda sunucudan tekrar al
+      fetchPhotos()
     }
   }
 
@@ -170,51 +186,93 @@ export default function GalleryEditor() {
           <p className="text-xs text-ink-400 mt-1">İlk foto eklenince otomatik kapak olur</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {photos.map(p => (
-            <div key={p.id}
-              draggable
-              onDragStart={() => onDragStart(p.id)}
-              onDragOver={onDragOver}
-              onDrop={() => onDrop(p.id)}
-              className="relative group aspect-square rounded-lg overflow-hidden border-2 border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-600 cursor-move bg-cream-100 dark:bg-ink-700">
-              <img src={cldImg(p.url, { w: ImgSize.thumb })} alt=""
-                className="w-full h-full object-cover"
-                loading="lazy" decoding="async" />
-
-              {/* Kapak badge'i */}
-              {p.isCover && (
-                <div className="absolute top-1 left-1 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-md bg-brand-700">
-                  Kapak
-                </div>
-              )}
-
-              {/* Hover action overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                {!p.isCover && (
-                  <button onClick={() => handleSetCover(p.id)} disabled={busyId === p.id}
-                    title="Kapak yap"
-                    className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-amber-600 shadow disabled:opacity-50">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
-                         className="w-4 h-4 mx-auto">
-                      <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                    </svg>
-                  </button>
-                )}
-                <button onClick={() => handleDelete(p.id)} disabled={busyId === p.id}
-                  title="Sil"
-                  className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-red-600 shadow disabled:opacity-50">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       strokeWidth={2} stroke="currentColor" className="w-4 h-4 mx-auto">
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                      d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21q.115.144.116.32V5.79c0 .15-.038.288-.116.43L18 6c0 1.005-.105 1.98-.305 2.92M19.228 5.79a48.108 48.108 0 0 0-3.478-.397m0 0a48.11 48.11 0 0 0-3.478-.397m0 0v3.66M4.772 5.79c.115.144.116.32-.116.43L4.5 6c0 1.005.105 1.98.305 2.92M4.772 5.79a48.11 48.11 0 0 1 3.478-.397m0 0V3.75a2.25 2.25 0 0 1 2.25-2.25h2.85a2.25 2.25 0 0 1 2.25 2.25v1.643" />
-                  </svg>
-                </button>
-              </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={photos.map(p => p.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {photos.map(p => (
+                <SortablePhoto
+                  key={p.id}
+                  photo={p}
+                  busy={busyId === p.id}
+                  onSetCover={() => handleSetCover(p.id)}
+                  onDelete={() => handleDelete(p.id)}
+                />
+              ))}
             </div>
-          ))}
+          </SortableContext>
+        </DndContext>
+      )}
+    </div>
+  )
+}
+
+/* FAZ 5.5c — sortable foto karti (grid icin) */
+function SortablePhoto({ photo, busy, onSetCover, onDelete }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: photo.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 20 : 'auto',
+    boxShadow: isDragging ? '0 16px 36px rgba(126, 34, 206, 0.40)' : undefined,
+  }
+
+  // Butona dokununca drag baslamasin
+  const stopDrag = (e) => e.stopPropagation()
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="relative group aspect-square rounded-lg overflow-hidden border-2 border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-600 cursor-grab active:cursor-grabbing touch-none bg-cream-100 dark:bg-ink-700"
+    >
+      <img src={cldImg(photo.url, { w: ImgSize.thumb })} alt=""
+        className="w-full h-full object-cover pointer-events-none"
+        loading="lazy" decoding="async" />
+
+      {photo.isCover && (
+        <div className="absolute top-1 left-1 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-md bg-brand-700">
+          Kapak
         </div>
       )}
+
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+        {!photo.isCover && (
+          <button
+            onPointerDown={stopDrag}
+            onClick={onSetCover}
+            disabled={busy}
+            title="Kapak yap"
+            className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-amber-600 shadow disabled:opacity-50">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                 className="w-4 h-4 mx-auto">
+              <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+            </svg>
+          </button>
+        )}
+        <button
+          onPointerDown={stopDrag}
+          onClick={onDelete}
+          disabled={busy}
+          title="Sil"
+          className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-red-600 shadow disabled:opacity-50">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               strokeWidth={2} stroke="currentColor" className="w-4 h-4 mx-auto">
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21q.115.144.116.32V5.79c0 .15-.038.288-.116.43L18 6c0 1.005-.105 1.98-.305 2.92M19.228 5.79a48.108 48.108 0 0 0-3.478-.397m0 0a48.11 48.11 0 0 0-3.478-.397m0 0v3.66M4.772 5.79c.115.144.116.32-.116.43L4.5 6c0 1.005.105 1.98.305 2.92M4.772 5.79a48.11 48.11 0 0 1 3.478-.397m0 0V3.75a2.25 2.25 0 0 1 2.25-2.25h2.85a2.25 2.25 0 0 1 2.25 2.25v1.643" />
+          </svg>
+        </button>
+      </div>
     </div>
   )
 }
