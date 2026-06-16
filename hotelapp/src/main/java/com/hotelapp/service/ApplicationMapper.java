@@ -22,6 +22,7 @@ import java.util.List;
 public class ApplicationMapper {
 
     private final ReviewService reviewService;
+    private final ReliabilityService reliabilityService;
     private final FileStorageService fileStorageService;
     private final ConversationRepository conversationRepository;
 
@@ -95,9 +96,9 @@ public class ApplicationMapper {
                 .build();
     }
 
-    /** Aday ozeti — avatar + rating dahil */
+    /** Aday ozeti — avatar + rating + reliability score dahil */
     public ApplicationResponse.CandidateSummary buildCandidateSummary(User candidate) {
-        var rating = reviewService.getCandidateRating(candidate.getId());
+        var rel = reliabilityService.computeForCandidate(candidate.getId());
         return ApplicationResponse.CandidateSummary.builder()
                 .id(candidate.getId())
                 .fullName(candidate.getFullName())
@@ -105,8 +106,9 @@ public class ApplicationMapper {
                 .avatarUrl(candidate.getAvatarPath() != null
                         ? fileStorageService.publicUrl(candidate.getAvatarPath())
                         : null)
-                .averageRating(rating.getAverageRating())
-                .reviewCount(rating.getReviewCount())
+                .averageRating(rel.getAverageRating())
+                .reviewCount(rel.getReviewCount())
+                .reliabilityScore(rel.getScore())
                 .build();
     }
 }

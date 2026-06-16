@@ -24,6 +24,30 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     Optional<Application> findFirstByCandidateIdAndJobListingIdAndStatusIn(
             Long candidateId, Long jobListingId, Collection<ApplicationStatus> statuses);
 
+    // ----------------------------------------------------------------
+    // Reliability score için yardımcı sayımlar
+    // ----------------------------------------------------------------
+
+    /** Adayın toplam no-show kaydı (her statüden). */
+    long countByCandidateIdAndNoShowTrue(Long candidateId);
+
+    /**
+     * Adayın belirtilen tarihten itibaren tamamlanmış (ACCEPTED + reviewedAt set +
+     * no-show değil) başvuru sayısı. Reliability skorunda "son 90 gün tamamlanmış iş"
+     * bonusu için kullanılır.
+     */
+    @Query("""
+        SELECT COUNT(a) FROM Application a
+        WHERE a.candidate.id = :candidateId
+          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
+          AND a.noShow = false
+          AND a.reviewedAt IS NOT NULL
+          AND a.reviewedAt >= :since
+    """)
+    long countCompletedAcceptedSince(
+            @Param("candidateId") Long candidateId,
+            @Param("since") LocalDateTime since);
+
     List<Application> findAllByJobListing_Business_OwnerId(Long ownerId);
 
     List<Application> findAllByJobListing_Business_OwnerIdAndStatus(Long ownerId, ApplicationStatus status);

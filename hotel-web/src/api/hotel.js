@@ -105,6 +105,12 @@ export async function deleteCandidateAvatar() {
   await api.delete('/api/candidate/avatar')
 }
 
+// Faz B/#11: Adayın kendi güvenilirlik skoru + breakdown
+export async function getMyReliability() {
+  const { data } = await api.get('/api/candidate/reliability')
+  return data  // { score, noShowCount, completedJobsLast90d, averageRating, reviewCount }
+}
+
 /* ── Job listing endpoints (public browse) ── */
 /**
  * Aktif ilanları listele — tüm filtreler opsiyonel.

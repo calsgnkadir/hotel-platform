@@ -20,6 +20,13 @@ export default function ProfileTab() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [reliability, setReliability] = useState(null)
+
+  useEffect(() => {
+    hotelApi.getMyReliability()
+      .then(setReliability)
+      .catch(() => {})  // sessiz hata: panel skoru kritik degil
+  }, [])
 
   useEffect(() => {
     hotelApi.getCandidateProfile()
@@ -222,6 +229,8 @@ export default function ProfileTab() {
         </div>
       </div>
 
+      {reliability && <ReliabilityCard data={reliability} />}
+
       <div className="card p-5">
         <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#e9d5ff' }}>Profil Fotoğrafı</h3>
         <div className="flex items-center gap-4">
@@ -423,6 +432,71 @@ export default function ProfileTab() {
       </form>
 
       <ChangePasswordCard />
+    </div>
+  )
+}
+
+/**
+ * Faz B/#11 — Adayın kendi güvenilirlik skoru kartı.
+ * 0-100 arası, breakdown pill'leri (rating + tamamlanmış iş + no-show) + ilerleme çubuğu.
+ */
+function ReliabilityCard({ data }) {
+  const { score = 0, noShowCount = 0, completedJobsLast90d = 0, averageRating, reviewCount } = data
+
+  let band, color, bg
+  if (score >= 80)      { band = 'Yüksek';   color = '#86efac'; bg = 'linear-gradient(90deg, #16a34a, #4ade80)' }
+  else if (score >= 60) { band = 'Ortalama'; color = '#fcd34d'; bg = 'linear-gradient(90deg, #d97706, #fbbf24)' }
+  else if (score >= 40) { band = 'Dikkat';   color = '#fdba74'; bg = 'linear-gradient(90deg, #ea580c, #fb923c)' }
+  else                  { band = 'Düşük';    color = '#fca5a5'; bg = 'linear-gradient(90deg, #b91c1c, #ef4444)' }
+
+  return (
+    <div className="card p-5"
+         style={{
+           background: 'linear-gradient(135deg, rgba(20, 14, 38, 0.85), rgba(15, 10, 30, 0.85))',
+           border: '1px solid rgba(168, 85, 247, 0.20)',
+         }}>
+      <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: '#a5b4fc' }}>
+            Güvenilirlik Skoru
+          </p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="font-bebas text-4xl tracking-wider" style={{ color: '#ffffff' }}>{score}</span>
+            <span className="text-xs" style={{ color: '#a5b4fc' }}>/ 100</span>
+            <span className="ml-2 text-[11px] font-bold uppercase tracking-wider" style={{ color }}>{band}</span>
+          </div>
+        </div>
+        <p className="text-[11px] max-w-xs text-right" style={{ color: '#a5b4fc' }}>
+          İşletmeler aday seçerken bu skoru görür. Yüksek tutmak seni öne çıkarır.
+        </p>
+      </div>
+
+      <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(168, 85, 247, 0.15)' }}>
+        <div className="h-full rounded-full transition-all"
+             style={{ width: `${Math.max(2, score)}%`, background: bg }} />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <BreakdownPill label="Ortalama puan" value={averageRating != null ? `${averageRating.toFixed(1)} / 5` : 'Henüz yok'}
+                       hint={reviewCount ? `${reviewCount} yorum` : null} />
+        <BreakdownPill label="Son 90 gün" value={`${completedJobsLast90d} tamamlanmış iş`} />
+        <BreakdownPill label="No-show" value={`${noShowCount}`} bad={noShowCount > 0} />
+      </div>
+    </div>
+  )
+}
+
+function BreakdownPill({ label, value, hint, bad }) {
+  return (
+    <div className="rounded-lg px-2.5 py-1.5"
+         style={{
+           background: bad ? 'rgba(239, 68, 68, 0.10)' : 'rgba(168, 85, 247, 0.10)',
+           border: `1px solid ${bad ? 'rgba(239, 68, 68, 0.30)' : 'rgba(168, 85, 247, 0.20)'}`,
+         }}>
+      <p className="text-[9px] uppercase tracking-wider font-bold" style={{ color: '#a5b4fc' }}>{label}</p>
+      <p className="text-xs font-semibold mt-0.5" style={{ color: bad ? '#fca5a5' : '#e9d5ff' }}>
+        {value}{hint && <span className="ml-1 font-normal opacity-70">· {hint}</span>}
+      </p>
     </div>
   )
 }

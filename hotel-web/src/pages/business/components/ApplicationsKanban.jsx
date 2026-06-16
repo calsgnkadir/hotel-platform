@@ -15,6 +15,7 @@ import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
+import ReliabilityBadge from '../../../components/ReliabilityBadge'
 
 /*
  * FAZ 5.5a — Basvuru Kanban
@@ -274,8 +275,11 @@ function Card({ app, accent, onClick, onMessage }) {
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-semibold text-white truncate">
-              {app.candidate?.fullName || 'Anonim'}
+            <div className="flex items-center gap-1.5">
+              <div className="text-[13px] font-semibold text-white truncate flex-1 min-w-0">
+                {app.candidate?.fullName || 'Anonim'}
+              </div>
+              <ReliabilityBadge score={app.candidate?.reliabilityScore} />
             </div>
             <div className="text-[10px] truncate" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
               {app.listing?.title || '—'}

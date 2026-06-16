@@ -4,6 +4,8 @@ import com.hotelapp.entity.User;
 import com.hotelapp.service.CandidateProfileService;
 import com.hotelapp.service.CandidateProfileService.CandidateProfileDto;
 import com.hotelapp.service.CandidateProfileService.ProfileUpdateRequest;
+import com.hotelapp.service.ReliabilityService;
+import com.hotelapp.service.ReliabilityService.ReliabilityScore;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CandidateController {
 
     private final CandidateProfileService candidateProfileService;
+    private final ReliabilityService reliabilityService;
 
     @Operation(summary = "Kendi profilim — sadece CANDIDATE")
     @GetMapping("/api/candidate/profile")
@@ -57,5 +60,14 @@ public class CandidateController {
     public ResponseEntity<Void> deleteAvatar(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         candidateProfileService.deleteAvatar(currentUser.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Güvenilirlik skorum + breakdown — sadece CANDIDATE")
+    @GetMapping("/api/candidate/reliability")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ReliabilityScore> getMyReliability(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
+        return ResponseEntity.ok(reliabilityService.computeForCandidate(currentUser.getId()));
     }
 }

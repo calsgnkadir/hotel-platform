@@ -9,6 +9,7 @@ import cldImg, { ImgSize } from '../../../lib/cldImg'
 import useFocusTrap from '../../../lib/useFocusTrap'
 import ApplicationsKanban from '../components/ApplicationsKanban'
 import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
+import ReliabilityBadge from '../../../components/ReliabilityBadge'
 
 const VIEW_STORAGE_KEY = 'biz-applications-view'
 
@@ -255,7 +256,10 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                   </div>
                 )}
                 <div>
-                  <div className="font-semibold text-ink-800 dark:text-ink-900">{app.candidate?.fullName}</div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-ink-800 dark:text-ink-900">{app.candidate?.fullName}</span>
+                    <ReliabilityBadge score={app.candidate?.reliabilityScore} />
+                  </div>
                   <div className="text-xs text-ink-500">{app.candidate?.email}</div>
                   <div className="text-xs text-ink-400 mt-0.5">{app.listing?.title}</div>
                   <div className="text-xs text-ink-400">
@@ -331,7 +335,10 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                     </div>
                   )}
                   <div>
-                    <h2 id="application-detail-title" className="text-lg font-bold text-ink-900">{selected.candidate?.fullName}</h2>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 id="application-detail-title" className="text-lg font-bold text-ink-900">{selected.candidate?.fullName}</h2>
+                      <ReliabilityBadge score={selected.candidate?.reliabilityScore} size="md" showLabel />
+                    </div>
                     <p className="text-sm text-ink-500">{selected.candidate?.email}</p>
                   </div>
                 </div>
