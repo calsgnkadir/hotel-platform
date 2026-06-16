@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 
-// FAZ 5.4 — stagger variants (ListingsPage liste grid'i icin)
+// FAZ 5.4 — stagger variants (daha belirgin: scale + y + slow)
 const LIST_STAGGER = {
   hidden:  { opacity: 1 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.045, delayChildren: 0.04 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.075, delayChildren: 0.08 } },
 }
 const LIST_ITEM = {
-  hidden:  { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
+  hidden:  { opacity: 0, y: 28, scale: 0.94 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
 }
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
@@ -894,7 +894,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           className="grid sm:grid-cols-2 xl:grid-cols-2 lg:grid-cols-3 gap-4"
           variants={LIST_STAGGER}
           initial="hidden"
-          animate="visible"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.05, margin: '0px 0px -10% 0px' }}
         >
           {listings.map(listing => (
             <motion.div key={listing.id}
