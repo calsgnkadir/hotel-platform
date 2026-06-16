@@ -414,6 +414,20 @@ export async function adminGetStats() {
   return data
 }
 
+// FAZ 6.3 — Listing moderation
+export async function adminListListings(status, search) {
+  const params = {}
+  if (status) params.status = status
+  if (search) params.search = search
+  const { data } = await api.get('/api/admin/listings', { params })
+  return data
+}
+
+export async function adminSetListingStatus(id, status) {
+  const { data } = await api.put(`/api/admin/listings/${id}/status`, { status })
+  return data
+}
+
 /* ── Messaging (#76) ── */
 
 /** Sohbetlerim — PageResponse<ConversationDto> döner. */

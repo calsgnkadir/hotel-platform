@@ -29,6 +29,7 @@ const businessNav = [
 const adminNav = [
   { id: 'overview', tKey: 'nav.overview' },
   { id: 'users',    tKey: 'nav.users' },
+  { id: 'listings', label: 'İlanlar' },     // FAZ 6.3 — moderation
   { id: 'reports',  tKey: 'nav.reports' },
   { id: 'audit',    tKey: 'nav.audit' },
 ]

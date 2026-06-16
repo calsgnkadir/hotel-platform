@@ -211,4 +211,75 @@ public class AdminService {
     public static class BanRequest {
         @NotNull @Min(1) private Integer days;
     }
+
+    // ================================================================
+    // FAZ 6.3 — Listing moderation (admin)
+    // ================================================================
+
+    @Transactional(readOnly = true)
+    public List<AdminListingDto> listListingsForAdmin(com.hotelapp.enums.ListingStatus status, String search) {
+        var stream = jobListingRepository.findAll().stream();
+        if (status != null) {
+            stream = stream.filter(l -> l.getStatus() == status);
+        }
+        if (search != null && !search.isBlank()) {
+            String q = search.trim().toLowerCase();
+            stream = stream.filter(l ->
+                (l.getTitle() != null && l.getTitle().toLowerCase().contains(q)) ||
+                (l.getBusiness() != null && l.getBusiness().getName() != null
+                    && l.getBusiness().getName().toLowerCase().contains(q))
+            );
+        }
+        return stream
+            .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+            .limit(200)
+            .map(l -> AdminListingDto.builder()
+                .id(l.getId())
+                .title(l.getTitle())
+                .position(l.getPosition() != null ? l.getPosition().name() : null)
+                .status(l.getStatus().name())
+                .businessId(l.getBusiness() != null ? l.getBusiness().getId() : null)
+                .businessName(l.getBusiness() != null ? l.getBusiness().getName() : null)
+                .ownerEmail(l.getBusiness() != null && l.getBusiness().getOwner() != null
+                    ? l.getBusiness().getOwner().getEmail() : null)
+                .createdAt(l.getCreatedAt())
+                .build())
+            .toList();
+    }
+
+    @Transactional
+    public AdminListingDto setListingStatus(Long listingId, com.hotelapp.enums.ListingStatus status) {
+        var listing = jobListingRepository.findById(listingId)
+            .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
+        listing.setStatus(status);
+        jobListingRepository.save(listing);
+        return AdminListingDto.builder()
+            .id(listing.getId())
+            .title(listing.getTitle())
+            .position(listing.getPosition() != null ? listing.getPosition().name() : null)
+            .status(listing.getStatus().name())
+            .businessId(listing.getBusiness() != null ? listing.getBusiness().getId() : null)
+            .businessName(listing.getBusiness() != null ? listing.getBusiness().getName() : null)
+            .ownerEmail(listing.getBusiness() != null && listing.getBusiness().getOwner() != null
+                ? listing.getBusiness().getOwner().getEmail() : null)
+            .createdAt(listing.getCreatedAt())
+            .build();
+    }
+
+    @Data @Builder
+    public static class AdminListingDto {
+        private Long id;
+        private String title;
+        private String position;
+        private String status;
+        private Long businessId;
+        private String businessName;
+        private String ownerEmail;
+        private LocalDateTime createdAt;
+    }
+
+    @Data
+    public static class SetListingStatusRequest {
+        @NotNull private com.hotelapp.enums.ListingStatus status;
+    }
 }

@@ -127,4 +127,29 @@ public class AdminController {
     public ResponseEntity<StatsDto> getStats() {
         return ResponseEntity.ok(adminService.getStats());
     }
+
+    // ================================================================
+    // FAZ 6.3 — Listing moderation
+    // ================================================================
+
+    @Operation(summary = "İlan moderasyon listesi (status filtreli + arama)")
+    @GetMapping("/listings")
+    public ResponseEntity<List<AdminService.AdminListingDto>> listListings(
+            @RequestParam(required = false) com.hotelapp.enums.ListingStatus status,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(adminService.listListingsForAdmin(status, search));
+    }
+
+    @Operation(summary = "İlanı askıya al / aktive et (PAUSED veya ACTIVE)")
+    @PutMapping("/listings/{id}/status")
+    public ResponseEntity<AdminService.AdminListingDto> setListingStatus(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long id,
+            @Valid @RequestBody AdminService.SetListingStatusRequest request) {
+        AdminService.AdminListingDto result = adminService.setListingStatus(id, request.getStatus());
+        eventPublisher.publishEvent(AuditLoggedEvent.user(currentUser.getId(),
+            "LISTING_" + request.getStatus().name(), "LISTING", id,
+            "İlan durumu: " + request.getStatus().name() + " (" + result.getTitle() + ")"));
+        return ResponseEntity.ok(result);
+    }
 }

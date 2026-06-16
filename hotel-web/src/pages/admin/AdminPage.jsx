@@ -567,6 +567,123 @@ function AuditTab() {
 }
 
 /* ── Main Page ── */
+/* ── FAZ 6.3 — Listing moderation tab ── */
+function ListingsTab() {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [busy, setBusy] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('')
+  const [search, setSearch] = useState('')
+
+  const fetchItems = useCallback(() => {
+    setLoading(true)
+    hotelApi.adminListListings(statusFilter || undefined, search || undefined)
+      .then(setItems)
+      .catch(err => toast.error(extractErrorMessage(err)))
+      .finally(() => setLoading(false))
+  }, [statusFilter, search])
+
+  useEffect(() => { fetchItems() }, [fetchItems])
+
+  async function setStatus(listing, newStatus) {
+    const verb = newStatus === 'PAUSED' ? 'askıya alınacak' : (newStatus === 'CLOSED' ? 'kapatılacak' : 'aktif edilecek')
+    if (!confirm(`"${listing.title}" ilanı ${verb}. Devam edilsin mi?`)) return
+    setBusy(listing.id)
+    try {
+      await hotelApi.adminSetListingStatus(listing.id, newStatus)
+      toast.success(`İlan durumu: ${newStatus}`)
+      fetchItems()
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const statusColor = (s) => s === 'ACTIVE' ? '#22c55e' : (s === 'PAUSED' ? '#fbbf24' : '#ef4444')
+
+  return (
+    <div className="space-y-4">
+      <div className="card p-4 space-y-3">
+        <div className="flex flex-wrap gap-2 items-center">
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Başlık veya işletme adı..."
+            className="input text-sm flex-1 min-w-[200px]" />
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+            className="input text-sm" style={{ maxWidth: 160 }}>
+            <option value="">Tüm durumlar</option>
+            <option value="ACTIVE">Aktif</option>
+            <option value="PAUSED">Askıda</option>
+            <option value="CLOSED">Kapalı</option>
+          </select>
+          <div className="text-xs px-3 py-1 rounded-full"
+               style={{ background: 'rgba(168, 85, 247, 0.18)', color: '#d8b4fe' }}>
+            {items.length} ilan
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="card p-8 text-center text-ink-400">Yükleniyor...</div>
+      ) : items.length === 0 ? (
+        <div className="card p-8 text-center text-ink-400">Sonuç yok</div>
+      ) : (
+        <div className="space-y-2">
+          {items.map(l => (
+            <div key={l.id} className="card p-4 flex items-start justify-between gap-3 flex-wrap">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <a href={`/listings/${l.id}`} target="_blank" rel="noopener noreferrer"
+                    className="font-semibold text-sm" style={{ color: '#e9d5ff' }}>
+                    {l.title}
+                  </a>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                    style={{
+                      background: `${statusColor(l.status)}22`,
+                      color: statusColor(l.status),
+                      border: `1px solid ${statusColor(l.status)}55`,
+                    }}>
+                    {l.status}
+                  </span>
+                </div>
+                <div className="text-xs mt-1" style={{ color: '#a5b4fc' }}>
+                  {l.position} · {l.businessName} · {l.ownerEmail}
+                </div>
+                <div className="text-[10px] mt-0.5" style={{ color: '#7c3aed' }}>
+                  {new Date(l.createdAt).toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                {l.status !== 'ACTIVE' && (
+                  <button onClick={() => setStatus(l, 'ACTIVE')} disabled={busy === l.id}
+                    className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                    style={{ background: 'rgba(34, 197, 94, 0.18)', color: '#86efac', border: '1px solid rgba(34, 197, 94, 0.40)' }}>
+                    Aktive Et
+                  </button>
+                )}
+                {l.status !== 'PAUSED' && (
+                  <button onClick={() => setStatus(l, 'PAUSED')} disabled={busy === l.id}
+                    className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                    style={{ background: 'rgba(251, 191, 36, 0.18)', color: '#fcd34d', border: '1px solid rgba(251, 191, 36, 0.40)' }}>
+                    Askıya Al
+                  </button>
+                )}
+                {l.status !== 'CLOSED' && (
+                  <button onClick={() => setStatus(l, 'CLOSED')} disabled={busy === l.id}
+                    className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                    style={{ background: 'rgba(239, 68, 68, 0.18)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.40)' }}>
+                    Kapat
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('overview')
 
@@ -574,6 +691,7 @@ export default function AdminPage() {
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
       {activeTab === 'overview' && <OverviewTab />}
       {activeTab === 'users'    && <UsersTab />}
+      {activeTab === 'listings' && <ListingsTab />}
       {activeTab === 'reports'  && <ReportsTab />}
       {activeTab === 'audit'    && <AuditTab />}
     </DashboardLayout>
