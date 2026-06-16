@@ -92,6 +92,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
         evictor.scheduleAtFixedRate(this::evictIdleBuckets, 5, 5, TimeUnit.MINUTES);
     }
 
+    /** FAZ 0/#4 — test'te bypass icin global toggle. */
+    @Value("${app.rate-limit.enabled:true}")
+    private boolean rateLimitEnabled;
+
+    @Override
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+        return !rateLimitEnabled;
+    }
+
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,

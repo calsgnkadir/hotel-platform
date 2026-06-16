@@ -1,0 +1,49 @@
+# FAZ 0/#4 — Integration test profile (H2 in-memory)
+spring:
+  datasource:
+    url: jdbc:h2:mem:hotel_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+    show-sql: false
+  flyway:
+    enabled: false   # test'lerde Hibernate schema yeterli
+
+# JWT (test-only secret)
+app:
+  jwt:
+    secret: dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtaW50ZWdyYXRpb24tdGVzdHMtbWluLTI1Ni1iaXQ=
+    expiration-ms: 3600000
+    refresh-expiration-ms: 86400000
+  base-url: http://localhost:8080
+  rate-limit:
+    enabled: false   # test'te bypass — peş peşe register'da 429 yememek için
+
+# OAuth2 client dummy — test'te kullanilmaz ama bean wiring icin gerekli
+spring.security.oauth2.client.registration.google:
+  client-id: test-client-id
+  client-secret: test-client-secret
+  scope: openid,profile,email
+
+# Disable external services in tests
+cloudinary:
+  url: cloudinary://test:test@test
+  enabled: false
+
+resend:
+  api-key: test-key
+  from: test@test.com
+  enabled: false
+
+logging:
+  level:
+    org.springframework: WARN
+    com.hotelapp: INFO
+    org.hibernate.SQL: WARN

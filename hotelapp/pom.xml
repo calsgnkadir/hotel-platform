@@ -165,6 +165,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- FAZ 0/#4 — H2 in-memory database for integration tests -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
