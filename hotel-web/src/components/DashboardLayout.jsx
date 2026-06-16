@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import NotificationBell from './NotificationBell'
 import SettingsMenu from './SettingsMenu'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -193,17 +193,14 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         </div>
 
         <div className="px-4 lg:px-8 pb-20 lg:pb-12 text-[14px]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab || 'default'}
-              initial={{ opacity: 0, y: 22, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, y: 0,  filter: 'blur(0px)' }}
-              exit   ={{ opacity: 0, y: -14, filter: 'blur(4px)' }}
-              transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            key={activeTab || 'default'}
+            initial={{ opacity: 0, y: 28, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0,  filter: 'blur(0px)' }}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {children}
+          </motion.div>
         </div>
       </main>
     </div>
