@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { keys } from '../lib/queryClient'
 import cldImg, { ImgSize } from '../lib/cldImg'
 import EmptyState from '../components/EmptyState'
+import ReportModal from '../components/ReportModal'  // FAZ 5.8
 import { SkeletonConversationList, SkeletonMessages } from '../components/Skeleton'
 import { wsSubscribe, wsPublish } from '../lib/websocket'
 import useWsConnected, { useWsReconnectInvalidate } from '../lib/useWsConnected'
@@ -858,10 +859,12 @@ export default function MessagesPage() {
   )
 }
 
-/* FAZ 1/#48 — 3. sütun: sohbet detay paneli (xl+ ekranlarda) */
+/* FAZ 5.8 — Slack tarzi 3. sutun: sohbet detay paneli (lg+ ekranlarda, dark glass) */
 function ConversationDetailPanel({ conversation }) {
   const c = conversation
-  const online = useOnline(c?.otherPartyId)  // FAZ 1/#60
+  const online = useOnline(c?.otherPartyId)
+  const [reportOpen, setReportOpen] = useState(false)
+
   const startedDays = c?.createdAt
     ? Math.floor((Date.now() - new Date(c.createdAt).getTime()) / 86400000)
     : null
@@ -871,91 +874,202 @@ function ConversationDetailPanel({ conversation }) {
     : startedDays < 7 ? `${startedDays} gün önce`
     : new Date(c.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
 
+  const initial = (c?.otherPartyName?.charAt(0) || '?').toUpperCase()
+  const isBiz = c?.otherPartyRole === 'BUSINESS_OWNER'
+
   return (
-    <div className="hidden xl:flex flex-col w-72 min-w-[18rem] border-l border-cream-200 dark:border-cream-300 bg-white dark:bg-ink-800">
-      {/* Avatar + isim header */}
-      <div className="px-5 py-6 border-b border-cream-200 dark:border-cream-300 text-center">
-        {c.otherPartyAvatarUrl ? (
-          <img src={cldImg(c.otherPartyAvatarUrl, { w: ImgSize.avatarMd })} alt={c.otherPartyName}
-               loading="lazy" decoding="async"
-               className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-2 border-cream-300" />
-        ) : (
-          <div className="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold"
-               style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
-            {c.otherPartyName?.charAt(0) || '?'}
+    <>
+      <div
+        className="hidden lg:flex flex-col w-80 min-w-[20rem] border-l overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, rgba(20, 14, 38, 0.92) 0%, rgba(15, 10, 30, 0.92) 100%)',
+          borderColor: 'rgba(168, 85, 247, 0.18)',
+        }}
+      >
+        {/* Avatar + isim header — Bebas + radial glow */}
+        <div className="relative px-5 py-6 text-center border-b" style={{ borderColor: 'rgba(168, 85, 247, 0.14)' }}>
+          {/* Dekoratif glow */}
+          <div
+            aria-hidden
+            className="absolute pointer-events-none inset-0"
+            style={{
+              background:
+                'radial-gradient(circle 200px at 50% 0%, rgba(168, 85, 247, 0.22) 0%, transparent 65%)',
+            }}
+          />
+          <div className="relative">
+            <div className="relative inline-block mb-3">
+              {c.otherPartyAvatarUrl ? (
+                <img
+                  src={cldImg(c.otherPartyAvatarUrl, { w: ImgSize.avatarMd })}
+                  alt={c.otherPartyName}
+                  loading="lazy" decoding="async"
+                  className="w-20 h-20 rounded-full object-cover"
+                  style={{ border: '2px solid rgba(168, 85, 247, 0.40)', boxShadow: '0 0 24px rgba(168, 85, 247, 0.30)' }}
+                />
+              ) : (
+                <div
+                  className="w-20 h-20 rounded-full flex items-center justify-center font-bebas text-3xl text-white"
+                  style={{
+                    background: 'linear-gradient(135deg, #6b21a8 0%, #9333ea 100%)',
+                    boxShadow: '0 0 24px rgba(168, 85, 247, 0.40)',
+                    border: '2px solid rgba(217, 70, 239, 0.30)',
+                  }}
+                >
+                  {initial}
+                </div>
+              )}
+              {online && (
+                <span
+                  className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full"
+                  style={{ background: '#22c55e', border: '2.5px solid #15102e', boxShadow: '0 0 10px rgba(34, 197, 94, 0.55)' }}
+                  title="Çevrimiçi"
+                />
+              )}
+            </div>
+            <h3
+              className="font-bebas text-xl tracking-wider uppercase text-white truncate"
+              style={{ textShadow: '0 0 12px rgba(168, 85, 247, 0.40)' }}
+            >
+              {c.otherPartyName}
+            </h3>
+            <div className="flex items-center justify-center gap-2 mt-1.5">
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: online ? '#22c55e' : '#52525b', boxShadow: online ? '0 0 6px #22c55e' : 'none' }}
+              />
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: online ? '#86efac' : '#a5b4fc' }}>
+                {online ? 'Çevrimiçi' : 'Çevrimdışı'}
+              </span>
+              {c.otherPartyRole && (
+                <>
+                  <span style={{ color: '#7c3aed' }}>·</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#d8b4fe' }}>
+                    {isBiz ? 'İşletme' : 'Aday'}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Ilan kart */}
+        {c.listingTitle && (
+          <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(168, 85, 247, 0.10)' }}>
+            <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2" style={{ color: '#c4b5fd' }}>
+              İlan
+            </div>
+            <div
+              className="rounded-xl p-3"
+              style={{
+                background: 'rgba(20, 14, 38, 0.55)',
+                border: '1px solid rgba(168, 85, 247, 0.18)',
+              }}
+            >
+              <div className="text-sm font-semibold text-white line-clamp-2 mb-2">{c.listingTitle}</div>
+              {c.listingId && (
+                <a
+                  href={`/listings/${c.listingId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
+                  style={{
+                    background: 'linear-gradient(135deg, #6b21a8, #9333ea)',
+                    color: '#ffffff',
+                    boxShadow: '0 0 12px rgba(168, 85, 247, 0.40)',
+                  }}
+                >
+                  İlana Git →
+                </a>
+              )}
+            </div>
           </div>
         )}
-        <h3 className="font-bold text-base text-ink-900 truncate">{c.otherPartyName}</h3>
-        {/* FAZ 1/#60 — Online/offline durum */}
-        <div className="flex items-center justify-center gap-1.5 mt-1">
-          <span className={`w-2 h-2 rounded-full ${online ? 'bg-green-500' : 'bg-cream-300'}`} />
-          <span className="text-xs text-ink-500">
-            {online ? 'Çevrimiçi' : 'Çevrimdışı'}
+
+        {/* Sohbet istatistik — kompakt */}
+        <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(168, 85, 247, 0.10)' }}>
+          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2.5" style={{ color: '#c4b5fd' }}>
+            Sohbet
+          </div>
+          <div className="space-y-2 text-xs">
+            <div className="flex justify-between items-center">
+              <span style={{ color: '#a5b4fc' }}>Başladı</span>
+              <span className="font-bold" style={{ color: '#ede9fe' }}>{startedLabel}</span>
+            </div>
+            {c.lastMessageAt && (
+              <div className="flex justify-between items-center">
+                <span style={{ color: '#a5b4fc' }}>Son mesaj</span>
+                <span className="font-bold" style={{ color: '#ede9fe' }}>{formatRelative(c.lastMessageAt)}</span>
+              </div>
+            )}
+            {c.unreadCount > 0 && (
+              <div className="flex justify-between items-center">
+                <span style={{ color: '#a5b4fc' }}>Okunmamış</span>
+                <span
+                  className="font-bold text-[10px] px-2 py-0.5 rounded-full"
+                  style={{
+                    background: 'linear-gradient(135deg, #6b21a8, #9333ea)',
+                    color: '#ffffff',
+                  }}
+                >
+                  {c.unreadCount}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Hizli islemler */}
+        <div className="px-5 py-4 space-y-2 flex-1">
+          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: '#c4b5fd' }}>
+            Hızlı İşlemler
+          </div>
+          <button
+            onClick={() => {
+              if (c.listingId) window.open(`/listings/${c.listingId}`, '_blank')
+            }}
+            disabled={!c.listingId}
+            className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: 'rgba(20, 14, 38, 0.55)',
+              color: '#d8b4fe',
+              border: '1px solid rgba(168, 85, 247, 0.18)',
+            }}
+          >
+            <span className="font-bebas text-base" style={{ color: '#e879f9' }}>↗</span>
+            <span className="font-semibold">İlanı Görüntüle</span>
+          </button>
+          <button
+            onClick={() => setReportOpen(true)}
+            className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5"
+            style={{
+              background: 'rgba(239, 68, 68, 0.10)',
+              color: '#fca5a5',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+            }}
+          >
+            <span className="font-bebas text-base">!</span>
+            <span className="font-semibold">Kullanıcıyı Bildir</span>
+          </button>
+        </div>
+
+        {/* Alt imza */}
+        <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'rgba(168, 85, 247, 0.10)' }}>
+          <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: '#7c3aed' }}>
+            AjansHotel · Sohbet
           </span>
         </div>
-        {c.otherPartyRole && (
-          <p className="text-xs text-ink-500 mt-0.5">
-            {c.otherPartyRole === 'BUSINESS_OWNER' ? 'İşletme' : 'Aday'}
-          </p>
-        )}
       </div>
 
-      {/* İlan bilgisi */}
-      {c.listingTitle && (
-        <div className="px-5 py-4 border-b border-cream-200 dark:border-cream-300">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">İlan</div>
-          <div className="text-sm font-semibold text-ink-800 mb-2 line-clamp-2">{c.listingTitle}</div>
-          {c.listingId && (
-            <a href={`/listings/${c.listingId}`} target="_blank" rel="noreferrer"
-               className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 hover:underline">
-              İlana Git
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                   strokeWidth={2} stroke="currentColor" className="w-3 h-3">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-              </svg>
-            </a>
-          )}
-        </div>
+      {/* Bildir modal */}
+      {reportOpen && c?.otherPartyId && (
+        <ReportModal
+          targetType="USER"
+          targetId={c.otherPartyId}
+          targetLabel={c.otherPartyName}
+          onClose={() => setReportOpen(false)}
+        />
       )}
-
-      {/* Sohbet istatistik */}
-      <div className="px-5 py-4 border-b border-cream-200 dark:border-cream-300">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Sohbet</div>
-        <div className="space-y-1.5 text-xs text-ink-700">
-          <div className="flex justify-between">
-            <span className="text-ink-500">Başladı:</span>
-            <span className="font-medium">{startedLabel}</span>
-          </div>
-          {c.lastMessageAt && (
-            <div className="flex justify-between">
-              <span className="text-ink-500">Son mesaj:</span>
-              <span className="font-medium">{formatRelative(c.lastMessageAt)}</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Hızlı eylemler */}
-      <div className="px-5 py-4 space-y-2 flex-1">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-1">Hızlı İşlemler</div>
-        <button className="w-full text-left text-xs text-ink-600 hover:text-brand-700 hover:bg-cream-50 px-3 py-2 rounded-lg flex items-center gap-2 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round"
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-          </svg>
-          Mesajlarda Ara
-        </button>
-        <button className="w-full text-left text-xs text-ink-600 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg flex items-center gap-2 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-          </svg>
-          Bildir
-        </button>
-      </div>
-    </div>
+    </>
   )
 }
