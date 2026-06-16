@@ -6,6 +6,7 @@ import EmptyState from '../../../components/EmptyState'
 import AvatarCluster from '../../../components/AvatarCluster'  // FAZ 5.14
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import ReliabilityBadge from '../../../components/ReliabilityBadge'
+import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ D1
 
 /* ── Workers Tab (#78) — Bizde çalışan adaylar ── */
 export default function WorkersTab({ applications, onOpenMessages }) {
@@ -97,8 +98,15 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                 d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
             </svg>
           </div>
-          <div className="text-2xl font-bold text-ink-900">{workers.length}</div>
-          <div className="text-xs text-ink-500 mt-0.5">Farklı Aday Çalıştı</div>
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <div className="text-2xl font-bold text-ink-900">{workers.length}</div>
+              <div className="text-xs text-ink-500 mt-0.5">Farklı Aday Çalıştı</div>
+            </div>
+            {/* FAZ D1 — son 8 hafta yeni iseaccept trend */}
+            <Sparkline data={weeklyTrend(applications, a => a.status === 'ACCEPTED')}
+                       color="#10b981" width={56} height={24} />
+          </div>
         </div>
         <div className="stat-card">
           <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center mb-3">
@@ -108,8 +116,15 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                 d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
           </div>
-          <div className="text-2xl font-bold text-ink-900">{totalHours.toFixed(0)}<span className="text-base">sa</span></div>
-          <div className="text-xs text-ink-500 mt-0.5">Toplam İş Saati</div>
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <div className="text-2xl font-bold text-ink-900">{totalHours.toFixed(0)}<span className="text-base">sa</span></div>
+              <div className="text-xs text-ink-500 mt-0.5">Toplam İş Saati</div>
+            </div>
+            {/* FAZ D1 — son 8 hafta toplam başvuru trendi (yoğunluk göstergesi) */}
+            <Sparkline data={weeklyTrend(applications, null)}
+                       color="#a855f7" width={56} height={24} />
+          </div>
         </div>
       </div>
 

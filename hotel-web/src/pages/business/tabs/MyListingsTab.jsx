@@ -9,9 +9,10 @@ import ListingFormModal from '../modals/ListingFormModal'
 import EmptyState from '../../../components/EmptyState'
 import { SkeletonList } from '../../../components/Skeleton'
 import { formatSalary } from '../../../lib/salary'  // FAZ 2/#25
+import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ D1
 
 /* ── My Listings Tab — FAZ 0/#10 react-query ── */
-export default function MyListingsTab() {
+export default function MyListingsTab({ applications = [] }) {
   const [formTarget, setFormTarget] = useState(null)
   const queryClient = useQueryClient()
 
@@ -66,7 +67,11 @@ export default function MyListingsTab() {
         </div>
       ) : (
         <div className="space-y-3">
-          {listings.map(listing => (
+          {listings.map(listing => {
+            // FAZ D1 — Bu ilana son 8 haftalik basvuru trendi
+            const trendData = weeklyTrend(applications, a => a.listing?.id === listing.id)
+            const last8wTotal = trendData.reduce((sum, b) => sum + b.c, 0)
+            return (
             <div key={listing.id} className="card p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -110,7 +115,17 @@ export default function MyListingsTab() {
                     {new Date(listing.createdAt).toLocaleDateString('tr-TR')}
                   </p>
                 </div>
-                <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
+                <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                  {/* FAZ D1 — son 8 hafta başvuru trendi */}
+                  <div className="flex items-center gap-1.5"
+                       title={`Son 8 hafta: ${last8wTotal} başvuru`}>
+                    <span className="text-[10px] uppercase tracking-widest font-bold"
+                          style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+                      {last8wTotal}
+                    </span>
+                    <Sparkline data={trendData} color="#a855f7" width={56} height={20} />
+                  </div>
+                  <div className="flex gap-2 flex-wrap justify-end">
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => setFormTarget(listing)}
                       className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
@@ -135,10 +150,11 @@ export default function MyListingsTab() {
                       Kapat
                     </button>
                   )}
+                  </div>
                 </div>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       )}
 
