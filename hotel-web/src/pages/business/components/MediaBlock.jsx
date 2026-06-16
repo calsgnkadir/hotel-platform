@@ -50,13 +50,17 @@ export default function MediaBlock({
 
   return (
     <div className="card p-5 space-y-5">
-      <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Görseller</h3>
+      <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+          style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+        Görseller
+      </h3>
 
       {/* Logo */}
       <div>
         <label className="label">Logo</label>
         <div className="flex items-center gap-4">
-          <div className="w-24 h-24 rounded-2xl bg-cream-50 dark:bg-ink-700 border-2 border-dashed border-cream-300 dark:border-ink-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-24 h-24 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden flex-shrink-0"
+               style={{ background: 'rgba(20, 14, 38, 0.55)', borderColor: 'rgba(168, 85, 247, 0.25)' }}>
             {logoUrl ? (
               <img src={`${cldImg(logoUrl, { w: ImgSize.avatarLg })}?v=${logoVersion}`} alt="Logo"
                    loading="lazy" decoding="async"
@@ -70,10 +74,10 @@ export default function MediaBlock({
             )}
           </div>
           <div className="flex-1 space-y-2">
-            <label className={`block px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
-              ${logoUploading
-                ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait'
-                : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
+            <label className="block px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full cursor-pointer text-center transition-all hover:-translate-y-0.5"
+                   style={logoUploading
+                     ? { background: 'rgba(168, 85, 247, 0.20)', color: '#c4b5fd', cursor: 'wait' }
+                     : { background: 'linear-gradient(135deg, #6b21a8, #9333ea)', color: '#fff', boxShadow: '0 0 14px rgba(168, 85, 247, 0.40)' }}>
               <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
                 onChange={handleLogoChange} disabled={logoUploading} />
               {logoUploading
@@ -82,7 +86,8 @@ export default function MediaBlock({
             </label>
             {logoUrl && (
               <button type="button" onClick={onLogoDelete}
-                className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">
+                className="block w-full px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-all hover:-translate-y-0.5"
+                style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.28)' }}>
                 Logoyu Kaldır
               </button>
             )}

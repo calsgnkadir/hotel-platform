@@ -171,7 +171,10 @@ export default function ProfileTab() {
 
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Temel Bilgiler</h3>
+        <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+            style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+          Temel Bilgiler
+        </h3>
 
         <div>
           <label className="label">İşletme Adı *</label>
@@ -218,7 +221,10 @@ export default function ProfileTab() {
 
       {/* İletişim */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">İletişim</h3>
+        <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+            style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+          İletişim
+        </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -265,7 +271,10 @@ export default function ProfileTab() {
       )}
 
       <div className="card p-5 space-y-3">
-        <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Çalışma Saatleri</h3>
+        <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+            style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+          Çalışma Saatleri
+        </h3>
         <WorkingHoursEditor
           value={parseWorkingHours(form.workingHours)}
           onChange={(struct) =>
@@ -276,9 +285,9 @@ export default function ProfileTab() {
 
       <div className="flex justify-end gap-3">
         <button type="submit" disabled={saving}
-          className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
-          {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+          className="px-6 py-2.5 font-bebas text-base tracking-wider uppercase text-white rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #6b21a8, #9333ea)', boxShadow: '0 0 18px rgba(168, 85, 247, 0.40)' }}>
+          {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet →'}
         </button>
       </div>
     </form>
