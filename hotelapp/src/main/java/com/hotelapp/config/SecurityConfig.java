@@ -63,6 +63,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // CSRF disable — stateless REST API + JWT (Authorization header).
+                // Token localStorage'da, otomatik gönderim cookie ile değil (axios
+                // interceptor); third-party site bizim adımıza istek atamaz → CSRF
+                // saldırı vektörü yok. Bu mantık COOKIE-BASED refresh token'a
+                // geçtiğimiz an YENİDEN değerlendirilmeli (CsrfTokenRepository +
+                // double-submit pattern eklenir). Şu an guard: tek source = chrome.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth

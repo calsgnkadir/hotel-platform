@@ -44,6 +44,7 @@ public class JobListingService {
     private final NotificationService notificationService;
     private final com.hotelapp.repository.BusinessPhotoRepository businessPhotoRepository;  // D3
     private final FileStorageService fileStorageService;                                     // D3
+    private final com.hotelapp.repository.UserAvailabilityBlockRepository availabilityBlockRepository;  // J2 müsaitlik filtre
 
     // ----------------------------------------------------------------
     // Public: browse active listings (dynamic filtering via Specification)
@@ -194,20 +195,31 @@ public class JobListingService {
             }
 
             var matching = userRepository.findCandidatesMatchingPreferences(district, listing.getPosition());
-            log.info("[MATCH] Listing #{} — district='{}', position={}, eşleşen aday sayısı={}",
+            log.info("[MATCH] Listing #{} — district='{}', position={}, ilcfe+pozisyon eşleşen aday sayısı={}",
                     listing.getId(), district, listing.getPosition(), matching.size());
 
             String posLabel = listing.getPosition().name();
+            int notifiedCount = 0, skippedNoFit = 0;
             for (var aday : matching) {
+                // FAZ J2 ext: aday haftalık müsaitlik bloğu tanımladıysa, ilan
+                // slot'larından en az biri bloğunun içine düşmeli. Hiç blok yoksa
+                // opt-out: her ilana açık (eski davranış).
+                if (!candidateFitsListingSlots(aday.getId(), listing)) {
+                    skippedNoFit++;
+                    continue;
+                }
                 log.info("[MATCH]   -> Bildirim atılıyor: candidateId={}, email={}",
                         aday.getId(), aday.getEmail());
                 notificationService.notify(aday.getId(),
                         com.hotelapp.enums.NotificationType.MATCHING_LISTING,
-                        "İlgini çekebilir 🎯",
+                        "İlgini çekebilir",
                         listing.getBusiness().getName() + " · " + district
                                 + " · " + posLabel + " — " + listing.getTitle(),
                         "listings");
+                notifiedCount++;
             }
+            log.info("[MATCH] Listing #{} — bildirilen={}, müsaitlik uyumsuzlugu={}",
+                    listing.getId(), notifiedCount, skippedNoFit);
         } catch (Exception e) {
             // Bildirim hatası ilan oluşturmayı bozmasın
             log.warn("Eşleşen aday bildirimi atılamadı: {}", e.getMessage(), e);
@@ -418,6 +430,35 @@ public class JobListingService {
                 .shiftSlots(slotDtos)
                 .businessPhotoUrls(loadBusinessPhotoUrls(l.getBusiness().getId()))  // D3
                 .build();
+    }
+
+    /**
+     * FAZ J2 ext — Aday'ın haftalık müsaitlik bloklarıyla ilanın vardiya slot'larından
+     * en az biri eşleşiyor mu? Aday hiç blok tanımlamamışsa true döner (opt-in mantık).
+     *
+     * Eşleşme: slot tarihinin haftagünü aday'ın bloğuyla aynı + slot saat aralığı
+     * tamamen bloğun içine düşer (b.startTime <= s.startTime AND s.endTime <= b.endTime).
+     */
+    private boolean candidateFitsListingSlots(Long candidateId, JobListing listing) {
+        var blocks = availabilityBlockRepository
+                .findByUserIdOrderByDayOfWeekAscStartTimeAsc(candidateId);
+        if (blocks.isEmpty()) return true;  // tanımlamadıysa engelleme
+
+        var slots = listing.getShiftSlots();
+        if (slots == null || slots.isEmpty()) return true;  // ilan slot kullanmıyorsa filtre yok
+
+        for (var slot : slots) {
+            if (slot.getDate() == null || slot.getStartTime() == null || slot.getEndTime() == null) continue;
+            var slotDow = slot.getDate().getDayOfWeek();
+            for (var b : blocks) {
+                if (b.getDayOfWeek() != slotDow) continue;
+                if (!b.getStartTime().isAfter(slot.getStartTime())
+                        && !slot.getEndTime().isAfter(b.getEndTime())) {
+                    return true;  // bu slot bu bloğa tamamen uyuyor
+                }
+            }
+        }
+        return false;
     }
 
     /** D3: ilk N işletme fotoğrafının URL'leri — kartta hover carousel için. */
