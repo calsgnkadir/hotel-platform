@@ -499,7 +499,8 @@ public class JobListingService {
         private LocalDate endDate;
         private LocalTime shiftStart;
         private LocalTime shiftEnd;
-        @NotNull private Shift shift;
+        // shift kategorisi (Sabah/Akşam/Gece) UI'dan kaldirildi — slot saatleri yeterli
+        private Shift shift;
 
         // Faz E1: Vardiya slotları — yeni ilanlar için en az 1 zorunlu
         private List<ShiftSlotCreate> shiftSlots;
