@@ -1,8 +1,17 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  // FAZ 0/#4d — Vitest config
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test-setup.js'],
+    css: false,
+    include: ['src/**/*.test.{js,jsx}'],
+  },
   // sockjs-client browser'da Node 'global' degiskenini kullanir → polyfill
   define: {
     global: 'globalThis',
