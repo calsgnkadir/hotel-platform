@@ -8,6 +8,7 @@ import ProfileCompletenessCard from '../../../components/ProfileCompletenessCard
 import { calculateCandidateCompleteness } from '../../../lib/profileCompleteness'
 import AvatarCropModal from '../../../components/AvatarCropModal'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
+import AvailabilityBlocksEditor from '../../../components/AvailabilityBlocksEditor'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../../utils/validation'
 import DistrictNeighborhoodSelect from '../../../components/DistrictNeighborhoodSelect'
 import { ISTANBUL_DISTRICTS } from '../../../data/istanbul'
@@ -230,6 +231,8 @@ export default function ProfileTab() {
       </div>
 
       {reliability && <ReliabilityCard data={reliability} />}
+
+      <AvailabilityBlocksEditor />
 
       <div className="card p-5">
         <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#e9d5ff' }}>Profil Fotoğrafı</h3>

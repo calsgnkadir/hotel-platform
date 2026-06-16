@@ -111,6 +111,17 @@ export async function getMyReliability() {
   return data  // { score, noShowCount, completedJobsLast90d, averageRating, reviewCount }
 }
 
+// Faz B/#10: Aday haftalık müsaitlik blokları (profil bazlı)
+export async function getMyAvailabilityBlocks() {
+  const { data } = await api.get('/api/candidate/availability-blocks')
+  return data  // List<{ id, dayOfWeek, startTime, endTime }>
+}
+
+export async function setMyAvailabilityBlocks(blocks) {
+  const { data } = await api.put('/api/candidate/availability-blocks', blocks)
+  return data
+}
+
 /* ── Job listing endpoints (public browse) ── */
 /**
  * Aktif ilanları listele — tüm filtreler opsiyonel.

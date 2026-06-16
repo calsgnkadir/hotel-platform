@@ -1,11 +1,15 @@
 package com.hotelapp.controller;
 
 import com.hotelapp.entity.User;
+import com.hotelapp.service.AvailabilityBlockService;
+import com.hotelapp.service.AvailabilityBlockService.AvailabilityBlockDto;
 import com.hotelapp.service.CandidateProfileService;
 import com.hotelapp.service.CandidateProfileService.CandidateProfileDto;
 import com.hotelapp.service.CandidateProfileService.ProfileUpdateRequest;
 import com.hotelapp.service.ReliabilityService;
 import com.hotelapp.service.ReliabilityService.ReliabilityScore;
+
+import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +28,7 @@ public class CandidateController {
 
     private final CandidateProfileService candidateProfileService;
     private final ReliabilityService reliabilityService;
+    private final AvailabilityBlockService availabilityBlockService;
 
     @Operation(summary = "Kendi profilim — sadece CANDIDATE")
     @GetMapping("/api/candidate/profile")
@@ -69,5 +74,24 @@ public class CandidateController {
     public ResponseEntity<ReliabilityScore> getMyReliability(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(reliabilityService.computeForCandidate(currentUser.getId()));
+    }
+
+    @Operation(summary = "Haftalık müsaitlik bloklarım — sadece CANDIDATE")
+    @GetMapping("/api/candidate/availability-blocks")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<List<AvailabilityBlockDto>> getMyAvailabilityBlocks(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
+        return ResponseEntity.ok(availabilityBlockService.getMyBlocks(currentUser.getId()));
+    }
+
+    @Operation(summary = "Haftalık müsaitlik bloklarımı topluca güncelle (replace) — sadece CANDIDATE")
+    @PutMapping("/api/candidate/availability-blocks")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<List<AvailabilityBlockDto>> setMyAvailabilityBlocks(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @Valid @RequestBody List<AvailabilityBlockDto> blocks) {
+        return ResponseEntity.ok(availabilityBlockService.replaceMyBlocks(currentUser.getId(), blocks));
     }
 }
