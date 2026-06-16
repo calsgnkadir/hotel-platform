@@ -427,9 +427,9 @@ body {
   height: 3px;
   background: linear-gradient(90deg,
     transparent 0%,
-    #6b21a8 20%,
-    #a855f7 50%,
-    #6b21a8 80%,
+    #936b1e 20%,
+    #d4a853 50%,
+    #936b1e 80%,
     transparent 100%);
   opacity: 0.85;
 }

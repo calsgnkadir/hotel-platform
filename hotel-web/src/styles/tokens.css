@@ -13,41 +13,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
 :root {
-  /* ================== DARK CONCIERGE — GLOBAL DEFAULT ================== */
-  /* FAZ 5.4 — WordPlay benchmark: tum uygulama premium dark + mor neon glow.
-   * Eski "hibrit" yaklasim (CAND acik / BIZ koyu) iptal — kullanici tum
-   * uygulamanin dark+premium olmasini istedi. */
+  /* ================== HOSPITALITY NIGHT — GLOBAL DEFAULT ================== */
+  /* FAZ D2 — Mor concierge yerine "lacivert + altın" hospitality paleti.
+   * Primary: koyu lacivert (#1e3a5f anchor), Accent: sıcak altın (#d4a853).
+   * Otel sektörünün premium kimliği — guven verici + lüks his.
+   * Eski mor varyantlar token icinde tutulmadi; hardcoded hex'ler
+   * incremental olarak temizlenecek. */
 
-  /* Surface — koyu mor + indigo katmanlar (Landing hero ile ayni mood) */
-  --bg-app:        #0a0618;  /* sayfa zemini — derin indigo */
-  --bg-surface:    #15102e;  /* kart, modal */
-  --bg-elevated:   #1f1740;  /* dropdown, popover */
-  --bg-subtle:     #1a1438;  /* hover, secondary */
-  --bg-muted:      #15102e;
+  /* Surface — koyu lacivert katmanlar (gece-gokyuzu mood) */
+  --bg-app:        #0c1726;  /* sayfa zemini — derin lacivert */
+  --bg-surface:    #15243d;  /* kart, modal */
+  --bg-elevated:   #1e3a5f;  /* dropdown, popover */
+  --bg-subtle:     #15243d;  /* hover, secondary */
+  --bg-muted:      #15243d;
 
-  /* Border — mor accent line */
-  --border-subtle: rgba(168, 85, 247, 0.18);
-  --border-strong: #a855f7;
+  /* Border — altın accent ipucu */
+  --border-subtle: rgba(212, 168, 83, 0.18);
+  --border-strong: #d4a853;
 
-  /* Text — beyaz/mor tonlar */
+  /* Text — beyaz/altin/krem tonlar */
   --text-primary:   #f8f6f4;  /* near-white */
-  --text-secondary: #d8b4fe;  /* light purple — okunur */
-  --text-muted:     #a5b4fc;  /* faded indigo */
-  --text-inverse:   #0a0618;
+  --text-secondary: #fde9a5;  /* light cream-gold — okunur */
+  --text-muted:     #8ba9d2;  /* faded ice-blue */
+  --text-inverse:   #0c1726;
 
-  /* Accent — Mor brand (parlak, neon vurgulu) */
-  --accent-action:        #a855f7;  /* brand-500 parlak */
-  --accent-action-hover:  #c084fc;  /* brand-400 daha parlak */
-  --accent-action-soft:   rgba(168, 85, 247, 0.15);
-  --accent-action-glow:   0 0 24px rgba(168, 85, 247, 0.45);
+  /* Accent — Altin brand (sicak, lüks vurgu) */
+  --accent-action:        #d4a853;  /* gold-500 */
+  --accent-action-hover:  #f7c43c;  /* gold-400 daha parlak */
+  --accent-action-soft:   rgba(212, 168, 83, 0.15);
+  --accent-action-glow:   0 0 24px rgba(212, 168, 83, 0.45);
 
-  /* Accent — Magenta (CTA + pozitif vurgu) */
-  --accent-positive:       #d946ef;  /* terra-500 magenta */
-  --accent-positive-hover: #e879f9;
-  --accent-positive-soft:  rgba(217, 70, 239, 0.15);
-  --accent-positive-text:  #f0abfc;
+  /* Accent — Mavi (linkler + ikincil vurgu) */
+  --accent-positive:       #5b85bf;  /* navy-light */
+  --accent-positive-hover: #8ba9d2;
+  --accent-positive-soft:  rgba(91, 133, 191, 0.15);
+  --accent-positive-text:  #b8cae5;
 
-  /* Status — doygun, koyu zemine uygun */
+  /* Status — doygun, koyu zemine uygun (degismedi) */
   --accent-warning:    #fbbf24;
   --accent-warning-bg: rgba(251, 191, 36, 0.12);
   --accent-danger:     #f87171;

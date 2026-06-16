@@ -1,9 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
-  // Tema v4 — "Royal Purple" (Hospitality + lüks his):
-  // Brand: koyu mor (derin, sofistike). Accent: parlak mor (vurgu).
-  // Cream zemin korundu, ink antrasit korundu.
+  // Tema v5 — FAZ D2 "Hospitality Night" (lacivert + altin):
+  // Brand: koyu lacivert (#1e3a5f) — sofistike, guven verici.
+  // Accent: sicak altin (#d4a853) — lüks his + sektör kimliği.
+  // Cream zemin korundu, ink antrasit korundu. Eski mor brand/terra adlari
+  // korundu (Tailwind class breakage olmasin), degerleri yeni paletle degisti.
   darkMode: 'class',
   theme: {
     extend: {
@@ -14,33 +16,33 @@ export default {
         bebas:   ['"Bebas Neue"', 'Impact', 'sans-serif'],
       },
       colors: {
-        // ── PRIMARY: Derin mor (regal/lüks tonu)
+        // ── PRIMARY: Koyu lacivert (hospitality classic)
         brand: {
-          50:  '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
-          700: '#7e22ce',
-          800: '#6b21a8',   // ← ana brand (koyu mor)
-          900: '#581c87',   // ← en koyu
+          50:  '#f1f5fb',
+          100: '#dde7f3',
+          200: '#b8cae5',
+          300: '#8ba9d2',
+          400: '#5b85bf',
+          500: '#3461a3',
+          600: '#234a82',
+          700: '#1e3a5f',   // ← ana brand (koyu lacivert)
+          800: '#15243d',
+          900: '#0c1726',   // ← en koyu
         },
 
-        // ── ACCENT: Parlak mor/magenta (CTA + vurgu)
-        // Eski 'terra' adı korundu uyumluluk için, değer fuchsia/parlak mor
+        // ── ACCENT: Sıcak altın (CTA + vurgu)
+        // Eski 'terra' adı korundu uyumluluk için, değer altin/amber-warm
         terra: {
-          50:  '#fdf4ff',
-          100: '#fae8ff',
-          200: '#f5d0fe',
-          300: '#f0abfc',
-          400: '#e879f9',
-          500: '#d946ef',   // ← accent ana ton (parlak mor)
-          600: '#c026d3',
-          700: '#a21caf',
-          800: '#86198f',
-          900: '#701a75',
+          50:  '#fefcf2',
+          100: '#fef7d7',
+          200: '#fde9a5',
+          300: '#fbd768',
+          400: '#f7c43c',
+          500: '#d4a853',   // ← accent ana ton (sicak altin)
+          600: '#b8902d',
+          700: '#936b1e',
+          800: '#6e4f17',
+          900: '#4a3510',
         },
 
         // ── BACKGROUND: Kremsi off-white (sıcak nötr — korunur)
@@ -67,11 +69,11 @@ export default {
           900: '#171513',
         },
 
-        // ── LEGACY uyumluluk
+        // ── LEGACY uyumluluk (eski "neon" mor referansları — yeni paletle altın)
         neon: {
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
+          400: '#f7c43c',
+          500: '#d4a853',
+          600: '#b8902d',
         },
       },
       scale: { '98': '0.98' },
