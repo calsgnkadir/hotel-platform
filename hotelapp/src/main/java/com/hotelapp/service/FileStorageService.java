@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -287,6 +288,70 @@ public class FileStorageService {
         if (!allowedExts.contains(ext)) {
             throw new BusinessRuleException("'." + ext + "' formatı desteklenmiyor. " + acceptedListMsg);
         }
+        validateMagicBytes(file, ext);
+    }
+
+    /**
+     * MIME type spoofing'i önler: uzantı uygun olsa bile dosyanın gerçek formatına
+     * (ilk 16 byte signature) bakar. .pdf adıyla yüklenen exe / image'a gizlenmiş
+     * payload bu kontrolde takılır.
+     */
+    private void validateMagicBytes(MultipartFile file, String ext) {
+        byte[] h;
+        try (var is = file.getInputStream()) {
+            h = is.readNBytes(16);
+        } catch (IOException e) {
+            throw new BusinessRuleException("Dosya okunamadı");
+        }
+        if (h.length < 4 || !matchesExtension(h, ext)) {
+            throw new BusinessRuleException(
+                    "Dosya içeriği '." + ext + "' uzantısıyla uyumsuz — gerçek format farklı görünüyor");
+        }
+    }
+
+    private boolean matchesExtension(byte[] h, String ext) {
+        return switch (ext) {
+            case "pdf"        -> startsWith(h, "%PDF");
+            case "png"        -> h[0] == (byte) 0x89 && h[1] == 0x50 && h[2] == 0x4E && h[3] == 0x47;
+            case "jpg", "jpeg"-> h[0] == (byte) 0xFF && h[1] == (byte) 0xD8 && h[2] == (byte) 0xFF;
+            case "webp"       -> h.length >= 12 && startsWith(h, "RIFF")
+                                  && h[8] == 'W' && h[9] == 'E' && h[10] == 'B' && h[11] == 'P';
+            case "heic", "heif"-> h.length >= 12
+                                  && h[4] == 'f' && h[5] == 't' && h[6] == 'y' && h[7] == 'p'
+                                  && isHeifBrand(new String(h, 8, 4, StandardCharsets.US_ASCII));
+            case "doc"        -> h[0] == (byte) 0xD0 && h[1] == (byte) 0xCF
+                                  && h[2] == 0x11 && h[3] == (byte) 0xE0;
+            // DOCX = ZIP container; PK 03 04 yeterli (içeriği doğrulamak unzip ister, overkill)
+            case "docx"       -> h[0] == 0x50 && h[1] == 0x4B && (h[2] == 0x03 || h[2] == 0x05 || h[2] == 0x07);
+            case "ogg"        -> h[0] == 'O' && h[1] == 'g' && h[2] == 'g' && h[3] == 'S';
+            // MP3: ID3 tag veya MPEG frame sync (0xFF Ex/Fx)
+            case "mp3"        -> startsWith(h, "ID3")
+                                  || (h[0] == (byte) 0xFF && (h[1] & 0xE0) == (byte) 0xE0);
+            // M4A: ftyp + (M4A | mp42 | isom | dash)
+            case "m4a"        -> h.length >= 12
+                                  && h[4] == 'f' && h[5] == 't' && h[6] == 'y' && h[7] == 'p';
+            case "wav"        -> h.length >= 12 && startsWith(h, "RIFF")
+                                  && h[8] == 'W' && h[9] == 'A' && h[10] == 'V' && h[11] == 'E';
+            // WEBM = EBML container (MKV de aynı, biz tarayıcının ürettiği audio/webm için yeterli)
+            case "webm"       -> h[0] == 0x1A && h[1] == 0x45 && h[2] == (byte) 0xDF && h[3] == (byte) 0xA3;
+            default           -> false;
+        };
+    }
+
+    private static boolean startsWith(byte[] h, String ascii) {
+        if (h.length < ascii.length()) return false;
+        for (int i = 0; i < ascii.length(); i++) {
+            if (h[i] != (byte) ascii.charAt(i)) return false;
+        }
+        return true;
+    }
+
+    private static final Set<String> HEIF_BRANDS = Set.of(
+            "heic", "heix", "heim", "heis", "hevc", "hevx",
+            "mif1", "msf1"
+    );
+    private static boolean isHeifBrand(String brand) {
+        return HEIF_BRANDS.contains(brand);
     }
 
     private String getExtension(String filename) {

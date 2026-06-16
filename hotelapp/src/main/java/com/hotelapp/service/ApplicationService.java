@@ -65,22 +65,21 @@ public class ApplicationService {
         // - PENDING/REVIEWING: süreç henüz tamamlanmadı
         // - ACCEPTED: aday zaten kabul edildi, tekrar başvurmasına gerek yok
         // - REJECTED/EXPIRED: ikinci şans verilebilir (engellemiyoruz)
-        Application existing = applicationRepository
-                .findAllByCandidateId(candidateId).stream()
-                .filter(a -> a.getJobListing().getId().equals(request.getJobListingId())
-                        && (a.getStatus() == ApplicationStatus.PENDING
-                            || a.getStatus() == ApplicationStatus.REVIEWING
-                            || a.getStatus() == ApplicationStatus.ACCEPTED))
-                .findFirst().orElse(null);
-
-        if (existing != null) {
-            String msg = switch (existing.getStatus()) {
-                case ACCEPTED  -> "Bu ilan için başvurunuz zaten kabul edildi. Tekrar başvuramazsınız.";
-                case REVIEWING -> "Bu ilana yaptığınız başvuru işletme tarafından inceleniyor.";
-                default        -> "Bu ilana zaten aktif bir başvurunuz var.";
-            };
-            throw new BusinessRuleException(msg);
-        }
+        applicationRepository.findFirstByCandidateIdAndJobListingIdAndStatusIn(
+                candidateId,
+                request.getJobListingId(),
+                java.util.List.of(
+                        ApplicationStatus.PENDING,
+                        ApplicationStatus.REVIEWING,
+                        ApplicationStatus.ACCEPTED))
+            .ifPresent(existing -> {
+                String msg = switch (existing.getStatus()) {
+                    case ACCEPTED  -> "Bu ilan için başvurunuz zaten kabul edildi. Tekrar başvuramazsınız.";
+                    case REVIEWING -> "Bu ilana yaptığınız başvuru işletme tarafından inceleniyor.";
+                    default        -> "Bu ilana zaten aktif bir başvurunuz var.";
+                };
+                throw new BusinessRuleException(msg);
+            });
 
         Application application = Application.builder()
                 .candidate(candidate)
