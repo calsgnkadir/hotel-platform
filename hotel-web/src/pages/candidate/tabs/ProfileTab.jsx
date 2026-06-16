@@ -146,31 +146,6 @@ export default function ProfileTab() {
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
-      <div className="no-print flex justify-end">
-        <button onClick={() => window.print()}
-          type="button"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg
-                     bg-white dark:bg-ink-800 text-ink-700 dark:text-cream-100
-                     border border-cream-300 dark:border-ink-700
-                     hover:border-brand-400 dark:hover:border-brand-500 hover:text-brand-700 dark:hover:text-brand-300
-                     transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z" />
-          </svg>
-          CV'mi Yazdır
-        </button>
-      </div>
-
-      <div className="print-only">
-        <h1 style={{ fontSize: '24pt', fontWeight: 700, margin: '0 0 4pt 0' }}>
-          {profile?.fullName || 'Aday Profili'}
-        </h1>
-        <p style={{ fontSize: '10pt', color: '#555', margin: 0 }}>
-          AjansHotel CV — {new Date().toLocaleDateString('tr-TR')}
-        </p>
-        <hr style={{ margin: '8pt 0', border: 0, borderTop: '1px solid #ccc' }} />
-      </div>
-
       {/* FAZ 5.4 — Identity + quick actions: 2-kolon ust bolum */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* SOL — Identity card */}
