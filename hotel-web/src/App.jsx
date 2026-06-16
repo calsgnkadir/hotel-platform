@@ -20,6 +20,7 @@ import KvkkPage from './pages/KvkkPage'
 import HelpPage from './pages/HelpPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import ListingDetailPage from './pages/candidate/ListingDetailPage'
+import BusinessPublicPage from './pages/public/BusinessPublicPage'  // FAZ 5.9
 import NotFoundPage from './pages/NotFoundPage'  // FAZ 3 - 404
 // FAZ 1/#23 — Web Push prompt (pure Java VAPID, in-app calisiyor)
 import PushPermissionPrompt from './components/PushPermissionPrompt'
@@ -86,6 +87,9 @@ function AnimatedRoutes() {
 
         {/* FAZ 1/#47 — Public listing detail (paylasilabilir URL) */}
         <Route path="/listings/:id"    element={<ListingDetailPage />} />
+
+        {/* FAZ 5.9 — Public isletme profil (paylasilabilir + SEO) */}
+        <Route path="/p/business/:id"  element={<BusinessPublicPage />} />
 
         {/* Candidate panel */}
         <Route

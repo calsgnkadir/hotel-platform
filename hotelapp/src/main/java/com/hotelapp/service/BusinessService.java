@@ -54,6 +54,16 @@ public class BusinessService {
     }
 
     // ----------------------------------------------------------------
+    // FAZ 5.9 — Public: id ile tekil isletme detayi (login gerektirmez)
+    // ----------------------------------------------------------------
+    @Transactional(readOnly = true)
+    public BusinessDto getPublicById(Long id) {
+        Business business = businessRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("İşletme", id));
+        return toDto(business);
+    }
+
+    // ----------------------------------------------------------------
     // Owner: update own profile (text fields only — fotolar ayrı endpoint)
     // ----------------------------------------------------------------
     @Transactional

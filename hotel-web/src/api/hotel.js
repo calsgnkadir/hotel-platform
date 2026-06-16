@@ -7,6 +7,12 @@ export async function getBusinessList(type) {
   return data
 }
 
+// FAZ 5.9 — public profil sayfasi (login gerektirmez)
+export async function getPublicBusiness(id) {
+  const { data } = await api.get(`/api/businesses/${id}`)
+  return data
+}
+
 /* ── Business owner profile ── */
 export async function getBusinessProfile() {
   const { data } = await api.get('/api/business/profile')

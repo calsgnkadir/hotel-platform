@@ -45,6 +45,12 @@ public class BusinessController {
         return ResponseEntity.ok(businessService.getGalleryPhotosForBusiness(id));
     }
 
+    @Operation(summary = "İşletme detay (public, paylaşılabilir profil) — FAZ 5.9")
+    @GetMapping("/api/businesses/{id}")
+    public ResponseEntity<BusinessDto> getPublicBusiness(@PathVariable Long id) {
+        return ResponseEntity.ok(businessService.getPublicById(id));
+    }
+
     @Operation(summary = "Logo URL'sine yönlendir (legacy — yeni frontend BusinessDto.logoUrl'i direkt kullanır)")
     @GetMapping("/api/businesses/{id}/logo")
     public ResponseEntity<Void> getLogo(@PathVariable Long id) {
