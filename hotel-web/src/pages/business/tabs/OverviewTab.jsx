@@ -1,6 +1,7 @@
 import { StatusBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
 import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ 5.6
+import TodayWidget from '../components/TodayWidget'  // FAZ 5.12
 
 /* ── Overview Tab ── */
 export default function OverviewTab({ applications, onTabChange }) {
@@ -10,6 +11,9 @@ export default function OverviewTab({ applications, onTabChange }) {
 
   return (
     <div className="space-y-4">
+      {/* FAZ 5.12 — Bugun widget tepelik */}
+      <TodayWidget applications={applications} onTabChange={onTabChange} />
+
       {/* Stat strip — sade 4'lu + sparkline */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {[
