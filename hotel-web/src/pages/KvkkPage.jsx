@@ -1,37 +1,53 @@
 import { Link } from 'react-router-dom'
 import BackButton from '../components/BackButton'
 
+/**
+ * KVKK aydinlatma metni — dark theme (FAZ 6 eksiklik avi).
+ * Eski: bg-white dark:bg-white -> dark zeminde okunamiyordu.
+ */
 export default function KvkkPage() {
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-ink-900 py-10 px-4">
+    <div className="min-h-screen py-10 px-4 relative" style={{ background: '#0a0612' }}>
+      {/* Calm radial halo */}
+      <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
+           style={{
+             background:
+               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(107, 33, 168, 0.18) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(217, 70, 239, 0.10) 0%, transparent 60%)',
+           }} />
+
       {/* Sabit sol üst geri butonu */}
       <div className="fixed top-3 left-4 z-40">
         <BackButton label="Geri" />
       </div>
 
-      <div className="max-w-3xl mx-auto bg-white dark:bg-white text-ink-800 dark:text-ink-800 rounded-2xl shadow-xl border border-cream-300 dark:border-cream-300 p-8 sm:p-10">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-ink-900 dark:text-ink-900">
-            Kişisel Verilerin Korunması Aydınlatma Metni
+      <div className="relative z-10 max-w-3xl mx-auto rounded-2xl p-6 sm:p-10"
+           style={{
+             background: 'linear-gradient(135deg, rgba(20, 14, 38, 0.85), rgba(15, 10, 30, 0.85))',
+             border: '1px solid rgba(168, 85, 247, 0.20)',
+             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.40)',
+           }}>
+        <div className="mb-6">
+          <h1 className="font-bebas text-3xl sm:text-4xl tracking-wider uppercase text-white"
+              style={{ textShadow: '0 0 18px rgba(168, 85, 247, 0.40)' }}>
+            Kişisel Verilerin Korunması
           </h1>
+          <p className="text-[10px] uppercase tracking-[0.2em] font-bold mt-2"
+             style={{ color: '#c4b5fd' }}>
+            Aydınlatma Metni · Son güncelleme: 22 Mayıs 2026
+          </p>
         </div>
 
-        <p className="text-sm text-ink-400 dark:text-ink-500 mb-6">
-          Son güncelleme: 22 Mayıs 2026
-        </p>
-
-        <div className="space-y-5 text-sm leading-relaxed text-ink-700 dark:text-ink-700">
-          <section>
-            <h2 className="font-semibold text-base text-ink-900 dark:text-ink-900 mb-2">1. Veri Sorumlusu</h2>
+        <div className="space-y-6 text-sm leading-relaxed" style={{ color: '#ede9fe' }}>
+          <Section title="1. Veri Sorumlusu">
             <p>
               AjansHotel platformunun (bundan sonra "Platform") veri sorumlusu, platformu işleten
               kişi/kurumdur. Platform, otel ve aday arasında iş eşleştirmesi yapan bir çevrimiçi
               hizmettir.
             </p>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="font-semibold text-base text-ink-900 dark:text-ink-900 mb-2">2. Toplanan Kişisel Veriler</h2>
+          <Section title="2. Toplanan Kişisel Veriler">
             <ul className="list-disc pl-5 space-y-1">
               <li><b>Kimlik bilgileri:</b> Ad, soyad, doğum tarihi, cinsiyet (opsiyonel)</li>
               <li><b>İletişim bilgileri:</b> E-posta, telefon, adres, ilçe</li>
@@ -41,10 +57,9 @@ export default function KvkkPage() {
               <li><b>Başvuru verileri:</b> İlan, ön yazı, müsaitlik, başvuru durumu</li>
               <li><b>Teknik veriler:</b> IP adresi, oturum tokeni, kullanım istatistikleri</li>
             </ul>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="font-semibold text-base text-ink-900 dark:text-ink-900 mb-2">3. İşleme Amaçları</h2>
+          <Section title="3. İşleme Amaçları">
             <ul className="list-disc pl-5 space-y-1">
               <li>Platform üyelik ve kimlik doğrulama</li>
               <li>İş ilanı oluşturma, başvuru alma ve süreç yönetimi</li>
@@ -52,18 +67,16 @@ export default function KvkkPage() {
               <li>Platform güvenliği ve kötüye kullanım önleme</li>
               <li>Yasal yükümlülükler çerçevesinde kayıt tutma</li>
             </ul>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="font-semibold text-base text-ink-900 dark:text-ink-900 mb-2">4. Hukuki Sebep</h2>
+          <Section title="4. Hukuki Sebep">
             <p>
               Verileriniz, KVKK m.5/2 uyarınca bir sözleşmenin kurulması ve ifası için zorunlu olması,
               meşru menfaat kapsamında ve açık rızanız ile işlenmektedir.
             </p>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="font-semibold text-base text-ink-900 dark:text-ink-900 mb-2">5. Veri Paylaşımı</h2>
+          <Section title="5. Veri Paylaşımı">
             <p>
               <b>Hassas belgeler</b> (adli sicil, sağlık raporu, kimlik) yalnızca senin açık iznin ile,
               başvurduğun işletmenin görüntülemesine açılır. Açık belgeler (CV, transkript, öğrenci belgesi)
@@ -72,10 +85,9 @@ export default function KvkkPage() {
             <p className="mt-2">
               Verileriniz üçüncü taraflarla pazarlama amacıyla paylaşılmaz.
             </p>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="font-semibold text-base text-ink-900 dark:text-ink-900 mb-2">6. KVKK Madde 11 Hakları</h2>
+          <Section title="6. KVKK Madde 11 Hakları">
             <p>Aşağıdaki haklara sahipsiniz:</p>
             <ul className="list-disc pl-5 space-y-1 mt-2">
               <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
@@ -85,30 +97,56 @@ export default function KvkkPage() {
               <li>Otomatik analizi ile aleyhe sonuç doğmasına itiraz etme</li>
               <li>Kanuna aykırı işleme nedeniyle zarara uğramışsanız tazminat talep etme</li>
             </ul>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="font-semibold text-base text-ink-900 dark:text-ink-900 mb-2">7. İletişim</h2>
+          <Section title="7. İletişim">
             <p>
               KVKK kapsamındaki taleplerinizi platformun destek e-posta adresine iletebilirsiniz.
               Talebiniz en geç <b>30 gün</b> içinde değerlendirilir.
             </p>
-          </section>
+          </Section>
 
-          <section className="bg-brand-50 dark:bg-brand-900/30 rounded-lg p-4 text-brand-900 dark:text-brand-200 border border-brand-200 dark:border-brand-800">
+          {/* Onay kutusu */}
+          <div className="rounded-xl p-4"
+               style={{
+                 background: 'rgba(168, 85, 247, 0.10)',
+                 border: '1px solid rgba(168, 85, 247, 0.25)',
+                 color: '#ede9fe',
+               }}>
             <p className="font-medium">
               Platforma kayıt olarak bu aydınlatma metnini okuduğunuzu ve verilerinizin yukarıda
               belirtilen amaçlarla işlenmesine açık rıza verdiğinizi kabul edersiniz.
             </p>
-          </section>
+          </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-cream-300 dark:border-cream-300 text-center">
-          <Link to="/register" className="text-sm font-semibold text-brand-700 dark:text-brand-700 hover:underline">
+        <div className="mt-8 pt-6 border-t text-center"
+             style={{ borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+          <Link to="/register"
+                className="inline-block text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-full transition-all hover:-translate-y-0.5"
+                style={{
+                  background: 'linear-gradient(135deg, #6b21a8, #9333ea)',
+                  color: '#ffffff',
+                  boxShadow: '0 0 18px rgba(168, 85, 247, 0.40)',
+                }}>
             Kayıt sayfasına dön →
           </Link>
         </div>
       </div>
     </div>
+  )
+}
+
+function Section({ title, children }) {
+  return (
+    <section>
+      <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-2.5"
+          style={{ color: '#c4b5fd' }}>
+        {title}
+      </h2>
+      <div style={{ color: '#ede9fe' }}>
+        {children}
+      </div>
+    </section>
   )
 }

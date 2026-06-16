@@ -261,7 +261,8 @@ export default function ProfileTab() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="card p-5 space-y-4">
-          <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Temel Bilgiler</h3>
+          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>Temel Bilgiler</h3>
 
           <div>
             <label className="label">Ad Soyad *</label>
@@ -306,7 +307,8 @@ export default function ProfileTab() {
         </div>
 
         <div className="card p-5 space-y-4">
-          <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Eğitim</h3>
+          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>Eğitim</h3>
           <div>
             <label className="label">Eğitim Durumu <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
             <select name="education" value={form.education} onChange={handleChange} className="input">
@@ -317,7 +319,8 @@ export default function ProfileTab() {
         </div>
 
         <div className="card p-5 space-y-4">
-          <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">İş Tercihleri</h3>
+          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>İş Tercihleri</h3>
 
           <div>
             <label className="label">Müsaitlik Türü <span className="text-ink-400 font-normal">(birden fazla seçebilirsin)</span></label>
@@ -346,7 +349,8 @@ export default function ProfileTab() {
         </div>
 
         <div className="card p-5 space-y-4">
-          <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Diğer</h3>
+          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>Diğer</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label">Ehliyet</label>
@@ -361,7 +365,8 @@ export default function ProfileTab() {
 
         <div className="card p-5 space-y-4">
           <div>
-            <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Bildirim Tercihleri</h3>
+            <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>Bildirim Tercihleri</h3>
             <p className="text-xs text-ink-500 mt-1">
               İlgini çekebilecek yeni ilan açıldığında otomatik bildirim al. Hiçbirini seçmezsen bildirim yok.
             </p>
