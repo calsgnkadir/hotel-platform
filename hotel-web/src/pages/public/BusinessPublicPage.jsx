@@ -280,7 +280,7 @@ export default function BusinessPublicPage() {
                   {typeLabel}
                   {business.category && <span> · {business.category}</span>}
                 </div>
-                <h1 className="font-bebas text-3xl lg:text-4xl tracking-wider uppercase text-white leading-tight"
+                <h1 className="font-bebas text-2xl sm:text-3xl lg:text-4xl tracking-wider uppercase text-white leading-tight"
                     style={{ textShadow: '0 0 18px rgba(168, 85, 247, 0.40)' }}>
                   {business.name}
                 </h1>

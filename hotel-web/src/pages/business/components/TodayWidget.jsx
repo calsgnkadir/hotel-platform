@@ -103,10 +103,10 @@ export default function TodayWidget({ applications, onTabChange }) {
       />
 
       <div className="relative">
-        <div className="flex items-baseline justify-between mb-4">
-          <div className="flex items-baseline gap-3">
+        <div className="flex items-baseline justify-between mb-4 flex-wrap gap-y-2">
+          <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
             <h2
-              className="font-bebas text-3xl tracking-wider uppercase text-white"
+              className="font-bebas text-2xl sm:text-3xl tracking-wider uppercase text-white"
               style={{ textShadow: '0 0 18px rgba(168, 85, 247, 0.40)' }}
             >
               Bugün

@@ -125,9 +125,9 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               Çıkış
             </button>
 
-            {/* Mobile menu trigger */}
+            {/* FAZ 6.1 — Mobile + tablet menu trigger (lg breakpoint altinda gozukur) */}
             <button onClick={() => setMobileMenuOpen(o => !o)}
-              className="sm:hidden p-2 rounded-full"
+              className="lg:hidden p-2 rounded-full"
               style={{ background: 'rgba(168, 85, 247, 0.15)' }}
               aria-label="Menü">
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -165,9 +165,9 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           })}
         </nav>
 
-        {/* Mobile menu drawer */}
+        {/* FAZ 6.1 — Mobile + tablet menu drawer (lg breakpoint altinda) */}
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t" style={{ borderColor: 'rgba(168, 85, 247, 0.15)' }}>
+          <div className="lg:hidden border-t" style={{ borderColor: 'rgba(168, 85, 247, 0.15)' }}>
             <nav className="px-4 py-3 space-y-1" aria-label="Mobil navigasyon">
               {navItems.map(item => {
                 const active = activeTab === item.id
@@ -208,8 +208,8 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         <EmailVerifyBanner />
 
         {/* Page heading strip (her sayfa için Bebas başlık) */}
-        <div className="px-4 lg:px-8 pt-6 lg:pt-8 pb-3 flex items-end justify-between gap-4 flex-wrap">
-          <h1 className="font-bebas text-3xl lg:text-4xl tracking-wider uppercase text-white"
+        <div className="px-4 lg:px-8 pt-5 lg:pt-8 pb-3 flex items-end justify-between gap-3 flex-wrap">
+          <h1 className="font-bebas text-2xl sm:text-3xl lg:text-4xl tracking-wider uppercase text-white"
               style={{ textShadow: '0 0 18px rgba(168, 85, 247, 0.30)' }}>
             {(() => {
               const item = navItems.find(n => n.id === activeTab)
