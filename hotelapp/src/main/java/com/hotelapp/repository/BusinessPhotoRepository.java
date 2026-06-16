@@ -17,6 +17,14 @@ public interface BusinessPhotoRepository extends JpaRepository<BusinessPhoto, Lo
     /** #86: displayOrder ASC + tiebreak için createdAt ASC. */
     List<BusinessPhoto> findAllByBusinessIdOrderByDisplayOrderAscCreatedAtAsc(Long businessId);
 
+    /**
+     * FAZ N+1 fix: birden fazla isletme icin tek sorguda foto listesi.
+     * Service tarafinda businessId'ye gore gruplanir.
+     */
+    @Query("SELECT p FROM BusinessPhoto p WHERE p.business.id IN :businessIds " +
+           "ORDER BY p.business.id, p.displayOrder, p.createdAt")
+    List<BusinessPhoto> findAllByBusinessIdInOrdered(@Param("businessIds") java.util.Collection<Long> businessIds);
+
     /** Bir işletmenin kapak fotosu (varsa). */
     Optional<BusinessPhoto> findByBusinessIdAndIsCoverTrue(Long businessId);
 

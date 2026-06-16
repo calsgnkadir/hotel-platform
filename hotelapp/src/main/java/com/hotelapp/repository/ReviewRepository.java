@@ -36,4 +36,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
            "WHERE r.byRole = 'BUSINESS' " +
            "AND r.application.candidate.id = :candidateId")
     Object[] aggregateForCandidate(@Param("candidateId") Long candidateId);
+
+    /**
+     * FAZ N+1 fix: birden fazla isletme icin tek sorguda rating aggregate.
+     * Donus: [businessId, avg, count] tuple listesi.
+     */
+    @Query("SELECT r.application.jobListing.business.id, AVG(r.rating), COUNT(r) FROM Review r " +
+           "WHERE r.byRole = 'CANDIDATE' " +
+           "AND r.application.jobListing.business.id IN :businessIds " +
+           "GROUP BY r.application.jobListing.business.id")
+    List<Object[]> aggregateForBusinessesBulk(@Param("businessIds") java.util.Collection<Long> businessIds);
 }

@@ -135,6 +135,27 @@ public class ReviewService {
         return summarize(reviewRepository.aggregateForCandidate(candidateId));
     }
 
+    /**
+     * FAZ N+1 fix: birden fazla isletme rating'i tek sorguda.
+     * Donus: Map<businessId, RatingSummary> — eksik isletmeler icin empty().
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, RatingSummary> getBusinessRatingsBulk(java.util.Collection<Long> businessIds) {
+        java.util.Map<Long, RatingSummary> map = new java.util.HashMap<>();
+        if (businessIds == null || businessIds.isEmpty()) return map;
+        for (Object[] row : reviewRepository.aggregateForBusinessesBulk(businessIds)) {
+            Long bid    = (row[0] != null) ? ((Number) row[0]).longValue() : null;
+            Double avg  = (row[1] != null) ? ((Number) row[1]).doubleValue() : null;
+            Long count  = (row[2] != null) ? ((Number) row[2]).longValue() : 0L;
+            if (bid != null) {
+                map.put(bid, RatingSummary.builder().averageRating(avg).reviewCount(count).build());
+            }
+        }
+        // GROUP BY'da olmayanlar icin empty
+        for (Long bid : businessIds) map.putIfAbsent(bid, RatingSummary.empty());
+        return map;
+    }
+
     private RatingSummary summarize(Object[] row) {
         // Hibernate Object[] döndürür ama bazen aslında tek bir Object[] içeren array gelir
         if (row == null || row.length == 0) return RatingSummary.empty();

@@ -62,7 +62,7 @@ public class JobListingService {
     ) {
         Specification<JobListing> spec = buildActiveListingSpec(
                 position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo);
-        return jobListingRepository.findAll(spec).stream().map(this::toResponse).toList();
+        return toResponses(jobListingRepository.findAll(spec));
     }
 
     private Specification<JobListing> buildActiveListingSpec(
@@ -125,8 +125,7 @@ public class JobListingService {
     // ----------------------------------------------------------------
     @Transactional(readOnly = true)
     public List<ListingResponse> getMyListings(Long ownerId) {
-        return jobListingRepository.findAllByBusiness_OwnerId(ownerId)
-                .stream().map(this::toResponse).toList();
+        return toResponses(jobListingRepository.findAllByBusiness_OwnerId(ownerId));
     }
 
     // ----------------------------------------------------------------
@@ -389,7 +388,61 @@ public class JobListingService {
         return listing;
     }
 
+    /**
+     * FAZ N+1 fix: liste toResponse'larini tek seferde bulk fetch ile uretir.
+     * Tekli toResponse cagrilari (create/update/single get) eski yolu kullanir.
+     *
+     * Once tum businessId'leri toplar, sonra:
+     *  - ReviewService.getBusinessRatingsBulk -> Map<id, RatingSummary>  (1 sorgu)
+     *  - BusinessPhotoRepository.findAllByBusinessIdInOrdered -> tek list (1 sorgu)
+     * sonra her listing'i bu map'lerden okuyarak DTO'ya cevirir.
+     */
+    private List<ListingResponse> toResponses(List<JobListing> listings) {
+        if (listings == null || listings.isEmpty()) return java.util.List.of();
+
+        java.util.Set<Long> businessIds = listings.stream()
+                .map(l -> l.getBusiness().getId())
+                .collect(java.util.stream.Collectors.toSet());
+
+        java.util.Map<Long, com.hotelapp.service.ReviewService.RatingSummary> ratingMap =
+                reviewService.getBusinessRatingsBulk(businessIds);
+
+        java.util.Map<Long, List<String>> photosMap = new java.util.HashMap<>();
+        for (var photo : businessPhotoRepository.findAllByBusinessIdInOrdered(businessIds)) {
+            Long bid = photo.getBusiness().getId();
+            var list = photosMap.computeIfAbsent(bid, k -> new java.util.ArrayList<>());
+            if (list.size() < 5) {  // ilk 5 yeterli (loadBusinessPhotoUrls ile esleşir)
+                String url = fileStorageService.publicUrl(photo.getFilePath());
+                if (url != null) list.add(url);
+            }
+        }
+
+        return listings.stream()
+                .map(l -> toResponse(l, ratingMap, photosMap))
+                .toList();
+    }
+
+    /** Overload — bulk map'leri kullanir (tek tek N+1 yapmaz). */
+    private ListingResponse toResponse(JobListing l,
+                                       java.util.Map<Long, com.hotelapp.service.ReviewService.RatingSummary> ratingMap,
+                                       java.util.Map<Long, List<String>> photosMap) {
+        Long bid = l.getBusiness().getId();
+        var rating = ratingMap.getOrDefault(bid, com.hotelapp.service.ReviewService.RatingSummary.empty());
+        var photos = photosMap.getOrDefault(bid, java.util.List.of());
+        return buildResponseFromParts(l, rating.getAverageRating(), rating.getReviewCount(), photos);
+    }
+
     private ListingResponse toResponse(JobListing l) {
+        // Tekli: rating + foto sorgulari burada ayri firar (create/update/get single)
+        var rating = reviewService.getBusinessRating(l.getBusiness().getId());
+        var photos = loadBusinessPhotoUrls(l.getBusiness().getId());
+        return buildResponseFromParts(l, rating.getAverageRating(), rating.getReviewCount(), photos);
+    }
+
+    /** Ortak DTO insa — hem bulk hem tekli yoldan kullanilir. */
+    private ListingResponse buildResponseFromParts(JobListing l,
+                                                   Double avgRating, Long reviewCount,
+                                                   List<String> photoUrls) {
         List<ShiftSlotDto> slotDtos = l.getShiftSlots() == null ? List.of()
                 : l.getShiftSlots().stream()
                     .sorted((a, b) -> {
@@ -432,11 +485,11 @@ public class JobListingService {
                 .businessAddress(l.getBusiness().getAddress())
                 .businessLatitude(l.getBusiness().getLatitude())
                 .businessLongitude(l.getBusiness().getLongitude())
-                .businessAverageRating(reviewService.getBusinessRating(l.getBusiness().getId()).getAverageRating())
-                .businessReviewCount(reviewService.getBusinessRating(l.getBusiness().getId()).getReviewCount())
+                .businessAverageRating(avgRating)
+                .businessReviewCount(reviewCount)
                 .createdAt(l.getCreatedAt())
                 .shiftSlots(slotDtos)
-                .businessPhotoUrls(loadBusinessPhotoUrls(l.getBusiness().getId()))  // D3
+                .businessPhotoUrls(photoUrls)  // D3
                 .build();
     }
 
