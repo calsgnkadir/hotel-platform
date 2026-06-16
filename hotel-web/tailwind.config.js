@@ -93,9 +93,10 @@ export default {
         // FAZ 5.4 — WordPlay benchmark keyframes (mor brand'imize uyarlanmis)
         // textShadow 3 mor ton arasinda gecis — hero baslik icin neon his
         textGlow: {
-          '0%':   { textShadow: '0 0 5px #6b21a8, 0 0 15px #9333ea, 0 0 20px #a855f7' },
-          '50%':  { textShadow: '0 0 8px #d946ef, 0 0 20px #c084fc, 0 0 30px #7e22ce' },
-          '100%': { textShadow: '0 0 10px #581c87, 0 0 25px #c084fc, 0 0 35px #6b21a8' },
+          // D2: lacivert + altin tonlarinda gecis (eski mor neon yerine)
+          '0%':   { textShadow: '0 0 5px #1e3a5f, 0 0 15px #b8902d, 0 0 20px #d4a853' },
+          '50%':  { textShadow: '0 0 8px #d4a853, 0 0 20px #f7c43c, 0 0 30px #234a82' },
+          '100%': { textShadow: '0 0 10px #0c1726, 0 0 25px #f7c43c, 0 0 35px #1e3a5f' },
         },
         // -10px ile +10px arasinda nazikce kaymasi
         floatY: {
@@ -132,8 +133,9 @@ export default {
         'terra-sm': '0 2px 12px rgba(217, 70, 239, 0.20)',
         'terra':    '0 4px 20px rgba(217, 70, 239, 0.30)',
         // FAZ 5.4 — WordPlay benchmark: double-layer neon glow CTA butonlar icin
-        'purple-glow':  '0 0 5px #6b21a8, 0 0 20px #9333ea',
-        'magenta-glow': '0 0 5px #d946ef, 0 0 20px #e879f9',
+        // D2: 'purple-glow' / 'magenta-glow' isimleri korundu (Tailwind class refs varsa kırılmasın), tonlar lacivert+altin
+        'purple-glow':  '0 0 5px #1e3a5f, 0 0 20px #b8902d',
+        'magenta-glow': '0 0 5px #d4a853, 0 0 20px #f7c43c',
         'soft-glow':    '0 0 5px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.3)',
       },
     },

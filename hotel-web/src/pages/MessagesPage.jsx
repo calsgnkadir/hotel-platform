@@ -102,19 +102,32 @@ function FileAttachment({ m }) {
   const name = m.attachmentName || 'Dosya'
   const ext = (name.split('.').pop() || '').toLowerCase()
   const meta = fileTypeMeta(ext)
+  // FAZ D5 son adım: PDF için Cloudinary'den ilk sayfa thumbnail dene
+  const [thumbFailed, setThumbFailed] = useState(false)
+  const pdfThumb = ext === 'pdf' ? pdfThumbnailUrl(m.attachmentUrl) : null
+  const showThumb = pdfThumb && !thumbFailed
+
   return (
     <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer"
        className={`flex items-center gap-2.5 px-3 py-2.5 border-b ${m.mine ? 'border-white/20' : 'border-cream-300 dark:border-ink-700'}`}>
-      <div className="w-9 h-11 rounded-md flex flex-col items-center justify-center flex-shrink-0 relative"
-           style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke={meta.iconColor} strokeWidth={1.6} className="w-4 h-4 -mb-0.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d={meta.iconPath} />
-        </svg>
-        <span className="text-[8px] font-bold tracking-wider" style={{ color: meta.iconColor }}>
-          {meta.label}
-        </span>
-      </div>
+      {showThumb ? (
+        <img src={pdfThumb}
+             alt="PDF önizleme" onError={() => setThumbFailed(true)}
+             loading="lazy" decoding="async"
+             className="w-12 h-16 rounded-md object-cover flex-shrink-0"
+             style={{ border: `1px solid ${meta.border}`, background: meta.bg }} />
+      ) : (
+        <div className="w-9 h-11 rounded-md flex flex-col items-center justify-center flex-shrink-0 relative"
+             style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke={meta.iconColor} strokeWidth={1.6} className="w-4 h-4 -mb-0.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d={meta.iconPath} />
+          </svg>
+          <span className="text-[8px] font-bold tracking-wider" style={{ color: meta.iconColor }}>
+            {meta.label}
+          </span>
+        </div>
+      )}
       <div className="flex-1 min-w-0">
         <div className="font-semibold truncate text-[13px]">{name}</div>
         <div className={`text-[10px] ${m.mine ? 'text-white/70' : 'text-ink-400'}`}>
@@ -123,6 +136,18 @@ function FileAttachment({ m }) {
       </div>
     </a>
   )
+}
+
+/**
+ * FAZ D5: Cloudinary raw PDF URL'ini image transformation ile ilk sayfa
+ * JPG thumbnail'ine cevirir.
+ *   .../raw/upload/...  ->  .../image/upload/pg_1,f_jpg,w_240,h_320,c_fill/...
+ * Cloudinary PDF -> image conversion bu URL'e geldiginde tetiklenir. Hesap planı
+ * PDF islemeyi desteklemiyorsa <img onError> fallback'i renkli rozeti gosterir.
+ */
+function pdfThumbnailUrl(rawUrl) {
+  if (!rawUrl || !rawUrl.includes('/raw/upload/')) return null
+  return rawUrl.replace('/raw/upload/', '/image/upload/pg_1,f_jpg,w_240,h_320,c_fill,q_auto/')
 }
 
 function fileTypeMeta(ext) {
