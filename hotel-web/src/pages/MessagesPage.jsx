@@ -97,6 +97,54 @@ function parseCallInvite(content) {
   return { type: m[1], url: m[2] }
 }
 
+/* ── Dosya eki: PDF/DOC/diğer için ayrı ikon + renk chip (FAZ D5) ── */
+function FileAttachment({ m }) {
+  const name = m.attachmentName || 'Dosya'
+  const ext = (name.split('.').pop() || '').toLowerCase()
+  const meta = fileTypeMeta(ext)
+  return (
+    <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer"
+       className={`flex items-center gap-2.5 px-3 py-2.5 border-b ${m.mine ? 'border-white/20' : 'border-cream-300 dark:border-ink-700'}`}>
+      <div className="w-9 h-11 rounded-md flex flex-col items-center justify-center flex-shrink-0 relative"
+           style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke={meta.iconColor} strokeWidth={1.6} className="w-4 h-4 -mb-0.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d={meta.iconPath} />
+        </svg>
+        <span className="text-[8px] font-bold tracking-wider" style={{ color: meta.iconColor }}>
+          {meta.label}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold truncate text-[13px]">{name}</div>
+        <div className={`text-[10px] ${m.mine ? 'text-white/70' : 'text-ink-400'}`}>
+          {m.attachmentSize ? `${(m.attachmentSize / 1024).toFixed(0)} KB · ` : ''}indirmek için tıkla
+        </div>
+      </div>
+    </a>
+  )
+}
+
+function fileTypeMeta(ext) {
+  // PDF — kırmızı; DOC/DOCX — mavi; XLS — yeşil; diğer — mor
+  const docPath = 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z'
+  switch (ext) {
+    case 'pdf':
+      return { label: 'PDF', bg: 'rgba(239, 68, 68, 0.12)', border: 'rgba(239, 68, 68, 0.30)',
+               iconColor: '#dc2626', iconPath: docPath }
+    case 'doc': case 'docx':
+      return { label: ext.toUpperCase(), bg: 'rgba(37, 99, 235, 0.12)', border: 'rgba(37, 99, 235, 0.30)',
+               iconColor: '#2563eb', iconPath: docPath }
+    case 'xls': case 'xlsx': case 'csv':
+      return { label: ext.toUpperCase(), bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.30)',
+               iconColor: '#059669', iconPath: docPath }
+    default:
+      return { label: ext.toUpperCase().slice(0, 4) || 'FILE',
+               bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.30)',
+               iconColor: '#7e22ce', iconPath: docPath }
+  }
+}
+
 /* ── Tek mesaj balonu (attachment render dahil) ── */
 function MessageBubble({ m }) {
   const isImage = m.attachmentType === 'image'
@@ -141,25 +189,7 @@ function MessageBubble({ m }) {
             <audio controls preload="metadata" src={m.attachmentUrl} className="h-8 max-w-[200px]" />
           </div>
         )}
-        {hasAttach && isFile && (
-          <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer"
-             className={`flex items-center gap-2 px-3 py-2.5 border-b ${m.mine ? 'border-white/20' : 'border-cream-300 dark:border-ink-700'}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={1.8} stroke="currentColor"
-                 className={`w-5 h-5 shrink-0 ${m.mine ? 'text-white' : 'text-ink-500'}`}>
-              <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-            </svg>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold truncate text-[13px]">{m.attachmentName || 'Dosya'}</div>
-              {m.attachmentSize && (
-                <div className={`text-[10px] ${m.mine ? 'text-white/70' : 'text-ink-400'}`}>
-                  {(m.attachmentSize / 1024).toFixed(0)} KB · indirmek için tıkla
-                </div>
-              )}
-            </div>
-          </a>
-        )}
+        {hasAttach && isFile && <FileAttachment m={m} />}
 
         {/* Metin (varsa) */}
         {m.content && m.content.trim() && (
