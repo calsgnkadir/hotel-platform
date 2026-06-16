@@ -30,6 +30,7 @@ export default function KeyboardShortcuts() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [helpOpen, setHelpOpen] = useState(false)
+  const [chordActive, setChordActive] = useState(false)  // FAZ 5.10 polish — visible hint
   const chordRef = useRef({ key: null, timer: null })
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export default function KeyboardShortcuts() {
         clearTimeout(chordRef.current.timer)
         chordRef.current.timer = null
       }
+      setChordActive(false)
     }
 
     function panel() {
@@ -99,6 +101,7 @@ export default function KeyboardShortcuts() {
       if (e.key === 'g' && !e.shiftKey) {
         chordRef.current.key = 'g'
         chordRef.current.timer = setTimeout(clearChord, CHORD_TIMEOUT_MS)
+        setChordActive(true)
       }
     }
 
@@ -109,9 +112,40 @@ export default function KeyboardShortcuts() {
     }
   }, [navigate, user?.role, helpOpen])
 
-  if (!helpOpen) return null
-
   return (
+    <>
+      {/* Chord aktif gostergesi — sag alt, 1.5s sonra silinir */}
+      {chordActive && !helpOpen && (
+        <div
+          className="fixed bottom-6 right-6 z-[90] pointer-events-none"
+          aria-hidden
+        >
+          <div
+            className="px-3 py-2 rounded-full flex items-center gap-2"
+            style={{
+              background: 'rgba(20, 14, 38, 0.92)',
+              border: '1px solid rgba(168, 85, 247, 0.40)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.40), 0 0 16px rgba(168, 85, 247, 0.30)',
+            }}
+          >
+            <kbd
+              className="font-mono text-[11px] font-bold px-2 py-0.5 rounded"
+              style={{
+                background: 'rgba(168, 85, 247, 0.25)',
+                color: '#ffffff',
+                border: '1px solid rgba(168, 85, 247, 0.50)',
+              }}
+            >
+              g
+            </kbd>
+            <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#d8b4fe' }}>
+              ikinci tuşu bekliyor...
+            </span>
+          </div>
+        </div>
+      )}
+
+      {helpOpen && (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center px-4"
       onClick={() => setHelpOpen(false)}
@@ -204,5 +238,7 @@ export default function KeyboardShortcuts() {
         </p>
       </div>
     </div>
+      )}
+    </>
   )
 }

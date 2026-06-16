@@ -880,10 +880,11 @@ function ConversationDetailPanel({ conversation }) {
   return (
     <>
       <div
-        className="hidden lg:flex flex-col w-80 min-w-[20rem] border-l overflow-hidden"
+        className="hidden lg:flex flex-col w-80 min-w-[20rem] border-l overflow-hidden relative"
         style={{
           background: 'linear-gradient(180deg, rgba(20, 14, 38, 0.92) 0%, rgba(15, 10, 30, 0.92) 100%)',
           borderColor: 'rgba(168, 85, 247, 0.18)',
+          zIndex: 5,  // FAZ 5.8 polish — ReportModal (z-50) ile catismayi onler
         }}
       >
         {/* Avatar + isim header — Bebas + radial glow */}
@@ -971,7 +972,7 @@ function ConversationDetailPanel({ conversation }) {
                 <a
                   href={`/listings/${c.listingId}`}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
                   style={{
                     background: 'linear-gradient(135deg, #6b21a8, #9333ea)',
