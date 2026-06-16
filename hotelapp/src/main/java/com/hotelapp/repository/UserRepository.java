@@ -49,4 +49,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findCandidatesMatchingPreferences(
             @Param("district") String district,
             @Param("position") Position position);
+
+    /**
+     * FAZ J2 ext: Müsaitlik bloğu tanımlamış tüm CANDIDATE'lar.
+     * district/position tercihi olmayanlar da listelenir — eşleşme JobListingService
+     * tarafında candidateFitsListingSlots ile filtrelenir.
+     */
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        WHERE u.role = com.hotelapp.enums.Role.CANDIDATE
+        AND EXISTS (
+            SELECT 1 FROM UserAvailabilityBlock b WHERE b.user.id = u.id
+        )
+    """)
+    List<User> findCandidatesWithAvailabilityBlocks();
 }

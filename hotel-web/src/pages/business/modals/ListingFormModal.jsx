@@ -38,7 +38,7 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
   const [form, setForm] = useState({
     position:     listing?.position     || 'WAITER',
     jobType:      listing?.jobType      || 'PERMANENT',
-    shift:        listing?.shift        || 'MORNING',
+    // shift kategorisi (Sabah/Akşam/Gece) kaldirildi — somut slot saatleri yeterli
     title:        listing?.title        || '',
     description:  listing?.description  || '',
     requirements: listing?.requirements || '',
@@ -151,7 +151,7 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
       const payload = {
         position:    form.position,
         jobType:     form.jobType,
-        shift:       form.shift,
+        shift:       null,  // legacy field, slot saatleri belirleyici
         title:       form.title.trim(),
         description: form.description.trim(),
         requirements: form.requirements.trim() || null,
@@ -222,18 +222,6 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
                 ))}
               </select>
             </div>
-          </div>
-
-          <div>
-            <label className="label">Vardiya *</label>
-            <select name="shift" value={form.shift} onChange={handleChange} className="input">
-              {Object.entries(SHIFT_LABELS).map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
-              ))}
-            </select>
-            <p className="text-xs text-ink-400 mt-1">
-              Adaylar bu kategoriye göre filtreleyebilir
-            </p>
           </div>
 
           <div>

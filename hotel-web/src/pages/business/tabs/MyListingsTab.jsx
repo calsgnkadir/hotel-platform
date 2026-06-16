@@ -86,7 +86,7 @@ export default function MyListingsTab({ applications = [] }) {
                   </div>
                   <p className="text-xs text-ink-500 mt-1">
                     {POSITION_LABELS[listing.position]} · {JOB_TYPE_LABELS[listing.jobType]}
-                    {listing.shift && ` · ${SHIFT_SHORT[listing.shift]}`}
+                    {/* shift kategorisi kaldirildi — slot saatleri yeterli */}
                   </p>
                   {(() => {
                     const s = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)

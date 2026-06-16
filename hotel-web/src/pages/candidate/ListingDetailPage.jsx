@@ -67,7 +67,7 @@ export default function ListingDetailPage() {
     )
   }
 
-  const shift = listing.shift ? SHIFT_INFO[listing.shift] : null
+  const shift = null  // legacy shift kategorisi gosterilmiyor — slot saatleri yeterli
   const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const hasDates = listing.startDate || listing.endDate
   const slots = [...(listing.shiftSlots || [])].sort((a, b) => {

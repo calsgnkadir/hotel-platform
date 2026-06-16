@@ -194,13 +194,21 @@ public class JobListingService {
                 return;
             }
 
-            var matching = userRepository.findCandidatesMatchingPreferences(district, listing.getPosition());
-            log.info("[MATCH] Listing #{} — district='{}', position={}, ilcfe+pozisyon eşleşen aday sayısı={}",
-                    listing.getId(), district, listing.getPosition(), matching.size());
+            // Iki opt-in kanali: (1) district+position tercihi (klasik), (2) musaitlik blogu tanimlamis
+            var prefMatched = userRepository.findCandidatesMatchingPreferences(district, listing.getPosition());
+            var availOptIn  = userRepository.findCandidatesWithAvailabilityBlocks();
+            // Set ile birlestir (duplicate adayi onle)
+            java.util.Map<Long, com.hotelapp.entity.User> matching = new java.util.LinkedHashMap<>();
+            for (var u : prefMatched) matching.put(u.getId(), u);
+            for (var u : availOptIn)  matching.putIfAbsent(u.getId(), u);
+
+            log.info("[MATCH] Listing #{} — district='{}', position={}, pref-eşleşen={}, avail-blok={}, toplam aday={}",
+                    listing.getId(), district, listing.getPosition(),
+                    prefMatched.size(), availOptIn.size(), matching.size());
 
             String posLabel = listing.getPosition().name();
             int notifiedCount = 0, skippedNoFit = 0;
-            for (var aday : matching) {
+            for (var aday : matching.values()) {
                 // FAZ J2 ext: aday haftalık müsaitlik bloğu tanımladıysa, ilan
                 // slot'larından en az biri bloğunun içine düşmeli. Hiç blok yoksa
                 // opt-out: her ilana açık (eski davranış).

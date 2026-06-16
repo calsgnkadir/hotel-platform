@@ -332,7 +332,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
 /* ── Detail Modal ── */
 function DetailModal({ listing, onClose, onApply }) {
   const [showReport, setShowReport] = useState(false)
-  const shift = listing.shift ? SHIFT_INFO[listing.shift] : null
+  const shift = null  // legacy shift kategorisi kaldirildi
   const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const hasDates = listing.startDate || listing.endDate
   const slots = [...(listing.shiftSlots || [])].sort((a, b) => {
@@ -524,7 +524,7 @@ function DetailModal({ listing, onClose, onApply }) {
 
 /* ── Listing Card ── */
 function ListingCard({ listing, onApply, onDetail }) {
-  const shift = listing.shift ? SHIFT_INFO[listing.shift] : null
+  const shift = null  // legacy shift kategorisi kaldirildi
   const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
 
   // FAZ 1/#46: Hero alan üstte — büyük gradient + işletme letter (foto-merkezli his)
@@ -861,18 +861,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           )}
         </div>
 
-        <FilterChipGroup
-          label="Vardiya"
-          value={shifts}
-          onChange={setShifts}
-          multi
-          layout="grid-3"
-          items={Object.entries(SHIFT_INFO).map(([key, s]) => ({
-            value: key,
-            label: s.label,
-            sub: s.time,
-          }))}
-        />
+        {/* Legacy vardiya kategorisi filtresi kaldirildi — slot tarih/saat filtreleri yeterli */}
 
         {activeFilterCount > 0 && (
           <div className="flex justify-end pt-1">
