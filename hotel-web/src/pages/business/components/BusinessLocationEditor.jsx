@@ -53,7 +53,10 @@ export default function BusinessLocationEditor({
     <div className="card p-5 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-bold text-ink-800 dark:text-ink-800 uppercase tracking-wider">Tam Konum</h3>
+          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+            Tam Konum
+          </h3>
           <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-0.5">
             {hasExact
               ? 'Aday\'lar ilan detayında bu tam konumu görür.'
