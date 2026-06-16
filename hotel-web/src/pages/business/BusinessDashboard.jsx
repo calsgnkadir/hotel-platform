@@ -61,8 +61,8 @@ export default function BusinessDashboard() {
       {isLoading ? (
         <SkeletonList count={5} />
       ) : (
-        /* FAZ 3 — Tab degisiminde sade fade-in. key={activeTab} animasyonu re-tetikler. */
-        <div key={activeTab} className="page-enter">
+        /* FAZ 5.4 — page transition art Framer'a devredildi (DashboardLayout) */
+        <div>
           {activeTab === 'overview'      && <OverviewTab applications={applications} onTabChange={setActiveTab} />}
           {activeTab === 'mylistings'    && <MyListingsTab />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
