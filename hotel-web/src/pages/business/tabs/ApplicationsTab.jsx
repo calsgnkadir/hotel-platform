@@ -8,6 +8,7 @@ import EmptyState from '../../../components/EmptyState'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import useFocusTrap from '../../../lib/useFocusTrap'
 import ApplicationsKanban from '../components/ApplicationsKanban'
+import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
 
 const VIEW_STORAGE_KEY = 'biz-applications-view'
 
@@ -107,6 +108,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
     try {
       const updated = await hotelApi.reviewApplication(selected.id, decision)
       toast.success(decision === 'ACCEPTED' ? 'Aday kabul edildi' : 'Aday reddedildi')
+      if (decision === 'ACCEPTED') celebrate()  // FAZ 5.11
       setSelected(updated)
       onRefresh()
     } catch (err) { toast.error(extractErrorMessage(err)) }

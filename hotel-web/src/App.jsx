@@ -34,6 +34,8 @@ import SkipLink from './components/SkipLink'
 import CommandPalette from './components/CommandPalette'
 // FAZ 5.10 — Klavye kisayollari (? + g+harf chord)
 import KeyboardShortcuts from './components/KeyboardShortcuts'
+// FAZ 5.11 — Visual delights
+import ScrollProgressBar from './components/ScrollProgressBar'
 // FAZ 5.4 — Framer Motion root config (reducedMotion respect)
 import { MotionConfig } from 'framer-motion'
 
@@ -52,6 +54,7 @@ export default function App() {
         <InstallPrompt />          {/* FAZ 2/#8 — PWA install */}
         <CommandPalette />         {/* FAZ 5.3 — ⌘K global arama */}
         <KeyboardShortcuts />      {/* FAZ 5.10 — ? help + g+harf chord */}
+        <ScrollProgressBar />      {/* FAZ 5.11 — sticky scroll progress */}
 
         <main id="main">
           <AnimatedRoutes />

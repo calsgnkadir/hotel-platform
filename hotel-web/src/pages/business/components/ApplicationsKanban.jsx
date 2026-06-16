@@ -14,6 +14,7 @@ import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
+import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
 
 /*
  * FAZ 5.5a — Basvuru Kanban
@@ -111,6 +112,7 @@ export default function ApplicationsKanban({ applications, onRefresh, onCardClic
     try {
       await action()
       toast.success('Durum güncellendi')
+      if (targetCol === 'ACCEPTED') celebrate()  // FAZ 5.11 — kabulde kutla
       onRefresh?.()
     } catch (err) {
       toast.error(extractErrorMessage(err))
