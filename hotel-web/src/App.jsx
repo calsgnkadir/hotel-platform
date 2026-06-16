@@ -31,6 +31,8 @@ import ErrorBoundary from './components/ErrorBoundary'
 import SkipLink from './components/SkipLink'
 // FAZ 5.3 — Command Palette ⌘K
 import CommandPalette from './components/CommandPalette'
+// FAZ 5.4 — Framer Motion root config (reducedMotion respect)
+import { MotionConfig } from 'framer-motion'
 
 export default function App() {
   useEffect(() => { initHapticForToasts() }, [])  // FAZ 3 - mobile haptic
@@ -38,6 +40,7 @@ export default function App() {
     <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+    <MotionConfig reducedMotion="user" transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <SkipLink />              {/* FAZ 3 / A11y — klavye Tab ilk durak */}
@@ -51,6 +54,7 @@ export default function App() {
         </main>
       </AuthProvider>
     </BrowserRouter>
+    </MotionConfig>
     </ThemeProvider>
     </QueryClientProvider>
     </ErrorBoundary>

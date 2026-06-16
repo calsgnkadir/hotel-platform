@@ -1,6 +1,17 @@
 // FAZ 5.2 — CandidateDashboard'dan ayrildi
+import { motion } from 'framer-motion'
 import StatusBadge from '../../../components/candidate/StatusBadge'
 import EarningsWidget from '../../../components/candidate/EarningsWidget'
+
+// FAZ 5.4 — stagger animasyonu container + item variants
+const STAGGER_CONTAINER = {
+  hidden:  { opacity: 1 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+}
+const STAGGER_ITEM = {
+  hidden:  { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] } },
+}
 
 export default function OverviewTab({ user, applications, onTabChange }) {
   const accepted = applications.filter(a => a.status === 'ACCEPTED').length
@@ -26,15 +37,23 @@ export default function OverviewTab({ user, applications, onTabChange }) {
 
       <EarningsWidget applications={applications} />
 
-      {/* Quick actions — ikonsuz, sade text + alt ince mor cizgi + sag chevron */}
-      <div className="grid sm:grid-cols-3 gap-3">
+      {/* Quick actions — stagger + ikonsuz + sag chevron */}
+      <motion.div
+        className="grid sm:grid-cols-3 gap-3"
+        variants={STAGGER_CONTAINER}
+        initial="hidden"
+        animate="visible"
+      >
         {[
           { num: '01', label: 'İlanları Keşfet',  tab: 'listings',     desc: 'Aktif iş ilanlarına göz at' },
           { num: '02', label: 'Başvurularım',     tab: 'applications', desc: 'Başvuru durumlarını takip et' },
           { num: '03', label: 'Mesajlarım',       tab: 'messages',     desc: 'İşletmelerle sohbet et' },
         ].map(action => (
-          <button key={action.tab} onClick={() => onTabChange(action.tab)}
-            className="card group text-left p-5 hover:-translate-y-1 transition-all duration-200 w-full">
+          <motion.button key={action.tab} onClick={() => onTabChange(action.tab)}
+            variants={STAGGER_ITEM}
+            whileHover={{ y: -4, transition: { duration: 0.18 } }}
+            whileTap={{ scale: 0.98 }}
+            className="card group text-left p-5 w-full">
             <div className="flex items-baseline justify-between mb-3">
               <span className="font-bebas text-2xl tracking-[0.25em]" style={{ color: '#7c3aed' }}>
                 {action.num}
@@ -43,9 +62,9 @@ export default function OverviewTab({ user, applications, onTabChange }) {
             </div>
             <div className="font-bebas text-xl tracking-wider uppercase text-white">{action.label}</div>
             <div className="text-[11px] mt-1" style={{ color: '#a5b4fc' }}>{action.desc}</div>
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {applications.length > 0 && (
         <div className="card">

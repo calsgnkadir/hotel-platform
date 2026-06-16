@@ -61,3 +61,6 @@ hotelapp/preview/
 
 # Bash test scripts (local-only — IntelliJ/manual)
 test-*.sh
+
+# FAZ 5.4 — local DB cleanup helpers (not for commit)
+cleanup-*.sql
