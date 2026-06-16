@@ -31,6 +31,8 @@ import ErrorBoundary from './components/ErrorBoundary'
 import SkipLink from './components/SkipLink'
 // FAZ 5.3 — Command Palette ⌘K
 import CommandPalette from './components/CommandPalette'
+// FAZ 5.10 — Klavye kisayollari (? + g+harf chord)
+import KeyboardShortcuts from './components/KeyboardShortcuts'
 // FAZ 5.4 — Framer Motion root config (reducedMotion respect)
 import { MotionConfig } from 'framer-motion'
 
@@ -48,6 +50,7 @@ export default function App() {
         <PushPermissionPrompt />  {/* FAZ 1/#23 — Web Push */}
         <InstallPrompt />          {/* FAZ 2/#8 — PWA install */}
         <CommandPalette />         {/* FAZ 5.3 — ⌘K global arama */}
+        <KeyboardShortcuts />      {/* FAZ 5.10 — ? help + g+harf chord */}
 
         <main id="main">
           <AnimatedRoutes />
