@@ -378,6 +378,43 @@ body {
   background: #2a2522;
 }
 
+/* FAZ D4 — Mobilde modal'lar bottom sheet gibi davransin (Slack/iOS native pattern).
+   Tum mevcut modal'lari (ApplyModal, DetailModal, ListingFormModal, ReviewModal,
+   ReportModal, AvatarCropModal, AdminPage modals) tek noktada uretmis oluyoruz. */
+@media (max-width: 640px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-content {
+    max-width: 100%;
+    width: 100%;
+    max-height: 90vh;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    animation: sheet-up 0.32s cubic-bezier(0.2, 0.85, 0.3, 1);
+    overflow-y: auto;
+    /* iOS safe-area + buton dokunulabilirligi */
+    padding-bottom: env(safe-area-inset-bottom);
+    position: relative;
+  }
+  /* Drag handle — gorsel ipucu: bu icerik kaydirilabilir */
+  .modal-content::before {
+    content: '';
+    position: sticky;
+    top: 0.5rem;
+    display: block;
+    width: 2.5rem;
+    height: 0.25rem;
+    margin: 0.5rem auto;
+    border-radius: 999px;
+    background: rgba(124, 58, 237, 0.30);
+    z-index: 10;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
