@@ -149,8 +149,8 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
            className="card max-w-lg w-full p-0 overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="px-5 py-4 border-b border-cream-200 dark:border-cream-300">
-          <h3 id="avatar-crop-title" className="font-bold text-base" style={{ color: '#faf5ff' }}>Profil Fotoğrafı</h3>
-          <p className="text-xs mt-0.5" style={{ color: '#c4b5fd' }}>
+          <h3 id="avatar-crop-title" className="font-bold text-base" style={{ color: '#f1f5fb' }}>Profil Fotoğrafı</h3>
+          <p className="text-xs mt-0.5" style={{ color: '#fde9a5' }}>
             Foto yükle → kare bölgeyi sürükle → kullan.
           </p>
         </div>
@@ -169,19 +169,19 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
               onClick={() => fileInputRef.current?.click()}
               className="cursor-pointer rounded-2xl text-center py-12 px-4 transition-all"
               style={{
-                background: dragOver ? 'rgba(168,85,247,0.20)' : 'rgba(168,85,247,0.08)',
-                border: `2px dashed ${dragOver ? '#d946ef' : 'rgba(168,85,247,0.40)'}`,
+                background: dragOver ? 'rgba(212, 168, 83,0.20)' : 'rgba(212, 168, 83,0.08)',
+                border: `2px dashed ${dragOver ? '#d4a853' : 'rgba(212, 168, 83,0.40)'}`,
               }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.6} stroke="currentColor"
-                   className="w-12 h-12 mx-auto mb-3" style={{ color: '#d8b4fe' }}>
+                   className="w-12 h-12 mx-auto mb-3" style={{ color: '#fde9a5' }}>
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
               </svg>
-              <p className="font-semibold text-sm" style={{ color: '#faf5ff' }}>
+              <p className="font-semibold text-sm" style={{ color: '#f1f5fb' }}>
                 Foto buraya sürükle veya tıkla
               </p>
-              <p className="text-xs mt-1" style={{ color: '#c4b5fd' }}>
+              <p className="text-xs mt-1" style={{ color: '#fde9a5' }}>
                 JPG/PNG/WEBP/HEIC · Maks {MAX_SIZE_MB} MB · Kare olarak kaydedilir
               </p>
               <input ref={fileInputRef} type="file"
@@ -205,7 +205,7 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
               </ReactCrop>
               <button type="button" onClick={reset}
                 className="mt-3 text-xs font-medium hover:underline"
-                style={{ color: '#c4b5fd' }}>
+                style={{ color: '#fde9a5' }}>
                 Başka foto seç
               </button>
             </div>
@@ -216,13 +216,13 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
         <div className="px-5 py-4 border-t border-cream-200 dark:border-cream-300 flex gap-2 justify-end">
           <button type="button" onClick={() => { reset(); onClose() }}
             className="px-4 py-2 text-sm font-semibold rounded-lg"
-            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(216,180,254,0.30)' }}>
+            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(253, 233, 165,0.30)' }}>
             İptal
           </button>
           <button type="button" onClick={handleConfirm}
             disabled={!src || saving}
             className="px-5 py-2 text-sm font-bold rounded-lg disabled:opacity-50 transition-all hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', color: '#fff', boxShadow: '0 4px 16px rgba(168,85,247,0.40)' }}>
+            style={{ background: 'linear-gradient(135deg, #d4a853, #d4a853)', color: '#fff', boxShadow: '0 4px 16px rgba(212, 168, 83,0.40)' }}>
             {saving ? 'Yükleniyor...' : 'Kullan'}
           </button>
         </div>

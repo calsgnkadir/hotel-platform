@@ -10,7 +10,7 @@ export default function LoadingScreen({ label = 'Yükleniyor...' }) {
       <div className="relative w-12 h-12">
         <div className="absolute inset-0 rounded-full border-4 border-cream-300" />
         <div className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
-             style={{ borderTopColor: '#7e22ce' }} />
+             style={{ borderTopColor: '#234a82' }} />
       </div>
       <p className="text-xs uppercase tracking-widest font-semibold text-ink-500">{label}</p>
     </div>

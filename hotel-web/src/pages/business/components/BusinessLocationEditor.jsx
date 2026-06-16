@@ -54,7 +54,7 @@ export default function BusinessLocationEditor({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
             Tam Konum
           </h3>
           <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-0.5">

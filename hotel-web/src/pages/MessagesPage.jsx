@@ -140,8 +140,8 @@ function fileTypeMeta(ext) {
                iconColor: '#059669', iconPath: docPath }
     default:
       return { label: ext.toUpperCase().slice(0, 4) || 'FILE',
-               bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.30)',
-               iconColor: '#7e22ce', iconPath: docPath }
+               bg: 'rgba(212, 168, 83, 0.12)', border: 'rgba(212, 168, 83, 0.30)',
+               iconColor: '#234a82', iconPath: docPath }
   }
 }
 
@@ -164,10 +164,10 @@ function MessageBubble({ m }) {
         ${m.mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
         style={{
           background: m.mine
-            ? 'linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%)'   /* purple-300 → purple-400 */
-            : 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)',   /* purple-100 → purple-200 */
-          color: '#3b0764',  /* koyu mor yazı — kontrast garantili */
-          border: '1px solid rgba(168, 85, 247, 0.35)',
+            ? 'linear-gradient(135deg, #fde9a5 0%, #a78bfa 100%)'   /* purple-300 → purple-400 */
+            : 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)',   /* purple-100 → purple-200 */
+          color: '#0c1726',  /* koyu mor yazı — kontrast garantili */
+          border: '1px solid rgba(212, 168, 83, 0.35)',
         }}>
 
         {/* Attachment */}
@@ -197,7 +197,7 @@ function MessageBubble({ m }) {
         )}
 
         {/* Zaman */}
-        <div className="text-[10px] px-3 pb-1 text-right" style={{ color: 'rgba(59, 7, 100, 0.60)' }}>
+        <div className="text-[10px] px-3 pb-1 text-right" style={{ color: 'rgba(12, 23, 38, 0.60)' }}>
           {formatTime(m.sentAt)}{m.mine && m.isRead ? ' · görüldü' : ''}
         </div>
       </div>
@@ -911,20 +911,20 @@ function ConversationDetailPanel({ conversation }) {
       <div
         className="hidden lg:flex flex-col w-80 min-w-[20rem] border-l overflow-hidden relative"
         style={{
-          background: 'linear-gradient(180deg, rgba(20, 14, 38, 0.92) 0%, rgba(15, 10, 30, 0.92) 100%)',
-          borderColor: 'rgba(168, 85, 247, 0.18)',
+          background: 'linear-gradient(180deg, rgba(21, 36, 61, 0.92) 0%, rgba(15, 23, 38, 0.92) 100%)',
+          borderColor: 'rgba(212, 168, 83, 0.18)',
           zIndex: 5,  // FAZ 5.8 polish — ReportModal (z-50) ile catismayi onler
         }}
       >
         {/* Avatar + isim header — Bebas + radial glow */}
-        <div className="relative px-5 py-6 text-center border-b" style={{ borderColor: 'rgba(168, 85, 247, 0.14)' }}>
+        <div className="relative px-5 py-6 text-center border-b" style={{ borderColor: 'rgba(212, 168, 83, 0.14)' }}>
           {/* Dekoratif glow */}
           <div
             aria-hidden
             className="absolute pointer-events-none inset-0"
             style={{
               background:
-                'radial-gradient(circle 200px at 50% 0%, rgba(168, 85, 247, 0.22) 0%, transparent 65%)',
+                'radial-gradient(circle 200px at 50% 0%, rgba(212, 168, 83, 0.22) 0%, transparent 65%)',
             }}
           />
           <div className="relative">
@@ -935,15 +935,15 @@ function ConversationDetailPanel({ conversation }) {
                   alt={c.otherPartyName}
                   loading="lazy" decoding="async"
                   className="w-20 h-20 rounded-full object-cover"
-                  style={{ border: '2px solid rgba(168, 85, 247, 0.40)', boxShadow: '0 0 24px rgba(168, 85, 247, 0.30)' }}
+                  style={{ border: '2px solid rgba(212, 168, 83, 0.40)', boxShadow: '0 0 24px rgba(212, 168, 83, 0.30)' }}
                 />
               ) : (
                 <div
                   className="w-20 h-20 rounded-full flex items-center justify-center font-bebas text-3xl text-white"
                   style={{
-                    background: 'linear-gradient(135deg, #6b21a8 0%, #9333ea 100%)',
-                    boxShadow: '0 0 24px rgba(168, 85, 247, 0.40)',
-                    border: '2px solid rgba(217, 70, 239, 0.30)',
+                    background: 'linear-gradient(135deg, #1e3a5f 0%, #b8902d 100%)',
+                    boxShadow: '0 0 24px rgba(212, 168, 83, 0.40)',
+                    border: '2px solid rgba(212, 168, 83, 0.30)',
                   }}
                 >
                   {initial}
@@ -952,14 +952,14 @@ function ConversationDetailPanel({ conversation }) {
               {online && (
                 <span
                   className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full"
-                  style={{ background: '#22c55e', border: '2.5px solid #15102e', boxShadow: '0 0 10px rgba(34, 197, 94, 0.55)' }}
+                  style={{ background: '#22c55e', border: '2.5px solid #15243d', boxShadow: '0 0 10px rgba(34, 197, 94, 0.55)' }}
                   title="Çevrimiçi"
                 />
               )}
             </div>
             <h3
               className="font-bebas text-xl tracking-wider uppercase text-white truncate"
-              style={{ textShadow: '0 0 12px rgba(168, 85, 247, 0.40)' }}
+              style={{ textShadow: '0 0 12px rgba(212, 168, 83, 0.40)' }}
             >
               {c.otherPartyName}
             </h3>
@@ -968,13 +968,13 @@ function ConversationDetailPanel({ conversation }) {
                 className="w-1.5 h-1.5 rounded-full"
                 style={{ background: online ? '#22c55e' : '#52525b', boxShadow: online ? '0 0 6px #22c55e' : 'none' }}
               />
-              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: online ? '#86efac' : '#a5b4fc' }}>
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: online ? '#86efac' : '#8ba9d2' }}>
                 {online ? 'Çevrimiçi' : 'Çevrimdışı'}
               </span>
               {c.otherPartyRole && (
                 <>
-                  <span style={{ color: '#7c3aed' }}>·</span>
-                  <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#d8b4fe' }}>
+                  <span style={{ color: '#234a82' }}>·</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#fde9a5' }}>
                     {isBiz ? 'İşletme' : 'Aday'}
                   </span>
                 </>
@@ -985,15 +985,15 @@ function ConversationDetailPanel({ conversation }) {
 
         {/* Ilan kart */}
         {c.listingTitle && (
-          <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(168, 85, 247, 0.10)' }}>
-            <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2" style={{ color: '#c4b5fd' }}>
+          <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(212, 168, 83, 0.10)' }}>
+            <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2" style={{ color: '#fde9a5' }}>
               İlan
             </div>
             <div
               className="rounded-xl p-3"
               style={{
-                background: 'rgba(20, 14, 38, 0.55)',
-                border: '1px solid rgba(168, 85, 247, 0.18)',
+                background: 'rgba(21, 36, 61, 0.55)',
+                border: '1px solid rgba(212, 168, 83, 0.18)',
               }}
             >
               <div className="text-sm font-semibold text-white line-clamp-2 mb-2">{c.listingTitle}</div>
@@ -1004,9 +1004,9 @@ function ConversationDetailPanel({ conversation }) {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, #6b21a8, #9333ea)',
+                    background: 'linear-gradient(135deg, #1e3a5f, #b8902d)',
                     color: '#ffffff',
-                    boxShadow: '0 0 12px rgba(168, 85, 247, 0.40)',
+                    boxShadow: '0 0 12px rgba(212, 168, 83, 0.40)',
                   }}
                 >
                   İlana Git →
@@ -1017,28 +1017,28 @@ function ConversationDetailPanel({ conversation }) {
         )}
 
         {/* Sohbet istatistik — kompakt */}
-        <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(168, 85, 247, 0.10)' }}>
-          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2.5" style={{ color: '#c4b5fd' }}>
+        <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(212, 168, 83, 0.10)' }}>
+          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2.5" style={{ color: '#fde9a5' }}>
             Sohbet
           </div>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between items-center">
-              <span style={{ color: '#a5b4fc' }}>Başladı</span>
-              <span className="font-bold" style={{ color: '#ede9fe' }}>{startedLabel}</span>
+              <span style={{ color: '#8ba9d2' }}>Başladı</span>
+              <span className="font-bold" style={{ color: '#dde7f3' }}>{startedLabel}</span>
             </div>
             {c.lastMessageAt && (
               <div className="flex justify-between items-center">
-                <span style={{ color: '#a5b4fc' }}>Son mesaj</span>
-                <span className="font-bold" style={{ color: '#ede9fe' }}>{formatRelative(c.lastMessageAt)}</span>
+                <span style={{ color: '#8ba9d2' }}>Son mesaj</span>
+                <span className="font-bold" style={{ color: '#dde7f3' }}>{formatRelative(c.lastMessageAt)}</span>
               </div>
             )}
             {c.unreadCount > 0 && (
               <div className="flex justify-between items-center">
-                <span style={{ color: '#a5b4fc' }}>Okunmamış</span>
+                <span style={{ color: '#8ba9d2' }}>Okunmamış</span>
                 <span
                   className="font-bold text-[10px] px-2 py-0.5 rounded-full"
                   style={{
-                    background: 'linear-gradient(135deg, #6b21a8, #9333ea)',
+                    background: 'linear-gradient(135deg, #1e3a5f, #b8902d)',
                     color: '#ffffff',
                   }}
                 >
@@ -1051,7 +1051,7 @@ function ConversationDetailPanel({ conversation }) {
 
         {/* Hizli islemler */}
         <div className="px-5 py-4 space-y-2 flex-1">
-          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: '#c4b5fd' }}>
+          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: '#fde9a5' }}>
             Hızlı İşlemler
           </div>
           <button
@@ -1061,12 +1061,12 @@ function ConversationDetailPanel({ conversation }) {
             disabled={!c.listingId}
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: 'rgba(20, 14, 38, 0.55)',
-              color: '#d8b4fe',
-              border: '1px solid rgba(168, 85, 247, 0.18)',
+              background: 'rgba(21, 36, 61, 0.55)',
+              color: '#fde9a5',
+              border: '1px solid rgba(212, 168, 83, 0.18)',
             }}
           >
-            <span className="font-bebas text-base" style={{ color: '#e879f9' }}>↗</span>
+            <span className="font-bebas text-base" style={{ color: '#f7c43c' }}>↗</span>
             <span className="font-semibold">İlanı Görüntüle</span>
           </button>
           <button
@@ -1084,8 +1084,8 @@ function ConversationDetailPanel({ conversation }) {
         </div>
 
         {/* Alt imza */}
-        <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'rgba(168, 85, 247, 0.10)' }}>
-          <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: '#7c3aed' }}>
+        <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'rgba(212, 168, 83, 0.10)' }}>
+          <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: '#234a82' }}>
             AjansHotel · Sohbet
           </span>
         </div>

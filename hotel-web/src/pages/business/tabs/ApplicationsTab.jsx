@@ -172,7 +172,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                   ${filter === f
                     ? 'text-white shadow-sm'
                     : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-                style={filter === f ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+                style={filter === f ? { background: 'linear-gradient(135deg, #1e3a5f, #234a82)' } : {}}>
                 {labels[f]} ({count})
               </button>
             )
@@ -185,7 +185,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
         </div>
         {/* FAZ 5.5 — Liste / Kanban view toggle */}
         <div className="inline-flex rounded-full p-1 self-start"
-             style={{ background: 'rgba(15, 10, 30, 0.55)', border: '1px solid rgba(168, 85, 247, 0.18)' }}>
+             style={{ background: 'rgba(15, 23, 38, 0.55)', border: '1px solid rgba(212, 168, 83, 0.18)' }}>
           {[
             { id: 'list',   label: 'Liste' },
             { id: 'kanban', label: 'Kanban' },
@@ -193,8 +193,8 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             <button key={v.id} onClick={() => setView(v.id)}
               className="px-3 py-1 rounded-full text-[11px] font-bebas tracking-widest uppercase transition-all"
               style={view === v.id
-                ? { background: 'linear-gradient(135deg, #6b21a8, #9333ea)', color: '#fff', boxShadow: '0 0 12px rgba(168,85,247,0.40)' }
-                : { color: '#c4b5fd' }}>
+                ? { background: 'linear-gradient(135deg, #1e3a5f, #b8902d)', color: '#fff', boxShadow: '0 0 12px rgba(212, 168, 83,0.40)' }
+                : { color: '#fde9a5' }}>
               {v.label}
             </button>
           ))}
@@ -251,7 +251,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                       style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
                     {app.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
@@ -273,7 +273,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                 {/* Chat-v2: 'İncelemeye Al' yerine direkt 'Mesajlaşmaya git' */}
                 <button onClick={e => { e.stopPropagation(); onOpenMessages?.(app.conversationId) }}
                   className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
-                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                  style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                     <path strokeLinecap="round" strokeLinejoin="round"
@@ -330,7 +330,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                       className="w-14 h-14 rounded-full object-cover border border-cream-300 flex-shrink-0" />
                   ) : (
                     <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                         style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                         style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
                       {selected.candidate?.fullName?.charAt(0) || '?'}
                     </div>
                   )}
@@ -486,7 +486,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                       </select>
                       <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
                         className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all"
-                        style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                        style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
                         Talep Et
                       </button>
                     </div>
@@ -536,7 +536,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                 <button
                   onClick={() => onOpenMessages?.(selected.conversationId)}
                   className="w-full py-2.5 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 3px 12px rgba(126,34,206,0.35)' }}>
+                  style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)', boxShadow: '0 3px 12px rgba(35, 74, 130,0.35)' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                     <path strokeLinecap="round" strokeLinejoin="round"
@@ -595,7 +595,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                     }
                   }}
                   className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
-                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                  style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
                   Mesaj Gönder
                 </button>
               )}

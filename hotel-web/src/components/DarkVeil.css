@@ -13,8 +13,8 @@
 @media (prefers-reduced-motion: reduce) {
   .darkveil-canvas {
     background: radial-gradient(ellipse at top left,
-      rgba(107, 33, 168, 0.35) 0%,
-      rgba(15, 10, 30, 0.95) 50%,
+      rgba(30, 58, 95, 0.35) 0%,
+      rgba(15, 23, 38, 0.95) 50%,
       rgba(2, 3, 12, 1) 100%);
   }
 }

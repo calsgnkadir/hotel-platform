@@ -151,14 +151,14 @@ export default function ProfileTab() {
         {/* SOL — Identity card */}
         <div className="card p-6 lg:col-span-1 flex flex-col items-center text-center">
           <div className="w-28 h-28 rounded-full flex items-center justify-center overflow-hidden mb-4 relative"
-               style={{ background: 'rgba(168, 85, 247, 0.10)', border: '2px solid rgba(168, 85, 247, 0.25)' }}>
+               style={{ background: 'rgba(212, 168, 83, 0.10)', border: '2px solid rgba(212, 168, 83, 0.25)' }}>
             {profile?.avatarUrl ? (
               <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
                    loading="lazy" decoding="async"
                    className="w-full h-full object-cover" />
             ) : (
               <span className="font-bebas text-5xl tracking-wider"
-                    style={{ color: '#c084fc', textShadow: '0 0 16px rgba(168, 85, 247, 0.4)' }}>
+                    style={{ color: '#f7c43c', textShadow: '0 0 16px rgba(212, 168, 83, 0.4)' }}>
                 {(profile?.fullName || 'A').charAt(0).toUpperCase()}
               </span>
             )}
@@ -166,13 +166,13 @@ export default function ProfileTab() {
           <h2 className="font-bebas text-2xl tracking-wider uppercase text-white mb-1">
             {profile?.fullName || 'Aday'}
           </h2>
-          <p className="text-xs mb-3" style={{ color: '#a5b4fc' }}>
+          <p className="text-xs mb-3" style={{ color: '#8ba9d2' }}>
             {profile?.email || ''}
           </p>
-          <div className="w-full pt-3 mt-1 border-t" style={{ borderColor: 'rgba(168, 85, 247, 0.15)' }}>
+          <div className="w-full pt-3 mt-1 border-t" style={{ borderColor: 'rgba(212, 168, 83, 0.15)' }}>
             <div className="flex items-center justify-between text-[11px]">
-              <span style={{ color: '#a5b4fc' }}>ÜYE OLDU</span>
-              <span className="font-semibold" style={{ color: '#e9d5ff' }}>
+              <span style={{ color: '#8ba9d2' }}>ÜYE OLDU</span>
+              <span className="font-semibold" style={{ color: '#dde7f3' }}>
                 {profile?.createdAt
                   ? new Date(profile.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
                   : '—'}
@@ -188,18 +188,18 @@ export default function ProfileTab() {
           {/* Email durum kartı */}
           <div className="card p-5 flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#a5b4fc' }}>
+              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#8ba9d2' }}>
                 Email Doğrulama
               </p>
               <p className="font-bebas text-xl tracking-wider mt-1 uppercase"
-                 style={{ color: profile?.emailVerifiedAt ? '#d8b4fe' : '#fbbf24' }}>
+                 style={{ color: profile?.emailVerifiedAt ? '#fde9a5' : '#fbbf24' }}>
                 {profile?.emailVerifiedAt ? 'Doğrulandı' : 'Beklemede'}
               </p>
             </div>
             <span className="w-3 h-3 rounded-full"
                   style={{
-                    background: profile?.emailVerifiedAt ? '#a855f7' : '#fbbf24',
-                    boxShadow: `0 0 12px ${profile?.emailVerifiedAt ? 'rgba(168,85,247,0.6)' : 'rgba(251,191,36,0.6)'}`,
+                    background: profile?.emailVerifiedAt ? '#d4a853' : '#fbbf24',
+                    boxShadow: `0 0 12px ${profile?.emailVerifiedAt ? 'rgba(212, 168, 83,0.6)' : 'rgba(251,191,36,0.6)'}`,
                   }} />
           </div>
         </div>
@@ -210,16 +210,16 @@ export default function ProfileTab() {
       <AvailabilityBlocksEditor />
 
       <div className="card p-5">
-        <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#e9d5ff' }}>Profil Fotoğrafı</h3>
+        <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#dde7f3' }}>Profil Fotoğrafı</h3>
         <div className="flex items-center gap-4">
           <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-               style={{ background: 'rgba(168, 85, 247, 0.10)', border: '2px solid rgba(168, 85, 247, 0.20)' }}>
+               style={{ background: 'rgba(212, 168, 83, 0.10)', border: '2px solid rgba(212, 168, 83, 0.20)' }}>
             {profile?.avatarUrl ? (
               <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
                    loading="lazy" decoding="async"
                    className="w-full h-full object-cover" />
             ) : (
-              <span className="font-bebas text-4xl tracking-wider" style={{ color: '#c084fc' }}>
+              <span className="font-bebas text-4xl tracking-wider" style={{ color: '#f7c43c' }}>
                 {(profile?.fullName || 'A').charAt(0).toUpperCase()}
               </span>
             )}
@@ -249,7 +249,7 @@ export default function ProfileTab() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>Temel Bilgiler</h3>
+              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Temel Bilgiler</h3>
 
           <div>
             <label className="label">Ad Soyad *</label>
@@ -295,7 +295,7 @@ export default function ProfileTab() {
 
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>Eğitim</h3>
+              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Eğitim</h3>
           <div>
             <label className="label">Eğitim Durumu <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
             <select name="education" value={form.education} onChange={handleChange} className="input">
@@ -307,7 +307,7 @@ export default function ProfileTab() {
 
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>İş Tercihleri</h3>
+              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>İş Tercihleri</h3>
 
           <div>
             <label className="label">Müsaitlik Türü <span className="text-ink-400 font-normal">(birden fazla seçebilirsin)</span></label>
@@ -337,7 +337,7 @@ export default function ProfileTab() {
 
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>Diğer</h3>
+              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Diğer</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label">Ehliyet</label>
@@ -353,7 +353,7 @@ export default function ProfileTab() {
         <div className="card p-5 space-y-4">
           <div>
             <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>Bildirim Tercihleri</h3>
+              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Bildirim Tercihleri</h3>
             <p className="text-xs text-ink-500 mt-1">
               İlgini çekebilecek yeni ilan açıldığında otomatik bildirim al. Hiçbirini seçmezsen bildirim yok.
             </p>
@@ -403,7 +403,7 @@ export default function ProfileTab() {
         <div className="flex justify-end">
           <button type="submit" disabled={saving}
             className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)' }}>
             {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
           </button>
         </div>
@@ -431,26 +431,26 @@ function ReliabilityCard({ data }) {
   return (
     <div className="card p-5"
          style={{
-           background: 'linear-gradient(135deg, rgba(20, 14, 38, 0.85), rgba(15, 10, 30, 0.85))',
-           border: '1px solid rgba(168, 85, 247, 0.20)',
+           background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.85), rgba(15, 23, 38, 0.85))',
+           border: '1px solid rgba(212, 168, 83, 0.20)',
          }}>
       <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: '#a5b4fc' }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: '#8ba9d2' }}>
             Güvenilirlik Skoru
           </p>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="font-bebas text-4xl tracking-wider" style={{ color: '#ffffff' }}>{score}</span>
-            <span className="text-xs" style={{ color: '#a5b4fc' }}>/ 100</span>
+            <span className="text-xs" style={{ color: '#8ba9d2' }}>/ 100</span>
             <span className="ml-2 text-[11px] font-bold uppercase tracking-wider" style={{ color }}>{band}</span>
           </div>
         </div>
-        <p className="text-[11px] max-w-xs text-right" style={{ color: '#a5b4fc' }}>
+        <p className="text-[11px] max-w-xs text-right" style={{ color: '#8ba9d2' }}>
           İşletmeler aday seçerken bu skoru görür. Yüksek tutmak seni öne çıkarır.
         </p>
       </div>
 
-      <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(168, 85, 247, 0.15)' }}>
+      <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(212, 168, 83, 0.15)' }}>
         <div className="h-full rounded-full transition-all"
              style={{ width: `${Math.max(2, score)}%`, background: bg }} />
       </div>
@@ -470,11 +470,11 @@ function BreakdownPill({ label, value, hint, bad }) {
   return (
     <div className="rounded-lg px-2.5 py-1.5"
          style={{
-           background: bad ? 'rgba(239, 68, 68, 0.10)' : 'rgba(168, 85, 247, 0.10)',
-           border: `1px solid ${bad ? 'rgba(239, 68, 68, 0.30)' : 'rgba(168, 85, 247, 0.20)'}`,
+           background: bad ? 'rgba(239, 68, 68, 0.10)' : 'rgba(212, 168, 83, 0.10)',
+           border: `1px solid ${bad ? 'rgba(239, 68, 68, 0.30)' : 'rgba(212, 168, 83, 0.20)'}`,
          }}>
-      <p className="text-[9px] uppercase tracking-wider font-bold" style={{ color: '#a5b4fc' }}>{label}</p>
-      <p className="text-xs font-semibold mt-0.5" style={{ color: bad ? '#fca5a5' : '#e9d5ff' }}>
+      <p className="text-[9px] uppercase tracking-wider font-bold" style={{ color: '#8ba9d2' }}>{label}</p>
+      <p className="text-xs font-semibold mt-0.5" style={{ color: bad ? '#fca5a5' : '#dde7f3' }}>
         {value}{hint && <span className="ml-1 font-normal opacity-70">· {hint}</span>}
       </p>
     </div>

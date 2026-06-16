@@ -65,25 +65,25 @@ export default function DocumentsTab() {
   return (
     <div className="space-y-4">
       <div className="card p-5"
-           style={{ background: 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)', borderColor: 'rgba(126,34,206,0.2)' }}>
+           style={{ background: 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)', borderColor: 'rgba(35, 74, 130,0.2)' }}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-black" style={{ color: '#3b0764' }}>
+            <h2 className="text-xl font-black" style={{ color: '#0c1726' }}>
               Sertifika Cüzdanım
             </h2>
-            <p className="text-xs mt-1" style={{ color: '#6b21a8' }}>
+            <p className="text-xs mt-1" style={{ color: '#1e3a5f' }}>
               Belgelerini güvenle sakla, başvurularına otomatik eklensin
             </p>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="text-3xl font-black" style={{ color: '#7e22ce' }}>%{completion}</div>
-            <div className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#6b21a8' }}>Doluluk</div>
+            <div className="text-3xl font-black" style={{ color: '#234a82' }}>%{completion}</div>
+            <div className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#1e3a5f' }}>Doluluk</div>
           </div>
         </div>
-        <div className="mt-3 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(126,34,206,0.15)' }}>
+        <div className="mt-3 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(35, 74, 130,0.15)' }}>
           <div className="h-full transition-all" style={{
             width: `${completion}%`,
-            background: 'linear-gradient(90deg, #7e22ce, #a855f7)'
+            background: 'linear-gradient(90deg, #234a82, #d4a853)'
           }} />
         </div>
       </div>

@@ -21,9 +21,9 @@ import { formatSalary } from '../lib/salary'  // FAZ 2/#25
 
 function makeIcon(size = 32, hot = false) {
   const grad = hot
-    ? 'linear-gradient(135deg, #d946ef, #a855f7)'
-    : 'linear-gradient(135deg, #6b21a8, #7e22ce)'
-  const shadow = hot ? '0 4px 16px rgba(217, 70, 239, 0.7)' : '0 4px 12px rgba(107, 33, 168, 0.5)'
+    ? 'linear-gradient(135deg, #d4a853, #d4a853)'
+    : 'linear-gradient(135deg, #1e3a5f, #234a82)'
+  const shadow = hot ? '0 4px 16px rgba(212, 168, 83, 0.7)' : '0 4px 12px rgba(30, 58, 95, 0.5)'
   return L.divIcon({
     className: 'custom-map-marker',
     html: `
@@ -123,14 +123,14 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
   if (listings.length === 0) {
     return (
       <div className="rounded-2xl border flex items-center justify-center h-full"
-           style={{ background: 'rgba(168,85,247,0.08)', borderColor: 'rgba(168,85,247,0.30)' }}>
-        <p className="text-sm" style={{ color: '#6b21a8' }}>İlan yok — haritada gösterilecek yer yok</p>
+           style={{ background: 'rgba(212, 168, 83,0.08)', borderColor: 'rgba(212, 168, 83,0.30)' }}>
+        <p className="text-sm" style={{ color: '#1e3a5f' }}>İlan yok — haritada gösterilecek yer yok</p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden relative h-full" style={{ border: '1px solid rgba(168,85,247,0.30)' }}>
+    <div className="rounded-2xl overflow-hidden relative h-full" style={{ border: '1px solid rgba(212, 168, 83,0.30)' }}>
       <MapContainer
         center={ISTANBUL_CENTER}
         zoom={11}
@@ -155,21 +155,21 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
               }}>
               <Popup>
                 <div className="text-[12px]" style={{ minWidth: 180 }}>
-                  <div className="font-bold mb-0.5" style={{ color: '#3b0764' }}>{p.listing.title}</div>
+                  <div className="font-bold mb-0.5" style={{ color: '#0c1726' }}>{p.listing.title}</div>
                   <div className="text-ink-700 mb-1">{p.listing.businessName}</div>
                   <div className="text-ink-500 text-[10px] mb-1">
                     {p.listing.businessDistrict || 'İstanbul'}
                     {p.approx && <span className="italic"> (yaklaşık)</span>}
                   </div>
                   {formatSalary(p.listing.salaryMin, p.listing.salaryMax, p.listing.salaryType, p.listing.tipsIncluded) && (
-                    <div className="font-semibold" style={{ color: '#7e22ce' }}>
+                    <div className="font-semibold" style={{ color: '#234a82' }}>
                       {formatSalary(p.listing.salaryMin, p.listing.salaryMax, p.listing.salaryType, p.listing.tipsIncluded)}
                     </div>
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); onMarkerClick?.(p.listing) }}
                     className="mt-1.5 text-[11px] font-semibold underline"
-                    style={{ color: '#a855f7' }}>
+                    style={{ color: '#d4a853' }}>
                     Detayları gör →
                   </button>
                 </div>
@@ -183,7 +183,7 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
 
       {/* Toplam ilan etiketi */}
       <div className="absolute top-3 left-3 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md"
-           style={{ background: 'rgba(255,255,255,0.85)', color: '#3b0764' }}>
+           style={{ background: 'rgba(255,255,255,0.85)', color: '#0c1726' }}>
         {listings.length} ilan haritada
       </div>
 

@@ -68,16 +68,16 @@ export default function WorkersTab({ applications, onOpenMessages }) {
       {/* FAZ 5.14 — Ekip vitrin satırı: avatar cluster + sayım */}
       <div className="rounded-2xl p-4 flex items-center justify-between gap-4 flex-wrap"
            style={{
-             background: 'linear-gradient(135deg, rgba(20, 14, 38, 0.85), rgba(15, 10, 30, 0.85))',
-             border: '1px solid rgba(168, 85, 247, 0.20)',
+             background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.85), rgba(15, 23, 38, 0.85))',
+             border: '1px solid rgba(212, 168, 83, 0.20)',
            }}>
         <div className="flex items-center gap-4">
           <AvatarCluster items={clusterItems} size={40} max={5} showOnlineDot />
           <div>
-            <div className="font-bebas text-base tracking-wider uppercase" style={{ color: '#e9d5ff' }}>
+            <div className="font-bebas text-base tracking-wider uppercase" style={{ color: '#dde7f3' }}>
               {workers.length} kişilik ekip
             </div>
-            <div className="text-[11px]" style={{ color: '#a5b4fc' }}>
+            <div className="text-[11px]" style={{ color: '#8ba9d2' }}>
               yeşil nokta = şu an çevrimiçi
             </div>
           </div>
@@ -123,7 +123,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
             </div>
             {/* FAZ D1 — son 8 hafta toplam başvuru trendi (yoğunluk göstergesi) */}
             <Sparkline data={weeklyTrend(applications, null)}
-                       color="#a855f7" width={56} height={24} />
+                       color="#d4a853" width={56} height={24} />
           </div>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                       style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
                     {w.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}

@@ -21,9 +21,9 @@ export default function OverviewTab({ applications, onTabChange }) {
             data: weeklyTrend(applications, null) },
           { label: 'Bekleyen',    value: pending,             dot: 'bg-amber-400', color: '#fbbf24',
             data: weeklyTrend(applications, a => a.status === 'PENDING') },
-          { label: 'İnceleniyor', value: reviewing,           dot: 'bg-brand-400', color: '#c084fc',
+          { label: 'İnceleniyor', value: reviewing,           dot: 'bg-brand-400', color: '#f7c43c',
             data: weeklyTrend(applications, a => a.status === 'REVIEWING') },
-          { label: 'Kabul',       value: accepted,            dot: 'bg-brand-500', color: '#a855f7',
+          { label: 'Kabul',       value: accepted,            dot: 'bg-brand-500', color: '#d4a853',
             data: weeklyTrend(applications, a => a.status === 'ACCEPTED') },
         ].map(s => (
           <div key={s.label} className="stat-card !p-3">

@@ -266,7 +266,7 @@ function UsersTab() {
                 ${roleFilter === f.value
                   ? 'text-white shadow-sm'
                   : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={roleFilter === f.value ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+              style={roleFilter === f.value ? { background: 'linear-gradient(135deg, #1e3a5f, #234a82)' } : {}}>
               {f.label}
             </button>
           ))}
@@ -410,7 +410,7 @@ function ReportsTab() {
               ${statusFilter === f.value
                 ? 'text-white shadow-sm'
                 : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+            style={statusFilter === f.value ? { background: 'linear-gradient(135deg, #1e3a5f, #234a82)' } : {}}>
             {f.label}
           </button>
         ))}
@@ -523,7 +523,7 @@ function AuditTab() {
               ${actionFilter === f.value
                 ? 'text-white shadow-sm'
                 : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={actionFilter === f.value ? { background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' } : {}}>
+            style={actionFilter === f.value ? { background: 'linear-gradient(135deg, #1e3a5f, #234a82)' } : {}}>
             {f.label}
           </button>
         ))}
@@ -617,7 +617,7 @@ function ListingsTab() {
             <option value="CLOSED">Kapalı</option>
           </select>
           <div className="text-xs px-3 py-1 rounded-full"
-               style={{ background: 'rgba(168, 85, 247, 0.18)', color: '#d8b4fe' }}>
+               style={{ background: 'rgba(212, 168, 83, 0.18)', color: '#fde9a5' }}>
             {items.length} ilan
           </div>
         </div>
@@ -634,7 +634,7 @@ function ListingsTab() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <a href={`/listings/${l.id}`} target="_blank" rel="noopener noreferrer"
-                    className="font-semibold text-sm" style={{ color: '#e9d5ff' }}>
+                    className="font-semibold text-sm" style={{ color: '#dde7f3' }}>
                     {l.title}
                   </a>
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -646,10 +646,10 @@ function ListingsTab() {
                     {l.status}
                   </span>
                 </div>
-                <div className="text-xs mt-1" style={{ color: '#a5b4fc' }}>
+                <div className="text-xs mt-1" style={{ color: '#8ba9d2' }}>
                   {l.position} · {l.businessName} · {l.ownerEmail}
                 </div>
-                <div className="text-[10px] mt-0.5" style={{ color: '#7c3aed' }}>
+                <div className="text-[10px] mt-0.5" style={{ color: '#234a82' }}>
                   {new Date(l.createdAt).toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>

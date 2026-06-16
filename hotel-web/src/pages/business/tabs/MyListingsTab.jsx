@@ -45,7 +45,7 @@ export default function MyListingsTab({ applications = [] }) {
         <p className="text-sm text-ink-500">{listings.length} ilan</p>
         <button onClick={() => setFormTarget('new')}
           className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+          style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
           + Yeni İlan
         </button>
       </div>
@@ -123,7 +123,7 @@ export default function MyListingsTab({ applications = [] }) {
                           style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
                       {last8wTotal}
                     </span>
-                    <Sparkline data={trendData} color="#a855f7" width={56} height={20} />
+                    <Sparkline data={trendData} color="#d4a853" width={56} height={20} />
                   </div>
                   <div className="flex gap-2 flex-wrap justify-end">
                   {listing.status !== 'CLOSED' && (

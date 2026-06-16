@@ -112,7 +112,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
               className={`chip ${isActive ? 'is-active' : ''}`}>
               <span className="font-bebas text-[13px] tracking-wider uppercase">{f.label}</span>
               <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${isActive ? 'bg-black/25' : ''}`}
-                    style={!isActive ? { background: 'rgba(168, 85, 247, 0.18)', color: '#d8b4fe' } : {}}>
+                    style={!isActive ? { background: 'rgba(212, 168, 83, 0.18)', color: '#fde9a5' } : {}}>
                 {count}
               </span>
             </button>
@@ -186,7 +186,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
               {(app.status === 'PENDING' || app.status === 'REVIEWING' || app.status === 'ACCEPTED') && (
                 <button onClick={() => onOpenMessages?.(app.conversationId)}
                   className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
-                  style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                  style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                     <path strokeLinecap="round" strokeLinejoin="round"

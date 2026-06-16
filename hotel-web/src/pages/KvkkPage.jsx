@@ -7,13 +7,13 @@ import BackButton from '../components/BackButton'
  */
 export default function KvkkPage() {
   return (
-    <div className="min-h-screen py-10 px-4 relative" style={{ background: '#0a0612' }}>
+    <div className="min-h-screen py-10 px-4 relative" style={{ background: '#0c1726' }}>
       {/* Calm radial halo */}
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
            style={{
              background:
-               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(107, 33, 168, 0.18) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(217, 70, 239, 0.10) 0%, transparent 60%)',
+               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(30, 58, 95, 0.18) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(212, 168, 83, 0.10) 0%, transparent 60%)',
            }} />
 
       {/* Sabit sol üst geri butonu */}
@@ -23,22 +23,22 @@ export default function KvkkPage() {
 
       <div className="relative z-10 max-w-3xl mx-auto rounded-2xl p-6 sm:p-10"
            style={{
-             background: 'linear-gradient(135deg, rgba(20, 14, 38, 0.85), rgba(15, 10, 30, 0.85))',
-             border: '1px solid rgba(168, 85, 247, 0.20)',
+             background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.85), rgba(15, 23, 38, 0.85))',
+             border: '1px solid rgba(212, 168, 83, 0.20)',
              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.40)',
            }}>
         <div className="mb-6">
           <h1 className="font-bebas text-3xl sm:text-4xl tracking-wider uppercase text-white"
-              style={{ textShadow: '0 0 18px rgba(168, 85, 247, 0.40)' }}>
+              style={{ textShadow: '0 0 18px rgba(212, 168, 83, 0.40)' }}>
             Kişisel Verilerin Korunması
           </h1>
           <p className="text-[10px] uppercase tracking-[0.2em] font-bold mt-2"
-             style={{ color: '#c4b5fd' }}>
+             style={{ color: '#fde9a5' }}>
             Aydınlatma Metni · Son güncelleme: 22 Mayıs 2026
           </p>
         </div>
 
-        <div className="space-y-6 text-sm leading-relaxed" style={{ color: '#ede9fe' }}>
+        <div className="space-y-6 text-sm leading-relaxed" style={{ color: '#dde7f3' }}>
           <Section title="1. Veri Sorumlusu">
             <p>
               AjansHotel platformunun (bundan sonra "Platform") veri sorumlusu, platformu işleten
@@ -109,9 +109,9 @@ export default function KvkkPage() {
           {/* Onay kutusu */}
           <div className="rounded-xl p-4"
                style={{
-                 background: 'rgba(168, 85, 247, 0.10)',
-                 border: '1px solid rgba(168, 85, 247, 0.25)',
-                 color: '#ede9fe',
+                 background: 'rgba(212, 168, 83, 0.10)',
+                 border: '1px solid rgba(212, 168, 83, 0.25)',
+                 color: '#dde7f3',
                }}>
             <p className="font-medium">
               Platforma kayıt olarak bu aydınlatma metnini okuduğunuzu ve verilerinizin yukarıda
@@ -121,13 +121,13 @@ export default function KvkkPage() {
         </div>
 
         <div className="mt-8 pt-6 border-t text-center"
-             style={{ borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+             style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
           <Link to="/register"
                 className="inline-block text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-full transition-all hover:-translate-y-0.5"
                 style={{
-                  background: 'linear-gradient(135deg, #6b21a8, #9333ea)',
+                  background: 'linear-gradient(135deg, #1e3a5f, #b8902d)',
                   color: '#ffffff',
-                  boxShadow: '0 0 18px rgba(168, 85, 247, 0.40)',
+                  boxShadow: '0 0 18px rgba(212, 168, 83, 0.40)',
                 }}>
             Kayıt sayfasına dön →
           </Link>
@@ -141,10 +141,10 @@ function Section({ title, children }) {
   return (
     <section>
       <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-2.5"
-          style={{ color: '#c4b5fd' }}>
+          style={{ color: '#fde9a5' }}>
         {title}
       </h2>
-      <div style={{ color: '#ede9fe' }}>
+      <div style={{ color: '#dde7f3' }}>
         {children}
       </div>
     </section>

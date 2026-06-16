@@ -172,7 +172,7 @@ export default function ProfileTab() {
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
         <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-            style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+            style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
           Temel Bilgiler
         </h3>
 
@@ -222,7 +222,7 @@ export default function ProfileTab() {
       {/* İletişim */}
       <div className="card p-5 space-y-4">
         <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-            style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+            style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
           İletişim
         </h3>
 
@@ -272,7 +272,7 @@ export default function ProfileTab() {
 
       <div className="card p-5 space-y-3">
         <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-            style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.18)' }}>
+            style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
           Çalışma Saatleri
         </h3>
         <WorkingHoursEditor
@@ -286,7 +286,7 @@ export default function ProfileTab() {
       <div className="flex justify-end gap-3">
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 font-bebas text-base tracking-wider uppercase text-white rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #6b21a8, #9333ea)', boxShadow: '0 0 18px rgba(168, 85, 247, 0.40)' }}>
+          style={{ background: 'linear-gradient(135deg, #1e3a5f, #b8902d)', boxShadow: '0 0 18px rgba(212, 168, 83, 0.40)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet →'}
         </button>
       </div>

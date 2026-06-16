@@ -53,17 +53,17 @@ export default function BottomSheet({ open, onClose, title, children, maxHeight 
         }}>
         {/* Drag handle */}
         <div className="sm:hidden flex justify-center pt-2 pb-1">
-          <span className="block w-10 h-1 rounded-full" style={{ background: 'rgba(124, 58, 237, 0.30)' }} />
+          <span className="block w-10 h-1 rounded-full" style={{ background: 'rgba(212, 168, 83, 0.30)' }} />
         </div>
 
         {/* Header */}
         {title && (
           <div className="px-5 py-3 flex items-center justify-between"
-               style={{ borderBottom: '1px solid rgba(168, 85, 247, 0.20)' }}>
-            <h3 className="font-bold text-base" style={{ color: '#3b0764' }}>{title}</h3>
+               style={{ borderBottom: '1px solid rgba(212, 168, 83, 0.20)' }}>
+            <h3 className="font-bold text-base" style={{ color: '#0c1726' }}>{title}</h3>
             <button onClick={onClose}
               className="w-8 h-8 grid place-items-center rounded-full hover:bg-purple-100 transition-colors"
-              style={{ color: '#6b21a8' }}
+              style={{ color: '#1e3a5f' }}
               aria-label="Kapat">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={2} stroke="currentColor" className="w-4 h-4">

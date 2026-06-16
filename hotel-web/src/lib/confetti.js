@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti'
  * canvas-confetti: ~5 kB, GPU-accel.
  */
 
-const PURPLE_PALETTE = ['#a855f7', '#d946ef', '#c084fc', '#e879f9', '#7c3aed', '#fbbf24']
+const PURPLE_PALETTE = ['#d4a853', '#d4a853', '#f7c43c', '#f7c43c', '#234a82', '#fbbf24']
 
 function prefersReducedMotion() {
   return typeof window !== 'undefined'

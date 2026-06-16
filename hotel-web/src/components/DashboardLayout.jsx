@@ -59,15 +59,15 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   }
 
   return (
-    <div className="min-h-screen relative" style={{ background: '#0a0612' }}>
+    <div className="min-h-screen relative" style={{ background: '#0c1726' }}>
       {/* Calm radial halo arka plan */}
       <div
         aria-hidden
         className="fixed inset-0 z-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(ellipse 800px 600px at 10% 20%, rgba(107, 33, 168, 0.18) 0%, transparent 60%),' +
-            'radial-gradient(ellipse 600px 500px at 90% 80%, rgba(217, 70, 239, 0.10) 0%, transparent 60%),' +
+            'radial-gradient(ellipse 800px 600px at 10% 20%, rgba(30, 58, 95, 0.18) 0%, transparent 60%),' +
+            'radial-gradient(ellipse 600px 500px at 90% 80%, rgba(212, 168, 83, 0.10) 0%, transparent 60%),' +
             'radial-gradient(circle at 50% 50%, transparent 0%, rgba(10, 6, 18, 0.6) 100%)',
         }}
       />
@@ -78,15 +78,15 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       {/* === HEADER — brand + top nav + right actions === */}
       <header className="relative z-30 sticky top-[2px] backdrop-blur-xl border-b"
               style={{
-                background: 'rgba(15, 10, 30, 0.75)',
-                borderColor: 'rgba(168, 85, 247, 0.18)',
+                background: 'rgba(15, 23, 38, 0.75)',
+                borderColor: 'rgba(212, 168, 83, 0.18)',
               }}>
         {/* Üst satır: brand + actions */}
         <div className="px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-baseline gap-2 flex-shrink-0">
             <span className="font-bebas text-2xl tracking-wider text-white">AJANSHOTEL</span>
             <span className="hidden sm:inline text-[9px] uppercase tracking-[0.2em]"
-                  style={{ color: '#c4b5fd' }}>istanbul</span>
+                  style={{ color: '#fde9a5' }}>istanbul</span>
           </Link>
 
           {/* Right actions */}
@@ -106,9 +106,9 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                 title="Public profilini yeni sekmede ac"
                 className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-full transition-all hover:-translate-y-0.5"
                 style={{
-                  background: 'rgba(168, 85, 247, 0.15)',
-                  color: '#d8b4fe',
-                  border: '1px solid rgba(168, 85, 247, 0.30)',
+                  background: 'rgba(212, 168, 83, 0.15)',
+                  color: '#fde9a5',
+                  border: '1px solid rgba(212, 168, 83, 0.30)',
                 }}
               >
                 Public Profilim ↗
@@ -129,7 +129,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
             {/* FAZ 6.1 — Mobile + tablet menu trigger (lg breakpoint altinda gozukur) */}
             <button onClick={() => setMobileMenuOpen(o => !o)}
               className="lg:hidden p-2 rounded-full"
-              style={{ background: 'rgba(168, 85, 247, 0.15)' }}
+              style={{ background: 'rgba(212, 168, 83, 0.15)' }}
               aria-label="Menü">
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
@@ -148,8 +148,8 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                 onClick={() => onTabChange?.(item.id)}
                 className="relative px-4 py-3 text-sm transition-all font-bebas tracking-wider uppercase"
                 style={{
-                  color: active ? '#ffffff' : '#a5b4fc',
-                  textShadow: active ? '0 0 12px rgba(168, 85, 247, 0.6)' : 'none',
+                  color: active ? '#ffffff' : '#8ba9d2',
+                  textShadow: active ? '0 0 12px rgba(212, 168, 83, 0.6)' : 'none',
                 }}
                 aria-current={active ? 'page' : undefined}
               >
@@ -158,7 +158,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                   <span
                     aria-hidden
                     className="absolute left-3 right-3 bottom-0 h-0.5 rounded-full"
-                    style={{ background: 'linear-gradient(90deg, transparent, #d946ef, transparent)' }}
+                    style={{ background: 'linear-gradient(90deg, transparent, #d4a853, transparent)' }}
                   />
                 )}
               </button>
@@ -168,7 +168,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
         {/* FAZ 6.1 — Mobile + tablet menu drawer (lg breakpoint altinda) */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t" style={{ borderColor: 'rgba(168, 85, 247, 0.15)' }}>
+          <div className="lg:hidden border-t" style={{ borderColor: 'rgba(212, 168, 83, 0.15)' }}>
             <nav className="px-4 py-3 space-y-1" aria-label="Mobil navigasyon">
               {navItems.map(item => {
                 const active = activeTab === item.id
@@ -177,15 +177,15 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                     onClick={() => { onTabChange?.(item.id); setMobileMenuOpen(false) }}
                     className="w-full text-left px-3 py-2.5 rounded-lg font-bebas text-base tracking-wider uppercase transition-all"
                     style={{
-                      background: active ? 'rgba(168, 85, 247, 0.18)' : 'transparent',
-                      color: active ? '#ffffff' : '#c4b5fd',
+                      background: active ? 'rgba(212, 168, 83, 0.18)' : 'transparent',
+                      color: active ? '#ffffff' : '#fde9a5',
                     }}>
                     {item.tKey ? t(item.tKey) : item.label}
                   </button>
                 )
               })}
               <div className="pt-3 mt-2 border-t flex items-center justify-between gap-2"
-                   style={{ borderColor: 'rgba(168, 85, 247, 0.15)' }}>
+                   style={{ borderColor: 'rgba(212, 168, 83, 0.15)' }}>
                 <LanguageSwitcher />
                 <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
                 <SettingsMenu onTabChange={onTabChange} />
@@ -205,13 +205,13 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       </header>
 
       {/* === Page Content === */}
-      <main className="relative z-10 fade-in" style={{ color: '#e9d5ff' }}>
+      <main className="relative z-10 fade-in" style={{ color: '#dde7f3' }}>
         <EmailVerifyBanner />
 
         {/* Page heading strip (her sayfa için Bebas başlık) */}
         <div className="px-4 lg:px-8 pt-5 lg:pt-8 pb-3 flex items-end justify-between gap-3 flex-wrap">
           <h1 className="font-bebas text-2xl sm:text-3xl lg:text-4xl tracking-wider uppercase text-white"
-              style={{ textShadow: '0 0 18px rgba(168, 85, 247, 0.30)' }}>
+              style={{ textShadow: '0 0 18px rgba(212, 168, 83, 0.30)' }}>
             {(() => {
               const item = navItems.find(n => n.id === activeTab)
               return item ? (item.tKey ? t(item.tKey) : item.label) : 'Panel'
@@ -232,20 +232,20 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 /* Her tab icin kucuk farkli kimlik elementi (sayfa kimligi) */
 function PageAccent({ tab, role }) {
   const accents = {
-    overview:     { label: 'Anlık', color: '#d946ef' },
-    listings:     { label: 'Aktif İlanlar', color: '#a855f7' },
-    applications: { label: 'Aday Süreci', color: '#c084fc' },
-    documents:    { label: 'Cüzdan', color: '#e879f9' },
-    messages:     { label: 'Sohbetler', color: '#a855f7' },
-    mylistings:   { label: 'Yayınlarım', color: '#c084fc' },
-    workers:      { label: 'Ekibim', color: '#e879f9' },
-    profile:      { label: 'Profil', color: '#a855f7' },
-    history:      { label: 'Geçmiş', color: '#c4b5fd' },
-    users:        { label: 'Kullanıcılar', color: '#a855f7' },
+    overview:     { label: 'Anlık', color: '#d4a853' },
+    listings:     { label: 'Aktif İlanlar', color: '#d4a853' },
+    applications: { label: 'Aday Süreci', color: '#f7c43c' },
+    documents:    { label: 'Cüzdan', color: '#f7c43c' },
+    messages:     { label: 'Sohbetler', color: '#d4a853' },
+    mylistings:   { label: 'Yayınlarım', color: '#f7c43c' },
+    workers:      { label: 'Ekibim', color: '#f7c43c' },
+    profile:      { label: 'Profil', color: '#d4a853' },
+    history:      { label: 'Geçmiş', color: '#fde9a5' },
+    users:        { label: 'Kullanıcılar', color: '#d4a853' },
     reports:      { label: 'Raporlar', color: '#fbbf24' },
     audit:        { label: 'Audit Log', color: '#22d3ee' },
   }
-  const a = accents[tab] || { label: '—', color: '#a5b4fc' }
+  const a = accents[tab] || { label: '—', color: '#8ba9d2' }
   return (
     <div className="flex items-center gap-2 px-3 py-1 rounded-full"
          style={{

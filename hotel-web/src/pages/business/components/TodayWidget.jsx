@@ -57,7 +57,7 @@ export default function TodayWidget({ applications, onTabChange }) {
   if (reviewing.length > 0) {
     items.push({
       key: 'reviewing',
-      color: '#c084fc',
+      color: '#f7c43c',
       label: `${reviewing.length} aday incelemede`,
       hint: 'Belgeleri ve mesajları kontrol et, karar ver',
       cta: 'İncele',
@@ -83,8 +83,8 @@ export default function TodayWidget({ applications, onTabChange }) {
       className="rounded-2xl p-5 relative overflow-hidden"
       style={{
         background:
-          'linear-gradient(135deg, rgba(20, 14, 38, 0.85) 0%, rgba(15, 10, 30, 0.85) 100%)',
-        border: '1px solid rgba(168, 85, 247, 0.20)',
+          'linear-gradient(135deg, rgba(21, 36, 61, 0.85) 0%, rgba(15, 23, 38, 0.85) 100%)',
+        border: '1px solid rgba(212, 168, 83, 0.20)',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.30)',
       }}
     >
@@ -98,7 +98,7 @@ export default function TodayWidget({ applications, onTabChange }) {
           width: '180px',
           height: '180px',
           background:
-            'radial-gradient(circle, rgba(217, 70, 239, 0.18) 0%, transparent 70%)',
+            'radial-gradient(circle, rgba(212, 168, 83, 0.18) 0%, transparent 70%)',
         }}
       />
 
@@ -107,13 +107,13 @@ export default function TodayWidget({ applications, onTabChange }) {
           <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
             <h2
               className="font-bebas text-2xl sm:text-3xl tracking-wider uppercase text-white"
-              style={{ textShadow: '0 0 18px rgba(168, 85, 247, 0.40)' }}
+              style={{ textShadow: '0 0 18px rgba(212, 168, 83, 0.40)' }}
             >
               Bugün
             </h2>
             <span
               className="text-[10px] uppercase tracking-[0.2em] font-bold"
-              style={{ color: '#c4b5fd' }}
+              style={{ color: '#fde9a5' }}
             >
               {new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}
             </span>
@@ -142,7 +142,7 @@ export default function TodayWidget({ applications, onTabChange }) {
               <div className="font-bebas text-lg tracking-wider uppercase" style={{ color: '#86efac' }}>
                 Her şey yolunda
               </div>
-              <div className="text-[11px] mt-0.5" style={{ color: '#a5b4fc' }}>
+              <div className="text-[11px] mt-0.5" style={{ color: '#8ba9d2' }}>
                 Bugün acil karar bekleyen başvuru yok. Yeni ilan açabilir veya mevcutları gözden geçirebilirsin.
               </div>
               <div className="mt-3 flex gap-2">
@@ -150,9 +150,9 @@ export default function TodayWidget({ applications, onTabChange }) {
                   onClick={() => onTabChange?.('mylistings')}
                   className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, #6b21a8, #9333ea)',
+                    background: 'linear-gradient(135deg, #1e3a5f, #b8902d)',
                     color: '#ffffff',
-                    boxShadow: '0 0 14px rgba(168, 85, 247, 0.40)',
+                    boxShadow: '0 0 14px rgba(212, 168, 83, 0.40)',
                   }}
                 >
                   Yeni İlan
@@ -161,9 +161,9 @@ export default function TodayWidget({ applications, onTabChange }) {
                   onClick={() => onTabChange?.('workers')}
                   className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
                   style={{
-                    background: 'rgba(20, 14, 38, 0.65)',
-                    color: '#d8b4fe',
-                    border: '1px solid rgba(168, 85, 247, 0.20)',
+                    background: 'rgba(21, 36, 61, 0.65)',
+                    color: '#fde9a5',
+                    border: '1px solid rgba(212, 168, 83, 0.20)',
                   }}
                 >
                   Ekibim
@@ -178,7 +178,7 @@ export default function TodayWidget({ applications, onTabChange }) {
                 key={it.key}
                 className="flex items-start justify-between gap-3 rounded-xl px-3.5 py-3 group transition-all"
                 style={{
-                  background: 'rgba(15, 10, 30, 0.65)',
+                  background: 'rgba(15, 23, 38, 0.65)',
                   border: `1px solid ${it.color}22`,
                 }}
               >

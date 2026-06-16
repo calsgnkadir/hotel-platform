@@ -165,15 +165,15 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
       <div
         className="max-w-md w-full rounded-2xl overflow-hidden relative"
         style={{
-          background: 'linear-gradient(135deg, rgba(20, 14, 38, 0.95), rgba(15, 10, 30, 0.95))',
-          border: '1px solid rgba(168, 85, 247, 0.25)',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.60), 0 0 40px rgba(168, 85, 247, 0.20)',
+          background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.95), rgba(15, 23, 38, 0.95))',
+          border: '1px solid rgba(212, 168, 83, 0.25)',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.60), 0 0 40px rgba(212, 168, 83, 0.20)',
         }}
       >
         {/* Hero alan — radial glow + ikon */}
         <div className="relative h-44 flex items-center justify-center overflow-hidden"
              style={{
-               background: 'linear-gradient(135deg, #4c1d95 0%, #7e22ce 50%, #d946ef 100%)',
+               background: 'linear-gradient(135deg, #15243d 0%, #234a82 50%, #d4a853 100%)',
              }}>
           {/* Dekoratif daireler */}
           <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-25"
@@ -198,7 +198,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
           <div
             className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
             style={{
-              background: 'rgba(15, 10, 30, 0.55)',
+              background: 'rgba(15, 23, 38, 0.55)',
               color: '#fff',
               border: '1px solid rgba(255, 255, 255, 0.25)',
             }}
@@ -212,11 +212,11 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
           <h2
             id="onboarding-title"
             className="font-bebas text-3xl tracking-wider uppercase text-white mb-2.5"
-            style={{ textShadow: '0 0 16px rgba(168, 85, 247, 0.40)' }}
+            style={{ textShadow: '0 0 16px rgba(212, 168, 83, 0.40)' }}
           >
             {step.title}
           </h2>
-          <p className="text-sm leading-relaxed mb-6" style={{ color: '#d8b4fe' }}>
+          <p className="text-sm leading-relaxed mb-6" style={{ color: '#fde9a5' }}>
             {step.description}
           </p>
 
@@ -228,8 +228,8 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                 className="h-1.5 rounded-full transition-all duration-300"
                 style={{
                   width: i === stepIdx ? '28px' : '6px',
-                  background: i <= stepIdx ? '#d946ef' : 'rgba(216, 180, 254, 0.28)',
-                  boxShadow: i === stepIdx ? '0 0 10px rgba(217, 70, 239, 0.55)' : 'none',
+                  background: i <= stepIdx ? '#d4a853' : 'rgba(253, 233, 165, 0.28)',
+                  boxShadow: i === stepIdx ? '0 0 10px rgba(212, 168, 83, 0.55)' : 'none',
                 }}
               />
             ))}
@@ -242,8 +242,8 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                 onClick={handleCta}
                 className="w-full py-3 font-bebas text-base tracking-wider uppercase text-white rounded-full transition-all hover:-translate-y-0.5"
                 style={{
-                  background: 'linear-gradient(135deg, #d946ef, #a855f7)',
-                  boxShadow: '0 0 20px rgba(168, 85, 247, 0.45)',
+                  background: 'linear-gradient(135deg, #d4a853, #d4a853)',
+                  boxShadow: '0 0 20px rgba(212, 168, 83, 0.45)',
                 }}
               >
                 {step.cta} →
@@ -255,14 +255,14 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
               style={
                 step.cta
                   ? {
-                      background: 'rgba(168, 85, 247, 0.14)',
-                      color: '#d8b4fe',
-                      border: '1px solid rgba(168, 85, 247, 0.30)',
+                      background: 'rgba(212, 168, 83, 0.14)',
+                      color: '#fde9a5',
+                      border: '1px solid rgba(212, 168, 83, 0.30)',
                     }
                   : {
-                      background: 'linear-gradient(135deg, #d946ef, #a855f7)',
+                      background: 'linear-gradient(135deg, #d4a853, #d4a853)',
                       color: '#fff',
-                      boxShadow: '0 0 20px rgba(168, 85, 247, 0.45)',
+                      boxShadow: '0 0 20px rgba(212, 168, 83, 0.45)',
                     }
               }
             >
@@ -272,7 +272,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
               <button
                 onClick={handleSkip}
                 className="w-full py-2 text-[11px] font-bold uppercase tracking-widest hover:underline transition-all"
-                style={{ color: '#a5b4fc' }}
+                style={{ color: '#8ba9d2' }}
               >
                 Şimdi atla
               </button>

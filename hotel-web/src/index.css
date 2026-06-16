@@ -61,7 +61,7 @@ body {
   width: 100%;
   max-width: 440px;
   box-shadow: 0 1px 2px rgba(23, 21, 19, 0.04),
-              0 12px 40px rgba(107, 33, 168, 0.08);
+              0 12px 40px rgba(30, 58, 95, 0.08);
   animation: slideUp 0.4s ease-out;
 }
 .dark .auth-card {
@@ -106,12 +106,12 @@ body {
          transition-all duration-200 active:scale-[0.97]
          disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
          inline-flex items-center justify-center gap-2;
-  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
-  box-shadow: 0 2px 12px rgba(168, 85, 247, 0.30);
+  background: linear-gradient(135deg, #d4a853 0%, #b8902d 100%);
+  box-shadow: 0 2px 12px rgba(212, 168, 83, 0.30);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.40);
+  background: linear-gradient(135deg, #b8902d 0%, #234a82 100%);
+  box-shadow: 0 4px 20px rgba(212, 168, 83, 0.40);
   transform: translateY(-1px);
 }
 
@@ -159,39 +159,39 @@ body {
    ──────────────────────────────────────────────────────────────── */
 .card {
   @apply rounded-2xl p-6 transition-all duration-300 relative;
-  background: rgba(20, 14, 38, 0.85);
-  border: 1px solid rgba(168, 85, 247, 0.14);
-  color: #e9d5ff;
+  background: rgba(21, 36, 61, 0.85);
+  border: 1px solid rgba(212, 168, 83, 0.14);
+  color: #dde7f3;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.30);
 }
 .card:hover {
-  border-color: rgba(168, 85, 247, 0.30);
+  border-color: rgba(212, 168, 83, 0.30);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.40);
 }
 .dark .card {
-  background: rgba(20, 14, 38, 0.85);
-  border-color: rgba(168, 85, 247, 0.14);
-  color: #e9d5ff;
+  background: rgba(21, 36, 61, 0.85);
+  border-color: rgba(212, 168, 83, 0.14);
+  color: #dde7f3;
 }
 
 .card-header {
   @apply pb-4 mb-4;
-  border-bottom: 1px solid rgba(168, 85, 247, 0.18);
+  border-bottom: 1px solid rgba(212, 168, 83, 0.18);
 }
 .dark .card-header {
-  border-color: rgba(168, 85, 247, 0.18);
+  border-color: rgba(212, 168, 83, 0.18);
 }
 
 /* Card icindeki form elemanlari — glass input */
 .card .label,
 .card label {
-  color: #c4b5fd !important;
+  color: #fde9a5 !important;
 }
 .card input,
 .card select,
 .card textarea {
   background: rgba(10, 6, 24, 0.55) !important;
-  border-color: rgba(168, 85, 247, 0.25) !important;
+  border-color: rgba(212, 168, 83, 0.25) !important;
   color: #f8f6f4 !important;
 }
 .card input::placeholder,
@@ -201,9 +201,9 @@ body {
 .card input:focus,
 .card select:focus,
 .card textarea:focus {
-  border-color: #a855f7 !important;
+  border-color: #d4a853 !important;
   background: rgba(10, 6, 24, 0.75) !important;
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.18) !important;
+  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.18) !important;
 }
 
 /* Card icindeki metin override — acik mor/beyaz */
@@ -213,12 +213,12 @@ body {
 }
 .card .text-ink-700,
 .card .text-ink-600 {
-  color: #e9d5ff !important;
+  color: #dde7f3 !important;
 }
 .card .text-ink-500,
 .card .text-ink-400,
 .card .text-ink-300 {
-  color: #c4b5fd !important;
+  color: #fde9a5 !important;
 }
 .card .text-white {
   color: #ffffff !important;
@@ -227,7 +227,7 @@ body {
 .card .text-brand-700,
 .card .text-brand-800,
 .card .text-brand-900 {
-  color: #d8b4fe !important;
+  color: #fde9a5 !important;
 }
 
 /* Card icindeki bg-cream / bg-white nested kutucuklari — yari glass */
@@ -235,11 +235,11 @@ body {
 .card .bg-cream-50,
 .card .bg-cream-100 {
   background: rgba(255, 255, 255, 0.04) !important;
-  border-color: rgba(168, 85, 247, 0.15) !important;
+  border-color: rgba(212, 168, 83, 0.15) !important;
 }
 .card .bg-cream-200,
 .card .bg-cream-300 {
-  background: rgba(168, 85, 247, 0.08) !important;
+  background: rgba(212, 168, 83, 0.08) !important;
 }
 /* divide-y border'lari da uyarla */
 .card .divide-cream-100 > * + *,
@@ -247,7 +247,7 @@ body {
 .card .divide-brand-100 > * + *,
 .card .divide-slate-50 > * + *,
 .card .divide-ink-700 > * + * {
-  border-color: rgba(168, 85, 247, 0.12) !important;
+  border-color: rgba(212, 168, 83, 0.12) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -257,16 +257,16 @@ body {
   @apply rounded-2xl p-4 relative overflow-hidden transition-all duration-300;
   background:
     linear-gradient(135deg, rgba(26, 16, 56, 0.65) 0%, rgba(15, 10, 35, 0.75) 100%);
-  border: 1px solid rgba(168, 85, 247, 0.22);
+  border: 1px solid rgba(212, 168, 83, 0.22);
   box-shadow:
-    inset 0 1px 0 rgba(168, 85, 247, 0.18),
+    inset 0 1px 0 rgba(212, 168, 83, 0.18),
     0 4px 20px rgba(0, 0, 0, 0.35);
 }
 .stat-card:hover {
-  border-color: rgba(217, 70, 239, 0.45);
+  border-color: rgba(212, 168, 83, 0.45);
   box-shadow:
-    inset 0 1px 0 rgba(168, 85, 247, 0.28),
-    0 6px 28px rgba(168, 85, 247, 0.25);
+    inset 0 1px 0 rgba(212, 168, 83, 0.28),
+    0 6px 28px rgba(212, 168, 83, 0.25);
   transform: translateY(-2px);
 }
 .stat-card::after {
@@ -274,17 +274,17 @@ body {
   position: absolute;
   top: -50%; right: -30%;
   width: 60%; height: 200%;
-  background: radial-gradient(ellipse, rgba(168, 85, 247, 0.10) 0%, transparent 60%);
+  background: radial-gradient(ellipse, rgba(212, 168, 83, 0.10) 0%, transparent 60%);
   pointer-events: none;
 }
 .stat-card .text-white {
   color: #ffffff !important;
   font-family: 'Bebas Neue', Impact, sans-serif !important;
   letter-spacing: 0.02em;
-  text-shadow: 0 0 18px rgba(168, 85, 247, 0.35);
+  text-shadow: 0 0 18px rgba(212, 168, 83, 0.35);
 }
 .stat-card .text-ink-500 {
-  color: #a5b4fc !important;
+  color: #8ba9d2 !important;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -301,15 +301,15 @@ body {
   border-color: rgba(251, 191, 36, 0.30);
 }
 .badge-reviewing {
-  background: rgba(168, 85, 247, 0.16);
-  color: #d8b4fe;
-  border-color: rgba(168, 85, 247, 0.32);
+  background: rgba(212, 168, 83, 0.16);
+  color: #fde9a5;
+  border-color: rgba(212, 168, 83, 0.32);
 }
 .badge-accepted {
-  background: rgba(217, 70, 239, 0.16);
-  color: #f0abfc;
-  border-color: rgba(217, 70, 239, 0.34);
-  box-shadow: 0 0 12px rgba(217, 70, 239, 0.20);
+  background: rgba(212, 168, 83, 0.16);
+  color: #fde9a5;
+  border-color: rgba(212, 168, 83, 0.34);
+  box-shadow: 0 0 12px rgba(212, 168, 83, 0.20);
 }
 .badge-rejected {
   background: rgba(248, 113, 113, 0.14);
@@ -333,21 +333,21 @@ body {
 .chip {
   @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all duration-200;
   background: rgba(26, 16, 56, 0.6);
-  border: 1px solid rgba(168, 85, 247, 0.18);
-  color: #c4b5fd;
+  border: 1px solid rgba(212, 168, 83, 0.18);
+  color: #fde9a5;
   cursor: pointer;
   backdrop-filter: blur(8px);
 }
 .chip:hover {
-  border-color: rgba(168, 85, 247, 0.40);
-  color: #e9d5ff;
+  border-color: rgba(212, 168, 83, 0.40);
+  color: #dde7f3;
   transform: translateY(-1px);
 }
 .chip.is-active {
-  background: linear-gradient(135deg, #6b21a8 0%, #9333ea 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #b8902d 100%);
   border-color: transparent;
   color: #ffffff;
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.45);
+  box-shadow: 0 0 16px rgba(212, 168, 83, 0.45);
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.30);
 }
 
@@ -410,7 +410,7 @@ body {
     height: 0.25rem;
     margin: 0.5rem auto;
     border-radius: 999px;
-    background: rgba(124, 58, 237, 0.30);
+    background: rgba(212, 168, 83, 0.30);
     z-index: 10;
   }
 }
@@ -450,7 +450,7 @@ body {
 .spinner {
   width: 28px; height: 28px;
   border: 3px solid #ebe0cc;
-  border-top-color: #6b21a8;
+  border-top-color: #1e3a5f;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -565,7 +565,7 @@ body {
    ════════════════════════════════════════════════════════════════ */
 
 *:focus-visible {
-  outline: 2px solid #9333ea;        /* brand-600 mor */
+  outline: 2px solid #b8902d;        /* brand-600 mor */
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -576,7 +576,7 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #9333ea;
+  outline: 2px solid #b8902d;
   outline-offset: 2px;
 }
 /* Modal overlay focus alminca outline gosterme (sadece kendisi container) */

@@ -28,9 +28,9 @@ const COLUMNS = [
     id: 'PENDING',
     label: 'Bekleyen',
     sub: 'Yeni başvurular + incelemede',
-    color: '#a855f7',
-    bg: 'rgba(168, 85, 247, 0.10)',
-    border: 'rgba(168, 85, 247, 0.25)',
+    color: '#d4a853',
+    bg: 'rgba(212, 168, 83, 0.10)',
+    border: 'rgba(212, 168, 83, 0.25)',
   },
   {
     id: 'HELD',
@@ -175,9 +175,9 @@ export default function ApplicationsKanban({ applications, onRefresh, onCardClic
       {busy && (
         <div className="fixed bottom-6 right-6 z-50 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest"
              style={{
-               background: 'rgba(168, 85, 247, 0.20)',
-               color: '#e9d5ff',
-               border: '1px solid rgba(168, 85, 247, 0.40)',
+               background: 'rgba(212, 168, 83, 0.20)',
+               color: '#dde7f3',
+               border: '1px solid rgba(212, 168, 83, 0.40)',
              }}>
           Güncelleniyor...
         </div>
@@ -252,7 +252,7 @@ function Card({ app, accent, onClick, onMessage }) {
       <div
         className="rounded-xl p-3"
         style={{
-          background: 'rgba(15, 10, 30, 0.85)',
+          background: 'rgba(15, 23, 38, 0.85)',
           border: `1px solid ${accent}22`,
           boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
         }}
@@ -298,7 +298,7 @@ function Card({ app, accent, onClick, onMessage }) {
                 onClick={(e) => { e.stopPropagation(); onMessage?.() }}
                 onPointerDown={(e) => e.stopPropagation()}
                 className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full transition-all hover:scale-105"
-                style={{ background: 'rgba(168, 85, 247, 0.18)', color: '#e9d5ff', border: '1px solid rgba(168, 85, 247, 0.30)' }}
+                style={{ background: 'rgba(212, 168, 83, 0.18)', color: '#dde7f3', border: '1px solid rgba(212, 168, 83, 0.30)' }}
               >
                 Mesaj
               </button>
@@ -307,7 +307,7 @@ function Card({ app, accent, onClick, onMessage }) {
               onClick={(e) => { e.stopPropagation(); onClick?.() }}
               onPointerDown={(e) => e.stopPropagation()}
               className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full transition-all hover:scale-105"
-              style={{ background: 'rgba(255,255,255,0.06)', color: '#e9d5ff', border: '1px solid rgba(255,255,255,0.10)' }}
+              style={{ background: 'rgba(255,255,255,0.06)', color: '#dde7f3', border: '1px solid rgba(255,255,255,0.10)' }}
             >
               Aç
             </button>
@@ -324,9 +324,9 @@ function CardSilhouette({ app }) {
     <div
       className="rounded-xl p-3 pointer-events-none"
       style={{
-        background: 'rgba(15, 10, 30, 0.95)',
-        border: '1.5px solid rgba(168, 85, 247, 0.55)',
-        boxShadow: '0 16px 40px rgba(168, 85, 247, 0.30)',
+        background: 'rgba(15, 23, 38, 0.95)',
+        border: '1.5px solid rgba(212, 168, 83, 0.55)',
+        boxShadow: '0 16px 40px rgba(212, 168, 83, 0.30)',
         transform: 'rotate(-2deg)',
         width: '260px',
       }}

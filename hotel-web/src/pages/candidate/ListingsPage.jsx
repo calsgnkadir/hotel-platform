@@ -168,7 +168,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
-                 style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                 style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div>
@@ -350,7 +350,7 @@ function DetailModal({ listing, onClose, onApply }) {
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
-                 style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                 style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div className="flex-1 min-w-0">
@@ -539,7 +539,7 @@ function ListingCard({ listing, onApply, onDetail }) {
       <div className="relative h-32 w-full flex items-center justify-center overflow-hidden"
            style={{
              background: `
-               linear-gradient(135deg, #4c1d95 0%, #7e22ce 50%, #a855f7 100%),
+               linear-gradient(135deg, #15243d 0%, #234a82 50%, #d4a853 100%),
                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 50%)
              `,
            }}>
@@ -581,18 +581,18 @@ function ListingCard({ listing, onApply, onDetail }) {
       {/* CONTENT */}
       <div className="p-4 flex flex-col">
         <h3 className="font-bold text-base leading-snug line-clamp-2 group-hover:opacity-90 transition-opacity"
-            style={{ color: '#faf5ff' }}>
+            style={{ color: '#f1f5fb' }}>
           {listing.title}
         </h3>
         <div className="flex items-center gap-2 flex-wrap mt-1">
-          <p className="text-sm" style={{ color: '#d8b4fe' }}>{listing.businessName}</p>
+          <p className="text-sm" style={{ color: '#fde9a5' }}>{listing.businessName}</p>
           {listing.businessReviewCount > 0 && (
             <StarRating value={listing.businessAverageRating}
               count={listing.businessReviewCount} size="xs" />
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 mt-2 text-xs flex-wrap" style={{ color: '#c4b5fd' }}>
+        <div className="flex items-center gap-1.5 mt-2 text-xs flex-wrap" style={{ color: '#fde9a5' }}>
           <span>{listing.businessDistrict || 'İstanbul'}</span>
           <span>·</span>
           <span>{POSITION_LABELS[listing.position] || listing.position}</span>
@@ -621,20 +621,20 @@ function ListingCard({ listing, onApply, onDetail }) {
           )
         })()}
 
-        <p className="text-xs mt-2 line-clamp-2" style={{ color: '#d8b4fe', opacity: 0.85 }}>{listing.description}</p>
+        <p className="text-xs mt-2 line-clamp-2" style={{ color: '#fde9a5', opacity: 0.85 }}>{listing.description}</p>
 
         <div className="flex gap-2 mt-4">
           <button
             onClick={(e) => { e.stopPropagation(); onDetail(listing) }}
             className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all"
-            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(216,180,254,0.30)' }}>
+            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(253, 233, 165,0.30)' }}>
             Detay
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onApply(listing) }}
             className="flex-1 py-2 px-3 text-sm font-bold text-white rounded-lg
                        transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', boxShadow: '0 4px 16px rgba(168,85,247,0.40)' }}>
+            style={{ background: 'linear-gradient(135deg, #d4a853, #d4a853)', boxShadow: '0 4px 16px rgba(212, 168, 83,0.40)' }}>
             Başvur →
           </button>
         </div>
@@ -766,13 +766,13 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           if (activeCount === 0) return null
           return (
             <div className="flex items-center justify-between rounded-lg px-3 py-2"
-                 style={{ background: 'rgba(168, 85, 247, 0.10)', border: '1px solid rgba(168, 85, 247, 0.25)' }}>
-              <span className="text-xs font-bebas tracking-wider uppercase" style={{ color: '#d8b4fe' }}>
+                 style={{ background: 'rgba(212, 168, 83, 0.10)', border: '1px solid rgba(212, 168, 83, 0.25)' }}>
+              <span className="text-xs font-bebas tracking-wider uppercase" style={{ color: '#fde9a5' }}>
                 {activeCount} FİLTRE AKTİF
               </span>
               <button onClick={() => {
                 setDistrict(''); setPosition(''); setJobType(''); setMinSalary(''); setDatePreset('')
-              }} className="text-xs font-bold hover:underline" style={{ color: '#e879f9' }}>
+              }} className="text-xs font-bold hover:underline" style={{ color: '#f7c43c' }}>
                 Temizle
               </button>
             </div>
@@ -935,10 +935,10 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           {!loading && listings.length === 0 && (
             <div className="card h-full flex items-center justify-center text-center">
               <div>
-                <p className="text-sm font-semibold mb-1" style={{ color: '#3b0764' }}>
+                <p className="text-sm font-semibold mb-1" style={{ color: '#0c1726' }}>
                   Filtreye uyan ilan yok
                 </p>
-                <p className="text-xs" style={{ color: '#6b21a8' }}>
+                <p className="text-xs" style={{ color: '#1e3a5f' }}>
                   Filtreleri değiştir, harita yeniden çizilir.
                 </p>
               </div>
@@ -993,7 +993,7 @@ function FilterChipGroup({
     <div>
       {label && (
         <label className="block mb-2 font-bebas text-xs tracking-[0.2em] uppercase"
-               style={{ color: '#c4b5fd' }}>
+               style={{ color: '#fde9a5' }}>
           {label}
         </label>
       )}
@@ -1017,15 +1017,15 @@ function FilterChipGroup({
 function FilterChip({ active, sub, onClick, children }) {
   const style = active
     ? {
-        background: 'linear-gradient(135deg, #6b21a8 0%, #9333ea 100%)',
+        background: 'linear-gradient(135deg, #1e3a5f 0%, #b8902d 100%)',
         color: '#ffffff',
         border: '1px solid transparent',
-        boxShadow: '0 0 14px rgba(168, 85, 247, 0.40)',
+        boxShadow: '0 0 14px rgba(212, 168, 83, 0.40)',
       }
     : {
-        background: 'rgba(20, 14, 38, 0.65)',
-        color: '#d8b4fe',
-        border: '1px solid rgba(168, 85, 247, 0.18)',
+        background: 'rgba(21, 36, 61, 0.65)',
+        color: '#fde9a5',
+        border: '1px solid rgba(212, 168, 83, 0.18)',
       }
   return (
     <button type="button" onClick={onClick}

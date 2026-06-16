@@ -106,7 +106,7 @@ export default function FavoritesTab({ onOpenMessages }) {
               className="w-12 h-12 rounded-full object-cover border border-cream-300 flex-shrink-0" />
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                 style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+                 style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
               {f.candidateName?.charAt(0) || '?'}
             </div>
           )}
@@ -127,7 +127,7 @@ export default function FavoritesTab({ onOpenMessages }) {
             <button onClick={() => handleStartChat(f.candidateId)}
               disabled={openingChatId === f.candidateId}
               className="text-xs px-2.5 py-1.5 rounded-lg text-white font-semibold transition-all hover:-translate-y-0.5 disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+              style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
               {openingChatId === f.candidateId ? '...' : '💬 Mesajla'}
             </button>
             <button onClick={() => handleRemove(f.candidateId, f.candidateName)}

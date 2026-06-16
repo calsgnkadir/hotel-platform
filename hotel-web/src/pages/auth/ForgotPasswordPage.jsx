@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: '#0a0618' }}>
+    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: '#0c1726' }}>
       {/* FAZ 5.4 — DarkVeil */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <DarkVeil hueShift={285} noiseIntensity={0.02} speed={0.4} warpAmount={0.3} />

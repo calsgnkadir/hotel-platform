@@ -40,13 +40,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: '#0a0612' }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ background: '#0c1726' }}>
       {/* Calm radial halo arka plan */}
       <div aria-hidden className="absolute inset-0 pointer-events-none"
            style={{
              background:
-               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(107, 33, 168, 0.20) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(217, 70, 239, 0.10) 0%, transparent 60%)',
+               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(30, 58, 95, 0.20) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(212, 168, 83, 0.10) 0%, transparent 60%)',
            }} />
 
       {/* Geri butonu — sol üst, sabit */}
@@ -62,12 +62,12 @@ export default function LoginPage() {
             <div className="mb-8">
               <Link to="/" className="inline-flex items-baseline gap-2 mb-10">
                 <span className="font-bebas font-bold text-2xl tracking-wider text-white">AJANSHOTEL</span>
-                <span className="text-[9px] uppercase tracking-[0.18em]" style={{ color: '#c4b5fd' }}>istanbul</span>
+                <span className="text-[9px] uppercase tracking-[0.18em]" style={{ color: '#fde9a5' }}>istanbul</span>
               </Link>
               <HeroHeading size="sm" align="left" className="hero-glow !leading-none">
                 <span className="text-white">Giriş Yap</span>
               </HeroHeading>
-              <p className="text-sm mt-3" style={{ color: '#a5b4fc' }}>
+              <p className="text-sm mt-3" style={{ color: '#8ba9d2' }}>
                 Kaldığın yerden devam et.
               </p>
             </div>
@@ -76,9 +76,9 @@ export default function LoginPage() {
             <GoogleSignInButton label="Google ile Devam Et" />
 
             <div className="flex items-center gap-3 my-5">
-              <span className="flex-1 h-px" style={{ background: 'rgba(168, 85, 247, 0.2)' }} />
-              <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#a5b4fc' }}>veya</span>
-              <span className="flex-1 h-px" style={{ background: 'rgba(168, 85, 247, 0.2)' }} />
+              <span className="flex-1 h-px" style={{ background: 'rgba(212, 168, 83, 0.2)' }} />
+              <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#8ba9d2' }}>veya</span>
+              <span className="flex-1 h-px" style={{ background: 'rgba(212, 168, 83, 0.2)' }} />
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -141,18 +141,18 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="text-[12px] text-center mt-6" style={{ color: '#c4b5fd' }}>
+            <p className="text-[12px] text-center mt-6" style={{ color: '#fde9a5' }}>
               Hesabın yok mu?{' '}
               <Link to="/register" className="font-bold transition-colors hover:underline"
-                    style={{ color: '#e879f9' }}>
+                    style={{ color: '#f7c43c' }}>
                 Ücretsiz kayıt ol
               </Link>
             </p>
           </div>
 
           <div className="mt-8 rounded-xl p-4 border"
-               style={{ background: 'rgba(168, 85, 247, 0.05)', borderColor: 'rgba(168, 85, 247, 0.12)' }}>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#c4b5fd' }}>
+               style={{ background: 'rgba(212, 168, 83, 0.05)', borderColor: 'rgba(212, 168, 83, 0.12)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#fde9a5' }}>
               Demo Hesaplar
             </p>
             <div className="space-y-1.5 text-[12px] font-mono">
@@ -166,21 +166,21 @@ export default function LoginPage() {
 
         {/* SAĞ — Hospitality value-prop paneli (kendi orijinal kompozisyon) */}
         <aside className="hidden lg:flex relative items-center justify-center px-12 py-16 border-l"
-               style={{ borderColor: 'rgba(168, 85, 247, 0.10)' }}>
+               style={{ borderColor: 'rgba(212, 168, 83, 0.10)' }}>
           {/* Sag panel'e ozel halo */}
           <div aria-hidden className="absolute inset-0 pointer-events-none"
                style={{
                  background:
-                   'radial-gradient(circle 500px at 60% 40%, rgba(168, 85, 247, 0.14) 0%, transparent 60%),' +
-                   'radial-gradient(circle 400px at 30% 80%, rgba(217, 70, 239, 0.10) 0%, transparent 60%)',
+                   'radial-gradient(circle 500px at 60% 40%, rgba(212, 168, 83, 0.14) 0%, transparent 60%),' +
+                   'radial-gradient(circle 400px at 30% 80%, rgba(212, 168, 83, 0.10) 0%, transparent 60%)',
                }} />
 
           <div className="relative z-10 max-w-md">
             {/* Canli rozet */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-8"
-                 style={{ background: 'rgba(217, 70, 239, 0.10)', border: '1px solid rgba(217, 70, 239, 0.25)' }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#e879f9' }} />
-              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#f0abfc' }}>
+                 style={{ background: 'rgba(212, 168, 83, 0.10)', border: '1px solid rgba(212, 168, 83, 0.25)' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#f7c43c' }} />
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#fde9a5' }}>
                 İstanbul Canlı
               </span>
             </div>
@@ -189,14 +189,14 @@ export default function LoginPage() {
             <HeroHeading size="lg" align="left" className="!leading-[0.92]">
               <span className="block text-white">Şehrin</span>
               <span className="block hero-glow" style={{
-                background: 'linear-gradient(135deg, #c084fc 0%, #d946ef 100%)',
+                background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>Vardiyası</span>
               <span className="block text-white">Hiç Durmuyor</span>
             </HeroHeading>
 
-            <p className="mt-6 mb-10 text-sm leading-relaxed" style={{ color: '#c4b5fd' }}>
+            <p className="mt-6 mb-10 text-sm leading-relaxed" style={{ color: '#fde9a5' }}>
               Otel, restoran, kafe — sabah müsait olduğun saatler birinin
               akşam doldurmaya çalıştığı bir vardiya. Aradaki köprü AjansHotel.
             </p>
@@ -209,16 +209,16 @@ export default function LoginPage() {
                 { num: '%94',   label: 'Başvuru sonrası memnuniyet (son 30 gün)' },
               ].map((s, i) => (
                 <div key={i} className="flex items-baseline gap-4 pb-4"
-                     style={{ borderBottom: i < 2 ? '1px solid rgba(168, 85, 247, 0.12)' : 'none' }}>
+                     style={{ borderBottom: i < 2 ? '1px solid rgba(212, 168, 83, 0.12)' : 'none' }}>
                   <span className="font-bebas text-4xl tracking-wider"
                         style={{
                           color: '#ffffff',
-                          textShadow: '0 0 18px rgba(168, 85, 247, 0.35)',
+                          textShadow: '0 0 18px rgba(212, 168, 83, 0.35)',
                           minWidth: '90px',
                         }}>
                     {s.num}
                   </span>
-                  <span className="text-xs uppercase tracking-wider" style={{ color: '#a5b4fc' }}>
+                  <span className="text-xs uppercase tracking-wider" style={{ color: '#8ba9d2' }}>
                     {s.label}
                   </span>
                 </div>
@@ -226,7 +226,7 @@ export default function LoginPage() {
             </div>
 
             {/* Imza */}
-            <p className="mt-12 text-[10px] uppercase tracking-[0.3em]" style={{ color: '#7c3aed' }}>
+            <p className="mt-12 text-[10px] uppercase tracking-[0.3em]" style={{ color: '#234a82' }}>
               AjansHotel · İstanbul Hospitality Network
             </p>
           </div>

@@ -88,16 +88,16 @@ export default function AvailabilityBlocksEditor() {
   return (
     <div className="card p-5"
          style={{
-           background: 'linear-gradient(135deg, rgba(20, 14, 38, 0.85), rgba(15, 10, 30, 0.85))',
-           border: '1px solid rgba(168, 85, 247, 0.20)',
+           background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.85), rgba(15, 23, 38, 0.85))',
+           border: '1px solid rgba(212, 168, 83, 0.20)',
          }}>
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div>
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-1"
-              style={{ color: '#c4b5fd' }}>
+              style={{ color: '#fde9a5' }}>
             Haftalık Müsaitlik
           </h3>
-          <p className="text-[11px] max-w-md" style={{ color: '#a5b4fc' }}>
+          <p className="text-[11px] max-w-md" style={{ color: '#8ba9d2' }}>
             Hangi gün ve saatlerde çalışabilirsin? İşletmeler ilan açtığında bu bloklara
             göre eşleştirme yapılır.
           </p>
@@ -105,20 +105,20 @@ export default function AvailabilityBlocksEditor() {
         <button type="button" onClick={addBlock}
           className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
           style={{
-            background: 'rgba(168, 85, 247, 0.18)',
-            border: '1px solid rgba(168, 85, 247, 0.35)',
-            color: '#d8b4fe',
+            background: 'rgba(212, 168, 83, 0.18)',
+            border: '1px solid rgba(212, 168, 83, 0.35)',
+            color: '#fde9a5',
           }}>
           + Blok Ekle
         </button>
       </div>
 
-      {loading && <p className="text-xs" style={{ color: '#a5b4fc' }}>Yükleniyor...</p>}
+      {loading && <p className="text-xs" style={{ color: '#8ba9d2' }}>Yükleniyor...</p>}
 
       {!loading && sorted.length === 0 && (
         <div className="text-center py-6 rounded-lg"
-             style={{ background: 'rgba(168, 85, 247, 0.06)', border: '1px dashed rgba(168, 85, 247, 0.25)' }}>
-          <p className="text-xs" style={{ color: '#c4b5fd' }}>
+             style={{ background: 'rgba(212, 168, 83, 0.06)', border: '1px dashed rgba(212, 168, 83, 0.25)' }}>
+          <p className="text-xs" style={{ color: '#fde9a5' }}>
             Henüz blok tanımlanmamış. <b>+ Blok Ekle</b> ile başla.
           </p>
         </div>
@@ -132,14 +132,14 @@ export default function AvailabilityBlocksEditor() {
             return (
               <div key={b.id ?? `new-${sortedIdx}`}
                    className="flex flex-wrap items-center gap-2 rounded-lg p-2"
-                   style={{ background: 'rgba(168, 85, 247, 0.06)', border: '1px solid rgba(168, 85, 247, 0.18)' }}>
+                   style={{ background: 'rgba(212, 168, 83, 0.06)', border: '1px solid rgba(212, 168, 83, 0.18)' }}>
                 <select value={b.dayOfWeek}
                         onChange={e => updateBlock(realIdx, { dayOfWeek: e.target.value })}
                         className="text-sm rounded-md px-2 py-1.5 min-w-[110px]"
                         style={{
-                          background: 'rgba(15, 10, 30, 0.85)',
-                          color: '#e9d5ff',
-                          border: '1px solid rgba(168, 85, 247, 0.30)',
+                          background: 'rgba(15, 23, 38, 0.85)',
+                          color: '#dde7f3',
+                          border: '1px solid rgba(212, 168, 83, 0.30)',
                         }}>
                   {DAY_ORDER.map(d => <option key={d} value={d}>{DAY_LABELS[d]}</option>)}
                 </select>
@@ -147,19 +147,19 @@ export default function AvailabilityBlocksEditor() {
                        onChange={e => updateBlock(realIdx, { startTime: e.target.value })}
                        className="text-sm rounded-md px-2 py-1.5"
                        style={{
-                         background: 'rgba(15, 10, 30, 0.85)',
-                         color: '#e9d5ff',
-                         border: '1px solid rgba(168, 85, 247, 0.30)',
+                         background: 'rgba(15, 23, 38, 0.85)',
+                         color: '#dde7f3',
+                         border: '1px solid rgba(212, 168, 83, 0.30)',
                          colorScheme: 'dark',
                        }} />
-                <span style={{ color: '#a5b4fc' }}>—</span>
+                <span style={{ color: '#8ba9d2' }}>—</span>
                 <input type="time" value={b.endTime}
                        onChange={e => updateBlock(realIdx, { endTime: e.target.value })}
                        className="text-sm rounded-md px-2 py-1.5"
                        style={{
-                         background: 'rgba(15, 10, 30, 0.85)',
-                         color: '#e9d5ff',
-                         border: '1px solid rgba(168, 85, 247, 0.30)',
+                         background: 'rgba(15, 23, 38, 0.85)',
+                         color: '#dde7f3',
+                         border: '1px solid rgba(212, 168, 83, 0.30)',
                          colorScheme: 'dark',
                        }} />
                 <button type="button" onClick={() => removeBlock(realIdx)}
@@ -186,8 +186,8 @@ export default function AvailabilityBlocksEditor() {
           <button type="button" onClick={save} disabled={!dirty || saving}
             className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-white rounded-full transition-all hover:-translate-y-0.5 disabled:opacity-40"
             style={{
-              background: 'linear-gradient(135deg, #6b21a8, #9333ea)',
-              boxShadow: '0 0 14px rgba(168, 85, 247, 0.40)',
+              background: 'linear-gradient(135deg, #1e3a5f, #b8902d)',
+              boxShadow: '0 0 14px rgba(212, 168, 83, 0.40)',
             }}>
             {saving ? 'Kaydediliyor...' : 'Müsaitliği Kaydet'}
           </button>

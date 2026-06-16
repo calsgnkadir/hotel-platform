@@ -59,7 +59,7 @@ export default function ListingDetailPage() {
           <p className="text-sm opacity-80 mb-4">Bu ilan kaldırılmış veya yayında değil olabilir.</p>
           <button onClick={() => navigate(-1)}
             className="px-5 py-2.5 rounded-lg text-white font-semibold"
-            style={{ background: 'linear-gradient(135deg, #6b21a8, #7e22ce)' }}>
+            style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
             Geri Dön
           </button>
         </div>
@@ -123,7 +123,7 @@ export default function ListingDetailPage() {
         <div className="card !p-0 overflow-hidden">
           <div className="relative h-48 w-full flex items-center justify-center overflow-hidden"
                style={{
-                 background: 'linear-gradient(135deg, #4c1d95 0%, #7e22ce 50%, #a855f7 100%)',
+                 background: 'linear-gradient(135deg, #15243d 0%, #234a82 50%, #d4a853 100%)',
                }}>
             <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full opacity-20"
                  style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
@@ -142,11 +142,11 @@ export default function ListingDetailPage() {
           </div>
 
           <div className="p-5">
-            <h1 className="text-2xl font-bold leading-tight" style={{ color: '#faf5ff' }}>
+            <h1 className="text-2xl font-bold leading-tight" style={{ color: '#f1f5fb' }}>
               {listing.title}
             </h1>
             <div className="flex items-center gap-2 flex-wrap mt-2">
-              <p className="text-base" style={{ color: '#d8b4fe' }}>{listing.businessName}</p>
+              <p className="text-base" style={{ color: '#fde9a5' }}>{listing.businessName}</p>
               {listing.businessReviewCount > 0 && (
                 <StarRating value={listing.businessAverageRating}
                   count={listing.businessReviewCount} size="sm" />
@@ -172,7 +172,7 @@ export default function ListingDetailPage() {
           ].map(s => (
             <div key={s.label} className="card !p-3 text-center">
               <div className="text-[10px] uppercase tracking-wider opacity-70">{s.label}</div>
-              <div className="text-sm font-semibold mt-0.5" style={{ color: '#faf5ff' }}>{s.value}</div>
+              <div className="text-sm font-semibold mt-0.5" style={{ color: '#f1f5fb' }}>{s.value}</div>
               {s.sub && <div className="text-[10px] opacity-60 mt-0.5">{s.sub}</div>}
             </div>
           ))}
@@ -205,7 +205,7 @@ export default function ListingDetailPage() {
         {/* Açıklama */}
         <div className="card p-5">
           <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Açıklama</h3>
-          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#f3e8ff' }}>
+          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#dde7f3' }}>
             {listing.description || 'Açıklama eklenmemiş.'}
           </p>
         </div>
@@ -213,7 +213,7 @@ export default function ListingDetailPage() {
         {listing.requirements && (
           <div className="card p-5">
             <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Gereksinimler</h3>
-            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#f3e8ff' }}>
+            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#dde7f3' }}>
               {listing.requirements}
             </p>
           </div>
@@ -222,7 +222,7 @@ export default function ListingDetailPage() {
         {hasDates && (
           <div className="card p-5">
             <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Kontrat Dönemi</h3>
-            <p className="text-sm" style={{ color: '#f3e8ff' }}>
+            <p className="text-sm" style={{ color: '#dde7f3' }}>
               {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
               {listing.startDate && listing.endDate && ' — '}
               {listing.endDate && new Date(listing.endDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -245,13 +245,13 @@ export default function ListingDetailPage() {
                 return (
                   <div key={s.id}
                     className="flex items-center justify-between rounded-lg px-3 py-2"
-                    style={{ background: full ? 'rgba(0,0,0,0.25)' : 'rgba(168,85,247,0.20)', opacity: full ? 0.6 : 1 }}>
+                    style={{ background: full ? 'rgba(0,0,0,0.25)' : 'rgba(212, 168, 83,0.20)', opacity: full ? 0.6 : 1 }}>
                     <div className="text-sm">
-                      <span className="font-semibold" style={{ color: '#faf5ff' }}>{dateLabel}</span>
-                      <span className="ml-2" style={{ color: '#d8b4fe' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
+                      <span className="font-semibold" style={{ color: '#f1f5fb' }}>{dateLabel}</span>
+                      <span className="ml-2" style={{ color: '#fde9a5' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
                     </div>
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                          style={{ background: full ? '#dc2626' : '#a855f7', color: '#fff' }}>
+                          style={{ background: full ? '#dc2626' : '#d4a853', color: '#fff' }}>
                       {full ? 'DOLU' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
                     </span>
                   </div>
@@ -268,9 +268,9 @@ export default function ListingDetailPage() {
             disabled={!hasFuture || applying}
             className="w-full py-4 text-base font-bold text-white rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 shadow-2xl"
             style={{ background: hasFuture
-              ? 'linear-gradient(135deg, #d946ef, #a855f7)'
+              ? 'linear-gradient(135deg, #d4a853, #d4a853)'
               : '#6b7280',
-              boxShadow: '0 8px 32px rgba(168,85,247,0.45)' }}>
+              boxShadow: '0 8px 32px rgba(212, 168, 83,0.45)' }}>
             {hasFuture ? 'Bu İlana Başvur →' : 'Süresi Doldu'}
           </button>
         </div>

@@ -55,7 +55,7 @@ export const DOC_CATEGORIES = [
   {
     key: 'general',
     label: 'Genel',
-    color: '#7e22ce',
+    color: '#234a82',
     types: [
       { type: 'CV',                  label: 'CV / Özgeçmiş',     ext: 'PDF/DOCX', required: true  },
       { type: 'TRANSCRIPT',          label: 'Transkript',        ext: 'PDF',      required: false },

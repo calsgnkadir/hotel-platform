@@ -44,7 +44,7 @@ export default function LandingPage() {
             </Link>
             <Link to="/register"
               className="text-[13px] font-semibold px-4 py-1.5 rounded-full text-white shadow-terra-sm hover:shadow-terra transition-all hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)' }}>
               Kayıt Ol
             </Link>
           </div>
@@ -52,7 +52,7 @@ export default function LandingPage() {
       </header>
 
       {/* ───── Hero (FAZ 5.4 — Dark Island) ───── */}
-      <section className="relative overflow-hidden" style={{ background: '#0a0618', minHeight: '92vh' }}>
+      <section className="relative overflow-hidden" style={{ background: '#0c1726', minHeight: '92vh' }}>
         {/* FAZ 5.4 — WebGL CPPN shader arka plan, mor brand'e hue-shift */}
         <DarkVeil hueShift={285} noiseIntensity={0.025} speed={0.45} warpAmount={0.35} />
 
@@ -73,7 +73,7 @@ export default function LandingPage() {
               <div className="inline-flex items-center gap-2 glass-panel rounded-full px-3 py-1.5 mb-7">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-glow-pulse" />
                 <span className="text-[11px] uppercase tracking-widest font-semibold"
-                      style={{ color: '#e9d5ff' }}>
+                      style={{ color: '#dde7f3' }}>
                   Yeni Sezon Açık
                 </span>
               </div>
@@ -87,10 +87,10 @@ export default function LandingPage() {
                 <span className="block text-white">İstanbul'un</span>
                 <span className="block">
                   <span style={{
-                    background: 'linear-gradient(135deg, #c084fc 0%, #d946ef 100%)',
+                    background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    filter: 'drop-shadow(0 0 24px rgba(217, 70, 239, 0.45))',
+                    filter: 'drop-shadow(0 0 24px rgba(212, 168, 83, 0.45))',
                   }}>
                     Hospitality
                   </span>
@@ -110,7 +110,7 @@ export default function LandingPage() {
               </div>
 
               <p className="text-base sm:text-lg leading-relaxed mb-9 max-w-xl"
-                 style={{ color: '#d8b4fe' }}>
+                 style={{ color: '#fde9a5' }}>
                 Hotel, restoran ve kafelerde günlük, sezonluk veya sürekli iş arıyorsan
                 doğru yerdesin. Vardiya seç, başvur, mesajlaş — gerisini bize bırak.
               </p>
@@ -120,7 +120,7 @@ export default function LandingPage() {
                   to="/register"
                   className="inline-flex items-center gap-2 text-sm font-bold px-7 py-3 rounded-full text-white cta-glow transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, #a855f7 0%, #d946ef 100%)',
+                    background: 'linear-gradient(135deg, #d4a853 0%, #d4a853 100%)',
                   }}
                 >
                   Hemen Başla
@@ -132,7 +132,7 @@ export default function LandingPage() {
                 <a
                   href="#features"
                   className="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-full glass-panel hover:bg-white/10 transition-colors"
-                  style={{ color: '#e9d5ff' }}
+                  style={{ color: '#dde7f3' }}
                 >
                   Nasıl çalışır?
                 </a>
@@ -140,11 +140,11 @@ export default function LandingPage() {
 
               {/* Trust strip */}
               <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs"
-                   style={{ color: '#c4b5fd' }}>
+                   style={{ color: '#fde9a5' }}>
                 {['KVKK uyumlu', 'Belge cüzdanı', 'Otomatik mesajlaşma'].map(label => (
                   <span key={label} className="flex items-center gap-1.5">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"
-                         style={{ color: '#a855f7' }}>
+                         style={{ color: '#d4a853' }}>
                       <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
                     </svg>
                     {label}
@@ -159,12 +159,12 @@ export default function LandingPage() {
                 <div className="glass-panel rounded-3xl p-7 shadow-glow-lg">
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bebas text-2xl tracking-wider"
-                         style={{ background: 'linear-gradient(135deg, #6b21a8, #d946ef)' }}>
+                         style={{ background: 'linear-gradient(135deg, #1e3a5f, #d4a853)' }}>
                       O
                     </div>
                     <div>
                       <div className="font-display text-base font-bold text-white">Conrad İstanbul</div>
-                      <div className="text-xs" style={{ color: '#c4b5fd' }}>Beşiktaş · 5 yıldız</div>
+                      <div className="text-xs" style={{ color: '#fde9a5' }}>Beşiktaş · 5 yıldız</div>
                     </div>
                   </div>
                   <div className="space-y-2.5">
@@ -173,7 +173,7 @@ export default function LandingPage() {
                     <ListingPreview pos="Bellboy" time="Hafta sonu · gece" wage="₺520/vardiya" dark />
                   </div>
                   <button className="w-full mt-5 py-2.5 rounded-full text-white text-sm font-semibold cta-glow transition-all"
-                          style={{ background: 'linear-gradient(135deg, #a855f7 0%, #d946ef 100%)' }}>
+                          style={{ background: 'linear-gradient(135deg, #d4a853 0%, #d4a853 100%)' }}>
                     3 vardiyaya başvur
                   </button>
                 </div>
@@ -253,7 +253,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link to="/register"
               className="inline-flex items-center gap-2 text-base font-semibold px-7 py-3.5 rounded-full text-white shadow-terra hover:-translate-y-0.5 transition-all"
-              style={{ background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)' }}>
               Hemen Kayıt Ol
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
@@ -309,12 +309,12 @@ function ListingPreview({ pos, time, wage, dark = false }) {
   if (dark) {
     return (
       <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl"
-           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(168,85,247,0.18)' }}>
+           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212, 168, 83,0.18)' }}>
         <div className="min-w-0">
           <div className="font-semibold text-sm text-white truncate">{pos}</div>
-          <div className="text-[11px] truncate" style={{ color: '#c4b5fd' }}>{time}</div>
+          <div className="text-[11px] truncate" style={{ color: '#fde9a5' }}>{time}</div>
         </div>
-        <div className="text-sm font-bold shrink-0" style={{ color: '#e879f9' }}>{wage}</div>
+        <div className="text-sm font-bold shrink-0" style={{ color: '#f7c43c' }}>{wage}</div>
       </div>
     )
   }

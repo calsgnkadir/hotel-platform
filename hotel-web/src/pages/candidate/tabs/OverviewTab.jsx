@@ -26,7 +26,7 @@ export default function OverviewTab({ user, applications, onTabChange }) {
             data: weeklyTrend(applications, null) },
           { label: 'Bekleyen', value: pending,             dot: 'bg-amber-400', color: '#fbbf24',
             data: weeklyTrend(applications, a => a.status === 'PENDING') },
-          { label: 'Kabul',    value: accepted,            dot: 'bg-brand-500', color: '#a855f7',
+          { label: 'Kabul',    value: accepted,            dot: 'bg-brand-500', color: '#d4a853',
             data: weeklyTrend(applications, a => a.status === 'ACCEPTED') },
         ].map(s => (
           <div key={s.label} className="stat-card !p-3">
@@ -62,13 +62,13 @@ export default function OverviewTab({ user, applications, onTabChange }) {
             whileTap={{ scale: 0.98 }}
             className="card group text-left p-5 w-full">
             <div className="flex items-baseline justify-between mb-3">
-              <span className="font-bebas text-2xl tracking-[0.25em]" style={{ color: '#7c3aed' }}>
+              <span className="font-bebas text-2xl tracking-[0.25em]" style={{ color: '#234a82' }}>
                 {action.num}
               </span>
-              <span className="text-lg transition-transform group-hover:translate-x-1" style={{ color: '#e879f9' }}>→</span>
+              <span className="text-lg transition-transform group-hover:translate-x-1" style={{ color: '#f7c43c' }}>→</span>
             </div>
             <div className="font-bebas text-xl tracking-wider uppercase text-white">{action.label}</div>
-            <div className="text-[11px] mt-1" style={{ color: '#a5b4fc' }}>{action.desc}</div>
+            <div className="text-[11px] mt-1" style={{ color: '#8ba9d2' }}>{action.desc}</div>
           </motion.button>
         ))}
       </motion.div>
