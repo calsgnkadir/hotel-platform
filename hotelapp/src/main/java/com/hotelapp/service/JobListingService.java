@@ -42,6 +42,8 @@ public class JobListingService {
     private final com.hotelapp.repository.UserRepository userRepository;
     private final ReviewService reviewService;
     private final NotificationService notificationService;
+    private final com.hotelapp.repository.BusinessPhotoRepository businessPhotoRepository;  // D3
+    private final FileStorageService fileStorageService;                                     // D3
 
     // ----------------------------------------------------------------
     // Public: browse active listings (dynamic filtering via Specification)
@@ -414,7 +416,19 @@ public class JobListingService {
                 .businessReviewCount(reviewService.getBusinessRating(l.getBusiness().getId()).getReviewCount())
                 .createdAt(l.getCreatedAt())
                 .shiftSlots(slotDtos)
+                .businessPhotoUrls(loadBusinessPhotoUrls(l.getBusiness().getId()))  // D3
                 .build();
+    }
+
+    /** D3: ilk N işletme fotoğrafının URL'leri — kartta hover carousel için. */
+    private List<String> loadBusinessPhotoUrls(Long businessId) {
+        return businessPhotoRepository
+                .findAllByBusinessIdOrderByDisplayOrderAscCreatedAtAsc(businessId)
+                .stream()
+                .limit(5)
+                .map(p -> fileStorageService.publicUrl(p.getFilePath()))
+                .filter(java.util.Objects::nonNull)
+                .toList();
     }
 
     // ----------------------------------------------------------------
@@ -498,5 +512,8 @@ public class JobListingService {
 
         // Faz E1
         private List<ShiftSlotDto> shiftSlots;
+
+        // FAZ D3 — işletme galeri fotoğrafları (ilk 5), hover carousel için
+        private List<String> businessPhotoUrls;
     }
 }

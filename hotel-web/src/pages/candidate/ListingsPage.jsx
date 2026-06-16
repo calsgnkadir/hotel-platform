@@ -18,6 +18,7 @@ import { extractErrorMessage } from '../../api/client'
 import { keys } from '../../lib/queryClient'
 import ReportModal from '../../components/ReportModal'
 import StarRating from '../../components/StarRating'
+import HoverPhotoCarousel from '../../components/HoverPhotoCarousel'  // FAZ D3
 import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
 import EmptyState from '../../components/EmptyState'
@@ -534,7 +535,7 @@ function ListingCard({ listing, onApply, onDetail }) {
       onClick={() => onDetail(listing)}
       className="card cursor-pointer hover:-translate-y-1 transition-all duration-200 group overflow-hidden !p-0"
     >
-      {/* HERO — foto-merkezli üst alan (#46) */}
+      {/* HERO — foto-merkezli üst alan (#46) + FAZ D3 hover carousel */}
       <div className="relative h-32 w-full flex items-center justify-center overflow-hidden"
            style={{
              background: `
@@ -542,27 +543,35 @@ function ListingCard({ listing, onApply, onDetail }) {
                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 50%)
              `,
            }}>
-        {/* Dekoratif daireler */}
-        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20"
-             style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
-        <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full opacity-15"
-             style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
+        {/* FAZ D3 — varsa galeri fotoğrafları hover carousel olarak öne geçer */}
+        {listing.businessPhotoUrls?.length > 0 ? (
+          <HoverPhotoCarousel photos={listing.businessPhotoUrls}
+                              alt={`${listing.businessName} galeri`} />
+        ) : (
+          <>
+            {/* Dekoratif daireler */}
+            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20"
+                 style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
+            <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full opacity-15"
+                 style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
 
-        {/* Büyük işletme harfi */}
-        <div className="text-white font-black opacity-90 relative z-10"
-             style={{ fontSize: '4rem', textShadow: '0 4px 20px rgba(0,0,0,0.3)', fontFamily: '"Fraunces", serif' }}>
-          {businessLetter}
-        </div>
+            {/* Büyük işletme harfi */}
+            <div className="text-white font-black opacity-90 relative z-10"
+                 style={{ fontSize: '4rem', textShadow: '0 4px 20px rgba(0,0,0,0.3)', fontFamily: '"Fraunces", serif' }}>
+              {businessLetter}
+            </div>
+          </>
+        )}
 
         {/* Job type chip — sağ üst */}
-        <span className="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md"
+        <span className="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md z-10"
               style={{ background: 'rgba(255,255,255,0.25)', color: '#fff' }}>
           {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
         </span>
 
         {/* Salary chip — sol alt (öne çıkar) */}
         {salary && (
-          <span className="absolute bottom-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-md"
+          <span className="absolute bottom-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-md z-10"
                 style={{ background: 'rgba(0,0,0,0.40)', color: '#fff' }}>
             {salary}
           </span>
