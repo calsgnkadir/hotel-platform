@@ -7,6 +7,7 @@ import com.hotelapp.dto.PageResponse;
 import com.hotelapp.dto.ReviewRequest;
 import com.hotelapp.entity.User;
 import com.hotelapp.enums.ApplicationStatus;
+import com.hotelapp.service.ApplicationQueryService;
 import com.hotelapp.service.ApplicationService;
 import com.hotelapp.service.ApplicationService.NoShowResult;
 import com.hotelapp.service.DocumentService;
@@ -33,6 +34,7 @@ import java.util.List;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    private final ApplicationQueryService applicationQueryService;  // FAZ C
     private final DocumentService documentService;
 
     // ============================================================
@@ -51,7 +53,7 @@ public class ApplicationController {
             @RequestParam(required = false) ApplicationStatus status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(
-                applicationService.getCandidateApplicationsPaged(currentUser.getId(), status, pageable));
+                applicationQueryService.getCandidateApplicationsPaged(currentUser.getId(), status, pageable));
     }
 
     @Operation(summary = "İlana başvur — sadece CANDIDATE")
@@ -111,7 +113,7 @@ public class ApplicationController {
             @RequestParam(required = false) String q,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(
-                applicationService.getBusinessApplicationsPaged(currentUser.getId(), status, listingId, q, pageable));
+                applicationQueryService.getBusinessApplicationsPaged(currentUser.getId(), status, listingId, q, pageable));
     }
 
     @Operation(summary = "Başvuruyu incelemeye al (PENDING → REVIEWING) — sadece BUSINESS_OWNER")

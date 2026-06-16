@@ -15,7 +15,6 @@ import com.hotelapp.repository.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -167,44 +166,8 @@ public class ApplicationService {
     }
 
     // ----------------------------------------------------------------
-    // CANDIDATE: List own applications
-    // ----------------------------------------------------------------
-    @Transactional(readOnly = true)
-    public List<ApplicationResponse> getCandidateApplications(Long candidateId) {
-        return applicationRepository.findAllByCandidateId(candidateId)
-                .stream().map(applicationMapper::toResponse).toList();
-    }
-
-    /** #84: Aday başvuruları — sayfalı + opsiyonel status filtresi. */
-    @Transactional(readOnly = true)
-    public PageResponse<ApplicationResponse> getCandidateApplicationsPaged(
-            Long candidateId, ApplicationStatus status, Pageable pageable) {
-        return PageResponse.of(
-                applicationRepository.searchCandidateApplications(candidateId, status, pageable),
-                applicationMapper::toResponse);
-    }
-
-    // ----------------------------------------------------------------
-    // BUSINESS OWNER: List incoming applications (optionally filtered)
-    // ----------------------------------------------------------------
-    @Transactional(readOnly = true)
-    public List<ApplicationResponse> getBusinessApplications(Long ownerId, ApplicationStatus status) {
-        List<Application> applications = (status != null)
-                ? applicationRepository.findAllByJobListing_Business_OwnerIdAndStatus(ownerId, status)
-                : applicationRepository.findAllByJobListing_Business_OwnerId(ownerId);
-        return applications.stream().map(applicationMapper::toResponse).toList();
-    }
-
-    /** #84: İşletme başvuruları — sayfalı + status/ilan/arama filtreleri. */
-    @Transactional(readOnly = true)
-    public PageResponse<ApplicationResponse> getBusinessApplicationsPaged(
-            Long ownerId, ApplicationStatus status, Long listingId, String q, Pageable pageable) {
-        String normalizedQ = (q != null && !q.isBlank()) ? q.trim() : null;
-        return PageResponse.of(
-                applicationRepository.searchBusinessApplications(ownerId, status, listingId, normalizedQ, pageable),
-                applicationMapper::toResponse);
-    }
-
+    // List sorgulari ApplicationQueryService'e tasindi (FAZ C god class temizligi)
+    // Unused unpaged getCandidate/BusinessApplications metodlari silindi (dead code).
     // ----------------------------------------------------------------
     // BUSINESS OWNER: Move PENDING → REVIEWING
     // ----------------------------------------------------------------
