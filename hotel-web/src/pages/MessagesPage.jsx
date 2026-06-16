@@ -407,7 +407,6 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       recTimerRef.current = setInterval(() => setRecDuration(d => d + 1), 1000)
     } catch (err) {
       toast.error('Mikrofon izni reddedildi veya kullanılamıyor')
-      console.error(err)
     }
   }
 

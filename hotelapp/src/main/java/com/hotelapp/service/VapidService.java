@@ -115,7 +115,7 @@ public class VapidService {
             String jwt = signingInput + "." + sigB64;
             return "vapid t=" + jwt + ", k=" + publicKeyForHeader;
         } catch (Exception e) {
-            throw new RuntimeException("VAPID JWT olusturulamadi: " + e.getMessage(), e);
+            throw new IllegalStateException("VAPID JWT olusturulamadi: " + e.getMessage(), e);
         }
     }
 

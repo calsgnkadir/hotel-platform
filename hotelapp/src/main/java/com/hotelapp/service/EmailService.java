@@ -75,7 +75,7 @@ public class EmailService {
                     toEmail, subject, response.getStatusCode());
         } catch (RestClientException e) {
             log.error("[EMAIL] Gönderim hatası: to={} hata={}", toEmail, e.getMessage());
-            throw new RuntimeException("Email gönderilemedi: " + e.getMessage(), e);
+            throw new IllegalStateException("Email gönderilemedi: " + e.getMessage(), e);
         }
     }
 
