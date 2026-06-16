@@ -444,7 +444,8 @@ export default function ProfileTab() {
  * 0-100 arası, breakdown pill'leri (rating + tamamlanmış iş + no-show) + ilerleme çubuğu.
  */
 function ReliabilityCard({ data }) {
-  const { score = 0, noShowCount = 0, completedJobsLast90d = 0, averageRating, reviewCount } = data
+  const { score = 0, noShowCount = 0, completedJobsLast90d = 0, completedJobsAllTime = 0,
+          averageRating, reviewCount } = data
 
   let band, color, bg
   if (score >= 80)      { band = 'Yüksek';   color = '#86efac'; bg = 'linear-gradient(90deg, #16a34a, #4ade80)' }
@@ -482,7 +483,8 @@ function ReliabilityCard({ data }) {
       <div className="flex flex-wrap gap-2">
         <BreakdownPill label="Ortalama puan" value={averageRating != null ? `${averageRating.toFixed(1)} / 5` : 'Henüz yok'}
                        hint={reviewCount ? `${reviewCount} yorum` : null} />
-        <BreakdownPill label="Son 90 gün" value={`${completedJobsLast90d} tamamlanmış iş`} />
+        <BreakdownPill label="Tüm zaman tamamlanan" value={`${completedJobsAllTime} iş`}
+                       hint={completedJobsLast90d > 0 ? `${completedJobsLast90d} son 90 gün` : null} />
         <BreakdownPill label="No-show" value={`${noShowCount}`} bad={noShowCount > 0} />
       </div>
     </div>

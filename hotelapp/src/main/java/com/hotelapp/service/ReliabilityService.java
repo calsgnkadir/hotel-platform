@@ -13,14 +13,14 @@ import java.time.LocalDateTime;
  * Aday güvenilirlik skoru (Reliability Score).
  *
  * Formül (0-100, clamp edilmiş):
- *   60                              baseline
- *   + (avgRating - 3) * 10          5★ = +20, 3★ = 0, 1★ = -20
- *   - noShowCount * 25              her no-show -25
- *   + min(20, completedLast90d * 2) son 90 günde tamamlanmış iş bonusu (max +20)
+ *   60                                                  baseline
+ *   + (avgRating - 3) * 10                              5★ = +20, 3★ = 0, 1★ = -20
+ *   - round(50 * noShow / (noShow + completedAllTime))  ORAN BAZLI — flake oranı kadar ceza
+ *   + min(20, completedLast90d * 2)                     son 90 günde aktivite bonusu
  *
- * Skor neyi söyler: aday geçmişte söz verdiği işe geldi mi, otelden ne aldı,
- * son zamanlarda aktif mi. İşletme paneli aday seçerken hızlı bir filtre olarak,
- * adayın kendi paneli neyi iyileştireceğini görmek için kullanır.
+ * Oran bazlı ceza şu mantığa dayanır: 4 no-show + 1 tamamlanmış iş = %80 ceza (-40);
+ * 4 no-show + 20 tamamlanmış iş = %16 ceza (-8). Hem yeni adaya yumuşak, hem geçmişi
+ * iyi olan adaya af tanır. Hiç geçmişi olmayan aday için ceza 0.
  */
 @Service
 @RequiredArgsConstructor
@@ -32,6 +32,7 @@ public class ReliabilityService {
     @Transactional(readOnly = true)
     public ReliabilityScore computeForCandidate(Long candidateId) {
         long noShowCount = applicationRepository.countByCandidateIdAndNoShowTrue(candidateId);
+        long completedAll = applicationRepository.countCompletedAcceptedAllTime(candidateId);
         long completedLast90d = applicationRepository.countCompletedAcceptedSince(
                 candidateId, LocalDateTime.now().minusDays(90));
         var rating = reviewService.getCandidateRating(candidateId);
@@ -41,7 +42,11 @@ public class ReliabilityService {
         if (avg != null) {
             score += (int) Math.round((avg - 3.0) * 10);
         }
-        score -= (int) (noShowCount * 25);
+        // Oran bazlı no-show cezası: max -50, denominator yoksa 0
+        long denom = noShowCount + completedAll;
+        if (denom > 0) {
+            score -= (int) Math.round(50.0 * noShowCount / denom);
+        }
         score += (int) Math.min(20, completedLast90d * 2);
         if (score < 0) score = 0;
         if (score > 100) score = 100;
@@ -50,6 +55,7 @@ public class ReliabilityService {
                 .score(score)
                 .noShowCount((int) noShowCount)
                 .completedJobsLast90d((int) completedLast90d)
+                .completedJobsAllTime((int) completedAll)
                 .averageRating(avg)
                 .reviewCount(rating.getReviewCount())
                 .build();
@@ -61,6 +67,7 @@ public class ReliabilityService {
         private Integer score;
         private Integer noShowCount;
         private Integer completedJobsLast90d;
+        private Integer completedJobsAllTime;
         private Double averageRating;
         private Long reviewCount;
     }

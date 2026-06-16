@@ -48,6 +48,16 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("candidateId") Long candidateId,
             @Param("since") LocalDateTime since);
 
+    /** Tüm zaman tamamlanmış iş sayısı — reliability oranı penalty denominatörü için. */
+    @Query("""
+        SELECT COUNT(a) FROM Application a
+        WHERE a.candidate.id = :candidateId
+          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
+          AND a.noShow = false
+          AND a.reviewedAt IS NOT NULL
+    """)
+    long countCompletedAcceptedAllTime(@Param("candidateId") Long candidateId);
+
     List<Application> findAllByJobListing_Business_OwnerId(Long ownerId);
 
     List<Application> findAllByJobListing_Business_OwnerIdAndStatus(Long ownerId, ApplicationStatus status);
