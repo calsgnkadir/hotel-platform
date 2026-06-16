@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../api/hotel'
 import { keys } from '../../lib/queryClient'
 import cldImg, { ImgSize } from '../../lib/cldImg'
+
+const MapView = lazy(() => import('../../components/MapView'))
 
 /**
  * FAZ 5.9 — Isletme public profil sayfasi (paylasilabilir).
@@ -303,6 +305,40 @@ export default function BusinessPublicPage() {
                      style={{ background: 'rgba(15, 10, 30, 0.75)', color: '#fff' }}>
                   {galleryIndex + 1} / {photos.length}
                 </div>
+              </div>
+            </section>
+          )}
+
+          {/* Harita */}
+          {business.latitude != null && business.longitude != null && (
+            <section className="rounded-2xl overflow-hidden"
+                     style={{ background: 'rgba(20, 14, 38, 0.55)', border: '1px solid rgba(168, 85, 247, 0.18)' }}>
+              <div className="px-5 pt-4 pb-2 flex items-baseline justify-between">
+                <h2 className="font-bebas text-lg tracking-[0.2em] uppercase" style={{ color: '#c4b5fd' }}>
+                  Konum
+                </h2>
+                {business.address && (
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`}
+                     target="_blank" rel="noopener noreferrer"
+                     className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                     style={{ background: 'rgba(168, 85, 247, 0.18)', color: '#d8b4fe', border: '1px solid rgba(168, 85, 247, 0.30)' }}>
+                    Google Maps →
+                  </a>
+                )}
+              </div>
+              <div className="h-[280px] lg:h-[320px] relative">
+                <Suspense fallback={
+                  <div className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-widest"
+                       style={{ color: '#a5b4fc' }}>
+                    Harita yükleniyor...
+                  </div>
+                }>
+                  <MapView
+                    position={[Number(business.latitude), Number(business.longitude)]}
+                    markerLabel={business.name}
+                    zoom={15}
+                  />
+                </Suspense>
               </div>
             </section>
           )}
