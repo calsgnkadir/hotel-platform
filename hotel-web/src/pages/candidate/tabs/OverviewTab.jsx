@@ -1,5 +1,6 @@
 // FAZ 5.2 — CandidateDashboard'dan ayrildi
 import { motion } from 'framer-motion'
+import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ 5.6
 import StatusBadge from '../../../components/candidate/StatusBadge'
 import EarningsWidget from '../../../components/candidate/EarningsWidget'
 
@@ -21,16 +22,22 @@ export default function OverviewTab({ user, applications, onTabChange }) {
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2.5">
         {[
-          { label: 'Başvuru',  value: applications.length, dot: 'bg-blue-400' },
-          { label: 'Bekleyen', value: pending,             dot: 'bg-amber-400' },
-          { label: 'Kabul',    value: accepted,            dot: 'bg-brand-500' },
+          { label: 'Başvuru',  value: applications.length, dot: 'bg-blue-400',  color: '#60a5fa',
+            data: weeklyTrend(applications, null) },
+          { label: 'Bekleyen', value: pending,             dot: 'bg-amber-400', color: '#fbbf24',
+            data: weeklyTrend(applications, a => a.status === 'PENDING') },
+          { label: 'Kabul',    value: accepted,            dot: 'bg-brand-500', color: '#a855f7',
+            data: weeklyTrend(applications, a => a.status === 'ACCEPTED') },
         ].map(s => (
           <div key={s.label} className="stat-card !p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
               <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">{s.label}</span>
             </div>
-            <div className="text-xl font-black text-white leading-none">{s.value}</div>
+            <div className="flex items-end justify-between gap-2">
+              <div className="text-xl font-black text-white leading-none">{s.value}</div>
+              <Sparkline data={s.data} color={s.color} />
+            </div>
           </div>
         ))}
       </div>

@@ -1,5 +1,6 @@
 import { StatusBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
+import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ 5.6
 
 /* ── Overview Tab ── */
 export default function OverviewTab({ applications, onTabChange }) {
@@ -9,20 +10,27 @@ export default function OverviewTab({ applications, onTabChange }) {
 
   return (
     <div className="space-y-4">
-      {/* Stat strip — sade 4'lü */}
+      {/* Stat strip — sade 4'lu + sparkline */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {[
-          { label: 'Toplam',      value: applications.length, dot: 'bg-blue-400' },
-          { label: 'Bekleyen',    value: pending,             dot: 'bg-amber-400' },
-          { label: 'İnceleniyor', value: reviewing,           dot: 'bg-brand-400' },
-          { label: 'Kabul',       value: accepted,            dot: 'bg-brand-500' },
+          { label: 'Toplam',      value: applications.length, dot: 'bg-blue-400',  color: '#60a5fa',
+            data: weeklyTrend(applications, null) },
+          { label: 'Bekleyen',    value: pending,             dot: 'bg-amber-400', color: '#fbbf24',
+            data: weeklyTrend(applications, a => a.status === 'PENDING') },
+          { label: 'İnceleniyor', value: reviewing,           dot: 'bg-brand-400', color: '#c084fc',
+            data: weeklyTrend(applications, a => a.status === 'REVIEWING') },
+          { label: 'Kabul',       value: accepted,            dot: 'bg-brand-500', color: '#a855f7',
+            data: weeklyTrend(applications, a => a.status === 'ACCEPTED') },
         ].map(s => (
           <div key={s.label} className="stat-card !p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
               <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold truncate">{s.label}</span>
             </div>
-            <div className="text-xl font-black text-white leading-none">{s.value}</div>
+            <div className="flex items-end justify-between gap-2">
+              <div className="text-xl font-black text-white leading-none">{s.value}</div>
+              <Sparkline data={s.data} color={s.color} width={56} height={24} />
+            </div>
           </div>
         ))}
       </div>
