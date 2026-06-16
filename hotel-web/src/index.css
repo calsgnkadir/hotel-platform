@@ -495,16 +495,15 @@ body {
    App.jsx Routes'una key={location.pathname} verilen icerikte uygulanir.
    ──────────────────────────────────────────────────────────────── */
 @keyframes pageEnter {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(28px) scale(0.97); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    filter: blur(0); }
 }
 .page-enter {
-  animation: pageEnter 220ms ease-out;
-  /* GPU layer hint — transition sirasinda layout reflow olmaz */
-  will-change: opacity, transform;
+  /* FAZ 5.4 — daha belirgin tab transition (eski 4px/220ms zayifti) */
+  animation: pageEnter 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  will-change: opacity, transform, filter;
 }
-/* Animation bittikten sonra will-change'i geri al (uzun sureli GPU layer gereksiz) */
-.page-enter { animation-fill-mode: both; }
 
 /* ────────────────────────────────────────────────────────────────
    FAZ 3 — prefers-reduced-motion (A11y)

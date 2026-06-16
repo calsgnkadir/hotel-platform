@@ -61,8 +61,8 @@ export default function BusinessDashboard() {
       {isLoading ? (
         <SkeletonList count={5} />
       ) : (
-        /* FAZ 5.4 — page transition art Framer'a devredildi (DashboardLayout) */
-        <div>
+        /* FAZ 5.4 — CSS-based tab transition (Framer key remount tetiklenmiyordu) */
+        <div key={activeTab} className="page-enter">
           {activeTab === 'overview'      && <OverviewTab applications={applications} onTabChange={setActiveTab} />}
           {activeTab === 'mylistings'    && <MyListingsTab />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => setActiveTab('messages')} />}

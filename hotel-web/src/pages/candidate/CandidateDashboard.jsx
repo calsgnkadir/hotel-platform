@@ -68,8 +68,8 @@ export default function CandidateDashboard() {
       {isLoading ? (
         <SkeletonList count={4} />
       ) : (
-        /* FAZ 5.4 — page transition art Framer'a devredildi (DashboardLayout) */
-        <div>
+        /* FAZ 5.4 — CSS-based tab transition (Framer key remount tetiklenmiyordu) */
+        <div key={activeTab} className="page-enter">
           {activeTab === 'overview'      && <OverviewTab user={user} applications={applications} onTabChange={handleTabChange} />}
           {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={refetchApplications} onMessagesOpen={() => handleTabChange('messages')} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => handleTabChange('messages')} onTabChange={handleTabChange} />}
