@@ -64,7 +64,7 @@ export default function BusinessDashboard() {
         /* FAZ 5.4 — CSS-based tab transition (Framer key remount tetiklenmiyordu) */
         <div key={activeTab} className="page-enter">
           {activeTab === 'overview'      && <OverviewTab applications={applications} onTabChange={setActiveTab} />}
-          {activeTab === 'mylistings'    && <MyListingsTab />}
+          {activeTab === 'mylistings'    && <MyListingsTab applications={applications} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'workers'       && <WorkersTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'favorites'     && <FavoritesTab onOpenMessages={() => setActiveTab('messages')} />}
