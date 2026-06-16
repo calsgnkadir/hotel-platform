@@ -28,6 +28,21 @@ const TYPE_LABELS = {
   EVENT_VENUE: 'Etkinlik Mekanı',
 }
 
+const DAY_LABELS_TR = {
+  MONDAY: 'Pazartesi', TUESDAY: 'Salı', WEDNESDAY: 'Çarşamba',
+  THURSDAY: 'Perşembe', FRIDAY: 'Cuma', SATURDAY: 'Cumartesi', SUNDAY: 'Pazar',
+}
+const DAY_ORDER = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY']
+
+function parseWorkingHours(raw) {
+  if (!raw) return null
+  if (typeof raw === 'object') return raw  // zaten parse'lanmis
+  if (typeof raw !== 'string') return null
+  const trimmed = raw.trim()
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return null  // serbest text
+  try { return JSON.parse(trimmed) } catch { return null }
+}
+
 function useSeoMeta({ title, description, image, url }) {
   useEffect(() => {
     const prev = {
@@ -358,17 +373,47 @@ export default function BusinessPublicPage() {
                 </section>
               )}
 
-              {business.workingHours && (
-                <section className="rounded-2xl p-5"
-                         style={{ background: 'rgba(20, 14, 38, 0.55)', border: '1px solid rgba(168, 85, 247, 0.14)' }}>
-                  <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#c4b5fd' }}>
-                    Çalışma Saatleri
-                  </h2>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#ede9fe' }}>
-                    {business.workingHours}
-                  </p>
-                </section>
-              )}
+              {business.workingHours && (() => {
+                const parsed = parseWorkingHours(business.workingHours)
+                return (
+                  <section className="rounded-2xl p-5"
+                           style={{ background: 'rgba(20, 14, 38, 0.55)', border: '1px solid rgba(168, 85, 247, 0.14)' }}>
+                    <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#c4b5fd' }}>
+                      Çalışma Saatleri
+                    </h2>
+                    {parsed ? (
+                      <ul className="space-y-1.5">
+                        {DAY_ORDER.map(day => {
+                          const d = parsed[day]
+                          if (!d) return null
+                          return (
+                            <li key={day} className="flex items-center justify-between text-sm py-1 border-b last:border-0"
+                                style={{ borderColor: 'rgba(168, 85, 247, 0.08)' }}>
+                              <span className="font-bebas text-base tracking-wider uppercase" style={{ color: '#d8b4fe' }}>
+                                {DAY_LABELS_TR[day]}
+                              </span>
+                              {d.closed ? (
+                                <span className="text-[11px] font-bold uppercase tracking-widest"
+                                      style={{ color: '#fca5a5' }}>
+                                  Kapalı
+                                </span>
+                              ) : (
+                                <span className="font-mono text-[13px] font-bold" style={{ color: '#ede9fe' }}>
+                                  {d.open} – {d.close}
+                                </span>
+                              )}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    ) : (
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#ede9fe' }}>
+                        {business.workingHours}
+                      </p>
+                    )}
+                  </section>
+                )
+              })()}
             </div>
 
             {/* Contact + Social (1 col sidebar) */}

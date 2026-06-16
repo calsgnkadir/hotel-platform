@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import * as hotelApi from '../api/hotel'
 import NotificationBell from './NotificationBell'
 import SettingsMenu from './SettingsMenu'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -39,7 +41,16 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
   const isCandidate = user?.role === 'CANDIDATE'
   const isAdmin = user?.role === 'ADMIN'
+  const isBusiness = user?.role === 'BUSINESS_OWNER'
   const navItems = isAdmin ? adminNav : (isCandidate ? candidateNav : businessNav)
+
+  // FAZ 5.9 — Business owner icin public profil linkinde gerekli id
+  const { data: bizProfile } = useQuery({
+    queryKey: ['business-profile-for-public-link'],
+    queryFn: hotelApi.getBusinessProfile,
+    enabled: isBusiness,
+    staleTime: 5 * 60 * 1000,
+  })
 
   function handleLogout() {
     logout()
@@ -84,6 +95,24 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
               <SettingsMenu onTabChange={onTabChange} />
             </div>
+
+            {/* FAZ 5.9 — Public profil linki (sadece BUSINESS_OWNER) */}
+            {isBusiness && bizProfile?.id && (
+              <a
+                href={`/p/business/${bizProfile.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Public profilini yeni sekmede ac"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-full transition-all hover:-translate-y-0.5"
+                style={{
+                  background: 'rgba(168, 85, 247, 0.15)',
+                  color: '#d8b4fe',
+                  border: '1px solid rgba(168, 85, 247, 0.30)',
+                }}
+              >
+                Public Profilim ↗
+              </a>
+            )}
 
             {/* Logout — kompakt buton */}
             <button onClick={handleLogout}
