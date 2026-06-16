@@ -40,7 +40,7 @@ export default function App() {
     <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-    <MotionConfig reducedMotion="user" transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
+    <MotionConfig reducedMotion="never" transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <SkipLink />              {/* FAZ 3 / A11y — klavye Tab ilk durak */}

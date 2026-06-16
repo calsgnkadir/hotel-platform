@@ -3,14 +3,14 @@ import { motion } from 'framer-motion'
 import StatusBadge from '../../../components/candidate/StatusBadge'
 import EarningsWidget from '../../../components/candidate/EarningsWidget'
 
-// FAZ 5.4 — stagger animasyonu container + item variants
+// FAZ 5.4 — daha belirgin stagger
 const STAGGER_CONTAINER = {
   hidden:  { opacity: 1 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.3 } },
 }
 const STAGGER_ITEM = {
-  hidden:  { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] } },
+  hidden:  { opacity: 0, y: 36, scale: 0.9 },
+  visible: { opacity: 1, y: 0,  scale: 1,    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
 }
 
 export default function OverviewTab({ user, applications, onTabChange }) {
