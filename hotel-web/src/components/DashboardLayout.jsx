@@ -83,7 +83,9 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               }}>
         {/* Üst satır: brand + actions */}
         <div className="px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-baseline gap-2 flex-shrink-0">
+          {/* Logo: panelden tiklayinca kendi dashboard'una kalsin, public landing'e atip
+              kullaniciyi 'cikis yaptirilmis gibi' hissettirmesin */}
+          <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2 flex-shrink-0">
             <span className="font-bebas text-2xl tracking-wider text-white">AJANSHOTEL</span>
             <span className="hidden sm:inline text-[9px] uppercase tracking-[0.2em]"
                   style={{ color: '#fde9a5' }}>istanbul</span>
@@ -227,6 +229,16 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       </main>
     </div>
   )
+}
+
+/* Role'e gore dashboard kok path'i — logo click hedefi */
+function dashboardHomeFor(role) {
+  switch (role) {
+    case 'ADMIN':          return '/admin'
+    case 'BUSINESS_OWNER': return '/business'
+    case 'CANDIDATE':      return '/candidate'
+    default:               return '/'
+  }
 }
 
 /* Her tab icin kucuk farkli kimlik elementi (sayfa kimligi) */
