@@ -10,7 +10,7 @@
  *   </BottomSheet>
  *
  * Özellikler:
- *  - Backdrop tıkla → kapat
+ *  - Backdrop tıkla kapat
  *  - Üstte drag handle (görsel ipucu)
  *  - Slide-up animasyon (300ms)
  *  - Body scroll lock (open iken)

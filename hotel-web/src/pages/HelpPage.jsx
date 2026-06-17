@@ -20,7 +20,7 @@ const FAQS = [
   },
   {
     q: 'Bir kullanıcıyı nasıl şikayet ederim?',
-    a: 'İlgili kullanıcının profilinde veya başvurusunda ⚠ Şikayet Et butonu olur. Sebebi açıklayıp gönder. Yönetici 24 saat içinde inceler.',
+    a: 'İlgili kullanıcının profilinde veya başvurusunda Şikayet Et butonu olur. Sebebi açıklayıp gönder. Yönetici 24 saat içinde inceler.',
   },
   {
     q: 'Bildirimleri nasıl kapatırım?',

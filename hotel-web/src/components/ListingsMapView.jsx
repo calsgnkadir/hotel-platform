@@ -7,8 +7,8 @@
  *   onMarkerClick:   (listing) => void
  *
  * Davranış:
- *   - lat/lng olan ilanlar → tam konum marker
- *   - olmayanlar → ilçe merkezi (cluster engellemek için küçük offset)
+ *   - lat/lng olan ilanlar tam konum marker
+ *   - olmayanlar ilçe merkezi (cluster engellemek için küçük offset)
  *   - highlightedId varsa o marker büyür + popup
  *   - Otomatik fit-bounds (tüm marker'ları görecek şekilde zoom)
  */
@@ -170,7 +170,7 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
                     onClick={(e) => { e.stopPropagation(); onMarkerClick?.(p.listing) }}
                     className="mt-1.5 text-[11px] font-semibold underline"
                     style={{ color: '#d4a853' }}>
-                    Detayları gör →
+                    Detayları gör
                   </button>
                 </div>
               </Popup>

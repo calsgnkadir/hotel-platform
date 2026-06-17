@@ -55,7 +55,7 @@ export default function LanguageSwitcher() {
               <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded"
                     style={{ background: '#dde7f3', color: '#1e3a5f' }}>{l.code}</span>
               <span>{l.label}</span>
-              {l.code === current.code && <span className="ml-auto text-xs">✓</span>}
+              {l.code === current.code && <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="ml-auto w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>}
             </button>
           ))}
         </div>

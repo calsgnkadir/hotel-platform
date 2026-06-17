@@ -208,7 +208,7 @@ export default function TodayWidget({ applications, onTabChange }) {
                     border: `1px solid ${it.color}40`,
                   }}
                 >
-                  {it.cta} →
+                  {it.cta}
                 </button>
               </li>
             ))}

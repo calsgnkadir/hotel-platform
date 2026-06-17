@@ -273,8 +273,8 @@ function MessageBubble({ m }) {
         ${m.mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
         style={{
           background: m.mine
-            ? 'linear-gradient(135deg, #fde9a5 0%, #a78bfa 100%)'   /* purple-300 → purple-400 */
-            : 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)',   /* purple-100 → purple-200 */
+            ? 'linear-gradient(135deg, #fde9a5 0%, #a78bfa 100%)'   /* purple-300 purple-400 */
+            : 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)',   /* purple-100 purple-200 */
           color: '#0c1726',  /* koyu mor yazı — kontrast garantili */
           border: '1px solid rgba(212, 168, 83, 0.35)',
         }}>
@@ -446,7 +446,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
   }, [conversation?.id])
 
   // Yeni mesajı cache'in başına ekle (optimistic update — anında UI'a yansır)
-  // Backend page'i en yeniden eskiye sıralıyor → content[0] en yeni
+  // Backend page'i en yeniden eskiye sıralıyor content[0] en yeni
   function appendMsg(msg) {
     if (!conversation) return
     queryClient.setQueryData(keys.conversations.messages(conversation.id), (old) => {
@@ -844,7 +844,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                     disabled={sending}
                     className="px-4 py-2 rounded-lg text-white text-sm font-semibold flex-shrink-0
                                bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-50">
-              Durdur ↑
+              Durdur
             </button>
           </>
         ) : (
@@ -1170,7 +1170,7 @@ function ConversationDetailPanel({ conversation }) {
                     boxShadow: '0 0 12px rgba(212, 168, 83, 0.40)',
                   }}
                 >
-                  İlana Git →
+                  İlana Git
                 </a>
               )}
             </div>
@@ -1227,7 +1227,7 @@ function ConversationDetailPanel({ conversation }) {
               border: '1px solid rgba(212, 168, 83, 0.18)',
             }}
           >
-            <span className="font-bebas text-base" style={{ color: '#f7c43c' }}>↗</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f7c43c" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5 19.5 4.5m0 0v15m0-15h-15" /></svg>
             <span className="font-semibold">İlanı Görüntüle</span>
           </button>
           <button

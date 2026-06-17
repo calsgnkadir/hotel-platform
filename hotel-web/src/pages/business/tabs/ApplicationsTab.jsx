@@ -299,7 +299,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
               <button onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={safePage === 0}
                 className="px-3 py-1.5 rounded-md bg-white dark:bg-ink-800 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
-                ← Önceki
+                Önceki
               </button>
               <span className="font-semibold text-ink-700">
                 {safePage + 1} / {pageCount}
@@ -307,7 +307,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
               <button onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
                 disabled={safePage >= pageCount - 1}
                 className="px-3 py-1.5 rounded-md bg-white dark:bg-ink-800 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
-                Sonraki →
+                Sonraki
               </button>
             </div>
           </div>
@@ -511,7 +511,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                     <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
                       className="py-2.5 rounded-lg text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
                       style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
-                      ✓ Kabul
+                      Kabul
                     </button>
                     {/* FAZ 2/#28 - HOLD butonu sadece PENDING/REVIEWING'de */}
                     {selected.status !== 'HELD' && (
@@ -524,7 +524,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                     <button onClick={() => handleDecide('REJECTED')} disabled={actionLoading}
                       className={`py-2.5 rounded-lg text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 ${selected.status === 'HELD' ? 'col-span-2' : ''}`}
                       style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
-                      ✗ Reddet
+                      Reddet
                     </button>
                   </div>
                 </div>

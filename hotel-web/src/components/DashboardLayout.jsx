@@ -113,7 +113,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                   border: '1px solid rgba(212, 168, 83, 0.30)',
                 }}
               >
-                Public Profilim ↗
+                Public Profilim
               </a>
             )}
 

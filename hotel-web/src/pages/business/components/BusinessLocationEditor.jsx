@@ -4,7 +4,7 @@ import MapView from '../../../components/MapView'
 
 /**
  * Business profili — tam konum editörü.
- * Aday'lar ilan detayında bu tam konumu görür. Adres ya yazılır → geocode + harita,
+ * Aday'lar ilan detayında bu tam konumu görür. Adres ya yazılır geocode + harita,
  * ya da haritaya tıklayarak işaretlenir.
  */
 export default function BusinessLocationEditor({

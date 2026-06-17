@@ -64,7 +64,7 @@ export default function NotificationBell({ onNavigate }) {
     staleTime: 10_000,
   })
 
-  // FAZ 1/#22 — WS sub: yeni bildirim → cache invalidate + dropdown açıksa liste refresh
+  // FAZ 1/#22 — WS sub: yeni bildirim cache invalidate + dropdown açıksa liste refresh
   useEffect(() => {
     if (muted) return
     const sub = wsSubscribe('/user/queue/notifications', () => {

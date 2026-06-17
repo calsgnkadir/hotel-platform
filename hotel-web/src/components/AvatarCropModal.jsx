@@ -5,9 +5,9 @@
  *  1. Drop zone'a foto bırak (veya tıkla, file picker)
  *  2. Modal açılır: foto + crop overlay (kare 1:1)
  *  3. Zoom slider + drag ile crop
- *  4. 'Kullan' → canvas üzerinde crop yap → blob → onConfirm(blob)
+ *  4. 'Kullan' canvas üzerinde crop yap blob onConfirm(blob)
  *
- * Parent: onConfirm(file) → mevcut upload API'sini çağırır.
+ * Parent: onConfirm(file) mevcut upload API'sini çağırır.
  */
 import { useRef, useState, useCallback } from 'react'
 import useFocusTrap from '../lib/useFocusTrap'
@@ -61,7 +61,7 @@ async function canvasToBlob(image, crop) {
   )
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => blob ? resolve(blob) : reject(new Error('Canvas → blob başarısız')),
+      (blob) => blob ? resolve(blob) : reject(new Error('Canvas blob başarısız')),
       'image/jpeg', 0.92
     )
   })
@@ -151,7 +151,7 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
         <div className="px-5 py-4 border-b border-cream-200 dark:border-cream-300">
           <h3 id="avatar-crop-title" className="font-bold text-base" style={{ color: '#f1f5fb' }}>Profil Fotoğrafı</h3>
           <p className="text-xs mt-0.5" style={{ color: '#fde9a5' }}>
-            Foto yükle → kare bölgeyi sürükle → kullan.
+            Foto yükle kare bölgeyi sürükle kullan.
           </p>
         </div>
 

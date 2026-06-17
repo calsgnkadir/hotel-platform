@@ -365,7 +365,7 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
               style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
               {loading
                 ? (isEdit ? 'Güncelleniyor...' : 'Oluşturuluyor...')
-                : (isEdit ? 'Güncelle' : 'İlan Oluştur →')}
+                : (isEdit ? 'Güncelle' : 'İlan Oluştur')}
             </button>
           </div>
         </form>

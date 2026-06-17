@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
-    // F0.2: Backend'i bilgilendir → refresh token DB'de revoke + cookie sil
+    // F0.2: Backend'i bilgilendir refresh token DB'de revoke + cookie sil
     try { await api.post('/api/auth/logout') } catch { /* sessiz */ }
     presenceUnsubscribe()
     wsDisconnect()

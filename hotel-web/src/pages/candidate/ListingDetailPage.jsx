@@ -24,10 +24,10 @@ const POSITION_LABELS = {
 const JOB_TYPE_LABELS = { PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı' }
 const BUSINESS_TYPE_LETTER = { HOTEL: 'H', RESTAURANT: 'R', CAFE: 'C', BAR: 'B', CLUB: 'K' }
 const SHIFT_INFO = {
-  MORNING: { label: 'Sabah', icon: '☀', time: '08:00–16:00' },
-  EVENING: { label: 'Akşam', icon: '🌆', time: '16:00–24:00' },
-  NIGHT:   { label: 'Gece',  icon: '🌙', time: '22:00–08:00' },
-  FLEXIBLE:{ label: 'Esnek', icon: '⏰', time: 'Esnek saatler' },
+  MORNING: { label: 'Sabah', icon: '', time: '08:00–16:00' },
+  EVENING: { label: 'Akşam', icon: '', time: '16:00–24:00' },
+  NIGHT:   { label: 'Gece',  icon: '', time: '22:00–08:00' },
+  FLEXIBLE:{ label: 'Esnek', icon: '', time: 'Esnek saatler' },
 }
 
 export default function ListingDetailPage() {
@@ -271,7 +271,7 @@ export default function ListingDetailPage() {
               ? 'linear-gradient(135deg, #d4a853, #d4a853)'
               : '#6b7280',
               boxShadow: '0 8px 32px rgba(212, 168, 83,0.45)' }}>
-            {hasFuture ? 'Bu İlana Başvur →' : 'Süresi Doldu'}
+            {hasFuture ? 'Bu İlana Başvur' : 'Süresi Doldu'}
           </button>
         </div>
       </main>

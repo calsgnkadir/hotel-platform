@@ -20,7 +20,7 @@ export default function NotFoundPage() {
         <Link to="/"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-semibold shadow-sm transition-all hover:-translate-y-0.5"
           style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
-          ← Ana Sayfaya Dön
+          Ana Sayfaya Dön
         </Link>
       </div>
     </div>

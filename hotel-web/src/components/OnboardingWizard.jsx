@@ -246,7 +246,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                   boxShadow: '0 0 20px rgba(212, 168, 83, 0.45)',
                 }}
               >
-                {step.cta} →
+                {step.cta}
               </button>
             )}
             <button
@@ -266,7 +266,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                     }
               }
             >
-              {isLast ? 'Başlayalım →' : 'İleri'}
+              {isLast ? 'Başlayalım' : 'İleri'}
             </button>
             {!isLast && (
               <button

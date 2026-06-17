@@ -3,7 +3,7 @@ import { DEFAULT_HOURS, WEEKDAYS } from '../lib/constants'
 /**
  * İşletme açık/kapalı + saat aralığı editörü.
  * 7 günün her biri için açık/kapalı + start/end saat.
- * "Pazartesi → tüm günlere uygula" hızlı kopyalama.
+ * "Pazartesi tüm günlere uygula" hızlı kopyalama.
  */
 export default function WorkingHoursEditor({ value, onChange }) {
   const hours = value || DEFAULT_HOURS

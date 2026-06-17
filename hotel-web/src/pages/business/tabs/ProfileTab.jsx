@@ -287,7 +287,7 @@ export default function ProfileTab() {
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 font-bebas text-base tracking-wider uppercase text-white rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
           style={{ background: 'linear-gradient(135deg, #1e3a5f, #b8902d)', boxShadow: '0 0 18px rgba(212, 168, 83, 0.40)' }}>
-          {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet →'}
+          {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
       </div>
     </form>

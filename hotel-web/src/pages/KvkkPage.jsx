@@ -129,7 +129,7 @@ export default function KvkkPage() {
                   color: '#ffffff',
                   boxShadow: '0 0 18px rgba(212, 168, 83, 0.40)',
                 }}>
-            Kayıt sayfasına dön →
+            Kayıt sayfasına dön
           </Link>
         </div>
       </div>

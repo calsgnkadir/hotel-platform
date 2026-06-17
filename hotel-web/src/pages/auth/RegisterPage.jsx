@@ -144,7 +144,7 @@ export default function RegisterPage() {
                   <div className="font-bold text-sm text-white truncate">{opt.title}</div>
                   <div className="text-[11px] text-ink-400 mt-0.5 truncate">{opt.desc}</div>
                 </div>
-                <span className="text-ink-600 group-hover:text-brand-700 group-hover:translate-x-1 transition-all">→</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5 text-ink-600 group-hover:text-brand-700 group-hover:translate-x-1 transition-all"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
               </button>
             ))}
 
@@ -164,7 +164,7 @@ export default function RegisterPage() {
             <div className="flex items-center gap-2 mb-2">
               <button type="button" onClick={() => setStep(1)}
                 className="text-[12px] font-semibold text-ink-500 hover:text-white flex items-center gap-1 transition-colors">
-                ← Geri
+                Geri
               </button>
               <span className="ml-auto text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full text-emerald-300 bg-emerald-950/40 border border-emerald-900/60">
                 {selectedRole === 'CANDIDATE' ? 'Aday' : 'İşletme Sahibi'}
@@ -314,7 +314,7 @@ export default function RegisterPage() {
                   </svg>
                   Kaydediliyor...
                 </span>
-              ) : 'Hesap Oluştur →'}
+              ) : 'Hesap Oluştur'}
             </button>
 
             <p className="text-sm text-center text-ink-400">

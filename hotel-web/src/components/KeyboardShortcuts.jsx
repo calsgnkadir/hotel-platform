@@ -5,13 +5,13 @@ import { useAuth } from '../context/AuthContext'
 /**
  * FAZ 5.10 — Klavye kisayollari
  *
- * ?         → Yardim modal ac
- * g + o     → Genel Bakis
- * g + l     → Ilanlar / Ilanlarim
- * g + a     → Basvurular / Gelen Basvurular
- * g + m     → Mesajlar
- * g + p     → Profilim
- * Esc       → Modal kapat
+ * ?         Yardim modal ac
+ * g + o     Genel Bakis
+ * g + l     Ilanlar / Ilanlarim
+ * g + a     Basvurular / Gelen Basvurular
+ * g + m     Mesajlar
+ * g + p     Profilim
+ * Esc       Modal kapat
  *
  * Input/textarea/contenteditable icindeyken devre disi.
  */

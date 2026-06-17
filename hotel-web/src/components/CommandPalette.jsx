@@ -218,8 +218,8 @@ export default function CommandPalette() {
         <div className="px-4 py-2 border-t text-[10px] flex items-center gap-4"
              style={{ borderColor: 'var(--border-subtle, #ebe0cc)', color: 'var(--text-muted, #766c61)' }}>
           <span className="flex items-center gap-1.5">
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>↑</kbd>
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>↓</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>Yukari</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>Asagi</kbd>
             <span>gezin</span>
           </span>
           <span className="flex items-center gap-1.5">

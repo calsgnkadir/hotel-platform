@@ -1,14 +1,14 @@
 /**
  * FAZ 1/#34 — Profile Completeness Card
  *
- * Profil ne kadar dolu → progress bar + eksik alan listesi.
+ * Profil ne kadar dolu progress bar + eksik alan listesi.
  * %100 olunca kutlama mesajı.
  */
 export default function ProfileCompletenessCard({ data }) {
   if (!data) return null
   const { percentage, missing } = data
 
-  // Renk: kırmızı → sarı → mor (mor seviye 70+)
+  // Renk: kırmızı sarı mor (mor seviye 70+)
   const color =
     percentage >= 90 ? '#16a34a' :     // yeşil
     percentage >= 70 ? '#1e3a5f' :     // mor (brand)

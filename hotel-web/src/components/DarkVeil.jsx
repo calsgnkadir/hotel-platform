@@ -101,7 +101,7 @@ const DarkVeil = React.memo(function DarkVeil({
   const ref = useRef(null)
 
   useEffect(() => {
-    // prefers-reduced-motion → shader'i baslatma (CPU/GPU savings)
+    // prefers-reduced-motion shader'i baslatma (CPU/GPU savings)
     if (typeof window !== 'undefined' &&
         window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

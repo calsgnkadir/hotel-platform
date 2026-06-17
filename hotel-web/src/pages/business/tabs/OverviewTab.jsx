@@ -43,7 +43,7 @@ export default function OverviewTab({ applications, onTabChange }) {
         <div className="card-header">
           <h2 className="font-semibold text-ink-800 dark:text-ink-900">Son Başvurular</h2>
           <button onClick={() => onTabChange('applications')}
-            className="text-xs font-medium text-brand-700 dark:text-brand-700">Tümünü Gör →</button>
+            className="text-xs font-medium text-brand-700 dark:text-brand-700">Tümünü Gör</button>
         </div>
         {applications.length === 0 ? (
           <EmptyState

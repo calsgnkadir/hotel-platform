@@ -309,11 +309,11 @@ export default function BusinessPublicPage() {
                     <button onClick={() => setGalleryIndex(i => (i - 1 + photos.length) % photos.length)}
                             className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-white text-lg"
                             style={{ background: 'rgba(15, 23, 38, 0.65)', border: '1px solid rgba(212, 168, 83, 0.30)' }}
-                            aria-label="Önceki foto">←</button>
+                            aria-label="Önceki foto"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></button>
                     <button onClick={() => setGalleryIndex(i => (i + 1) % photos.length)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-white text-lg"
                             style={{ background: 'rgba(15, 23, 38, 0.65)', border: '1px solid rgba(212, 168, 83, 0.30)' }}
-                            aria-label="Sonraki foto">→</button>
+                            aria-label="Sonraki foto"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg></button>
                   </>
                 )}
                 <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold"
@@ -337,7 +337,7 @@ export default function BusinessPublicPage() {
                      target="_blank" rel="noopener noreferrer"
                      className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
                      style={{ background: 'rgba(212, 168, 83, 0.18)', color: '#fde9a5', border: '1px solid rgba(212, 168, 83, 0.30)' }}>
-                    Google Maps →
+                    Google Maps
                   </a>
                 )}
               </div>
@@ -479,7 +479,7 @@ export default function BusinessPublicPage() {
                   color: '#fff',
                   boxShadow: '0 0 18px rgba(212, 168, 83, 0.40)',
                 }}>
-                Profili Paylaş →
+                Profili Paylaş
               </button>
             </aside>
           </div>

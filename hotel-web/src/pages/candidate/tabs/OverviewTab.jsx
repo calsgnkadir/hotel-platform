@@ -294,7 +294,13 @@ function StatCard({ label, value, color, data, icon, delta, cornerStyle = 0, del
                   color:      delta > 0 ? '#86efac' : '#fca5a5',
                   border: `1px solid ${delta > 0 ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
                 }}>
-            {delta > 0 ? '↗' : '↘'} {Math.abs(delta)}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth={2.5} className="w-3 h-3">
+              {delta > 0
+                ? <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                : <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />}
+            </svg>
+            {Math.abs(delta)}
           </motion.span>
         )}
       </div>

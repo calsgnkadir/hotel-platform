@@ -78,7 +78,7 @@ export default function HistoryTab({ applications, onOpenMessages }) {
             ? '—'
             : firstDate === lastDate
               ? new Date(firstDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
-              : `${new Date(firstDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} → ${new Date(lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}`
+              : `${new Date(firstDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${new Date(lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}`
 
           return (
             <div key={app.id} className="card">

@@ -63,9 +63,9 @@ const SENSITIVE_DOC_TYPES = Object.keys(SENSITIVE_DOC_LABELS)
 /* ── Apply Modal (Chat refactor v2) ──
    Akış:
    1) Aday slotu seçer + ön yazı yazar + ekstra dosya (opsiyonel) seçer
-   2) "Başvur" → POST /applications → backend conversation açar + sistem mesajı atar
+   2) "Başvur" POST /applications backend conversation açar + sistem mesajı atar
    3) Seçili dosyalar conversation'a attachment mesajı olarak yüklenir
-   4) /candidate → mesajlar sekmesine yönlendir (conversationId query ile)
+   4) /candidate mesajlar sekmesine yönlendir (conversationId query ile)
 */
 export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   const [coverLetter, setCoverLetter] = useState('')
@@ -86,11 +86,11 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   // Bugün başlayan ama saat geçmiş vardiyaya başvuru engellenir.
   function isPastSlot(s) {
     if (!s.date) return false
-    if (s.date < todayStr) return true                  // dünden eski → geçmiş
-    if (s.date > todayStr) return false                 // yarın+ → gelecek
+    if (s.date < todayStr) return true                  // dünden eski geçmiş
+    if (s.date > todayStr) return false                 // yarın+ gelecek
     // Bugünse saat karşılaştır
     if (!s.startTime) return false                      // saat yoksa kabul
-    const startHHMM = String(s.startTime).slice(0, 5)   // 14:00:00 → 14:00
+    const startHHMM = String(s.startTime).slice(0, 5)   // 14:00:00 14:00
     const nowHHMM = new Date().toTimeString().slice(0, 5)
     return startHHMM <= nowHHMM
   }
@@ -127,7 +127,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
 
     setLoading(true)
     try {
-      // 1) Application gönder → backend conversation açar + sistem mesajı yazar
+      // 1) Application gönder backend conversation açar + sistem mesajı yazar
       const appResp = await hotelApi.applyToListing({
         jobListingId: listing.id,
         coverLetter,
@@ -320,7 +320,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             <button type="submit" disabled={loading || !hasFutureSlots}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
               style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
-              {loading ? 'Gönderiliyor...' : !hasFutureSlots ? 'Süresi Doldu' : 'Başvur →'}
+              {loading ? 'Gönderiliyor...' : !hasFutureSlots ? 'Süresi Doldu' : 'Başvur'}
             </button>
           </div>
         </form>
@@ -505,7 +505,7 @@ function DetailModal({ listing, onClose, onApply }) {
             disabled={!detailHasFuture}
             className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
             style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
-            {detailHasFuture ? 'Başvur →' : 'Süresi Doldu'}
+            {detailHasFuture ? 'Başvur' : 'Süresi Doldu'}
           </button>
         </div>
       </div>
@@ -635,7 +635,7 @@ function ListingCard({ listing, onApply, onDetail }) {
             className="flex-1 py-2 px-3 text-sm font-bold text-white rounded-lg
                        transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #d4a853, #d4a853)', boxShadow: '0 4px 16px rgba(212, 168, 83,0.40)' }}>
-            Başvur →
+            Başvur
           </button>
         </div>
       </div>
@@ -668,7 +668,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   const [customFrom, setCustomFrom] = useState('')
   const [customTo,   setCustomTo]   = useState('')
 
-  // Preset → dateFrom/dateTo (YYYY-MM-DD)
+  // Preset dateFrom/dateTo (YYYY-MM-DD)
   const dateRange = (() => {
     const today = new Date()
     const fmt = (d) => d.toISOString().split('T')[0]
