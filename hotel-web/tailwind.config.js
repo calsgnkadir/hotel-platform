@@ -14,6 +14,8 @@ export default {
         display: ['Fraunces', 'Georgia', 'serif'],
         // FAZ 5.4 — WordPlay benchmark: stratejik kelime vurgusu icin
         bebas:   ['"Bebas Neue"', 'Impact', 'sans-serif'],
+        // FAZ Auth Redesign — modern geometrik, premium SaaS hissi
+        geist:   ['Geist', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         // ── PRIMARY: Koyu lacivert (hospitality classic)

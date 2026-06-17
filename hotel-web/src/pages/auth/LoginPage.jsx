@@ -1,254 +1,454 @@
 import { useForm } from 'react-hook-form'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
-import BackButton from '../../components/BackButton'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
-import HeroHeading from '../../components/HeroHeading'
 
 /**
- * Login v3 — Hospitality Concierge dili:
- *  - Krem zemin + beyaz card
- *  - Fraunces "giriş yap" başlığı
- *  - Terracotta CTA
+ * Login Redesign — "Geist + glass + mouse parallax"
+ *
+ * Sade ama derin: tek merkez cam kart, animasyonlu mesh gradient + altın
+ * parçacık zemin, floating label input, spring micro-interactions, parallax tilt.
+ * Hero panel YOK — odak tek noktada.
  */
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const { register, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm()
+  const [shake, setShake] = useState(0)
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm()
+  // Mouse parallax — kart hafifçe mouse'a tepki versin
+  const cardRef = useRef(null)
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const rotateX = useSpring(useTransform(my, [-0.5, 0.5], [4, -4]),  { stiffness: 150, damping: 30 })
+  const rotateY = useSpring(useTransform(mx, [-0.5, 0.5], [-4, 4]),  { stiffness: 150, damping: 30 })
+
+  function onMove(e) {
+    if (!cardRef.current) return
+    const r = cardRef.current.getBoundingClientRect()
+    mx.set((e.clientX - r.left) / r.width  - 0.5)
+    my.set((e.clientY - r.top)  / r.height - 0.5)
+  }
+  function onLeave() { mx.set(0); my.set(0) }
 
   async function onSubmit(data) {
     try {
       const result = await login(data.email, data.password)
       const redirectTo = location.state?.from?.pathname
-      if (redirectTo) {
-        navigate(redirectTo, { replace: true })
-      } else if (result.role === 'CANDIDATE') {
-        navigate('/candidate', { replace: true })
-      } else if (result.role === 'BUSINESS_OWNER') {
-        navigate('/business', { replace: true })
-      } else if (result.role === 'ADMIN') {
-        navigate('/admin', { replace: true })
-      }
-      toast.success(`Hoş geldin, ${result.fullName}!`)
+      if (redirectTo) navigate(redirectTo, { replace: true })
+      else if (result.role === 'CANDIDATE')      navigate('/candidate', { replace: true })
+      else if (result.role === 'BUSINESS_OWNER') navigate('/business',  { replace: true })
+      else if (result.role === 'ADMIN')          navigate('/admin',     { replace: true })
+      toast.success(`Hoş geldin, ${result.fullName.split(' ')[0]}.`)
     } catch (err) {
+      setShake(n => n + 1)
       toast.error(extractErrorMessage(err))
     }
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: '#0c1726' }}>
-      {/* Calm radial halo arka plan */}
-      <div aria-hidden className="absolute inset-0 pointer-events-none"
-           style={{
-             background:
-               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(30, 58, 95, 0.20) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(212, 168, 83, 0.10) 0%, transparent 60%)',
-           }} />
+    <div className="min-h-screen relative overflow-hidden font-geist" style={{ background: '#0a1220' }}>
+      <AmbientBackdrop />
 
-      {/* Geri butonu — sol üst, sabit */}
-      <div className="absolute top-4 left-4 z-30">
-        <BackButton to="/" label="Geri" />
-      </div>
-
-      {/* 2-sutun split-screen */}
-      <div className="relative z-10 min-h-screen grid lg:grid-cols-2">
-        {/* SOL — Form */}
-        <main className="flex items-center justify-center px-4 sm:px-10 py-16">
-          <div className="w-full max-w-sm">
-            <div className="mb-8">
-              <Link to="/" className="inline-flex items-baseline gap-2 mb-10">
-                <span className="font-bebas font-bold text-2xl tracking-wider text-white">AJANSHOTEL</span>
-                <span className="text-[9px] uppercase tracking-[0.18em]" style={{ color: '#fde9a5' }}>istanbul</span>
-              </Link>
-              <HeroHeading size="sm" align="left" className="hero-glow !leading-none">
-                <span className="text-white">Giriş Yap</span>
-              </HeroHeading>
-              <p className="text-sm mt-3" style={{ color: '#8ba9d2' }}>
-                Kaldığın yerden devam et.
-              </p>
-            </div>
-
-            <div className="space-y-5">
-            <GoogleSignInButton label="Google ile Devam Et" />
-
-            <div className="flex items-center gap-3 my-5">
-              <span className="flex-1 h-px" style={{ background: 'rgba(212, 168, 83, 0.2)' }} />
-              <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#8ba9d2' }}>veya</span>
-              <span className="flex-1 h-px" style={{ background: 'rgba(212, 168, 83, 0.2)' }} />
-            </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label className="label">E-posta</label>
-                <input
-                  type="email"
-                  className="input"
-                  placeholder="ornek@email.com"
-                  {...register('email', {
-                    required: 'E-posta zorunlu',
-                    pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Geçerli bir e-posta girin' },
-                  })}
-                />
-                {errors.email && (
-                  <p className="error-text">{errors.email.message}</p>
-                )}
-              </div>
-
-              <div>
-                <div className="flex items-baseline justify-between mb-1.5">
-                  <label className="label !mb-0">Şifre</label>
-                  <Link to="/forgot-password"
-                    className="text-[11px] font-semibold text-brand-700 hover:text-brand-800 transition-colors">
-                    Şifremi unuttum
-                  </Link>
-                </div>
-                <input
-                  type="password"
-                  className="input"
-                  placeholder="••••••••"
-                  {...register('password', {
-                    required: 'Şifre zorunlu',
-                    minLength: { value: 8, message: 'En az 8 karakter' },
-                  })}
-                />
-                {errors.password && (
-                  <p className="error-text">{errors.password.message}</p>
-                )}
-              </div>
-
-              <button type="submit" disabled={isSubmitting} className="btn-primary mt-2">
-                {isSubmitting ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                    </svg>
-                    Giriş yapılıyor...
-                  </>
-                ) : (
-                  <>
-                    Giriş Yap
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                         strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                    </svg>
-                  </>
-                )}
-              </button>
-            </form>
-
-            <p className="text-[12px] text-center mt-6" style={{ color: '#fde9a5' }}>
-              Hesabın yok mu?{' '}
-              <Link to="/register" className="font-bold transition-colors hover:underline"
-                    style={{ color: '#f7c43c' }}>
-                Ücretsiz kayıt ol
-              </Link>
-            </p>
-          </div>
-
-          <div className="mt-8 rounded-xl p-4 border"
-               style={{ background: 'rgba(212, 168, 83, 0.05)', borderColor: 'rgba(212, 168, 83, 0.12)' }}>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#fde9a5' }}>
-              Demo Hesaplar
-            </p>
-            <div className="space-y-1.5 text-[12px] font-mono">
-              <DemoRow k="Aday"     v="demo-aday1@test.com" />
-              <DemoRow k="İşletme"  v="demo-isletme1@test.com" />
-              <DemoRow k="Şifre"    v="Demo1234!" />
-            </div>
-          </div>
-          </div>
-        </main>
-
-        {/* SAĞ — Hospitality value-prop paneli (kendi orijinal kompozisyon) */}
-        <aside className="hidden lg:flex relative items-center justify-center px-12 py-16 border-l"
-               style={{ borderColor: 'rgba(212, 168, 83, 0.10)' }}>
-          {/* Sag panel'e ozel halo */}
-          <div aria-hidden className="absolute inset-0 pointer-events-none"
+      {/* Merkez kart konteyneri — mouse parallax buradan dinlenir */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12"
+           onMouseMove={onMove} onMouseLeave={onLeave}>
+        <motion.div
+          ref={cardRef}
+          key={shake}
+          initial={{ opacity: 0, y: 24, scale: 0.97 }}
+          animate={{
+            opacity: 1, y: 0, scale: 1,
+            x: shake > 0 ? [0, -8, 8, -6, 6, -3, 3, 0] : 0,
+          }}
+          transition={{
+            opacity: { duration: 0.5 },
+            y:       { type: 'spring', stiffness: 110, damping: 16 },
+            scale:   { type: 'spring', stiffness: 110, damping: 16 },
+            x:       { duration: 0.45 },
+          }}
+          style={{ rotateX, rotateY, transformPerspective: 1100 }}
+          className="w-full max-w-md relative"
+        >
+          {/* Animasyonlu altın hat gradient border (conic) */}
+          <div aria-hidden className="absolute -inset-px rounded-[28px] opacity-90 pointer-events-none"
                style={{
-                 background:
-                   'radial-gradient(circle 500px at 60% 40%, rgba(212, 168, 83, 0.14) 0%, transparent 60%),' +
-                   'radial-gradient(circle 400px at 30% 80%, rgba(212, 168, 83, 0.10) 0%, transparent 60%)',
+                 background: 'conic-gradient(from 0deg, transparent 0%, rgba(212,168,83,0.45) 12%, transparent 32%, rgba(212,168,83,0.30) 60%, transparent 78%)',
+                 animation: 'spin 14s linear infinite',
+                 filter: 'blur(0.5px)',
                }} />
+          <div className="relative rounded-[27px] p-8 sm:p-10"
+               style={{
+                 background: 'linear-gradient(180deg, rgba(15, 23, 38, 0.78) 0%, rgba(12, 23, 38, 0.85) 100%)',
+                 backdropFilter: 'blur(28px) saturate(140%)',
+                 WebkitBackdropFilter: 'blur(28px) saturate(140%)',
+                 border: '1px solid rgba(212, 168, 83, 0.14)',
+                 boxShadow: '0 24px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)',
+               }}>
+            <Stagger>
+              {/* Brand */}
+              <motion.div variants={ITEM} className="flex items-center justify-between mb-10">
+                <Link to="/" className="flex items-baseline gap-2">
+                  <span className="font-bebas text-2xl tracking-wider text-white">AJANSHOTEL</span>
+                  <span className="text-[9px] uppercase tracking-[0.22em]" style={{ color: '#fde9a5' }}>istanbul</span>
+                </Link>
+                <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em]"
+                      style={{ color: 'rgba(253, 233, 165, 0.55)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#d4a853' }} />
+                  giriş
+                </span>
+              </motion.div>
 
-          <div className="relative z-10 max-w-md">
-            {/* Canli rozet */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-8"
-                 style={{ background: 'rgba(212, 168, 83, 0.10)', border: '1px solid rgba(212, 168, 83, 0.25)' }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#f7c43c' }} />
-              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#fde9a5' }}>
-                İstanbul Canlı
-              </span>
-            </div>
+              {/* Başlık */}
+              <motion.h1 variants={ITEM}
+                className="text-3xl sm:text-[34px] leading-[1.05] mb-2"
+                style={{ color: '#f8f6f4', fontWeight: 500, letterSpacing: '-0.02em' }}>
+                Tekrar <em className="not-italic" style={{
+                  fontWeight: 600,
+                  background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                }}>hoş geldin</em>.
+              </motion.h1>
+              <motion.p variants={ITEM} className="text-sm mb-8" style={{ color: '#8ba9d2', fontWeight: 400 }}>
+                E-posta adresinle devam et.
+              </motion.p>
 
-            {/* Buyuk Bebas baslik */}
-            <HeroHeading size="lg" align="left" className="!leading-[0.92]">
-              <span className="block text-white">Şehrin</span>
-              <span className="block hero-glow" style={{
-                background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>Vardiyası</span>
-              <span className="block text-white">Hiç Durmuyor</span>
-            </HeroHeading>
+              {/* Google */}
+              <motion.div variants={ITEM}>
+                <GoogleSignInButton label="Google ile devam et" />
+              </motion.div>
 
-            <p className="mt-6 mb-10 text-sm leading-relaxed" style={{ color: '#fde9a5' }}>
-              Otel, restoran, kafe — sabah müsait olduğun saatler birinin
-              akşam doldurmaya çalıştığı bir vardiya. Aradaki köprü AjansHotel.
-            </p>
+              <motion.div variants={ITEM} className="flex items-center gap-3 my-6">
+                <span className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,168,83,0.18), transparent)' }} />
+                <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'rgba(253, 233, 165, 0.45)' }}>veya</span>
+                <span className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,168,83,0.18), transparent)' }} />
+              </motion.div>
 
-            {/* 3 stat row — Bebas + ince mor cizgi */}
-            <div className="space-y-5">
-              {[
-                { num: '127',   label: 'Aday bu hafta vardiyaya çıktı' },
-                { num: '8 sa',  label: 'Ortalama ilk eşleşme süresi' },
-                { num: '%94',   label: 'Başvuru sonrası memnuniyet (son 30 gün)' },
-              ].map((s, i) => (
-                <div key={i} className="flex items-baseline gap-4 pb-4"
-                     style={{ borderBottom: i < 2 ? '1px solid rgba(212, 168, 83, 0.12)' : 'none' }}>
-                  <span className="font-bebas text-4xl tracking-wider"
-                        style={{
-                          color: '#ffffff',
-                          textShadow: '0 0 18px rgba(212, 168, 83, 0.35)',
-                          minWidth: '90px',
-                        }}>
-                    {s.num}
-                  </span>
-                  <span className="text-xs uppercase tracking-wider" style={{ color: '#8ba9d2' }}>
-                    {s.label}
-                  </span>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <motion.div variants={ITEM}>
+                  <FloatingInput
+                    label="E-posta"
+                    type="email"
+                    autoComplete="email"
+                    error={errors.email?.message}
+                    value={watch('email')}
+                    registration={register('email', {
+                      required: 'E-posta zorunlu',
+                      pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Geçerli bir e-posta girin' },
+                    })}
+                  />
+                </motion.div>
+
+                <motion.div variants={ITEM}>
+                  <FloatingInput
+                    label="Şifre"
+                    type="password"
+                    autoComplete="current-password"
+                    error={errors.password?.message}
+                    value={watch('password')}
+                    registration={register('password', {
+                      required: 'Şifre zorunlu',
+                      minLength: { value: 8, message: 'En az 8 karakter' },
+                    })}
+                    trailing={
+                      <Link to="/forgot-password"
+                        className="text-[11px] font-medium transition-colors"
+                        style={{ color: 'rgba(253, 233, 165, 0.75)' }}>
+                        Unuttum?
+                      </Link>
+                    }
+                  />
+                </motion.div>
+
+                <motion.div variants={ITEM} className="pt-2">
+                  <SubmitButton submitting={isSubmitting}>Giriş yap</SubmitButton>
+                </motion.div>
+              </form>
+
+              <motion.p variants={ITEM} className="text-[13px] text-center mt-6"
+                        style={{ color: 'rgba(253, 233, 165, 0.7)' }}>
+                Hesabın yok mu?{' '}
+                <Link to="/register" className="relative font-semibold group"
+                      style={{ color: '#f7c43c' }}>
+                  Ücretsiz oluştur
+                  <span aria-hidden className="absolute left-0 -bottom-0.5 h-px w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+                        style={{ background: '#f7c43c' }} />
+                </Link>
+              </motion.p>
+
+              <motion.details variants={ITEM} className="mt-8 group">
+                <summary className="cursor-pointer text-[10px] uppercase tracking-[0.3em] flex items-center gap-2 select-none"
+                         style={{ color: 'rgba(139, 169, 210, 0.65)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" strokeWidth={1.8} className="w-3 h-3 transition-transform group-open:rotate-90">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                  </svg>
+                  Demo hesaplar
+                </summary>
+                <div className="mt-3 space-y-1.5 text-[12px]" style={{ fontFamily: '"Geist Mono", monospace' }}>
+                  <DemoRow k="Aday"    v="aday1@test.com" />
+                  <DemoRow k="İşletme" v="isletme1@test.com" />
+                  <DemoRow k="Şifre"   v="Password123!" />
                 </div>
-              ))}
-            </div>
-
-            {/* Imza */}
-            <p className="mt-12 text-[10px] uppercase tracking-[0.3em]" style={{ color: '#234a82' }}>
-              AjansHotel · İstanbul Hospitality Network
-            </p>
+              </motion.details>
+            </Stagger>
           </div>
-        </aside>
+        </motion.div>
       </div>
+
+      {/* Yerel keyframe */}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
+        @keyframes drift-a { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(40px,-30px) scale(1.05) } }
+        @keyframes drift-b { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(-30px,40px) scale(0.95) } }
+        @keyframes drift-c { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(20px,30px) scale(1.08) } }
+        @keyframes float-particle {
+          0%   { transform: translateY(0) translateX(0); opacity: 0 }
+          10%  { opacity: 0.9 }
+          90%  { opacity: 0.9 }
+          100% { transform: translateY(-100vh) translateX(40px); opacity: 0 }
+        }
+      `}</style>
     </div>
   )
 }
 
+/* ───── Stagger orchestrator ───── */
+const ITEM = {
+  hidden:  { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 180, damping: 22 } },
+}
+function Stagger({ children }) {
+  return (
+    <motion.div
+      initial="hidden" animate="visible"
+      variants={{ visible: { transition: { staggerChildren: 0.07, delayChildren: 0.2 } } }}>
+      {children}
+    </motion.div>
+  )
+}
+
+/* ───── Floating label input ───── */
+function FloatingInput({ label, type = 'text', autoComplete, error, value, registration, trailing }) {
+  const [focused, setFocused] = useState(false)
+  const [showPwd, setShowPwd] = useState(false)
+  const isPwd = type === 'password'
+  const effectiveType = isPwd && showPwd ? 'text' : type
+  const filled = !!(value && String(value).length > 0)
+  const lifted = focused || filled
+
+  return (
+    <div className="relative">
+      <motion.div
+        animate={{
+          borderColor: error
+            ? 'rgba(248, 113, 113, 0.55)'
+            : focused
+              ? 'rgba(212, 168, 83, 0.55)'
+              : 'rgba(212, 168, 83, 0.14)',
+          boxShadow: focused
+            ? '0 0 0 4px rgba(212, 168, 83, 0.10), 0 8px 24px rgba(0,0,0,0.20)'
+            : '0 0 0 0px rgba(212, 168, 83, 0)',
+        }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        className="relative rounded-2xl"
+        style={{
+          background: 'rgba(10, 18, 32, 0.55)',
+          border: '1px solid',
+        }}
+      >
+        <input
+          {...registration}
+          type={effectiveType}
+          autoComplete={autoComplete}
+          onFocus={(e) => { setFocused(true);  registration.onBlur && null }}
+          onBlur={(e)  => { setFocused(false); registration.onBlur(e) }}
+          placeholder=" "
+          className="peer w-full bg-transparent outline-none text-[15px] px-4 pt-6 pb-2 text-white tracking-normal"
+          style={{ caretColor: '#d4a853' }}
+        />
+        <motion.label
+          animate={{
+            y:        lifted ? -8  : 4,
+            scale:    lifted ? 0.82 : 1,
+            color:    error ? '#fca5a5' : (focused ? '#fde9a5' : 'rgba(139, 169, 210, 0.85)'),
+          }}
+          transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+          className="absolute left-4 top-3 text-[13px] origin-left pointer-events-none"
+          style={{ letterSpacing: lifted ? '0.18em' : '0', textTransform: lifted ? 'uppercase' : 'none', fontWeight: lifted ? 600 : 400 }}
+        >
+          {label}
+        </motion.label>
+
+        {/* Trailing area: pwd toggle veya custom link */}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          {isPwd && (
+            <button type="button" tabIndex={-1}
+              onClick={() => setShowPwd(s => !s)}
+              className="w-7 h-7 grid place-items-center rounded-full hover:bg-white/5 transition-colors"
+              aria-label={showPwd ? 'Şifreyi gizle' : 'Şifreyi göster'}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   stroke="rgba(253, 233, 165, 0.75)" strokeWidth={1.6} className="w-4 h-4">
+                {showPwd ? (
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.243 4.243L9.88 9.88" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                )}
+                {!showPwd && <circle cx="12" cy="12" r="3" />}
+              </svg>
+            </button>
+          )}
+          {trailing}
+        </div>
+      </motion.div>
+
+      {/* Hata mesajı — yumuşak yükselme */}
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="text-[11px] mt-1.5 ml-1" style={{ color: '#fca5a5' }}>
+          {error}
+        </motion.p>
+      )}
+    </div>
+  )
+}
+
+/* ───── Submit button — spring + loading ───── */
+function SubmitButton({ children, submitting }) {
+  return (
+    <motion.button
+      type="submit" disabled={submitting}
+      whileHover={{ scale: 1.015, y: -1 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+      className="w-full relative rounded-2xl py-3.5 px-6 font-semibold text-[14px] tracking-wide overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      style={{
+        background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+        color: '#1a1208',
+        boxShadow: '0 8px 24px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.30)',
+      }}
+    >
+      {/* Sheen sweep */}
+      <span aria-hidden className="absolute inset-y-0 -left-1/3 w-1/3 pointer-events-none"
+            style={{
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent)',
+              transform: 'skewX(-20deg)',
+              animation: 'shimmer 2.6s ease-in-out infinite',
+            }} />
+      {submitting ? (
+        <>
+          <Dot delay="0ms" /><Dot delay="120ms" /><Dot delay="240ms" />
+        </>
+      ) : (
+        <>
+          <span>{children}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth={2.5} className="w-4 h-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+        </>
+      )}
+    </motion.button>
+  )
+}
+function Dot({ delay }) {
+  return (
+    <span className="w-1.5 h-1.5 rounded-full" style={{
+      background: '#1a1208',
+      animation: `bounce 0.9s ease-in-out infinite`,
+      animationDelay: delay,
+    }} />
+  )
+}
+
+/* ───── Demo row ───── */
 function DemoRow({ k, v }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <span className="text-ink-400 uppercase tracking-wider text-[10px]">{k}</span>
-      <code className="text-ink-800">{v}</code>
+    <div className="flex items-baseline justify-between gap-3 px-3 py-1.5 rounded-md"
+         style={{ background: 'rgba(212, 168, 83, 0.04)' }}>
+      <span className="uppercase tracking-[0.2em] text-[9px]" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>{k}</span>
+      <code style={{ color: '#fde9a5' }}>{v}</code>
     </div>
   )
 }
 
-function WarningIcon() {
+/* ───── Ambient backdrop — gradient blobs + particles + grain ───── */
+function AmbientBackdrop() {
+  // Particles için sabit set (re-render olmasın)
+  const particles = useRef(
+    Array.from({ length: 22 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 20,
+      duration: 14 + Math.random() * 18,
+      size: 1 + Math.random() * 2.5,
+    }))
+  ).current
+
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" className="w-3.5 h-3.5">
-      <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-    </svg>
+    <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* 3 büyük drift gradient blob */}
+      <div className="absolute -top-32 -left-32 w-[640px] h-[640px] rounded-full opacity-60"
+           style={{
+             background: 'radial-gradient(circle, rgba(35, 74, 130, 0.55) 0%, transparent 60%)',
+             animation: 'drift-a 24s ease-in-out infinite',
+             filter: 'blur(40px)',
+           }} />
+      <div className="absolute bottom-[-200px] right-[-180px] w-[640px] h-[640px] rounded-full opacity-50"
+           style={{
+             background: 'radial-gradient(circle, rgba(212, 168, 83, 0.30) 0%, transparent 60%)',
+             animation: 'drift-b 28s ease-in-out infinite',
+             filter: 'blur(50px)',
+           }} />
+      <div className="absolute top-1/3 right-1/4 w-[420px] h-[420px] rounded-full opacity-40"
+           style={{
+             background: 'radial-gradient(circle, rgba(184, 144, 45, 0.25) 0%, transparent 60%)',
+             animation: 'drift-c 32s ease-in-out infinite',
+             filter: 'blur(60px)',
+           }} />
+
+      {/* Soft floor */}
+      <div className="absolute inset-0"
+           style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(212, 168, 83, 0.06) 0%, transparent 50%)' }} />
+
+      {/* Altın parçacıklar */}
+      <div className="absolute inset-0">
+        {particles.map(p => (
+          <span key={p.id}
+            className="absolute rounded-full"
+            style={{
+              left:    `${p.left}%`,
+              bottom:  '-10px',
+              width:   `${p.size}px`,
+              height:  `${p.size}px`,
+              background: 'rgba(212, 168, 83, 0.55)',
+              boxShadow: '0 0 6px rgba(212, 168, 83, 0.55)',
+              animation: `float-particle ${p.duration}s linear infinite`,
+              animationDelay: `${p.delay}s`,
+            }} />
+        ))}
+      </div>
+
+      {/* SVG grain noise overlay — kart cam dokusuna karakter katar */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.035] mix-blend-overlay" aria-hidden>
+        <filter id="auth-noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+          <feColorMatrix values="0 0 0 0 0.83  0 0 0 0 0.66  0 0 0 0 0.33  0 0 0 0.4 0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#auth-noise)" />
+      </svg>
+
+      {/* Vignette */}
+      <div className="absolute inset-0"
+           style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(10, 18, 32, 0.55) 100%)' }} />
+    </div>
   )
 }
