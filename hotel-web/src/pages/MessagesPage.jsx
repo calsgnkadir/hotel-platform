@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
 import toast from 'react-hot-toast'
@@ -32,59 +33,100 @@ function formatTime(iso) {
 
 /* ── Tek sohbet öğesi (sol panel) ── */
 function ConversationItem({ conv, isActive, onClick }) {
-  const online = useOnline(conv.otherPartyId)  // FAZ 1/#60
+  const online = useOnline(conv.otherPartyId)
+  const hasUnread = conv.unreadCount > 0
   return (
-    <button onClick={onClick}
-      className={`w-full text-left px-3 py-3 border-b border-cream-200 dark:border-cream-300 hover:bg-cream-50 dark:hover:bg-slate-800 transition-colors
-        ${isActive ? 'bg-brand-50 dark:bg-brand-900/30' : ''}`}>
-      <div className="flex items-start gap-3">
+    <motion.button onClick={onClick}
+      whileHover={{ x: 2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 360, damping: 24 }}
+      className="relative w-full text-left px-3 py-3 group overflow-hidden rounded-xl"
+      style={{
+        background: isActive
+          ? 'linear-gradient(90deg, rgba(212, 168, 83, 0.10), rgba(212, 168, 83, 0.02))'
+          : 'transparent',
+        marginBottom: 4,
+      }}
+    >
+      {/* Active vertical accent — sol kenar altın */}
+      {isActive && (
+        <motion.span layoutId="conv-active-rail"
+          className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
+          style={{ background: 'linear-gradient(180deg, #f7c43c, #d4a853, #b8902d)',
+                   boxShadow: '0 0 12px rgba(212, 168, 83, 0.55)' }} />
+      )}
+      {/* Hover sweep — altın yumuşak geçiş */}
+      <span aria-hidden className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            style={{ background: 'linear-gradient(90deg, rgba(212, 168, 83, 0.08) 0%, transparent 60%)' }} />
+
+      <div className="relative flex items-start gap-3">
         <div className="relative flex-shrink-0">
           {conv.otherPartyAvatarUrl ? (
             <img src={cldImg(conv.otherPartyAvatarUrl, { w: ImgSize.avatarSm })} alt={conv.otherPartyName}
               loading="lazy" decoding="async"
-              className="w-10 h-10 rounded-full object-cover border border-cream-300" />
+              className="w-10 h-10 rounded-full object-cover"
+              style={{ border: '1px solid rgba(212, 168, 83, 0.25)' }} />
           ) : (
-            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                   strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-ink-400 dark:text-ink-500">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-              </svg>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center font-geist font-semibold text-[15px]"
+                 style={{
+                   background: 'linear-gradient(135deg, rgba(35, 74, 130, 0.65), rgba(30, 58, 95, 0.85))',
+                   border: '1px solid rgba(212, 168, 83, 0.25)',
+                   color: '#fde9a5',
+                 }}>
+              {(conv.otherPartyName || '?').charAt(0).toUpperCase()}
             </div>
           )}
-          {/* FAZ 1/#60 — Online dot sağ alt */}
+          {/* Online pulse */}
           {online && (
-            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white"
-                  title="Çevrimiçi" />
+            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full"
+                  style={{
+                    background: '#22c55e',
+                    border: '2px solid rgba(15, 23, 38, 0.95)',
+                    boxShadow: '0 0 0 2px rgba(34, 197, 94, 0.35)',
+                    animation: 'conv-pulse 2.4s ease-in-out infinite',
+                  }} title="Çevrimiçi" />
           )}
         </div>
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <div className="font-semibold text-sm text-ink-800 dark:text-ink-900 truncate">
+            <div className="font-geist font-semibold text-[13.5px] truncate"
+                 style={{ color: hasUnread ? '#ffffff' : '#e9d5ff', letterSpacing: '-0.01em' }}>
               {conv.otherPartyName}
             </div>
-            <div className="text-[10px] text-ink-400 dark:text-ink-500 flex-shrink-0">
+            <div className="text-[10px] flex-shrink-0 font-geist"
+                 style={{ color: 'rgba(139, 169, 210, 0.7)' }}>
               {formatRelative(conv.lastMessageAt)}
             </div>
           </div>
           {conv.listingTitle && (
-            <div className="text-[10px] text-brand-700 dark:text-brand-700 truncate mt-0.5">
+            <div className="text-[10px] truncate mt-0.5 uppercase tracking-wider font-geist font-semibold"
+                 style={{ color: 'rgba(253, 233, 165, 0.7)' }}>
               {conv.listingTitle}
             </div>
           )}
-          <div className="flex items-center justify-between gap-2 mt-1">
-            <div className={`text-xs truncate ${conv.unreadCount > 0 ? 'text-ink-800 dark:text-ink-900 font-medium' : 'text-ink-500 dark:text-ink-400'}`}>
-              {conv.lastMessagePreview || <span className="italic text-ink-400 dark:text-ink-500">Henüz mesaj yok</span>}
+          <div className="flex items-center justify-between gap-2 mt-1.5">
+            <div className={`text-[12px] truncate font-geist ${hasUnread ? 'font-medium' : 'font-normal'}`}
+                 style={{ color: hasUnread ? '#fde9a5' : 'rgba(139, 169, 210, 0.85)' }}>
+              {conv.lastMessagePreview || <span className="italic" style={{ color: 'rgba(139, 169, 210, 0.5)' }}>Henüz mesaj yok</span>}
             </div>
-            {conv.unreadCount > 0 && (
-              <span className="flex-shrink-0 text-[10px] font-bold text-white rounded-full px-1.5 min-w-[18px] text-center bg-brand-700">
+            {hasUnread && (
+              <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+                className="flex-shrink-0 text-[10px] font-bold rounded-full px-1.5 min-w-[20px] text-center font-geist"
+                style={{
+                  background: 'linear-gradient(135deg, #f7c43c, #d4a853)',
+                  color: '#1a1208',
+                  boxShadow: '0 0 12px rgba(212, 168, 83, 0.45)',
+                }}>
                 {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
-              </span>
+              </motion.span>
             )}
           </div>
         </div>
       </div>
-    </button>
+      <style>{`@keyframes conv-pulse { 0%,100% { box-shadow: 0 0 0 2px rgba(34,197,94,0.35) } 50% { box-shadow: 0 0 0 5px rgba(34,197,94,0.15) } }`}</style>
+    </motion.button>
   )
 }
 
@@ -585,8 +627,45 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center text-ink-400 text-sm">
-        Sohbet seçin
+      <div className="flex-1 flex items-center justify-center px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 140, damping: 18 }}
+          className="text-center max-w-xs"
+        >
+          {/* Floating chat bubble illustrasyonu */}
+          <motion.div
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            className="relative w-24 h-24 mx-auto mb-5"
+          >
+            <div className="absolute inset-0 rounded-full"
+                 style={{
+                   background: 'radial-gradient(circle, rgba(212, 168, 83, 0.25) 0%, transparent 65%)',
+                   filter: 'blur(8px)',
+                 }} />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className="relative w-full h-full">
+              <defs>
+                <linearGradient id="bubble-grad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%"  stopColor="#f7c43c" />
+                  <stop offset="100%" stopColor="#b8902d" />
+                </linearGradient>
+              </defs>
+              <path d="M14 12h32a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H24l-10 8V20a8 8 0 0 1 0-8z"
+                    fill="rgba(15, 23, 38, 0.85)"
+                    stroke="url(#bubble-grad)" strokeWidth="1.5" />
+              <circle cx="24" cy="29" r="2" fill="#fde9a5" opacity="0.9" />
+              <circle cx="32" cy="29" r="2" fill="#fde9a5" opacity="0.9" />
+              <circle cx="40" cy="29" r="2" fill="#fde9a5" opacity="0.9" />
+            </svg>
+          </motion.div>
+          <h3 className="font-geist text-base font-semibold mb-1.5" style={{ color: '#e9d5ff', letterSpacing: '-0.01em' }}>
+            Sohbet seçin
+          </h3>
+          <p className="font-geist text-[12.5px]" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+            Soldan bir sohbet seç veya yeni bir ilana başvur — her başvuru otomatik bir sohbet açar.
+          </p>
+        </motion.div>
       </div>
     )
   }
