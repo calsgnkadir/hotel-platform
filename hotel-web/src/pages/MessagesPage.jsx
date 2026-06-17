@@ -32,6 +32,48 @@ function formatTime(iso) {
 }
 
 /* ── Tek sohbet öğesi (sol panel) ── */
+/* ── Arama kutusu (focus'ta altın glow ring) ── */
+function SearchInput({ value, onChange }) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <motion.div
+      animate={{
+        borderColor: focused ? 'rgba(212, 168, 83, 0.55)' : 'rgba(212, 168, 83, 0.18)',
+        boxShadow: focused
+          ? '0 0 0 3px rgba(212, 168, 83, 0.10), 0 4px 14px rgba(0,0,0,0.20)'
+          : '0 0 0 0px rgba(212, 168, 83, 0)',
+      }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="relative rounded-xl"
+      style={{
+        background: 'rgba(10, 18, 32, 0.55)',
+        border: '1px solid',
+      }}>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+           strokeWidth={1.8} stroke="currentColor"
+           className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+           style={{ color: focused ? '#fde9a5' : 'rgba(139, 169, 210, 0.65)' }}>
+        <path strokeLinecap="round" strokeLinejoin="round"
+              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+      </svg>
+      <input type="text" value={value}
+             onChange={e => onChange(e.target.value)}
+             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+             placeholder="Kişi, ilan veya mesaj…"
+             className="w-full bg-transparent outline-none h-9 pl-8 pr-7 text-[12.5px] font-geist"
+             style={{ color: '#ffffff', caretColor: '#d4a853' }} />
+      {value && (
+        <button type="button" onClick={() => onChange('')}
+                title="Temizle"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 grid place-items-center rounded-full hover:bg-white/5 transition-colors"
+                style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+          ×
+        </button>
+      )}
+    </motion.div>
+  )
+}
+
 function ConversationItem({ conv, isActive, onClick }) {
   const online = useOnline(conv.otherPartyId)
   const hasUnread = conv.unreadCount > 0
@@ -627,22 +669,44 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center px-6">
+      <div className="flex-1 flex items-center justify-center px-6 relative overflow-hidden">
+        {/* Ambient partiküller — yumuşak altın */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none">
+          {[
+            { left: 28, top: 32, size: 3, delay: 0 },
+            { left: 65, top: 22, size: 2, delay: 1.2 },
+            { left: 78, top: 60, size: 2.5, delay: 2.4 },
+            { left: 22, top: 70, size: 2, delay: 3.6 },
+            { left: 50, top: 80, size: 1.8, delay: 0.6 },
+          ].map((p, i) => (
+            <motion.span key={i}
+              animate={{ y: [0, -16, 0], opacity: [0.2, 0.7, 0.2] }}
+              transition={{ duration: 5 + i, repeat: Infinity, ease: 'easeInOut', delay: p.delay }}
+              className="absolute rounded-full"
+              style={{
+                left: `${p.left}%`, top: `${p.top}%`,
+                width: p.size, height: p.size,
+                background: '#d4a853',
+                boxShadow: '0 0 8px #d4a853',
+              }} />
+          ))}
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 140, damping: 18 }}
-          className="text-center max-w-xs"
+          className="text-center max-w-xs relative font-geist"
         >
           {/* Floating chat bubble illustrasyonu */}
           <motion.div
-            animate={{ y: [0, -6, 0] }}
+            animate={{ y: [0, -8, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            className="relative w-24 h-24 mx-auto mb-5"
+            className="relative w-28 h-28 mx-auto mb-6"
           >
             <div className="absolute inset-0 rounded-full"
                  style={{
-                   background: 'radial-gradient(circle, rgba(212, 168, 83, 0.25) 0%, transparent 65%)',
-                   filter: 'blur(8px)',
+                   background: 'radial-gradient(circle, rgba(212, 168, 83, 0.30) 0%, transparent 65%)',
+                   filter: 'blur(12px)',
                  }} />
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className="relative w-full h-full">
               <defs>
@@ -659,10 +723,13 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
               <circle cx="40" cy="29" r="2" fill="#fde9a5" opacity="0.9" />
             </svg>
           </motion.div>
-          <h3 className="font-geist text-base font-semibold mb-1.5" style={{ color: '#e9d5ff', letterSpacing: '-0.01em' }}>
-            Sohbet seçin
+          <h3 className="text-[18px] font-semibold mb-2" style={{ color: '#ffffff', letterSpacing: '-0.015em' }}>
+            <em className="not-italic font-semibold" style={{
+              background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            }}>Sohbet</em> seçin
           </h3>
-          <p className="font-geist text-[12.5px]" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+          <p className="text-[12.5px] leading-relaxed" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
             Soldan bir sohbet seç veya yeni bir ilana başvur — her başvuru otomatik bir sohbet açar.
           </p>
         </motion.div>
@@ -920,33 +987,23 @@ export default function MessagesPage() {
       <div className="flex h-full">
         {/* Sol — Sohbet listesi */}
         <div className={`${showListMobile ? 'flex' : 'hidden sm:flex'} flex-col w-full sm:w-80 sm:min-w-[20rem] border-r border-cream-200 dark:border-cream-300 bg-white dark:bg-ink-800`}>
-          <div className="px-4 py-3 border-b border-cream-200 dark:border-cream-300 space-y-2">
-            <div className="flex items-baseline justify-between gap-2">
-              <h3 className="text-sm font-bold text-ink-800 dark:text-ink-900">Mesajlar</h3>
-              <p className="text-[11px] text-ink-400 dark:text-ink-500">
-                {filteredConvs.length}{search ? ` / ${conversations.length}` : ''} sohbet
-              </p>
+          <div className="px-4 py-3 space-y-2.5 font-geist"
+               style={{ borderBottom: '1px solid rgba(212, 168, 83, 0.10)' }}>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-[14px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
+                Sohbetler
+              </h3>
+              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{
+                      background: 'rgba(212, 168, 83, 0.10)',
+                      border: '1px solid rgba(212, 168, 83, 0.25)',
+                      color: '#fde9a5',
+                    }}>
+                {filteredConvs.length}{search ? ` / ${conversations.length}` : ''}
+              </span>
             </div>
-            {/* Arama kutusu */}
-            <div className="relative">
-              <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-                     placeholder="Kişi, ilan veya mesaj ara..."
-                     className="input text-xs h-8 pl-7 pr-6" />
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                   strokeWidth={2} stroke="currentColor"
-                   className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-              </svg>
-              {search && (
-                <button type="button" onClick={() => setSearch('')}
-                        title="Aramayı temizle"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 grid place-items-center
-                                   text-ink-400 hover:text-ink-700">
-                  ×
-                </button>
-              )}
-            </div>
+            {/* Arama — focus glow ring */}
+            <SearchInput value={search} onChange={setSearch} />
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             {loading ? (
