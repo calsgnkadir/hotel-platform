@@ -126,8 +126,8 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           return (
             <button key={f.value} onClick={() => setStatusFilter(f.value)}
               className={`chip ${isActive ? 'is-active' : ''}`}>
-              <span className="font-geist text-[12.5px] uppercase"
-                    style={{ fontWeight: isActive ? 600 : 500, letterSpacing: '0.05em' }}>
+              <span className="font-geist text-[13.5px]"
+                    style={{ fontWeight: isActive ? 600 : 500, letterSpacing: '-0.005em', textTransform: 'none' }}>
                 {f.label}
               </span>
               <span className={`text-[11px] tabular-nums font-geist font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-black/25' : ''}`}

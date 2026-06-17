@@ -148,11 +148,11 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               <button
                 key={item.id}
                 onClick={() => onTabChange?.(item.id)}
-                className="relative px-4 py-3 text-[13px] transition-all font-geist uppercase"
+                className="relative px-4 py-3 text-[14px] transition-all font-geist"
                 style={{
                   color: active ? '#ffffff' : '#8ba9d2',
                   fontWeight: active ? 600 : 500,
-                  letterSpacing: '0.08em',
+                  letterSpacing: '-0.005em',
                   textShadow: active ? '0 0 12px rgba(212, 168, 83, 0.45)' : 'none',
                 }}
                 aria-current={active ? 'page' : undefined}
@@ -179,12 +179,12 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                 return (
                   <button key={item.id}
                     onClick={() => { onTabChange?.(item.id); setMobileMenuOpen(false) }}
-                    className="w-full text-left px-3 py-2.5 rounded-lg font-geist text-[14px] uppercase transition-all"
+                    className="w-full text-left px-3 py-2.5 rounded-lg font-geist text-[15px] transition-all"
                     style={{
                       background: active ? 'rgba(212, 168, 83, 0.18)' : 'transparent',
                       color: active ? '#ffffff' : '#fde9a5',
                       fontWeight: active ? 600 : 500,
-                      letterSpacing: '0.06em',
+                      letterSpacing: '-0.005em',
                     }}>
                     {item.tKey ? t(item.tKey) : item.label}
                   </button>
