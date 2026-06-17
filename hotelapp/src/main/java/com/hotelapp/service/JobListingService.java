@@ -125,7 +125,15 @@ public class JobListingService {
     // ----------------------------------------------------------------
     @Transactional(readOnly = true)
     public List<ListingResponse> getMyListings(Long ownerId) {
-        return toResponses(jobListingRepository.findAllByBusiness_OwnerId(ownerId));
+        // Defensive cap: tek isletme normalde <50 ilan yonetir; 500 ustu durumlarda
+        // bellek koruma icin kesilir. Ileride pageable variant eklenir.
+        var all = jobListingRepository.findAllByBusiness_OwnerId(ownerId);
+        if (all.size() > 500) {
+            log.warn("[GET-MY-LISTINGS] ownerId={} icin {} ilan var (>500), ilk 500 doneriyor",
+                    ownerId, all.size());
+            all = all.subList(0, 500);
+        }
+        return toResponses(all);
     }
 
     // ----------------------------------------------------------------

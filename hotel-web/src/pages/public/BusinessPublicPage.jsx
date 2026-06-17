@@ -214,9 +214,11 @@ export default function BusinessPublicPage() {
 
   return (
     <div className="min-h-screen relative" style={{ background: '#0c1726' }}>
-      {/* Schema.org JSON-LD */}
+      {/* Schema.org JSON-LD — XSS guard: isletme adi gibi user-data icinde
+          '</script>' geçerse script tag'den kacis olabilirdi. JSON.stringify
+          '<' karakterini escape etmiyor; '<' ile escape edilir. */}
       <script type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
 
       {/* Calm radial halo */}
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
