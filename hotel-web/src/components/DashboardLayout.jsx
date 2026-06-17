@@ -148,10 +148,12 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               <button
                 key={item.id}
                 onClick={() => onTabChange?.(item.id)}
-                className="relative px-4 py-3 text-sm transition-all font-bebas tracking-wider uppercase"
+                className="relative px-4 py-3 text-[13px] transition-all font-geist uppercase"
                 style={{
                   color: active ? '#ffffff' : '#8ba9d2',
-                  textShadow: active ? '0 0 12px rgba(212, 168, 83, 0.6)' : 'none',
+                  fontWeight: active ? 600 : 500,
+                  letterSpacing: '0.08em',
+                  textShadow: active ? '0 0 12px rgba(212, 168, 83, 0.45)' : 'none',
                 }}
                 aria-current={active ? 'page' : undefined}
               >
@@ -177,10 +179,12 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                 return (
                   <button key={item.id}
                     onClick={() => { onTabChange?.(item.id); setMobileMenuOpen(false) }}
-                    className="w-full text-left px-3 py-2.5 rounded-lg font-bebas text-base tracking-wider uppercase transition-all"
+                    className="w-full text-left px-3 py-2.5 rounded-lg font-geist text-[14px] uppercase transition-all"
                     style={{
                       background: active ? 'rgba(212, 168, 83, 0.18)' : 'transparent',
                       color: active ? '#ffffff' : '#fde9a5',
+                      fontWeight: active ? 600 : 500,
+                      letterSpacing: '0.06em',
                     }}>
                     {item.tKey ? t(item.tKey) : item.label}
                   </button>
@@ -210,10 +214,14 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       <main className="relative z-10 fade-in" style={{ color: '#dde7f3' }}>
         <EmailVerifyBanner />
 
-        {/* Page heading strip (her sayfa için Bebas başlık) */}
+        {/* Page heading strip — Geist semibold, sade premium */}
         <div className="px-4 lg:px-8 pt-5 lg:pt-8 pb-3 flex items-end justify-between gap-3 flex-wrap">
-          <h1 className="font-bebas text-2xl sm:text-3xl lg:text-4xl tracking-wider uppercase text-white"
-              style={{ textShadow: '0 0 18px rgba(212, 168, 83, 0.30)' }}>
+          <h1 className="font-geist text-2xl sm:text-3xl lg:text-[36px] text-white"
+              style={{
+                fontWeight: 600,
+                letterSpacing: '-0.02em',
+                textShadow: '0 0 24px rgba(212, 168, 83, 0.20)',
+              }}>
             {(() => {
               const item = navItems.find(n => n.id === activeTab)
               return item ? (item.tKey ? t(item.tKey) : item.label) : 'Panel'
