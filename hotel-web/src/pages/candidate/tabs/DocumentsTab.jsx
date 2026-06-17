@@ -71,9 +71,9 @@ export default function DocumentsTab() {
     >
       <HeroCard completion={completion} uploaded={uploadedTypes.size} total={totalTypes} />
 
-      {/* BENTO GRID — kategori kartları yan yana */}
+      {/* BENTO GRID — kategori kartları yan yana, dar ekranda bile 2 sutun */}
       <motion.div variants={ITEM}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {DOC_CATEGORIES.map((cat, idx) => {
           const filled = cat.types.filter(t => uploadedTypes.has(t.type)).length
           return (
