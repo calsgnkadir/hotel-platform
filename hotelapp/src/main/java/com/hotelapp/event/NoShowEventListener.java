@@ -2,9 +2,9 @@ package com.hotelapp.event;
 
 import com.hotelapp.enums.NotificationType;
 import com.hotelapp.service.NotificationService;
+import com.hotelapp.service.OutboxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -25,7 +25,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class NoShowEventListener {
 
     private final NotificationService notificationService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final OutboxService outboxService; // FAZ C.2 — audit log outbox uzerinden
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -33,16 +33,14 @@ public class NoShowEventListener {
         log.info("[NO-SHOW-ASYNC] handling event for application={} candidate={}",
                 e.applicationId(), e.candidateEmail());
 
-        // FAZ 4.10 — Audit log artik event olarak publish edilir.
-        // AFTER_COMMIT listener icinden publish edildiginde, AuditEventListener
-        // bunu direkt isler (yeni transaction yok, ana akistan tamamen ayri).
-        eventPublisher.publishEvent(AuditLoggedEvent.user(
+        // FAZ C.2 — Audit log Outbox'a yazilir, OutboxRelay async deliverıyor.
+        outboxService.appendAuditLog(AuditLoggedEvent.user(
                 e.actorOwnerId(), "MARK_NO_SHOW", "APPLICATION", e.applicationId(),
                 "Aday " + e.candidateEmail() + " no-show isaretlendi. Kalan strike: "
                         + e.candidateStrikesRemaining()));
 
         if (e.autoBanned()) {
-            eventPublisher.publishEvent(AuditLoggedEvent.system(
+            outboxService.appendAuditLog(AuditLoggedEvent.system(
                     "AUTO_BAN", "USER", e.candidateId(),
                     "3 strike -> " + e.candidateEmail() + " otomatik 30 gun banlandi (bitis: "
                             + e.bannedUntil() + ")"));

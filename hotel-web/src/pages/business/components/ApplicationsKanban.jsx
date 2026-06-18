@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import {
   DndContext,
   PointerSensor,
+  TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
@@ -77,8 +78,10 @@ export default function ApplicationsKanban({ applications, onRefresh, onCardClic
     return map
   }, [applications])
 
+  // FAZ C.1 — TouchSensor: mobil drag desteği (delay 200ms scroll ile çakışmayı önler)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
     useSensor(KeyboardSensor),
   )
 

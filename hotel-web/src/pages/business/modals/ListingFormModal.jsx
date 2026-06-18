@@ -7,6 +7,7 @@ import useFocusTrap from '../../../lib/useFocusTrap'
 import {
   DndContext,
   PointerSensor,
+  TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
@@ -89,9 +90,10 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
     })
   }
 
-  // FAZ 5.5b: drag-drop ile slot siralama
+  // FAZ 5.5b: drag-drop ile slot siralama (FAZ C.1: TouchSensor — mobil)
   const slotSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
   function handleSlotDragEnd(e) {

@@ -13,8 +13,8 @@ import com.hotelapp.service.ReportService.ReportDto;
 import com.hotelapp.service.ReportService.UpdateReportStatusRequest;
 import com.hotelapp.service.AuditLogService;
 import com.hotelapp.service.AuditLogService.AuditLogDto;
+import com.hotelapp.service.OutboxService;
 import com.hotelapp.event.AuditLoggedEvent;
-import org.springframework.context.ApplicationEventPublisher;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,7 +38,7 @@ public class AdminController {
     private final AdminService adminService;
     private final ReportService reportService;
     private final AuditLogService auditLogService;
-    private final ApplicationEventPublisher eventPublisher; // FAZ 4.10
+    private final OutboxService outboxService; // FAZ C.2 — outbox via append
 
     // ================================================================
     // İşlem geçmişi (D4 audit log)
@@ -70,7 +70,7 @@ public class AdminController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateReportStatusRequest request) {
         ReportDto result = reportService.updateStatus(id, request.getStatus(), request.getAdminNote());
-        eventPublisher.publishEvent(AuditLoggedEvent.user(currentUser.getId(),
+        outboxService.appendAuditLog(AuditLoggedEvent.user(currentUser.getId(),
                 request.getStatus().name().equals("RESOLVED") ? "RESOLVE_REPORT" : "DISMISS_REPORT",
                 "REPORT", id,
                 "Şikayet #" + id + " → " + request.getStatus()));
@@ -106,7 +106,7 @@ public class AdminController {
             @PathVariable Long id,
             @Valid @RequestBody BanRequest request) {
         UserSummary result = adminService.ban(id, request.getDays());
-        eventPublisher.publishEvent(AuditLoggedEvent.user(currentUser.getId(), "BAN_USER", "USER", id,
+        outboxService.appendAuditLog(AuditLoggedEvent.user(currentUser.getId(), "BAN_USER", "USER", id,
                 request.getDays() + " gün ban (" + result.getEmail() + ")"));
         return ResponseEntity.ok(result);
     }
@@ -117,7 +117,7 @@ public class AdminController {
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long id) {
         UserSummary result = adminService.unban(id);
-        eventPublisher.publishEvent(AuditLoggedEvent.user(currentUser.getId(), "UNBAN_USER", "USER", id,
+        outboxService.appendAuditLog(AuditLoggedEvent.user(currentUser.getId(), "UNBAN_USER", "USER", id,
                 "Ban kaldırıldı (" + result.getEmail() + ")"));
         return ResponseEntity.ok(result);
     }
@@ -147,7 +147,7 @@ public class AdminController {
             @PathVariable Long id,
             @Valid @RequestBody AdminService.SetListingStatusRequest request) {
         AdminService.AdminListingDto result = adminService.setListingStatus(id, request.getStatus());
-        eventPublisher.publishEvent(AuditLoggedEvent.user(currentUser.getId(),
+        outboxService.appendAuditLog(AuditLoggedEvent.user(currentUser.getId(),
             "LISTING_" + request.getStatus().name(), "LISTING", id,
             "İlan durumu: " + request.getStatus().name() + " (" + result.getTitle() + ")"));
         return ResponseEntity.ok(result);
