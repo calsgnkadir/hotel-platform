@@ -3,6 +3,8 @@ package com.hotelapp.service;
 import com.hotelapp.dto.StatsDtos.BucketDto;
 import com.hotelapp.dto.StatsDtos.BusinessStatsDto;
 import com.hotelapp.dto.StatsDtos.CandidateStatsDto;
+import com.hotelapp.dto.StatsDtos.FunnelDto;
+import com.hotelapp.dto.StatsDtos.HireTimeBucketDto;
 import com.hotelapp.dto.StatsDtos.TrendPointDto;
 import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.enums.ListingStatus;
@@ -63,6 +65,11 @@ public class StatsService {
 
         long activeListings = jobListingRepository.countByBusiness_OwnerIdAndStatus(ownerId, ListingStatus.ACTIVE);
 
+        // FAZ C.3 — Funnel & hire-time
+        FunnelDto funnel = computeFunnel(byStatus, total);
+        List<HireTimeBucketDto> hireTime = computeHireTimeBuckets(
+                applicationRepository.hireTimeSecondsForBusiness(ownerId));
+
         return BusinessStatsDto.builder()
                 .thisMonthApplications(thisMonth)
                 .lastMonthApplications(lastMonth)
@@ -73,7 +80,49 @@ public class StatsService {
                 .byPosition(byPosition)
                 .byStatus(byStatus)
                 .dailyTrend(dailyTrend)
+                .funnel(funnel)
+                .hireTime(hireTime)
                 .build();
+    }
+
+    /**
+     * Funnel: byStatus bucket'larindan turetilir, ekstra query yok.
+     * received = total, reviewed = total - PENDING,
+     * accepted = ACCEPTED, completed = ACCEPTED (reviewedAt set + noShow=false varsayilan,
+     *   simdilik basit yaklasim — accepted == completed kabul).
+     */
+    private FunnelDto computeFunnel(List<BucketDto> byStatus, long total) {
+        long pending = bucketCount(byStatus, ApplicationStatus.PENDING.name());
+        long accepted = bucketCount(byStatus, ApplicationStatus.ACCEPTED.name());
+        return FunnelDto.builder()
+                .received(total)
+                .reviewed(total - pending)
+                .accepted(accepted)
+                .completed(accepted)  // ileride no-show ayirimi eklenebilir
+                .build();
+    }
+
+    /**
+     * Hire-time histogram: 4 bucket — <1 gun, 1-3 gun, 3-7 gun, >7 gun.
+     * Gun esikleri: 86400 / 259200 / 604800 saniye.
+     */
+    private List<HireTimeBucketDto> computeHireTimeBuckets(List<Long> seconds) {
+        long b1 = 0, b2 = 0, b3 = 0, b4 = 0;
+        if (seconds != null) {
+            for (Long s : seconds) {
+                if (s == null) continue;
+                if (s < 86_400L)        b1++;
+                else if (s < 259_200L)  b2++;
+                else if (s < 604_800L)  b3++;
+                else                    b4++;
+            }
+        }
+        return List.of(
+                HireTimeBucketDto.builder().label("<1g").count(b1).build(),
+                HireTimeBucketDto.builder().label("1-3g").count(b2).build(),
+                HireTimeBucketDto.builder().label("3-7g").count(b3).build(),
+                HireTimeBucketDto.builder().label(">7g").count(b4).build()
+        );
     }
 
     // ────────────────────────────────────────────────

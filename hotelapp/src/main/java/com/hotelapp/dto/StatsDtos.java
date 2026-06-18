@@ -28,6 +28,28 @@ public class StatsDtos {
         private long count;
     }
 
+    /**
+     * FAZ C.3 — Recruitment funnel.
+     * received >= reviewed >= accepted >= completed (cumulative).
+     */
+    @Data @Builder @AllArgsConstructor @NoArgsConstructor
+    public static class FunnelDto {
+        private long received;    // tum basvurular
+        private long reviewed;    // PENDING haric (gorulmus)
+        private long accepted;    // ACCEPTED + COMPLETED
+        private long completed;   // is bitmis (no-show degil + reviewed)
+    }
+
+    /**
+     * FAZ C.3 — Hire-time histogram bucket'i (createdAt -> reviewedAt suresi).
+     * Sadece ACCEPTED basvurular icin hesaplanir.
+     */
+    @Data @Builder @AllArgsConstructor @NoArgsConstructor
+    public static class HireTimeBucketDto {
+        private String label;     // "<1g", "1-3g", "3-7g", ">7g"
+        private long count;
+    }
+
     /** İşletme dashboard'u için zengin stat paketi. */
     @Data @Builder @AllArgsConstructor @NoArgsConstructor
     public static class BusinessStatsDto {
@@ -43,6 +65,10 @@ public class StatsDtos {
         private List<BucketDto> byStatus;
         /** Son 30 gün — günlük başvuru. */
         private List<TrendPointDto> dailyTrend;
+        /** FAZ C.3 — Recruitment funnel. */
+        private FunnelDto funnel;
+        /** FAZ C.3 — Hire-time histogram (4 bucket). */
+        private List<HireTimeBucketDto> hireTime;
     }
 
     /** Aday dashboard'u için zengin stat paketi. */

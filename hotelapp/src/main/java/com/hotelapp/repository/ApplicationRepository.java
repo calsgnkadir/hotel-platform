@@ -188,4 +188,17 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
           AND a.reviewedAt IS NOT NULL
     """)
     Double avgResponseSecondsForCandidate(@Param("candidateId") Long candidateId);
+
+    /**
+     * FAZ C.3 — Isletme: ACCEPTED basvurularin hire-time saniyeleri.
+     * Frontend histogram icin StatsService 4 bucket'a ayirir.
+     */
+    @Query("""
+        SELECT FUNCTION('TIMESTAMPDIFF', SECOND, a.createdAt, a.reviewedAt)
+        FROM Application a
+        WHERE a.jobListing.business.owner.id = :ownerId
+          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
+          AND a.reviewedAt IS NOT NULL
+    """)
+    List<Long> hireTimeSecondsForBusiness(@Param("ownerId") Long ownerId);
 }

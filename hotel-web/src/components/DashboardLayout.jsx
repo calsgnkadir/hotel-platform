@@ -23,6 +23,7 @@ const businessNav = [
   { id: 'mylistings',    tKey: 'nav.myListings' },
   { id: 'applications',  tKey: 'nav.incomingApplications' },
   { id: 'workers',       tKey: 'nav.workers' },
+  { id: 'analytics',     label: 'Analitik' },        // FAZ C.3
   { id: 'messages',      tKey: 'nav.messages' },
 ]
 
