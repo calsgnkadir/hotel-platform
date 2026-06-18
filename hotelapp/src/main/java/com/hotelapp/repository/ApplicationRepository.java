@@ -4,6 +4,7 @@ import com.hotelapp.entity.Application;
 import com.hotelapp.enums.ApplicationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -75,7 +76,11 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     // Tüm filtre parametreleri opsiyonel (:param IS NULL OR ...) deseniyle.
     // ----------------------------------------------------------------
 
-    /** Aday: kendi başvuruları, opsiyonel status filtresi. */
+    /**
+     * Aday: kendi başvuruları, opsiyonel status filtresi.
+     * N+1 fix: candidate + jobListing + business eager fetch.
+     */
+    @EntityGraph(attributePaths = { "candidate", "jobListing", "jobListing.business" })
     @Query("""
         SELECT a FROM Application a
         WHERE a.candidate.id = :candidateId
@@ -86,7 +91,11 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("status") ApplicationStatus status,
             Pageable pageable);
 
-    /** İşletme: kendi ilanlarına gelen başvurular; status + ilan + aday adı araması opsiyonel. */
+    /**
+     * İşletme: kendi ilanlarına gelen başvurular; status + ilan + aday adı araması opsiyonel.
+     * N+1 fix: candidate + jobListing + business eager fetch.
+     */
+    @EntityGraph(attributePaths = { "candidate", "jobListing", "jobListing.business" })
     @Query("""
         SELECT a FROM Application a
         WHERE a.jobListing.business.owner.id = :ownerId

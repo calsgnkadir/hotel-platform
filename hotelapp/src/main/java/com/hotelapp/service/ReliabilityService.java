@@ -29,6 +29,21 @@ public class ReliabilityService {
     private final ApplicationRepository applicationRepository;
     private final ReviewService reviewService;
 
+    /**
+     * Bulk variant — birden fazla aday için hesaplama.
+     * Hala her aday için 3 query'lik N+1 vardır ama service tarafı tek noktadan
+     * çağırır. İlerde GROUP BY ile gerçek bulk query'lere donüşür.
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, ReliabilityScore> computeForCandidatesBulk(java.util.Collection<Long> candidateIds) {
+        java.util.Map<Long, ReliabilityScore> map = new java.util.HashMap<>();
+        if (candidateIds == null || candidateIds.isEmpty()) return map;
+        for (Long id : candidateIds) {
+            map.put(id, computeForCandidate(id));
+        }
+        return map;
+    }
+
     @Transactional(readOnly = true)
     public ReliabilityScore computeForCandidate(Long candidateId) {
         long noShowCount = applicationRepository.countByCandidateIdAndNoShowTrue(candidateId);

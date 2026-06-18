@@ -405,7 +405,7 @@ public class JobListingService {
      *  - BusinessPhotoRepository.findAllByBusinessIdInOrdered -> tek list (1 sorgu)
      * sonra her listing'i bu map'lerden okuyarak DTO'ya cevirir.
      */
-    private List<ListingResponse> toResponses(List<JobListing> listings) {
+    List<ListingResponse> toResponses(List<JobListing> listings) {
         if (listings == null || listings.isEmpty()) return java.util.List.of();
 
         java.util.Set<Long> businessIds = listings.stream()
@@ -440,7 +440,7 @@ public class JobListingService {
         return buildResponseFromParts(l, rating.getAverageRating(), rating.getReviewCount(), photos);
     }
 
-    private ListingResponse toResponse(JobListing l) {
+    ListingResponse toResponse(JobListing l) {
         // Tekli: rating + foto sorgulari burada ayri firar (create/update/get single)
         var rating = reviewService.getBusinessRating(l.getBusiness().getId());
         var photos = loadBusinessPhotoUrls(l.getBusiness().getId());

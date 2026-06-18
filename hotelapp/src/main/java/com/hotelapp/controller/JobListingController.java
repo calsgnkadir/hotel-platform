@@ -5,6 +5,7 @@ import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.ListingStatus;
 import com.hotelapp.enums.Position;
 import com.hotelapp.enums.Shift;
+import com.hotelapp.service.JobListingQueryService;
 import com.hotelapp.service.JobListingService;
 import com.hotelapp.service.JobListingService.ListingRequest;
 import com.hotelapp.service.JobListingService.ListingResponse;
@@ -31,6 +32,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class JobListingController {
 
     private final JobListingService jobListingService;
+    private final JobListingQueryService jobListingQueryService;
 
     @Operation(
             summary = "Aktif ilanları listele",
@@ -47,7 +49,7 @@ public class JobListingController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
         return ResponseEntity.ok(
-                jobListingService.getActiveListings(position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo));
+                jobListingQueryService.getActiveListings(position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo));
     }
 
     @Operation(summary = "Kendi ilanlarımı listele — sadece BUSINESS_OWNER")
@@ -56,7 +58,7 @@ public class JobListingController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<ListingResponse>> myListings(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
-        return ResponseEntity.ok(jobListingService.getMyListings(currentUser.getId()));
+        return ResponseEntity.ok(jobListingQueryService.getMyListings(currentUser.getId()));
     }
 
     @Operation(summary = "Yeni ilan oluştur — sadece BUSINESS_OWNER")
@@ -85,7 +87,7 @@ public class JobListingController {
     @GetMapping("/{id}")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ListingResponse> getListing(@PathVariable Long id) {
-        return ResponseEntity.ok(jobListingService.getListingById(id));
+        return ResponseEntity.ok(jobListingQueryService.getListingById(id));
     }
 
     @Operation(summary = "İlanı düzenle — sadece BUSINESS_OWNER (sahibi)")
