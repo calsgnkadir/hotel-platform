@@ -45,6 +45,8 @@ class RateLimitFilterTest {
         for (int i = 0; i < 10; i++) {
             MockHttpServletResponse res = new MockHttpServletResponse();
             filter.doFilter(post("/api/messages"), res, chain);
+            // sanity: chain calistirilmali
+
             assertThat(res.getStatus()).isEqualTo(HttpStatus.OK.value());
         }
         MockHttpServletResponse res11 = new MockHttpServletResponse();

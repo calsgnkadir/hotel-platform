@@ -184,8 +184,18 @@ export async function getMyApplications(params = {}) {
 
 export async function applyToListing(payload) {
   // payload: { jobListingId, coverLetter, availabilities: [] }
-  const { data } = await api.post('/api/candidate/applications', payload)
+  // FAZ D.2 — Idempotency-Key: double-click/retry'da duplicate basvuru yaratmiyor.
+  // Backend in-memory cache 1 saat boyunca ayni response'u doner.
+  const idemKey = genIdempotencyKey()
+  const { data } = await api.post('/api/candidate/applications', payload, {
+    headers: { 'Idempotency-Key': idemKey },
+  })
   return data
+}
+
+function genIdempotencyKey() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  return 'idem-' + Math.random().toString(36).slice(2) + '-' + Date.now().toString(36)
 }
 
 export async function respondDocumentRequest(requestId, grant) {

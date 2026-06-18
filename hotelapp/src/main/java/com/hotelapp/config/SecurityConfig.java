@@ -1,5 +1,6 @@
 package com.hotelapp.config;
 
+import com.hotelapp.security.IdempotencyFilter;
 import com.hotelapp.security.JwtAuthFilter;
 import com.hotelapp.security.RateLimitFilter;
 import com.hotelapp.security.oauth.CustomOAuth2UserService;
@@ -32,6 +33,7 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final RateLimitFilter rateLimitFilter;
+    private final IdempotencyFilter idempotencyFilter; // FAZ D.2
     private final AuthenticationProvider authenticationProvider;
 
     /** #92: Google OAuth — opsiyonel (env yoksa null) */
@@ -100,6 +102,8 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(rateLimitFilter, JwtAuthFilter.class)
+                // FAZ D.2 — JWT'den SONRA: SecurityContext set edilmis olur
+                .addFilterAfter(idempotencyFilter, JwtAuthFilter.class)
 
                 // #92: Google OAuth2 login flow
                 .oauth2Login(oauth -> oauth

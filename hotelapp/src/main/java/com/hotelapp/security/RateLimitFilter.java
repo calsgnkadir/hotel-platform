@@ -76,10 +76,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
      * Tam yol eslestirir; path variable iceren endpoint'ler dahil degil (orn. PUT/DELETE).
      */
     private static final Set<String> SENSITIVE_WRITE_POSTS = Set.of(
-            "/api/applications",
-            "/api/messages",
-            "/api/reports",
-            "/api/listings"
+            "/api/candidate/applications",   // basvuru olustur (spam)
+            "/api/messages",                 // mesaj gonder (spam)
+            "/api/reports",                  // sikayet (spam)
+            "/api/listings"                  // ilan olustur
     );
 
     /**
