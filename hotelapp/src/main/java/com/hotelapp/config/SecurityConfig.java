@@ -15,7 +15,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -73,6 +75,30 @@ public class SecurityConfig {
                 // double-submit pattern eklenir). Şu an guard: tek source = chrome.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
+                // FAZ D.3 — Security headers
+                .headers(headers -> headers
+                        // HSTS — HTTPS-only (Railway prod TLS terminator: zaten zorunlu,
+                        // header sub-domain'lere yayılır)
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31_536_000L)   // 1 yıl
+                        )
+                        // X-Frame-Options: DENY — clickjacking koruması
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+                        // Referrer-Policy: origin-only (path/query leak'i önler)
+                        .referrerPolicy(ref -> ref.policy(
+                                ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        // CSP: API JSON response icin minimal (defansif derinlik).
+                        // Frontend HTML Vercel'de servis edilir, kendi CSP'si var.
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"))
+                        // Permissions-Policy: hassas API'leri varsayilan kapali.
+                        // Spring Security 6.2'de DSL ismi version'a gore degisiyor,
+                        // basit ve sabit yontem: HeaderWriter ile.
+                        .addHeaderWriter((req, res) -> res.setHeader(
+                                "Permissions-Policy",
+                                "camera=(), microphone=(), geolocation=(self), payment=()"))
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
