@@ -8,6 +8,7 @@ import ProfileCompletenessCard from '../../../components/ProfileCompletenessCard
 import { calculateCandidateCompleteness } from '../../../lib/profileCompleteness'
 import AvatarCropModal from '../../../components/AvatarCropModal'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
+import GdprCard from '../../../components/GdprCard'
 import AvailabilityBlocksEditor from '../../../components/AvailabilityBlocksEditor'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../../utils/validation'
 import DistrictNeighborhoodSelect from '../../../components/DistrictNeighborhoodSelect'
@@ -410,6 +411,7 @@ export default function ProfileTab() {
       </form>
 
       <ChangePasswordCard />
+      <GdprCard />
     </div>
   )
 }

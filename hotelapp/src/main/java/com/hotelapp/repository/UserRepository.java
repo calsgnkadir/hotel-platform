@@ -63,4 +63,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         )
     """)
     List<User> findCandidatesWithAvailabilityBlocks();
+
+    /** FAZ D.8 — Anonymize cutoff'u gecmis pending deletion'lar. */
+    List<User> findAllByScheduledAnonymizeAtBefore(LocalDateTime now);
 }

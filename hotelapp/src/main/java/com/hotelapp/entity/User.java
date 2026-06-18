@@ -80,6 +80,16 @@ public class User {
      */
     private LocalDateTime emailVerifiedAt;
 
+    /**
+     * FAZ D.8 — KVKK soft delete.
+     * deletionRequestedAt set + enabled=false: kullanici hesap silme istegi yapti.
+     * scheduledAnonymizeAt: bu tarihten sonra @Scheduled anonymize eder
+     * (PII alanlari "deleted-{id}@deleted.local" gibi maskelenir).
+     * 30 gun grace: aralikta kullanici destek hattindan recovery isteyebilir.
+     */
+    private LocalDateTime deletionRequestedAt;
+    private LocalDateTime scheduledAnonymizeAt;
+
     /** FAZ 4.4 — Email dogrulanmis mi? OAuth icin daima true. */
     public boolean isEmailVerified() {
         return emailVerifiedAt != null

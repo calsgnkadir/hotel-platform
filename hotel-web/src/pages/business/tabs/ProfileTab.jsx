@@ -3,6 +3,7 @@ import * as hotelApi from '../../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
+import GdprCard from '../../../components/GdprCard'
 import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../../utils/validation'
 import DistrictNeighborhoodSelect from '../../../components/DistrictNeighborhoodSelect'
 import GalleryEditor from '../../../components/GalleryEditor'
@@ -293,6 +294,7 @@ export default function ProfileTab() {
     </form>
 
     <ChangePasswordCard />
+    <GdprCard />
     </div>
   )
 }
