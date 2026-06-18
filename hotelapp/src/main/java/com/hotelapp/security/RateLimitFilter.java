@@ -47,9 +47,14 @@ import java.util.concurrent.TimeUnit;
  *            10 dk'dan eski bucket'ları siler. Saldırgan 100k spoof'la bile
  *            memory bloat etmez.
  *
- * Kurallar:
- *  - Auth (/api/auth/**)  : 10 / dakika  (brute-force koruması)
- *  - Diğer endpointler    : 60 / dakika
+ * Kurallar (FAZ D.1 — 3 tier):
+ *  - Auth (/api/auth/**)          : 10 / dakika  (brute-force koruması)
+ *  - Sensitive write POST'lar     : 10 / dakika  (spam: mesaj, şikayet, başvuru, ilan)
+ *  - Diğer endpointler            : 60 / dakika
+ *
+ * Sensitive write tier — IP başına ayrı bucket. Authenticated user spam'ini
+ * önler ama farklı IP'lerden farklı user'lar etkilenmez. (User-id bazlı bucket
+ * ileride filter'da SecurityContext'e erişim refactor'u ile eklenebilir.)
  */
 @Component
 @Slf4j
@@ -62,8 +67,20 @@ public class RateLimitFilter extends OncePerRequestFilter {
         TimedBucket(Bucket b) { this.bucket = b; this.lastAccessNanos = System.nanoTime(); }
     }
 
-    private final Map<String, TimedBucket> authBuckets    = new ConcurrentHashMap<>();
-    private final Map<String, TimedBucket> generalBuckets = new ConcurrentHashMap<>();
+    private final Map<String, TimedBucket> authBuckets      = new ConcurrentHashMap<>();
+    private final Map<String, TimedBucket> sensitiveBuckets = new ConcurrentHashMap<>();
+    private final Map<String, TimedBucket> generalBuckets   = new ConcurrentHashMap<>();
+
+    /**
+     * FAZ D.1 — Sensitive write POST endpoint'leri (spam/burst koruması).
+     * Tam yol eslestirir; path variable iceren endpoint'ler dahil degil (orn. PUT/DELETE).
+     */
+    private static final Set<String> SENSITIVE_WRITE_POSTS = Set.of(
+            "/api/applications",
+            "/api/messages",
+            "/api/reports",
+            "/api/listings"
+    );
 
     /**
      * Trusted proxy IP'leri — bunlardan gelen X-Forwarded-For kabul edilir.
@@ -111,10 +128,20 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String ip = extractIp(request);
         String path = request.getRequestURI();
         boolean isAuth = path.startsWith("/api/auth");
+        boolean isSensitiveWrite = !isAuth
+                && "POST".equalsIgnoreCase(request.getMethod())
+                && SENSITIVE_WRITE_POSTS.contains(path);
 
-        Map<String, TimedBucket> map = isAuth ? authBuckets : generalBuckets;
-        TimedBucket tb = map.computeIfAbsent(ip, k -> new TimedBucket(
-                isAuth ? buildAuthBucket() : buildGeneralBucket()));
+        Map<String, TimedBucket> map;
+        java.util.function.Supplier<Bucket> bucketBuilder;
+        if (isAuth) {
+            map = authBuckets;           bucketBuilder = this::buildAuthBucket;
+        } else if (isSensitiveWrite) {
+            map = sensitiveBuckets;      bucketBuilder = this::buildSensitiveBucket;
+        } else {
+            map = generalBuckets;        bucketBuilder = this::buildGeneralBucket;
+        }
+        TimedBucket tb = map.computeIfAbsent(ip, k -> new TimedBucket(bucketBuilder.get()));
         tb.lastAccessNanos = System.nanoTime();
 
         if (tb.bucket.tryConsume(1)) {
@@ -144,6 +171,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
         Bandwidth limit = Bandwidth.builder()
                 .capacity(60)
                 .refillGreedy(60, Duration.ofMinutes(1))
+                .build();
+        return Bucket.builder().addLimit(limit).build();
+    }
+
+    /** FAZ D.1 — Sensitive write POST: dakikada 10. */
+    private Bucket buildSensitiveBucket() {
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(10)
+                .refillGreedy(10, Duration.ofMinutes(1))
                 .build();
         return Bucket.builder().addLimit(limit).build();
     }
@@ -183,10 +219,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
         try {
             long now = System.nanoTime();
             int authRemoved = evict(authBuckets, now);
+            int sensitiveRemoved = evict(sensitiveBuckets, now);
             int generalRemoved = evict(generalBuckets, now);
-            if (authRemoved + generalRemoved > 0) {
-                log.debug("RateLimit eviction — auth: {}, general: {} (kalan: {} + {})",
-                        authRemoved, generalRemoved, authBuckets.size(), generalBuckets.size());
+            if (authRemoved + sensitiveRemoved + generalRemoved > 0) {
+                log.debug("RateLimit eviction — auth: {}, sensitive: {}, general: {} (kalan: {} + {} + {})",
+                        authRemoved, sensitiveRemoved, generalRemoved,
+                        authBuckets.size(), sensitiveBuckets.size(), generalBuckets.size());
             }
         } catch (Exception ex) {
             log.error("Bucket eviction hatası", ex);
