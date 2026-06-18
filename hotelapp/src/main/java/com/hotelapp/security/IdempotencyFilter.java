@@ -1,5 +1,6 @@
 package com.hotelapp.security;
 
+import com.hotelapp.metrics.AppMetrics;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,6 +44,7 @@ public class IdempotencyFilter extends OncePerRequestFilter {
     private static final int MAX_KEY_LENGTH = 128;
 
     private final IdempotencyService service;
+    private final org.springframework.beans.factory.ObjectProvider<AppMetrics> metrics; // optional
 
     @Override
     protected void doFilterInternal(
@@ -73,10 +75,12 @@ public class IdempotencyFilter extends OncePerRequestFilter {
         }
 
         String cacheKey = userId + ":" + idemKey;
+        AppMetrics m = metrics.getIfAvailable();
         IdempotencyService.CachedResponse cached = service.find(cacheKey);
         if (cached != null) {
             log.debug("[IDEMPOTENCY] cache hit user={} key={} status={}",
                     userId, idemKey, cached.status());
+            if (m != null) m.idempotencyHit.increment();
             response.setStatus(cached.status());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
@@ -84,6 +88,7 @@ public class IdempotencyFilter extends OncePerRequestFilter {
             response.getWriter().write(cached.body());
             return;
         }
+        if (m != null) m.idempotencyMiss.increment();
 
         ContentCachingResponseWrapper wrapper = new ContentCachingResponseWrapper(response);
         chain.doFilter(request, wrapper);

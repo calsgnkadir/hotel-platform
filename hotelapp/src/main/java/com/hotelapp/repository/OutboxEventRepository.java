@@ -17,4 +17,7 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> 
         ORDER BY e.createdAt ASC
     """)
     List<OutboxEvent> findUnprocessed(Pageable pageable);
+
+    /** FAZ D.4 — Prometheus gauge için pending count. */
+    long countByProcessedAtIsNull();
 }

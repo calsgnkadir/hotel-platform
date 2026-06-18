@@ -166,7 +166,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,circuitbreakers,flyway   # FAZ 4.3 — Flyway migration durumu
+        include: health,info,circuitbreakers,flyway,prometheus   # FAZ D.4 — /actuator/prometheus scrape
   endpoint:
     health:
       show-details: when-authorized   # detay sadece auth'a

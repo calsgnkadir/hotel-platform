@@ -41,6 +41,7 @@ public class ApplicationService {
     private final EmailTemplates emailTemplates;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher; // FAZ 4.11 - no-show async
     private final ApplicationMapper applicationMapper; // FAZ 4.5 - god class temizligi (toResponse + buildCandidateSummary)
+    private final org.springframework.beans.factory.ObjectProvider<com.hotelapp.metrics.AppMetrics> metricsProvider; // FAZ D.4
 
     @org.springframework.beans.factory.annotation.Value("${app.base-url:http://localhost:5173}")
     private String baseUrl;
@@ -131,6 +132,10 @@ public class ApplicationService {
         }
 
         applicationRepository.save(application);
+
+        // FAZ D.4 — Prometheus counter
+        var m = metricsProvider.getIfAvailable();
+        if (m != null) m.applicationsCreated.increment();
 
         // Aday başvuru sırasında belirli hassas belgelere önceden izin verdiyse,
         // her biri için GRANTED durumda DocumentRequest oluştur. İşletme görür/inceler.
@@ -330,6 +335,12 @@ public class ApplicationService {
             app.setStatus(ApplicationStatus.WITHDRAWN);
         }
         applicationRepository.save(app);
+
+        // FAZ D.4 — Prometheus counter (sadece accept için)
+        if (accept) {
+            var m = metricsProvider.getIfAvailable();
+            if (m != null) m.applicationsAccepted.increment();
+        }
 
         // Isletmeye bildirim
         Long ownerId = app.getJobListing().getBusiness().getOwner().getId();

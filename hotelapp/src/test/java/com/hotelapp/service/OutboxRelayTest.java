@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class OutboxRelayTest {
@@ -36,7 +37,18 @@ class OutboxRelayTest {
 
     @BeforeEach
     void setUp() {
-        relay = new OutboxRelay(outboxRepository, objectMapper, auditLogService);
+        // FAZ D.4 — AppMetrics opsiyonel; test'te bos provider yeterli
+        org.springframework.beans.factory.ObjectProvider<com.hotelapp.metrics.AppMetrics> noMetrics =
+                emptyProvider();
+        relay = new OutboxRelay(outboxRepository, objectMapper, auditLogService, noMetrics);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static <T> org.springframework.beans.factory.ObjectProvider<T> emptyProvider() {
+        org.springframework.beans.factory.ObjectProvider p =
+                mock(org.springframework.beans.factory.ObjectProvider.class);
+        when(p.getIfAvailable()).thenReturn(null);
+        return (org.springframework.beans.factory.ObjectProvider<T>) p;
     }
 
     @Test

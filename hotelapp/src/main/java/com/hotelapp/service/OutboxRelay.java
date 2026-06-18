@@ -3,6 +3,7 @@ package com.hotelapp.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hotelapp.entity.OutboxEvent;
 import com.hotelapp.event.AuditLoggedEvent;
+import com.hotelapp.metrics.AppMetrics;
 import com.hotelapp.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ public class OutboxRelay {
     private final OutboxEventRepository outboxRepository;
     private final ObjectMapper objectMapper;
     private final AuditLogService auditLogService;
+    private final org.springframework.beans.factory.ObjectProvider<AppMetrics> metrics; // optional
 
     @Scheduled(fixedDelayString = "${app.outbox.relayDelayMs:5000}")
     public void relay() {
@@ -47,12 +49,15 @@ public class OutboxRelay {
         if (pending.isEmpty()) return;
 
         log.debug("[OUTBOX-RELAY] {} pending event islenecek", pending.size());
+        AppMetrics m = metrics.getIfAvailable();
         for (OutboxEvent row : pending) {
             try {
                 handle(row);
                 markProcessed(row.getId());
+                if (m != null) m.outboxPublished.increment();
             } catch (Exception ex) {
                 markFailed(row.getId(), ex);
+                if (m != null) m.outboxFailed.increment();
             }
         }
     }

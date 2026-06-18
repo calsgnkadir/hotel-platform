@@ -32,7 +32,14 @@ class IdempotencyFilterTest {
     void setUp() {
         service = new IdempotencyService();
         ReflectionTestUtils.setField(service, "ttlMinutes", 60L);
-        filter = new IdempotencyFilter(service);
+        // FAZ D.4 — AppMetrics opsiyonel; test'te bos provider
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        org.springframework.beans.factory.ObjectProvider noMetricsRaw =
+                mock(org.springframework.beans.factory.ObjectProvider.class);
+        org.mockito.Mockito.when(noMetricsRaw.getIfAvailable()).thenReturn(null);
+        @SuppressWarnings("unchecked")
+        org.springframework.beans.factory.ObjectProvider<com.hotelapp.metrics.AppMetrics> noMetrics = noMetricsRaw;
+        filter = new IdempotencyFilter(service, noMetrics);
         chain = mock(FilterChain.class);
     }
 

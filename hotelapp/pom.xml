@@ -124,6 +124,12 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- FAZ D.4 — Prometheus scrape registry (Micrometer) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
         <!-- Cloudinary — kalıcı dosya/foto storage (Railway ephemeral disk sorunu için) -->
         <dependency>
             <groupId>com.cloudinary</groupId>
