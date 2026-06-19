@@ -840,19 +840,25 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
             Sohbete ilk mesajı sen yaz
           </div>
         ) : messages.map(m => <MessageBubble key={m.id} m={m} />)}
-        {/* FAZ 1/#60 — Karşı taraf yazıyor göstergesi */}
+        {/* FAZ 1/#60 + G.7 — Karşı taraf yazıyor göstergesi (altın sine wave) */}
         {otherTyping && (
           <div className="flex items-center gap-2 px-3 py-2 text-xs text-ink-500 fade-in">
-            <span className="flex gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '300ms' }} />
-            </span>
-            <span>{conversation?.otherPartyName || 'Karşı taraf'} yazıyor...</span>
+            <TypingSineWave />
+            <span>{conversation?.otherPartyName || 'Karşı taraf'} yazıyor…</span>
           </div>
         )}
         <div ref={scrollAnchorRef} />
       </div>
+
+      {/* FAZ G.6 — Bağlamlı hızlı yanıt çipleri */}
+      {!recording && !sending && (
+        <QuickReplyChips
+          role={user?.role}
+          listingTitle={conversation?.listingTitle}
+          onPick={(text) => setDraft(d => d ? d + ' ' + text : text)}
+          messageCount={messages.length}
+        />
+      )}
 
       {/* Kompozer — dosya ekle + metin + sesli mesaj + gönder */}
       <form onSubmit={handleSend} className="px-3 py-3 border-t border-cream-200 dark:border-cream-300 flex items-center gap-2 flex-shrink-0">
@@ -944,25 +950,166 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
               </svg>
             </button>
 
-            <input type="text" value={draft}
-              onChange={e => {
-                setDraft(e.target.value)
-                // FAZ 1/#60 — Yazıyor sinyali (her tuş vuruşunda; backend timeout 3sn)
-                if (conversation?.id) {
-                  wsPublish(`/app/chat.typing/${conversation.id}`, {})
-                }
-              }}
-              onPaste={handlePaste}
-              placeholder="Mesaj yaz veya foto yapıştır..." maxLength={2000}
-              className="input text-sm flex-1" disabled={sending} />
-            <button type="submit"
-              disabled={sending || !draft.trim()}
-              className="px-4 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50 flex-shrink-0 bg-brand-700 hover:bg-brand-800 transition-colors">
-              {sending ? '...' : 'Gönder'}
-            </button>
+            <div className="relative flex-1 min-w-0">
+              <input type="text" value={draft}
+                onChange={e => {
+                  setDraft(e.target.value)
+                  if (conversation?.id) {
+                    wsPublish(`/app/chat.typing/${conversation.id}`, {})
+                  }
+                }}
+                onPaste={handlePaste}
+                placeholder="Mesaj yaz veya foto yapıştır..." maxLength={2000}
+                className="input text-sm w-full" disabled={sending} />
+              {/* FAZ G.7 — Karakter sayacı (sadece 1500'den sonra görünür) */}
+              {draft.length >= 1500 && (
+                <span style={{
+                  position: 'absolute',
+                  right: 10, bottom: -16,
+                  fontSize: 10,
+                  color: draft.length >= 1900 ? '#ef6461' : draft.length >= 1800 ? '#d97706' : '#94a3b8',
+                  fontVariantNumeric: 'tabular-nums',
+                  fontWeight: 600,
+                }}>
+                  {draft.length} / 2000
+                </span>
+              )}
+            </div>
+            <SendButton sending={sending} disabled={!draft.trim() || sending} />
           </>
         )}
       </form>
+    </div>
+  )
+}
+
+/* ─────────── FAZ G.7 — Send button (altın gradient + sent flash) ─────────── */
+function SendButton({ sending, disabled }) {
+  return (
+    <button type="submit"
+      disabled={disabled}
+      title={disabled && !sending ? 'Mesaj yaz' : 'Gönder (Enter)'}
+      style={{
+        position: 'relative',
+        padding: '0 18px', height: 40,
+        borderRadius: 10,
+        background: disabled
+          ? 'rgba(148, 163, 184, 0.25)'
+          : 'linear-gradient(135deg, #1e3a5f, #234a82)',
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: 700,
+        letterSpacing: '0.02em',
+        border: 'none',
+        flexShrink: 0,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        boxShadow: disabled ? 'none' : '0 6px 18px rgba(30, 58, 95, 0.32)',
+        transition: 'transform 150ms, box-shadow 200ms, background 200ms',
+      }}
+      onMouseDown={e => !disabled && (e.currentTarget.style.transform = 'translateY(1px) scale(0.98)')}
+      onMouseUp={e => (e.currentTarget.style.transform = '')}
+      onMouseLeave={e => (e.currentTarget.style.transform = '')}>
+      {sending ? (
+        <span className="inline-flex items-center gap-1.5">
+          <span style={{
+            width: 12, height: 12, borderRadius: '50%',
+            border: '2px solid rgba(255,255,255,0.35)',
+            borderTopColor: '#fff',
+            animation: 'sb-spin 700ms linear infinite',
+          }} />
+          <span>Gönderiliyor…</span>
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1.5">
+          Gönder
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 12 21 3 14 21l-3-8-8-1Z" stroke="#fbd768" strokeWidth="2" strokeLinejoin="round" />
+          </svg>
+        </span>
+      )}
+      <style>{`
+        @keyframes sb-spin { to { transform: rotate(360deg); } }
+      `}</style>
+    </button>
+  )
+}
+
+/* ─────────── FAZ G.7 — Altın sine wave typing indicator ─────────── */
+function TypingSineWave() {
+  return (
+    <span style={{
+      display: 'inline-block',
+      width: 28, height: 14,
+      overflow: 'hidden',
+    }} aria-hidden="true">
+      <svg width="56" height="14" viewBox="0 0 56 14"
+           style={{ animation: 'tw-shift 1.4s linear infinite' }}>
+        <path d="M0 7 Q 3.5 1 7 7 T 14 7 T 21 7 T 28 7 T 35 7 T 42 7 T 49 7 T 56 7"
+              fill="none" stroke="#d4a853" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+      <style>{`
+        @keyframes tw-shift {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+      `}</style>
+    </span>
+  )
+}
+
+/* ─────────── FAZ G.6 — Bağlamlı hızlı yanıt çipleri ─────────── */
+function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
+  // Sadece ilk birkaç mesajda göster — uzun sohbette gürültü olur
+  if (messageCount > 6) return null
+
+  const isBiz = role === 'BUSINESS_OWNER'
+  const sets = {
+    candidate: [
+      { t: 'Müsaitim, detay verir misiniz?', emoji: null },
+      { t: 'Hangi gün başlıyor?',            emoji: null },
+      { t: 'Ücret günlük mü saatlik mi?',    emoji: null },
+      { t: 'Adresi paylaşır mısınız?',       emoji: null },
+      { t: 'Teşekkürler, dönüş yapacağım.',  emoji: null },
+    ],
+    business: [
+      { t: 'Hafta sonu uygun musun?',                   emoji: null },
+      { t: 'Saat 14:00\'te işbaşı yapabilir misin?',    emoji: null },
+      { t: 'Hangi tarihler müsaitsin?',                 emoji: null },
+      { t: 'Daha önce benzer bir yerde çalıştın mı?',   emoji: null },
+      { t: 'Yarın 09:00\'da görüşmeye gelir misin?',    emoji: null },
+    ],
+  }
+  const chips = isBiz ? sets.business : sets.candidate
+
+  return (
+    <div className="px-3 pb-2 pt-1 border-t border-cream-200 dark:border-cream-300 flex-shrink-0">
+      <div className="text-[9px] uppercase tracking-widest text-ink-400 mb-1.5 flex items-center gap-1.5">
+        <span style={{ color: '#d4a853' }}>✦</span>
+        <span>Hızlı yanıt</span>
+        {listingTitle && (
+          <span className="truncate text-ink-500" style={{ maxWidth: 200 }}>
+            · {listingTitle}
+          </span>
+        )}
+      </div>
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-3 px-3"
+           style={{ scrollbarWidth: 'thin' }}>
+        {chips.map((c, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onPick?.(c.t)}
+            className="px-3 py-1.5 rounded-full text-[12px] whitespace-nowrap transition-all hover:-translate-y-0.5"
+            style={{
+              background: 'rgba(212, 168, 83, 0.10)',
+              color: '#1e3a5f',
+              border: '1px solid rgba(212, 168, 83, 0.28)',
+              flexShrink: 0,
+            }}>
+            {c.t}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
