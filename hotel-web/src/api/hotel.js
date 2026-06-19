@@ -436,6 +436,16 @@ export async function adminUnbanUser(id) {
   return data
 }
 
+// FAZ D.5 — Outbox DLQ
+export async function adminListOutbox(filter = 'all', limit = 50) {
+  const { data } = await api.get('/api/admin/outbox', { params: { filter, limit } })
+  return data
+}
+
+export async function adminRetryOutbox(id) {
+  await api.post(`/api/admin/outbox/${id}/retry`)
+}
+
 export async function adminGetStats() {
   const { data } = await api.get('/api/admin/stats')
   return data

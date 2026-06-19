@@ -13,6 +13,8 @@ import com.hotelapp.service.ReportService.ReportDto;
 import com.hotelapp.service.ReportService.UpdateReportStatusRequest;
 import com.hotelapp.service.AuditLogService;
 import com.hotelapp.service.AuditLogService.AuditLogDto;
+import com.hotelapp.service.OutboxAdminService;
+import com.hotelapp.service.OutboxAdminService.OutboxEventDto;
 import com.hotelapp.service.OutboxService;
 import com.hotelapp.event.AuditLoggedEvent;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +41,7 @@ public class AdminController {
     private final ReportService reportService;
     private final AuditLogService auditLogService;
     private final OutboxService outboxService; // FAZ C.2 — outbox via append
+    private final OutboxAdminService outboxAdminService; // FAZ D.5
 
     // ================================================================
     // İşlem geçmişi (D4 audit log)
@@ -138,6 +141,32 @@ public class AdminController {
             @RequestParam(required = false) com.hotelapp.enums.ListingStatus status,
             @RequestParam(required = false) String search) {
         return ResponseEntity.ok(adminService.listListingsForAdmin(status, search));
+    }
+
+    // ================================================================
+    // FAZ D.5 — Outbox DLQ goruntuleme + manuel retry
+    // ================================================================
+
+    @Operation(
+            summary = "Outbox event listesi",
+            description = "filter: all | pending | dead. DEAD = attempts>=5, hala teslim edilmemis."
+    )
+    @GetMapping("/outbox")
+    public ResponseEntity<List<OutboxEventDto>> listOutbox(
+            @RequestParam(required = false, defaultValue = "all") String filter,
+            @RequestParam(required = false, defaultValue = "50") int limit) {
+        return ResponseEntity.ok(outboxAdminService.list(filter, limit));
+    }
+
+    @Operation(summary = "Outbox event'i tekrar denemeye al (attempts/lastError sifirlanir)")
+    @PostMapping("/outbox/{id}/retry")
+    public ResponseEntity<Void> retryOutbox(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long id) {
+        outboxAdminService.retry(id);
+        outboxService.appendAuditLog(AuditLoggedEvent.user(currentUser.getId(),
+                "OUTBOX_RETRY", "OUTBOX_EVENT", id, "Manuel retry tetiklendi"));
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "İlanı askıya al / aktive et (PAUSED veya ACTIVE)")

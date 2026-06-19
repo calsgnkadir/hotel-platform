@@ -33,6 +33,7 @@ const adminNav = [
   { id: 'listings', label: 'İlanlar' },     // FAZ 6.3 — moderation
   { id: 'reports',  tKey: 'nav.reports' },
   { id: 'audit',    tKey: 'nav.audit' },
+  { id: 'outbox',   label: 'Outbox' },      // FAZ D.5 — DLQ admin
 ]
 
 export default function DashboardLayout({ children, activeTab, onTabChange }) {

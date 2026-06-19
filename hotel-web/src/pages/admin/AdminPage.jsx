@@ -694,6 +694,155 @@ export default function AdminPage() {
       {activeTab === 'listings' && <ListingsTab />}
       {activeTab === 'reports'  && <ReportsTab />}
       {activeTab === 'audit'    && <AuditTab />}
+      {activeTab === 'outbox'   && <OutboxTab />}
     </DashboardLayout>
+  )
+}
+
+/* ── Outbox Tab (FAZ D.5) ── */
+function OutboxTab() {
+  const [filter, setFilter] = useState('all')
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      setItems(await hotelApi.adminListOutbox(filter, 100))
+    } catch (e) {
+      toast.error(extractErrorMessage(e) || 'Outbox listelenemedi')
+    } finally {
+      setLoading(false)
+    }
+  }, [filter])
+
+  useEffect(() => { load() }, [load])
+
+  async function retry(id) {
+    try {
+      await hotelApi.adminRetryOutbox(id)
+      toast.success('Retry sırasına alındı')
+      load()
+    } catch (e) {
+      toast.error(extractErrorMessage(e) || 'İşlem başarısız')
+    }
+  }
+
+  const FILTERS = [
+    { v: 'all',     label: 'Tümü' },
+    { v: 'pending', label: 'Sırada' },
+    { v: 'dead',    label: 'Dead Letter' },
+  ]
+
+  const statusStyle = {
+    DELIVERED: { color: '#16a34a', bg: 'rgba(22, 163, 74, 0.10)' },
+    PENDING:   { color: '#d97706', bg: 'rgba(217, 119, 6, 0.10)' },
+    DEAD:      { color: '#b91c1c', bg: 'rgba(185, 28, 28, 0.10)' },
+  }
+
+  return (
+    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {FILTERS.map(f => (
+          <button
+            key={f.v}
+            onClick={() => setFilter(f.v)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: 999,
+              border: filter === f.v ? '1px solid #d4a853' : '1px solid rgba(148,163,184,0.3)',
+              background: filter === f.v ? 'rgba(212, 168, 83, 0.12)' : 'transparent',
+              color: filter === f.v ? '#d4a853' : '#94a3b8',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div style={{ color: '#94a3b8' }}>Yükleniyor…</div>
+      ) : items.length === 0 ? (
+        <div style={{ color: '#94a3b8', padding: 24, textAlign: 'center' }}>Bu filtreyle event yok.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {items.map(e => {
+            const s = statusStyle[e.status] || statusStyle.PENDING
+            return (
+              <div key={e.id} style={{
+                padding: 14,
+                borderRadius: 10,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(212, 168, 83, 0.12)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 12,
+              }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{
+                      padding: '2px 8px',
+                      borderRadius: 999,
+                      background: s.bg,
+                      color: s.color,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: '0.05em',
+                    }}>{e.status}</span>
+                    <span style={{ color: '#cbd5e1', fontSize: 13, fontWeight: 600 }}>#{e.id}</span>
+                    <span style={{ color: '#d4a853', fontSize: 11, fontWeight: 600 }}>{e.eventType}</span>
+                    <span style={{ color: '#94a3b8', fontSize: 11 }}>
+                      deneme {e.attempts}
+                    </span>
+                    <span style={{ color: '#64748b', fontSize: 11 }}>
+                      {new Date(e.createdAt).toLocaleString('tr-TR')}
+                    </span>
+                  </div>
+                  {e.lastError && (
+                    <div style={{
+                      marginTop: 6,
+                      fontSize: 11,
+                      color: '#fca5a5',
+                      fontFamily: 'monospace',
+                      lineHeight: 1.4,
+                    }}>
+                      {e.lastError}
+                    </div>
+                  )}
+                  <div style={{
+                    marginTop: 6,
+                    fontSize: 10,
+                    color: '#64748b',
+                    fontFamily: 'monospace',
+                    wordBreak: 'break-all',
+                  }}>
+                    {e.payloadPreview}
+                  </div>
+                </div>
+                {e.status !== 'DELIVERED' && (
+                  <button
+                    onClick={() => retry(e.id)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 6,
+                      background: 'rgba(212, 168, 83, 0.12)',
+                      border: '1px solid rgba(212, 168, 83, 0.3)',
+                      color: '#d4a853',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}>
+                    Tekrar Dene
+                  </button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
