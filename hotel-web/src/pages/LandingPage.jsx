@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import DarkVeil from '../components/DarkVeil'
 import HeroHeading from '../components/HeroHeading'
 import RotatingText from '../components/RotatingText'
+import LandingPulse from '../components/LandingPulse'
 
 /**
  * Landing v3 — "Hospitality Concierge" tasarım dili:
@@ -153,8 +154,11 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Sag: gorsel kart — glass panel uzerinde */}
-            <div className="lg:col-span-5 hidden lg:block animate-fade-up" style={{ animationDelay: '0.2s' }}>
+            {/* Sag: pulse widget + gorsel kart — glass panel uzerinde */}
+            <div className="lg:col-span-5 hidden lg:block animate-fade-up space-y-5" style={{ animationDelay: '0.2s' }}>
+              {/* FAZ G.8 — Canli "Vardiya Nabzi" widget — manifesto'nun kalbi */}
+              <LandingPulse />
+
               <div className="relative animate-float-y">
                 <div className="glass-panel rounded-3xl p-7 shadow-glow-lg">
                   <div className="flex items-center gap-3 mb-5">

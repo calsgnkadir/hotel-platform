@@ -199,6 +199,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     """)
     Double avgResponseSecondsForCandidate(@Param("candidateId") Long candidateId);
 
+    /** FAZ G.8 — Platform geneli son N saatte yapilan basvuru sayisi (pulse). */
+    long countByCreatedAtAfter(LocalDateTime threshold);
+
     /**
      * FAZ C.3 — Isletme: ACCEPTED basvurularin hire-time saniyeleri.
      * Frontend histogram icin StatsService 4 bucket'a ayirir.

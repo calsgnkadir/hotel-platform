@@ -126,7 +126,8 @@ public class SecurityConfig {
                                 "/actuator/health",          // FAZ 2/#18 — basic health check (public)
                                 "/actuator/health/**",       // FAZ 4.2 — liveness + readiness probes
                                 "/actuator/info",             // FAZ 2/#18 — info (public, hassas degil)
-                                "/api/dev/**"                // FAZ 4.4 — DEV-only test (@Profile("dev"))
+                                "/api/dev/**",               // FAZ 4.4 — DEV-only test (@Profile("dev"))
+                                "/api/public/**"             // FAZ G.8 — landing pulse + public widget'lar
                         ).permitAll()
                         .requestMatchers("/api/candidate/**").hasRole("CANDIDATE")
                         .requestMatchers("/api/business/**").hasRole("BUSINESS_OWNER")

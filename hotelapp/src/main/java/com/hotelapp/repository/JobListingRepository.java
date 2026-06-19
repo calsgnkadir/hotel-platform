@@ -13,4 +13,10 @@ public interface JobListingRepository
 
     /** #88: Bir işletmenin belirli statüde kaç ilanı var? (örn. ACTIVE) */
     long countByBusiness_OwnerIdAndStatus(Long ownerId, com.hotelapp.enums.ListingStatus status);
+
+    /** FAZ G.8 — Platform geneli aktif ilan sayisi. */
+    long countByStatus(com.hotelapp.enums.ListingStatus status);
+
+    /** FAZ G.8 — Bu ay icinde yayinlanan ilan sayisi (momentum gostergesi). */
+    long countByCreatedAtAfter(java.time.LocalDateTime threshold);
 }
