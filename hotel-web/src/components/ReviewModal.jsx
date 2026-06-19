@@ -11,10 +11,10 @@ import useFocusTrap from '../lib/useFocusTrap'
  * Asagidaki 4 aspect aday tarafindan isletmeye verilir.
  */
 const CANDIDATE_ASPECTS = [
-  { key: 'aspect1', emoji: '🤝', label: 'Yönetim',          hint: 'İşveren tutumu, adil davranma' },
-  { key: 'aspect2', emoji: '💰', label: 'Ödeme',            hint: 'Zamanında, eksiksiz' },
-  { key: 'aspect3', emoji: '🌟', label: 'Çalışma Koşulları', hint: 'Mola, ekipman, güvenlik' },
-  { key: 'aspect4', emoji: '👥', label: 'Ekip',             hint: 'Diğer çalışanlarla uyum' },
+  { key: 'aspect1', label: 'Yönetim',          hint: 'İşveren tutumu, adil davranma' },
+  { key: 'aspect2', label: 'Ödeme',            hint: 'Zamanında, eksiksiz' },
+  { key: 'aspect3', label: 'Çalışma Koşulları', hint: 'Mola, ekipman, güvenlik' },
+  { key: 'aspect4', label: 'Ekip',             hint: 'Diğer çalışanlarla uyum' },
 ]
 
 export default function ReviewModal({ applicationId, title, onClose, onSuccess }) {

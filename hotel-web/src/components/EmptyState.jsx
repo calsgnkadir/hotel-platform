@@ -142,7 +142,7 @@ const ILLUSTRATIONS = {
     </svg>
   ),
 
-  // ⭐ Favoriler — kalp + yıldız parıltıları
+  // Favoriler — kalp + yıldız parıltıları
   favorites: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
       <defs>

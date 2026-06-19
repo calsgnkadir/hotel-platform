@@ -79,7 +79,7 @@ public class AuthService {
         try {
             String dashboardUrl = baseUrl + (request.getRole() == Role.BUSINESS_OWNER ? "/business" : "/candidate");
             String html = emailTemplates.welcome(user.getFullName(), user.getRole().name(), dashboardUrl);
-            emailService.queue(user.getEmail(), "AjansHotel'e Hoş Geldin! 👋", html);
+            emailService.queue(user.getEmail(), "AjansHotel'e Hoş Geldin", html);
         } catch (Exception ex) {
             log.warn("[WELCOME-EMAIL] Gonderilemedi (yok sayildi): user={} sebep={}",
                     user.getEmail(), ex.getMessage());

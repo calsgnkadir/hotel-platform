@@ -30,7 +30,7 @@ public class EmailTemplates {
 
         String body = """
             <h2 style="margin:0 0 16px; font-size:24px; font-weight:800; color:#171513; letter-spacing:-0.3px;">
-              Hoş geldin, %s! 👋
+              Hoş geldin, %s
             </h2>
             <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#3d3631;">
               %s
@@ -133,7 +133,7 @@ public class EmailTemplates {
                                        String businessName, String dashboardUrl) {
         String body = """
             <h2 style="margin:0 0 16px; font-size:24px; font-weight:800; color:#171513; letter-spacing:-0.3px;">
-              Müjde, başvurun kabul edildi! 🎉
+              Müjde, başvurun kabul edildi
             </h2>
             <p style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#3d3631;">
               Merhaba %s,

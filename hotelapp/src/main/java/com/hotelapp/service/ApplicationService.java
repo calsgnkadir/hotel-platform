@@ -241,14 +241,14 @@ public class ApplicationService {
 
         if (request.getDecision() == ApplicationStatus.ACCEPTED) {
             notificationService.notify(candidateId, NotificationType.APPLICATION_ACCEPTED,
-                    "Başvurun kabul edildi 🎉",
+                    "Başvurun kabul edildi",
                     listingTitle + " ilanına başvurun kabul edildi!",
                     "applications");
             // FAZ 3 — Email: kabul (sessiz fail)
             try {
                 String html = emailTemplates.applicationAccepted(
                         candidateName, listingTitle, businessName, baseUrl + "/candidate");
-                emailService.queue(candidateEmail, "🎉 Başvurun kabul edildi — " + listingTitle, html);
+                emailService.queue(candidateEmail, "Başvurun kabul edildi — " + listingTitle, html);
             } catch (Exception ex) {
                 log.warn("[ACCEPT-EMAIL] Gonderilemedi (yok sayildi): app={} sebep={}",
                         applicationId, ex.getMessage());
