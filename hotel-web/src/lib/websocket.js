@@ -3,8 +3,9 @@
  *
  * Singleton STOMP client + subscription registry.
  * - Connect: JWT header ile
- * - Auto-reconnect (5sn interval)
- * - Subscribe registry (component unmount'ta clean)
+ * - FAZ D.10: Exponential backoff reconnect (1s -> 2s -> ... -> 30s max)
+ * - Tab visibilitychange: arka plandan ön plana gelince agresif reconnect dene
+ * - State machine: 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'failed'
  *
  * Kullanım:
  *   import { wsConnect, wsSubscribe, wsPublish, wsDisconnect } from './websocket'
@@ -19,18 +20,35 @@ let client = null
 let connected = false
 let pendingSubs = []  // bağlanmadan önce sub ister isen, buraya kuyruğa al
 
-// FAZ 4.8 — Bağlantı durumu için listener registry.
-// React tarafında useWsConnected() bunu izler; WS aktif olunca polling kapanır.
+// FAZ D.10 — connection state machine
+const STATE = { IDLE: 'idle', CONNECTING: 'connecting', CONNECTED: 'connected', RECONNECTING: 'reconnecting', FAILED: 'failed' }
+let connectionState = STATE.IDLE
+let reconnectAttempts = 0
+const MAX_RECONNECT_DELAY_MS = 30_000
+const BASE_RECONNECT_DELAY_MS = 1_000
+
+function computeBackoffDelay() {
+  // 1, 2, 4, 8, 16, 30, 30, ... + 0-1000ms jitter
+  const exp = Math.min(MAX_RECONNECT_DELAY_MS, BASE_RECONNECT_DELAY_MS * 2 ** Math.min(reconnectAttempts, 5))
+  return exp + Math.floor(Math.random() * 1000)
+}
+
+// FAZ 4.8 + D.10 — Bağlantı durumu listener registry (artik state string'i de yayar)
 const statusListeners = new Set()
 function notifyStatus() {
-  statusListeners.forEach(cb => { try { cb(connected) } catch {} })
+  statusListeners.forEach(cb => { try { cb(connected, connectionState) } catch {} })
 }
+
+/**
+ * cb(connected, state): boolean + 'idle'/'connecting'/'connected'/'reconnecting'/'failed'
+ */
 export function wsOnStatusChange(cb) {
   statusListeners.add(cb)
-  // İlk subscribe'da mevcut durumu hemen ver (state init için)
-  try { cb(connected) } catch {}
+  try { cb(connected, connectionState) } catch {}
   return () => statusListeners.delete(cb)
 }
+
+export function wsGetState() { return connectionState }
 
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '')
 const WS_URL = `${BASE_URL}/ws`
@@ -48,18 +66,25 @@ export function wsConnect() {
     return
   }
 
+  connectionState = STATE.CONNECTING
+  notifyStatus()
+  const initialDelay = computeBackoffDelay()
+
   client = new Client({
     webSocketFactory: () => new SockJS(WS_URL),
     connectHeaders: {
       Authorization: `Bearer ${token}`,
     },
-    reconnectDelay: 5000,      // 5sn sonra otomatik yeniden bağlan
+    // FAZ D.10 — Stomp's own reconnectDelay (her fail'de bu degeri yeniden hesaplariz)
+    reconnectDelay: initialDelay,
     heartbeatIncoming: 10000,
     heartbeatOutgoing: 10000,
     debug: () => {},            // log spam kapalı (DEV'de istersen aç)
 
     onConnect: () => {
       connected = true
+      connectionState = STATE.CONNECTED
+      reconnectAttempts = 0     // Basarili — backoff sifirla
       console.log('[WS] Bağlandı')
       // Bekleyen sub'ları gerçekle
       pendingSubs.forEach(({ destination, callback, ref }) => {
@@ -73,7 +98,7 @@ export function wsConnect() {
         })
       })
       pendingSubs = []
-      notifyStatus()  // React hooks'ları haberdar et → polling kapanır
+      notifyStatus()
     },
 
     onStompError: (frame) => {
@@ -86,20 +111,54 @@ export function wsConnect() {
 
     onDisconnect: () => {
       connected = false
-      console.log('[WS] Bağlantı kesildi')
-      notifyStatus()  // React hooks'ları haberdar et → polling devreye girer
+      // Asagidaki onWebSocketClose backoff arttirir
+      notifyStatus()
     },
 
     onWebSocketClose: () => {
-      // SockJS transport kapanışı — onDisconnect her zaman tetiklenmez
-      if (connected) {
+      // SockJS transport kapanışı — Stomp.js bunu auto-reconnect ile dener
+      if (connected || connectionState === STATE.CONNECTING || connectionState === STATE.RECONNECTING) {
         connected = false
+        reconnectAttempts++
+        connectionState = STATE.RECONNECTING
+        if (client) {
+          // Stomp.js'ye sonraki retry delay'i ver — exponential backoff
+          client.reconnectDelay = computeBackoffDelay()
+        }
+        console.log(`[WS] Reconnect attempt #${reconnectAttempts} after ${client?.reconnectDelay}ms`)
         notifyStatus()
       }
     },
   })
 
   client.activate()
+}
+
+/**
+ * FAZ D.10 — Manuel reconnect (kullanici "yeniden dene" tiklarsa).
+ * Backoff sifirlanir, hemen yeniden baglanir.
+ */
+export function wsForceReconnect() {
+  reconnectAttempts = 0
+  if (client) {
+    try { client.deactivate() } catch {}
+    client = null
+  }
+  connected = false
+  pendingSubs = []
+  connectionState = STATE.IDLE
+  wsConnect()
+}
+
+// FAZ D.10 — Tab visibility change: arka plandan donunce, baglanti yoksa retry
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !connected
+        && (connectionState === STATE.RECONNECTING || connectionState === STATE.FAILED)) {
+      console.log('[WS] Tab visible — force reconnect')
+      wsForceReconnect()
+    }
+  })
 }
 
 export function wsDisconnect() {

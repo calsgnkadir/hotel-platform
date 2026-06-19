@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
 import NotificationBell from './NotificationBell'
 import SettingsMenu from './SettingsMenu'
+import WsConnectionBadge from './WsConnectionBadge'
 import LanguageSwitcher from './LanguageSwitcher'
 import EmailVerifyBanner from './EmailVerifyBanner'
 
@@ -97,6 +98,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-1">
               <LanguageSwitcher />
+              <WsConnectionBadge />
               <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
               <SettingsMenu onTabChange={onTabChange} />
             </div>
