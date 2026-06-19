@@ -56,6 +56,16 @@
   --accent-danger-bg:  rgba(248, 113, 113, 0.12);
   --accent-info:       #22d3ee;
   --accent-info-bg:    rgba(34, 211, 238, 0.12);
+
+  /* FAZ G.0 — SIGNAL renkleri (durum sinyalleri: kabul, red, ban, bekliyor).
+   * Altin "CTA/vurgu" rolunu surdurur — signal'lar yalnizca durum gosterimi
+   * (kanban kart, status badge, toast type) icin kullanilir. Altinla cakismaz. */
+  --signal-green:      #3ddc97;  /* Kabul, Aktif, Online */
+  --signal-green-soft: rgba(61, 220, 151, 0.14);
+  --signal-coral:      #ef6461;  /* Red, Ban, Dead-letter */
+  --signal-coral-soft: rgba(239, 100, 97, 0.14);
+  --signal-amber:      #f59e0b;  /* Bekliyor, Hold, Warning */
+  --signal-amber-soft: rgba(245, 158, 11, 0.14);
 }
 
 /* FAZ 5.4 — Eski hibrit role-based override (data-role="business") iptal edildi.

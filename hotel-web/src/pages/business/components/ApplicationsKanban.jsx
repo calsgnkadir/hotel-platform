@@ -65,6 +65,21 @@ function statusBucket(s) {
   return s
 }
 
+/**
+ * FAZ G.2 — Yanıt süresi ısı şeridi rengi.
+ * <6sa: yeşil (sorun yok)
+ * 6-24sa: amber (dikkat)
+ * >24sa: mercan (acil yanıt)
+ */
+function computeResponseHeat(createdAt) {
+  if (!createdAt) return null
+  const ageHours = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60)
+  if (ageHours < 6)  return { color: 'var(--signal-green)', label: ageHours < 1 ? '<1 saat' : `${Math.floor(ageHours)} saat` }
+  if (ageHours < 24) return { color: 'var(--signal-amber)', label: `${Math.floor(ageHours)} saat` }
+  const days = Math.floor(ageHours / 24)
+  return { color: 'var(--signal-coral)', label: `${days} gün${days > 1 ? '' : ''}` }
+}
+
 export default function ApplicationsKanban({ applications, onRefresh, onCardClick, onOpenMessages }) {
   const [activeApp, setActiveApp] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -244,6 +259,13 @@ function Card({ app, accent, onClick, onMessage }) {
     ? new Date(app.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })
     : ''
 
+  // FAZ G.2 — Yanit suresi isi seridi: PENDING ise basvurudan beri gecen sure
+  // signal-green (<6sa) -> signal-amber (6-24sa) -> signal-coral (>24sa).
+  // Boylece isletmeyi "hizli yanit ver" davranisina UI uzerinden nudge'larız.
+  const heatColor = app.status === 'PENDING' || app.status === 'REVIEWING'
+    ? computeResponseHeat(app.createdAt)
+    : null
+
   return (
     <div
       ref={setNodeRef}
@@ -258,8 +280,26 @@ function Card({ app, accent, onClick, onMessage }) {
           background: 'rgba(15, 23, 38, 0.85)',
           border: `1px solid ${accent}22`,
           boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
+        {heatColor && (
+          <div
+            aria-label={`Yanit bekleyen sure: ${heatColor.label}`}
+            title={`Yanitlanmadi (${heatColor.label})`}
+            style={{
+              position: 'absolute',
+              top: 8,
+              bottom: 8,
+              left: 0,
+              width: 3,
+              borderRadius: 2,
+              background: heatColor.color,
+              boxShadow: `0 0 8px ${heatColor.color}66`,
+            }}
+          />
+        )}
         <div className="flex items-start gap-2.5">
           {app.candidate?.avatarUrl ? (
             <img

@@ -7,6 +7,7 @@ import * as hotelApi from '../api/hotel'
 import NotificationBell from './NotificationBell'
 import SettingsMenu from './SettingsMenu'
 import WsConnectionBadge from './WsConnectionBadge'
+import BottomTabBar from './BottomTabBar'
 import LanguageSwitcher from './LanguageSwitcher'
 import EmailVerifyBanner from './EmailVerifyBanner'
 
@@ -235,10 +236,18 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           <PageAccent tab={activeTab} role={user?.role} />
         </div>
 
-        <div className="px-4 lg:px-8 pb-20 lg:pb-12 text-[14px]">
+        <div className="px-4 lg:px-8 pb-24 md:pb-20 lg:pb-12 text-[14px]">
           {children}
         </div>
       </main>
+
+      {/* FAZ G.1 — Mobil bottom tab bar (md:hidden inside) */}
+      <BottomTabBar
+        navItems={navItems}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        role={user?.role}
+      />
     </div>
   )
 }

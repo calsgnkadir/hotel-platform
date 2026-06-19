@@ -77,6 +77,34 @@ export default {
           500: '#d4a853',
           600: '#b8902d',
         },
+
+        // FAZ G.0 — SIGNAL renkleri (durum sinyalleri: kabul, red, ban).
+        // Altin "vurgu/CTA" rolunu surdurur, signal'lar yalnizca durum
+        // gosterimi (kanban, badge, toast) icin kullanilir. Altinla cakismaz.
+        signal: {
+          // Yesil — Kabul, Aktif Vardiya, Online presence
+          green: {
+            DEFAULT: '#3ddc97',
+            50:  '#e8fbf2',
+            500: '#3ddc97',
+            600: '#1fb87a',
+            700: '#15875a',
+          },
+          // Mercan/kirmizi — Red, Ban, Dead-letter, kritik hata
+          coral: {
+            DEFAULT: '#ef6461',
+            50:  '#fdeceb',
+            500: '#ef6461',
+            600: '#d83d3a',
+            700: '#a82c2a',
+          },
+          // Amber — Bekliyor / hold / warning (mevcut terra'dan ayri durum tonu)
+          amber: {
+            DEFAULT: '#f59e0b',
+            500: '#f59e0b',
+            600: '#d97706',
+          },
+        },
       },
       scale: { '98': '0.98' },
       keyframes: {
