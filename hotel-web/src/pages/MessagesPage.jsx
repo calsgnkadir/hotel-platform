@@ -497,6 +497,38 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     }
   }
 
+  // FAZ G.5 — Pano'dan foto/dosya yapıştırma (screenshot kopyalayıp Ctrl+V)
+  async function handlePaste(e) {
+    if (sending || recording) return
+    const items = Array.from(e.clipboardData?.items || [])
+    const fileItem = items.find(it => it.kind === 'file')
+    if (!fileItem) return  // sadece metin yapıştırma — default davranış
+    const file = fileItem.getAsFile()
+    if (!file) return
+    e.preventDefault()
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error('Dosya 15 MB\'dan büyük')
+      return
+    }
+    // Pano'dan gelen image genelde "image.png" gibi; ad ile orijinali koru
+    const stamped = file.name && file.name !== 'image.png'
+      ? file
+      : new File([file], `pano-${Date.now()}.${(file.type.split('/')[1] || 'png')}`, { type: file.type })
+    setSending(true)
+    try {
+      const msg = await hotelApi.sendMessageAttachment(conversation.id, stamped, draft.trim())
+      appendMsg(msg)
+      setDraft('')
+      lastSeenIdRef.current = msg.id
+      setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+      onMessageSent?.()
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setSending(false)
+    }
+  }
+
   // ── Sesli mesaj kaydı (MediaRecorder API) ──
   const [recording, setRecording] = useState(false)
   const [recDuration, setRecDuration] = useState(0)
@@ -920,7 +952,8 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                   wsPublish(`/app/chat.typing/${conversation.id}`, {})
                 }
               }}
-              placeholder="Mesaj yaz..." maxLength={2000}
+              onPaste={handlePaste}
+              placeholder="Mesaj yaz veya foto yapıştır..." maxLength={2000}
               className="input text-sm flex-1" disabled={sending} />
             <button type="submit"
               disabled={sending || !draft.trim()}
