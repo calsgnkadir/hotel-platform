@@ -116,8 +116,15 @@ export function wsConnect() {
     },
 
     onWebSocketClose: () => {
-      // SockJS transport kapanışı — Stomp.js bunu auto-reconnect ile dener
-      if (connected || connectionState === STATE.CONNECTING || connectionState === STATE.RECONNECTING) {
+      // SockJS transport kapanışı — Stomp.js bunu auto-reconnect ile dener.
+      // FAZ F.5: zaten RECONNECTING state'indeysek bu yeni close olayi sadece
+      // Stomp'un kendi retry doneminin "artigi". attempt sayacini iki kez
+      // arttirma; backoff zaten bir onceki close'ta ayarlandi.
+      if (connectionState === STATE.RECONNECTING) {
+        connected = false
+        return
+      }
+      if (connected || connectionState === STATE.CONNECTING) {
         connected = false
         reconnectAttempts++
         connectionState = STATE.RECONNECTING
@@ -135,18 +142,29 @@ export function wsConnect() {
 }
 
 /**
- * FAZ D.10 — Manuel reconnect (kullanici "yeniden dene" tiklarsa).
+ * FAZ D.10 + F.5 — Manuel reconnect (kullanici "yeniden dene" tiklarsa).
  * Backoff sifirlanir, hemen yeniden baglanir.
+ *
+ * F.5 fix: client.deactivate() bir Promise doner; eskiden hemen null + wsConnect()
+ * geciyordu, eski SockJS transport hala canliyken yeni baglanti aciliyordu
+ * (double subscription / message duplikasyonu riski). Artik deactivate
+ * tamamlanmasini bekleyip wsConnect() cagiriyoruz.
  */
 export function wsForceReconnect() {
   reconnectAttempts = 0
-  if (client) {
-    try { client.deactivate() } catch {}
-    client = null
-  }
   connected = false
   pendingSubs = []
   connectionState = STATE.IDLE
+
+  if (client) {
+    const old = client
+    client = null
+    // Deactivate Promise döner; sonucu ne olursa olsun yeni baglantiya gec
+    Promise.resolve(old.deactivate())
+      .catch(() => {})    // hata olsa bile yeni baglanti acilmali
+      .finally(() => wsConnect())
+    return
+  }
   wsConnect()
 }
 
