@@ -49,6 +49,14 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
     private String allowedOrigins;
 
+    /**
+     * FAZ F.6 — HSTS sadece HTTPS prod ortaminda anlamli; localhost'ta TLS yokken
+     * browser bu domain'i HTTPS-only isaretler ve 1 yil dev'i bozar. Default true
+     * (Railway prod), local override icin app.security.hsts-enabled=false.
+     */
+    @Value("${app.security.hsts-enabled:true}")
+    private boolean hstsEnabled;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -78,11 +86,14 @@ public class SecurityConfig {
                 // FAZ D.3 — Security headers
                 .headers(headers -> headers
                         // HSTS — HTTPS-only (Railway prod TLS terminator: zaten zorunlu,
-                        // header sub-domain'lere yayılır)
-                        .httpStrictTransportSecurity(hsts -> hsts
-                                .includeSubDomains(true)
-                                .maxAgeInSeconds(31_536_000L)   // 1 yıl
-                        )
+                        // header sub-domain'lere yayılır). FAZ F.6: dev override.
+                        .httpStrictTransportSecurity(hsts -> {
+                            if (hstsEnabled) {
+                                hsts.includeSubDomains(true).maxAgeInSeconds(31_536_000L);
+                            } else {
+                                hsts.disable();
+                            }
+                        })
                         // X-Frame-Options: DENY — clickjacking koruması
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
                         // Referrer-Policy: origin-only (path/query leak'i önler)

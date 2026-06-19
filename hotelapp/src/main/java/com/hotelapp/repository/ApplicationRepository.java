@@ -19,6 +19,16 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findAllByCandidateId(Long candidateId);
 
     /**
+     * FAZ F.6 — GDPR export icin N+1 fix: jobListing + business eager fetch.
+     * Genel findAllByCandidateId'i degistirmedik (diger cagri noktalarinin
+     * davranisini bozmamak icin); export-spesifik ayri yontem.
+     */
+    @EntityGraph(attributePaths = { "jobListing", "jobListing.business" })
+    @Query("SELECT a FROM Application a WHERE a.candidate.id = :candidateId")
+    List<Application> findAllByCandidateIdForExport(
+            @Param("candidateId") Long candidateId);
+
+    /**
      * Aynı ilana yeniden başvuru kontrolü için spot sorgu.
      * Eski yaklaşım: tüm aday başvurularını getir + stream'de filtre — DB'yi boğardı.
      */

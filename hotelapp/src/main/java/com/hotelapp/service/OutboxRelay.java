@@ -87,4 +87,19 @@ public class OutboxRelay {
 
     // markProcessed / markFailed FAZ F.4 ile OutboxStatusWriter'a tasindi
     // (self-invocation + @Transactional proxy bypass fix'i).
+
+    /**
+     * FAZ F.6 — Eski teslim edilmis event'leri sil. Her gece 04:00.
+     * Default 30 gun retention; observability icin "su olaydan sonra ne oldu"
+     * sorularina cevap vermek icin yeterli, sonra DB sismesini engeller.
+     */
+    @Scheduled(cron = "${app.outbox.cleanupCron:0 0 4 * * *}")
+    @org.springframework.transaction.annotation.Transactional
+    public void cleanupProcessed() {
+        var cutoff = java.time.LocalDateTime.now().minusDays(30);
+        int deleted = outboxRepository.deleteProcessedOlderThan(cutoff);
+        if (deleted > 0) {
+            log.info("[OUTBOX-CLEANUP] {} eski islenmis event silindi (>30 gun)", deleted);
+        }
+    }
 }

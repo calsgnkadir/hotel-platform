@@ -78,7 +78,7 @@ public class GdprService {
 
         // Basvuruları sade ozet (kapsamli ApplicationResponse kullanmiyoruz —
         // burada PII surrogate'larin azaltilmasi onemli)
-        List<Map<String, Object>> apps = applicationRepository.findAllByCandidateId(userId).stream()
+        List<Map<String, Object>> apps = applicationRepository.findAllByCandidateIdForExport(userId).stream()
                 .map(a -> {
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("id", a.getId());

@@ -3,6 +3,7 @@ package com.hotelapp.repository;
 import com.hotelapp.entity.OutboxEvent;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -45,4 +46,10 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> 
     org.springframework.data.domain.Page<OutboxEvent> findDeadLetters(
             @org.springframework.data.repository.query.Param("minAttempts") int minAttempts,
             org.springframework.data.domain.Pageable pageable);
+
+    /** FAZ F.6 — Eski teslim edilmis event'leri sil (tablo sismesini onler). */
+    @Modifying
+    @Query("DELETE FROM OutboxEvent e WHERE e.processedAt IS NOT NULL AND e.processedAt < :cutoff")
+    int deleteProcessedOlderThan(
+            @org.springframework.data.repository.query.Param("cutoff") java.time.LocalDateTime cutoff);
 }

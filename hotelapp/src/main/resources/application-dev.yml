@@ -23,6 +23,12 @@ jwt:
 file:
   upload-dir: ./uploads
 
+# FAZ F.6 — Dev'de HSTS kapali (localhost TLS yok; aksi halde browser
+# bu domain'i 1 yil HTTPS-only isaretler, dev'i bozar)
+app:
+  security:
+    hsts-enabled: false
+
 logging:
   level:
     com.hotelapp: DEBUG

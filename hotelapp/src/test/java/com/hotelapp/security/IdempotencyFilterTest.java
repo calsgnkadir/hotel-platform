@@ -150,6 +150,21 @@ class IdempotencyFilterTest {
     }
 
     @Test
+    @DisplayName("FAZ F.6: TTL gecen entry cache'ten otomatik temizlenir")
+    void expiredEntry_returnsMissAndEvicts() {
+        // TTL'i 0'a indir; store edilen entry derhal expire'a dusecek
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "ttlMinutes", 0L);
+        service.store("99:expired-key", 200, "old");
+        // 1 nano sonra bile expired sayilmali
+        try { Thread.sleep(5); } catch (InterruptedException ignored) {}
+
+        var found = service.find("99:expired-key");
+        org.assertj.core.api.Assertions.assertThat(found).isNull();
+        // Ikinci find hala null (cache.remove cagrilmis olmali)
+        org.assertj.core.api.Assertions.assertThat(service.find("99:expired-key")).isNull();
+    }
+
+    @Test
     @DisplayName("Farkli user'lar ayni key'i cakismadan kullanabilir")
     void differentUsers_isolated() throws Exception {
         service.store("1:shared-key", 200, "user1");

@@ -94,9 +94,10 @@ class GdprServiceTest {
     void exportUserData_includesAllSections() {
         User u = user(7L);
         when(userRepository.findById(7L)).thenReturn(Optional.of(u));
-        when(applicationRepository.findAllByCandidateId(7L)).thenReturn(List.of());
+        when(applicationRepository.findAllByCandidateIdForExport(7L)).thenReturn(List.of());
         Page<com.hotelapp.entity.Notification> emptyPage = new PageImpl<>(List.of());
-        when(notificationRepository.findAllByRecipientIdOrderByCreatedAtDesc(eq7L(), any(Pageable.class)))
+        when(notificationRepository.findAllByRecipientIdOrderByCreatedAtDesc(
+                org.mockito.ArgumentMatchers.eq(7L), any(Pageable.class)))
                 .thenReturn(emptyPage);
 
         var data = service.exportUserData(7L);
@@ -107,8 +108,6 @@ class GdprServiceTest {
         assertThat(profile.get("email")).isEqualTo("u7@x.com");
         assertThat(profile.get("fullName")).isEqualTo("Ad Soyad");
     }
-
-    private static long eq7L() { return org.mockito.ArgumentMatchers.eq(7L); }
 
     @Test
     @DisplayName("anonymizeDueAccounts: email maskelenir, name silinmis kullanici olur")
