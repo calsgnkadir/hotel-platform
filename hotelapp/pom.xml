@@ -151,11 +151,13 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- DevTools -->
+        <!-- DevTools — FAZ H.1: scope=runtime + optional=true tek basina prod jar'a
+             sizmasini ENGELLEMEZ. scope=test'e cevirdik, ek olarak spring-boot-maven-plugin
+             excludeDevtools=true zaten default (3.x) — belt + suspenders. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
+            <scope>test</scope>
             <optional>true</optional>
         </dependency>
 
@@ -186,6 +188,8 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <!-- FAZ H.1: prod jar'a devtools ve lombok girmesin (defense in depth) -->
+                    <excludeDevtools>true</excludeDevtools>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
