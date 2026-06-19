@@ -40,19 +40,32 @@ class RateLimitFilterTest {
     }
 
     @Test
-    @DisplayName("Sensitive POST /api/messages: 10 istek gecer, 11. 429 doner")
-    void sensitiveEndpoint_limitedTo10PerMinute() throws Exception {
+    @DisplayName("FAZ F.1 Sensitive POST /api/messages/conversations/42/messages: 10 OK, 11. 429")
+    void sensitiveEndpoint_messageSendPath_limited() throws Exception {
+        // F.1 fix: gercek mesaj endpoint path'i (eski exact-match /api/messages bunu kacirir)
+        String realPath = "/api/messages/conversations/42/messages";
         for (int i = 0; i < 10; i++) {
             MockHttpServletResponse res = new MockHttpServletResponse();
-            filter.doFilter(post("/api/messages"), res, chain);
-            // sanity: chain calistirilmali
-
+            filter.doFilter(post(realPath), res, chain);
             assertThat(res.getStatus()).isEqualTo(HttpStatus.OK.value());
         }
         MockHttpServletResponse res11 = new MockHttpServletResponse();
-        filter.doFilter(post("/api/messages"), res11, chain);
+        filter.doFilter(post(realPath), res11, chain);
         assertThat(res11.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS.value());
         assertThat(res11.getContentAsString()).contains("Too Many Requests");
+    }
+
+    @Test
+    @DisplayName("FAZ F.1 Sensitive POST /api/messages/conversations (yeni sohbet): limit aktif")
+    void sensitiveEndpoint_newConversation_limited() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            MockHttpServletResponse res = new MockHttpServletResponse();
+            filter.doFilter(post("/api/messages/conversations"), res, chain);
+            assertThat(res.getStatus()).isEqualTo(HttpStatus.OK.value());
+        }
+        MockHttpServletResponse res11 = new MockHttpServletResponse();
+        filter.doFilter(post("/api/messages/conversations"), res11, chain);
+        assertThat(res11.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS.value());
     }
 
     @Test
@@ -72,8 +85,8 @@ class RateLimitFilterTest {
         filter.doFilter(gReq, gRes, chain);
         assertThat(gRes.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS.value());
 
-        // Ama POST /api/messages hala calisir (ayri bucket)
-        MockHttpServletRequest pReq = new MockHttpServletRequest("POST", "/api/messages");
+        // Ama POST /api/messages/conversations hala calisir (ayri bucket — F.1)
+        MockHttpServletRequest pReq = new MockHttpServletRequest("POST", "/api/messages/conversations");
         pReq.setRemoteAddr("10.0.0.2");
         MockHttpServletResponse pRes = new MockHttpServletResponse();
         filter.doFilter(pReq, pRes, chain);

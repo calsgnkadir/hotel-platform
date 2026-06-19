@@ -56,7 +56,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-                if (jwtService.isTokenValid(jwt, userDetails)) {
+                // FAZ F.3 — KVKK soft-delete: enabled=false ise eski JWT gecersiz olmali.
+                // UserPrincipal.isEnabled() User.isEnabled()'i doner; GdprService.requestDeletion
+                // bunu false yapar, yani silme talebinden sonra eski token 401 dusurulur.
+                // isAccountNonLocked() banned kullanicilari da bloklar.
+                if (jwtService.isTokenValid(jwt, userDetails)
+                        && userDetails.isEnabled()
+                        && userDetails.isAccountNonLocked()) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,

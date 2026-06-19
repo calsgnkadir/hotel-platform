@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -53,6 +54,9 @@ public class GdprController {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
         headers.setContentLength(json.length);
+        // FAZ F.2 — PII icerigi shared proxy / browser cache'inde tutulmasin (KVKK m.12)
+        headers.setCacheControl(CacheControl.noStore());
+        headers.setPragma("no-cache");
 
         return new ResponseEntity<>(json, headers, 200);
     }

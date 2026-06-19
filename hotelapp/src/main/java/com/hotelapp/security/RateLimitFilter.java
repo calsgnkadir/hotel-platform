@@ -72,15 +72,27 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final Map<String, TimedBucket> generalBuckets   = new ConcurrentHashMap<>();
 
     /**
-     * FAZ D.1 — Sensitive write POST endpoint'leri (spam/burst koruması).
-     * Tam yol eslestirir; path variable iceren endpoint'ler dahil degil (orn. PUT/DELETE).
+     * FAZ D.1 + F.1 — Sensitive write POST endpoint'leri (spam/burst koruması).
+     *
+     * F.1 fix: exact-match Set yerine prefix/path kontrolu. Mesaj endpoint'i
+     * gercekte /api/messages/conversations[/{id}/messages] altinda — exact-match
+     * Set ile bu path'lar yakalanmiyor, mesaj spam korumasi olu kaliyor.
+     *
+     * Sensitive (10/dk):
+     *  - POST /api/candidate/applications       (basvuru olustur)
+     *  - POST /api/messages/**                  (yeni conversation + mesaj gonder)
+     *  - POST /api/reports                      (sikayet)
+     *  - POST /api/listings                     (ilan olustur)
      */
-    private static final Set<String> SENSITIVE_WRITE_POSTS = Set.of(
-            "/api/candidate/applications",   // basvuru olustur (spam)
-            "/api/messages",                 // mesaj gonder (spam)
-            "/api/reports",                  // sikayet (spam)
-            "/api/listings"                  // ilan olustur
-    );
+    private static boolean isSensitiveWrite(HttpServletRequest req) {
+        if (!"POST".equalsIgnoreCase(req.getMethod())) return false;
+        String p = req.getRequestURI();
+        return "/api/candidate/applications".equals(p)
+                || p.startsWith("/api/messages/")
+                || "/api/messages".equals(p)
+                || "/api/reports".equals(p)
+                || "/api/listings".equals(p);
+    }
 
     /**
      * Trusted proxy IP'leri — bunlardan gelen X-Forwarded-For kabul edilir.
@@ -128,9 +140,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String ip = extractIp(request);
         String path = request.getRequestURI();
         boolean isAuth = path.startsWith("/api/auth");
-        boolean isSensitiveWrite = !isAuth
-                && "POST".equalsIgnoreCase(request.getMethod())
-                && SENSITIVE_WRITE_POSTS.contains(path);
+        boolean isSensitiveWrite = !isAuth && isSensitiveWrite(request);
 
         Map<String, TimedBucket> map;
         java.util.function.Supplier<Bucket> bucketBuilder;
