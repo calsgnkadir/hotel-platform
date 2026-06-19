@@ -19,6 +19,7 @@ import AdminPage from './pages/admin/AdminPage'
 import KvkkPage from './pages/KvkkPage'
 import TermsPage from './pages/TermsPage'
 import HelpPage from './pages/HelpPage'
+import ContactPage from './pages/ContactPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import ListingDetailPage from './pages/candidate/ListingDetailPage'
 import BusinessPublicPage from './pages/public/BusinessPublicPage'  // FAZ 5.9
@@ -91,6 +92,7 @@ function AnimatedRoutes() {
         <Route path="/kvkk"            element={<KvkkPage />} />
         <Route path="/terms"           element={<TermsPage />} />
         <Route path="/yardim"          element={<HelpPage />} />
+        <Route path="/iletisim"        element={<ContactPage />} />
         <Route path="/verify-email"    element={<VerifyEmailPage />} />
 
         {/* FAZ 1/#47 — Public listing detail (paylasilabilir URL) */}

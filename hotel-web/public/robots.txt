@@ -9,6 +9,7 @@ Allow: /p/business/
 Allow: /kvkk
 Allow: /terms
 Allow: /yardim
+Allow: /iletisim
 
 Disallow: /candidate/
 Disallow: /business/
