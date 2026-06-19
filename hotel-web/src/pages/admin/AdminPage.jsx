@@ -694,8 +694,124 @@ export default function AdminPage() {
       {activeTab === 'listings' && <ListingsTab />}
       {activeTab === 'reports'  && <ReportsTab />}
       {activeTab === 'audit'    && <AuditTab />}
+      {activeTab === 'businesses' && <BusinessesTab />}
       {activeTab === 'outbox'   && <OutboxTab />}
     </DashboardLayout>
+  )
+}
+
+/* FAZ G.3 — İşletme doğrulama tab */
+function BusinessesTab() {
+  const [filter, setFilter] = useState('all')   // all | verified | unverified
+  const [search, setSearch] = useState('')
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const verified = filter === 'all' ? null : filter === 'verified'
+      setItems(await hotelApi.adminListBusinesses(verified, search))
+    } catch (e) {
+      toast.error(extractErrorMessage(e) || 'İşletmeler yüklenemedi')
+    } finally {
+      setLoading(false)
+    }
+  }, [filter, search])
+
+  useEffect(() => { load() }, [load])
+
+  async function toggleVerified(biz) {
+    try {
+      await hotelApi.adminSetBusinessVerified(biz.id, !biz.verifiedAt)
+      toast.success(biz.verifiedAt ? 'Doğrulama kaldırıldı' : 'İşletme doğrulandı')
+      load()
+    } catch (e) {
+      toast.error(extractErrorMessage(e) || 'İşlem başarısız')
+    }
+  }
+
+  const FILTERS = [
+    { v: 'all',         label: 'Tümü' },
+    { v: 'verified',    label: 'Doğrulanmış' },
+    { v: 'unverified',  label: 'Onay Bekliyor' },
+  ]
+
+  return (
+    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        {FILTERS.map(f => (
+          <button key={f.v} onClick={() => setFilter(f.v)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: 999,
+              border: filter === f.v ? '1px solid #d4a853' : '1px solid rgba(148,163,184,0.3)',
+              background: filter === f.v ? 'rgba(212, 168, 83, 0.12)' : 'transparent',
+              color: filter === f.v ? '#d4a853' : '#94a3b8',
+              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}>
+            {f.label}
+          </button>
+        ))}
+        <input value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="ad veya email ara…"
+          style={{
+            flex: 1, minWidth: 220,
+            padding: '8px 12px', borderRadius: 8,
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(212, 168, 83, 0.18)',
+            color: '#f3f4f6', fontSize: 13, outline: 'none',
+          }} />
+      </div>
+
+      {loading ? (
+        <div style={{ color: '#94a3b8' }}>Yükleniyor…</div>
+      ) : items.length === 0 ? (
+        <div style={{ color: '#94a3b8', padding: 24, textAlign: 'center' }}>İşletme bulunamadı.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {items.map(b => (
+            <div key={b.id} style={{
+              padding: 14, borderRadius: 10,
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(212, 168, 83, 0.12)',
+              display: 'flex', alignItems: 'center', gap: 12,
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <span style={{ color: '#f3f4f6', fontSize: 14, fontWeight: 600 }}>{b.name}</span>
+                  {b.verifiedAt && (
+                    <span style={{
+                      padding: '2px 8px', borderRadius: 999,
+                      background: 'rgba(212, 168, 83, 0.18)',
+                      color: '#fbd768', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+                    }}>DOĞRULANDI</span>
+                  )}
+                </div>
+                <div style={{ color: '#94a3b8', fontSize: 11, marginTop: 2 }}>
+                  {b.type} · {b.district || '—'} · {b.ownerEmail}
+                </div>
+                {b.verifiedAt && (
+                  <div style={{ color: '#64748b', fontSize: 10, marginTop: 2 }}>
+                    {new Date(b.verifiedAt).toLocaleString('tr-TR')} · admin #{b.verifiedBy}
+                  </div>
+                )}
+              </div>
+              <button onClick={() => toggleVerified(b)}
+                style={{
+                  padding: '6px 14px', borderRadius: 6,
+                  background: b.verifiedAt ? 'rgba(239, 100, 97, 0.12)' : 'linear-gradient(135deg, #d4a853, #f7c43c)',
+                  border: b.verifiedAt ? '1px solid rgba(239, 100, 97, 0.3)' : 'none',
+                  color: b.verifiedAt ? '#fca5a5' : '#0c1726',
+                  fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+                }}>
+                {b.verifiedAt ? 'Onayı Kaldır' : 'Doğrula'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -30,12 +30,13 @@ const businessNav = [
 ]
 
 const adminNav = [
-  { id: 'overview', tKey: 'nav.overview' },
-  { id: 'users',    tKey: 'nav.users' },
-  { id: 'listings', label: 'İlanlar' },     // FAZ 6.3 — moderation
-  { id: 'reports',  tKey: 'nav.reports' },
-  { id: 'audit',    tKey: 'nav.audit' },
-  { id: 'outbox',   label: 'Outbox' },      // FAZ D.5 — DLQ admin
+  { id: 'overview',   tKey: 'nav.overview' },
+  { id: 'users',      tKey: 'nav.users' },
+  { id: 'businesses', label: 'İşletmeler' }, // FAZ G.3 — KYC doğrulama
+  { id: 'listings',   label: 'İlanlar' },     // FAZ 6.3 — moderation
+  { id: 'reports',    tKey: 'nav.reports' },
+  { id: 'audit',      tKey: 'nav.audit' },
+  { id: 'outbox',     label: 'Outbox' },      // FAZ D.5 — DLQ admin
 ]
 
 export default function DashboardLayout({ children, activeTab, onTabChange }) {

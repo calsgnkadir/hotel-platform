@@ -436,6 +436,20 @@ export async function adminUnbanUser(id) {
   return data
 }
 
+// FAZ G.3 — İşletme doğrulama (KYC rozet)
+export async function adminListBusinesses(verified, search) {
+  const params = {}
+  if (verified !== undefined && verified !== null) params.verified = verified
+  if (search) params.search = search
+  const { data } = await api.get('/api/admin/businesses', { params })
+  return data
+}
+
+export async function adminSetBusinessVerified(id, verified) {
+  const { data } = await api.put(`/api/admin/businesses/${id}/verify`, null, { params: { verified } })
+  return data
+}
+
 // FAZ D.5 — Outbox DLQ
 export async function adminListOutbox(filter = 'all', limit = 50) {
   const { data } = await api.get('/api/admin/outbox', { params: { filter, limit } })

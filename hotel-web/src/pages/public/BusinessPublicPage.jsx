@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import * as hotelApi from '../../api/hotel'
 import { keys } from '../../lib/queryClient'
 import cldImg, { ImgSize } from '../../lib/cldImg'
+import VerifiedBadge from '../../components/VerifiedBadge'
 
 const MapView = lazy(() => import('../../components/MapView'))
 
@@ -282,9 +283,10 @@ export default function BusinessPublicPage() {
                   {typeLabel}
                   {business.category && <span> · {business.category}</span>}
                 </div>
-                <h1 className="font-bebas text-2xl sm:text-3xl lg:text-4xl tracking-wider uppercase text-white leading-tight"
+                <h1 className="font-bebas text-2xl sm:text-3xl lg:text-4xl tracking-wider uppercase text-white leading-tight inline-flex items-center"
                     style={{ textShadow: '0 0 18px rgba(212, 168, 83, 0.40)' }}>
                   {business.name}
+                  {business.verified && <VerifiedBadge size="lg" />}
                 </h1>
                 <div className="text-sm mt-1.5" style={{ color: '#8ba9d2' }}>
                   {fullLocation || business.city || '—'}

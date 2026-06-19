@@ -495,6 +495,7 @@ public class JobListingService {
                 .businessLongitude(l.getBusiness().getLongitude())
                 .businessAverageRating(avgRating)
                 .businessReviewCount(reviewCount)
+                .businessVerified(l.getBusiness().getVerifiedAt() != null) // FAZ G.3
                 .createdAt(l.getCreatedAt())
                 .shiftSlots(slotDtos)
                 .businessPhotoUrls(photoUrls)  // D3
@@ -610,6 +611,7 @@ public class JobListingService {
         private String status;
         private Long businessId;
         private String businessName;
+        private Boolean businessVerified; // FAZ G.3
         private String businessType;
         private String businessDistrict;
         private String businessNeighborhood;

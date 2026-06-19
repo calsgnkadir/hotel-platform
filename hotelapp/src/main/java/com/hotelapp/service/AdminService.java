@@ -278,6 +278,70 @@ public class AdminService {
         private LocalDateTime createdAt;
     }
 
+    // ================================================================
+    // FAZ G.3 — Isletme dogrulama (KYC onay rozeti)
+    // ================================================================
+
+    @Data @Builder
+    public static class AdminBusinessDto {
+        private Long id;
+        private String name;
+        private String type;
+        private String district;
+        private String ownerEmail;
+        private LocalDateTime verifiedAt;   // null = onaysiz
+        private Long verifiedBy;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminBusinessDto> listBusinessesForAdmin(Boolean verifiedOnly, String search) {
+        var stream = businessRepository.findAll().stream();
+        if (Boolean.TRUE.equals(verifiedOnly)) {
+            stream = stream.filter(b -> b.getVerifiedAt() != null);
+        } else if (Boolean.FALSE.equals(verifiedOnly)) {
+            stream = stream.filter(b -> b.getVerifiedAt() == null);
+        }
+        if (search != null && !search.isBlank()) {
+            String q = search.trim().toLowerCase();
+            stream = stream.filter(b ->
+                (b.getName() != null && b.getName().toLowerCase().contains(q)) ||
+                (b.getOwner() != null && b.getOwner().getEmail() != null
+                    && b.getOwner().getEmail().toLowerCase().contains(q)));
+        }
+        return stream
+            .limit(200)
+            .map(this::toAdminBusinessDto)
+            .toList();
+    }
+
+    /** Toggle: verified ise verifiedAt=null, degilse simdiki tarih + admin id. */
+    @Transactional
+    public AdminBusinessDto setBusinessVerified(Long businessId, boolean verified, Long adminId) {
+        var biz = businessRepository.findById(businessId)
+            .orElseThrow(() -> new ResourceNotFoundException("İşletme", businessId));
+        if (verified) {
+            biz.setVerifiedAt(LocalDateTime.now());
+            biz.setVerifiedBy(adminId);
+        } else {
+            biz.setVerifiedAt(null);
+            biz.setVerifiedBy(null);
+        }
+        businessRepository.save(biz);
+        return toAdminBusinessDto(biz);
+    }
+
+    private AdminBusinessDto toAdminBusinessDto(com.hotelapp.entity.Business b) {
+        return AdminBusinessDto.builder()
+            .id(b.getId())
+            .name(b.getName())
+            .type(b.getType() != null ? b.getType().name() : null)
+            .district(b.getDistrict())
+            .ownerEmail(b.getOwner() != null ? b.getOwner().getEmail() : null)
+            .verifiedAt(b.getVerifiedAt())
+            .verifiedBy(b.getVerifiedBy())
+            .build();
+    }
+
     @Data
     public static class SetListingStatusRequest {
         @NotNull private com.hotelapp.enums.ListingStatus status;

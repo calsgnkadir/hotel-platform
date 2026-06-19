@@ -71,6 +71,16 @@ public class Business {
 
     private LocalDateTime createdAt;
 
+    /**
+     * FAZ G.3 — KYC/onay rozetli isletme. Admin manuel "Dogrula" tıklar:
+     * vergi numarası + isim eslesmesi + telefon dogrulamasi vb. dısarıda.
+     * null = onaysız, NOT NULL = onaylanmıs ve halka acık rozet gosterilir.
+     */
+    private LocalDateTime verifiedAt;
+
+    /** Onayi veren admin id'si (audit izi). */
+    private Long verifiedBy;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

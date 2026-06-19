@@ -308,6 +308,7 @@ public class BusinessService {
                         .orElse(null))
                 .averageRating(rating.getAverageRating())
                 .reviewCount(rating.getReviewCount())
+                .verified(b.getVerifiedAt() != null)  // FAZ G.3
                 .build();
     }
 
@@ -338,6 +339,8 @@ public class BusinessService {
         // R3
         private Double averageRating;  // null = yorum yok
         private Long reviewCount;
+        // FAZ G.3 — KYC onayli isletme rozeti
+        private Boolean verified;
     }
 
     @Data

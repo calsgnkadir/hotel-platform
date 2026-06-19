@@ -169,6 +169,31 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    // ================================================================
+    // FAZ G.3 — Isletme dogrulama (KYC onay rozeti)
+    // ================================================================
+
+    @Operation(summary = "İşletmeleri listele (verifiedOnly opsiyonel: true/false/null)")
+    @GetMapping("/businesses")
+    public ResponseEntity<List<AdminService.AdminBusinessDto>> listBusinesses(
+            @RequestParam(required = false) Boolean verified,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(adminService.listBusinessesForAdmin(verified, search));
+    }
+
+    @Operation(summary = "İşletme doğrulamasını aç/kapat (toggle)")
+    @PutMapping("/businesses/{id}/verify")
+    public ResponseEntity<AdminService.AdminBusinessDto> setBusinessVerified(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long id,
+            @RequestParam boolean verified) {
+        AdminService.AdminBusinessDto result = adminService.setBusinessVerified(id, verified, currentUser.getId());
+        outboxService.appendAuditLog(AuditLoggedEvent.user(currentUser.getId(),
+                verified ? "BUSINESS_VERIFY" : "BUSINESS_UNVERIFY", "BUSINESS", id,
+                "İşletme " + result.getName() + " → " + (verified ? "doğrulandı" : "doğrulama kaldırıldı")));
+        return ResponseEntity.ok(result);
+    }
+
     @Operation(summary = "İlanı askıya al / aktive et (PAUSED veya ACTIVE)")
     @PutMapping("/listings/{id}/status")
     public ResponseEntity<AdminService.AdminListingDto> setListingStatus(

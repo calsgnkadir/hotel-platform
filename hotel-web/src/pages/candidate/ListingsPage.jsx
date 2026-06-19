@@ -18,6 +18,7 @@ import { extractErrorMessage } from '../../api/client'
 import { keys } from '../../lib/queryClient'
 import ReportModal from '../../components/ReportModal'
 import StarRating from '../../components/StarRating'
+import VerifiedBadge from '../../components/VerifiedBadge'
 import HoverPhotoCarousel from '../../components/HoverPhotoCarousel'  // FAZ D3
 import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
@@ -585,7 +586,10 @@ function ListingCard({ listing, onApply, onDetail }) {
           {listing.title}
         </h3>
         <div className="flex items-center gap-2 flex-wrap mt-1">
-          <p className="text-sm" style={{ color: '#fde9a5' }}>{listing.businessName}</p>
+          <p className="text-sm inline-flex items-center" style={{ color: '#fde9a5' }}>
+            {listing.businessName}
+            {listing.businessVerified && <VerifiedBadge size="sm" />}
+          </p>
           {listing.businessReviewCount > 0 && (
             <StarRating value={listing.businessAverageRating}
               count={listing.businessReviewCount} size="xs" />
