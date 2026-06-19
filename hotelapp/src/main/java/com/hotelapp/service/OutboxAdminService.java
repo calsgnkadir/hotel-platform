@@ -1,6 +1,7 @@
 package com.hotelapp.service;
 
 import com.hotelapp.entity.OutboxEvent;
+import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.OutboxEventRepository;
 import lombok.Builder;
@@ -39,20 +40,28 @@ public class OutboxAdminService {
         var pageable = PageRequest.of(0, safeLimit);
         var page = switch (filter == null ? "all" : filter.toLowerCase()) {
             case "pending" -> outboxRepository.findAllByProcessedAtIsNullOrderByCreatedAtDesc(pageable);
-            case "dead"    -> outboxRepository.findDeadLetters(pageable);
+            case "dead"    -> outboxRepository.findDeadLetters(OutboxRelay.MAX_ATTEMPTS, pageable);
             default        -> outboxRepository.findAllByOrderByCreatedAtDesc(pageable);
         };
         return page.getContent().stream().map(this::toDto).toList();
     }
 
-    /** Manuel retry: attempts/error sifirlanir, processedAt NULL kalir. */
+    /**
+     * Manuel retry: attempts/error sifirlanir, processedAt NULL kalir.
+     * FAZ F.4: DELIVERED guard — zaten teslim edilmis event'i tekrar islemek
+     * duplicate email/audit yaratir. UI butonu sadece non-DELIVERED gosterse de
+     * backend de korumali olmali (admin API direkt cagriya kapali degil).
+     */
     @Transactional
     public void retry(Long id) {
         OutboxEvent e = outboxRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("OutboxEvent", id));
+        if (e.getProcessedAt() != null) {
+            throw new BusinessRuleException(
+                    "Zaten teslim edilmis event retry edilemez (duplicate teslimat riski)");
+        }
         e.setAttempts(0);
         e.setLastError(null);
-        e.setProcessedAt(null);
         outboxRepository.save(e);
         log.info("[OUTBOX-ADMIN] event id={} manuel retry'a alindi (type={})", id, e.getEventType());
     }
@@ -60,7 +69,7 @@ public class OutboxAdminService {
     private OutboxEventDto toDto(OutboxEvent e) {
         String status;
         if (e.getProcessedAt() != null) status = "DELIVERED";
-        else if (e.getAttempts() >= 5) status = "DEAD";
+        else if (e.getAttempts() >= OutboxRelay.MAX_ATTEMPTS) status = "DEAD";
         else status = "PENDING";
 
         return OutboxEventDto.builder()

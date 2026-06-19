@@ -15,10 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -32,17 +32,18 @@ class OutboxRelayTest {
 
     @Mock private OutboxEventRepository outboxRepository;
     @Mock private AuditLogService auditLogService;
-    @Mock private EmailService emailService;  // FAZ D.9
+    @Mock private EmailService emailService;       // FAZ D.9
+    @Mock private OutboxStatusWriter statusWriter; // FAZ F.4
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private OutboxRelay relay;
 
     @BeforeEach
     void setUp() {
-        // FAZ D.4 — AppMetrics opsiyonel; test'te bos provider yeterli
         org.springframework.beans.factory.ObjectProvider<com.hotelapp.metrics.AppMetrics> noMetrics =
                 emptyProvider();
-        relay = new OutboxRelay(outboxRepository, objectMapper, auditLogService, emailService, noMetrics);
+        relay = new OutboxRelay(outboxRepository, objectMapper, auditLogService, emailService,
+                statusWriter, noMetrics);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -54,7 +55,7 @@ class OutboxRelayTest {
     }
 
     @Test
-    @DisplayName("relay: AUDIT_LOG (user) -> auditLogService.log + processed isaretler")
+    @DisplayName("relay: AUDIT_LOG (user) -> auditLogService.log + statusWriter.markProcessed")
     void relay_userAuditLog_processed() throws Exception {
         var event = AuditLoggedEvent.user(42L, "BAN_USER", "USER", 99L, "detail");
         var row = OutboxEvent.builder()
@@ -64,15 +65,14 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(0)
                 .build();
-        when(outboxRepository.findUnprocessed(any())).thenReturn(List.of(row));
-        when(outboxRepository.findById(1L)).thenReturn(Optional.of(row));
+        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+                .thenReturn(List.of(row));
 
         relay.relay();
 
         verify(auditLogService).log(42L, "BAN_USER", "USER", 99L, "detail");
-        ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
-        verify(outboxRepository).save(captor.capture());
-        assertThat(captor.getValue().getProcessedAt()).isNotNull();
+        verify(statusWriter).markProcessed(1L);
+        verify(statusWriter, never()).markFailed(any(), any(), anyInt());
     }
 
     @Test
@@ -86,18 +86,19 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(0)
                 .build();
-        when(outboxRepository.findUnprocessed(any())).thenReturn(List.of(row));
-        when(outboxRepository.findById(2L)).thenReturn(Optional.of(row));
+        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+                .thenReturn(List.of(row));
 
         relay.relay();
 
         verify(auditLogService).logSystem("AUTO_BAN", "USER", 7L, "auto");
         verify(auditLogService, never()).log(any(), anyString(), anyString(), any(), anyString());
+        verify(statusWriter).markProcessed(2L);
     }
 
     @Test
-    @DisplayName("relay: handler exception -> attempts++ + lastError, processedAt NULL kalir")
-    void relay_handlerFailure_marksAttemptsAndError() throws Exception {
+    @DisplayName("relay: handler exception -> statusWriter.markFailed cagrilir")
+    void relay_handlerFailure_marksFailed() throws Exception {
         var event = AuditLoggedEvent.user(1L, "ACT", "T", 1L, "d");
         var row = OutboxEvent.builder()
                 .id(3L)
@@ -106,23 +107,40 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(2)
                 .build();
-        when(outboxRepository.findUnprocessed(any())).thenReturn(List.of(row));
-        when(outboxRepository.findById(3L)).thenReturn(Optional.of(row));
+        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+                .thenReturn(List.of(row));
         doThrow(new RuntimeException("DB down"))
                 .when(auditLogService).log(any(), anyString(), anyString(), any(), anyString());
 
         relay.relay();
 
-        ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
-        verify(outboxRepository).save(captor.capture());
-        OutboxEvent saved = captor.getValue();
-        assertThat(saved.getAttempts()).isEqualTo(3);
-        assertThat(saved.getLastError()).contains("DB down");
-        assertThat(saved.getProcessedAt()).isNull();
+        ArgumentCaptor<Exception> exCap = ArgumentCaptor.forClass(Exception.class);
+        verify(statusWriter).markFailed(eq(3L), exCap.capture(), eq(OutboxRelay.MAX_ATTEMPTS));
+        assertThat(exCap.getValue().getMessage()).contains("DB down");
+        verify(statusWriter, never()).markProcessed(any());
     }
 
     @Test
-    @DisplayName("relay: EMAIL -> EmailService.send + processed")
+    @DisplayName("relay: bilinmeyen eventType -> handler fail, markFailed cagrilir")
+    void relay_unknownType_marksFailed() {
+        var row = OutboxEvent.builder()
+                .id(4L)
+                .eventType("WEIRD_TYPE")
+                .payload("{}")
+                .createdAt(LocalDateTime.now())
+                .attempts(0)
+                .build();
+        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+                .thenReturn(List.of(row));
+
+        relay.relay();
+
+        verify(statusWriter).markFailed(eq(4L), any(IllegalArgumentException.class),
+                eq(OutboxRelay.MAX_ATTEMPTS));
+    }
+
+    @Test
+    @DisplayName("relay: EMAIL -> emailService.send + processed")
     void relay_email_sent() throws Exception {
         EmailMessage msg = new EmailMessage("to@x.com", "Konu", "<p>body</p>");
         OutboxEvent row = OutboxEvent.builder()
@@ -132,19 +150,17 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(0)
                 .build();
-        when(outboxRepository.findUnprocessed(any())).thenReturn(List.of(row));
-        when(outboxRepository.findById(10L)).thenReturn(Optional.of(row));
+        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+                .thenReturn(List.of(row));
 
         relay.relay();
 
         verify(emailService).send("to@x.com", "Konu", "<p>body</p>");
-        ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
-        verify(outboxRepository).save(captor.capture());
-        assertThat(captor.getValue().getProcessedAt()).isNotNull();
+        verify(statusWriter).markProcessed(10L);
     }
 
     @Test
-    @DisplayName("relay: EMAIL gonderim hatasi -> attempts++ + lastError")
+    @DisplayName("relay: EMAIL gonderim hatasi -> markFailed cagrilir")
     void relay_email_failure_retried() throws Exception {
         EmailMessage msg = new EmailMessage("to@x.com", "Konu", "<p>body</p>");
         OutboxEvent row = OutboxEvent.builder()
@@ -154,39 +170,14 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(0)
                 .build();
-        when(outboxRepository.findUnprocessed(any())).thenReturn(List.of(row));
-        when(outboxRepository.findById(11L)).thenReturn(Optional.of(row));
+        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+                .thenReturn(List.of(row));
         doThrow(new RuntimeException("Resend 500"))
                 .when(emailService).send(anyString(), anyString(), anyString());
 
         relay.relay();
 
-        ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
-        verify(outboxRepository).save(captor.capture());
-        OutboxEvent saved = captor.getValue();
-        assertThat(saved.getAttempts()).isEqualTo(1);
-        assertThat(saved.getLastError()).contains("Resend 500");
-        assertThat(saved.getProcessedAt()).isNull();
-    }
-
-    @Test
-    @DisplayName("relay: bilinmeyen eventType -> hata fail markaslar")
-    void relay_unknownType_marksFailed() {
-        var row = OutboxEvent.builder()
-                .id(4L)
-                .eventType("WEIRD_TYPE")
-                .payload("{}")
-                .createdAt(LocalDateTime.now())
-                .attempts(0)
-                .build();
-        when(outboxRepository.findUnprocessed(any())).thenReturn(List.of(row));
-        when(outboxRepository.findById(4L)).thenReturn(Optional.of(row));
-
-        relay.relay();
-
-        ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
-        verify(outboxRepository).save(captor.capture());
-        assertThat(captor.getValue().getAttempts()).isEqualTo(1);
-        assertThat(captor.getValue().getLastError()).contains("unknown event type");
+        verify(statusWriter).markFailed(eq(11L), any(RuntimeException.class),
+                eq(OutboxRelay.MAX_ATTEMPTS));
     }
 }

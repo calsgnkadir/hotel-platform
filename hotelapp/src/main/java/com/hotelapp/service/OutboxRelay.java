@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -37,17 +34,20 @@ import java.util.List;
 public class OutboxRelay {
 
     private static final int BATCH_SIZE = 20;
-    private static final int MAX_ATTEMPTS = 5;
+    /** Public: hem repository query'sinde hem de OutboxStatusWriter'da magic 5 tekrar etmesin. */
+    public static final int MAX_ATTEMPTS = 5;
 
     private final OutboxEventRepository outboxRepository;
     private final ObjectMapper objectMapper;
     private final AuditLogService auditLogService;
     private final EmailService emailService; // FAZ D.9
+    private final OutboxStatusWriter statusWriter; // FAZ F.4 — self-invocation fix
     private final org.springframework.beans.factory.ObjectProvider<AppMetrics> metrics; // optional
 
     @Scheduled(fixedDelayString = "${app.outbox.relayDelayMs:5000}")
     public void relay() {
-        List<OutboxEvent> pending = outboxRepository.findUnprocessed(PageRequest.of(0, BATCH_SIZE));
+        List<OutboxEvent> pending = outboxRepository.findUnprocessed(
+                MAX_ATTEMPTS, PageRequest.of(0, BATCH_SIZE));
         if (pending.isEmpty()) return;
 
         log.debug("[OUTBOX-RELAY] {} pending event islenecek", pending.size());
@@ -55,10 +55,10 @@ public class OutboxRelay {
         for (OutboxEvent row : pending) {
             try {
                 handle(row);
-                markProcessed(row.getId());
+                statusWriter.markProcessed(row.getId());
                 if (m != null) m.outboxPublished.increment();
             } catch (Exception ex) {
-                markFailed(row.getId(), ex);
+                statusWriter.markFailed(row.getId(), ex, MAX_ATTEMPTS);
                 if (m != null) m.outboxFailed.increment();
             }
         }
@@ -85,27 +85,6 @@ public class OutboxRelay {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void markProcessed(Long id) {
-        outboxRepository.findById(id).ifPresent(e -> {
-            e.setProcessedAt(LocalDateTime.now());
-            outboxRepository.save(e);
-        });
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void markFailed(Long id, Exception ex) {
-        outboxRepository.findById(id).ifPresent(e -> {
-            e.setAttempts(e.getAttempts() + 1);
-            String msg = ex.getClass().getSimpleName() + ": " + ex.getMessage();
-            e.setLastError(msg.length() > 500 ? msg.substring(0, 500) : msg);
-            outboxRepository.save(e);
-            if (e.getAttempts() >= MAX_ATTEMPTS) {
-                log.error("[OUTBOX-RELAY] event id={} max attempt ({}) asti, son hata: {}",
-                        id, MAX_ATTEMPTS, msg);
-            } else {
-                log.warn("[OUTBOX-RELAY] event id={} fail (attempt {}): {}", id, e.getAttempts(), msg);
-            }
-        });
-    }
+    // markProcessed / markFailed FAZ F.4 ile OutboxStatusWriter'a tasindi
+    // (self-invocation + @Transactional proxy bypass fix'i).
 }

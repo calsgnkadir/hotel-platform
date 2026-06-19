@@ -1,6 +1,7 @@
 package com.hotelapp.service;
 
 import com.hotelapp.entity.OutboxEvent;
+import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.OutboxEventRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -60,14 +61,16 @@ class OutboxAdminServiceTest {
     }
 
     @Test
-    @DisplayName("list(dead): sadece findDeadLetters çağrılır")
+    @DisplayName("list(dead): sadece findDeadLetters çağrılır + MAX_ATTEMPTS gönderilir")
     void list_dead_callsDeadLettersQuery() {
-        when(outboxRepository.findDeadLetters(any(Pageable.class)))
+        when(outboxRepository.findDeadLetters(org.mockito.ArgumentMatchers.eq(OutboxRelay.MAX_ATTEMPTS),
+                any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of()));
 
         service.list("dead", 50);
 
-        verify(outboxRepository).findDeadLetters(any(Pageable.class));
+        verify(outboxRepository).findDeadLetters(org.mockito.ArgumentMatchers.eq(OutboxRelay.MAX_ATTEMPTS),
+                any(Pageable.class));
     }
 
     @Test
@@ -104,6 +107,17 @@ class OutboxAdminServiceTest {
 
         assertThatThrownBy(() -> service.retry(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("FAZ F.4 retry: DELIVERED event reddedilir (duplicate teslimat riski)")
+    void retry_delivered_throws() {
+        OutboxEvent delivered = ev(8L, 0, LocalDateTime.now()); // processedAt set
+        when(outboxRepository.findById(8L)).thenReturn(Optional.of(delivered));
+
+        assertThatThrownBy(() -> service.retry(8L))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("teslim edilmis");
     }
 
     @Test

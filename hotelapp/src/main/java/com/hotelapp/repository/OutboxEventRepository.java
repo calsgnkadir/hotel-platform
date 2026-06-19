@@ -9,14 +9,17 @@ import java.util.List;
 
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> {
 
-    /** Pending event'leri eski-once sirayla — batch limit Pageable ile. */
+    /** Pending event'leri eski-once sirayla — batch limit Pageable ile.
+     *  FAZ F.4: maxAttempts parametre — magic 5 tekrar etmesin (OutboxRelay.MAX_ATTEMPTS). */
     @Query("""
         SELECT e FROM OutboxEvent e
         WHERE e.processedAt IS NULL
-          AND e.attempts < 5
+          AND e.attempts < :maxAttempts
         ORDER BY e.createdAt ASC
     """)
-    List<OutboxEvent> findUnprocessed(Pageable pageable);
+    List<OutboxEvent> findUnprocessed(
+            @org.springframework.data.repository.query.Param("maxAttempts") int maxAttempts,
+            Pageable pageable);
 
     /** FAZ D.4 — Prometheus gauge için pending count. */
     long countByProcessedAtIsNull();
@@ -31,13 +34,15 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> 
     org.springframework.data.domain.Page<OutboxEvent>
         findAllByProcessedAtIsNullOrderByCreatedAtDesc(org.springframework.data.domain.Pageable pageable);
 
-    /** Dead-letter: max retry asilmis, processedAt NULL. */
+    /** Dead-letter: max retry asilmis, processedAt NULL.
+     *  FAZ F.4: minAttempts parametre — magic 5 tekrar etmesin. */
     @Query("""
         SELECT e FROM OutboxEvent e
         WHERE e.processedAt IS NULL
-          AND e.attempts >= 5
+          AND e.attempts >= :minAttempts
         ORDER BY e.createdAt DESC
     """)
-    org.springframework.data.domain.Page<OutboxEvent>
-        findDeadLetters(org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<OutboxEvent> findDeadLetters(
+            @org.springframework.data.repository.query.Param("minAttempts") int minAttempts,
+            org.springframework.data.domain.Pageable pageable);
 }
