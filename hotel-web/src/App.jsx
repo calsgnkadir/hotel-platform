@@ -17,6 +17,7 @@ import CandidateDashboard from './pages/candidate/CandidateDashboard'
 import BusinessDashboard from './pages/business/BusinessDashboard'
 import AdminPage from './pages/admin/AdminPage'
 import KvkkPage from './pages/KvkkPage'
+import TermsPage from './pages/TermsPage'
 import HelpPage from './pages/HelpPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import ListingDetailPage from './pages/candidate/ListingDetailPage'
@@ -38,6 +39,8 @@ import KeyboardShortcuts from './components/KeyboardShortcuts'
 import ScrollProgressBar from './components/ScrollProgressBar'
 // FAZ 5.4 — Framer Motion root config (reducedMotion respect)
 import { MotionConfig } from 'framer-motion'
+// FAZ I.1 — KVKK cookie consent banner
+import CookieConsent from './components/CookieConsent'
 
 export default function App() {
   useEffect(() => { initHapticForToasts() }, [])  // FAZ 3 - mobile haptic
@@ -55,6 +58,7 @@ export default function App() {
         <CommandPalette />         {/* FAZ 5.3 — ⌘K global arama */}
         <KeyboardShortcuts />      {/* FAZ 5.10 — ? help + g+harf chord */}
         <ScrollProgressBar />      {/* FAZ 5.11 — sticky scroll progress */}
+        <CookieConsent />          {/* FAZ I.1 — KVKK çerez tercihi */}
 
         <main id="main">
           <AnimatedRoutes />
@@ -85,6 +89,7 @@ function AnimatedRoutes() {
         <Route path="/reset-password"  element={<ResetPasswordPage />} />
         <Route path="/oauth-success"   element={<OAuthSuccessPage />} />
         <Route path="/kvkk"            element={<KvkkPage />} />
+        <Route path="/terms"           element={<TermsPage />} />
         <Route path="/yardim"          element={<HelpPage />} />
         <Route path="/verify-email"    element={<VerifyEmailPage />} />
 

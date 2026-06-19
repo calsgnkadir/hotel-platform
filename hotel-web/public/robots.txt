@@ -1,9 +1,26 @@
+# FAZ I.7 — SEO crawl directives
+# Public: landing, ilan detayları, public işletme profilleri, hukuki sayfalar
+# Private: dashboard'lar (candidate/business/admin) + API + auth flow
+
 User-agent: *
 Allow: /
 Allow: /listings/
+Allow: /p/business/
+Allow: /kvkk
+Allow: /terms
+Allow: /yardim
+
 Disallow: /candidate/
 Disallow: /business/
 Disallow: /admin/
 Disallow: /api/
+Disallow: /oauth-success
+Disallow: /verify-email
+Disallow: /reset-password
+Disallow: /forgot-password
+
+# Google'a "JSON-LD'leri keşfedebilirsin" ipucu
+User-agent: Googlebot
+Allow: /
 
 Sitemap: https://hotel-platform-seven.vercel.app/sitemap.xml

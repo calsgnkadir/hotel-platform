@@ -305,6 +305,26 @@ export default function RegisterPage() {
               </div>
             )}
 
+            {/* FAZ I.4 — Kullanım Şartları + KVKK onay (zorunlu) */}
+            <label className="flex items-start gap-2.5 text-[12px] text-ink-500 leading-relaxed">
+              <input
+                type="checkbox"
+                className="mt-0.5 accent-brand-700"
+                {...register('acceptedTerms', { required: 'Devam etmek için onaylamalısın' })}
+              />
+              <span>
+                <Link to="/terms" target="_blank" rel="noopener noreferrer"
+                      className="font-semibold text-brand-700 hover:underline">Kullanım Şartları</Link>
+                {' '}ve{' '}
+                <Link to="/kvkk" target="_blank" rel="noopener noreferrer"
+                      className="font-semibold text-brand-700 hover:underline">KVKK Aydınlatma Metni</Link>
+                'ni okudum, kabul ediyorum.
+              </span>
+            </label>
+            {errors.acceptedTerms && (
+              <p className="text-[11px] text-red-500 -mt-2">{errors.acceptedTerms.message}</p>
+            )}
+
             <button type="submit" disabled={isSubmitting} className="btn-primary">
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">
