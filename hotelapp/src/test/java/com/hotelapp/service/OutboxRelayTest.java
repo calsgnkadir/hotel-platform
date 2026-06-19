@@ -3,6 +3,7 @@ package com.hotelapp.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hotelapp.entity.OutboxEvent;
 import com.hotelapp.event.AuditLoggedEvent;
+import com.hotelapp.event.EmailMessage;
 import com.hotelapp.repository.OutboxEventRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,7 @@ class OutboxRelayTest {
 
     @Mock private OutboxEventRepository outboxRepository;
     @Mock private AuditLogService auditLogService;
+    @Mock private EmailService emailService;  // FAZ D.9
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private OutboxRelay relay;
@@ -40,7 +42,7 @@ class OutboxRelayTest {
         // FAZ D.4 — AppMetrics opsiyonel; test'te bos provider yeterli
         org.springframework.beans.factory.ObjectProvider<com.hotelapp.metrics.AppMetrics> noMetrics =
                 emptyProvider();
-        relay = new OutboxRelay(outboxRepository, objectMapper, auditLogService, noMetrics);
+        relay = new OutboxRelay(outboxRepository, objectMapper, auditLogService, emailService, noMetrics);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -116,6 +118,54 @@ class OutboxRelayTest {
         OutboxEvent saved = captor.getValue();
         assertThat(saved.getAttempts()).isEqualTo(3);
         assertThat(saved.getLastError()).contains("DB down");
+        assertThat(saved.getProcessedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("relay: EMAIL -> EmailService.send + processed")
+    void relay_email_sent() throws Exception {
+        EmailMessage msg = new EmailMessage("to@x.com", "Konu", "<p>body</p>");
+        OutboxEvent row = OutboxEvent.builder()
+                .id(10L)
+                .eventType(OutboxService.TYPE_EMAIL)
+                .payload(objectMapper.writeValueAsString(msg))
+                .createdAt(LocalDateTime.now())
+                .attempts(0)
+                .build();
+        when(outboxRepository.findUnprocessed(any())).thenReturn(List.of(row));
+        when(outboxRepository.findById(10L)).thenReturn(Optional.of(row));
+
+        relay.relay();
+
+        verify(emailService).send("to@x.com", "Konu", "<p>body</p>");
+        ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
+        verify(outboxRepository).save(captor.capture());
+        assertThat(captor.getValue().getProcessedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("relay: EMAIL gonderim hatasi -> attempts++ + lastError")
+    void relay_email_failure_retried() throws Exception {
+        EmailMessage msg = new EmailMessage("to@x.com", "Konu", "<p>body</p>");
+        OutboxEvent row = OutboxEvent.builder()
+                .id(11L)
+                .eventType(OutboxService.TYPE_EMAIL)
+                .payload(objectMapper.writeValueAsString(msg))
+                .createdAt(LocalDateTime.now())
+                .attempts(0)
+                .build();
+        when(outboxRepository.findUnprocessed(any())).thenReturn(List.of(row));
+        when(outboxRepository.findById(11L)).thenReturn(Optional.of(row));
+        doThrow(new RuntimeException("Resend 500"))
+                .when(emailService).send(anyString(), anyString(), anyString());
+
+        relay.relay();
+
+        ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
+        verify(outboxRepository).save(captor.capture());
+        OutboxEvent saved = captor.getValue();
+        assertThat(saved.getAttempts()).isEqualTo(1);
+        assertThat(saved.getLastError()).contains("Resend 500");
         assertThat(saved.getProcessedAt()).isNull();
     }
 

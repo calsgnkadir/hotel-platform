@@ -248,7 +248,7 @@ public class ApplicationService {
             try {
                 String html = emailTemplates.applicationAccepted(
                         candidateName, listingTitle, businessName, baseUrl + "/candidate");
-                emailService.send(candidateEmail, "🎉 Başvurun kabul edildi — " + listingTitle, html);
+                emailService.queue(candidateEmail, "🎉 Başvurun kabul edildi — " + listingTitle, html);
             } catch (Exception ex) {
                 log.warn("[ACCEPT-EMAIL] Gonderilemedi (yok sayildi): app={} sebep={}",
                         applicationId, ex.getMessage());
@@ -263,7 +263,7 @@ public class ApplicationService {
                 String html = emailTemplates.applicationRejected(
                         candidateName, listingTitle, businessName,
                         request.getNote(), baseUrl + "/candidate");
-                emailService.send(candidateEmail, "Başvurun yanıtlandı — " + listingTitle, html);
+                emailService.queue(candidateEmail, "Başvurun yanıtlandı — " + listingTitle, html);
             } catch (Exception ex) {
                 log.warn("[REJECT-EMAIL] Gonderilemedi (yok sayildi): app={} sebep={}",
                         applicationId, ex.getMessage());

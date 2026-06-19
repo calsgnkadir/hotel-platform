@@ -60,7 +60,7 @@ public class EmailVerificationService {
         String verifyLink = appBaseUrl + "/verify-email?token=" + token;
         try {
             String html = emailTemplates.verifyEmail(user.getFullName(), verifyLink);
-            emailService.send(user.getEmail(), "AjansHotel — Email Doğrulama", html);
+            emailService.queue(user.getEmail(), "AjansHotel — Email Doğrulama", html);
             log.info("[EMAIL-VERIFY] Token olusturuldu + mail gonderildi: userId={} link={}",
                     user.getId(), verifyLink);
         } catch (Exception e) {

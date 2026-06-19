@@ -76,7 +76,7 @@ public class PasswordResetService {
         String resetLink = appBaseUrl + "/reset-password?token=" + token;
         String html = emailService.buildPasswordResetHtml(user.getFullName(), resetLink);
         try {
-            emailService.send(user.getEmail(), "AjansHotel — Şifre Sıfırlama", html);
+            emailService.queue(user.getEmail(), "AjansHotel — Şifre Sıfırlama", html);
             log.info("[PWD-RESET] Token oluşturuldu + email gönderildi: userId={} link={}",
                     user.getId(), resetLink);
         } catch (Exception e) {

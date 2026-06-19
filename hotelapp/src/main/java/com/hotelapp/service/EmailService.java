@@ -30,15 +30,35 @@ public class EmailService {
     private final String fromEmail;
     private final String fromName;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final org.springframework.beans.factory.ObjectProvider<OutboxService> outboxProvider; // FAZ D.9
 
     public EmailService(
             @Value("${app.email.resend.api-key:}")     String apiKey,
             @Value("${app.email.resend.from:onboarding@resend.dev}") String fromEmail,
-            @Value("${app.email.resend.from-name:AjansHotel}")       String fromName
+            @Value("${app.email.resend.from-name:AjansHotel}")       String fromName,
+            org.springframework.beans.factory.ObjectProvider<OutboxService> outboxProvider
     ) {
         this.apiKey   = apiKey;
         this.fromEmail = fromEmail;
         this.fromName  = fromName;
+        this.outboxProvider = outboxProvider;
+    }
+
+    /**
+     * FAZ D.9 — Domain service'ler bunu cagirir. Email outbox'a yazilir,
+     * OutboxRelay scheduler async deliver eder. Resend down olsa bile
+     * mesaj kayipsiz: bir sonraki tick'te tekrar denenir (max 5 deneme).
+     *
+     * outboxProvider null ise (test/dev erken yukleme), inline send fallback.
+     */
+    public void queue(String toEmail, String subject, String htmlBody) {
+        OutboxService outbox = outboxProvider.getIfAvailable();
+        if (outbox != null) {
+            outbox.appendEmail(new com.hotelapp.event.EmailMessage(toEmail, subject, htmlBody));
+        } else {
+            log.warn("[EMAIL] OutboxService yok, inline send fallback");
+            send(toEmail, subject, htmlBody);
+        }
     }
 
     /**

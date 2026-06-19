@@ -3,6 +3,7 @@ package com.hotelapp.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hotelapp.entity.OutboxEvent;
 import com.hotelapp.event.AuditLoggedEvent;
+import com.hotelapp.event.EmailMessage;
 import com.hotelapp.metrics.AppMetrics;
 import com.hotelapp.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class OutboxRelay {
     private final OutboxEventRepository outboxRepository;
     private final ObjectMapper objectMapper;
     private final AuditLogService auditLogService;
+    private final EmailService emailService; // FAZ D.9
     private final org.springframework.beans.factory.ObjectProvider<AppMetrics> metrics; // optional
 
     @Scheduled(fixedDelayString = "${app.outbox.relayDelayMs:5000}")
@@ -71,6 +73,10 @@ public class OutboxRelay {
                 } else {
                     auditLogService.log(e.actorId(), e.action(), e.targetType(), e.targetId(), e.details());
                 }
+            }
+            case OutboxService.TYPE_EMAIL -> {
+                EmailMessage e = objectMapper.readValue(row.getPayload(), EmailMessage.class);
+                emailService.send(e.to(), e.subject(), e.html());
             }
             default -> {
                 log.warn("[OUTBOX-RELAY] bilinmeyen eventType={} id={}", row.getEventType(), row.getId());
