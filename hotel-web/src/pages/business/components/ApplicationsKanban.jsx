@@ -17,6 +17,7 @@ import { extractErrorMessage } from '../../../api/client'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
 import ReliabilityBadge from '../../../components/ReliabilityBadge'
+import ReliabilityRing from '../../../components/ReliabilityRing'
 
 /*
  * FAZ 5.5a — Basvuru Kanban
@@ -301,22 +302,25 @@ function Card({ app, accent, onClick, onMessage }) {
           />
         )}
         <div className="flex items-start gap-2.5">
-          {app.candidate?.avatarUrl ? (
-            <img
-              src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })}
-              alt={app.candidate.fullName}
-              loading="lazy"
-              decoding="async"
-              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
-            />
-          ) : (
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center font-bebas text-base text-white flex-shrink-0"
-              style={{ background: `linear-gradient(135deg, ${accent}80, ${accent}40)` }}
-            >
-              {initial}
-            </div>
-          )}
+          {/* FAZ G.4: avatar etrafında reliability ring (Apple Watch tarzı) */}
+          <ReliabilityRing score={app.candidate?.reliabilityScore} size={42} stroke={3}>
+            {app.candidate?.avatarUrl ? (
+              <img
+                src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })}
+                alt={app.candidate.fullName}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center font-bebas text-base text-white"
+                style={{ background: `linear-gradient(135deg, ${accent}80, ${accent}40)` }}
+              >
+                {initial}
+              </div>
+            )}
+          </ReliabilityRing>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <div className="text-[13px] font-semibold text-white truncate flex-1 min-w-0">
