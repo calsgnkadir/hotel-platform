@@ -160,6 +160,12 @@ app:
       # NOT: FCM .local TLD'sini reddeder (403). Gercek bir email/domain kullan.
       subject:     ${VAPID_SUBJECT:mailto:calisgankadircan@gmail.com}
 
+  # FAZ H.4 — Field-level encryption (KVKK m.12)
+  # 256-bit AES key, base64 encoded. Bos -> encryption DEVRE DISI (dev OK, prod KVKK risk).
+  # Olusturmak icin: openssl rand -base64 32
+  encryption:
+    key: ${APP_ENCRYPTION_KEY:}
+
 # FAZ 2/#18 — Actuator (health + circuit breaker durumu)
 # Production'da sadece /health public, diger endpoint'ler protected
 management:

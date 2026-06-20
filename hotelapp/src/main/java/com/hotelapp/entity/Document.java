@@ -1,6 +1,7 @@
 package com.hotelapp.entity;
 
 import com.hotelapp.enums.DocumentType;
+import com.hotelapp.security.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,10 +27,17 @@ public class Document {
     @Column(nullable = false)
     private DocumentType type;
 
-    // Dosyanın diskteki yolu (ya da S3 bucket key)
-    @Column(nullable = false)
+    // Dosyanın Cloudinary public_id'si.
+    // FAZ H.4 — KVKK m.12: AES-GCM ile şifreli saklanır (DB dump'ta
+    // hangi adayın hangi dosyayı yüklediği plain okunmasın).
+    // Legacy plain değerler geri uyumludur (prefix-based detection).
+    @Column(nullable = false, length = 500)
+    @Convert(converter = EncryptedStringConverter.class)
     private String filePath;
 
+    // Orijinal dosya adı — şifreli (hassas: "saglik-raporu-tckn1234.pdf" gibi)
+    @Column(length = 500)
+    @Convert(converter = EncryptedStringConverter.class)
     private String originalFileName;
 
     // true → herkes görebilir (CV, transkript)
