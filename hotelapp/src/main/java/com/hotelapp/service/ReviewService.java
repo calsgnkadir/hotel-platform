@@ -135,6 +135,27 @@ public class ReviewService {
         return summarize(reviewRepository.aggregateForCandidate(candidateId));
     }
 
+    /** Dalga 3 — Bulk aday rating: ReliabilityService N+1 fix. */
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, RatingSummary> getCandidateRatingsBulk(java.util.Collection<Long> candidateIds) {
+        java.util.Map<Long, RatingSummary> map = new java.util.HashMap<>();
+        if (candidateIds == null || candidateIds.isEmpty()) return map;
+        for (Object[] row : reviewRepository.aggregateForCandidatesBulk(candidateIds)) {
+            Long cid    = (row[0] != null) ? ((Number) row[0]).longValue() : null;
+            Double avg  = (row[1] != null) ? ((Number) row[1]).doubleValue() : null;
+            Long count  = (row[2] != null) ? ((Number) row[2]).longValue() : 0L;
+            if (cid != null) {
+                map.put(cid, RatingSummary.builder().averageRating(avg).reviewCount(count).build());
+            }
+        }
+        // Reviewsuz adaylar icin empty fallback
+        for (Long id : candidateIds) {
+            map.computeIfAbsent(id, k ->
+                RatingSummary.builder().averageRating(null).reviewCount(0L).build());
+        }
+        return map;
+    }
+
     /**
      * FAZ N+1 fix: birden fazla isletme rating'i tek sorguda.
      * Donus: Map<businessId, RatingSummary> — eksik isletmeler icin empty().

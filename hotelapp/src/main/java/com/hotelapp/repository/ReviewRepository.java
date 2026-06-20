@@ -46,4 +46,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
            "AND r.application.jobListing.business.id IN :businessIds " +
            "GROUP BY r.application.jobListing.business.id")
     List<Object[]> aggregateForBusinessesBulk(@Param("businessIds") java.util.Collection<Long> businessIds);
+
+    /** Dalga 3 — Aday rating'i bulk (ReliabilityService N+1 fix). [candidateId, avg, count] */
+    @Query("SELECT r.application.candidate.id, AVG(r.rating), COUNT(r) FROM Review r " +
+           "WHERE r.byRole = 'BUSINESS' " +
+           "AND r.application.candidate.id IN :candidateIds " +
+           "GROUP BY r.application.candidate.id")
+    List<Object[]> aggregateForCandidatesBulk(@Param("candidateIds") java.util.Collection<Long> candidateIds);
 }

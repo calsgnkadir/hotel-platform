@@ -190,7 +190,6 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
               placeholder="Kendinizi kısaca tanıtın, neden bu pozisyonda çalışmak istediğinizi anlatın..."
               autoFocus
             />
-            <p className="text-xs text-ink-400 mt-1">{coverLetter.length} karakter</p>
           </div>
 
           {/* Faz E3: Slot seçimi (zorunlu — min 1) */}
@@ -536,32 +535,15 @@ function ListingCard({ listing, onApply, onDetail }) {
       onClick={() => onDetail(listing)}
       className="card cursor-pointer hover:-translate-y-1 transition-all duration-200 group overflow-hidden !p-0"
     >
-      {/* HERO — foto-merkezli üst alan (#46) + FAZ D3 hover carousel */}
-      <div className="relative h-32 w-full flex items-center justify-center overflow-hidden"
+      {/* HERO — foto-merkezli üst alan */}
+      <div className="relative h-32 w-full overflow-hidden"
            style={{
-             background: `
-               linear-gradient(135deg, #15243d 0%, #234a82 50%, #d4a853 100%),
-               radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 50%)
-             `,
+             background: 'linear-gradient(135deg, #15243d 0%, #234a82 100%)',
            }}>
-        {/* FAZ D3 — varsa galeri fotoğrafları hover carousel olarak öne geçer */}
-        {listing.businessPhotoUrls?.length > 0 ? (
+        {/* Galeri fotoğrafları varsa hover carousel; yoksa düz gradient (placeholder harfi kaldirildi) */}
+        {listing.businessPhotoUrls?.length > 0 && (
           <HoverPhotoCarousel photos={listing.businessPhotoUrls}
                               alt={`${listing.businessName} galeri`} />
-        ) : (
-          <>
-            {/* Dekoratif daireler */}
-            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20"
-                 style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
-            <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full opacity-15"
-                 style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
-
-            {/* Büyük işletme harfi */}
-            <div className="text-white font-black opacity-90 relative z-10"
-                 style={{ fontSize: '4rem', textShadow: '0 4px 20px rgba(0,0,0,0.3)', fontFamily: '"Fraunces", serif' }}>
-              {businessLetter}
-            </div>
-          </>
         )}
 
         {/* Job type chip — sağ üst */}
@@ -627,16 +609,11 @@ function ListingCard({ listing, onApply, onDetail }) {
 
         <p className="text-xs mt-2 line-clamp-2" style={{ color: '#fde9a5', opacity: 0.85 }}>{listing.description}</p>
 
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={(e) => { e.stopPropagation(); onDetail(listing) }}
-            className="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all"
-            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(253, 233, 165,0.30)' }}>
-            Detay
-          </button>
+        {/* Tek CTA — kart tiklamasi detaya goturur, sadece "Basvur" butonu durur */}
+        <div className="mt-4">
           <button
             onClick={(e) => { e.stopPropagation(); onApply(listing) }}
-            className="flex-1 py-2 px-3 text-sm font-bold text-white rounded-lg
+            className="w-full py-2 px-3 text-sm font-bold text-white rounded-lg
                        transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #d4a853, #d4a853)', boxShadow: '0 4px 16px rgba(212, 168, 83,0.40)' }}>
             Başvur

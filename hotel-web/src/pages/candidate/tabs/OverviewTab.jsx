@@ -1,4 +1,3 @@
-// FAZ Redesign v2 — animated borders + dramatic count-up + ambient particles
 import { useEffect, useRef, useState } from 'react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import Sparkline, { weeklyTrend } from '../../../components/Sparkline'
@@ -36,8 +35,6 @@ export default function OverviewTab({ user, applications, onTabChange }) {
       initial="hidden" animate="visible"
       variants={{ visible: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } }}
     >
-      <AmbientField />
-
       {/* STAT KARTLARI */}
       <motion.div variants={ITEM} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard
@@ -46,8 +43,6 @@ export default function OverviewTab({ user, applications, onTabChange }) {
           color="#60a5fa"
           delta={delta}
           data={weeklyTrend(applications, null)}
-          icon="briefcase"
-          cornerStyle={0}
           delay={0}
         />
         <StatCard
@@ -55,8 +50,6 @@ export default function OverviewTab({ user, applications, onTabChange }) {
           value={pending}
           color="#fbbf24"
           data={weeklyTrend(applications, a => a.status === 'PENDING')}
-          icon="clock"
-          cornerStyle={1}
           delay={0.1}
         />
         <StatCard
@@ -64,8 +57,6 @@ export default function OverviewTab({ user, applications, onTabChange }) {
           value={accepted}
           color="#d4a853"
           data={weeklyTrend(applications, a => a.status === 'ACCEPTED')}
-          icon="star"
-          cornerStyle={2}
           delay={0.2}
         />
       </motion.div>
@@ -120,34 +111,7 @@ export default function OverviewTab({ user, applications, onTabChange }) {
   )
 }
 
-/* ────── Ambient field — sayfa arka planında yumuşak altın parçacıklar ────── */
-function AmbientField() {
-  const particles = useRef(
-    Array.from({ length: 14 }, () => ({
-      left: Math.random() * 100,
-      top:  Math.random() * 100,
-      size: 1 + Math.random() * 2,
-      delay: Math.random() * 6,
-      duration: 8 + Math.random() * 8,
-    }))
-  ).current
-  return (
-    <div aria-hidden className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
-      {particles.map((p, i) => (
-        <motion.span key={i}
-          animate={{ y: [0, -20, 0], opacity: [0.1, 0.4, 0.1] }}
-          transition={{ duration: p.duration, repeat: Infinity, ease: 'easeInOut', delay: p.delay }}
-          className="absolute rounded-full"
-          style={{
-            left: `${p.left}%`, top: `${p.top}%`,
-            width: p.size, height: p.size,
-            background: '#d4a853',
-            boxShadow: '0 0 8px #d4a853',
-          }} />
-      ))}
-    </div>
-  )
-}
+/* AmbientField parçacıklar sokuldu — Dalga 3 motion policy */
 
 /* ────── Sub-pieces ────── */
 
@@ -185,12 +149,7 @@ const ICONS = {
   star:      <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />,
 }
 
-function StatCard({ label, value, color, data, icon, delta, cornerStyle = 0, delay = 0 }) {
-  const corners = [
-    'rounded-tl-[28px] rounded-tr-[12px] rounded-br-[28px] rounded-bl-[12px]',
-    'rounded-tl-[12px] rounded-tr-[28px] rounded-br-[12px] rounded-bl-[28px]',
-    'rounded-tl-[28px] rounded-tr-[28px] rounded-br-[12px] rounded-bl-[12px]',
-  ][cornerStyle]
+function StatCard({ label, value, color, data, delta, delay = 0 }) {
 
   // Mouse parallax
   const ref = useRef(null)
@@ -228,17 +187,10 @@ function StatCard({ label, value, color, data, icon, delta, cornerStyle = 0, del
       whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 230, damping: 22 }}
       style={{ rotateX, rotateY, transformPerspective: 1000 }}
-      className={`relative overflow-hidden ${corners} p-5 cursor-default min-h-[150px] group`}
+      className="relative overflow-hidden rounded-2xl p-5 cursor-default min-h-[150px] group"
     >
-      {/* Animasyonlu conic gradient border — sürekli dönen */}
-      <div aria-hidden className="absolute -inset-px rounded-[inherit] opacity-70 pointer-events-none"
-           style={{
-             background: `conic-gradient(from 0deg, transparent 0%, ${color}55 12%, transparent 28%, ${color}33 55%, transparent 75%)`,
-             animation: 'spin 12s linear infinite',
-             filter: 'blur(0.5px)',
-           }} />
-      {/* İç katman — glass */}
-      <div className="absolute inset-px rounded-[inherit] pointer-events-none"
+      {/* Glass icerik katmani */}
+      <div className="absolute inset-0 rounded-2xl pointer-events-none"
            style={{
              background: 'linear-gradient(155deg, rgba(21, 36, 61, 0.88) 0%, rgba(15, 23, 38, 0.96) 100%)',
              border: `1px solid ${color}22`,
@@ -287,47 +239,25 @@ function StatCard({ label, value, color, data, icon, delta, cornerStyle = 0, del
         </div>
       </div>
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-        @keyframes overview-ring-pulse {
-          0%,100% { transform: scale(1);   opacity: 0.5 }
-          50%     { transform: scale(1.18); opacity: 0 }
-        }
-      `}</style>
     </motion.div>
   )
 }
 
-function QuickActionTile({ label, desc, color, icon, idx, onClick }) {
-  const corners = [
-    'rounded-tl-[22px] rounded-tr-[8px] rounded-br-[22px] rounded-bl-[8px]',
-    'rounded-tl-[8px] rounded-tr-[22px] rounded-br-[8px] rounded-bl-[22px]',
-  ][idx % 2]
+function QuickActionTile({ label, desc, color, onClick }) {
   return (
     <motion.button onClick={onClick}
       whileHover={{ y: -5, scale: 1.025 }}
       whileTap={{ scale: 0.96 }}
       transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-      className={`relative overflow-hidden ${corners} text-left p-4 group min-h-[150px] flex flex-col justify-between cursor-pointer`}
+      className="relative overflow-hidden rounded-2xl text-left p-4 group min-h-[150px] flex flex-col justify-between cursor-pointer"
     >
-      {/* Animasyonlu conic border (sadece hover'da görünür belirginleşir) */}
-      <div aria-hidden className="absolute -inset-px rounded-[inherit] opacity-30 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none"
-           style={{
-             background: `conic-gradient(from 0deg, transparent 0%, ${color}55 15%, transparent 30%, ${color}33 55%, transparent 75%)`,
-             animation: 'spin 14s linear infinite',
-           }} />
-      {/* İç glass */}
-      <div className="absolute inset-px rounded-[inherit] pointer-events-none"
+      {/* Glass icerik */}
+      <div className="absolute inset-0 rounded-2xl pointer-events-none"
            style={{
              background: 'linear-gradient(155deg, rgba(21, 36, 61, 0.85) 0%, rgba(15, 23, 38, 0.96) 100%)',
              border: `1px solid ${color}22`,
              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
            }} />
-      {/* Hover glow blob */}
-      <div aria-hidden className="absolute -top-10 -right-10 w-32 h-32 rounded-full pointer-events-none opacity-30 group-hover:opacity-80 transition-opacity duration-500"
-           style={{ background: `radial-gradient(circle, ${color}66, transparent 65%)`, filter: 'blur(20px)' }} />
-
-      {/* QuickActionTile ikon kutucugu kaldirildi — sadece label + desc */}
 
       <div className="relative">
         <div className="text-[14px] font-semibold mb-0.5" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>

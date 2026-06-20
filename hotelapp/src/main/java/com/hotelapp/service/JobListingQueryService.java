@@ -10,6 +10,7 @@ import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.JobListingRepository;
 import com.hotelapp.service.JobListingService.ListingResponse;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -91,8 +92,18 @@ public class JobListingQueryService {
             }
             if (minSalary != null) predicates.add(cb.greaterThanOrEqualTo(root.get("salaryMin"), minSalary));
             if (keyword != null && !keyword.isBlank()) {
+                // Full-text search — title + description + requirements + position enum +
+                // business name. district join'i tetiklemeden tek alias kullanilir.
                 String pattern = "%" + keyword.toLowerCase() + "%";
-                predicates.add(cb.like(cb.lower(root.get("title")), pattern));
+                Join<JobListing, Business> bizForKw = root.join("business", JoinType.LEFT);
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("title")),        pattern),
+                        cb.like(cb.lower(root.get("description")),  pattern),
+                        cb.like(cb.lower(root.get("requirements")), pattern),
+                        cb.like(cb.lower(root.get("position").as(String.class)), pattern),
+                        cb.like(cb.lower(bizForKw.get("name")),     pattern)
+                ));
+                query.distinct(true);
             }
             if (dateFrom != null || dateTo != null) {
                 query.distinct(true);

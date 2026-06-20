@@ -69,6 +69,42 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     """)
     long countCompletedAcceptedAllTime(@Param("candidateId") Long candidateId);
 
+    // ----------------------------------------------------------------
+    // Dalga 3 — Bulk reliability sayimlari (N+1 fix). Her metod tek
+    // GROUP BY query'si, candidateId basina tek satir.
+    // Sonuc: Object[] { candidateId, count }
+    // ----------------------------------------------------------------
+
+    @Query("""
+        SELECT a.candidate.id, COUNT(a) FROM Application a
+        WHERE a.candidate.id IN :ids AND a.noShow = true
+        GROUP BY a.candidate.id
+    """)
+    List<Object[]> bulkCountNoShow(@Param("ids") Collection<Long> ids);
+
+    @Query("""
+        SELECT a.candidate.id, COUNT(a) FROM Application a
+        WHERE a.candidate.id IN :ids
+          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
+          AND a.noShow = false
+          AND a.reviewedAt IS NOT NULL
+        GROUP BY a.candidate.id
+    """)
+    List<Object[]> bulkCountCompletedAllTime(@Param("ids") Collection<Long> ids);
+
+    @Query("""
+        SELECT a.candidate.id, COUNT(a) FROM Application a
+        WHERE a.candidate.id IN :ids
+          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
+          AND a.noShow = false
+          AND a.reviewedAt IS NOT NULL
+          AND a.reviewedAt >= :since
+        GROUP BY a.candidate.id
+    """)
+    List<Object[]> bulkCountCompletedSince(
+            @Param("ids") Collection<Long> ids,
+            @Param("since") LocalDateTime since);
+
     List<Application> findAllByJobListing_Business_OwnerId(Long ownerId);
 
     List<Application> findAllByJobListing_Business_OwnerIdAndStatus(Long ownerId, ApplicationStatus status);
