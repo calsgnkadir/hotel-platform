@@ -527,9 +527,6 @@ function ListingCard({ listing, onApply, onDetail }) {
   const shift = null  // legacy shift kategorisi kaldirildi
   const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
 
-  // FAZ 1/#46: Hero alan üstte — büyük gradient + işletme letter (foto-merkezli his)
-  const businessLetter = BUSINESS_TYPE_LETTER[listing.businessType] || listing.businessName?.charAt(0) || '?'
-
   return (
     <div
       onClick={() => onDetail(listing)}
