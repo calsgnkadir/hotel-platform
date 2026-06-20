@@ -101,4 +101,22 @@ public class JobListingController {
             @Valid @RequestBody ListingRequest request) {
         return ResponseEntity.ok(jobListingService.updateListing(id, currentUser.getId(), request));
     }
+
+    // ----------------------------------------------------------------
+    // Dalga 4
+    // ----------------------------------------------------------------
+
+    @Operation(summary = "İlan goruntulenme sayisini +1 artir (anonim trafik dahil)")
+    @PostMapping("/{id}/view")
+    public ResponseEntity<Void> trackView(@PathVariable Long id) {
+        jobListingService.trackView(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Pozisyon icin maas benchmark (AVG/MIN/MAX) — Glassdoor pattern")
+    @GetMapping("/salary-benchmark")
+    public ResponseEntity<JobListingService.SalaryBenchmarkResponse> salaryBenchmark(
+            @RequestParam Position position) {
+        return ResponseEntity.ok(jobListingService.getSalaryBenchmark(position));
+    }
 }

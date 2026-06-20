@@ -45,6 +45,7 @@ public class JobListingService {
     private final com.hotelapp.repository.BusinessPhotoRepository businessPhotoRepository;  // D3
     private final FileStorageService fileStorageService;                                     // D3
     private final com.hotelapp.repository.UserAvailabilityBlockRepository availabilityBlockRepository;  // J2 müsaitlik filtre
+    private final com.hotelapp.repository.ApplicationRepository applicationRepository;                 // Dalga 4 — guven sinyali
 
     // ----------------------------------------------------------------
     // Public: browse active listings (dynamic filtering via Specification)
@@ -381,7 +382,61 @@ public class JobListingService {
     public ListingResponse getListingById(Long id) {
         JobListing listing = jobListingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("İlan", id));
-        return toResponse(listing);
+        ListingResponse resp = toResponse(listing);
+        // Dalga 4 / Ozellik 4 — Guven sinyali: bu isletmede tamamlanmis (kabul +
+        // reviewed) is sayisi. Detail sayfasinda tek query (N+1 yok).
+        Long ownerId = listing.getBusiness().getOwner() != null
+                ? listing.getBusiness().getOwner().getId() : null;
+        if (ownerId != null) {
+            resp.setBusinessWorkerCount(
+                    Math.toIntExact(applicationRepository.countCompletedByBusinessOwner(ownerId)));
+        }
+        return resp;
+    }
+
+    /**
+     * Dalga 4 / Teknik 5 — Atomik view counter +1.
+     * Anonim trafik dahil her ilan detay sayfa açilisinda çagirilir.
+     * Repo @Modifying single UPDATE; transaction baska bir yerde de govern eder.
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public void trackView(Long id) {
+        jobListingRepository.incrementViewCount(id);
+    }
+
+    /**
+     * Dalga 4 / Ozellik 6 — Maas benchmark: pozisyon icin AVG/MIN/MAX.
+     * Frontend ilan detay sayfasinda "Bu pozisyon Istanbul ort: ₺X-Y" chip.
+     */
+    @Transactional(readOnly = true)
+    public SalaryBenchmarkResponse getSalaryBenchmark(com.hotelapp.enums.Position position) {
+        Object[] row = jobListingRepository.salaryBenchmark(position);
+        if (row == null || row.length < 5) return SalaryBenchmarkResponse.empty(position);
+        java.math.BigDecimal avgMin = (java.math.BigDecimal) row[0];
+        java.math.BigDecimal avgMax = (java.math.BigDecimal) row[1];
+        java.math.BigDecimal min    = (java.math.BigDecimal) row[2];
+        java.math.BigDecimal max    = (java.math.BigDecimal) row[3];
+        Long count = (row[4] != null) ? ((Number) row[4]).longValue() : 0L;
+        return SalaryBenchmarkResponse.builder()
+                .position(position.name())
+                .avgMin(avgMin).avgMax(avgMax)
+                .min(min).max(max)
+                .count(count)
+                .build();
+    }
+
+    @Data @Builder
+    public static class SalaryBenchmarkResponse {
+        private String position;
+        private java.math.BigDecimal avgMin;
+        private java.math.BigDecimal avgMax;
+        private java.math.BigDecimal min;
+        private java.math.BigDecimal max;
+        private Long count;
+
+        public static SalaryBenchmarkResponse empty(com.hotelapp.enums.Position p) {
+            return SalaryBenchmarkResponse.builder().position(p.name()).count(0L).build();
+        }
     }
 
     // ----------------------------------------------------------------
@@ -499,6 +554,10 @@ public class JobListingService {
                 .createdAt(l.getCreatedAt())
                 .shiftSlots(slotDtos)
                 .businessPhotoUrls(photoUrls)  // D3
+                // Dalga 4 — view counter (her response'ta) + business creation date
+                // businessWorkerCount sadece tekli detail icin doldurulur (N+1 onlemek icin)
+                .viewCount(l.getViewCount() != null ? l.getViewCount() : 0L)
+                .businessCreatedAt(l.getBusiness().getCreatedAt())
                 .build();
     }
 
@@ -628,5 +687,12 @@ public class JobListingService {
 
         // FAZ D3 — işletme galeri fotoğrafları (ilk 5), hover carousel için
         private List<String> businessPhotoUrls;
+
+        // Dalga 4 / Teknik 5 — Conversion metric icin
+        private Long viewCount;
+
+        // Dalga 4 / Ozellik 4 — Guven sinyalleri (Glassdoor pattern)
+        private LocalDateTime businessCreatedAt;
+        private Integer businessWorkerCount;   // tamamlanmis aday sayisi (ACCEPTED + reviewedAt set)
     }
 }

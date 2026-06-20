@@ -105,6 +105,19 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("ids") Collection<Long> ids,
             @Param("since") LocalDateTime since);
 
+    /**
+     * Dalga 4 / Ozellik 4 — Bir isletmede tamamlanmis aday sayisi (guven sinyali).
+     * ACCEPTED + reviewedAt SET + noShow=false sayisi (unique aday degil — toplam tamamlanan).
+     */
+    @Query("""
+        SELECT COUNT(a) FROM Application a
+        WHERE a.jobListing.business.owner.id = :ownerId
+          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
+          AND a.noShow = false
+          AND a.reviewedAt IS NOT NULL
+    """)
+    long countCompletedByBusinessOwner(@Param("ownerId") Long ownerId);
+
     List<Application> findAllByJobListing_Business_OwnerId(Long ownerId);
 
     List<Application> findAllByJobListing_Business_OwnerIdAndStatus(Long ownerId, ApplicationStatus status);

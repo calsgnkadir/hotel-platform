@@ -83,6 +83,12 @@ public class JobListing {
     @Builder.Default
     private List<ShiftSlot> shiftSlots = new ArrayList<>();
 
+    // Dalga 4 — View counter (Teknik 5). Anonim trafik dahil her detay
+    // sayfasi acilisinda +1 artar. Conversion: applications / viewCount.
+    @Column(nullable = false)
+    @Builder.Default
+    private Long viewCount = 0L;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
