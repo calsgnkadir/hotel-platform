@@ -9,7 +9,6 @@ import BottomTabBar from './BottomTabBar'
 import LanguageSwitcher from './LanguageSwitcher'
 import EmailVerifyBanner from './EmailVerifyBanner'
 import ExpandableTabs, { tabIcons } from './ExpandableTabs'
-import DecryptEffect from './DecryptEffect'
 import { keys } from '../lib/queryClient'
 
 // FAZ 1/#36 — Nav item id'leri i18n key'lerine map'lenir.
@@ -148,17 +147,34 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           </div>
         </div>
 
-        {/* Alt satır: yatay tab strip (desktop) — hover'da decrypt effect */}
+        {/* Alt satır: yatay tab strip (desktop) */}
         <nav className="hidden lg:flex items-center gap-2 px-8 pb-1 -mt-1" aria-label="Ana navigasyon">
-          {navItems.map(item => (
-            <NavTabButton
-              key={item.id}
-              item={item}
-              active={activeTab === item.id}
-              onClick={() => onTabChange?.(item.id)}
-              t={t}
-            />
-          ))}
+          {navItems.map(item => {
+            const active = activeTab === item.id
+            return (
+              <button
+                key={item.id}
+                onClick={() => onTabChange?.(item.id)}
+                className="relative px-4 py-3 text-[14px] transition-all font-geist"
+                style={{
+                  color: active ? '#ffffff' : '#8ba9d2',
+                  fontWeight: active ? 600 : 500,
+                  letterSpacing: '-0.005em',
+                  textShadow: active ? '0 0 12px rgba(212, 168, 83, 0.45)' : 'none',
+                }}
+                aria-current={active ? 'page' : undefined}
+              >
+                {item.tKey ? t(item.tKey) : item.label}
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute left-3 right-3 bottom-0 h-0.5 rounded-full"
+                    style={{ background: 'linear-gradient(90deg, transparent, #d4a853, transparent)' }}
+                  />
+                )}
+              </button>
+            )
+          })}
         </nav>
 
         {/* FAZ 6.1 — Mobile + tablet menu drawer (lg breakpoint altinda) */}
@@ -235,35 +251,6 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         role={user?.role}
       />
     </div>
-  )
-}
-
-/* Desktop yatay nav tab — hover'da DecryptEffect tetiklenir */
-function NavTabButton({ item, active, onClick, t }) {
-  const [hover, setHover] = useState(false)
-  const label = item.tKey ? t(item.tKey) : item.label
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      className="relative px-4 py-3 text-[14px] transition-all font-geist"
-      style={{
-        color: active ? '#ffffff' : '#8ba9d2',
-        fontWeight: active ? 600 : 500,
-        letterSpacing: '-0.005em',
-        textShadow: active ? '0 0 12px rgba(212, 168, 83, 0.45)' : 'none',
-      }}
-      aria-current={active ? 'page' : undefined}>
-      <DecryptEffect text={label} active={hover && !active} />
-      {active && (
-        <span
-          aria-hidden
-          className="absolute left-3 right-3 bottom-0 h-0.5 rounded-full"
-          style={{ background: 'linear-gradient(90deg, transparent, #d4a853, transparent)' }}
-        />
-      )}
-    </button>
   )
 }
 
