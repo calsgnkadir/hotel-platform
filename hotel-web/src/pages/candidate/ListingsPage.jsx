@@ -739,7 +739,19 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         <div className="flex gap-2">
           <button onClick={() => setShowFilters(s => !s)}
             className="sm:hidden btn-secondary text-sm flex items-center gap-1.5">
-            🔧 Filtreler
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="21" y1="4" x2="14" y2="4" />
+              <line x1="10" y1="4" x2="3" y2="4" />
+              <line x1="21" y1="12" x2="12" y2="12" />
+              <line x1="8" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="20" x2="16" y2="20" />
+              <line x1="12" y1="20" x2="3" y2="20" />
+              <line x1="14" y1="2" x2="14" y2="6" />
+              <line x1="8" y1="10" x2="8" y2="14" />
+              <line x1="16" y1="18" x2="16" y2="22" />
+            </svg>
+            Filtreler
             {activeFilterCount > 0 && (
               <span className="bg-brand-700 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                 {activeFilterCount}
@@ -749,39 +761,46 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         </div>
       </div>
 
+      {/* Dalga 1 — Aktif filtre bar (yatay scroll chip'ler) */}
+      <ActiveFilterBar
+        filters={{ keyword: debouncedKeyword, position, jobType, district, minSalary, shifts, datePreset, customFrom, customTo }}
+        labels={{ POSITION_LABELS, JOB_TYPE_LABELS }}
+        onRemove={(key) => {
+          if (key === 'keyword')   { setKeyword(''); setDebouncedKeyword('') }
+          if (key === 'position')  setPosition('')
+          if (key === 'jobType')   setJobType('')
+          if (key === 'district')  setDistrict('')
+          if (key === 'minSalary') setMinSalary('')
+          if (key === 'datePreset'){ setDatePreset(''); setCustomFrom(''); setCustomTo('') }
+          if (key.startsWith('shift:')) setShifts(prev => prev.filter(s => s !== key.slice(6)))
+        }}
+        onClearAll={clearFilters}
+      />
+
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm pointer-events-none"></span>
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none"
+             width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
         <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
           placeholder="İlan başlığında ara..."
           className="input pl-10 text-sm" />
         {keyword && (
           <button onClick={() => setKeyword('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600 text-sm">
-            ✕
+            aria-label="Aramayı temizle"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
           </button>
         )}
       </div>
 
       <div className={`card p-4 space-y-4 ${showFilters ? '' : 'hidden sm:block'}`}>
-        {/* FAZ 2/#45 — Aktif filtre rozet + temizle */}
-        {(() => {
-          const activeCount = [district, position, jobType, minSalary, datePreset]
-            .filter(v => v && v !== '').length
-          if (activeCount === 0) return null
-          return (
-            <div className="flex items-center justify-between rounded-lg px-3 py-2"
-                 style={{ background: 'rgba(212, 168, 83, 0.10)', border: '1px solid rgba(212, 168, 83, 0.25)' }}>
-              <span className="text-xs font-bebas tracking-wider uppercase" style={{ color: '#fde9a5' }}>
-                {activeCount} FİLTRE AKTİF
-              </span>
-              <button onClick={() => {
-                setDistrict(''); setPosition(''); setJobType(''); setMinSalary(''); setDatePreset('')
-              }} className="text-xs font-bold hover:underline" style={{ color: '#f7c43c' }}>
-                Temizle
-              </button>
-            </div>
-          )
-        })()}
+        {/* Dalga 1 — Eski "FİLTRE AKTİF" banner üst ActiveFilterBar'a tasindi */}
 
         {/* İlçe — dropdown (39 ilçe pill chip mantıksız) */}
         <div>
@@ -870,8 +889,12 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         {activeFilterCount > 0 && (
           <div className="flex justify-end pt-1">
             <button onClick={clearFilters}
-              className="text-xs text-ink-500 hover:text-brand-700 dark:text-brand-700 font-medium">
-              ✕ Filtreleri temizle
+              className="text-xs text-ink-500 hover:text-brand-700 dark:text-brand-700 font-medium inline-flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+              </svg>
+              Filtreleri temizle
             </button>
           </div>
         )}
@@ -951,6 +974,70 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           onMessagesOpen={(convId) => onMessagesOpen?.(convId)}
         />
       )}
+    </div>
+  )
+}
+
+/* Dalga 1 — Aktif filtre yatay scroll bar (her chip'te X ile sil) */
+const DATE_PRESET_LABELS = {
+  TODAY: 'Bugün', TOMORROW: 'Yarın', WEEK: 'Bu Hafta',
+  WEEKEND: 'Haftasonu', CUSTOM: 'Özel Tarih',
+}
+const SHIFT_LABELS_INLINE = { MORNING: 'Sabah', EVENING: 'Akşam', NIGHT: 'Gece' }
+
+function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
+  const { POSITION_LABELS: posLabels, JOB_TYPE_LABELS: jobLabels } = labels
+  const chips = []
+  if (filters.keyword)   chips.push({ key: 'keyword',   text: `"${filters.keyword}"` })
+  if (filters.district)  chips.push({ key: 'district',  text: filters.district })
+  if (filters.position)  chips.push({ key: 'position',  text: posLabels[filters.position] || filters.position })
+  if (filters.jobType)   chips.push({ key: 'jobType',   text: jobLabels[filters.jobType] || filters.jobType })
+  if (filters.minSalary) chips.push({ key: 'minSalary', text: `${Number(filters.minSalary).toLocaleString('tr-TR')} ₺+` })
+  if (filters.datePreset) {
+    const dt = filters.datePreset === 'CUSTOM' && (filters.customFrom || filters.customTo)
+      ? `${filters.customFrom || '...'} → ${filters.customTo || '...'}`
+      : DATE_PRESET_LABELS[filters.datePreset] || filters.datePreset
+    chips.push({ key: 'datePreset', text: dt })
+  }
+  (filters.shifts || []).forEach(s =>
+    chips.push({ key: `shift:${s}`, text: SHIFT_LABELS_INLINE[s] || s })
+  )
+
+  if (chips.length === 0) return null
+
+  return (
+    <div className="flex items-center gap-2 -mx-1 px-1">
+      <div className="flex items-center gap-2 overflow-x-auto flex-1 py-1
+                      [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {chips.map(c => (
+          <button key={c.key}
+            type="button"
+            onClick={() => onRemove(c.key)}
+            className="group flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all hover:-translate-y-0.5"
+            style={{
+              background: 'rgba(212, 168, 83, 0.12)',
+              color: '#fde9a5',
+              border: '1px solid rgba(212, 168, 83, 0.28)',
+            }}>
+            <span className="truncate max-w-[180px]">{c.text}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                 className="opacity-70 group-hover:opacity-100" aria-hidden="true">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        ))}
+      </div>
+      <button onClick={onClearAll}
+        type="button"
+        className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-full flex-shrink-0 transition-all hover:-translate-y-0.5"
+        style={{
+          background: 'rgba(248, 113, 113, 0.10)',
+          color: '#f87171',
+          border: '1px solid rgba(248, 113, 113, 0.30)',
+        }}>
+        Hepsini Temizle
+      </button>
     </div>
   )
 }
