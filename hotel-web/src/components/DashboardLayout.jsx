@@ -8,6 +8,8 @@ import WsConnectionBadge from './WsConnectionBadge'
 import BottomTabBar from './BottomTabBar'
 import LanguageSwitcher from './LanguageSwitcher'
 import EmailVerifyBanner from './EmailVerifyBanner'
+import NotificationBell from './NotificationBell'
+import SettingsMenu from './SettingsMenu'
 /* ExpandableTabs HeaderActions kaldirildi — nav artik sol sidebar'da */
 
 // FAZ 1/#36 — Nav item id'leri i18n key'lerine map'lenir.
@@ -90,6 +92,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         bizProfile={bizProfile}
         isBusiness={isBusiness}
         onLogout={handleLogout}
+        onNavigate={(link) => onTabChange?.(link)}
       />
 
       {/* === MOBILE HEADER (lg:hidden) — brand + menu trigger === */}
@@ -192,7 +195,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 }
 
 /* Desktop Sidebar — fixed 240px, lg+ only */
-function Sidebar({ navItems, activeTab, onTabChange, t, user, bizProfile, isBusiness, onLogout }) {
+function Sidebar({ navItems, activeTab, onTabChange, t, user, bizProfile, isBusiness, onLogout, onNavigate }) {
   return (
     <aside
       className="hidden lg:flex fixed top-0 left-0 bottom-0 w-[240px] flex-col z-30 backdrop-blur-xl border-r"
@@ -249,12 +252,14 @@ function Sidebar({ navItems, activeTab, onTabChange, t, user, bizProfile, isBusi
         })}
       </nav>
 
-      {/* Footer — utilities + logout */}
+      {/* Footer — utilities + bildirim + ayarlar + logout */}
       <div className="border-t flex-shrink-0 p-3 space-y-2"
            style={{ borderColor: 'rgba(212, 168, 83, 0.15)' }}>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <LanguageSwitcher />
           <WsConnectionBadge />
+          <NotificationBell onNavigate={onNavigate} />
+          <SettingsMenu onTabChange={onTabChange} />
         </div>
 
         {isBusiness && bizProfile?.id && (
