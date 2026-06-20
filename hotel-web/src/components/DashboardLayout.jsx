@@ -4,12 +4,12 @@ import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
-import NotificationBell from './NotificationBell'
-import SettingsMenu from './SettingsMenu'
 import WsConnectionBadge from './WsConnectionBadge'
 import BottomTabBar from './BottomTabBar'
 import LanguageSwitcher from './LanguageSwitcher'
 import EmailVerifyBanner from './EmailVerifyBanner'
+import ExpandableTabs, { tabIcons } from './ExpandableTabs'
+import { keys } from '../lib/queryClient'
 
 // FAZ 1/#36 — Nav item id'leri i18n key'lerine map'lenir.
 const candidateNav = [
@@ -99,11 +99,11 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-1">
+            <div className="hidden sm:flex items-center gap-2">
               <LanguageSwitcher />
               <WsConnectionBadge />
-              <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
-              <SettingsMenu onTabChange={onTabChange} />
+              {/* Header expandable tabs — Ana Sayfa / Bildirimler / Ayarlar */}
+              <HeaderActions onTabChange={onTabChange} role={user?.role} />
             </div>
 
             {/* FAZ 5.9 — Public profil linki (sadece BUSINESS_OWNER) */}
@@ -252,6 +252,38 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       />
     </div>
   )
+}
+
+/* Header sağ aksiyon barı — Ana Sayfa / Bildirimler / Ayarlar */
+function HeaderActions({ onTabChange, role }) {
+  const { data: unread = 0 } = useQuery({
+    queryKey: keys.notifications.unreadCount(),
+    queryFn: () => hotelApi.getUnreadNotificationCount(),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    enabled: !!role,
+  })
+
+  // Role'e göre Ana Sayfa tab id'si — hepsi 'overview' aslında
+  // Ayarlar tabı: aday + işletme için 'profile'; admin'de profile yok → 'overview'
+  const homeId    = 'overview'
+  const notifId   = role === 'ADMIN' ? 'audit' : 'messages'
+  const settingsId = role === 'ADMIN' ? 'overview' : 'profile'
+
+  const tabs = [
+    { title: 'Ana Sayfa',   icon: tabIcons.home },
+    { title: 'Bildirimler', icon: tabIcons.bell, badge: unread },
+    { title: 'Ayarlar',     icon: tabIcons.settings },
+  ]
+
+  function handle(idx) {
+    if (idx == null) return
+    if (idx === 0) onTabChange?.(homeId)
+    else if (idx === 1) onTabChange?.(notifId)
+    else if (idx === 2) onTabChange?.(settingsId)
+  }
+
+  return <ExpandableTabs tabs={tabs} onChange={handle} />
 }
 
 /* Role'e gore dashboard kok path'i — logo click hedefi */
