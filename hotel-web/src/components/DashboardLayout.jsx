@@ -179,8 +179,6 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               return item ? (item.tKey ? t(item.tKey) : item.label) : 'Panel'
             })()}
           </h1>
-          {/* Her tab'a unique mini badge (page kimligi) */}
-          <PageAccent tab={activeTab} role={user?.role} />
         </div>
 
         <div className="px-4 lg:px-8 pb-24 md:pb-20 lg:pb-12 text-[14px]">
@@ -305,33 +303,4 @@ function dashboardHomeFor(role) {
   }
 }
 
-/* Her tab icin kucuk farkli kimlik elementi (sayfa kimligi) */
-function PageAccent({ tab, role }) {
-  const accents = {
-    overview:     { label: 'Anlık', color: '#d4a853' },
-    listings:     { label: 'Aktif İlanlar', color: '#d4a853' },
-    applications: { label: 'Aday Süreci', color: '#f7c43c' },
-    documents:    { label: 'Cüzdan', color: '#f7c43c' },
-    messages:     { label: 'Sohbetler', color: '#d4a853' },
-    mylistings:   { label: 'Yayınlarım', color: '#f7c43c' },
-    workers:      { label: 'Ekibim', color: '#f7c43c' },
-    profile:      { label: 'Profil', color: '#d4a853' },
-    history:      { label: 'Geçmiş', color: '#fde9a5' },
-    users:        { label: 'Kullanıcılar', color: '#d4a853' },
-    reports:      { label: 'Raporlar', color: '#fbbf24' },
-    audit:        { label: 'Audit Log', color: '#22d3ee' },
-  }
-  const a = accents[tab] || { label: '—', color: '#8ba9d2' }
-  return (
-    <div className="flex items-center gap-2 px-3 py-1 rounded-full"
-         style={{
-           background: `${a.color}10`,
-           border: `1px solid ${a.color}30`,
-         }}>
-      <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: a.color }} />
-      <span className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: a.color }}>
-        {a.label}
-      </span>
-    </div>
-  )
-}
+/* PageAccent kaldirildi — sayfa basligi yanindaki "Anlik / Aktif Ilanlar / ..." badge gereksizdi */
