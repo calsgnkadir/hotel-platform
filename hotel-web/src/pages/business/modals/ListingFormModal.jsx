@@ -295,7 +295,7 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
               onChange={(e) => setForm(f => ({ ...f, tipsIncluded: e.target.checked }))}
               className="w-4 h-4 accent-brand-600" />
             <span className="text-sm text-ink-700 dark:text-ink-200">
-              💰 Bahşiş (servis bedeli) ek olarak verilir
+              Bahşiş (servis bedeli) ek olarak verilir
             </span>
           </label>
 
@@ -441,8 +441,12 @@ function SortableSlot({ slot, index, totalCount, todayStr, onUpdate, onDuplicate
             <button type="button" onClick={onRemove}
               disabled={locked}
               className="text-xs px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
-              title={locked ? 'Bu slota kabul edilmiş aday var, silinemez' : 'Sil'}>
-              ✕
+              title={locked ? 'Bu slota kabul edilmiş aday var, silinemez' : 'Sil'}
+              aria-label="Sil">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+              </svg>
             </button>
           )}
         </div>

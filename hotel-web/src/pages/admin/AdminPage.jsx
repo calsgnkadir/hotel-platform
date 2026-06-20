@@ -3,7 +3,7 @@ import DashboardLayout from '../../components/DashboardLayout'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
-// Ayarlar + Yardım header'daki ⚙ SettingsMenu'ye taşındı
+// Ayarlar + Yardım header'daki Ayarlar SettingsMenu'ye taşındı
 
 /* ── Inline SVG helper (Heroicons stroke stili) ── */
 function Icon({ d, className = 'w-4 h-4', strokeWidth = 2 }) {

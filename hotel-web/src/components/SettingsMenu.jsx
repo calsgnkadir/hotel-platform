@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext'
 import toast from 'react-hot-toast'
 
 /**
- * Header'daki dişli (⚙) ikonu — tıklayınca dropdown açılır.
+ * Header'daki dişli (Ayarlar) ikonu — tıklayınca dropdown açılır.
  * İçerik: Tema seçimi + Bildirim kapama + Yardım/SSS + Çıkış
  *
  * Sidebar'da Ayarlar/Yardım sekmeleri kaldırıldı; her şey buraya toplandı.

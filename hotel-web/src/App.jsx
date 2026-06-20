@@ -32,7 +32,7 @@ import InstallPrompt from './components/InstallPrompt'
 import ErrorBoundary from './components/ErrorBoundary'
 // FAZ 3 — A11y: Skip-to-content link
 import SkipLink from './components/SkipLink'
-// FAZ 5.3 — Command Palette ⌘K
+// FAZ 5.3 — Command Palette Ctrl+K
 import CommandPalette from './components/CommandPalette'
 // FAZ 5.10 — Klavye kisayollari (? + g+harf chord)
 import KeyboardShortcuts from './components/KeyboardShortcuts'
@@ -59,7 +59,7 @@ export default function App() {
         <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
         <PushPermissionPrompt />  {/* FAZ 1/#23 — Web Push */}
         <InstallPrompt />          {/* FAZ 2/#8 — PWA install */}
-        <CommandPalette />         {/* FAZ 5.3 — ⌘K global arama */}
+        <CommandPalette />         {/* FAZ 5.3 — Ctrl+K global arama */}
         <KeyboardShortcuts />      {/* FAZ 5.10 — ? help + g+harf chord */}
         <ScrollProgressBar />      {/* FAZ 5.11 — sticky scroll progress */}
         <CookieConsent />          {/* FAZ I.1 — KVKK çerez tercihi */}

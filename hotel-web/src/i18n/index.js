@@ -13,8 +13,8 @@ import tr from './locales/tr.json'
 import en from './locales/en.json'
 
 export const SUPPORTED_LANGS = [
-  { code: 'tr', label: 'Türkçe',  flag: '🇹🇷' },
-  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'tr', label: 'Türkçe',  flag: 'TR' },
+  { code: 'en', label: 'English', flag: 'EN' },
 ]
 
 i18n

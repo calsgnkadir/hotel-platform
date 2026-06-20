@@ -84,16 +84,20 @@ export default function InstallPrompt() {
              style={{ background: 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)' }}>
           <div className="p-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xl"
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
                    style={{ background: 'linear-gradient(135deg, #d4a853, #234a82)' }}>
-                📱
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
+                </svg>
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-sm" style={{ color: '#0c1726' }}>
                   Ana ekrana ekle
                 </h3>
                 <p className="text-xs mt-1" style={{ color: '#1e3a5f' }}>
-                  Safari'de paylaş ikonuna <span className="font-bold">⎙</span> bas, ardından
+                  Safari'de paylaş ikonuna bas, ardından
                   <span className="font-bold"> "Ana Ekrana Ekle"</span> seç.
                 </p>
                 <button onClick={handleLater}
@@ -116,9 +120,14 @@ export default function InstallPrompt() {
            style={{ background: 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)' }}>
         <div className="p-4">
           <div className="flex items-start gap-3">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-2xl"
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
                  style={{ background: 'linear-gradient(135deg, #d4a853, #234a82)' }}>
-              📲
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-sm" style={{ color: '#0c1726' }}>
@@ -131,7 +140,7 @@ export default function InstallPrompt() {
                 <button onClick={handleInstall}
                   className="flex-1 px-3 py-2 rounded-lg text-xs font-bold text-white shadow-sm"
                   style={{ background: 'linear-gradient(135deg, #d4a853, #234a82)' }}>
-                  ⬇ Yükle
+                  Yükle
                 </button>
                 <button onClick={handleLater}
                   className="px-3 py-2 rounded-lg text-xs font-semibold"

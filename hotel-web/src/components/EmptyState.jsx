@@ -13,7 +13,7 @@
  */
 
 const ILLUSTRATIONS = {
-  // 📋 Başvurular — kâğıt + uçak (uçan başvuru fikri)
+  // Başvurular — kâğıt + uçak (uçan başvuru fikri)
   applications: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
       <defs>
@@ -39,7 +39,7 @@ const ILLUSTRATIONS = {
     </svg>
   ),
 
-  // 🔍 İlanlar — mercek + işletme
+  // İlanlar — mercek + işletme
   listings: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
       <defs>
@@ -63,7 +63,7 @@ const ILLUSTRATIONS = {
     </svg>
   ),
 
-  // 💬 Mesajlar — konuşma balonları
+  // Mesajlar — konuşma balonları
   messages: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
       <defs>
@@ -89,7 +89,7 @@ const ILLUSTRATIONS = {
     </svg>
   ),
 
-  // 👥 Çalışanlar — adam silueti grubu
+  // Çalışanlar — adam silueti grubu
   workers: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
       <defs>
@@ -113,7 +113,7 @@ const ILLUSTRATIONS = {
     </svg>
   ),
 
-  // ⏳ Geçmiş — saat
+  // Geçmiş — saat
   history: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
       <defs>
@@ -166,7 +166,7 @@ const ILLUSTRATIONS = {
     </svg>
   ),
 
-  // 🔎 Search — filtre sonucu yok
+  // Search — filtre sonucu yok
   search: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
       <defs>
@@ -190,7 +190,7 @@ const ILLUSTRATIONS = {
     </svg>
   ),
 
-  // 🔔 Notifications — zil + sessiz
+  // Notifications — zil + sessiz
   notifications: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
       <defs>
@@ -212,7 +212,7 @@ const ILLUSTRATIONS = {
     </svg>
   ),
 
-  // 📦 Generic — boş kutu
+  // Generic — boş kutu
   generic: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" className="w-32 h-32" fill="none">
       <defs>

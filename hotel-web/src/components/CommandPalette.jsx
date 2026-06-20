@@ -204,7 +204,7 @@ export default function CommandPalette() {
                     {active && (
                       <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded"
                            style={{ background: 'var(--bg-subtle, rgba(0,0,0,0.05))' }}>
-                        ↵
+                        Enter
                       </kbd>
                     )}
                   </button>
@@ -223,11 +223,11 @@ export default function CommandPalette() {
             <span>gezin</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>↵</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>Enter</kbd>
             <span>seç</span>
           </span>
           <span className="ml-auto flex items-center gap-1.5">
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>⌘ K</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>Ctrl K</kbd>
             <span>tekrar aç/kapat</span>
           </span>
         </div>

@@ -1084,7 +1084,7 @@ function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
   return (
     <div className="px-3 pb-2 pt-1 border-t border-cream-200 dark:border-cream-300 flex-shrink-0">
       <div className="text-[9px] uppercase tracking-widest text-ink-400 mb-1.5 flex items-center gap-1.5">
-        <span style={{ color: '#d4a853' }}>✦</span>
+        <span style={{ color: '#d4a853' }}>·</span>
         <span>Hızlı yanıt</span>
         {listingTitle && (
           <span className="truncate text-ink-500" style={{ maxWidth: 200 }}>

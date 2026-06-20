@@ -128,7 +128,7 @@ export default function FavoritesTab({ onOpenMessages }) {
               disabled={openingChatId === f.candidateId}
               className="text-xs px-2.5 py-1.5 rounded-lg text-white font-semibold transition-all hover:-translate-y-0.5 disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
-              {openingChatId === f.candidateId ? '...' : '💬 Mesajla'}
+              {openingChatId === f.candidateId ? '...' : 'Mesajla'}
             </button>
             <button onClick={() => handleRemove(f.candidateId, f.candidateName)}
               disabled={removingId === f.candidateId}
