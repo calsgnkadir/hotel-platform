@@ -74,12 +74,8 @@ export default function OverviewTab({ user, applications, onTabChange }) {
         <EarningsWidget applications={applications} />
       </motion.div>
 
-      {/* QUICK ACTIONS */}
-      <motion.div variants={ITEM} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {QUICK_ACTIONS.map((a, i) => (
-          <QuickActionTile key={a.tab} {...a} idx={i} onClick={() => onTabChange(a.tab)} />
-        ))}
-      </motion.div>
+      {/* QUICK ACTIONS sokuldu — sidebar nav + mobile bottom tab bar zaten ayni
+          sekmelere erisim sagliyor, ortada redundant 5 kart gerek yok */}
 
       {applications.length > 0 && (
         <motion.div variants={ITEM} className="relative overflow-hidden rounded-2xl"
