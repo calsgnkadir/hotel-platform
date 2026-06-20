@@ -15,11 +15,14 @@ import GoogleSignInButton from './GoogleSignInButton'
  *
  * Landing arka planda blur'da kalır — sayfa değişikliği olmaz.
  */
-export default function AuthModal({ open, onClose }) {
+export default function AuthModal({ open, onClose, defaultRole = null }) {
   const navigate = useNavigate()
-  const [role, setRole] = useState(null)   // null | 'CANDIDATE' | 'BUSINESS_OWNER'
+  const [role, setRole] = useState(defaultRole)   // null | 'CANDIDATE' | 'BUSINESS_OWNER'
   const [email, setEmail] = useState('')
   const dialogRef = useRef(null)
+
+  // Modal her acildiginda defaultRole degisirse senkronize et
+  useEffect(() => { if (open) setRole(defaultRole) }, [open, defaultRole])
 
   // Esc ile kapat + ilk açılışta odak
   useEffect(() => {

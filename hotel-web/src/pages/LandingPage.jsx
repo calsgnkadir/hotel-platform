@@ -18,7 +18,8 @@ import AuthModal from '../components/AuthModal'
  */
 export default function LandingPage() {
   const [authOpen, setAuthOpen] = useState(false)
-  const openAuth = () => setAuthOpen(true)
+  const [authRole, setAuthRole] = useState(null)
+  const openAuth = (role = null) => { setAuthRole(role); setAuthOpen(true) }
   const closeAuth = () => setAuthOpen(false)
   return (
     <div className="min-h-screen text-white">
@@ -121,24 +122,47 @@ export default function LandingPage() {
                 doğru yerdesin. Vardiya seç, başvur, mesajlaş — gerisini bize bırak.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3">
-                <button type="button" onClick={openAuth}
-                  className="inline-flex items-center gap-2 text-sm font-bold px-7 py-3 rounded-full text-white cta-glow transition-all hover:-translate-y-0.5"
+              {/* Dalga 4 — Dual CTA: iki rol icin ayri buton (Workday/Jora pattern) */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button type="button" onClick={() => openAuth('CANDIDATE')}
+                  className="group flex-1 sm:flex-initial sm:min-w-[220px] inline-flex items-center justify-between gap-3 text-left px-5 py-4 rounded-2xl transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, #d4a853 0%, #d4a853 100%)',
-                  }}
-                >
-                  Hemen Başla
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    boxShadow: '0 8px 24px rgba(212, 168, 83, 0.35)',
+                    color: '#0a0612',
+                  }}>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-70">Aday için</div>
+                    <div className="text-base font-bold">İş arıyorum</div>
+                  </div>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                       className="group-hover:translate-x-1 transition-transform" aria-hidden="true">
+                    <path d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                   </svg>
                 </button>
-                <a
-                  href="#features"
-                  className="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-full glass-panel hover:bg-white/10 transition-colors"
-                  style={{ color: '#dde7f3' }}
-                >
+                <button type="button" onClick={() => openAuth('BUSINESS_OWNER')}
+                  className="group flex-1 sm:flex-initial sm:min-w-[220px] inline-flex items-center justify-between gap-3 text-left px-5 py-4 rounded-2xl transition-all hover:-translate-y-0.5"
+                  style={{
+                    background: 'rgba(212, 168, 83, 0.10)',
+                    border: '1px solid rgba(212, 168, 83, 0.45)',
+                    color: '#fde9a5',
+                  }}>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-65">İşletme için</div>
+                    <div className="text-base font-bold">Eleman arıyorum</div>
+                  </div>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                       className="group-hover:translate-x-1 transition-transform" aria-hidden="true">
+                    <path d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-4">
+                <a href="#features"
+                   className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-full glass-panel hover:bg-white/10 transition-colors"
+                   style={{ color: '#dde7f3' }}>
                   Nasıl çalışır?
                 </a>
               </div>
@@ -293,8 +317,8 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Dalga 2 — Landing CTA'lardan açılan Auth Modal */}
-      <AuthModal open={authOpen} onClose={closeAuth} />
+      {/* Dalga 2/4 — Landing CTA'lardan açılan Auth Modal (rol pre-selected) */}
+      <AuthModal open={authOpen} onClose={closeAuth} defaultRole={authRole} />
     </div>
   )
 }
