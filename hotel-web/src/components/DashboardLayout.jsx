@@ -8,8 +8,7 @@ import WsConnectionBadge from './WsConnectionBadge'
 import BottomTabBar from './BottomTabBar'
 import LanguageSwitcher from './LanguageSwitcher'
 import EmailVerifyBanner from './EmailVerifyBanner'
-import ExpandableTabs, { tabIcons } from './ExpandableTabs'
-import { keys } from '../lib/queryClient'
+/* ExpandableTabs HeaderActions kaldirildi — nav artik sol sidebar'da */
 
 // FAZ 1/#36 — Nav item id'leri i18n key'lerine map'lenir.
 const candidateNav = [
@@ -81,101 +80,39 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       {/* Neon üst hat (ince) */}
       <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none no-print" />
 
-      {/* === HEADER — brand + top nav + right actions === */}
-      <header className="relative z-30 sticky top-[2px] backdrop-blur-xl border-b"
+      {/* === DESKTOP SIDEBAR (lg+ only, fixed 240px) === */}
+      <Sidebar
+        navItems={navItems}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        t={t}
+        user={user}
+        bizProfile={bizProfile}
+        isBusiness={isBusiness}
+        onLogout={handleLogout}
+      />
+
+      {/* === MOBILE HEADER (lg:hidden) — brand + menu trigger === */}
+      <header className="lg:hidden relative z-30 sticky top-[2px] backdrop-blur-xl border-b"
               style={{
                 background: 'rgba(15, 23, 38, 0.75)',
                 borderColor: 'rgba(212, 168, 83, 0.18)',
               }}>
-        {/* Üst satır: brand + actions */}
-        <div className="px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
-          {/* Logo: panelden tiklayinca kendi dashboard'una kalsin, public landing'e atip
-              kullaniciyi 'cikis yaptirilmis gibi' hissettirmesin */}
+        <div className="px-4 py-3 flex items-center justify-between gap-4">
           <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2 flex-shrink-0">
             <span className="font-bebas text-2xl tracking-wider text-white">AJANSHOTEL</span>
             <span className="hidden sm:inline text-[9px] uppercase tracking-[0.2em]"
                   style={{ color: '#fde9a5' }}>istanbul</span>
           </Link>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2">
-              <LanguageSwitcher />
-              <WsConnectionBadge />
-              {/* Header expandable tabs — Ana Sayfa / Bildirimler / Ayarlar */}
-              <HeaderActions onTabChange={onTabChange} role={user?.role} />
-            </div>
-
-            {/* FAZ 5.9 — Public profil linki (sadece BUSINESS_OWNER) */}
-            {isBusiness && bizProfile?.id && (
-              <a
-                href={`/p/business/${bizProfile.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Public profilini yeni sekmede ac"
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-full transition-all hover:-translate-y-0.5"
-                style={{
-                  background: 'rgba(212, 168, 83, 0.15)',
-                  color: '#fde9a5',
-                  border: '1px solid rgba(212, 168, 83, 0.30)',
-                }}
-              >
-                Public Profilim
-              </a>
-            )}
-
-            {/* Logout — kompakt buton */}
-            <button onClick={handleLogout}
-              className="hidden sm:inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full transition-all hover:-translate-y-0.5"
-              style={{
-                background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.20), rgba(185, 28, 28, 0.30))',
-                color: '#fca5a5',
-                border: '1px solid rgba(220, 38, 38, 0.30)',
-              }}>
-              Çıkış
-            </button>
-
-            {/* FAZ 6.1 — Mobile + tablet menu trigger (lg breakpoint altinda gozukur) */}
-            <button onClick={() => setMobileMenuOpen(o => !o)}
-              className="lg:hidden p-2 rounded-full"
-              style={{ background: 'rgba(212, 168, 83, 0.15)' }}
-              aria-label="Menü">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
-              </svg>
-            </button>
-          </div>
+          <button onClick={() => setMobileMenuOpen(o => !o)}
+            className="p-2 rounded-full"
+            style={{ background: 'rgba(212, 168, 83, 0.15)' }}
+            aria-label="Menü">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
         </div>
-
-        {/* Alt satır: yatay tab strip (desktop) */}
-        <nav className="hidden lg:flex items-center gap-2 px-8 pb-1 -mt-1" aria-label="Ana navigasyon">
-          {navItems.map(item => {
-            const active = activeTab === item.id
-            return (
-              <button
-                key={item.id}
-                onClick={() => onTabChange?.(item.id)}
-                className="relative px-4 py-3 text-[14px] transition-all font-geist"
-                style={{
-                  color: active ? '#ffffff' : '#8ba9d2',
-                  fontWeight: active ? 600 : 500,
-                  letterSpacing: '-0.005em',
-                  textShadow: active ? '0 0 12px rgba(212, 168, 83, 0.45)' : 'none',
-                }}
-                aria-current={active ? 'page' : undefined}
-              >
-                {item.tKey ? t(item.tKey) : item.label}
-                {active && (
-                  <span
-                    aria-hidden
-                    className="absolute left-3 right-3 bottom-0 h-0.5 rounded-full"
-                    style={{ background: 'linear-gradient(90deg, transparent, #d4a853, transparent)' }}
-                  />
-                )}
-              </button>
-            )
-          })}
-        </nav>
 
         {/* FAZ 6.1 — Mobile + tablet menu drawer (lg breakpoint altinda) */}
         {mobileMenuOpen && (
@@ -217,8 +154,8 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         )}
       </header>
 
-      {/* === Page Content === */}
-      <main className="relative z-10 fade-in" style={{ color: '#dde7f3' }}>
+      {/* === Page Content (lg+'ta sidebar yer acmasi icin lg:pl-[240px]) === */}
+      <main className="relative z-10 fade-in lg:pl-[240px]" style={{ color: '#dde7f3' }}>
         <EmailVerifyBanner />
 
         {/* Page heading strip — Geist semibold, sade premium */}
@@ -254,36 +191,100 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   )
 }
 
-/* Header sağ aksiyon barı — Ana Sayfa / Bildirimler / Ayarlar */
-function HeaderActions({ onTabChange, role }) {
-  const { data: unread = 0 } = useQuery({
-    queryKey: keys.notifications.unreadCount(),
-    queryFn: () => hotelApi.getUnreadNotificationCount(),
-    refetchInterval: 30_000,
-    refetchOnWindowFocus: true,
-    enabled: !!role,
-  })
+/* Desktop Sidebar — fixed 240px, lg+ only */
+function Sidebar({ navItems, activeTab, onTabChange, t, user, bizProfile, isBusiness, onLogout }) {
+  return (
+    <aside
+      className="hidden lg:flex fixed top-0 left-0 bottom-0 w-[240px] flex-col z-30 backdrop-blur-xl border-r"
+      style={{
+        background: 'rgba(15, 23, 38, 0.85)',
+        borderColor: 'rgba(212, 168, 83, 0.18)',
+      }}
+      aria-label="Ana navigasyon">
+      {/* Logo */}
+      <Link to={dashboardHomeFor(user?.role)}
+            className="flex items-baseline gap-2 flex-shrink-0 px-6 pt-6 pb-4">
+        <span className="font-bebas text-2xl tracking-wider text-white">AJANSHOTEL</span>
+        <span className="text-[9px] uppercase tracking-[0.2em]"
+              style={{ color: '#fde9a5' }}>istanbul</span>
+      </Link>
 
-  // Role'e göre Ana Sayfa tab id'si — hepsi 'overview' aslında
-  // Ayarlar tabı: aday + işletme için 'profile'; admin'de profile yok → 'overview'
-  const homeId    = 'overview'
-  const notifId   = role === 'ADMIN' ? 'audit' : 'messages'
-  const settingsId = role === 'ADMIN' ? 'overview' : 'profile'
+      {/* Nav items */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
+        {navItems.map(item => {
+          const active = activeTab === item.id
+          return (
+            <button
+              key={item.id}
+              onClick={() => onTabChange?.(item.id)}
+              className="relative w-full text-left px-4 py-2.5 rounded-lg text-[14px] transition-all font-geist"
+              style={{
+                background: active ? 'rgba(212, 168, 83, 0.14)' : 'transparent',
+                color: active ? '#ffffff' : '#8ba9d2',
+                fontWeight: active ? 600 : 500,
+                letterSpacing: '-0.005em',
+                border: active ? '1px solid rgba(212, 168, 83, 0.30)' : '1px solid transparent',
+              }}
+              onMouseEnter={(e) => {
+                if (!active) {
+                  e.currentTarget.style.background = 'rgba(212, 168, 83, 0.05)'
+                  e.currentTarget.style.color = '#fde9a5'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!active) {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = '#8ba9d2'
+                }
+              }}
+              aria-current={active ? 'page' : undefined}>
+              {item.tKey ? t(item.tKey) : item.label}
+              {active && (
+                <span aria-hidden
+                      className="absolute left-0 top-2 bottom-2 w-1 rounded-r"
+                      style={{ background: '#d4a853', boxShadow: '0 0 12px rgba(212, 168, 83, 0.6)' }} />
+              )}
+            </button>
+          )
+        })}
+      </nav>
 
-  const tabs = [
-    { title: 'Ana Sayfa',   icon: tabIcons.home },
-    { title: 'Bildirimler', icon: tabIcons.bell, badge: unread },
-    { title: 'Ayarlar',     icon: tabIcons.settings },
-  ]
+      {/* Footer — utilities + logout */}
+      <div className="border-t flex-shrink-0 p-3 space-y-2"
+           style={{ borderColor: 'rgba(212, 168, 83, 0.15)' }}>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <WsConnectionBadge />
+        </div>
 
-  function handle(idx) {
-    if (idx == null) return
-    if (idx === 0) onTabChange?.(homeId)
-    else if (idx === 1) onTabChange?.(notifId)
-    else if (idx === 2) onTabChange?.(settingsId)
-  }
+        {isBusiness && bizProfile?.id && (
+          <a
+            href={`/p/business/${bizProfile.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Public profilini yeni sekmede ac"
+            className="block text-center text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-full transition-all hover:-translate-y-0.5"
+            style={{
+              background: 'rgba(212, 168, 83, 0.15)',
+              color: '#fde9a5',
+              border: '1px solid rgba(212, 168, 83, 0.30)',
+            }}>
+            Public Profilim
+          </a>
+        )}
 
-  return <ExpandableTabs tabs={tabs} onChange={handle} />
+        <button onClick={onLogout}
+          className="w-full text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-full transition-all hover:-translate-y-0.5"
+          style={{
+            background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.20), rgba(185, 28, 28, 0.30))',
+            color: '#fca5a5',
+            border: '1px solid rgba(220, 38, 38, 0.30)',
+          }}>
+          Çıkış
+        </button>
+      </div>
+    </aside>
+  )
 }
 
 /* Role'e gore dashboard kok path'i — logo click hedefi */
