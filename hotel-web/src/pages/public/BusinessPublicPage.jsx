@@ -161,7 +161,7 @@ export default function BusinessPublicPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0c1726' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <div className="font-bebas text-2xl tracking-widest" style={{ color: '#fde9a5' }}>YÜKLENİYOR...</div>
       </div>
     )
@@ -169,7 +169,7 @@ export default function BusinessPublicPage() {
 
   if (error || !business) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: '#0c1726' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center px-4">
         <div className="font-bebas text-3xl tracking-widest mb-2 text-white">404</div>
         <div className="text-sm mb-6" style={{ color: '#fde9a5' }}>İşletme bulunamadı.</div>
         <Link to="/" className="text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full"
@@ -214,7 +214,7 @@ export default function BusinessPublicPage() {
   }
 
   return (
-    <div className="min-h-screen relative" style={{ background: '#0c1726' }}>
+    <div className="min-h-screen relative">
       {/* Schema.org JSON-LD — XSS guard: isletme adi gibi user-data icinde
           '</script>' geçerse script tag'den kacis olabilirdi. JSON.stringify
           '<' karakterini escape etmiyor; '<' ile escape edilir. */}

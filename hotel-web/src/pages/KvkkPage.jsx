@@ -7,7 +7,7 @@ import BackButton from '../components/BackButton'
  */
 export default function KvkkPage() {
   return (
-    <div className="min-h-screen py-10 px-4 relative" style={{ background: '#0c1726' }}>
+    <div className="min-h-screen py-10 px-4 relative">
       {/* Calm radial halo */}
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
            style={{

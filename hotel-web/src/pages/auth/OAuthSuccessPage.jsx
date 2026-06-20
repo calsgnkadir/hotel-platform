@@ -55,7 +55,7 @@ export default function OAuthSuccessPage() {
   }, [params, navigate, loginFromOAuth])
 
   return (
-    <div className="min-h-screen bg-ink-900 flex items-center justify-center text-slate-300">
+    <div className="min-h-screen flex items-center justify-center text-slate-300 relative z-10">
       <div className="text-center">
         <div className="spinner mx-auto" />
         <p className="text-[13px] mt-4">Giriş yapılıyor...</p>

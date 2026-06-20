@@ -17,16 +17,16 @@ html, body, #root {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #faf7f2;          /* cream-100 — sıcak krem zemin */
-  color: #171513;                /* ink-900 — antrasit */
+  background: #0a0a0a;           /* neutral-950 — BeamsBackground koyu zemin */
+  color: #f5f5f5;                /* açık metin — koyu zemin üzerinde okunaklı */
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s, color 0.2s;
 }
 
-/* Dark mode opsiyonel — kullanıcı toggle'larsa */
+/* Dark/light fark kalktı — tüm sayfalar BeamsBackground koyu zeminde */
 .dark body {
-  background: #1f1c1a;
-  color: #faf7f2;
+  background: #0a0a0a;
+  color: #f5f5f5;
 }
 
 /* Quick Action kartları artık genel .card stilini kullanıyor — özel override yok */

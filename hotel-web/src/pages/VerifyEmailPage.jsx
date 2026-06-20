@@ -32,7 +32,7 @@ export default function VerifyEmailPage() {
   }, [token])
 
   return (
-    <div className="min-h-screen bg-cream-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 text-white relative z-10">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-brand-200 p-8 text-center">
         <h1 className="text-2xl font-bold mb-3" style={{ color: '#0c1726' }}>
           Email Doğrulama

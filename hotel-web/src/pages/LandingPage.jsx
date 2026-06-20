@@ -16,7 +16,7 @@ import LandingPulse from '../components/LandingPulse'
  */
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-cream-100 text-ink-900">
+    <div className="min-h-screen text-white">
       {/* Üst hat — sıcak gradient */}
       <div className="neon-strip" />
 
@@ -53,7 +53,7 @@ export default function LandingPage() {
       </header>
 
       {/* ───── Hero (FAZ 5.4 — Dark Island) ───── */}
-      <section className="relative overflow-hidden" style={{ background: '#0c1726', minHeight: '92vh' }}>
+      <section className="relative overflow-hidden" style={{ minHeight: '92vh' }}>
         {/* FAZ 5.4 — WebGL CPPN shader arka plan, mor brand'e hue-shift */}
         <DarkVeil hueShift={285} noiseIntensity={0.025} speed={0.45} warpAmount={0.35} />
 

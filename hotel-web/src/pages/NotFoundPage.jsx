@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cream-100 p-6">
+    <div className="min-h-screen flex items-center justify-center p-6 text-white relative z-10">
       <div className="text-center max-w-md">
         <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-6 text-5xl font-black"
              style={{ background: 'linear-gradient(135deg, #dde7f3, #ddd6fe)', color: '#234a82' }}>

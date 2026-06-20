@@ -45,7 +45,7 @@ export default function ListingDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream-100">
+      <div className="min-h-screen flex items-center justify-center text-white relative z-10">
         <div className="spinner" />
       </div>
     )
@@ -53,7 +53,7 @@ export default function ListingDetailPage() {
 
   if (error || !listing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream-100">
+      <div className="min-h-screen flex items-center justify-center text-white relative z-10">
         <div className="card max-w-md text-center p-8">
           <h2 className="text-xl font-bold mb-2">İlan bulunamadı</h2>
           <p className="text-sm opacity-80 mb-4">Bu ilan kaldırılmış veya yayında değil olabilir.</p>
@@ -98,7 +98,7 @@ export default function ListingDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 dark:bg-ink-900">
+    <div className="min-h-screen text-white relative z-10">
       {/* Top bar — geri butonu + breadcrumb */}
       <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 bg-cream-100/85 backdrop-blur-lg border-b border-cream-300">
         <div className="max-w-4xl mx-auto flex items-center gap-3">

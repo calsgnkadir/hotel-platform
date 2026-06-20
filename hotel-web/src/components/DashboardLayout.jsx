@@ -65,7 +65,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   }
 
   return (
-    <div className="min-h-screen relative" style={{ background: '#0c1726' }}>
+    <div className="min-h-screen relative">
       {/* Calm radial halo arka plan */}
       <div
         aria-hidden

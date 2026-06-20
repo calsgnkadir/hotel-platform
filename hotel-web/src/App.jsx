@@ -42,7 +42,8 @@ import ScrollProgressBar from './components/ScrollProgressBar'
 import { MotionConfig } from 'framer-motion'
 // FAZ I.1 — KVKK cookie consent banner
 import CookieConsent from './components/CookieConsent'
-// Global parıltı arka planı (tüm sayfalarda)
+// Global arka plan katmanları (tüm sayfalarda)
+import BeamsBackground from './components/BeamsBackground'
 import SparklesBackground from './components/SparklesBackground'
 import { ParticlesProvider } from '@tsparticles/react'
 import { loadSlim } from '@tsparticles/slim'
@@ -63,7 +64,8 @@ export default function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <SkipLink />              {/* FAZ 3 / A11y — klavye Tab ilk durak */}
-        <SparklesBackground />    {/* Global parıltı arka planı (reduced-motion respect) */}
+        <BeamsBackground />       {/* En alt: altın huzme ışın katmanı */}
+        <SparklesBackground />    {/* Üst: altın parıltılar */}
         <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
         <PushPermissionPrompt />  {/* FAZ 1/#23 — Web Push */}
         <InstallPrompt />          {/* FAZ 2/#8 — PWA install */}

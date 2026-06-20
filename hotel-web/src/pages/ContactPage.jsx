@@ -84,7 +84,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 py-10 px-4">
+    <div className="min-h-screen py-10 px-4 text-white relative z-10">
       <div className="fixed top-3 left-4 z-40">
         <BackButton label="Geri" />
       </div>

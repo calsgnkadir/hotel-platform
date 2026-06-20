@@ -52,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden font-geist" style={{ background: '#0a1220' }}>
+    <div className="min-h-screen relative overflow-hidden font-geist">
       <AmbientBackdrop />
 
       {/* Merkez kart konteyneri — mouse parallax buradan dinlenir */}
