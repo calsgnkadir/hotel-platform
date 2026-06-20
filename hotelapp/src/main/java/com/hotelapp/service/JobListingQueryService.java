@@ -74,6 +74,27 @@ public class JobListingQueryService {
         return jobListingService.toResponse(listing);
     }
 
+    // Position enum -> TR + EN keyword'leri. Kullanici "garson" yazinca
+    // WAITER pozisyonlu ilanlar da bulunur. Eslestirme: keyword icinde
+    // en az bir kelime gecerse o position dahil edilir.
+    private static final java.util.Map<Position, java.util.List<String>> POSITION_KEYWORDS =
+            java.util.Map.of(
+                    Position.WAITER,        java.util.List.of("garson", "servis", "waiter"),
+                    Position.DISHWASHER,    java.util.List.of("bulasik", "bulaşık", "dishwasher"),
+                    Position.HOUSEKEEPING,  java.util.List.of("kat hizmetleri", "kat", "temizlik", "housekeeping"),
+                    Position.RECEPTION,     java.util.List.of("resepsiyon", "front desk", "reception"),
+                    Position.KITCHEN_STAFF, java.util.List.of("mutfak", "asci", "aşçı", "kitchen"),
+                    Position.BELLBOY,       java.util.List.of("bellboy", "tasiyici", "taşıyıcı"),
+                    Position.SECURITY,      java.util.List.of("guvenlik", "güvenlik", "security")
+            );
+
+    private static List<Position> matchPositionKeyword(String kwLower) {
+        return POSITION_KEYWORDS.entrySet().stream()
+                .filter(e -> e.getValue().stream().anyMatch(kwLower::contains))
+                .map(java.util.Map.Entry::getKey)
+                .toList();
+    }
+
     private Specification<JobListing> buildActiveListingSpec(
             Position position, JobType jobType, List<Shift> shifts,
             String district, BigDecimal minSalary, String keyword,
@@ -92,17 +113,22 @@ public class JobListingQueryService {
             }
             if (minSalary != null) predicates.add(cb.greaterThanOrEqualTo(root.get("salaryMin"), minSalary));
             if (keyword != null && !keyword.isBlank()) {
-                // Full-text search — title + description + requirements + position enum +
-                // business name. district join'i tetiklemeden tek alias kullanilir.
-                String pattern = "%" + keyword.toLowerCase() + "%";
+                // Full-text search — title + description + requirements + business name +
+                // position enum TR/EN keyword mapping. ("garson" -> WAITER ilanlar)
+                String kwLower = keyword.toLowerCase();
+                String pattern = "%" + kwLower + "%";
                 Join<JobListing, Business> bizForKw = root.join("business", JoinType.LEFT);
-                predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("title")),        pattern),
-                        cb.like(cb.lower(root.get("description")),  pattern),
-                        cb.like(cb.lower(root.get("requirements")), pattern),
-                        cb.like(cb.lower(root.get("position").as(String.class)), pattern),
-                        cb.like(cb.lower(bizForKw.get("name")),     pattern)
-                ));
+
+                List<Position> matchingPositions = matchPositionKeyword(kwLower);
+                List<Predicate> ors = new ArrayList<>();
+                ors.add(cb.like(cb.lower(root.get("title")),        pattern));
+                ors.add(cb.like(cb.lower(root.get("description")),  pattern));
+                ors.add(cb.like(cb.lower(root.get("requirements")), pattern));
+                ors.add(cb.like(cb.lower(bizForKw.get("name")),     pattern));
+                if (!matchingPositions.isEmpty()) {
+                    ors.add(root.get("position").in(matchingPositions));
+                }
+                predicates.add(cb.or(ors.toArray(new Predicate[0])));
                 query.distinct(true);
             }
             if (dateFrom != null || dateTo != null) {
