@@ -13,10 +13,10 @@ export default function SparklesBackground({
   className = '',
   background = 'transparent',
   particleColor = '#fbd768',
-  minSize = 0.4,
-  maxSize = 1.2,
-  particleDensity = 25,
-  speed = 1.0,
+  minSize = 0.5,
+  maxSize = 1.6,
+  particleDensity = 50,
+  speed = 1.2,
 }) {
   const { loaded } = useParticlesProvider()
   const id = useId()
@@ -65,7 +65,7 @@ export default function SparklesBackground({
               value: particleDensity,
             },
             opacity: {
-              value: { min: 0.15, max: 0.55 },
+              value: { min: 0.2, max: 0.75 },
               animation: {
                 enable: true,
                 speed: speed,
