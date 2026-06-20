@@ -1,88 +1,43 @@
-import { useEffect, useId, useState } from 'react'
-import { motion, useAnimation, useReducedMotion } from 'framer-motion'
+import { useId } from 'react'
+import { motion } from 'framer-motion'
+import Particles, { useParticlesProvider } from '@tsparticles/react'
 
 /**
- * SparklesBackground — global arka plan parıltıları (kar/yıldız efekti).
+ * SparklesBackground — global arka plan parıltıları.
  *
- * Pragmatik kararlar:
- *  - Lazy load: ilk render'da bundle yüklemesin, mount sonrası dynamic import
- *    (ayrı 'particles' chunk — vite.config manualChunks)
- *  - prefers-reduced-motion → render etmez (a11y zorunlu)
- *  - position: fixed inset-0 + zIndex 0 + pointer-events:none → sayfa
- *    içeriğiyle çakışmaz
- *  - Palet altın (#d4a853) — Hospitality Night temasıyla uyum
- *  - density 70 default (daha yüksek mobil pil tüketir)
- *  - opacity 0 → fade-in (motion controls.start)
+ * @tsparticles v4 API'si: ParticlesProvider App root'unda wrap eder ve
+ * engine'i init eder. Burada sadece `useParticlesProvider().loaded`
+ * kontrol edip `<Particles>` render ederiz.
  */
 export default function SparklesBackground({
   className = '',
   background = 'transparent',
-  particleColor = '#d4a853',
+  particleColor = '#fbd768',
   minSize = 0.6,
-  maxSize = 1.8,
-  particleDensity = 70,
+  maxSize = 2.4,
+  particleDensity = 90,
   speed = 1.4,
 }) {
-  const reduced = useReducedMotion()
-  const [Particles, setParticlesComp] = useState(null)
-  const [initEngine, setInitEngine] = useState(null)
-  const [loadSlim, setLoadSlim] = useState(null)
-  const [ready, setReady] = useState(false)
-  const controls = useAnimation()
+  const { loaded } = useParticlesProvider()
   const id = useId()
 
-  useEffect(() => {
-    if (reduced) return
-    let cancelled = false
-    Promise.all([
-      import('@tsparticles/react'),
-      import('@tsparticles/slim'),
-    ]).then(([reactMod, slimMod]) => {
-      if (cancelled) return
-      setParticlesComp(() => reactMod.default)
-      setInitEngine(() => reactMod.initParticlesEngine)
-      setLoadSlim(() => slimMod.loadSlim)
-    }).catch(() => {})
-    return () => { cancelled = true }
-  }, [reduced])
-
-  useEffect(() => {
-    if (!initEngine || !loadSlim || ready) return
-    initEngine(async (engine) => { await loadSlim(engine) })
-      .then(() => setReady(true))
-      .catch(() => {})
-  }, [initEngine, loadSlim, ready])
-
-  async function onLoaded(container) {
-    if (container) {
-      controls.start({ opacity: 1, transition: { duration: 1.2 } })
-    }
-  }
-
-  if (reduced || !ready || !Particles) return null
+  if (!loaded) return null
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
-      animate={controls}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2 }}
       aria-hidden="true"
       className={className}
       style={{
-        // Sayfa zemini (opak #0c1726/cream) Particles'ı kapatıyordu.
-        // Yüksek z-index + mix-blend-mode 'screen' kombosu:
-        //   - Koyu zeminde altın pikseller eklenir (parlama hissi)
-        //   - Modal (z>=50 sıralı), header (z=30) zaten alt katman değil — pointer
-        //     events:none olduğu için tıklamayı kesmez; sadece görsel overlay.
-        //   - Toaster (top-right) react-hot-toast kendi z-index 9999 — onun altında.
         position: 'fixed', inset: 0,
         zIndex: 40,
         pointerEvents: 'none',
-        mixBlendMode: 'screen',
       }}>
       <Particles
         id={`sparkles-${id}`}
         className="h-full w-full"
-        particlesLoaded={onLoaded}
         options={{
           background: { color: { value: background } },
           fullScreen: { enable: false, zIndex: 0 },
@@ -110,7 +65,7 @@ export default function SparklesBackground({
               value: particleDensity,
             },
             opacity: {
-              value: { min: 0.1, max: 1 },
+              value: { min: 0.3, max: 1 },
               animation: {
                 enable: true,
                 speed: speed,

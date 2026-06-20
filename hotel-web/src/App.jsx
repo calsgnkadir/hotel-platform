@@ -44,6 +44,13 @@ import { MotionConfig } from 'framer-motion'
 import CookieConsent from './components/CookieConsent'
 // Global parıltı arka planı (tüm sayfalarda)
 import SparklesBackground from './components/SparklesBackground'
+import { ParticlesProvider } from '@tsparticles/react'
+import { loadSlim } from '@tsparticles/slim'
+
+// MODULE-LEVEL stable init callback — ParticlesProvider stable referans bekler.
+// Component içinde tanımlanırsa her render'da yeni reference olur ve hata fırlatır:
+// "ParticlesProvider init callback must be stable across the app lifecycle"
+const particlesInit = (engine) => loadSlim(engine)
 
 export default function App() {
   useEffect(() => { initHapticForToasts() }, [])  // FAZ 3 - mobile haptic
@@ -52,6 +59,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
     <ThemeProvider>
     <MotionConfig reducedMotion="user" transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
+    <ParticlesProvider init={particlesInit}>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <SkipLink />              {/* FAZ 3 / A11y — klavye Tab ilk durak */}
@@ -69,6 +77,7 @@ export default function App() {
         </main>
       </AuthProvider>
     </BrowserRouter>
+    </ParticlesProvider>
     </MotionConfig>
     </ThemeProvider>
     </QueryClientProvider>
