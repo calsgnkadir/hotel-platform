@@ -42,6 +42,8 @@ import ScrollProgressBar from './components/ScrollProgressBar'
 import { MotionConfig } from 'framer-motion'
 // FAZ I.1 — KVKK cookie consent banner
 import CookieConsent from './components/CookieConsent'
+// Global parıltı arka planı (tüm sayfalarda)
+import SparklesBackground from './components/SparklesBackground'
 
 export default function App() {
   useEffect(() => { initHapticForToasts() }, [])  // FAZ 3 - mobile haptic
@@ -53,6 +55,7 @@ export default function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <SkipLink />              {/* FAZ 3 / A11y — klavye Tab ilk durak */}
+        <SparklesBackground />    {/* Global parıltı arka planı (reduced-motion respect) */}
         <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
         <PushPermissionPrompt />  {/* FAZ 1/#23 — Web Push */}
         <InstallPrompt />          {/* FAZ 2/#8 — PWA install */}
