@@ -68,9 +68,16 @@ export default function SparklesBackground({
       aria-hidden="true"
       className={className}
       style={{
+        // Sayfa zemini (opak #0c1726/cream) Particles'ı kapatıyordu.
+        // Yüksek z-index + mix-blend-mode 'screen' kombosu:
+        //   - Koyu zeminde altın pikseller eklenir (parlama hissi)
+        //   - Modal (z>=50 sıralı), header (z=30) zaten alt katman değil — pointer
+        //     events:none olduğu için tıklamayı kesmez; sadece görsel overlay.
+        //   - Toaster (top-right) react-hot-toast kendi z-index 9999 — onun altında.
         position: 'fixed', inset: 0,
-        zIndex: 0,
+        zIndex: 40,
         pointerEvents: 'none',
+        mixBlendMode: 'screen',
       }}>
       <Particles
         id={`sparkles-${id}`}
