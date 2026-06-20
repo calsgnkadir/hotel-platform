@@ -35,6 +35,7 @@ const adminNav = [
   { id: 'businesses', label: 'İşletmeler' }, // FAZ G.3 — KYC doğrulama
   { id: 'listings',   label: 'İlanlar' },     // FAZ 6.3 — moderation
   { id: 'reports',    tKey: 'nav.reports' },
+  { id: 'support',    label: 'Destek' },          // FAZ I.5
   { id: 'audit',      tKey: 'nav.audit' },
   { id: 'outbox',     label: 'Outbox' },      // FAZ D.5 — DLQ admin
 ]

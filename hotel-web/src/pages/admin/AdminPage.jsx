@@ -695,10 +695,191 @@ export default function AdminPage() {
       {activeTab === 'reports'  && <ReportsTab />}
       {activeTab === 'audit'    && <AuditTab />}
       {activeTab === 'businesses' && <BusinessesTab />}
+      {activeTab === 'support'  && <SupportTab />}
       {activeTab === 'outbox'   && <OutboxTab />}
     </DashboardLayout>
   )
 }
+
+/* FAZ I.5 — Destek bileti moderasyon tab */
+function SupportTab() {
+  const [filter, setFilter] = useState('all')   // all | OPEN | IN_PROGRESS | RESOLVED | DISMISSED
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [openId, setOpenId] = useState(null)
+  const [noteDraft, setNoteDraft] = useState('')
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const status = filter === 'all' ? null : filter
+      setItems(await hotelApi.adminListSupport(status, 100))
+    } catch (e) {
+      toast.error(extractErrorMessage(e) || 'Liste yüklenemedi')
+    } finally {
+      setLoading(false)
+    }
+  }, [filter])
+
+  useEffect(() => { load() }, [load])
+
+  async function setStatus(id, newStatus, note) {
+    try {
+      await hotelApi.adminUpdateSupportStatus(id, newStatus, note)
+      toast.success('Durum güncellendi')
+      setOpenId(null)
+      setNoteDraft('')
+      load()
+    } catch (e) {
+      toast.error(extractErrorMessage(e) || 'İşlem başarısız')
+    }
+  }
+
+  const FILTERS = [
+    { v: 'all',         label: 'Tümü' },
+    { v: 'OPEN',        label: 'Yeni' },
+    { v: 'IN_PROGRESS', label: 'İnceleniyor' },
+    { v: 'RESOLVED',    label: 'Çözüldü' },
+    { v: 'DISMISSED',   label: 'Reddedildi' },
+  ]
+  const statusStyle = {
+    OPEN:        { color: '#d97706', bg: 'rgba(217, 119, 6, 0.10)' },
+    IN_PROGRESS: { color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.10)' },
+    RESOLVED:    { color: '#16a34a', bg: 'rgba(22, 163, 74, 0.10)' },
+    DISMISSED:   { color: '#64748b', bg: 'rgba(100, 116, 139, 0.10)' },
+  }
+  const SUBJECT_LABEL = {
+    GENERAL:         'Genel',
+    ACCOUNT:         'Hesap',
+    KVKK:            'KVKK',
+    BUSINESS_VERIFY: 'İşletme Doğrulama',
+    TECHNICAL:       'Teknik',
+    PARTNERSHIP:     'İş Birliği',
+  }
+
+  return (
+    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {FILTERS.map(f => (
+          <button key={f.v} onClick={() => setFilter(f.v)}
+            style={{
+              padding: '6px 14px', borderRadius: 999,
+              border: filter === f.v ? '1px solid #d4a853' : '1px solid rgba(148,163,184,0.3)',
+              background: filter === f.v ? 'rgba(212, 168, 83, 0.12)' : 'transparent',
+              color: filter === f.v ? '#d4a853' : '#94a3b8',
+              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div style={{ color: '#94a3b8' }}>Yükleniyor…</div>
+      ) : items.length === 0 ? (
+        <div style={{ color: '#94a3b8', padding: 24, textAlign: 'center' }}>Bilet yok.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {items.map(t => {
+            const s = statusStyle[t.status] || statusStyle.OPEN
+            const isOpen = openId === t.id
+            return (
+              <div key={t.id} style={{
+                padding: 14, borderRadius: 10,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(212, 168, 83, 0.12)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{
+                        padding: '2px 8px', borderRadius: 999,
+                        background: s.bg, color: s.color,
+                        fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+                      }}>{t.status}</span>
+                      <span style={{ color: '#cbd5e1', fontSize: 12, fontWeight: 700 }}>#{t.id}</span>
+                      <span style={{ color: '#d4a853', fontSize: 11, fontWeight: 600 }}>
+                        {SUBJECT_LABEL[t.subject] || t.subject}
+                      </span>
+                      <span style={{ color: '#94a3b8', fontSize: 11 }}>
+                        {t.userRole} · {t.userFullName} ({t.userEmail})
+                      </span>
+                    </div>
+                    <div style={{
+                      marginTop: 8, color: '#f3f4f6', fontSize: 13, lineHeight: 1.5,
+                      whiteSpace: 'pre-wrap',
+                    }}>
+                      {t.message}
+                    </div>
+                    {t.adminNote && (
+                      <div style={{
+                        marginTop: 8, padding: 10, borderRadius: 8,
+                        background: 'rgba(212, 168, 83, 0.06)',
+                        border: '1px solid rgba(212, 168, 83, 0.20)',
+                        fontSize: 12, color: '#fde9a5',
+                      }}>
+                        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
+                                      color: '#d4a853', marginBottom: 4 }}>ADMIN NOTU</div>
+                        {t.adminNote}
+                      </div>
+                    )}
+                    <div style={{ color: '#64748b', fontSize: 10, marginTop: 6 }}>
+                      Açılma: {new Date(t.createdAt).toLocaleString('tr-TR')}
+                      {t.resolvedAt && <> · Kapanış: {new Date(t.resolvedAt).toLocaleString('tr-TR')}</>}
+                    </div>
+                  </div>
+                  {!isOpen && t.status !== 'RESOLVED' && t.status !== 'DISMISSED' && (
+                    <button onClick={() => { setOpenId(t.id); setNoteDraft(t.adminNote || '') }}
+                      style={{
+                        padding: '6px 12px', borderRadius: 6,
+                        background: 'rgba(212, 168, 83, 0.12)',
+                        border: '1px solid rgba(212, 168, 83, 0.3)',
+                        color: '#d4a853', fontSize: 11, fontWeight: 600,
+                        cursor: 'pointer', whiteSpace: 'nowrap',
+                      }}>
+                      Yanıtla
+                    </button>
+                  )}
+                </div>
+
+                {isOpen && (
+                  <div style={{ marginTop: 12, paddingTop: 12,
+                                borderTop: '1px solid rgba(212, 168, 83, 0.12)' }}>
+                    <textarea value={noteDraft} onChange={e => setNoteDraft(e.target.value)}
+                      placeholder="Kullanıcıya notun (opsiyonel — RESOLVED'da göstereceğiz)"
+                      rows={3}
+                      style={{
+                        width: '100%', padding: 10, borderRadius: 8,
+                        background: 'rgba(0,0,0,0.25)',
+                        border: '1px solid rgba(212, 168, 83, 0.18)',
+                        color: '#f3f4f6', fontSize: 12, outline: 'none',
+                        resize: 'vertical',
+                      }} />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                      <button onClick={() => setStatus(t.id, 'IN_PROGRESS', noteDraft)}
+                        style={btnBlue}>Inceliyorum</button>
+                      <button onClick={() => setStatus(t.id, 'RESOLVED', noteDraft)}
+                        style={btnGreen}>Çözüldü</button>
+                      <button onClick={() => setStatus(t.id, 'DISMISSED', noteDraft)}
+                        style={btnRed}>Reddet</button>
+                      <button onClick={() => { setOpenId(null); setNoteDraft('') }}
+                        style={btnGhost}>Vazgeç</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+const btnBlue  = { padding: '6px 12px', borderRadius: 6, background: 'rgba(59,130,246,0.15)', color: '#93c5fd', border: '1px solid rgba(59,130,246,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+const btnGreen = { padding: '6px 12px', borderRadius: 6, background: 'rgba(22,163,74,0.15)', color: '#86efac', border: '1px solid rgba(22,163,74,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+const btnRed   = { padding: '6px 12px', borderRadius: 6, background: 'rgba(239,100,97,0.15)', color: '#fca5a5', border: '1px solid rgba(239,100,97,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+const btnGhost = { padding: '6px 12px', borderRadius: 6, background: 'transparent', color: '#94a3b8', border: '1px solid #475569', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
 
 /* FAZ G.3 — İşletme doğrulama tab */
 function BusinessesTab() {

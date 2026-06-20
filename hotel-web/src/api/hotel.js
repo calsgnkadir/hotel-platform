@@ -436,6 +436,27 @@ export async function adminUnbanUser(id) {
   return data
 }
 
+// FAZ I.5 — Destek bileti (kullanıcı + admin)
+export async function submitSupport(subject, message) {
+  const { data } = await api.post('/api/me/support', { subject, message })
+  return data
+}
+export async function listMySupport() {
+  const { data } = await api.get('/api/me/support')
+  return data
+}
+export async function adminListSupport(status, limit = 100) {
+  const params = { limit }
+  if (status) params.status = status
+  const { data } = await api.get('/api/admin/support', { params })
+  return data
+}
+export async function adminUpdateSupportStatus(id, status, adminNote) {
+  const { data } = await api.put(`/api/admin/support/${id}/status`,
+    { status, adminNote: adminNote || null })
+  return data
+}
+
 // FAZ G.3 — İşletme doğrulama (KYC rozet)
 export async function adminListBusinesses(verified, search) {
   const params = {}

@@ -16,6 +16,10 @@ import com.hotelapp.service.AuditLogService.AuditLogDto;
 import com.hotelapp.service.OutboxAdminService;
 import com.hotelapp.service.OutboxAdminService.OutboxEventDto;
 import com.hotelapp.service.OutboxService;
+import com.hotelapp.service.SupportTicketService;
+import com.hotelapp.service.SupportTicketService.TicketDto;
+import com.hotelapp.service.SupportTicketService.UpdateStatusRequest;
+import com.hotelapp.enums.SupportStatus;
 import com.hotelapp.event.AuditLoggedEvent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -42,6 +46,7 @@ public class AdminController {
     private final AuditLogService auditLogService;
     private final OutboxService outboxService; // FAZ C.2 — outbox via append
     private final OutboxAdminService outboxAdminService; // FAZ D.5
+    private final SupportTicketService supportService;   // FAZ I.5
 
     // ================================================================
     // İşlem geçmişi (D4 audit log)
@@ -167,6 +172,29 @@ public class AdminController {
         outboxService.appendAuditLog(AuditLoggedEvent.user(currentUser.getId(),
                 "OUTBOX_RETRY", "OUTBOX_EVENT", id, "Manuel retry tetiklendi"));
         return ResponseEntity.noContent().build();
+    }
+
+    // ================================================================
+    // FAZ I.5 — Destek bileti moderasyonu
+    // ================================================================
+
+    @Operation(summary = "Destek biletlerini listele (status opsiyonel)")
+    @GetMapping("/support")
+    public ResponseEntity<List<TicketDto>> listSupport(
+            @RequestParam(required = false) SupportStatus status,
+            @RequestParam(required = false, defaultValue = "100") int limit) {
+        return ResponseEntity.ok(supportService.listForAdmin(status, limit));
+    }
+
+    @Operation(summary = "Destek bileti durumunu güncelle (admin notu opsiyonel)")
+    @PutMapping("/support/{id}/status")
+    public ResponseEntity<TicketDto> updateSupportStatus(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateStatusRequest request) {
+        return ResponseEntity.ok(
+                supportService.updateStatus(id, currentUser.getId(),
+                        request.getStatus(), request.getAdminNote()));
     }
 
     // ================================================================

@@ -1,6 +1,23 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import BackButton from '../components/BackButton'
+import * as hotelApi from '../api/hotel'
+import { extractErrorMessage } from '../api/client'
+
+// FAZ I.5 — Frontend dropdown değeri → backend SupportSubject enum'una eşleşir
+const SUBJECT_TO_ENUM = {
+  genel:   'GENERAL',
+  hesap:   'ACCOUNT',
+  kvkk:    'KVKK',
+  isletme: 'BUSINESS_VERIFY',
+  teknik:  'TECHNICAL',
+  is:      'PARTNERSHIP',
+}
+
+function isAuthed() {
+  return !!localStorage.getItem('token')
+}
 
 /**
  * FAZ I.3 — İletişim sayfası.
@@ -31,12 +48,30 @@ const KVKK_EMAIL    = 'kvkk@ajanshotel.com'
 export default function ContactPage() {
   const [subject, setSubject] = useState('genel')
   const [body, setBody]       = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent]       = useState(false)
 
   const targetEmail = subject === 'kvkk' ? KVKK_EMAIL : SUPPORT_EMAIL
   const subjLabel = SUBJECTS.find(s => s.v === subject)?.label || 'Genel'
   const mailtoHref = `mailto:${targetEmail}` +
     `?subject=${encodeURIComponent('[AjansHotel] ' + subjLabel)}` +
     `&body=${encodeURIComponent(body)}`
+
+  async function submitToBackend(e) {
+    e.preventDefault()
+    if (!body.trim() || sending) return
+    setSending(true)
+    try {
+      await hotelApi.submitSupport(SUBJECT_TO_ENUM[subject] || 'GENERAL', body.trim())
+      setSent(true)
+      setBody('')
+      toast.success('Talebin alındı, 24 saat içinde dönüş yapılacak.')
+    } catch (err) {
+      toast.error(extractErrorMessage(err) || 'Gönderilemedi — mailto ile dene.')
+    } finally {
+      setSending(false)
+    }
+  }
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -113,20 +148,57 @@ export default function ContactPage() {
                 style={{ borderColor: '#cbd5e1', color: '#0c1726', minHeight: 140 }}
               />
             </div>
-            <a href={mailtoHref}
-               className="block w-full text-center px-5 py-3 rounded-xl font-semibold text-sm transition-all"
-               style={{
-                 background: body.trim() ? 'linear-gradient(135deg, #1e3a5f, #234a82)' : '#cbd5e1',
-                 color: '#fff',
-                 pointerEvents: body.trim() ? 'auto' : 'none',
-                 opacity: body.trim() ? 1 : 0.7,
-               }}>
-              {body.trim() ? 'E-posta uygulamasında aç' : 'Önce mesaj yaz'}
-            </a>
-            <p className="text-[11px] text-ink-500 leading-relaxed">
-              Bu form, varsayılan e-posta uygulamanı açar — gönderim {targetEmail}{' '}
-              adresine yapılır. Yanıt süresi <strong>24 saat</strong> hedeflenir.
-            </p>
+            {sent ? (
+              <div style={{
+                padding: 14, borderRadius: 12,
+                background: 'rgba(61, 220, 151, 0.10)',
+                border: '1px solid rgba(61, 220, 151, 0.35)',
+                color: '#15875a', fontSize: 13, fontWeight: 600,
+                textAlign: 'center',
+              }}>
+                Talebin alındı. 24 saat içinde dönüş yapılacak.
+              </div>
+            ) : isAuthed() ? (
+              <>
+                <button type="button" onClick={submitToBackend}
+                  disabled={!body.trim() || sending}
+                  className="block w-full text-center px-5 py-3 rounded-xl font-semibold text-sm transition-all"
+                  style={{
+                    background: body.trim() && !sending
+                      ? 'linear-gradient(135deg, #1e3a5f, #234a82)'
+                      : '#cbd5e1',
+                    color: '#fff',
+                    border: 'none',
+                    cursor: body.trim() && !sending ? 'pointer' : 'not-allowed',
+                  }}>
+                  {sending ? 'Gönderiliyor…'
+                    : body.trim() ? 'Talebi Gönder' : 'Önce mesaj yaz'}
+                </button>
+                <p className="text-[11px] text-ink-500 leading-relaxed">
+                  Talebin platformda kayıt altına alınır; admin paneline düşer ve <strong>24 saat</strong>{' '}
+                  içinde yanıtlanır. Tercihen{' '}
+                  <a href={mailtoHref} className="underline">e-posta uygulamasında aç</a>.
+                </p>
+              </>
+            ) : (
+              <>
+                <a href={mailtoHref}
+                   className="block w-full text-center px-5 py-3 rounded-xl font-semibold text-sm transition-all"
+                   style={{
+                     background: body.trim() ? 'linear-gradient(135deg, #1e3a5f, #234a82)' : '#cbd5e1',
+                     color: '#fff',
+                     pointerEvents: body.trim() ? 'auto' : 'none',
+                     opacity: body.trim() ? 1 : 0.7,
+                   }}>
+                  {body.trim() ? 'E-posta uygulamasında aç' : 'Önce mesaj yaz'}
+                </a>
+                <p className="text-[11px] text-ink-500 leading-relaxed">
+                  Bu form, varsayılan e-posta uygulamanı açar — gönderim {targetEmail}{' '}
+                  adresine yapılır. <Link to="/login" className="underline">Giriş yaparsan</Link>{' '}
+                  doğrudan platforma yazabilirsin.
+                </p>
+              </>
+            )}
           </div>
         </section>
       </div>
