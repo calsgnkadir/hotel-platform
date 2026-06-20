@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
@@ -35,8 +35,12 @@ const BUSINESS_TYPES = [
 export default function RegisterPage() {
   const { register: registerUser } = useAuth()
   const navigate = useNavigate()
-  const [step, setStep] = useState(1)
-  const [selectedRole, setSelectedRole] = useState(null)
+  const location = useLocation()
+  // Dalga 2 — Landing AuthModal'dan gelen pre-fill: role seçilmişse step2'ye atla
+  const preselectedRole = location.state?.preselectedRole
+  const prefillEmail = location.state?.prefillEmail
+  const [step, setStep] = useState(preselectedRole ? 2 : 1)
+  const [selectedRole, setSelectedRole] = useState(preselectedRole || null)
 
   const {
     register,
@@ -44,7 +48,9 @@ export default function RegisterPage() {
     watch,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm()
+  } = useForm({
+    defaultValues: prefillEmail ? { email: prefillEmail } : {},
+  })
 
   function goToStep2(role) {
     setSelectedRole(role)

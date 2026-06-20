@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import DarkVeil from '../components/DarkVeil'
 import HeroHeading from '../components/HeroHeading'
 import RotatingText from '../components/RotatingText'
 import LandingPulse from '../components/LandingPulse'
+import AuthModal from '../components/AuthModal'
 
 /**
  * Landing v3 — "Hospitality Concierge" tasarım dili:
@@ -15,6 +17,9 @@ import LandingPulse from '../components/LandingPulse'
  * + RotatingText (Garson/Resepsiyon/...). Sayfanın geri kalanı krem temada kalır.
  */
 export default function LandingPage() {
+  const [authOpen, setAuthOpen] = useState(false)
+  const openAuth = () => setAuthOpen(true)
+  const closeAuth = () => setAuthOpen(false)
   return (
     <div className="min-h-screen text-white">
       {/* Üst hat — sıcak gradient */}
@@ -43,11 +48,11 @@ export default function LandingPage() {
               className="text-[13px] font-medium px-4 py-1.5 rounded-full text-ink-700 hover:bg-cream-200 transition-colors">
               Giriş Yap
             </Link>
-            <Link to="/register"
+            <button type="button" onClick={openAuth}
               className="text-[13px] font-semibold px-4 py-1.5 rounded-full text-white shadow-terra-sm hover:shadow-terra transition-all hover:-translate-y-0.5"
               style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)' }}>
               Kayıt Ol
-            </Link>
+            </button>
           </div>
         </div>
       </header>
@@ -117,8 +122,7 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-wrap items-center gap-3">
-                <Link
-                  to="/register"
+                <button type="button" onClick={openAuth}
                   className="inline-flex items-center gap-2 text-sm font-bold px-7 py-3 rounded-full text-white cta-glow transition-all hover:-translate-y-0.5"
                   style={{
                     background: 'linear-gradient(135deg, #d4a853 0%, #d4a853 100%)',
@@ -129,7 +133,7 @@ export default function LandingPage() {
                        strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                   </svg>
-                </Link>
+                </button>
                 <a
                   href="#features"
                   className="inline-flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-full glass-panel hover:bg-white/10 transition-colors"
@@ -255,7 +259,7 @@ export default function LandingPage() {
             Aday veya işletme — kayıt 2 dakika. Aktif sezonda %78 başvuru kabul oranı.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link to="/register"
+            <button type="button" onClick={openAuth}
               className="inline-flex items-center gap-2 text-base font-semibold px-7 py-3.5 rounded-full text-white shadow-terra hover:-translate-y-0.5 transition-all"
               style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)' }}>
               Hemen Kayıt Ol
@@ -263,7 +267,7 @@ export default function LandingPage() {
                    strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>
-            </Link>
+            </button>
             <Link to="/login"
               className="inline-flex items-center gap-2 text-base font-semibold px-7 py-3.5 rounded-full border-2 border-brand-700 text-brand-700 hover:bg-brand-50 transition-colors">
               Giriş Yap
@@ -288,6 +292,9 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Dalga 2 — Landing CTA'lardan açılan Auth Modal */}
+      <AuthModal open={authOpen} onClose={closeAuth} />
     </div>
   )
 }
