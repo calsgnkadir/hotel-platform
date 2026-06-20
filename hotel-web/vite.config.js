@@ -73,7 +73,6 @@ export default defineConfig({
           'i18n':            ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
           'forms':           ['react-hook-form', 'react-image-crop'],
           'query':           ['@tanstack/react-query'],
-          'particles':       ['@tsparticles/react', '@tsparticles/engine', '@tsparticles/slim'],
         },
       },
     },
