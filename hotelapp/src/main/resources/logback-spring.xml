@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FAZ H.3 — Structured logging + Correlation ID.
+
+  Strateji:
+   - Dev / test profile: pretty pattern (insan okur), renkli, %X{cid} dahil
+   - Prod profile:        compact tek-satır JSON (log aggregator'a dostça)
+
+  Correlation ID:
+   - CorrelationIdFilter her request'in en başında MDC'ye 'cid' yazar
+   - Bu pattern %X{cid:-?} ile her log satırına basılır
+   - Scheduled task gibi non-HTTP context'lerde 'cid' = '?'
+-->
+<configuration scan="false">
+
+    <springProperty name="appName" source="spring.application.name" defaultValue="hotelapp"/>
+
+    <!-- Pretty pattern — dev / test -->
+    <property name="PRETTY_PATTERN"
+              value="%d{HH:mm:ss.SSS} %highlight(%-5level) [%X{cid:-?}] %cyan(%logger{36}) - %msg%n%ex"/>
+
+    <!-- JSON benzeri tek satır — prod (logstash-encoder olmadan, manuel) -->
+    <property name="JSON_PATTERN"
+              value='{"ts":"%d{yyyy-MM-dd HH:mm:ss.SSS,UTC}","level":"%level","logger":"%logger","cid":"%X{cid:-?}","thread":"%thread","msg":"%replace(%msg){&apos;&quot;&apos;,&apos;\\&quot;&apos;}","app":"${appName}"}%n'/>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <!-- DEV / TEST profile: insan okur -->
+    <!-- ─────────────────────────────────────────────────────── -->
+    <springProfile name="dev,test,default">
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${PRETTY_PATTERN}</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="STDOUT"/>
+        </root>
+
+        <logger name="com.hotelapp" level="DEBUG"/>
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+    </springProfile>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <!-- PROD profile: JSON satırlar -->
+    <!-- ─────────────────────────────────────────────────────── -->
+    <springProfile name="prod">
+        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${JSON_PATTERN}</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="JSON"/>
+        </root>
+
+        <logger name="com.hotelapp" level="INFO"/>
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+    </springProfile>
+
+</configuration>
