@@ -94,9 +94,10 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         onLogout={handleLogout}
       />
 
-      {/* === Sayfa SAG UST: NotificationBell (desktop fixed) === */}
-      <div className="hidden lg:block fixed top-3 right-5 z-40">
+      {/* === Sayfa SAG UST: NotificationBell + SettingsMenu (desktop fixed) === */}
+      <div className="hidden lg:flex fixed top-3 right-5 z-40 items-center gap-2">
         <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
+        <SettingsMenu onTabChange={onTabChange} />
       </div>
 
       {/* === MOBILE HEADER (lg:hidden) — brand + menu trigger === */}
@@ -262,7 +263,6 @@ function Sidebar({ navItems, activeTab, onTabChange, t, user, bizProfile, isBusi
         <div className="flex items-center gap-2 flex-wrap">
           <LanguageSwitcher />
           <WsConnectionBadge />
-          <SettingsMenu onTabChange={onTabChange} />
         </div>
 
         {isBusiness && bizProfile?.id && (
