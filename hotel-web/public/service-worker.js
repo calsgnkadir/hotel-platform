@@ -9,12 +9,16 @@
  *  - notification click: tab odaklanir veya yeni acilir
  */
 
-const CACHE_VERSION = 'ajanshotel-v4'  // FAZ 3 polish quick wins
+// FAZ I.6 — bump version (manifest + offline fallback eklendi)
+const CACHE_VERSION = 'ajanshotel-v5'
 const APP_SHELL = [
   '/',
   '/favicon.svg',
   '/manifest.json',
+  '/offline.html',
 ]
+// FAZ I.6 — Static asset uzantilari icin stale-while-revalidate
+const SWR_EXT = /\.(?:js|css|woff2?|svg|png|jpg|jpeg|webp|ico)$/i
 
 self.addEventListener('install', (event) => {
   // FAZ 2/#8 — App shell'i precache
@@ -33,33 +37,56 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// FAZ 2/#8 — Fetch handler: network-first GET, fallback to cache
+// FAZ I.6 — Akilli cache stratejisi:
+//   - /api, /ws  → bypass (her zaman fresh)
+//   - Static asset (js/css/font/image) → stale-while-revalidate (hizli sayfa acma)
+//   - Navigate → network-first, offline.html fallback
 self.addEventListener('fetch', (event) => {
   const req = event.request
-  // Sadece GET ve same-origin
   if (req.method !== 'GET') return
   const url = new URL(req.url)
   if (url.origin !== self.location.origin) return
-  // API request'lerini cache'leme (her seferinde fresh)
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/ws/')) return
 
+  const isAsset = SWR_EXT.test(url.pathname)
+
+  if (isAsset) {
+    // SWR: hemen cache'den ver + arka planda guncelle
+    event.respondWith(
+      caches.open(CACHE_VERSION).then(async cache => {
+        const cached = await cache.match(req)
+        const fetchPromise = fetch(req)
+          .then(res => {
+            if (res && res.status === 200 && res.type === 'basic') {
+              cache.put(req, res.clone()).catch(() => {})
+            }
+            return res
+          })
+          .catch(() => cached)
+        return cached || fetchPromise
+      })
+    )
+    return
+  }
+
+  // Navigate / HTML → network-first
   event.respondWith(
     fetch(req)
       .then(res => {
-        // Basarili response'u cache'e koy (klon gerek, body bir kez okunabilir)
         if (res && res.status === 200 && res.type === 'basic') {
           const resClone = res.clone()
           caches.open(CACHE_VERSION).then(c => c.put(req, resClone)).catch(() => {})
         }
         return res
       })
-      .catch(() => {
-        // Offline: cache'den dene, navigasyon ise index.html dön (SPA fallback)
-        return caches.match(req).then(cached => {
-          if (cached) return cached
-          if (req.mode === 'navigate') return caches.match('/')
-          return new Response('Offline', { status: 503, statusText: 'Offline' })
-        })
+      .catch(async () => {
+        const cached = await caches.match(req)
+        if (cached) return cached
+        if (req.mode === 'navigate') {
+          // Once SPA fallback, sonra explicit offline page
+          return (await caches.match('/')) || (await caches.match('/offline.html'))
+        }
+        return new Response('Offline', { status: 503, statusText: 'Offline' })
       })
   )
 })

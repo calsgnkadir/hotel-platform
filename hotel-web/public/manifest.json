@@ -1,29 +1,23 @@
 {
-  "name": "AjansHotel — İstanbul'un İş Platformu",
+  "name": "AjansHotel — İstanbul'un Hospitality Platformu",
   "short_name": "AjansHotel",
-  "description": "Otel, restoran, kafe yarı zamanlı işleri — adaylar ve işletmeler için modern platform.",
+  "description": "Otel, restoran, kafe vardiyaları — aday ve işletme için modern iş eşleştirme platformu.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0a0612",
-  "theme_color": "#7e22ce",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "orientation": "any",
+  "background_color": "#0c1726",
+  "theme_color": "#1e3a5f",
   "lang": "tr",
   "dir": "ltr",
   "categories": ["business", "lifestyle", "productivity"],
+  "id": "ajanshotel-pwa",
+  "prefer_related_applications": false,
   "icons": [
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
-    }
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "monochrome" }
   ],
   "shortcuts": [
     {
@@ -46,6 +40,36 @@
       "description": "Sohbetlerimi aç",
       "url": "/candidate?tab=messages",
       "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Gelen Başvurular",
+      "short_name": "Başvurular",
+      "description": "İşletme: yeni başvurular",
+      "url": "/business?tab=applications",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Bugün",
+      "short_name": "Bugün",
+      "description": "İşletme: bugünkü vardiyalar",
+      "url": "/business?tab=overview",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "1080x1920",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Mobil ana ekran"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "1920x1080",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Masaüstü panel"
     }
   ]
 }

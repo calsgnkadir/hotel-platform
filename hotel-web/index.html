@@ -21,9 +21,11 @@
     </noscript>
     <meta name="description" content="İstanbul'daki hotel, restoran ve kafelerde günlük/aylık iş arayan adaylarla işletmeleri buluşturan platform." />
 
-    <!-- FAZ 2/#8 — PWA -->
+    <!-- FAZ 2/#8 + I.6 — PWA -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#7e22ce" />
+    <!-- FAZ I.6: palet guncellendi — lacivert/altin (eski mor #7e22ce kaldirildi) -->
+    <meta name="theme-color" content="#1e3a5f" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c1726" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
 
     <!-- PWA mobile capable (modern standart) -->
@@ -34,8 +36,9 @@
     <meta name="apple-mobile-web-app-title" content="AjansHotel" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
 
-    <!-- Microsoft Tile -->
-    <meta name="msapplication-TileColor" content="#7e22ce" />
+    <!-- Microsoft Tile (FAZ I.6 — paletimize uyumlu) -->
+    <meta name="msapplication-TileColor" content="#1e3a5f" />
+    <meta name="msapplication-TileImage" content="/favicon.svg" />
 
     <!-- FAZ 3 — SEO ek meta tags -->
     <meta name="keywords" content="hotel iş, restoran iş, kafe iş, İstanbul iş, garson, resepsiyon, yarı zamanlı iş, otel personeli, hospitality, vardiyalı iş" />
