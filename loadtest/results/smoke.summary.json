@@ -1,0 +1,168 @@
+{
+    "metrics": {
+        "checks": {
+            "passes": 228,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.99": false
+            },
+            "value": 1
+        },
+        "http_req_duration": {
+            "med": 21.4837,
+            "max": 521.479,
+            "p(90)": 35.50789,
+            "p(95)": 41.895284999999994,
+            "avg": 26.189814035087725,
+            "min": 5.3832,
+            "thresholds": {
+                "p(95)<500": false
+            }
+        },
+        "vus": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "data_sent": {
+            "count": 10374,
+            "rate": 172.64951576628837
+        },
+        "http_reqs": {
+            "count": 114,
+            "rate": 1.897247426003169
+        },
+        "vus_max": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_blocked": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.3511947368421053,
+            "min": 0,
+            "med": 0,
+            "max": 30.9605
+        },
+        "data_received": {
+            "count": 885286,
+            "rate": 14733.391094531942
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(90)": 35.50789,
+            "p(95)": 41.895284999999994,
+            "avg": 26.189814035087725,
+            "min": 5.3832,
+            "med": 21.4837,
+            "max": 521.479
+        },
+        "http_req_sending": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.014412280701754383,
+            "min": 0,
+            "med": 0,
+            "max": 0.5633
+        },
+        "iterations": {
+            "count": 57,
+            "rate": 0.9486237130015845
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 114,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_req_waiting": {
+            "med": 20.1104,
+            "max": 519.7166,
+            "p(90)": 33.01851,
+            "p(95)": 39.875769999999996,
+            "avg": 24.827028947368426,
+            "min": 4.0274
+        },
+        "http_req_receiving": {
+            "avg": 1.3483728070175443,
+            "min": 0,
+            "med": 1.2581,
+            "max": 4.4862,
+            "p(90)": 2.2266,
+            "p(95)": 2.6085099999999994
+        },
+        "listings_latency": {
+            "avg": 40.56363157894737,
+            "min": 16.8419,
+            "med": 25.742,
+            "max": 521.479,
+            "p(90)": 41.93224,
+            "p(95)": 69.2519999999998,
+            "thresholds": {
+                "p(95)<400": false
+            }
+        },
+        "http_req_connecting": {
+            "med": 0,
+            "max": 1.6117,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.02606052631578947,
+            "min": 0
+        },
+        "iteration_duration": {
+            "avg": 1054.158763157895,
+            "min": 1025.5673,
+            "med": 1039.961,
+            "max": 1536.1352,
+            "p(90)": 1055.124,
+            "p(95)": 1088.2001599999999
+        }
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "health 200": {
+                    "name": "health 200",
+                    "path": "::health 200",
+                    "id": "8e4f90a842a57472549a6b2cf699032d",
+                    "passes": 57,
+                    "fails": 0
+                },
+                "health UP": {
+                    "passes": 57,
+                    "fails": 0,
+                    "name": "health UP",
+                    "path": "::health UP",
+                    "id": "ed7273c2edd6b69edda02eff11de2443"
+                },
+                "listings 200": {
+                    "path": "::listings 200",
+                    "id": "652fb154c94172cafd553ce1c9624550",
+                    "passes": 57,
+                    "fails": 0,
+                    "name": "listings 200"
+                },
+                "listings has body": {
+                    "path": "::listings has body",
+                    "id": "0e8d6b486617562131461fe3148dd790",
+                    "passes": 57,
+                    "fails": 0,
+                    "name": "listings has body"
+                }
+            }
+    }
+}
