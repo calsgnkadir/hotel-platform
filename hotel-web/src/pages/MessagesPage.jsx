@@ -305,12 +305,27 @@ function MessageBubble({ m }) {
           <div className="px-3.5 py-2 whitespace-pre-wrap break-words">{m.content}</div>
         )}
 
-        {/* Zaman */}
-        <div className="text-[10px] px-3 pb-1 text-right" style={{ color: 'rgba(12, 23, 38, 0.60)' }}>
-          {formatTime(m.sentAt)}{m.mine && m.isRead ? ' · görüldü' : ''}
+        {/* Zaman + WhatsApp-style read receipt (cift tik) */}
+        <div className="text-[10px] px-3 pb-1 text-right inline-flex items-center justify-end gap-1 w-full"
+             style={{ color: 'rgba(12, 23, 38, 0.60)' }}>
+          <span>{formatTime(m.sentAt)}</span>
+          {m.mine && <ReadReceipt isRead={m.isRead} />}
         </div>
       </div>
     </div>
+  )
+}
+
+/* Dalga 4 / UX 4 — WhatsApp-style cift tik (gonderildi/okundu) */
+function ReadReceipt({ isRead }) {
+  const color = isRead ? '#2563eb' : 'rgba(12, 23, 38, 0.45)'  // mavi / gri
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color}
+         strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+         aria-label={isRead ? 'Okundu' : 'Gönderildi'}>
+      <path d="m5 12 4 4 6-6" />
+      <path d="m11 16 6-6 2 2" opacity="0.85" />
+    </svg>
   )
 }
 
