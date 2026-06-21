@@ -252,15 +252,21 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     long countByCreatedAtAfter(LocalDateTime threshold);
 
     /**
-     * FAZ C.3 — Isletme: ACCEPTED basvurularin hire-time saniyeleri.
-     * Frontend histogram icin StatsService 4 bucket'a ayirir.
+     * Isletme: ACCEPTED basvurularin hire-time saniyeleri (StatsService histogram).
+     *
+     * NATIVE SQL kullanim sebebi: JPQL'de FUNCTION('TIMESTAMPDIFF', ...) cagrisi
+     * Hibernate icindeki toLowerCase() Turkce locale'de `I -> ı` ceviriyor ve
+     * SQL'e `tımestampdıff` olarak gidiyor -> "FUNCTION does not exist".
+     * Native SQL bu donusumden etkilenmez.
      */
-    @Query("""
-        SELECT FUNCTION('TIMESTAMPDIFF', SECOND, a.createdAt, a.reviewedAt)
-        FROM Application a
-        WHERE a.jobListing.business.owner.id = :ownerId
-          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
-          AND a.reviewedAt IS NOT NULL
-    """)
+    @Query(value = """
+        SELECT TIMESTAMPDIFF(SECOND, a.created_at, a.reviewed_at)
+        FROM applications a
+        JOIN job_listings j ON j.id = a.job_listing_id
+        JOIN businesses   b ON b.id = j.business_id
+        WHERE b.owner_id = :ownerId
+          AND a.status = 'ACCEPTED'
+          AND a.reviewed_at IS NOT NULL
+    """, nativeQuery = true)
     List<Long> hireTimeSecondsForBusiness(@Param("ownerId") Long ownerId);
 }
