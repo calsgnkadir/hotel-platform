@@ -162,29 +162,30 @@ export default function ApplicationsKanban({ applications, onRefresh, onCardClic
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="overflow-x-auto pb-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 min-w-[640px] lg:min-w-0">
-          {COLUMNS.map(col => (
-            <Column key={col.id} col={col} count={grouped[col.id]?.length || 0}>
-              {grouped[col.id]?.length ? (
-                grouped[col.id].map(app => (
-                  <Card
-                    key={app.id}
-                    app={app}
-                    accent={col.color}
-                    onClick={() => onCardClick?.(app)}
-                    onMessage={() => onOpenMessages?.(app.conversationId)}
-                  />
-                ))
-              ) : (
-                <div className="text-[11px] text-center py-6 uppercase tracking-widest"
-                     style={{ color: 'rgba(229, 231, 235, 0.35)' }}>
-                  boş
-                </div>
-              )}
-            </Column>
-          ))}
-        </div>
+      {/* Kanban — bos kolonlari gizle, kartlari yatay yan yana goster (Trello'ya
+          benzer ama dolu olmayan kolon yer kaplama). */}
+      <div className="space-y-5">
+        {COLUMNS.filter(col => (grouped[col.id]?.length || 0) > 0).map(col => (
+          <Column key={col.id} col={col} count={grouped[col.id]?.length || 0}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {grouped[col.id].map(app => (
+                <Card
+                  key={app.id}
+                  app={app}
+                  accent={col.color}
+                  onClick={() => onCardClick?.(app)}
+                  onMessage={() => onOpenMessages?.(app.conversationId)}
+                />
+              ))}
+            </div>
+          </Column>
+        ))}
+        {COLUMNS.every(col => (grouped[col.id]?.length || 0) === 0) && (
+          <div className="text-[12px] text-center py-8 uppercase tracking-widest"
+               style={{ color: 'rgba(229, 231, 235, 0.45)' }}>
+            Hiçbir kolonda başvuru yok
+          </div>
+        )}
       </div>
 
       <DragOverlay dropAnimation={{ duration: 180 }}>
