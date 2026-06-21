@@ -94,11 +94,8 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         onLogout={handleLogout}
       />
 
-      {/* === Sayfa SAG UST: NotificationBell + SettingsMenu (desktop fixed) === */}
-      <div className="hidden lg:flex fixed top-3 right-5 z-40 items-center gap-2">
-        <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
-        <SettingsMenu onTabChange={onTabChange} />
-      </div>
+      {/* NotificationBell + SettingsMenu page heading strip yanina tasindi
+          (eskiden fixed top-3 right-5 idi -> EmailVerifyBanner ile cakisiyordu) */}
 
       {/* === MOBILE HEADER (lg:hidden) — brand + menu trigger === */}
       <header className="lg:hidden relative z-30 sticky top-[2px] backdrop-blur-xl border-b"
@@ -166,7 +163,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       <main className="relative z-10 fade-in lg:pl-[240px]" style={{ color: '#dde7f3' }}>
         <EmailVerifyBanner />
 
-        {/* Page heading strip — Geist semibold, sade premium */}
+        {/* Page heading strip — Geist semibold + sag tarafta bell/settings (desktop only) */}
         <div className="px-4 lg:px-8 pt-5 lg:pt-8 pb-3 flex items-end justify-between gap-3 flex-wrap">
           <h1 className="font-geist text-2xl sm:text-3xl lg:text-[36px] text-white"
               style={{
@@ -179,6 +176,10 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               return item ? (item.tKey ? t(item.tKey) : item.label) : 'Panel'
             })()}
           </h1>
+          <div className="hidden lg:flex items-center gap-2">
+            <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
+            <SettingsMenu onTabChange={onTabChange} />
+          </div>
         </div>
 
         <div className="px-4 lg:px-8 pb-24 md:pb-20 lg:pb-12 text-[14px]">
