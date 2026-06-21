@@ -71,6 +71,10 @@ export default function MyListingsTab({ applications = [] }) {
             // FAZ D1 — Bu ilana son 8 haftalik basvuru trendi
             const trendData = weeklyTrend(applications, a => a.listing?.id === listing.id)
             const last8wTotal = trendData.reduce((sum, b) => sum + b.c, 0)
+            // Dalga 4 / Teknik 5 — Conversion: bu ilana toplam basvuru / goruntulenme
+            const listingApplications = applications.filter(a => a.listing?.id === listing.id).length
+            const views = listing.viewCount || 0
+            const conversion = views > 0 ? Math.round((listingApplications / views) * 100) : null
             return (
             <div key={listing.id} className="card p-4">
               <div className="flex items-start justify-between gap-3">
@@ -86,7 +90,11 @@ export default function MyListingsTab({ applications = [] }) {
                   </div>
                   <p className="text-xs text-ink-500 mt-1">
                     {POSITION_LABELS[listing.position]} · {JOB_TYPE_LABELS[listing.jobType]}
-                    {/* shift kategorisi kaldirildi — slot saatleri yeterli */}
+                  </p>
+                  {/* Dalga 4 / Teknik 5 — Conversion satiri */}
+                  <p className="text-[11px] mt-1 font-medium" style={{ color: '#fde9a5' }}>
+                    {views.toLocaleString('tr-TR')} görüntülenme · {listingApplications} başvuru
+                    {conversion !== null && ` · %${conversion} dönüşüm`}
                   </p>
                   {(() => {
                     const s = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)

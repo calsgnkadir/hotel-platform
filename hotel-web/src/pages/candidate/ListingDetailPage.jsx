@@ -13,7 +13,7 @@ import StarRating from '../../components/StarRating'
 import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
 import toast from 'react-hot-toast'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ApplyModal } from './ListingsPage'
 import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
 
@@ -41,6 +41,19 @@ export default function ListingDetailPage() {
     queryKey: keys.listings.detail(id),
     queryFn: () => hotelApi.getListing(id),
     enabled: !!id,
+  })
+
+  // Dalga 4 / Teknik 5 — Goruntulenme sayaci (mount'ta 1 kez tetiklenir)
+  useEffect(() => {
+    if (id) hotelApi.trackListingView(id)
+  }, [id])
+
+  // Dalga 4 / Ozellik 6 — Pozisyon bazli maas benchmark
+  const { data: benchmark } = useQuery({
+    queryKey: ['salary-benchmark', listing?.position],
+    queryFn: () => hotelApi.getSalaryBenchmark(listing.position),
+    enabled: !!listing?.position,
+    staleTime: 5 * 60_000,
   })
 
   if (isLoading) {
@@ -178,6 +191,54 @@ export default function ListingDetailPage() {
           ))}
         </div>
 
+        {/* Dalga 4 / Ozellik 6 — Maas benchmark chip (Glassdoor pattern) */}
+        {benchmark && benchmark.count > 0 && benchmark.avgMin && (
+          <div className="card !p-4 flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] uppercase tracking-wider opacity-70 mb-1">
+                İstanbul {POSITION_LABELS[listing.position] || listing.position} ortalaması
+              </div>
+              <div className="text-base font-bold" style={{ color: '#fde9a5' }}>
+                {Number(benchmark.avgMin).toLocaleString('tr-TR')}₺
+                {benchmark.avgMax && Number(benchmark.avgMax) !== Number(benchmark.avgMin) &&
+                  ` – ${Number(benchmark.avgMax).toLocaleString('tr-TR')}₺`}
+              </div>
+              <div className="text-[11px] opacity-65 mt-0.5">
+                {benchmark.count} aktif ilan baz alındı
+                {listing.salaryMin && benchmark.avgMin &&
+                  ` · Bu ilan ${Number(listing.salaryMin) >= Number(benchmark.avgMin) ? '✓ ortalamanın üzeri' : '↓ ortalamanın altı'}`}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dalga 4 / Ozellik 4 — Guven sinyalleri (Glassdoor employer stats) */}
+        <div className="card !p-4">
+          <div className="text-[10px] uppercase tracking-wider opacity-70 mb-3">Bu işletme hakkında</div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {listing.businessCreatedAt && (
+              <TrustSignal
+                label="Üyelik"
+                value={memberSince(listing.businessCreatedAt)}
+              />
+            )}
+            {typeof listing.businessWorkerCount === 'number' && (
+              <TrustSignal
+                label="Tamamlanan iş"
+                value={`${listing.businessWorkerCount}+`}
+                sub="kabul + çalışma"
+              />
+            )}
+            {typeof listing.viewCount === 'number' && (
+              <TrustSignal
+                label="Görüntülenme"
+                value={listing.viewCount.toLocaleString('tr-TR')}
+                sub="bu ilan"
+              />
+            )}
+          </div>
+        </div>
+
         {/* Konum */}
         {listing.businessDistrict && (
           <div className="card p-5">
@@ -287,4 +348,24 @@ export default function ListingDetailPage() {
       )}
     </div>
   )
+}
+
+/* Dalga 4 / Ozellik 4 — Guven sinyali kucuk kutu */
+function TrustSignal({ label, value, sub }) {
+  return (
+    <div className="text-left">
+      <div className="text-[10px] uppercase tracking-wider opacity-65">{label}</div>
+      <div className="text-base font-bold mt-0.5" style={{ color: '#fde9a5' }}>{value}</div>
+      {sub && <div className="text-[10px] opacity-55">{sub}</div>}
+    </div>
+  )
+}
+
+/* "2 ay önce", "1 yıl önce" — uyelik suresi insan-okunabilir */
+function memberSince(iso) {
+  const d = new Date(iso)
+  const days = Math.floor((Date.now() - d.getTime()) / 86_400_000)
+  if (days < 30)    return `${days} gün`
+  if (days < 365)   return `${Math.floor(days / 30)} ay`
+  return `${Math.floor(days / 365)} yıl`
 }
