@@ -82,42 +82,83 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       {/* Neon üst hat (ince) */}
       <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none no-print" />
 
-      {/* === DESKTOP SIDEBAR (lg+ only, fixed 240px) === */}
-      <Sidebar
-        navItems={navItems}
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-        t={t}
-        user={user}
-        bizProfile={bizProfile}
-        isBusiness={isBusiness}
-        onLogout={handleLogout}
-      />
-
-      {/* NotificationBell + SettingsMenu page heading strip yanina tasindi
-          (eskiden fixed top-3 right-5 idi -> EmailVerifyBanner ile cakisiyordu) */}
-
-      {/* === MOBILE HEADER (lg:hidden) — brand + menu trigger === */}
-      <header className="lg:hidden relative z-30 sticky top-[2px] backdrop-blur-xl border-b"
+      {/* === HEADER — brand + yatay tab strip + sag actions (desktop+mobile unified) === */}
+      <header className="relative z-30 sticky top-[2px] backdrop-blur-xl border-b"
               style={{
                 background: 'rgba(15, 23, 38, 0.75)',
                 borderColor: 'rgba(212, 168, 83, 0.18)',
               }}>
-        <div className="px-4 py-3 flex items-center justify-between gap-4">
+        <div className="px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
           <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2 flex-shrink-0">
             <span className="font-bebas text-2xl tracking-wider text-white">AJANSHOTEL</span>
             <span className="hidden sm:inline text-[9px] uppercase tracking-[0.2em]"
                   style={{ color: '#fde9a5' }}>istanbul</span>
           </Link>
-          <button onClick={() => setMobileMenuOpen(o => !o)}
-            className="p-2 rounded-full"
-            style={{ background: 'rgba(212, 168, 83, 0.15)' }}
-            aria-label="Menü">
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2">
+              <LanguageSwitcher />
+              <WsConnectionBadge />
+              <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
+              <SettingsMenu onTabChange={onTabChange} />
+              {isBusiness && bizProfile?.id && (
+                <a href={`/p/business/${bizProfile.id}`} target="_blank" rel="noopener noreferrer"
+                   title="Public profilini yeni sekmede ac"
+                   className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
+                   style={{
+                     background: 'rgba(212, 168, 83, 0.15)',
+                     color: '#fde9a5',
+                     border: '1px solid rgba(212, 168, 83, 0.30)',
+                   }}>
+                  Public
+                </a>
+              )}
+              <button onClick={handleLogout}
+                className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.20), rgba(185, 28, 28, 0.30))',
+                  color: '#fca5a5',
+                  border: '1px solid rgba(220, 38, 38, 0.30)',
+                }}>
+                Çıkış
+              </button>
+            </div>
+            <button onClick={() => setMobileMenuOpen(o => !o)}
+              className="lg:hidden p-2 rounded-full"
+              style={{ background: 'rgba(212, 168, 83, 0.15)' }}
+              aria-label="Menü">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {/* Desktop yatay tab strip — brand altinda */}
+        <nav className="hidden lg:flex items-center gap-1 px-8 pb-2 -mt-1" aria-label="Ana navigasyon">
+          {navItems.map(item => {
+            const active = activeTab === item.id
+            return (
+              <button key={item.id}
+                onClick={() => onTabChange?.(item.id)}
+                className="relative px-4 py-2.5 text-[14px] transition-all font-geist rounded-lg"
+                style={{
+                  color: active ? '#ffffff' : '#8ba9d2',
+                  fontWeight: active ? 600 : 500,
+                  letterSpacing: '-0.005em',
+                  background: active ? 'rgba(212, 168, 83, 0.12)' : 'transparent',
+                  textShadow: active ? '0 0 12px rgba(212, 168, 83, 0.45)' : 'none',
+                }}
+                aria-current={active ? 'page' : undefined}>
+                {item.tKey ? t(item.tKey) : item.label}
+                {active && (
+                  <span aria-hidden
+                        className="absolute left-3 right-3 bottom-0 h-0.5 rounded-full"
+                        style={{ background: 'linear-gradient(90deg, transparent, #d4a853, transparent)' }} />
+                )}
+              </button>
+            )
+          })}
+        </nav>
 
         {/* FAZ 6.1 — Mobile + tablet menu drawer (lg breakpoint altinda) */}
         {mobileMenuOpen && (
@@ -159,11 +200,11 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         )}
       </header>
 
-      {/* === Page Content (lg+'ta sidebar yer acmasi icin lg:pl-[240px]) === */}
-      <main className="relative z-10 fade-in lg:pl-[240px]" style={{ color: '#dde7f3' }}>
+      {/* === Page Content === */}
+      <main className="relative z-10 fade-in" style={{ color: '#dde7f3' }}>
         <EmailVerifyBanner />
 
-        {/* Page heading strip — Geist semibold + sag tarafta bell/settings (desktop only) */}
+        {/* Page heading strip — Geist semibold */}
         <div className="px-4 lg:px-8 pt-5 lg:pt-8 pb-3 flex items-end justify-between gap-3 flex-wrap">
           <h1 className="font-geist text-2xl sm:text-3xl lg:text-[36px] text-white"
               style={{
@@ -176,10 +217,6 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
               return item ? (item.tKey ? t(item.tKey) : item.label) : 'Panel'
             })()}
           </h1>
-          <div className="hidden lg:flex items-center gap-2">
-            <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
-            <SettingsMenu onTabChange={onTabChange} />
-          </div>
         </div>
 
         <div className="px-4 lg:px-8 pb-24 md:pb-20 lg:pb-12 text-[14px]">
