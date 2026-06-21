@@ -5,7 +5,6 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
 import WsConnectionBadge from './WsConnectionBadge'
-import BottomTabBar from './BottomTabBar'
 import LanguageSwitcher from './LanguageSwitcher'
 import EmailVerifyBanner from './EmailVerifyBanner'
 import NotificationBell from './NotificationBell'
@@ -224,13 +223,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         </div>
       </main>
 
-      {/* FAZ G.1 — Mobil bottom tab bar (md:hidden inside) */}
-      <BottomTabBar
-        navItems={navItems}
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-        role={user?.role}
-      />
+      {/* BottomTabBar kaldirildi — yatay ust nav yeterli (kullanici istegi) */}
     </div>
   )
 }
