@@ -131,7 +131,9 @@ export default function ListingDetailPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 lg:px-6 py-6 space-y-5">
+      <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
+        <div className="xl:grid xl:grid-cols-[1fr_340px] xl:gap-5 space-y-5 xl:space-y-0">
+        <div className="space-y-5 min-w-0">
         {/* HERO — büyük gradient kart */}
         <div className="card !p-0 overflow-hidden">
           <div className="relative h-48 w-full flex items-center justify-center overflow-hidden"
@@ -322,19 +324,51 @@ export default function ListingDetailPage() {
           </div>
         )}
 
-        {/* Footer — başvur butonu sticky */}
-        <div className="sticky bottom-4 mt-8">
-          <button
-            onClick={handleApply}
-            disabled={!hasFuture || applying}
-            className="w-full py-4 text-base font-bold text-white rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 shadow-2xl"
-            style={{ background: hasFuture
-              ? 'linear-gradient(135deg, #d4a853, #d4a853)'
-              : '#6b7280',
-              boxShadow: '0 8px 32px rgba(212, 168, 83,0.45)' }}>
-            {hasFuture ? 'Bu İlana Başvur' : 'Süresi Doldu'}
-          </button>
-        </div>
+        </div>  {/* SOL kolon kapanis */}
+
+        {/* === SAG KOLON: Sticky Basvur Card === */}
+        <aside className="xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto space-y-3">
+          <div className="card p-5">
+            {/* Maas büyük */}
+            <div className="text-[10px] uppercase tracking-widest font-semibold mb-1"
+                 style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+              ÜCRET
+            </div>
+            <div className="font-bebas text-3xl tracking-wider mb-3"
+                 style={{ color: '#fde9a5', textShadow: '0 0 16px rgba(212, 168, 83, 0.35)' }}>
+              {salary || '—'}
+            </div>
+
+            {/* Hizli bilgiler */}
+            <div className="space-y-2 mb-4 pb-4 border-b"
+                 style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+              <DetailRow label="Pozisyon" value={POSITION_LABELS[listing.position] || listing.position} />
+              <DetailRow label="İlçe"     value={listing.businessDistrict || '—'} />
+              {shift && <DetailRow label="Vardiya" value={shift.label} sub={shift.time} />}
+              <DetailRow label="Tür" value={JOB_TYPE_LABELS[listing.jobType] || listing.jobType} />
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={handleApply}
+              disabled={!hasFuture || applying}
+              className="w-full py-3.5 text-[15px] font-bold text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
+              style={{ background: hasFuture
+                ? 'linear-gradient(135deg, #d4a853, #d4a853)'
+                : '#6b7280',
+                boxShadow: '0 8px 24px rgba(212, 168, 83, 0.40)' }}>
+              {hasFuture ? 'Bu İlana Başvur' : 'Süresi Doldu'}
+            </button>
+
+            {hasFuture && (
+              <p className="text-[11px] text-center mt-3"
+                 style={{ color: 'rgba(229, 231, 235, 0.50)' }}>
+                Başvurmak 30 saniye sürer
+              </p>
+            )}
+          </div>
+        </aside>
+        </div>  {/* xl:grid kapanis */}
       </main>
 
       {/* ApplyModal - başvur butonuna basınca açılır */}
@@ -368,4 +402,18 @@ function memberSince(iso) {
   if (days < 30)    return `${days} gün`
   if (days < 365)   return `${Math.floor(days / 30)} ay`
   return `${Math.floor(days / 365)} yıl`
+}
+
+/* Sticky basvur kart icinde satir */
+function DetailRow({ label, value, sub }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="text-[11px] uppercase tracking-wider flex-shrink-0"
+            style={{ color: 'rgba(229, 231, 235, 0.50)' }}>{label}</span>
+      <div className="text-right min-w-0">
+        <div className="text-[13px] font-semibold truncate" style={{ color: '#dde7f3' }}>{value}</div>
+        {sub && <div className="text-[10px]" style={{ color: 'rgba(229, 231, 235, 0.45)' }}>{sub}</div>}
+      </div>
+    </div>
+  )
 }
