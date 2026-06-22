@@ -159,7 +159,7 @@ export default function ProfileTab() {
     <div className="grid xl:grid-cols-[1fr_360px] gap-4 items-start max-w-[1400px] mx-auto">
     <div className="space-y-5 min-w-0">
     <ProfileCompletenessCard data={completeness} />
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <MediaBlock
         logoUrl={logoUrl}
         logoVersion={logoVersion}
@@ -171,6 +171,9 @@ export default function ProfileTab() {
       />
 
       <GalleryEditor />
+
+      {/* Dalga G3 — Temel + Iletisim yan yana (uzun sayfa kompakt) */}
+      <div className="grid lg:grid-cols-2 gap-4 items-start">
 
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
@@ -257,6 +260,8 @@ export default function ProfileTab() {
         </div>
       </div>
 
+      </div>  {/* 2-col Temel+Iletisim kapanis */}
+
       {form.district && (
         <BusinessLocationEditor
           district={form.district}
@@ -295,8 +300,11 @@ export default function ProfileTab() {
       </div>
     </form>
 
-    <ChangePasswordCard />
-    <GdprCard />
+    {/* Dalga G3 — Sifre + GDPR yan yana (compact alt satir) */}
+    <div className="grid lg:grid-cols-2 gap-4">
+      <ChangePasswordCard />
+      <GdprCard />
+    </div>
     </div>
 
     {/* === SAG KOLON: Canli Onizleme === */}
