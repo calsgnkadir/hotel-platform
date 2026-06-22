@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
@@ -24,7 +24,7 @@ import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
 import EmptyState from '../../components/EmptyState'
 import { SkeletonListingGrid } from '../../components/Skeleton'
-import ListingsMapView from '../../components/ListingsMapView'
+// ListingsMapView kaldirildi (kullanici istegi)
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
 
@@ -626,7 +626,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   const navigate = useNavigate()
   const [applyTarget, setApplyTarget] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
-  const [highlightedId, setHighlightedId] = useState(null)   // FAZ 1/#30
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 6
 
   // #47: Detay artık modal değil, kendi route'a navigate
   const openDetail = (listing) => navigate(`/listings/${listing.id}`)
@@ -698,82 +699,21 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     (district ? 1 : 0) + (minSalary ? 1 : 0) + shifts.length +
     (datePreset ? 1 : 0)
 
+  // 6'lik pagination
+  const totalPages = Math.max(1, Math.ceil(listings.length / PAGE_SIZE))
+  const safePage   = Math.min(page, totalPages)
+  const pageItems  = useMemo(
+    () => listings.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [listings, safePage]
+  )
+  // Filtre/keyword degisirse sayfa 1'e dön (boş sayfada kalmamak için)
+  useEffect(() => { setPage(1) }, [debouncedKeyword, position, jobType, district, minSalary, shifts, datePreset, customFrom, customTo])
+
   return (
-    <div className="xl:grid xl:grid-cols-5 xl:gap-4 space-y-4 xl:space-y-0">
-      {/* SOL PANEL — header + filtre + liste */}
-      <div className="xl:col-span-3 space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-ink-900">İş İlanları</h2>
-          <p className="text-sm text-ink-500 mt-0.5">
-            {loading ? '...' : `${listings.length} ilan`}
-            {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowFilters(s => !s)}
-            className="sm:hidden btn-secondary text-sm flex items-center gap-1.5">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="21" y1="4" x2="14" y2="4" />
-              <line x1="10" y1="4" x2="3" y2="4" />
-              <line x1="21" y1="12" x2="12" y2="12" />
-              <line x1="8" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="20" x2="16" y2="20" />
-              <line x1="12" y1="20" x2="3" y2="20" />
-              <line x1="14" y1="2" x2="14" y2="6" />
-              <line x1="8" y1="10" x2="8" y2="14" />
-              <line x1="16" y1="18" x2="16" y2="22" />
-            </svg>
-            Filtreler
-            {activeFilterCount > 0 && (
-              <span className="bg-brand-700 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Dalga 1 — Aktif filtre bar (yatay scroll chip'ler) */}
-      <ActiveFilterBar
-        filters={{ keyword: debouncedKeyword, position, jobType, district, minSalary, shifts, datePreset, customFrom, customTo }}
-        labels={{ POSITION_LABELS, JOB_TYPE_LABELS }}
-        onRemove={(key) => {
-          if (key === 'keyword')   { setKeyword(''); setDebouncedKeyword('') }
-          if (key === 'position')  setPosition('')
-          if (key === 'jobType')   setJobType('')
-          if (key === 'district')  setDistrict('')
-          if (key === 'minSalary') setMinSalary('')
-          if (key === 'datePreset'){ setDatePreset(''); setCustomFrom(''); setCustomTo('') }
-          if (key.startsWith('shift:')) setShifts(prev => prev.filter(s => s !== key.slice(6)))
-        }}
-        onClearAll={clearFilters}
-      />
-
-      <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none"
-             width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
-        <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
-          placeholder="İlan başlığında ara..."
-          className="input pl-10 text-sm" />
-        {keyword && (
-          <button onClick={() => setKeyword('')}
-            aria-label="Aramayı temizle"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
-
-      <div className={`card p-4 space-y-4 ${showFilters ? '' : 'hidden sm:block'}`}>
+    <div className="xl:grid xl:grid-cols-[280px_1fr] xl:gap-5 space-y-4 xl:space-y-0">
+      {/* SOL PANEL — filtre paneli (sticky lg+) */}
+      <aside className="xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
+        <div className={`card p-4 space-y-4 ${showFilters ? '' : 'hidden xl:block'}`}>
         {/* Dalga 1 — Eski "FİLTRE AKTİF" banner üst ActiveFilterBar'a tasindi */}
 
         {/* İlçe — dropdown (39 ilçe pill chip mantıksız) */}
@@ -872,70 +812,117 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             </button>
           </div>
         )}
-      </div>
-
-      {loading ? (
-        <SkeletonListingGrid count={6} />
-      ) : listings.length === 0 ? (
-        <div className="card">
-          <EmptyState
-            type={activeFilterCount > 0 ? 'search' : 'listings'}
-            title={activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
-            description={activeFilterCount > 0
-              ? 'Filtreleri değiştir veya temizleyerek daha fazla ilan görebilirsin.'
-              : 'Daha sonra tekrar kontrol et — yeni ilanlar her gün eklenir.'}
-            ctaLabel={activeFilterCount > 0 ? 'Filtreleri Temizle' : null}
-            onCta={clearFilters}
-          />
-        </div>
-      ) : (
-        <motion.div
-          className="grid sm:grid-cols-2 xl:grid-cols-2 lg:grid-cols-3 gap-4"
-          variants={LIST_STAGGER}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.05, margin: '0px 0px -10% 0px' }}
-        >
-          {listings.map(listing => (
-            <motion.div key={listing.id}
-              variants={LIST_ITEM}
-              onMouseEnter={() => setHighlightedId(listing.id)}
-              onMouseLeave={() => setHighlightedId(null)}>
-              <ListingCard
-                listing={listing}
-                onApply={setApplyTarget}
-                onDetail={openDetail}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
-      </div>  {/* SOL PANEL kapanış */}
-
-      {/* SAĞ PANEL — Harita (xl+ ekranda sticky) */}
-      <aside className="hidden xl:block xl:col-span-2">
-        <div className="sticky top-4" style={{ height: 'calc(100vh - 6rem)' }}>
-          {!loading && listings.length > 0 && (
-            <ListingsMapView
-              listings={listings}
-              highlightedId={highlightedId}
-              onMarkerClick={openDetail}
-            />
-          )}
-          {!loading && listings.length === 0 && (
-            <div className="card h-full flex items-center justify-center text-center">
-              <div>
-                <p className="text-sm font-semibold mb-1" style={{ color: '#0c1726' }}>
-                  Filtreye uyan ilan yok
-                </p>
-                <p className="text-xs" style={{ color: '#1e3a5f' }}>
-                  Filtreleri değiştir, harita yeniden çizilir.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+        </div>  {/* card filtre paneli kapanis */}
       </aside>
+
+      {/* SAG PANEL — header + search + chip bar + ilan grid + pagination */}
+      <section className="space-y-4 min-w-0">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-ink-900">İş İlanları</h2>
+            <p className="text-sm text-ink-500 mt-0.5">
+              {loading ? '...' : `${listings.length} ilan`}
+              {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
+            </p>
+          </div>
+          <button onClick={() => setShowFilters(s => !s)}
+            className="xl:hidden btn-secondary text-sm flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="21" y1="4" x2="14" y2="4" /><line x1="10" y1="4" x2="3" y2="4" />
+              <line x1="21" y1="12" x2="12" y2="12" /><line x1="8" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="20" x2="16" y2="20" /><line x1="12" y1="20" x2="3" y2="20" />
+              <line x1="14" y1="2" x2="14" y2="6" /><line x1="8" y1="10" x2="8" y2="14" />
+              <line x1="16" y1="18" x2="16" y2="22" />
+            </svg>
+            Filtreler
+            {activeFilterCount > 0 && (
+              <span className="bg-brand-700 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        <ActiveFilterBar
+          filters={{ keyword: debouncedKeyword, position, jobType, district, minSalary, shifts, datePreset, customFrom, customTo }}
+          labels={{ POSITION_LABELS, JOB_TYPE_LABELS }}
+          onRemove={(key) => {
+            if (key === 'keyword')   { setKeyword(''); setDebouncedKeyword('') }
+            if (key === 'position')  setPosition('')
+            if (key === 'jobType')   setJobType('')
+            if (key === 'district')  setDistrict('')
+            if (key === 'minSalary') setMinSalary('')
+            if (key === 'datePreset'){ setDatePreset(''); setCustomFrom(''); setCustomTo('') }
+            if (key.startsWith('shift:')) setShifts(prev => prev.filter(s => s !== key.slice(6)))
+          }}
+          onClearAll={clearFilters}
+        />
+
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none"
+               width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
+            placeholder="İlan başlığında ara..."
+            className="input pl-10 text-sm" />
+          {keyword && (
+            <button onClick={() => setKeyword('')}
+              aria-label="Aramayı temizle"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {loading ? (
+          <SkeletonListingGrid count={6} />
+        ) : listings.length === 0 ? (
+          <div className="card">
+            <EmptyState
+              type={activeFilterCount > 0 ? 'search' : 'listings'}
+              title={activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
+              description={activeFilterCount > 0
+                ? 'Filtreleri değiştir veya temizleyerek daha fazla ilan görebilirsin.'
+                : 'Daha sonra tekrar kontrol et — yeni ilanlar her gün eklenir.'}
+              ctaLabel={activeFilterCount > 0 ? 'Filtreleri Temizle' : null}
+              onCta={clearFilters}
+            />
+          </div>
+        ) : (
+          <>
+            <motion.div
+              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              variants={LIST_STAGGER}
+              initial="hidden"
+              animate="visible"
+              key={safePage}  /* sayfa degisince stagger tekrar oynar */
+            >
+              {pageItems.map(listing => (
+                <motion.div key={listing.id} variants={LIST_ITEM}>
+                  <ListingCard
+                    listing={listing}
+                    onApply={setApplyTarget}
+                    onDetail={openDetail}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+            {totalPages > 1 && (
+              <ListingsPagination page={safePage} totalPages={totalPages} onChange={(p) => {
+                setPage(p)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }} />
+            )}
+          </>
+        )}
+      </section>
 
 
       {/* #47 — Detail kendi route */}
@@ -1065,6 +1052,65 @@ function FilterChipGroup({
         ))}
       </div>
     </div>
+  )
+}
+
+/* shadcn-style pagination — 6'lik sayfalar */
+function ListingsPagination({ page, totalPages, onChange }) {
+  function pageNumbers() {
+    const out = []
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) out.push(i)
+      return out
+    }
+    out.push(1)
+    if (page > 4) out.push('…')
+    const start = Math.max(2, page - 1)
+    const end   = Math.min(totalPages - 1, page + 1)
+    for (let i = start; i <= end; i++) out.push(i)
+    if (page < totalPages - 3) out.push('…')
+    out.push(totalPages)
+    return out
+  }
+  return (
+    <nav className="flex items-center justify-center gap-1 pt-4 flex-wrap" aria-label="Sayfalama">
+      <ListingsPageBtn disabled={page === 1} onClick={() => onChange(page - 1)} ariaLabel="Önceki">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+        <span className="ml-1">Önceki</span>
+      </ListingsPageBtn>
+      {pageNumbers().map((n, i) => (
+        n === '…'
+          ? <span key={`e${i}`} className="w-9 text-center text-[13px]" style={{ color: 'rgba(229, 231, 235, 0.50)' }}>…</span>
+          : <ListingsPageBtn key={n} active={n === page} onClick={() => onChange(n)} ariaLabel={`Sayfa ${n}`}>
+              {n}
+            </ListingsPageBtn>
+      ))}
+      <ListingsPageBtn disabled={page === totalPages} onClick={() => onChange(page + 1)} ariaLabel="Sonraki">
+        <span className="mr-1">Sonraki</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      </ListingsPageBtn>
+    </nav>
+  )
+}
+
+function ListingsPageBtn({ children, active, disabled, onClick, ariaLabel }) {
+  return (
+    <button type="button" onClick={onClick} disabled={disabled}
+            aria-label={ariaLabel} aria-current={active ? 'page' : undefined}
+            className="min-w-[36px] h-9 inline-flex items-center justify-center px-3 rounded-lg text-[13px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+            style={{
+              background: active ? 'rgba(212, 168, 83, 0.18)' : 'rgba(21, 36, 61, 0.55)',
+              color:      active ? '#fde9a5' : 'rgba(229, 231, 235, 0.75)',
+              border:    `1px solid ${active ? 'rgba(212, 168, 83, 0.55)' : 'rgba(212, 168, 83, 0.18)'}`,
+            }}>
+      {children}
+    </button>
   )
 }
 
