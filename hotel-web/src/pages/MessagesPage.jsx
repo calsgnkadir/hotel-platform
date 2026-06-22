@@ -1284,7 +1284,18 @@ function ConversationDetailPanel({ conversation }) {
             }}
           />
           <div className="relative">
-            <div className="relative inline-block mb-3">
+            {/* Dalga G3 — avatar tiklayinca public profil yeni sekmede acilir */}
+            <a
+              href={c?.otherPartyId
+                ? (c.otherPartyRole === 'BUSINESS_OWNER'
+                    ? `/p/business/${c.otherPartyId}`
+                    : `/p/candidate/${c.otherPartyId}`)
+                : undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Profili gor"
+              className="relative inline-block mb-3 cursor-pointer hover:scale-105 transition-transform"
+            >
               {c.otherPartyAvatarUrl ? (
                 <img
                   src={cldImg(c.otherPartyAvatarUrl, { w: ImgSize.avatarMd })}
@@ -1312,7 +1323,7 @@ function ConversationDetailPanel({ conversation }) {
                   title="Çevrimiçi"
                 />
               )}
-            </div>
+            </a>
             <h3
               className="font-bebas text-xl tracking-wider uppercase text-white truncate"
               style={{ textShadow: '0 0 12px rgba(212, 168, 83, 0.40)' }}

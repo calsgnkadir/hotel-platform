@@ -10,6 +10,7 @@ import AvatarCropModal from '../../../components/AvatarCropModal'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
 import GdprCard from '../../../components/GdprCard'
 import { SkeletonForm } from '../../../components/Skeleton'
+import { Alert } from '../../../components/ui/Alert'
 import AvailabilityBlocksEditor from '../../../components/AvailabilityBlocksEditor'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../../utils/validation'
 import DistrictNeighborhoodSelect from '../../../components/DistrictNeighborhoodSelect'
@@ -22,6 +23,7 @@ import {
 export default function ProfileTab() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savedAt, setSavedAt] = useState(null)  // Dalga G3 — Alert success goster
   const [form, setForm] = useState(null)
   const [profile, setProfile] = useState(null)
   const [reliability, setReliability] = useState(null)
@@ -132,6 +134,8 @@ export default function ProfileTab() {
       const data = await hotelApi.updateCandidateProfile(payload)
       setProfile(data)
       toast.success('Profil güncellendi!')
+      setSavedAt(Date.now())  // Alert tetigi
+      setTimeout(() => setSavedAt(null), 5000)  // 5sn sonra otomatik kapat
     } catch (err) {
       toast.error(extractErrorMessage(err))
     } finally {
@@ -149,6 +153,12 @@ export default function ProfileTab() {
 
   return (
     <div className="space-y-4 max-w-[1400px] mx-auto">
+      {/* Dalga G3 — shadcn Alert uyarlamasi: kaydet sonrasi inline geri bildirim */}
+      {savedAt && (
+        <Alert variant="success" title="Profil güncellendi">
+          Değişiklikler kaydedildi — işverenler artık güncel bilgilerinizi görür.
+        </Alert>
+      )}
       {/* UST: 3 esit sutun — Identity | Doluluk | Email durumu */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Identity card */}

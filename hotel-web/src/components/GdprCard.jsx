@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ConfirmDialog } from './ui/ConfirmDialog'
 import toast from 'react-hot-toast'
 import api from '../api/client'
 
@@ -83,70 +84,35 @@ export default function GdprCard() {
           {exporting ? 'Hazırlanıyor...' : 'Verilerimi İndir (JSON)'}
         </button>
 
-        {!confirming ? (
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            style={{
-              padding: '10px 16px',
-              borderRadius: 8,
-              background: 'transparent',
-              color: '#b91c1c',
-              fontSize: 13,
-              fontWeight: 600,
-              border: '1px solid rgba(185, 28, 28, 0.3)',
-              cursor: 'pointer',
-            }}>
-            Hesabımı Sil
-          </button>
-        ) : (
-          <div style={{
-            padding: 14,
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          style={{
+            padding: '10px 16px',
             borderRadius: 8,
-            background: 'rgba(239, 68, 68, 0.06)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: 'transparent',
+            color: '#b91c1c',
+            fontSize: 13,
+            fontWeight: 600,
+            border: '1px solid rgba(185, 28, 28, 0.3)',
+            cursor: 'pointer',
           }}>
-            <p style={{ fontSize: 12, color: '#991b1b', marginBottom: 12, lineHeight: 1.5 }}>
-              Bu işlem geri alınamaz. Hesabınız 30 gün içinde anonymize edilecek.
-              30 gün boyunca destek hattından geri alabilirsiniz.
-            </p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleting}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: 6,
-                  background: '#b91c1c',
-                  color: 'white',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: deleting ? 'wait' : 'pointer',
-                }}>
-                {deleting ? 'Siliniyor...' : 'Evet, Sil'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirming(false)}
-                disabled={deleting}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: 6,
-                  background: 'transparent',
-                  color: '#475569',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  border: '1px solid #cbd5e1',
-                  cursor: 'pointer',
-                }}>
-                Vazgeç
-              </button>
-            </div>
-          </div>
-        )}
+          Hesabımı Sil
+        </button>
       </div>
+
+      {/* Dalga G3 — shadcn AlertDialog uyarlamasi */}
+      <ConfirmDialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title="Hesabını sil"
+        description="Bu işlem geri alınamaz. Hesabınız 30 gün içinde anonimleştirilecek. 30 gün boyunca destek hattından geri alabilirsiniz."
+        confirmLabel="Evet, sil"
+        cancelLabel="Vazgeç"
+        destructive
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }
