@@ -81,7 +81,15 @@ function computeResponseHeat(createdAt) {
   return { color: 'var(--signal-coral)', label: `${days} gün${days > 1 ? '' : ''}` }
 }
 
-export default function ApplicationsKanban({ applications, onRefresh, onCardClick, onOpenMessages }) {
+export default function ApplicationsKanban({ applications, statusFilter = 'ALL', onRefresh, onCardClick, onOpenMessages }) {
+  // Dalga H4 — chip filtresine gore hangi kolonlar gosterilecek
+  // ALL: tum kolonlar, digerleri: sadece eslesen kolon
+  const FILTER_TO_COLUMN_ID = {
+    PENDING: 'PENDING', REVIEWING: 'REVIEWING', ACCEPTED: 'ACCEPTED', REJECTED: 'REJECTED',
+  }
+  const visibleColumns = statusFilter === 'ALL'
+    ? COLUMNS
+    : COLUMNS.filter(c => c.id === FILTER_TO_COLUMN_ID[statusFilter])
   const [activeApp, setActiveApp] = useState(null)
   // Dalga H4 — Toplu islem icin secili basvuru id seti
   const [selectedIds, setSelectedIds] = useState(new Set())
@@ -231,9 +239,9 @@ export default function ApplicationsKanban({ applications, onRefresh, onCardClic
         </div>
       )}
 
-      {/* Dalga H4 — Tum kolonlari goster (bos olsa bile drag-drop hedefi) */}
+      {/* Dalga H4 — chip filtresine gore kolonlari goster */}
       <div className="space-y-5">
-        {COLUMNS.map(col => (
+        {visibleColumns.map(col => (
           <Column key={col.id} col={col} count={grouped[col.id]?.length || 0}>
             {(grouped[col.id]?.length || 0) === 0 ? (
               <div className="text-[11px] italic py-6 text-center uppercase tracking-widest"

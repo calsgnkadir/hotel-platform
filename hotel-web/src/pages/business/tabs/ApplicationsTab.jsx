@@ -218,6 +218,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
               const name = (a.candidate?.fullName || '').toLowerCase()
               return name.includes(search.trim().toLowerCase())
             })}
+            statusFilter={filter}  /* Dalga H4 — chip secimi kanban'i filtrele */
             onRefresh={onRefresh}
             onCardClick={(app) => setSelected(app)}
             onOpenMessages={(convId) => onOpenMessages?.(convId)}
