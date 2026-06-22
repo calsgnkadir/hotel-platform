@@ -9,8 +9,8 @@
  *  - notification click: tab odaklanir veya yeni acilir
  */
 
-// FAZ I.6 — bump version (manifest + offline fallback eklendi)
-const CACHE_VERSION = 'ajanshotel-v5'
+// Dalga G3 bump — eski v5 'business:1 503' konsol hatasi temizlensin
+const CACHE_VERSION = 'ajanshotel-v6'
 const APP_SHELL = [
   '/',
   '/favicon.svg',
@@ -83,10 +83,11 @@ self.addEventListener('fetch', (event) => {
         const cached = await caches.match(req)
         if (cached) return cached
         if (req.mode === 'navigate') {
-          // Once SPA fallback, sonra explicit offline page
-          return (await caches.match('/')) || (await caches.match('/offline.html'))
+          const fallback = (await caches.match('/')) || (await caches.match('/offline.html'))
+          if (fallback) return fallback
         }
-        return new Response('Offline', { status: 503, statusText: 'Offline' })
+        // Dalga G3 — 503 string yerine network hatasi at; DevTools console temiz
+        return Response.error()
       })
   )
 })

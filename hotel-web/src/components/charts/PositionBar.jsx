@@ -10,7 +10,8 @@ const POSITION_LABELS = {
   SECURITY: 'Güvenlik',
 }
 
-const COLORS = ['#047857', '#0891b2', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+// Dalga G3 — dark altin tema icin yuksek kontrast palet (eski koyu yesil/mavi okunmuyor)
+const COLORS = ['#f7c43c', '#d4a853', '#5b85bf', '#8ba9d2', '#22d3ee', '#a78bfa', '#fbbf24']
 
 /**
  * Pozisyona göre başvuru bar chart.
@@ -30,7 +31,7 @@ export default function PositionBar({ data, title = 'Pozisyon Dağılımı', hei
   if (chartData.length === 0) {
     return (
       <div className="card p-5 h-full">
-        <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider mb-2">{title}</h3>
+        <h3 className="text-sm font-bold text-cream-50 uppercase tracking-wider mb-2">{title}</h3>
         <div className="flex items-center justify-center text-sm text-ink-400" style={{ height }}>
           Henüz veri yok
         </div>
@@ -40,18 +41,19 @@ export default function PositionBar({ data, title = 'Pozisyon Dağılımı', hei
 
   return (
     <div className="card p-5">
-      <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider mb-3">{title}</h3>
+      <h3 className="text-sm font-bold text-cream-50 uppercase tracking-wider mb-3">{title}</h3>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={chartData} layout="vertical"
           margin={{ top: 5, right: 16, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-          <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }}
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(212, 168, 83, 0.10)" horizontal={false} />
+          <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(229, 231, 235, 0.65)' }}
             tickLine={false} axisLine={false} allowDecimals={false} />
           <YAxis type="category" dataKey="label"
-            tick={{ fontSize: 11, fill: '#475569' }} tickLine={false} axisLine={false} width={80} />
+            tick={{ fontSize: 11, fill: '#fde9a5', fontWeight: 600 }} tickLine={false} axisLine={false} width={90} />
           <Tooltip
-            contentStyle={{ borderRadius: 8, fontSize: 12, border: '1px solid #e2e8f0' }}
-            cursor={{ fill: '#f8fafc' }}
+            contentStyle={{ borderRadius: 8, fontSize: 12, background: 'rgba(15, 23, 38, 0.95)',
+                            border: '1px solid rgba(212, 168, 83, 0.30)', color: '#fde9a5' }}
+            cursor={{ fill: 'rgba(212, 168, 83, 0.08)' }}
             formatter={(v) => [`${v} başvuru`, '']} />
           <Bar dataKey="count" radius={[0, 4, 4, 0]}>
             {chartData.map((_, i) => (
