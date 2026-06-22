@@ -9,6 +9,7 @@ import { calculateCandidateCompleteness } from '../../../lib/profileCompleteness
 import AvatarCropModal from '../../../components/AvatarCropModal'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
 import GdprCard from '../../../components/GdprCard'
+import { SkeletonForm } from '../../../components/Skeleton'
 import AvailabilityBlocksEditor from '../../../components/AvailabilityBlocksEditor'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../../utils/validation'
 import DistrictNeighborhoodSelect from '../../../components/DistrictNeighborhoodSelect'
@@ -138,7 +139,7 @@ export default function ProfileTab() {
     }
   }
 
-  if (loading) return <div className="flex justify-center py-16"><div className="spinner" /></div>
+  if (loading) return <SkeletonForm fields={6} />
   if (!form) return null
 
   const completeness = calculateCandidateCompleteness(

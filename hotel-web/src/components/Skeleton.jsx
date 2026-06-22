@@ -143,3 +143,94 @@ export function SkeletonAvatar({ size = 'md' }) {
   const sizes = { sm: 'w-8 h-8', md: 'w-10 h-10', lg: 'w-14 h-14', xl: 'w-20 h-20' }
   return <ShimmerBlock className={`${sizes[size] || sizes.md} rounded-full`} />
 }
+
+/* Dalga E — Generic dikdortgen blok (height/width parametrik) */
+export function SkeletonBlock({ height = 80, width = '100%', className = '' }) {
+  return (
+    <ShimmerBlock
+      className={`rounded-xl ${className}`}
+      style={{ height: typeof height === 'number' ? `${height}px` : height, width }}
+    />
+  )
+}
+
+/* Dalga E — Overview/Dashboard stat karti
+   Etiket + buyuk sayi + sparkline alani */
+export function SkeletonStatCard() {
+  return (
+    <div className="card !p-3">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <ShimmerBlock className="w-1.5 h-1.5 rounded-full" />
+        <ShimmerBlock className="h-2.5 w-20 rounded" />
+      </div>
+      <div className="flex items-end justify-between gap-2">
+        <ShimmerBlock className="h-7 w-12 rounded" />
+        <ShimmerBlock className="h-6 w-14 rounded" />
+      </div>
+    </div>
+  )
+}
+
+/* Dalga E — Overview tab stat grid'i icin (4 kart yan yana) */
+export function SkeletonStatGrid({ count = 4 }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      {Array.from({ length: count }).map((_, i) => <SkeletonStatCard key={i} />)}
+    </div>
+  )
+}
+
+/* Dalga E — ListingDetailPage tam sayfa skeleton
+   Hero + chip + aciklama + sag basvur card */
+export function SkeletonDetail() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
+      <div className="xl:grid xl:grid-cols-[1fr_340px] xl:gap-5 space-y-5 xl:space-y-0">
+        <div className="space-y-5 min-w-0">
+          {/* Hero */}
+          <div className="card !p-0 overflow-hidden">
+            <ShimmerBlock className="h-48 w-full" style={{ borderRadius: 0 }} />
+            <div className="p-5 space-y-2">
+              <ShimmerBlock className="h-7 w-2/3 rounded" />
+              <ShimmerBlock className="h-4 w-1/3 rounded" />
+            </div>
+          </div>
+          {/* 4 chip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="card !p-3 space-y-1.5">
+                <ShimmerBlock className="h-2.5 w-10 rounded mx-auto" />
+                <ShimmerBlock className="h-4 w-3/4 rounded mx-auto" />
+              </div>
+            ))}
+          </div>
+          {/* Aciklama */}
+          <div className="card p-5 space-y-2">
+            <ShimmerBlock className="h-3 w-20 rounded" />
+            <ShimmerBlock className="h-3 w-full rounded" />
+            <ShimmerBlock className="h-3 w-5/6 rounded" />
+            <ShimmerBlock className="h-3 w-4/6 rounded" />
+          </div>
+        </div>
+        {/* Sag panel */}
+        <aside className="space-y-4">
+          <div className="card p-5 space-y-3">
+            <ShimmerBlock className="h-3 w-12 rounded" />
+            <ShimmerBlock className="h-8 w-2/3 rounded" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex justify-between">
+                <ShimmerBlock className="h-3 w-16 rounded" />
+                <ShimmerBlock className="h-3 w-20 rounded" />
+              </div>
+            ))}
+            <ShimmerBlock className="h-11 w-full rounded-xl mt-3" />
+          </div>
+          <div className="card p-4">
+            <ShimmerBlock className="h-3 w-16 rounded mb-3" />
+            <ShimmerBlock className="h-60 w-full rounded-lg" />
+          </div>
+        </aside>
+      </div>
+    </div>
+  )
+}

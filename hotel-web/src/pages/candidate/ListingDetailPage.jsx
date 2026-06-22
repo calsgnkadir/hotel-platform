@@ -12,6 +12,7 @@ import { useAuth } from '../../context/AuthContext'
 import StarRating from '../../components/StarRating'
 import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
+import { SkeletonDetail } from '../../components/Skeleton'
 import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
 import { ApplyModal } from './ListingsPage'
@@ -58,8 +59,8 @@ export default function ListingDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white relative z-10">
-        <div className="spinner" />
+      <div className="min-h-screen text-white relative z-10">
+        <SkeletonDetail />
       </div>
     )
   }

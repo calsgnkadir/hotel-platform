@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
 import GdprCard from '../../../components/GdprCard'
+import { SkeletonForm } from '../../../components/Skeleton'
 import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../../utils/validation'
 import DistrictNeighborhoodSelect from '../../../components/DistrictNeighborhoodSelect'
 import GalleryEditor from '../../../components/GalleryEditor'
@@ -145,7 +146,7 @@ export default function ProfileTab() {
     }
   }
 
-  if (loading) return <div className="flex justify-center py-16"><div className="spinner" /></div>
+  if (loading) return <SkeletonForm fields={6} />
   if (!form) return null
 
   // FAZ 1/#34 — Profil doluluk hesaplama (anlık, form state'inden)
