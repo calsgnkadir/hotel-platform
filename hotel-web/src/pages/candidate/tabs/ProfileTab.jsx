@@ -13,6 +13,7 @@ import AvailabilityBlocksEditor from '../../../components/AvailabilityBlocksEdit
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../../utils/validation'
 import DistrictNeighborhoodSelect from '../../../components/DistrictNeighborhoodSelect'
 import { ISTANBUL_DISTRICTS } from '../../../data/istanbul'
+import DocumentsTab from './DocumentsTab'   // Belgelerim Profilim'e tasindi
 import {
   GENDER_LABELS, EDUCATION_LABELS, AVAILABILITY_LABELS, POSITION_LABELS
 } from '../../../utils/labels'
@@ -362,21 +363,10 @@ export default function ProfileTab() {
 
           <div>
             <label className="label">İlgilendiğin İlçeler</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto p-2 border border-cream-300 rounded-lg">
-              {ISTANBUL_DISTRICTS.map(d => {
-                const active = form.preferredDistricts.includes(d)
-                return (
-                  <label key={d}
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs cursor-pointer
-                      ${active ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'text-ink-600 hover:bg-cream-50'}`}>
-                    <input type="checkbox" checked={active}
-                      onChange={() => toggleSetField('preferredDistricts', d)}
-                      className="w-3.5 h-3.5 accent-brand-700" />
-                    {d}
-                  </label>
-                )
-              })}
-            </div>
+            <DistrictAutocomplete
+              selected={form.preferredDistricts}
+              onToggle={(d) => toggleSetField('preferredDistricts', d)}
+            />
             <p className="text-xs text-ink-400 mt-1">{form.preferredDistricts.length} ilçe seçili</p>
           </div>
 
@@ -410,8 +400,109 @@ export default function ProfileTab() {
         </div>
       </form>
 
+      {/* Belgelerim — Profilim icine tasindi (kullanici istegi) */}
+      <DocumentsTab />
+
       <ChangePasswordCard />
       <GdprCard />
+    </div>
+  )
+}
+
+/* Aranabilir ilce secimi — "ba" yazinca Bagcilar/Basaksehir filtrelenir
+   diakritik-insensitive arama, checkbox-style multi-select chip listesi */
+function DistrictAutocomplete({ selected, onToggle }) {
+  const [query, setQuery] = useState('')
+  // Turkce karakterleri normalize et (ı→i, ö→o, ü→u, ç→c, ş→s, ğ→g)
+  function norm(s) {
+    return (s || '').toLowerCase()
+      .replaceAll('ı', 'i').replaceAll('ö', 'o').replaceAll('ü', 'u')
+      .replaceAll('ç', 'c').replaceAll('ş', 's').replaceAll('ğ', 'g')
+  }
+  const nq = norm(query.trim())
+  const matches = nq
+    ? ISTANBUL_DISTRICTS.filter(d => norm(d).includes(nq))
+    : ISTANBUL_DISTRICTS
+
+  return (
+    <div className="space-y-2">
+      {/* Search input */}
+      <div className="relative">
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none"
+             width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
+          placeholder="İlçe ara (örn. ba → Bağcılar, Başakşehir)"
+          className="input pl-9 text-sm" />
+        {query && (
+          <button type="button" onClick={() => setQuery('')}
+            aria-label="Aramayı temizle"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* Secili ilceler — chip seti (var ise) */}
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selected.map(d => (
+            <button key={d} type="button" onClick={() => onToggle(d)}
+              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+              style={{
+                background: 'rgba(212, 168, 83, 0.18)',
+                color: '#fde9a5',
+                border: '1px solid rgba(212, 168, 83, 0.45)',
+              }}>
+              {d}
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+              </svg>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Eslesen ilce listesi */}
+      <div className="max-h-44 overflow-y-auto border rounded-lg p-1.5"
+           style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+        {matches.length === 0 ? (
+          <p className="text-xs text-center py-3" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+            "{query}" ile eşleşen ilçe yok
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+            {matches.map(d => {
+              const active = selected.includes(d)
+              return (
+                <button key={d} type="button" onClick={() => onToggle(d)}
+                  className="flex items-center justify-between gap-2 px-2 py-1.5 rounded text-xs transition-colors text-left"
+                  style={{
+                    background: active ? 'rgba(212, 168, 83, 0.14)' : 'transparent',
+                    color: active ? '#fde9a5' : 'rgba(229, 231, 235, 0.78)',
+                    border: active ? '1px solid rgba(212, 168, 83, 0.32)' : '1px solid transparent',
+                    fontWeight: active ? 600 : 500,
+                  }}>
+                  <span className="truncate">{d}</span>
+                  {active && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

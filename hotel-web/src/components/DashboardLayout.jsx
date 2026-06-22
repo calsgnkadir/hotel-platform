@@ -16,8 +16,8 @@ const candidateNav = [
   { id: 'overview',      tKey: 'nav.overview' },
   { id: 'listings',      tKey: 'nav.listings' },
   { id: 'applications',  tKey: 'nav.applications' },
-  { id: 'documents',     tKey: 'nav.documents' },
   { id: 'messages',      tKey: 'nav.messages' },
+  { id: 'profile',       label: 'Profilim' },   // Belgelerim Profilim icinde
 ]
 
 const businessNav = [
