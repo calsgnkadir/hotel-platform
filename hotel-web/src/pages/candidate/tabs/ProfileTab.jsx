@@ -148,10 +148,10 @@ export default function ProfileTab() {
 
   return (
     <div className="space-y-4 max-w-[1400px] mx-auto">
-      {/* FAZ 5.4 — Identity + quick actions: 2-kolon ust bolum */}
+      {/* UST: 3 esit sutun — Identity | Doluluk | Email durumu */}
       <div className="grid lg:grid-cols-3 gap-4">
-        {/* SOL — Identity card */}
-        <div className="card p-6 lg:col-span-1 flex flex-col items-center text-center">
+        {/* Identity card */}
+        <div className="card p-6 flex flex-col items-center text-center">
           <div className="w-28 h-28 rounded-full flex items-center justify-center overflow-hidden mb-4 relative"
                style={{ background: 'rgba(212, 168, 83, 0.10)', border: '2px solid rgba(212, 168, 83, 0.25)' }}>
             {profile?.avatarUrl ? (
@@ -183,12 +183,11 @@ export default function ProfileTab() {
           </div>
         </div>
 
-        {/* SAĞ — Profil tamamlama + Email durum */}
-        <div className="lg:col-span-2 space-y-4">
-          <ProfileCompletenessCard data={completeness} />
+        {/* Profil tamamlama */}
+        <ProfileCompletenessCard data={completeness} />
 
-          {/* Email durum kartı */}
-          <div className="card p-5 flex items-center justify-between gap-4 flex-wrap">
+        {/* Email durum kartı */}
+        <div className="card p-5 flex items-center justify-between gap-4 flex-wrap">
             <div>
               <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#8ba9d2' }}>
                 Email Doğrulama
@@ -203,12 +202,13 @@ export default function ProfileTab() {
                     background: profile?.emailVerifiedAt ? '#d4a853' : '#fbbf24',
                     boxShadow: `0 0 12px ${profile?.emailVerifiedAt ? 'rgba(212, 168, 83,0.6)' : 'rgba(251,191,36,0.6)'}`,
                   }} />
-          </div>
         </div>
       </div>
 
-      {/* Compact iki sutun: Reliability + Profil Foto sol; Availability sag */}
-      <div className="grid lg:grid-cols-2 gap-4">
+      {/* ANA 2-SUTUN: tum form ve yan widget'lar yan yana */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid lg:grid-cols-2 gap-4 items-start">
+        {/* === SOL SUTUN === */}
         <div className="space-y-4">
           {reliability && <ReliabilityCard data={reliability} />}
           <div className="card p-5">
@@ -247,13 +247,6 @@ export default function ProfileTab() {
           </div>
         </div>
           </div>
-        </div>
-        <div><AvailabilityBlocksEditor /></div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Form sutunlari: 2 kolon — Temel Bilgiler + Egitim/Diger yan yana */}
-      <div className="grid lg:grid-cols-2 gap-4">
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
               style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Temel Bilgiler</h3>
@@ -300,7 +293,26 @@ export default function ProfileTab() {
           </div>
         </div>
 
-        {/* Sag kolon: Egitim + Diger (Ehliyet) tek card'da birlestirildi */}
+        {/* SOL: Ilgilendigin Ilceler (uzayan otomatik tamamlama) */}
+        <div className="card p-5 space-y-3">
+          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>İlgilendiğin İlçeler</h3>
+          <p className="text-xs" style={{ color: 'rgba(229, 231, 235, 0.65)' }}>
+            Bu ilçelerde yeni ilan açıldığında otomatik bildirim alırsın.
+          </p>
+          <DistrictAutocomplete
+            selected={form.preferredDistricts}
+            onToggle={(d) => toggleSetField('preferredDistricts', d)}
+          />
+          <p className="text-xs text-ink-400">{form.preferredDistricts.length} ilçe seçili</p>
+        </div>
+        </div>  {/* SOL SUTUN kapanis */}
+
+        {/* === SAG SUTUN === */}
+        <div className="space-y-4">
+          <AvailabilityBlocksEditor />
+
+          {/* Egitim + Ehliyet */}
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
               style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Eğitim & Ek</h3>
@@ -322,7 +334,6 @@ export default function ProfileTab() {
             </div>
           </div>
         </div>
-      </div>  {/* 2-col Temel+Egitim kapanis */}
 
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
@@ -354,47 +365,32 @@ export default function ProfileTab() {
           </div>
         </div>
 
-        {/* Bildirim Tercihleri: 2 sutun — Ilceler sol, Pozisyonlar sag */}
-        <div className="card p-5 space-y-4">
-          <div>
-            <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Bildirim Tercihleri</h3>
-            <p className="text-xs text-ink-500 mt-1">
-              İlgini çekebilecek yeni ilan açıldığında otomatik bildirim al. Hiçbirini seçmezsen bildirim yok.
-            </p>
+        {/* SAG: Ilgilendigin Pozisyonlar */}
+        <div className="card p-5 space-y-3">
+          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>İlgilendiğin Pozisyonlar</h3>
+          <p className="text-xs" style={{ color: 'rgba(229, 231, 235, 0.65)' }}>
+            Bu pozisyonlarda yeni ilan acildiginda otomatik bildirim alirsin.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {Object.entries(POSITION_LABELS).map(([value, label]) => {
+              const active = form.preferredPositions.includes(value)
+              return (
+                <label key={value}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
+                    ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                  <input type="checkbox" checked={active}
+                    onChange={() => toggleSetField('preferredPositions', value)}
+                    className="w-4 h-4 accent-brand-700" />
+                  {label}
+                </label>
+              )
+            })}
           </div>
-
-          <div className="grid lg:grid-cols-2 gap-4">
-          <div>
-            <label className="label">İlgilendiğin İlçeler</label>
-            <DistrictAutocomplete
-              selected={form.preferredDistricts}
-              onToggle={(d) => toggleSetField('preferredDistricts', d)}
-            />
-            <p className="text-xs text-ink-400 mt-1">{form.preferredDistricts.length} ilçe seçili</p>
-          </div>
-
-          <div>
-            <label className="label">İlgilendiğin Pozisyonlar</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {Object.entries(POSITION_LABELS).map(([value, label]) => {
-                const active = form.preferredPositions.includes(value)
-                return (
-                  <label key={value}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
-                      ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                    <input type="checkbox" checked={active}
-                      onChange={() => toggleSetField('preferredPositions', value)}
-                      className="w-4 h-4 accent-brand-700" />
-                    {label}
-                  </label>
-                )
-              })}
-            </div>
-            <p className="text-xs text-ink-400 mt-1">{form.preferredPositions.length} pozisyon seçili</p>
-          </div>
-          </div>  {/* 2-col Ilce+Pozisyon kapanis */}
+          <p className="text-xs text-ink-400">{form.preferredPositions.length} pozisyon seçili</p>
         </div>
+        </div>  {/* SAG SUTUN kapanis */}
+      </div>  {/* 2-SUTUN GRID kapanis */}
 
         <div className="flex justify-end">
           <button type="submit" disabled={saving}
@@ -405,13 +401,13 @@ export default function ProfileTab() {
         </div>
       </form>
 
-      {/* Belgelerim — Profilim icine tasindi (kullanici istegi) */}
-      <DocumentsTab />
-
-      {/* Sifre + GDPR yan yana (compact) */}
-      <div className="grid lg:grid-cols-2 gap-4">
-        <ChangePasswordCard />
-        <GdprCard />
+      {/* Belgelerim sol, Sifre+GDPR sag — yatay full dolu */}
+      <div className="grid lg:grid-cols-2 gap-4 items-start">
+        <DocumentsTab />
+        <div className="space-y-4">
+          <ChangePasswordCard />
+          <GdprCard />
+        </div>
       </div>
     </div>
   )
