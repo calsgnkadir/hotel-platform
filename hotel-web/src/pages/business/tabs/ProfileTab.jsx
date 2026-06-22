@@ -300,16 +300,13 @@ export default function ProfileTab() {
       </div>
     </form>
 
-    {/* Dalga G3 — Sifre + GDPR yan yana (compact alt satir) */}
-    <div className="grid lg:grid-cols-2 gap-4">
-      <ChangePasswordCard />
-      <GdprCard />
-    </div>
     </div>
 
-    {/* === SAG KOLON: Canli Onizleme === */}
-    <aside className="xl:sticky xl:top-4 xl:self-start">
+    {/* === SAG KOLON: Canli Onizleme + Sifre + KVKK (alt alta) === */}
+    <aside className="xl:sticky xl:top-4 xl:self-start space-y-4">
       <BusinessPreviewCard form={form} logoUrl={logoUrl} />
+      <ChangePasswordCard />
+      <GdprCard />
     </aside>
     </div>
   )
