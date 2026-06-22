@@ -114,7 +114,7 @@ export default function ListingDetailPage() {
     <div className="min-h-screen text-white relative z-10">
       {/* Top bar — geri butonu + breadcrumb */}
       <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 bg-cream-100/85 backdrop-blur-lg border-b border-cream-300">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
           <button onClick={handleBack}
             className="p-2 rounded-lg hover:bg-cream-200 transition-colors text-ink-700"
             title="Geri">

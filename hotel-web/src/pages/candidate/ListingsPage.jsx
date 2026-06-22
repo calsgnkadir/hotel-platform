@@ -530,29 +530,68 @@ function ListingCard({ listing, onApply, onDetail }) {
   return (
     <div
       onClick={() => onDetail(listing)}
-      className="card cursor-pointer hover:-translate-y-1 transition-all duration-200 group overflow-hidden !p-0"
+      className="cursor-pointer transition-all duration-300 group overflow-hidden rounded-2xl relative"
+      style={{
+        background: 'linear-gradient(145deg, rgba(21, 36, 61, 0.92) 0%, rgba(15, 23, 38, 0.98) 100%)',
+        border: '1px solid rgba(212, 168, 83, 0.12)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04)',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-4px)'
+        e.currentTarget.style.borderColor = 'rgba(212, 168, 83, 0.35)'
+        e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.35), 0 0 24px rgba(212, 168, 83, 0.15), inset 0 1px 0 rgba(255,255,255,0.06)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.borderColor = 'rgba(212, 168, 83, 0.12)'
+        e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04)'
+      }}
     >
       {/* HERO — foto-merkezli üst alan */}
-      <div className="relative h-32 w-full overflow-hidden"
+      <div className="relative h-36 w-full overflow-hidden"
            style={{
              background: 'linear-gradient(135deg, #15243d 0%, #234a82 100%)',
            }}>
-        {/* Galeri fotoğrafları varsa hover carousel; yoksa düz gradient (placeholder harfi kaldirildi) */}
         {listing.businessPhotoUrls?.length > 0 && (
           <HoverPhotoCarousel photos={listing.businessPhotoUrls}
                               alt={`${listing.businessName} galeri`} />
         )}
 
+        {/* Verified badge — sol üst */}
+        {listing.businessVerified && (
+          <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full backdrop-blur-md"
+                style={{
+                  background: 'rgba(15, 23, 38, 0.75)',
+                  color: '#fde9a5',
+                  border: '1px solid rgba(212, 168, 83, 0.45)',
+                }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Doğrulandı
+          </span>
+        )}
+
         {/* Job type chip — sağ üst */}
         <span className="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md z-10"
-              style={{ background: 'rgba(255,255,255,0.25)', color: '#fff' }}>
+              style={{
+                background: 'rgba(15, 23, 38, 0.75)',
+                color: '#dde7f3',
+                border: '1px solid rgba(212, 168, 83, 0.22)',
+              }}>
           {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
         </span>
 
-        {/* Salary chip — sol alt (öne çıkar) */}
+        {/* Salary chip — altın gradient, ön plana çıkar */}
         {salary && (
-          <span className="absolute bottom-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-md z-10"
-                style={{ background: 'rgba(0,0,0,0.40)', color: '#fff' }}>
+          <span className="absolute bottom-3 left-3 text-[12px] font-bold px-3 py-1.5 rounded-full z-10"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(212, 168, 83, 0.95), rgba(184, 144, 45, 0.95))',
+                  color: '#15243d',
+                  boxShadow: '0 4px 12px rgba(212, 168, 83, 0.35)',
+                  border: '1px solid rgba(247, 196, 60, 0.50)',
+                }}>
             {salary}
           </span>
         )}
@@ -560,14 +599,15 @@ function ListingCard({ listing, onApply, onDetail }) {
 
       {/* CONTENT */}
       <div className="p-4 flex flex-col">
-        <h3 className="font-bold text-base leading-snug line-clamp-2 group-hover:opacity-90 transition-opacity"
-            style={{ color: '#f1f5fb' }}>
+        <h3 className="font-bold text-base leading-snug line-clamp-2 transition-colors duration-200"
+            style={{ color: '#f1f5fb' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#fde9a5' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = '#f1f5fb' }}>
           {listing.title}
         </h3>
         <div className="flex items-center gap-2 flex-wrap mt-1">
           <p className="text-sm inline-flex items-center" style={{ color: '#fde9a5' }}>
             {listing.businessName}
-            {listing.businessVerified && <VerifiedBadge size="sm" />}
           </p>
           {listing.businessReviewCount > 0 && (
             <StarRating value={listing.businessAverageRating}
