@@ -74,15 +74,18 @@ function SearchInput({ value, onChange }) {
   )
 }
 
-function ConversationItem({ conv, isActive, onClick }) {
+function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) {
   const online = useOnline(conv.otherPartyId)
   const hasUnread = conv.unreadCount > 0
   return (
-    <motion.button onClick={onClick}
+    <motion.div onClick={onClick}
       whileHover={{ x: 2 }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 360, damping: 24 }}
-      className="relative w-full text-left px-3 py-3 group overflow-hidden rounded-xl"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
+      className="relative w-full text-left px-3 py-3 group overflow-hidden rounded-xl cursor-pointer"
       style={{
         background: isActive
           ? 'linear-gradient(90deg, rgba(212, 168, 83, 0.10), rgba(212, 168, 83, 0.02))'
@@ -167,8 +170,21 @@ function ConversationItem({ conv, isActive, onClick }) {
           </div>
         </div>
       </div>
+      {/* Dalga G3 — Yildiz toggle butonu (sag ust kose) */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onToggleStar?.() }}
+        title={isStarred ? 'Yildizi kaldir' : 'Yildizla'}
+        className="absolute top-2 right-2 p-1 rounded-md transition-colors opacity-60 hover:opacity-100"
+        style={{ color: isStarred ? '#f7c43c' : 'rgba(229, 231, 235, 0.45)' }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill={isStarred ? 'currentColor' : 'none'}
+             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      </button>
       <style>{`@keyframes conv-pulse { 0%,100% { box-shadow: 0 0 0 2px rgba(34,197,94,0.35) } 50% { box-shadow: 0 0 0 5px rgba(34,197,94,0.15) } }`}</style>
-    </motion.button>
+    </motion.div>
   )
 }
 
@@ -1130,12 +1146,34 @@ function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
 }
 
 /* ── Ana sayfa ── */
+const STAR_KEY = 'ajanshotel.starred-conversations'
+function loadStarred() {
+  try { return new Set(JSON.parse(localStorage.getItem(STAR_KEY) || '[]')) }
+  catch { return new Set() }
+}
+function saveStarred(set) {
+  try { localStorage.setItem(STAR_KEY, JSON.stringify([...set])) } catch {}
+}
+
 export default function MessagesPage() {
   const [activeId, setActiveId] = useState(null)
   const [showListMobile, setShowListMobile] = useState(true)
   const [search, setSearch] = useState('')
+  // Dalga G3 — LinkedIn'den uyarlama: filter chip (tumu/okunmamis/yildizli)
+  const [filter, setFilter] = useState('all')  // 'all' | 'unread' | 'starred'
+  const [starred, setStarred] = useState(loadStarred)
   const queryClient = useQueryClient()
   const wsOk = useWsConnected()  // FAZ 4.8
+
+  function toggleStar(convId) {
+    setStarred(prev => {
+      const next = new Set(prev)
+      if (next.has(convId)) next.delete(convId)
+      else next.add(convId)
+      saveStarred(next)
+      return next
+    })
+  }
 
   // FAZ 4.8 — WS reconnect olunca tek seferlik catch-up
   useWsReconnectInvalidate([
@@ -1154,16 +1192,33 @@ export default function MessagesPage() {
   })
   const conversations = convData?.content ?? []
 
-  // Arama: kişi adı + listingTitle + son mesaj preview üzerinden filtrele
+  // Arama + filter chip + yildizli ust siralama
   const filteredConvs = (() => {
-    if (!search.trim()) return conversations
-    const q = search.trim().toLowerCase()
-    return conversations.filter(c =>
-      (c.otherPartyName || '').toLowerCase().includes(q) ||
-      (c.listingTitle || '').toLowerCase().includes(q) ||
-      (c.lastMessagePreview || '').toLowerCase().includes(q)
-    )
+    let out = conversations
+    // 1) Filter chip
+    if (filter === 'unread')  out = out.filter(c => c.unreadCount > 0)
+    if (filter === 'starred') out = out.filter(c => starred.has(c.id))
+    // 2) Arama
+    if (search.trim()) {
+      const q = search.trim().toLowerCase()
+      out = out.filter(c =>
+        (c.otherPartyName || '').toLowerCase().includes(q) ||
+        (c.listingTitle || '').toLowerCase().includes(q) ||
+        (c.lastMessagePreview || '').toLowerCase().includes(q)
+      )
+    }
+    // 3) Yildizli olanlar her zaman uste cik (filter starred degilse)
+    if (filter !== 'starred') {
+      out = [...out].sort((a, b) => {
+        const sa = starred.has(a.id) ? 1 : 0
+        const sb = starred.has(b.id) ? 1 : 0
+        return sb - sa
+      })
+    }
+    return out
   })()
+  const unreadTotal = conversations.filter(c => c.unreadCount > 0).length
+  const starredTotal = conversations.filter(c => starred.has(c.id)).length
 
   // Yeni mesaj gönderildiğinde sohbet listesini refetch et (lastMessage preview için)
   function refetchConvs() {
@@ -1199,6 +1254,33 @@ export default function MessagesPage() {
             </div>
             {/* Arama — focus glow ring */}
             <SearchInput value={search} onChange={setSearch} />
+            {/* Dalga G3 — LinkedIn-style filter chip bar (Tumu / Okunmamis / Yildizli) */}
+            <div className="flex items-center gap-1.5">
+              {[
+                { id: 'all',     label: 'Tümü',     count: conversations.length },
+                { id: 'unread',  label: 'Okunmamış', count: unreadTotal },
+                { id: 'starred', label: 'Yıldızlı',  count: starredTotal },
+              ].map(opt => {
+                const active = filter === opt.id
+                return (
+                  <button key={opt.id} type="button"
+                    onClick={() => setFilter(opt.id)}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
+                    style={{
+                      background: active ? 'rgba(212, 168, 83, 0.20)' : 'rgba(21, 36, 61, 0.55)',
+                      color: active ? '#fde9a5' : 'rgba(229, 231, 235, 0.65)',
+                      border: `1px solid ${active ? 'rgba(212, 168, 83, 0.50)' : 'rgba(212, 168, 83, 0.15)'}`,
+                    }}>
+                    {opt.label}
+                    {opt.count > 0 && (
+                      <span className="text-[9px] font-bold opacity-80">
+                        {opt.count > 9 ? '9+' : opt.count}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             {loading ? (
@@ -1222,6 +1304,8 @@ export default function MessagesPage() {
             ) : filteredConvs.map(c => (
               <ConversationItem key={c.id} conv={c}
                 isActive={c.id === activeId}
+                isStarred={starred.has(c.id)}
+                onToggleStar={() => toggleStar(c.id)}
                 onClick={() => selectConversation(c)} />
             ))}
           </div>
