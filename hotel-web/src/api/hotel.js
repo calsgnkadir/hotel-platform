@@ -168,6 +168,18 @@ export async function updateListing(listingId, payload) {
   return data
 }
 
+// Dalga H1 — Kaydettiklerim (saved/favori ilanlar)
+export async function saveListing(listingId) {
+  await api.post(`/api/saved-listings/${listingId}`)
+}
+export async function unsaveListing(listingId) {
+  await api.delete(`/api/saved-listings/${listingId}`)
+}
+export async function getMySavedListings() {
+  const { data } = await api.get('/api/saved-listings/my')
+  return data
+}
+
 export async function getListing(listingId) {
   const { data } = await api.get(`/api/listings/${listingId}`)
   return data

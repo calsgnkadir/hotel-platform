@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 
 // FAZ 5.4 — stagger variants (daha belirgin: scale + y + slow)
@@ -523,9 +523,10 @@ function DetailModal({ listing, onClose, onApply }) {
 }
 
 /* ── Listing Card ── */
-function ListingCard({ listing, onApply, onDetail }) {
+function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
   const shift = null  // legacy shift kategorisi kaldirildi
   const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
+  const isSaved = savedIds?.has(listing.id)
 
   return (
     <div
@@ -574,7 +575,7 @@ function ListingCard({ listing, onApply, onDetail }) {
         )}
 
         {/* Job type chip — sağ üst */}
-        <span className="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md z-10"
+        <span className="absolute top-3 right-12 text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md z-10"
               style={{
                 background: 'rgba(15, 23, 38, 0.75)',
                 color: '#dde7f3',
@@ -582,6 +583,25 @@ function ListingCard({ listing, onApply, onDetail }) {
               }}>
           {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
         </span>
+
+        {/* Dalga H1 — Kalp butonu (favori toggle) */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onToggleSave?.(listing.id, isSaved) }}
+          aria-label={isSaved ? 'Kaydedilenlerden cikar' : 'Kaydet'}
+          title={isSaved ? 'Kaydedilenlerden çıkar' : 'Kaydet'}
+          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110"
+          style={{
+            background: 'rgba(15, 23, 38, 0.75)',
+            border: `1px solid ${isSaved ? 'rgba(239, 68, 68, 0.55)' : 'rgba(212, 168, 83, 0.22)'}`,
+            color: isSaved ? '#fca5a5' : 'rgba(229, 231, 235, 0.65)',
+          }}>
+          <svg width="14" height="14" viewBox="0 0 24 24"
+               fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor"
+               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
 
         {/* Salary chip — altın gradient, ön plana çıkar */}
         {salary && (
@@ -668,6 +688,24 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   const [showFilters, setShowFilters] = useState(false)
   const [page, setPage] = useState(1)
   const PAGE_SIZE = 6
+
+  // Dalga H1 — Kaydedilen ilan ID'leri (kalp ikonunun durumu icin)
+  const queryClient = useQueryClient()
+  const { data: savedListings = [] } = useQuery({
+    queryKey: ['my-saved-listings'],
+    queryFn: () => hotelApi.getMySavedListings(),
+    staleTime: 60_000,
+  })
+  const savedIds = new Set(savedListings.map(l => l.id))
+  async function handleToggleSave(listingId, currentlySaved) {
+    try {
+      if (currentlySaved) await hotelApi.unsaveListing(listingId)
+      else                await hotelApi.saveListing(listingId)
+      queryClient.invalidateQueries({ queryKey: ['my-saved-listings'] })
+    } catch (e) {
+      toast.error('Kaydetme islemi basarisiz')
+    }
+  }
 
   // #47: Detay artık modal değil, kendi route'a navigate
   const openDetail = (listing) => navigate(`/listings/${listing.id}`)
@@ -950,6 +988,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
                     listing={listing}
                     onApply={setApplyTarget}
                     onDetail={openDetail}
+                    savedIds={savedIds}
+                    onToggleSave={handleToggleSave}
                   />
                 </motion.div>
               ))}
