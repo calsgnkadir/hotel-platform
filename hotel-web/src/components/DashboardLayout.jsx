@@ -54,7 +54,7 @@ const businessNav = [
   { id: 'overview',      tKey: 'nav.overview',             icon: 'overview' },
   { id: 'mylistings',    tKey: 'nav.myListings',           icon: 'briefcase' },
   { id: 'applications',  tKey: 'nav.incomingApplications', icon: 'inbox' },
-  { id: 'workers',       tKey: 'nav.workers',              icon: 'users' },
+  // 'workers' (Bizde Calisanlar) — SettingsMenu icine tasindi
   { id: 'analytics',     label: 'Analitik',                icon: 'trending' },
   { id: 'messages',      tKey: 'nav.messages',             icon: 'messages' },
   { id: 'profile',       label: 'Profilim',                icon: 'building' },
