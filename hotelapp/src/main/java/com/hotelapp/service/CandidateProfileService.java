@@ -217,7 +217,10 @@ public class CandidateProfileService {
                 .smokes(candidate.getSmokes())
                 .hasLicense(candidate.getHasLicense())
                 .reliabilityScore(reliability != null ? reliability.getScore() : null)
-                .reliabilityTier(reliability != null ? reliability.getTier() : null)
+                .reliabilityTier(reliability != null && reliability.getScore() != null
+                        ? (reliability.getScore() >= 70 ? "HIGH"
+                          : reliability.getScore() >= 40 ? "MEDIUM" : "LOW")
+                        : null)
                 .completedJobs(completedJobs)
                 .noShowCount(noShows)
                 .averageRating(avgRating)
