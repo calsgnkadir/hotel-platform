@@ -17,7 +17,7 @@ const candidateNav = [
   { id: 'listings',      tKey: 'nav.listings' },
   { id: 'applications',  tKey: 'nav.applications' },
   { id: 'messages',      tKey: 'nav.messages' },
-  { id: 'profile',       label: 'Profilim' },   // Belgelerim Profilim icinde
+  // Profilim ust nav'da DEGIL — SettingsMenu dropdown'undan acilir
 ]
 
 const businessNav = [

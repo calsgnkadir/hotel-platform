@@ -436,7 +436,8 @@ function DistrictAutocomplete({ selected, onToggle }) {
         </svg>
         <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
           placeholder="İlçe ara (örn. ba → Bağcılar, Başakşehir)"
-          className="input pl-9 text-sm" />
+          className="input text-sm"
+          style={{ paddingLeft: 36 }} />
         {query && (
           <button type="button" onClick={() => setQuery('')}
             aria-label="Aramayı temizle"
