@@ -206,7 +206,7 @@ export default function ListingDetailPage() {
               <div className="text-[11px] opacity-65 mt-0.5">
                 {benchmark.count} aktif ilan baz alındı
                 {listing.salaryMin && benchmark.avgMin &&
-                  ` · Bu ilan ${Number(listing.salaryMin) >= Number(benchmark.avgMin) ? '✓ ortalamanın üzeri' : '↓ ortalamanın altı'}`}
+                  ` · Bu ilan ${Number(listing.salaryMin) >= Number(benchmark.avgMin) ? 'ortalamanın üzerinde' : 'ortalamanın altında'}`}
               </div>
             </div>
           </div>

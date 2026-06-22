@@ -4,10 +4,8 @@
  * Burada tek noktadan import edilir.
  */
 
-export const POSITION_LABELS = {
-  WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
-  RECEPTION: 'Resepsiyon', KITCHEN_STAFF: 'Mutfak Personeli', BELLBOY: 'Bellboy', SECURITY: 'Güvenlik',
-}
+// Dalga A — POSITION_LABELS dedupe: tek kaynak utils/labels.js
+export { POSITION_LABELS } from '../../../utils/labels'
 
 export const JOB_TYPE_LABELS = {
   PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı',
