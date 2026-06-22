@@ -214,57 +214,6 @@ export default function ListingDetailPage() {
           </div>
         )}
 
-        {/* Dalga 4 / Ozellik 4 — Guven sinyalleri (Glassdoor employer stats) */}
-        <div className="card !p-4">
-          <div className="text-[10px] uppercase tracking-wider opacity-70 mb-3">Bu işletme hakkında</div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {listing.businessCreatedAt && (
-              <TrustSignal
-                label="Üyelik"
-                value={memberSince(listing.businessCreatedAt)}
-              />
-            )}
-            {typeof listing.businessWorkerCount === 'number' && (
-              <TrustSignal
-                label="Tamamlanan iş"
-                value={`${listing.businessWorkerCount}+`}
-                sub="kabul + çalışma"
-              />
-            )}
-            {typeof listing.viewCount === 'number' && (
-              <TrustSignal
-                label="Görüntülenme"
-                value={listing.viewCount.toLocaleString('tr-TR')}
-                sub="bu ilan"
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Konum */}
-        {listing.businessDistrict && (
-          <div className="card p-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Konum</h3>
-            <MapView
-              position={listing.businessLatitude != null && listing.businessLongitude != null
-                ? [Number(listing.businessLatitude), Number(listing.businessLongitude)]
-                : null}
-              district={listing.businessDistrict}
-              neighborhood={listing.businessNeighborhood}
-              title={listing.businessName}
-              height="280px"
-            />
-            {listing.businessAddress && (
-              <p className="text-sm mt-3 opacity-90">{listing.businessAddress}</p>
-            )}
-            {listing.businessLatitude == null && (
-              <p className="text-xs mt-1 italic" style={{ color: '#fbbf24' }}>
-                Yaklaşık konum — işletme henüz tam adresi haritada işaretlemedi.
-              </p>
-            )}
-          </div>
-        )}
-
         {/* Açıklama */}
         <div className="card p-5">
           <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Açıklama</h3>
@@ -326,10 +275,10 @@ export default function ListingDetailPage() {
 
         </div>  {/* SOL kolon kapanis */}
 
-        {/* === SAG KOLON: Sticky Basvur Card === */}
-        <aside className="xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto space-y-3">
+        {/* === SAG KOLON: Basvur Card + Konum + Isletme bilgileri === */}
+        <aside className="space-y-4">
+          {/* Basvur Card */}
           <div className="card p-5">
-            {/* Maas büyük */}
             <div className="text-[10px] uppercase tracking-widest font-semibold mb-1"
                  style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
               ÜCRET
@@ -339,7 +288,6 @@ export default function ListingDetailPage() {
               {salary || '—'}
             </div>
 
-            {/* Hizli bilgiler */}
             <div className="space-y-2 mb-4 pb-4 border-b"
                  style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
               <DetailRow label="Pozisyon" value={POSITION_LABELS[listing.position] || listing.position} />
@@ -348,7 +296,6 @@ export default function ListingDetailPage() {
               <DetailRow label="Tür" value={JOB_TYPE_LABELS[listing.jobType] || listing.jobType} />
             </div>
 
-            {/* CTA */}
             <button
               onClick={handleApply}
               disabled={!hasFuture || applying}
@@ -366,6 +313,46 @@ export default function ListingDetailPage() {
                 Başvurmak 30 saniye sürer
               </p>
             )}
+          </div>
+
+          {/* Konum + Harita */}
+          {listing.businessDistrict && (
+            <div className="card p-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Konum</h3>
+              <MapView
+                position={listing.businessLatitude != null && listing.businessLongitude != null
+                  ? [Number(listing.businessLatitude), Number(listing.businessLongitude)]
+                  : null}
+                district={listing.businessDistrict}
+                neighborhood={listing.businessNeighborhood}
+                title={listing.businessName}
+                height="240px"
+              />
+              {listing.businessAddress && (
+                <p className="text-[12px] mt-3 opacity-90">{listing.businessAddress}</p>
+              )}
+              {listing.businessLatitude == null && (
+                <p className="text-[11px] mt-1 italic" style={{ color: '#fbbf24' }}>
+                  Yaklaşık konum — işletme tam adresi haritada işaretlememiş.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Bu isletme hakkinda (trust signals) */}
+          <div className="card p-4">
+            <div className="text-[10px] uppercase tracking-wider opacity-70 mb-3">Bu işletme hakkında</div>
+            <div className="grid grid-cols-1 gap-3">
+              {listing.businessCreatedAt && (
+                <TrustSignal label="Üyelik" value={memberSince(listing.businessCreatedAt)} />
+              )}
+              {typeof listing.businessWorkerCount === 'number' && (
+                <TrustSignal label="Tamamlanan iş" value={`${listing.businessWorkerCount}+`} sub="kabul + çalışma" />
+              )}
+              {typeof listing.viewCount === 'number' && (
+                <TrustSignal label="Görüntülenme" value={listing.viewCount.toLocaleString('tr-TR')} sub="bu ilan" />
+              )}
+            </div>
           </div>
         </aside>
         </div>  {/* xl:grid kapanis */}
