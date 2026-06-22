@@ -86,6 +86,11 @@ public class CandidateProfileService {
                 ? new HashSet<>(req.getPreferredPositions())
                 : new HashSet<>());
 
+        // Dalga H2 — Is ariyorum toggle (null gelirse mevcut degeri koru)
+        if (req.getIsAvailable() != null) {
+            user.setIsAvailable(req.getIsAvailable());
+        }
+
         userRepository.save(user);
         return toDto(user);
     }
@@ -148,6 +153,7 @@ public class CandidateProfileService {
                         : null)
                 .preferredDistricts(u.getPreferredDistricts() != null ? new HashSet<>(u.getPreferredDistricts()) : new HashSet<>())
                 .preferredPositions(u.getPreferredPositions() != null ? new HashSet<>(u.getPreferredPositions()) : new HashSet<>())
+                .isAvailable(u.getIsAvailable())  // Dalga H2
                 .build();
     }
 
@@ -235,6 +241,8 @@ public class CandidateProfileService {
                 .birthDate(canSeeSensitive ? candidate.getBirthDate() : null)
                 .gender(canSeeSensitive ? candidate.getGender() : null)
                 .sensitiveUnlocked(canSeeSensitive)
+                // Dalga H2 — herkese acik (LinkedIn Open to Work gibi)
+                .isAvailable(candidate.getIsAvailable())
                 .build();
     }
 
@@ -269,6 +277,9 @@ public class CandidateProfileService {
         // ADIM J: Bildirim tercihleri
         private Set<String> preferredDistricts;
         private Set<Position> preferredPositions;
+
+        // Dalga H2 — Is ariyorum toggle
+        private Boolean isAvailable;
     }
 
     /**
@@ -306,6 +317,9 @@ public class CandidateProfileService {
         private LocalDate birthDate;
         private Gender  gender;
         private Boolean sensitiveUnlocked; // true ise hassas alanlar dolu
+
+        // Dalga H2 — Is ariyorum (herkese acik, LinkedIn Open to Work)
+        private Boolean isAvailable;
     }
 
     @Data
@@ -333,5 +347,8 @@ public class CandidateProfileService {
         // ADIM J: Bildirim tercihleri (opsiyonel)
         private Set<String> preferredDistricts;
         private Set<Position> preferredPositions;
+
+        // Dalga H2 — Is ariyorum (LinkedIn Open to Work)
+        private Boolean isAvailable;
     }
 }

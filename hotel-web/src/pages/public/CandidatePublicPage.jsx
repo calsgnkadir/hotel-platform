@@ -114,10 +114,25 @@ export default function CandidatePublicPage() {
                 )}
               </div>
               <div className="flex-1 min-w-0 pb-1">
-                <h1 className="font-bebas text-3xl tracking-wider uppercase truncate"
-                    style={{ color: '#ffffff' }}>
-                  {profile.fullName}
-                </h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="font-bebas text-3xl tracking-wider uppercase truncate"
+                      style={{ color: '#ffffff' }}>
+                    {profile.fullName}
+                  </h1>
+                  {/* Dalga H2 — Is ariyorum rozeti (LinkedIn Open to Work) */}
+                  {profile.isAvailable && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
+                          style={{
+                            background: 'rgba(34, 197, 94, 0.15)',
+                            color: '#86efac',
+                            border: '1px solid rgba(34, 197, 94, 0.40)',
+                          }}>
+                      <span className="w-1.5 h-1.5 rounded-full inline-block"
+                            style={{ background: '#22c55e', boxShadow: '0 0 8px rgba(34, 197, 94, 0.6)' }} />
+                      İş Arıyor
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-1 flex-wrap text-[13px]"
                      style={{ color: '#fde9a5' }}>
                   {profile.district && <span>{profile.district}</span>}

@@ -159,6 +159,13 @@ public class User {
     private Boolean smokes;
     private Boolean hasLicense;
 
+    // Dalga H2 — Is ariyorum toggle (LinkedIn Open to Work pattern)
+    // null = belirtilmemis, true = aktif arayisi, false = simdilik kapali
+    // Aday Profilim'de switch ile yonetir, isletme aramada filtre olarak kullanabilir
+    @Column(name = "is_available")
+    @Builder.Default
+    private Boolean isAvailable = true;
+
     // Profil fotoğrafı — Cloudinary storage ref (D7)
     // Format: "upload:image:ajanshotel/avatars/{userId}/{uuid}.jpg"
     private String avatarPath;

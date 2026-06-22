@@ -53,6 +53,7 @@ export default function ProfileTab() {
           hasLicense:         data.hasLicense ?? null,
           preferredDistricts: data.preferredDistricts || [],
           preferredPositions: data.preferredPositions || [],
+          isAvailable:        data.isAvailable ?? true,  // Dalga H2
         })
       })
       .catch(() => toast.error('Profil yüklenemedi'))
@@ -130,6 +131,7 @@ export default function ProfileTab() {
         hasLicense:         form.hasLicense,
         preferredDistricts: form.preferredDistricts,
         preferredPositions: form.preferredPositions,
+        isAvailable:        form.isAvailable,  // Dalga H2
       }
       const data = await hotelApi.updateCandidateProfile(payload)
       setProfile(data)
@@ -159,6 +161,51 @@ export default function ProfileTab() {
           Değişiklikler kaydedildi — işverenler artık güncel bilgilerinizi görür.
         </Alert>
       )}
+
+      {/* Dalga H2 — Is ariyorum toggle (LinkedIn Open to Work).
+          Form disinda inline kaydeder — toggle->API->state */}
+      <div className="card p-4 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+               style={{
+                 background: form.isAvailable
+                   ? 'rgba(34, 197, 94, 0.15)'
+                   : 'rgba(229, 231, 235, 0.08)',
+                 border: `1px solid ${form.isAvailable ? 'rgba(34, 197, 94, 0.40)' : 'rgba(229, 231, 235, 0.15)'}`,
+               }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke={form.isAvailable ? '#86efac' : 'rgba(229, 231, 235, 0.45)'}
+                 strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="2" y="7" width="20" height="14" rx="2" />
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <p className="font-bebas text-base tracking-[0.15em] uppercase"
+               style={{ color: form.isAvailable ? '#86efac' : 'rgba(229, 231, 235, 0.70)' }}>
+              {form.isAvailable ? 'İş Arıyorum' : 'Şu anda iş aramıyorum'}
+            </p>
+            <p className="text-[12px] mt-0.5" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+              {form.isAvailable
+                ? 'İşletmeler profilinde yeşil rozet görür — daha fazla teklif almak için açık tutun.'
+                : 'Aktif olduğunda işletmeler size daha fazla teklif gönderebilir.'}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={form.isAvailable}
+          onClick={() => setForm(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
+          className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors shrink-0"
+          style={{
+            background: form.isAvailable ? '#22c55e' : 'rgba(229, 231, 235, 0.15)',
+            border: `1px solid ${form.isAvailable ? '#16a34a' : 'rgba(229, 231, 235, 0.25)'}`,
+          }}>
+          <span className="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                style={{ transform: form.isAvailable ? 'translateX(22px)' : 'translateX(3px)' }} />
+        </button>
+      </div>
       {/* UST: 3 esit sutun — Identity | Doluluk | Email durumu */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Identity card */}
