@@ -441,6 +441,13 @@ export default function BusinessPublicPage() {
                          style={{ color: '#f7c43c' }}>{business.phone}</a>
                     </li>
                   )}
+                  {business.email && (
+                    <li>
+                      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#8ba9d2' }}>E-posta</div>
+                      <a href={`mailto:${business.email}`} className="font-medium block mt-0.5 hover:underline truncate"
+                         style={{ color: '#f7c43c' }}>{business.email}</a>
+                    </li>
+                  )}
                   {business.website && (
                     <li>
                       <div className="text-[10px] uppercase tracking-widest" style={{ color: '#8ba9d2' }}>Web</div>

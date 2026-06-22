@@ -217,12 +217,69 @@ export default function CandidatePublicPage() {
           </div>
         )}
 
-        {/* Privacy notice */}
-        <p className="text-center text-[11px] py-3"
-           style={{ color: 'rgba(229, 231, 235, 0.45)' }}>
-          KVKK kapsamında hassas bilgiler (telefon, email, adres, doğum tarihi) burada gösterilmez.
-          Mesajlaşma sekmesinden iletişime geçebilirsiniz.
-        </p>
+        {/* Dalga G2 — Hassas iletisim bilgileri (sadece basvuru aldıysa açık) */}
+        {profile.sensitiveUnlocked ? (
+          <div className="card p-5"
+               style={{ border: '1px solid rgba(212, 168, 83, 0.35)' }}>
+            <div className="flex items-center justify-between pb-2 mb-3 border-b"
+                 style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+              <h2 className="font-bebas text-base tracking-[0.2em] uppercase"
+                  style={{ color: '#fde9a5' }}>İletişim Bilgileri</h2>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
+                    style={{
+                      background: 'rgba(34, 197, 94, 0.15)',
+                      color: '#86efac',
+                      border: '1px solid rgba(34, 197, 94, 0.30)',
+                    }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Başvuru alındı — erişim açık
+              </span>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {profile.email && <DetailRow label="E-posta" value={profile.email} />}
+              {profile.phone && <DetailRow label="Telefon" value={profile.phone} />}
+              {profile.neighborhood && <DetailRow label="Mahalle" value={profile.neighborhood} />}
+              {profile.birthDate && (
+                <DetailRow label="Doğum Tarihi"
+                           value={new Date(profile.birthDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })} />
+              )}
+              {profile.gender && (
+                <DetailRow label="Cinsiyet"
+                           value={{ MALE: 'Erkek', FEMALE: 'Kadın', OTHER: 'Diğer' }[profile.gender] || profile.gender} />
+              )}
+            </div>
+            <p className="text-[11px] mt-3 italic"
+               style={{ color: 'rgba(229, 231, 235, 0.50)' }}>
+              KVKK kapsamında bu bilgiler sadece adayın size başvurmuş olması nedeniyle gösteriliyor.
+              Üçüncü kişilerle paylaşmayın.
+            </p>
+          </div>
+        ) : (
+          <div className="card p-4"
+               style={{ background: 'rgba(15, 23, 38, 0.55)', border: '1px dashed rgba(212, 168, 83, 0.25)' }}>
+            <div className="flex items-start gap-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24"
+                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                   className="flex-shrink-0 mt-0.5" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <div className="text-[12px]" style={{ color: 'rgba(229, 231, 235, 0.75)' }}>
+                <p className="font-semibold mb-1" style={{ color: '#fde9a5' }}>
+                  Hassas bilgiler gizli
+                </p>
+                <p style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+                  Email, telefon, mahalle ve doğum tarihi gibi bilgiler yalnızca aday
+                  size başvurduğunda görüntülenebilir. İlanlarınız üzerinden başvuru
+                  bekleyiniz.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

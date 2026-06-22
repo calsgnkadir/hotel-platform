@@ -13,6 +13,7 @@ import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.ReviewRepository;
 import com.hotelapp.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.hotelapp.validation.AdultAge;
 import com.hotelapp.validation.TurkeyPhone;
@@ -163,22 +164,24 @@ public class CandidateProfileService {
             throw new ResourceNotFoundException("Aday", candidateId);
         }
 
-        // Yetki kontrolu: viewer kim?
         User viewer = userRepository.findById(viewerId)
                 .orElseThrow(() -> new AccessDeniedException("Yetki yok"));
 
-        if (viewer.getRole() == UserRole.BUSINESS_OWNER) {
-            // Aday bu isletmenin herhangi bir ilanina basvurmus mu?
-            boolean hasApplied = applicationRepository
+        // Dalga G2 — Politika
+        // - Temel bilgiler (ad/avatar/ilce/pozisyon/guvenilirlik) HERKESE acik
+        // - Hassas (email/phone/adres tam/dogum) sadece:
+        //   a) Aday kendi profili icin (viewer == candidate)
+        //   b) Isletme + aday bu isletmenin ilanina basvurmus
+        //   c) Admin
+        boolean canSeeSensitive = false;
+        if (viewer.getRole() == UserRole.ADMIN) {
+            canSeeSensitive = true;
+        } else if (viewer.getId().equals(candidateId)) {
+            canSeeSensitive = true;
+        } else if (viewer.getRole() == UserRole.BUSINESS_OWNER) {
+            canSeeSensitive = applicationRepository
                     .existsByCandidateIdAndJobListingBusinessOwnerId(candidateId, viewerId);
-            if (!hasApplied) {
-                throw new AccessDeniedException(
-                        "Bu adayın profilini görüntülemek için ilanınıza başvurmuş olması gerekir");
-            }
-        } else if (viewer.getRole() == UserRole.CANDIDATE && !viewer.getId().equals(candidateId)) {
-            throw new AccessDeniedException("Diğer adayların profilini göremezsiniz");
         }
-        // ADMIN: serbest
 
         // Guvenilirlik + sayilar
         ReliabilityService.ReliabilityScore reliability =
@@ -220,6 +223,13 @@ public class CandidateProfileService {
                 .averageRating(avgRating)
                 .reviewCount(reviewCount)
                 .memberSince(candidate.getCreatedAt())
+                // Hassas alanlar — sadece yetkili viewer icin doldur, aksi takdirde null
+                .email(canSeeSensitive ? candidate.getEmail() : null)
+                .phone(canSeeSensitive ? candidate.getPhone() : null)
+                .neighborhood(canSeeSensitive ? candidate.getNeighborhood() : null)
+                .birthDate(canSeeSensitive ? candidate.getBirthDate() : null)
+                .gender(canSeeSensitive ? candidate.getGender() : null)
+                .sensitiveUnlocked(canSeeSensitive)
                 .build();
     }
 
@@ -283,6 +293,14 @@ public class CandidateProfileService {
         private Long    reviewCount;
 
         private LocalDateTime memberSince;
+
+        // Dalga G2 — Hassas alanlar (sadece yetkili viewer icin dolu, digerinde null)
+        private String  email;
+        private String  phone;
+        private String  neighborhood;     // ilce zaten public; mahalle hassas
+        private LocalDate birthDate;
+        private Gender  gender;
+        private Boolean sensitiveUnlocked; // true ise hassas alanlar dolu
     }
 
     @Data

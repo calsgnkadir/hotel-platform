@@ -294,6 +294,7 @@ public class BusinessService {
                 .longitude(b.getLongitude())
                 .description(b.getDescription())
                 .phone(b.getPhone())
+                .email(b.getOwner() != null ? b.getOwner().getEmail() : null)  // Dalga G2 — public email
                 .website(b.getWebsite())
                 .category(b.getCategory())
                 .instagram(b.getInstagram())
@@ -328,6 +329,8 @@ public class BusinessService {
         private java.math.BigDecimal longitude;
         private String description;
         private String phone;
+        // Dalga G2 — Isletme iletisim bilgisi tamamen acik (otel/restoran rehberi gibi)
+        private String email;
         private String website;
         private String category;
         private String instagram;
