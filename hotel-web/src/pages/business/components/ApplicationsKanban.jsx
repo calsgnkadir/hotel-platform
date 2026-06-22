@@ -83,6 +83,38 @@ function computeResponseHeat(createdAt) {
 
 export default function ApplicationsKanban({ applications, onRefresh, onCardClick, onOpenMessages }) {
   const [activeApp, setActiveApp] = useState(null)
+  // Dalga H4 — Toplu islem icin secili basvuru id seti
+  const [selectedIds, setSelectedIds] = useState(new Set())
+
+  function toggleSelect(id) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function handleBulkAction(targetStatus) {
+    const ids = [...selectedIds]
+    if (ids.length === 0) return
+    const label = targetStatus === 'ACCEPTED' ? 'kabul edilecek' : 'red edilecek'
+    if (!window.confirm(`${ids.length} başvuru ${label}. Emin misiniz?`)) return
+    try {
+      // Sirayla tek tek update — backend bulk endpoint yoksa
+      const hotelApi = await import('../../../api/hotel')
+      await Promise.allSettled(
+        ids.map(id => hotelApi.updateApplicationStatus(id, targetStatus))
+      )
+      const toast = (await import('react-hot-toast')).default
+      toast.success(`${ids.length} başvuru güncellendi`)
+      setSelectedIds(new Set())
+      onRefresh?.()
+    } catch {
+      const toast = (await import('react-hot-toast')).default
+      toast.error('Toplu işlem başarısız')
+    }
+  }
   const [busy, setBusy] = useState(false)
 
   const grouped = useMemo(() => {
@@ -162,30 +194,69 @@ export default function ApplicationsKanban({ applications, onRefresh, onCardClic
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      {/* Kanban — bos kolonlari gizle, kartlari yatay yan yana goster (Trello'ya
-          benzer ama dolu olmayan kolon yer kaplama). */}
+      {/* Dalga H4 — Toplu islem toolbar (secim varsa gozukur) */}
+      {selectedIds.size > 0 && (
+        <div className="mb-4 sticky top-0 z-10 rounded-xl px-4 py-3 flex items-center justify-between gap-3 backdrop-blur-md"
+             style={{
+               background: 'rgba(212, 168, 83, 0.18)',
+               border: '1px solid rgba(212, 168, 83, 0.45)',
+               boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
+             }}>
+          <div className="flex items-center gap-2">
+            <span className="font-bebas text-xl tracking-wider" style={{ color: '#fde9a5' }}>
+              {selectedIds.size}
+            </span>
+            <span className="text-[12px] uppercase tracking-wider font-semibold"
+                  style={{ color: 'rgba(229, 231, 235, 0.85)' }}>
+              başvuru seçildi
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => handleBulkAction('ACCEPTED')}
+              className="text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
+              style={{ background: 'rgba(34, 197, 94, 0.20)', color: '#86efac', border: '1px solid rgba(34, 197, 94, 0.45)' }}>
+              Toplu Kabul
+            </button>
+            <button type="button" onClick={() => handleBulkAction('REJECTED')}
+              className="text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
+              style={{ background: 'rgba(239, 68, 68, 0.20)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.45)' }}>
+              Toplu Red
+            </button>
+            <button type="button" onClick={() => setSelectedIds(new Set())}
+              className="text-[11px] uppercase tracking-wider px-2 py-1 rounded-full"
+              style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+              İptal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Dalga H4 — Tum kolonlari goster (bos olsa bile drag-drop hedefi) */}
       <div className="space-y-5">
-        {COLUMNS.filter(col => (grouped[col.id]?.length || 0) > 0).map(col => (
+        {COLUMNS.map(col => (
           <Column key={col.id} col={col} count={grouped[col.id]?.length || 0}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {grouped[col.id].map(app => (
-                <Card
-                  key={app.id}
-                  app={app}
-                  accent={col.color}
-                  onClick={() => onCardClick?.(app)}
-                  onMessage={() => onOpenMessages?.(app.conversationId)}
-                />
-              ))}
-            </div>
+            {(grouped[col.id]?.length || 0) === 0 ? (
+              <div className="text-[11px] italic py-6 text-center uppercase tracking-widest"
+                   style={{ color: 'rgba(229, 231, 235, 0.30)' }}>
+                Bu kolonda başvuru yok
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {grouped[col.id].map(app => (
+                  <Card
+                    key={app.id}
+                    app={app}
+                    accent={col.color}
+                    selected={selectedIds.has(app.id)}
+                    onToggleSelect={() => toggleSelect(app.id)}
+                    onClick={() => onCardClick?.(app)}
+                    onMessage={() => onOpenMessages?.(app.conversationId)}
+                  />
+                ))}
+              </div>
+            )}
           </Column>
         ))}
-        {COLUMNS.every(col => (grouped[col.id]?.length || 0) === 0) && (
-          <div className="text-[12px] text-center py-8 uppercase tracking-widest"
-               style={{ color: 'rgba(229, 231, 235, 0.45)' }}>
-            Hiçbir kolonda başvuru yok
-          </div>
-        )}
       </div>
 
       <DragOverlay dropAnimation={{ duration: 180 }}>
@@ -248,7 +319,7 @@ function Column({ col, count, children }) {
 
 /* ─────────── Card (draggable) ─────────── */
 
-function Card({ app, accent, onClick, onMessage }) {
+function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: app.id })
 
   const style = {
@@ -257,9 +328,19 @@ function Card({ app, accent, onClick, onMessage }) {
   }
 
   const initial = app.candidate?.fullName?.charAt(0)?.toUpperCase() || '?'
-  const date = app.createdAt
-    ? new Date(app.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })
-    : ''
+  // Dalga H4 — Relative time + tam tarih tooltip
+  const fullDate = app.createdAt ? new Date(app.createdAt) : null
+  function relativeDate(d) {
+    if (!d) return ''
+    const days = Math.floor((Date.now() - d.getTime()) / 86_400_000)
+    if (days === 0) return 'Bugün'
+    if (days === 1) return 'Dün'
+    if (days < 7) return `${days} gün önce`
+    if (days < 30) return `${Math.floor(days / 7)} hafta önce`
+    return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })
+  }
+  const date = relativeDate(fullDate)
+  const dateTooltip = fullDate?.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) || ''
 
   // FAZ G.2 — Yanit suresi isi seridi: PENDING ise basvurudan beri gecen sure
   // signal-green (<6sa) -> signal-amber (6-24sa) -> signal-coral (>24sa).
@@ -272,16 +353,19 @@ function Card({ app, accent, onClick, onMessage }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="rounded-xl p-3 cursor-grab active:cursor-grabbing transition-all hover:-translate-y-0.5 group"
+      className="rounded-xl cursor-grab active:cursor-grabbing transition-all hover:-translate-y-0.5 group"
       {...attributes}
       {...listeners}
     >
       <div
         className="rounded-xl p-3"
         style={{
-          background: 'rgba(15, 23, 38, 0.85)',
-          border: `1px solid ${accent}22`,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+          // Dalga H4 — Kullanici 'beyaz kart' istedi: koyu lacivert -> krem/beyaz tema
+          background: selected ? '#fef3c7' : '#fefefc',
+          border: `1px solid ${selected ? '#f59e0b' : 'rgba(15, 23, 38, 0.10)'}`,
+          boxShadow: selected
+            ? '0 4px 16px rgba(245, 158, 11, 0.30), 0 0 0 3px rgba(245, 158, 11, 0.15)'
+            : '0 2px 8px rgba(15, 23, 38, 0.08), 0 1px 2px rgba(15, 23, 38, 0.04)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -302,7 +386,29 @@ function Card({ app, accent, onClick, onMessage }) {
             }}
           />
         )}
-        <div className="flex items-start gap-2.5">
+
+        {/* Dalga H4 — Checkbox sag ust kose */}
+        <button type="button"
+                onClick={(e) => { e.stopPropagation(); onToggleSelect?.() }}
+                onPointerDown={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                aria-label={selected ? 'Seç kaldır' : 'Seç'}
+                title={selected ? 'Seç kaldır' : 'Toplu işlem için seç'}
+                className="absolute top-2 right-2 w-5 h-5 rounded-md flex items-center justify-center transition-all"
+                style={{
+                  background: selected ? '#f59e0b' : '#ffffff',
+                  border: `2px solid ${selected ? '#d97706' : 'rgba(15, 23, 38, 0.25)'}`,
+                  color: '#ffffff',
+                }}>
+          {selected && (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+        </button>
+
+        <div className="flex items-start gap-2.5 pr-7">
           {/* FAZ G.4: avatar etrafında reliability ring (Apple Watch tarzı)
               Dalga G3: avatar tiklayinca public profil sayfasini ac */}
           <a
@@ -327,7 +433,7 @@ function Card({ app, accent, onClick, onMessage }) {
               ) : (
                 <div
                   className="w-full h-full flex items-center justify-center font-bebas text-base text-white"
-                  style={{ background: `linear-gradient(135deg, ${accent}80, ${accent}40)` }}
+                  style={{ background: `linear-gradient(135deg, ${accent}, ${accent}80)` }}
                 >
                   {initial}
                 </div>
@@ -336,29 +442,43 @@ function Card({ app, accent, onClick, onMessage }) {
           </a>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <div className="text-[13px] font-semibold text-white truncate flex-1 min-w-0">
+              {/* Aday adi — koyu lacivert text */}
+              <div className="text-[14px] font-semibold truncate flex-1 min-w-0"
+                   style={{ color: '#0c1726', letterSpacing: '-0.005em' }}>
                 {app.candidate?.fullName || 'Anonim'}
               </div>
               <ReliabilityBadge score={app.candidate?.reliabilityScore} />
             </div>
-            <div className="text-[10px] truncate" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
-              {app.listing?.title || '—'}
+            {/* Ilan basligi — daha belirgin */}
+            <div className="text-[12px] font-medium truncate mt-0.5"
+                 style={{ color: 'rgba(15, 23, 38, 0.75)' }}>
+              {app.listing?.title || 'İlan bilgisi yok'}
             </div>
+            {/* Pozisyon + ilçe chip seti — kullanici 'duzgun yazilsin' istedi */}
+            {(app.listing?.position || app.candidate?.district) && (
+              <div className="flex items-center gap-1.5 mt-1 text-[10.5px]"
+                   style={{ color: 'rgba(15, 23, 38, 0.55)' }}>
+                {app.listing?.position && <span>{app.listing.position}</span>}
+                {app.listing?.position && app.candidate?.district && <span style={{ opacity: 0.4 }}>·</span>}
+                {app.candidate?.district && <span>{app.candidate.district}</span>}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-2.5 pt-2 border-t"
-             style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          <span className="text-[9px] uppercase tracking-widest" style={{ color: accent }}>
+        <div className="flex items-center justify-between mt-3 pt-2.5 border-t"
+             style={{ borderColor: 'rgba(15, 23, 38, 0.10)' }}>
+          <span className="text-[10px] uppercase tracking-wider font-semibold" title={dateTooltip}
+                style={{ color: 'rgba(15, 23, 38, 0.55)' }}>
             {date}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {app.conversationId && (
               <button
                 onClick={(e) => { e.stopPropagation(); onMessage?.() }}
                 onPointerDown={(e) => e.stopPropagation()}
-                className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full transition-all hover:scale-105"
-                style={{ background: 'rgba(212, 168, 83, 0.18)', color: '#dde7f3', border: '1px solid rgba(212, 168, 83, 0.30)' }}
+                className="text-[10.5px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition-all hover:scale-105"
+                style={{ background: 'rgba(35, 74, 130, 0.10)', color: '#1e3a5f', border: '1px solid rgba(35, 74, 130, 0.25)' }}
               >
                 Mesaj
               </button>
@@ -366,8 +486,8 @@ function Card({ app, accent, onClick, onMessage }) {
             <button
               onClick={(e) => { e.stopPropagation(); onClick?.() }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full transition-all hover:scale-105"
-              style={{ background: 'rgba(255,255,255,0.06)', color: '#dde7f3', border: '1px solid rgba(255,255,255,0.10)' }}
+              className="text-[10.5px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition-all hover:scale-105"
+              style={{ background: 'rgba(212, 168, 83, 0.18)', color: '#7c5618', border: '1px solid rgba(212, 168, 83, 0.45)' }}
             >
               Aç
             </button>
