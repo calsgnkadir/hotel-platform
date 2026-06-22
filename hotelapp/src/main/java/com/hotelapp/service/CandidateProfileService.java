@@ -7,7 +7,7 @@ import com.hotelapp.enums.Gender;
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.Language;
 import com.hotelapp.enums.Position;
-import com.hotelapp.enums.UserRole;
+import com.hotelapp.enums.Role;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.ReviewRepository;
@@ -160,7 +160,7 @@ public class CandidateProfileService {
     public PublicCandidateProfileDto getPublicProfile(Long candidateId, Long viewerId) {
         User candidate = userRepository.findById(candidateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aday", candidateId));
-        if (candidate.getRole() != UserRole.CANDIDATE) {
+        if (candidate.getRole() != Role.CANDIDATE) {
             throw new ResourceNotFoundException("Aday", candidateId);
         }
 
@@ -174,11 +174,11 @@ public class CandidateProfileService {
         //   b) Isletme + aday bu isletmenin ilanina basvurmus
         //   c) Admin
         boolean canSeeSensitive = false;
-        if (viewer.getRole() == UserRole.ADMIN) {
+        if (viewer.getRole() == Role.ADMIN) {
             canSeeSensitive = true;
         } else if (viewer.getId().equals(candidateId)) {
             canSeeSensitive = true;
-        } else if (viewer.getRole() == UserRole.BUSINESS_OWNER) {
+        } else if (viewer.getRole() == Role.BUSINESS_OWNER) {
             canSeeSensitive = applicationRepository
                     .existsByCandidateIdAndJobListingBusinessOwnerId(candidateId, viewerId);
         }
