@@ -6,6 +6,7 @@ import com.hotelapp.service.AvailabilityBlockService.AvailabilityBlockDto;
 import com.hotelapp.service.CandidateProfileService;
 import com.hotelapp.service.CandidateProfileService.CandidateProfileDto;
 import com.hotelapp.service.CandidateProfileService.ProfileUpdateRequest;
+import com.hotelapp.service.CandidateProfileService.PublicCandidateProfileDto;
 import com.hotelapp.service.ReliabilityService;
 import com.hotelapp.service.ReliabilityService.ReliabilityScore;
 
@@ -83,6 +84,16 @@ public class CandidateController {
     public ResponseEntity<List<AvailabilityBlockDto>> getMyAvailabilityBlocks(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(availabilityBlockService.getMyBlocks(currentUser.getId()));
+    }
+
+    @Operation(summary = "Aday public profili — isletme aday ilanina basvurmus ise gorebilir")
+    @GetMapping("/api/candidates/{id}/public")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<PublicCandidateProfileDto> getPublicProfile(
+            @PathVariable Long id,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
+        return ResponseEntity.ok(candidateProfileService.getPublicProfile(id, currentUser.getId()));
     }
 
     @Operation(summary = "Haftalık müsaitlik bloklarımı topluca güncelle (replace) — sadece CANDIDATE")

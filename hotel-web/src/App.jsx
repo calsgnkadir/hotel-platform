@@ -23,6 +23,7 @@ import ContactPage from './pages/ContactPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import ListingDetailPage from './pages/candidate/ListingDetailPage'
 import BusinessPublicPage from './pages/public/BusinessPublicPage'  // FAZ 5.9
+import CandidatePublicPage from './pages/public/CandidatePublicPage'  // Dalga G
 import NotFoundPage from './pages/NotFoundPage'  // FAZ 3 - 404
 // FAZ 1/#23 — Web Push prompt (pure Java VAPID, in-app calisiyor)
 import PushPermissionPrompt from './components/PushPermissionPrompt'
@@ -103,6 +104,9 @@ function AnimatedRoutes() {
 
         {/* FAZ 5.9 — Public isletme profil (paylasilabilir + SEO) */}
         <Route path="/p/business/:id"  element={<BusinessPublicPage />} />
+
+        {/* Dalga G — Aday public profili (yetki: ilgili isletme + admin) */}
+        <Route path="/p/candidate/:id" element={<ProtectedRoute><CandidatePublicPage /></ProtectedRoute>} />
 
         {/* Candidate panel */}
         <Route

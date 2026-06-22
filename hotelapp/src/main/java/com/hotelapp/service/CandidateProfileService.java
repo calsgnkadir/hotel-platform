@@ -1,13 +1,19 @@
 package com.hotelapp.service;
 
 import com.hotelapp.entity.User;
+import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.enums.EducationLevel;
 import com.hotelapp.enums.Gender;
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.Language;
 import com.hotelapp.enums.Position;
+import com.hotelapp.enums.UserRole;
 import com.hotelapp.exception.ResourceNotFoundException;
+import com.hotelapp.repository.ApplicationRepository;
+import com.hotelapp.repository.ReviewRepository;
 import com.hotelapp.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
+import java.time.LocalDateTime;
 import com.hotelapp.validation.AdultAge;
 import com.hotelapp.validation.TurkeyPhone;
 import jakarta.validation.constraints.NotBlank;
@@ -28,6 +34,9 @@ public class CandidateProfileService {
 
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final ApplicationRepository applicationRepository;
+    private final ReviewRepository reviewRepository;
+    private final ReliabilityService reliabilityService;
 
     // ----------------------------------------------------------------
     // Read own profile
@@ -142,6 +151,79 @@ public class CandidateProfileService {
     }
 
     // ----------------------------------------------------------------
+    // PUBLIC PROFILE — isletme adayin profilini gorebilsin (sadece ilan
+    // basvurusu yapilmissa). Hassas alanlar (email/telefon/adres/dogum)
+    // ASLA DTO'da yok.
+    // ----------------------------------------------------------------
+    @Transactional(readOnly = true)
+    public PublicCandidateProfileDto getPublicProfile(Long candidateId, Long viewerId) {
+        User candidate = userRepository.findById(candidateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aday", candidateId));
+        if (candidate.getRole() != UserRole.CANDIDATE) {
+            throw new ResourceNotFoundException("Aday", candidateId);
+        }
+
+        // Yetki kontrolu: viewer kim?
+        User viewer = userRepository.findById(viewerId)
+                .orElseThrow(() -> new AccessDeniedException("Yetki yok"));
+
+        if (viewer.getRole() == UserRole.BUSINESS_OWNER) {
+            // Aday bu isletmenin herhangi bir ilanina basvurmus mu?
+            boolean hasApplied = applicationRepository
+                    .existsByCandidateIdAndJobListingBusinessOwnerId(candidateId, viewerId);
+            if (!hasApplied) {
+                throw new AccessDeniedException(
+                        "Bu adayın profilini görüntülemek için ilanınıza başvurmuş olması gerekir");
+            }
+        } else if (viewer.getRole() == UserRole.CANDIDATE && !viewer.getId().equals(candidateId)) {
+            throw new AccessDeniedException("Diğer adayların profilini göremezsiniz");
+        }
+        // ADMIN: serbest
+
+        // Guvenilirlik + sayilar
+        ReliabilityService.ReliabilityScore reliability =
+                reliabilityService.computeForCandidate(candidateId);
+        long completedJobs = applicationRepository
+                .countByCandidateIdAndStatusAndNoShowFalse(candidateId, ApplicationStatus.ACCEPTED);
+        long noShows = applicationRepository.countByCandidateIdAndNoShowTrue(candidateId);
+
+        // Aday'in aldigi rating'ler (isletme -> aday)
+        Object[] ratingAgg = reviewRepository.aggregateForCandidate(candidateId);
+        Double avgRating = null;
+        Long reviewCount = 0L;
+        if (ratingAgg != null && ratingAgg.length >= 2 && ratingAgg[1] != null) {
+            avgRating  = ratingAgg[0] != null ? ((Number) ratingAgg[0]).doubleValue() : null;
+            reviewCount = ((Number) ratingAgg[1]).longValue();
+        }
+
+        return PublicCandidateProfileDto.builder()
+                .id(candidate.getId())
+                .fullName(candidate.getFullName())
+                .avatarUrl(candidate.getAvatarPath() != null
+                        ? fileStorageService.publicUrl(candidate.getAvatarPath())
+                        : null)
+                .district(candidate.getDistrict())
+                .education(candidate.getEducation())
+                .preferredPositions(candidate.getPreferredPositions() != null
+                        ? new HashSet<>(candidate.getPreferredPositions()) : new HashSet<>())
+                .availabilityTypes(candidate.getAvailabilityTypes() != null
+                        ? new HashSet<>(candidate.getAvailabilityTypes()) : new HashSet<>())
+                .languages(candidate.getLanguages() != null
+                        ? new HashSet<>(candidate.getLanguages()) : new HashSet<>())
+                .previousExperience(candidate.getPreviousExperience())
+                .smokes(candidate.getSmokes())
+                .hasLicense(candidate.getHasLicense())
+                .reliabilityScore(reliability != null ? reliability.getScore() : null)
+                .reliabilityTier(reliability != null ? reliability.getTier() : null)
+                .completedJobs(completedJobs)
+                .noShowCount(noShows)
+                .averageRating(avgRating)
+                .reviewCount(reviewCount)
+                .memberSince(candidate.getCreatedAt())
+                .build();
+    }
+
+    // ----------------------------------------------------------------
     // DTOs
     // ----------------------------------------------------------------
     @Data @Builder
@@ -172,6 +254,35 @@ public class CandidateProfileService {
         // ADIM J: Bildirim tercihleri
         private Set<String> preferredDistricts;
         private Set<Position> preferredPositions;
+    }
+
+    /**
+     * Dalga G — Aday public profili. Email/telefon/adres/dogum tarihi YOK.
+     * Yetki: sadece ilgili isletme (aday bu isletmeye basvurmus) veya admin.
+     */
+    @Data @Builder
+    public static class PublicCandidateProfileDto {
+        private Long id;
+        private String fullName;
+        private String avatarUrl;
+        private String district;          // sadece ilce, mahalle yok
+        private EducationLevel education;
+        private Set<Position> preferredPositions;
+        private Set<JobType> availabilityTypes;
+        private Set<Language> languages;
+        private String previousExperience;
+        private Boolean smokes;
+        private Boolean hasLicense;
+
+        // Guvenilirlik metrikleri
+        private Integer reliabilityScore;
+        private String  reliabilityTier;  // HIGH/MEDIUM/LOW
+        private Long    completedJobs;    // kabul + no-show degil
+        private Long    noShowCount;
+        private Double  averageRating;
+        private Long    reviewCount;
+
+        private LocalDateTime memberSince;
     }
 
     @Data

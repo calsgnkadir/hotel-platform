@@ -42,6 +42,12 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     /** Adayın toplam no-show kaydı (her statüden). */
     long countByCandidateIdAndNoShowTrue(Long candidateId);
 
+    /** Adayın tamamlanmış (kabul + no-show degil) is sayisi — Dalga G public profil */
+    long countByCandidateIdAndStatusAndNoShowFalse(Long candidateId, ApplicationStatus status);
+
+    /** Aday bu isletmenin herhangi bir ilanina basvurmus mu — public profile yetki kontrolu */
+    boolean existsByCandidateIdAndJobListingBusinessOwnerId(Long candidateId, Long ownerId);
+
     /**
      * Adayın belirtilen tarihten itibaren tamamlanmış (ACCEPTED + reviewedAt set +
      * no-show değil) başvuru sayısı. Reliability skorunda "son 90 gün tamamlanmış iş"

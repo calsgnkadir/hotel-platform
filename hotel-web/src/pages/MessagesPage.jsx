@@ -1410,6 +1410,28 @@ function ConversationDetailPanel({ conversation }) {
           <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: '#fde9a5' }}>
             Hızlı İşlemler
           </div>
+          {/* Dalga G — Kullanici profilini gor (role'a gore /p/business/:id veya /p/candidate/:id) */}
+          <button
+            onClick={() => {
+              if (!c?.otherPartyId) return
+              const path = c.otherPartyRole === 'BUSINESS_OWNER'
+                ? `/p/business/${c.otherPartyId}`
+                : `/p/candidate/${c.otherPartyId}`
+              window.open(path, '_blank')
+            }}
+            disabled={!c?.otherPartyId}
+            className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: 'rgba(21, 36, 61, 0.55)',
+              color: '#fde9a5',
+              border: '1px solid rgba(212, 168, 83, 0.18)',
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f7c43c" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+            <span className="font-semibold">
+              {c?.otherPartyRole === 'BUSINESS_OWNER' ? 'İşletme Profili' : 'Aday Profili'}
+            </span>
+          </button>
           <button
             onClick={() => {
               if (c.listingId) window.open(`/listings/${c.listingId}`, '_blank')

@@ -81,6 +81,12 @@ export async function changePassword(currentPassword, newPassword) {
 }
 
 /* ── Candidate profile ── */
+// Dalga G — Aday public profili (isletme bakar, aday kendi profili icin getCandidateProfile)
+export async function getCandidatePublicProfile(id) {
+  const { data } = await api.get(`/api/candidates/${id}/public`)
+  return data
+}
+
 export async function getCandidateProfile() {
   const { data } = await api.get('/api/candidate/profile')
   return data
