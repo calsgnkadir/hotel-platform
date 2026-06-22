@@ -147,7 +147,7 @@ export default function ProfileTab() {
   )
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto">
+    <div className="space-y-4 max-w-[1400px] mx-auto">
       {/* FAZ 5.4 — Identity + quick actions: 2-kolon ust bolum */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* SOL — Identity card */}
@@ -207,12 +207,12 @@ export default function ProfileTab() {
         </div>
       </div>
 
-      {reliability && <ReliabilityCard data={reliability} />}
-
-      <AvailabilityBlocksEditor />
-
-      <div className="card p-5">
-        <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#dde7f3' }}>Profil Fotoğrafı</h3>
+      {/* Compact iki sutun: Reliability + Profil Foto sol; Availability sag */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          {reliability && <ReliabilityCard data={reliability} />}
+          <div className="card p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#dde7f3' }}>Profil Fotoğrafı</h3>
         <div className="flex items-center gap-4">
           <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                style={{ background: 'rgba(212, 168, 83, 0.10)', border: '2px solid rgba(212, 168, 83, 0.20)' }}>
@@ -246,9 +246,14 @@ export default function ProfileTab() {
             <p className="text-xs text-ink-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
           </div>
         </div>
+          </div>
+        </div>
+        <div><AvailabilityBlocksEditor /></div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Form sutunlari: 2 kolon — Temel Bilgiler + Egitim/Diger yan yana */}
+      <div className="grid lg:grid-cols-2 gap-4">
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
               style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Temel Bilgiler</h3>
@@ -295,17 +300,29 @@ export default function ProfileTab() {
           </div>
         </div>
 
+        {/* Sag kolon: Egitim + Diger (Ehliyet) tek card'da birlestirildi */}
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Eğitim</h3>
-          <div>
-            <label className="label">Eğitim Durumu <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-            <select name="education" value={form.education} onChange={handleChange} className="input">
-              <option value="">Seçin</option>
-              {Object.entries(EDUCATION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
+              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Eğitim & Ek</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="label">Eğitim Durumu</label>
+              <select name="education" value={form.education} onChange={handleChange} className="input">
+                <option value="">Seçin</option>
+                {Object.entries(EDUCATION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label">Ehliyet</label>
+              <select value={triValue(form.hasLicense)} onChange={e => setTriState('hasLicense', e.target.value)} className="input">
+                <option value="unknown">Belirtmedim</option>
+                <option value="yes">Var</option>
+                <option value="no">Yok</option>
+              </select>
+            </div>
           </div>
         </div>
+      </div>  {/* 2-col Temel+Egitim kapanis */}
 
         <div className="card p-5 space-y-4">
           <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
@@ -337,21 +354,7 @@ export default function ProfileTab() {
           </div>
         </div>
 
-        <div className="card p-5 space-y-4">
-          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>Diğer</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="label">Ehliyet</label>
-              <select value={triValue(form.hasLicense)} onChange={e => setTriState('hasLicense', e.target.value)} className="input">
-                <option value="unknown">Belirtmedim</option>
-                <option value="yes">Var</option>
-                <option value="no">Yok</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
+        {/* Bildirim Tercihleri: 2 sutun — Ilceler sol, Pozisyonlar sag */}
         <div className="card p-5 space-y-4">
           <div>
             <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
@@ -361,6 +364,7 @@ export default function ProfileTab() {
             </p>
           </div>
 
+          <div className="grid lg:grid-cols-2 gap-4">
           <div>
             <label className="label">İlgilendiğin İlçeler</label>
             <DistrictAutocomplete
@@ -389,6 +393,7 @@ export default function ProfileTab() {
             </div>
             <p className="text-xs text-ink-400 mt-1">{form.preferredPositions.length} pozisyon seçili</p>
           </div>
+          </div>  {/* 2-col Ilce+Pozisyon kapanis */}
         </div>
 
         <div className="flex justify-end">
@@ -403,8 +408,11 @@ export default function ProfileTab() {
       {/* Belgelerim — Profilim icine tasindi (kullanici istegi) */}
       <DocumentsTab />
 
-      <ChangePasswordCard />
-      <GdprCard />
+      {/* Sifre + GDPR yan yana (compact) */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <ChangePasswordCard />
+        <GdprCard />
+      </div>
     </div>
   )
 }
