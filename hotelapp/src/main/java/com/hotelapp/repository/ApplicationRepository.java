@@ -45,8 +45,12 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     /** Adayın tamamlanmış (kabul + no-show degil) is sayisi — Dalga G public profil */
     long countByCandidateIdAndStatusAndNoShowFalse(Long candidateId, ApplicationStatus status);
 
-    /** Aday bu isletmenin herhangi bir ilanina basvurmus mu — public profile yetki kontrolu */
+    /** Aday bu isletmenin herhangi bir ilanina basvurmus mu — public profile yetki kontrolu (basit) */
     boolean existsByCandidateIdAndJobListingBusinessOwnerId(Long candidateId, Long ownerId);
+
+    /** Aday bu isletmede CALISMIS mi (ACCEPTED basvuru) — hassas bilgi yetki kontrolu */
+    boolean existsByCandidateIdAndJobListingBusinessOwnerIdAndStatus(
+            Long candidateId, Long ownerId, ApplicationStatus status);
 
     /**
      * Adayın belirtilen tarihten itibaren tamamlanmış (ACCEPTED + reviewedAt set +

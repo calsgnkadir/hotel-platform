@@ -179,8 +179,10 @@ public class CandidateProfileService {
         } else if (viewer.getId().equals(candidateId)) {
             canSeeSensitive = true;
         } else if (viewer.getRole() == Role.BUSINESS_OWNER) {
+            // Dalga G2 — sadece KABUL EDILMIS (calismis) basvurusu varsa hassas alanlar acilir
             canSeeSensitive = applicationRepository
-                    .existsByCandidateIdAndJobListingBusinessOwnerId(candidateId, viewerId);
+                    .existsByCandidateIdAndJobListingBusinessOwnerIdAndStatus(
+                            candidateId, viewerId, ApplicationStatus.ACCEPTED);
         }
 
         // Guvenilirlik + sayilar
