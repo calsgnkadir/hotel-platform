@@ -168,6 +168,12 @@ export async function updateListing(listingId, payload) {
   return data
 }
 
+// Dalga H3 — Profil goruntulenme stats (son N gun)
+export async function getMyProfileViews(days = 90) {
+  const { data } = await api.get('/api/candidate/profile-views', { params: { days } })
+  return data  // { totalViews, uniqueViewers, days }
+}
+
 // Dalga H1 — Kaydettiklerim (saved/favori ilanlar)
 export async function saveListing(listingId) {
   await api.post(`/api/saved-listings/${listingId}`)

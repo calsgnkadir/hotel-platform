@@ -38,6 +38,7 @@ public class CandidateProfileService {
     private final ApplicationRepository applicationRepository;
     private final ReviewRepository reviewRepository;
     private final ReliabilityService reliabilityService;
+    private final ProfileViewService profileViewService;
 
     // ----------------------------------------------------------------
     // Read own profile
@@ -190,6 +191,9 @@ public class CandidateProfileService {
                     .existsByCandidateIdAndJobListingBusinessOwnerIdAndStatus(
                             candidateId, viewerId, ApplicationStatus.ACCEPTED);
         }
+
+        // Dalga H3 — Goruntulenme audit (self-view sayilmaz, gunluk dedupe)
+        profileViewService.record(candidateId, viewerId);
 
         // Guvenilirlik + sayilar
         ReliabilityService.ReliabilityScore reliability =

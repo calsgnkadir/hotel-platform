@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
+import * as hotelApi from '../../../api/hotel'
 import Sparkline, { weeklyTrend } from '../../../components/Sparkline'
 import EarningsWidget from '../../../components/candidate/EarningsWidget'
 
@@ -37,6 +39,9 @@ export default function OverviewTab({ user, applications, onTabChange }) {
     >
       {/* === SOL KOLON === */}
       <div className="space-y-4 min-w-0">
+      {/* Dalga H3 — Profil goruntulenme widget'i (Kariyer.net'ten uyarlama) */}
+      <ProfileViewsWidget />
+
       {/* STAT KARTLARI */}
       <motion.div variants={ITEM} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard
@@ -370,5 +375,49 @@ function RecentAppRow({ app, last }) {
         {STATUS_LABEL[app.status] || app.status}
       </span>
     </motion.div>
+  )
+}
+
+/* Dalga H3 — Profil goruntulenme widget'i (Kariyer.net 90 gun pattern) */
+function ProfileViewsWidget() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['my-profile-views', 90],
+    queryFn: () => hotelApi.getMyProfileViews(90),
+    staleTime: 5 * 60_000,
+  })
+
+  if (isLoading) return null
+  const total = data?.totalViews ?? 0
+  const unique = data?.uniqueViewers ?? 0
+
+  return (
+    <div className="card p-4 flex items-center gap-4">
+      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+           style={{
+             background: 'rgba(212, 168, 83, 0.12)',
+             border: '1px solid rgba(212, 168, 83, 0.30)',
+           }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f7c43c"
+             strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[10px] uppercase tracking-widest font-semibold"
+             style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+          PROFIL GÖRÜNTÜLENME · SON 90 GÜN
+        </div>
+        <div className="flex items-baseline gap-3 mt-0.5">
+          <span className="font-bebas text-2xl tracking-wider"
+                style={{ color: '#fde9a5', textShadow: '0 0 12px rgba(212, 168, 83, 0.35)' }}>
+            {total}
+          </span>
+          <span className="text-[11px]" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+            {unique > 0 ? `${unique} işletme baktı` : 'henüz işletme bakmadı'}
+          </span>
+        </div>
+      </div>
+    </div>
   )
 }

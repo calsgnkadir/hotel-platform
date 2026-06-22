@@ -9,6 +9,8 @@ import com.hotelapp.service.CandidateProfileService.ProfileUpdateRequest;
 import com.hotelapp.service.CandidateProfileService.PublicCandidateProfileDto;
 import com.hotelapp.service.ReliabilityService;
 import com.hotelapp.service.ReliabilityService.ReliabilityScore;
+import com.hotelapp.service.ProfileViewService;
+import com.hotelapp.service.ProfileViewService.ProfileViewStats;
 
 import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +32,7 @@ public class CandidateController {
     private final CandidateProfileService candidateProfileService;
     private final ReliabilityService reliabilityService;
     private final AvailabilityBlockService availabilityBlockService;
+    private final ProfileViewService profileViewService;
 
     @Operation(summary = "Kendi profilim — sadece CANDIDATE")
     @GetMapping("/api/candidate/profile")
@@ -84,6 +87,16 @@ public class CandidateController {
     public ResponseEntity<List<AvailabilityBlockDto>> getMyAvailabilityBlocks(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(availabilityBlockService.getMyBlocks(currentUser.getId()));
+    }
+
+    @Operation(summary = "Profilim goruntulenme sayim — son N gun")
+    @GetMapping("/api/candidate/profile-views")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ProfileViewStats> getMyProfileViews(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "90") int days) {
+        return ResponseEntity.ok(profileViewService.getStats(currentUser.getId(), days));
     }
 
     @Operation(summary = "Aday public profili — isletme aday ilanina basvurmus ise gorebilir")
