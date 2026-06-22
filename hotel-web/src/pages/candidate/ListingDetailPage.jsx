@@ -114,7 +114,7 @@ export default function ListingDetailPage() {
     <div className="min-h-screen text-white relative z-10">
       {/* Top bar — geri butonu + breadcrumb */}
       <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 bg-cream-100/85 backdrop-blur-lg border-b border-cream-300">
-        <div className="max-w-7xl mx-auto flex items-center gap-3">
+        <div className="max-w-7xl flex items-center gap-3">
           <button onClick={handleBack}
             className="p-2 rounded-lg hover:bg-cream-200 transition-colors text-ink-700"
             title="Geri">
@@ -131,7 +131,7 @@ export default function ListingDetailPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
+      <main className="max-w-7xl px-4 lg:px-6 py-6">
         <div className="xl:grid xl:grid-cols-[1fr_340px] xl:gap-5 space-y-5 xl:space-y-0">
         <div className="space-y-5 min-w-0">
         {/* HERO — büyük gradient kart */}
