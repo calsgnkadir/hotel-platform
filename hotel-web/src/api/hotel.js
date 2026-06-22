@@ -167,6 +167,11 @@ export async function getListing(listingId) {
   return data
 }
 
+// Dalga 4 — view count tracking (fire-and-forget; hata UI'yi bloklamasin)
+export async function trackListingView(listingId) {
+  try { await api.post(`/api/listings/${listingId}/view`) } catch { /* sessiz */ }
+}
+
 export async function updateListingStatus(listingId, status) {
   const { data } = await api.put(`/api/listings/${listingId}/status`, null, { params: { status } })
   return data
