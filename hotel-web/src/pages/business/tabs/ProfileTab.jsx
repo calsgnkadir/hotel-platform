@@ -155,7 +155,8 @@ export default function ProfileTab() {
   )
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto">
+    <div className="grid xl:grid-cols-[1fr_360px] gap-4 items-start max-w-[1400px] mx-auto">
+    <div className="space-y-5 min-w-0">
     <ProfileCompletenessCard data={completeness} />
     <form onSubmit={handleSubmit} className="space-y-5">
       <MediaBlock
@@ -295,6 +296,130 @@ export default function ProfileTab() {
 
     <ChangePasswordCard />
     <GdprCard />
+    </div>
+
+    {/* === SAG KOLON: Canli Onizleme === */}
+    <aside className="xl:sticky xl:top-4 xl:self-start">
+      <BusinessPreviewCard form={form} logoUrl={logoUrl} />
+    </aside>
+    </div>
+  )
+}
+
+/* Canli Onizleme — form degistikce sag panelde guncellenir
+   Kullanici (aday) public sayfayi nasil gorecek? */
+function BusinessPreviewCard({ form, logoUrl }) {
+  const TYPE_LABELS = { HOTEL: 'Otel', RESTAURANT: 'Restoran', CAFE: 'Kafe', OTHER: 'Diğer' }
+  const initial = (form.name || 'A').trim().charAt(0).toUpperCase()
+  return (
+    <div className="card overflow-hidden">
+      <div className="px-4 py-3 border-b flex items-center justify-between"
+           style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+        <h3 className="font-bebas text-base tracking-[0.2em] uppercase"
+            style={{ color: '#fde9a5' }}>Canlı Önizleme</h3>
+        <span className="text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: 'rgba(229, 231, 235, 0.45)' }}>aday bu şekilde görür</span>
+      </div>
+      <div className="p-4">
+        {/* Logo + isim */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
+               style={{
+                 background: 'rgba(212, 168, 83, 0.10)',
+                 border: '1px solid rgba(212, 168, 83, 0.30)',
+               }}>
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <span className="font-bebas text-2xl" style={{ color: '#f7c43c' }}>{initial}</span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-bebas text-xl tracking-wider uppercase truncate"
+                 style={{ color: '#ffffff' }}>
+              {form.name || 'İşletme adınız'}
+            </div>
+            <div className="text-[11px] uppercase tracking-wider mt-0.5"
+                 style={{ color: '#fde9a5' }}>
+              {TYPE_LABELS[form.type] || form.type}
+              {form.category && ` · ${form.category}`}
+            </div>
+          </div>
+        </div>
+
+        {/* Konum */}
+        {(form.district || form.address) && (
+          <div className="flex items-start gap-2 text-[12px] mb-3"
+               style={{ color: 'rgba(229, 231, 235, 0.75)' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                 className="flex-shrink-0 mt-0.5" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <div className="min-w-0">
+              {form.district && <div className="font-medium">{form.district}{form.neighborhood && ` / ${form.neighborhood}`}</div>}
+              {form.address && <div className="text-[11px] mt-0.5 line-clamp-2"
+                                     style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+                {form.address}
+              </div>}
+            </div>
+          </div>
+        )}
+
+        {/* Telefon */}
+        {form.phone && (
+          <div className="flex items-center gap-2 text-[12px] mb-3"
+               style={{ color: 'rgba(229, 231, 235, 0.75)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            <span>{form.phone}</span>
+          </div>
+        )}
+
+        {/* Aciklama */}
+        {form.description && (
+          <p className="text-[12px] leading-relaxed mb-3 line-clamp-4"
+             style={{ color: 'rgba(229, 231, 235, 0.65)' }}>
+            {form.description}
+          </p>
+        )}
+
+        {/* Sosyal */}
+        {(form.website || form.instagram || form.facebook) && (
+          <div className="pt-3 border-t flex items-center gap-2 flex-wrap"
+               style={{ borderColor: 'rgba(212, 168, 83, 0.12)' }}>
+            {form.website && (
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded"
+                    style={{ background: 'rgba(212, 168, 83, 0.12)', color: '#fde9a5' }}>
+                Web
+              </span>
+            )}
+            {form.instagram && (
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded"
+                    style={{ background: 'rgba(212, 168, 83, 0.12)', color: '#fde9a5' }}>
+                Instagram
+              </span>
+            )}
+            {form.facebook && (
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded"
+                    style={{ background: 'rgba(212, 168, 83, 0.12)', color: '#fde9a5' }}>
+                Facebook
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Bos durumu */}
+        {!form.name && !form.district && !form.description && (
+          <p className="text-center text-[11px] italic py-4"
+             style={{ color: 'rgba(229, 231, 235, 0.40)' }}>
+            Form alanlarını doldurdukça burada güncellenir.
+          </p>
+        )}
+      </div>
     </div>
   )
 }

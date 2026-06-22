@@ -31,10 +31,12 @@ export default function OverviewTab({ user, applications, onTabChange }) {
 
   return (
     <motion.div
-      className="relative space-y-4 font-geist"
+      className="relative grid xl:grid-cols-[1fr_320px] gap-4 items-start font-geist"
       initial="hidden" animate="visible"
       variants={{ visible: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } }}
     >
+      {/* === SOL KOLON === */}
+      <div className="space-y-4 min-w-0">
       {/* STAT KARTLARI */}
       <motion.div variants={ITEM} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard
@@ -107,7 +109,81 @@ export default function OverviewTab({ user, applications, onTabChange }) {
           </motion.div>
         </motion.div>
       )}
+      </div>
+
+      {/* === SAG KOLON: Aktivite akisi === */}
+      <motion.aside variants={ITEM} className="space-y-4 xl:sticky xl:top-4 xl:self-start">
+        <ActivityStream applications={applications} onTabChange={onTabChange} />
+      </motion.aside>
     </motion.div>
+  )
+}
+
+/* Aktivite akisi — son basvurularin durum degisikligi zaman cizgisi */
+function ActivityStream({ applications, onTabChange }) {
+  const sorted = [...applications]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 10)
+
+  function relativeTime(iso) {
+    const diff = Date.now() - new Date(iso).getTime()
+    const m = Math.floor(diff / 60_000)
+    if (m < 1)  return 'az önce'
+    if (m < 60) return `${m} dk`
+    const h = Math.floor(m / 60)
+    if (h < 24) return `${h} sa`
+    const d = Math.floor(h / 24)
+    if (d < 7)  return `${d} gün`
+    return new Date(iso).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })
+  }
+
+  return (
+    <div className="card p-4">
+      <div className="flex items-center justify-between mb-3 pb-2 border-b"
+           style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+        <h3 className="font-bebas text-base tracking-[0.2em] uppercase"
+            style={{ color: '#fde9a5' }}>Aktivite</h3>
+        <span className="text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: 'rgba(229, 231, 235, 0.50)' }}>{sorted.length} kayıt</span>
+      </div>
+
+      {sorted.length === 0 ? (
+        <p className="text-center text-xs py-8" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+          Henüz başvuru yok. İlanlar sekmesinden başla.
+        </p>
+      ) : (
+        <ul className="space-y-2.5">
+          {sorted.map(app => {
+            const tint = STATUS_TINT[app.status] || { color: '#8ba9d2', text: '#dde7f3' }
+            return (
+              <li key={app.id}>
+                <button onClick={() => onTabChange('applications')}
+                  className="w-full text-left flex items-start gap-2.5 group">
+                  <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
+                        style={{
+                          background: tint.color,
+                          boxShadow: `0 0 8px ${tint.color}80`,
+                        }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-medium truncate group-hover:text-white transition-colors"
+                       style={{ color: '#dde7f3' }}>
+                      {app.listing?.title || 'İlan'}
+                    </p>
+                    <p className="text-[11px] truncate" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+                      {app.listing?.businessName || ''} · {STATUS_LABEL[app.status] || app.status}
+                    </p>
+                  </div>
+                  <span className="text-[10px] flex-shrink-0 mt-0.5"
+                        style={{ color: 'rgba(229, 231, 235, 0.38)' }}>
+                    {relativeTime(app.createdAt)}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
   )
 }
 
