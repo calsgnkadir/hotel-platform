@@ -49,6 +49,13 @@ export default function ListingDetailPage() {
     if (id) hotelApi.trackListingView(id)
   }, [id])
 
+  // Dalga I2 — Incelediklerim localStorage'a kaydet (listing yuklenince)
+  useEffect(() => {
+    if (listing?.id) {
+      import('../../lib/recentlyViewed').then(m => m.recordView(listing))
+    }
+  }, [listing?.id])
+
   // Dalga 4 / Ozellik 6 — Pozisyon bazli maas benchmark
   const { data: benchmark } = useQuery({
     queryKey: ['salary-benchmark', listing?.position],
