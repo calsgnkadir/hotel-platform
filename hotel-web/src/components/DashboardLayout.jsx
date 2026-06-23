@@ -49,6 +49,7 @@ const candidateNav = [
   { id: 'listings',      tKey: 'nav.listings',     icon: 'briefcase' },
   { id: 'saved',         label: 'Kaydettiklerim',  icon: 'heart' },    // Dalga H1
   { id: 'recent',        label: 'İncelediklerim',  icon: 'eye' },      // Dalga I2
+  { id: 'relations',     label: 'İşletmeler',       icon: 'building' }, // Dalga I1
   { id: 'applications',  tKey: 'nav.applications', icon: 'send' },
   { id: 'messages',      tKey: 'nav.messages',     icon: 'messages' },
   { id: 'profile',       label: 'Profilim',        icon: 'user' },

@@ -697,6 +697,14 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     staleTime: 60_000,
   })
   const savedIds = new Set(savedListings.map(l => l.id))
+
+  // Dalga I1 — Engellenen isletmelerin ilanlari feed'den dusuruluyor
+  const { data: blockedBusinesses = [] } = useQuery({
+    queryKey: ['my-blocked-businesses'],
+    queryFn: () => hotelApi.getMyBlockedBusinesses(),
+    staleTime: 60_000,
+  })
+  const blockedBusinessIds = new Set(blockedBusinesses.map(b => b.id))
   async function handleToggleSave(listingId, currentlySaved) {
     try {
       if (currentlySaved) await hotelApi.unsaveListing(listingId)
@@ -777,12 +785,20 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     (district ? 1 : 0) + (minSalary ? 1 : 0) + shifts.length +
     (datePreset ? 1 : 0)
 
+  // Dalga I1 — Engelli isletmeleri client-side filtrele (backend rebuild gerekene kadar)
+  const visibleListings = useMemo(
+    () => blockedBusinessIds.size === 0
+      ? listings
+      : listings.filter(l => !blockedBusinessIds.has(l.businessId)),
+    [listings, blockedBusinessIds]
+  )
+
   // 6'lik pagination
-  const totalPages = Math.max(1, Math.ceil(listings.length / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(visibleListings.length / PAGE_SIZE))
   const safePage   = Math.min(page, totalPages)
   const pageItems  = useMemo(
-    () => listings.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
-    [listings, safePage]
+    () => visibleListings.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [visibleListings, safePage]
   )
   // Filtre/keyword degisirse sayfa 1'e dön (boş sayfada kalmamak için)
   useEffect(() => { setPage(1) }, [debouncedKeyword, position, jobType, district, minSalary, shifts, datePreset, customFrom, customTo])

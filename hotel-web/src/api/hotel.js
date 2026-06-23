@@ -168,6 +168,32 @@ export async function updateListing(listingId, payload) {
   return data
 }
 
+// Dalga I1 — Isletme takip / engelle
+export async function followBusiness(businessId) {
+  await api.post(`/api/business-relations/${businessId}/follow`)
+}
+export async function unfollowBusiness(businessId) {
+  await api.delete(`/api/business-relations/${businessId}/follow`)
+}
+export async function blockBusiness(businessId) {
+  await api.post(`/api/business-relations/${businessId}/block`)
+}
+export async function unblockBusiness(businessId) {
+  await api.delete(`/api/business-relations/${businessId}/block`)
+}
+export async function getMyFollowingBusinesses() {
+  const { data } = await api.get('/api/business-relations/following')
+  return data
+}
+export async function getMyBlockedBusinesses() {
+  const { data } = await api.get('/api/business-relations/blocked')
+  return data
+}
+export async function getBusinessRelationStats() {
+  const { data } = await api.get('/api/business-relations/stats')
+  return data
+}
+
 // Dalga H3 — Profil goruntulenme stats (son N gun)
 export async function getMyProfileViews(days = 90) {
   const { data } = await api.get('/api/candidate/profile-views', { params: { days } })

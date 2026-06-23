@@ -1,8 +1,9 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../api/hotel'
+import { useAuth } from '../../context/AuthContext'
 import { keys } from '../../lib/queryClient'
 import cldImg, { ImgSize } from '../../lib/cldImg'
 import VerifiedBadge from '../../components/VerifiedBadge'
@@ -125,6 +126,46 @@ export default function BusinessPublicPage() {
     queryFn: () => hotelApi.getPublicBusiness(id),
     enabled: !!id,
   })
+
+  // Dalga I1 — Takip + engelle (sadece aday icin)
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const isCandidate = user?.role === 'CANDIDATE'
+  const { data: following = [] } = useQuery({
+    queryKey: ['my-following-businesses'],
+    queryFn: () => hotelApi.getMyFollowingBusinesses(),
+    enabled: isCandidate,
+    staleTime: 60_000,
+  })
+  const { data: blocked = [] } = useQuery({
+    queryKey: ['my-blocked-businesses'],
+    queryFn: () => hotelApi.getMyBlockedBusinesses(),
+    enabled: isCandidate,
+    staleTime: 60_000,
+  })
+  const isFollowing = following.some(b => b.id === Number(id))
+  const isBlocked   = blocked.some(b => b.id === Number(id))
+
+  async function toggleFollow() {
+    try {
+      if (isFollowing) await hotelApi.unfollowBusiness(id)
+      else             await hotelApi.followBusiness(id)
+      queryClient.invalidateQueries({ queryKey: ['my-following-businesses'] })
+      queryClient.invalidateQueries({ queryKey: ['my-blocked-businesses'] })
+    } catch { toast.error('İşlem başarısız') }
+  }
+  async function toggleBlock() {
+    try {
+      if (isBlocked) {
+        await hotelApi.unblockBusiness(id)
+      } else {
+        if (!window.confirm('Bu işletmeyi engellemek istediğinize emin misiniz? İlanları feed\'inizde gözükmez.')) return
+        await hotelApi.blockBusiness(id)
+      }
+      queryClient.invalidateQueries({ queryKey: ['my-blocked-businesses'] })
+      queryClient.invalidateQueries({ queryKey: ['my-following-businesses'] })
+    } catch { toast.error('İşlem başarısız') }
+  }
 
   const { data: photos = [] } = useQuery({
     queryKey: ['public-business-photos', id],
@@ -294,6 +335,29 @@ export default function BusinessPublicPage() {
                 <div className="mt-3">
                   <StarRow avg={business.averageRating} count={business.reviewCount} />
                 </div>
+                {/* Dalga I1 — Aday icin Takip + Engelle butonlari */}
+                {isCandidate && (
+                  <div className="mt-4 flex gap-2 flex-wrap">
+                    <button type="button" onClick={toggleFollow}
+                      className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
+                      style={{
+                        background: isFollowing ? 'rgba(34, 197, 94, 0.18)' : 'rgba(212, 168, 83, 0.18)',
+                        color: isFollowing ? '#86efac' : '#fde9a5',
+                        border: `1px solid ${isFollowing ? 'rgba(34, 197, 94, 0.40)' : 'rgba(212, 168, 83, 0.45)'}`,
+                      }}>
+                      {isFollowing ? '✓ Takip Ediliyor' : '+ Takip Et'}
+                    </button>
+                    <button type="button" onClick={toggleBlock}
+                      className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
+                      style={{
+                        background: isBlocked ? 'rgba(239, 68, 68, 0.18)' : 'rgba(15, 23, 38, 0.55)',
+                        color: isBlocked ? '#fca5a5' : 'rgba(229, 231, 235, 0.65)',
+                        border: `1px solid ${isBlocked ? 'rgba(239, 68, 68, 0.45)' : 'rgba(229, 231, 235, 0.20)'}`,
+                      }}>
+                      {isBlocked ? 'Engeli Kaldır' : 'Engelle'}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </section>
