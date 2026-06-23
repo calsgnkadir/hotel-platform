@@ -2,6 +2,8 @@ package com.hotelapp.service;
 
 import com.hotelapp.entity.User;
 import com.hotelapp.enums.ApplicationStatus;
+import com.hotelapp.enums.DocumentType;
+import com.hotelapp.repository.DocumentRepository;
 import com.hotelapp.enums.EducationLevel;
 import com.hotelapp.enums.Gender;
 import com.hotelapp.enums.JobType;
@@ -39,6 +41,7 @@ public class CandidateProfileService {
     private final ReviewRepository reviewRepository;
     private final ReliabilityService reliabilityService;
     private final ProfileViewService profileViewService;
+    private final DocumentRepository documentRepository;
 
     // ----------------------------------------------------------------
     // Read own profile
@@ -195,6 +198,16 @@ public class CandidateProfileService {
         // Dalga H3 — Goruntulenme audit (self-view sayilmaz, gunluk dedupe)
         profileViewService.record(candidateId, viewerId);
 
+        // Dalga I3 — CV URL (sadece sensitive unlocked viewer goruyor)
+        String resumeUrl = null;
+        if (canSeeSensitive) {
+            resumeUrl = documentRepository
+                    .findByStudentIdAndType(candidateId, DocumentType.CV)
+                    .filter(d -> d.getFilePath() != null)
+                    .map(d -> fileStorageService.publicUrl(d.getFilePath()))
+                    .orElse(null);
+        }
+
         // Guvenilirlik + sayilar
         ReliabilityService.ReliabilityScore reliability =
                 reliabilityService.computeForCandidate(candidateId);
@@ -247,6 +260,8 @@ public class CandidateProfileService {
                 .sensitiveUnlocked(canSeeSensitive)
                 // Dalga H2 — herkese acik (LinkedIn Open to Work gibi)
                 .isAvailable(candidate.getIsAvailable())
+                // Dalga I3 — CV URL (sadece kabul edilmis isletme indirir)
+                .resumeUrl(resumeUrl)
                 .build();
     }
 
@@ -324,6 +339,9 @@ public class CandidateProfileService {
 
         // Dalga H2 — Is ariyorum (herkese acik, LinkedIn Open to Work)
         private Boolean isAvailable;
+
+        // Dalga I3 — CV/Ozgecmis URL (sensitive unlocked viewer icin)
+        private String resumeUrl;
     }
 
     @Data
