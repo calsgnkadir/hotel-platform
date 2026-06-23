@@ -63,25 +63,45 @@ export default function OverviewTab({ applications, onTabChange }) {
             />
           ) : (
             <div className="table-container rounded-none border-0 border-t border-cream-200">
-              <table className="table">
+              <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '38%' }} />
+                  <col className="hidden md:table-column" style={{ width: '24%' }} />
+                  <col style={{ width: '22%' }} />
+                  <col className="hidden sm:table-column" style={{ width: '16%' }} />
+                </colgroup>
                 <thead>
-                  <tr>
-                    <th>Aday</th>
-                    <th className="hidden md:table-cell">İlan</th>
-                    <th>Durum</th>
-                    <th className="hidden sm:table-cell">Tarih</th>
+                  <tr style={{ borderBottom: '1px solid rgba(212, 168, 83, 0.18)' }}>
+                    <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                        style={{ color: 'rgba(229, 231, 235, 0.65)' }}>Aday</th>
+                    <th className="hidden md:table-cell text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                        style={{ color: 'rgba(229, 231, 235, 0.65)' }}>İlan</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                        style={{ color: 'rgba(229, 231, 235, 0.65)' }}>Durum</th>
+                    <th className="hidden sm:table-cell text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                        style={{ color: 'rgba(229, 231, 235, 0.65)' }}>Tarih</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {applications.slice(0, 5).map(app => (
-                    <tr key={app.id}>
-                      <td>
-                        <div className="font-medium text-ink-800 dark:text-ink-900">{app.candidate?.fullName}</div>
-                        <div className="text-xs text-ink-400">{app.candidate?.email}</div>
+                  {applications.slice(0, 5).map((app, i, arr) => (
+                    <tr key={app.id}
+                        style={{ borderBottom: i === arr.length - 1 ? 'none' : '1px solid rgba(212, 168, 83, 0.08)' }}>
+                      <td className="px-4 py-3.5">
+                        <div className="font-semibold truncate" style={{ color: '#dde7f3' }}>
+                          {app.candidate?.fullName || 'Anonim'}
+                        </div>
+                        <div className="text-[11px] truncate mt-0.5"
+                             style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+                          {app.candidate?.email}
+                        </div>
                       </td>
-                      <td className="hidden md:table-cell text-ink-600 text-sm">{app.listing?.title}</td>
-                      <td><StatusBadge status={app.status} /></td>
-                      <td className="hidden sm:table-cell text-ink-500 text-xs">
+                      <td className="hidden md:table-cell px-4 py-3.5 truncate"
+                          style={{ color: 'rgba(229, 231, 235, 0.75)' }}>
+                        {app.listing?.title || '—'}
+                      </td>
+                      <td className="px-4 py-3.5"><StatusBadge status={app.status} /></td>
+                      <td className="hidden sm:table-cell px-4 py-3.5 text-[12px]"
+                          style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
                         {new Date(app.createdAt).toLocaleDateString('tr-TR')}
                       </td>
                     </tr>
