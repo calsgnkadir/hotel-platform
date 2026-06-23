@@ -43,21 +43,39 @@ export default function CandidatePublicPage() {
 
   if (error) {
     const status = error?.response?.status
+    const title = status === 403 ? 'Erişim Yok'
+                : status === 404 ? 'Aday Bulunamadı'
+                : status === 500 ? 'Sunucu Hatası'
+                : status === 401 || status === undefined ? 'Bağlantı Hatası'
+                : 'Hata Oluştu'
     const msg = status === 403
       ? 'Bu adayın profilini görüntülemek için ilanınıza başvurmuş olması gerekir.'
       : status === 404
-      ? 'Aday bulunamadı.'
-      : 'Profil yüklenirken hata oluştu.'
+      ? 'Aday bulunamadı ya da hesap silinmiş olabilir.'
+      : status === 500
+      ? 'Sunucu yanıt vermiyor. Backend yeniden başlatılmış olabilir, birkaç saniye sonra tekrar deneyin.'
+      : status === 401
+      ? 'Oturumun süresi dolmuş olabilir. Çıkış yapıp tekrar giriş yap.'
+      : status === undefined
+      ? 'Backend uygulamasına bağlanılamadı. Spring Boot çalışıyor mu?'
+      : `HTTP ${status} — ${error?.response?.data?.message || 'Beklenmedik hata'}`
     return (
       <div className="min-h-screen flex items-center justify-center text-white relative z-10">
         <div className="card max-w-md text-center p-8">
-          <h2 className="text-xl font-bold mb-2">Erişim Yok</h2>
+          <h2 className="text-xl font-bold mb-2">{title}</h2>
           <p className="text-sm opacity-80 mb-4">{msg}</p>
-          <button onClick={() => navigate(-1)}
-            className="px-5 py-2.5 rounded-lg text-white font-semibold"
-            style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
-            Geri Dön
-          </button>
+          <div className="flex gap-2 justify-center">
+            <button onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg text-white font-semibold text-sm"
+              style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+              Tekrar Dene
+            </button>
+            <button onClick={() => navigate(-1)}
+              className="px-4 py-2 rounded-lg text-white font-semibold text-sm"
+              style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+              Geri Dön
+            </button>
+          </div>
         </div>
       </div>
     )

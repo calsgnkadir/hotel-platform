@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../api/hotel'
 import { useAuth } from '../../context/AuthContext'
+import ReportModal from '../../components/ReportModal'
 import { keys } from '../../lib/queryClient'
 import cldImg, { ImgSize } from '../../lib/cldImg'
 import VerifiedBadge from '../../components/VerifiedBadge'
@@ -127,10 +128,11 @@ export default function BusinessPublicPage() {
     enabled: !!id,
   })
 
-  // Dalga I1 — Takip + engelle (sadece aday icin)
+  // Dalga I1 — Takip + Bildir (sadece aday icin)
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const isCandidate = user?.role === 'CANDIDATE'
+  const [reportOpen, setReportOpen] = useState(false)
   const { data: following = [] } = useQuery({
     queryKey: ['my-following-businesses'],
     queryFn: () => hotelApi.getMyFollowingBusinesses(),
@@ -335,7 +337,7 @@ export default function BusinessPublicPage() {
                 <div className="mt-3">
                   <StarRow avg={business.averageRating} count={business.reviewCount} />
                 </div>
-                {/* Dalga I1 — Aday icin Takip + Engelle butonlari */}
+                {/* Dalga I1 — Aday icin Takip Et + Kullaniciyi Bildir */}
                 {isCandidate && (
                   <div className="mt-4 flex gap-2 flex-wrap">
                     <button type="button" onClick={toggleFollow}
@@ -347,14 +349,15 @@ export default function BusinessPublicPage() {
                       }}>
                       {isFollowing ? '✓ Takip Ediliyor' : '+ Takip Et'}
                     </button>
-                    <button type="button" onClick={toggleBlock}
+                    <button type="button" onClick={() => setReportOpen(true)}
                       className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
                       style={{
-                        background: isBlocked ? 'rgba(239, 68, 68, 0.18)' : 'rgba(15, 23, 38, 0.55)',
-                        color: isBlocked ? '#fca5a5' : 'rgba(229, 231, 235, 0.65)',
-                        border: `1px solid ${isBlocked ? 'rgba(239, 68, 68, 0.45)' : 'rgba(229, 231, 235, 0.20)'}`,
+                        background: 'rgba(239, 68, 68, 0.10)',
+                        color: '#fca5a5',
+                        border: '1px solid rgba(239, 68, 68, 0.30)',
                       }}>
-                      {isBlocked ? 'Engeli Kaldır' : 'Engelle'}
+                      <span className="font-bebas text-base">!</span>
+                      Kullanıcıyı Bildir
                     </button>
                   </div>
                 )}
@@ -567,6 +570,16 @@ export default function BusinessPublicPage() {
           </footer>
         </main>
       </div>
+
+      {/* Dalga I1 — Kullaniciyi Bildir modal'i (isletme owner'i hedef) */}
+      {reportOpen && business?.id && (
+        <ReportModal
+          targetType="USER"
+          targetId={business.id}
+          targetLabel={business.name}
+          onClose={() => setReportOpen(false)}
+        />
+      )}
     </div>
   )
 }
