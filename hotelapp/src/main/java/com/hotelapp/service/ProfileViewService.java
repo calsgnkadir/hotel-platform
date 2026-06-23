@@ -3,7 +3,9 @@ package com.hotelapp.service;
 import com.hotelapp.entity.ProfileView;
 import com.hotelapp.repository.ProfileViewRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
  * - countLastDays(profileId, days): Son N gun sayim (toplam + unique)
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ProfileViewService {
 
@@ -24,25 +27,33 @@ public class ProfileViewService {
      * Yeni view kaydi. Ayni viewer ayni profile ayni gun 2. kez bakarsa
      * yeni kayit OLUSTURMAZ (gunluk dedupe).
      * Self-view (aday kendi profili) sayilmaz.
+     *
+     * REQUIRES_NEW: getPublicProfile() readOnly transaction icinde cagrilir;
+     * INSERT icin temiz, ayri transaction gerek. Hata olursa ana akisi
+     * bozmadan log + yutulur (audit silinse de profil acilmasi gerek).
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(Long profileId, Long viewerId) {
-        if (profileId == null) return;
-        // Self-view sayma
-        if (viewerId != null && viewerId.equals(profileId)) return;
+        try {
+            if (profileId == null) return;
+            if (viewerId != null && viewerId.equals(profileId)) return;
 
-        // Gunluk dedupe
-        if (viewerId != null) {
-            LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-            if (profileViewRepository.existsTodayByProfileAndViewer(profileId, viewerId, startOfDay)) {
-                return;  // bugun zaten baktigi sayildi
+            if (viewerId != null) {
+                LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+                if (profileViewRepository.existsTodayByProfileAndViewer(profileId, viewerId, startOfDay)) {
+                    return;
+                }
             }
-        }
 
-        profileViewRepository.save(ProfileView.builder()
-                .profileId(profileId)
-                .viewerId(viewerId)
-                .build());
+            profileViewRepository.save(ProfileView.builder()
+                    .profileId(profileId)
+                    .viewerId(viewerId)
+                    .build());
+        } catch (RuntimeException ex) {
+            // Audit yazma hatasi profil acilmasini engellemesin
+            log.warn("ProfileView audit yazilirken hata olustu — gormezden geliniyor. profile={} viewer={}",
+                    profileId, viewerId, ex);
+        }
     }
 
     @Transactional(readOnly = true)
