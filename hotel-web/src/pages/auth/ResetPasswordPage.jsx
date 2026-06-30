@@ -57,10 +57,10 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       {/* FAZ 5.4 — DarkVeil */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <DarkVeil hueShift={285} noiseIntensity={0.02} speed={0.4} warpAmount={0.3} />
+        <DarkVeil hueShift={35} noiseIntensity={0.02} speed={0.4} warpAmount={0.3} />
       </div>
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
-           style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(10,6,24,0.7) 90%)' }} />
+           style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(13, 11, 9, 0.72) 90%)' }} />
 
       <div className="relative z-10 neon-strip" />
 
@@ -83,9 +83,20 @@ export default function ResetPasswordPage() {
               <span className="w-1.5 h-1.5 rounded-full bg-terra-400 animate-glow-pulse" />
               <span className="text-[11px] uppercase tracking-widest text-ink-700">Yeni Şifre</span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight uppercase">
+            <h1 className="mb-2"
+                style={{
+                  color: '#f5efe2',
+                  fontSize: 'clamp(28px, 4vw, 34px)',
+                  lineHeight: 1.08,
+                  letterSpacing: '-0.025em',
+                  fontWeight: 500,
+                  fontFamily: 'Inter, sans-serif',
+                }}>
               <span className="block">Şifreni</span>
-              <span className="block bg-gradient-to-r from-brand-700 to-terra-500 bg-clip-text text-transparent">Yenile</span>
+              <em className="not-italic font-syne block"
+                  style={{ fontWeight: 700, color: '#cdb78f', letterSpacing: '-0.015em' }}>
+                yenile
+              </em>
             </h1>
           </div>
 

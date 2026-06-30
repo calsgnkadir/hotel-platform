@@ -71,6 +71,81 @@ body {
   box-shadow: 0 32px 72px rgba(0, 0, 0, 0.45);
 }
 
+/* ────────────────────────────────────────────────────────────────
+   AUTH CARD — child Tailwind class cascade (Register/Forgot/Reset/AuthModal)
+   ──────────────────────────────────────────────────────────────── */
+.auth-card .text-ink-900,
+.auth-card .text-ink-800 { color: #f5efe2 !important; }
+.auth-card .text-ink-700,
+.auth-card .text-ink-600 { color: #ede4d3 !important; }
+.auth-card .text-ink-500,
+.auth-card .text-ink-400,
+.auth-card .text-ink-300 { color: #928678 !important; }
+.auth-card .text-white   { color: #f5efe2 !important; }
+
+.auth-card .text-brand-700,
+.auth-card .text-brand-600,
+.auth-card .text-brand-800,
+.auth-card .text-brand-900 { color: #cdb78f !important; }
+.auth-card .text-brand-300,
+.auth-card .text-brand-400 { color: #cdb78f !important; }
+
+.auth-card .text-terra-500,
+.auth-card .text-terra-600 { color: #cdb78f !important; }
+
+.auth-card .text-red-500,
+.auth-card .text-red-600,
+.auth-card .text-red-700 { color: #d39481 !important; }
+.auth-card .text-amber-600,
+.auth-card .text-amber-700,
+.auth-card .text-amber-400 { color: #c8923a !important; }
+.auth-card .text-emerald-300,
+.auth-card .text-emerald-400,
+.auth-card .text-emerald-500,
+.auth-card .text-emerald-600 { color: #a8c8a8 !important; }
+.auth-card .text-slate-400,
+.auth-card .text-slate-500,
+.auth-card .text-slate-600 { color: #928678 !important; }
+
+.auth-card .bg-white,
+.auth-card .bg-white\/40,
+.auth-card .bg-cream-50,
+.auth-card .bg-cream-100 { background: rgba(205, 183, 143, 0.06) !important; }
+.auth-card .bg-cream-200,
+.auth-card .bg-cream-300 { background: rgba(205, 183, 143, 0.10) !important; }
+.auth-card .bg-emerald-500 { background: #7a9f7a !important; }
+.auth-card .bg-emerald-950\/40 { background: rgba(122, 159, 122, 0.12) !important; }
+.auth-card .bg-slate-700 { background: rgba(205, 183, 143, 0.08) !important; }
+.auth-card .bg-brand-50,
+.auth-card [class*="bg-brand-900"] { background: rgba(205, 183, 143, 0.06) !important; }
+
+.auth-card .border-cream-200,
+.auth-card .border-cream-300,
+.auth-card .border-slate-200,
+.auth-card .border-slate-700 { border-color: rgba(205, 183, 143, 0.10) !important; }
+.auth-card .border-brand-200,
+.auth-card .border-brand-600,
+.auth-card .border-brand-400,
+.auth-card [class*="hover\\:border-brand-"] { border-color: rgba(205, 183, 143, 0.32) !important; }
+.auth-card .border-emerald-900\/60 { border-color: rgba(122, 159, 122, 0.32) !important; }
+
+.auth-card input,
+.auth-card select,
+.auth-card textarea {
+  background: rgba(13, 11, 9, 0.55) !important;
+  border-color: rgba(205, 183, 143, 0.14) !important;
+  color: #ede4d3 !important;
+}
+.auth-card input::placeholder,
+.auth-card textarea::placeholder { color: #928678 !important; }
+.auth-card input:focus,
+.auth-card select:focus,
+.auth-card textarea:focus {
+  border-color: rgba(205, 183, 143, 0.55) !important;
+  background: rgba(34, 31, 27, 0.85) !important;
+  box-shadow: 0 0 0 4px rgba(205, 183, 143, 0.10) !important;
+}
+
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -328,6 +403,49 @@ body {
 .card .bg-cream-300 {
   background: rgba(205, 183, 143, 0.08) !important;
 }
+/* Card — amber → ochre (muted), red → brick, brand-50/100/900 → champagne tint */
+.card .text-amber-600,
+.card .text-amber-700,
+.card .text-amber-400 { color: #c8923a !important; }
+.card .bg-amber-50    { background: rgba(200, 146, 58, 0.10) !important; }
+.card .hover\:bg-amber-100:hover { background: rgba(200, 146, 58, 0.18) !important; }
+.card .border-amber-200 { border-color: rgba(200, 146, 58, 0.28) !important; }
+
+.card .text-red-500,
+.card .text-red-600,
+.card .text-red-700 { color: #d39481 !important; }
+.card .bg-red-50    { background: rgba(180, 106, 85, 0.10) !important; }
+.card .border-red-200 { border-color: rgba(180, 106, 85, 0.28) !important; }
+
+.card .bg-brand-50,
+.card .bg-brand-100,
+.card [class*="bg-brand-900"],
+.card .hover\:bg-brand-100:hover,
+.card [class*="hover\\:bg-brand-900"]:hover { background: rgba(205, 183, 143, 0.08) !important; }
+.card .border-brand-200,
+.card [class*="hover\\:border-brand-"]:hover { border-color: rgba(205, 183, 143, 0.32) !important; }
+.card .accent-brand-700,
+.card .accent-brand-600 { accent-color: #cdb78f !important; }
+
+/* Card — emerald → sage */
+.card .text-emerald-300,
+.card .text-emerald-400,
+.card .text-emerald-500,
+.card .text-emerald-600 { color: #a8c8a8 !important; }
+.card .bg-emerald-50 { background: rgba(122, 159, 122, 0.10) !important; }
+.card .border-emerald-200 { border-color: rgba(122, 159, 122, 0.28) !important; }
+
+/* Card — slate (cool gray) → muted ivory */
+.card .text-slate-400,
+.card .text-slate-500,
+.card .text-slate-600,
+.card .text-slate-700 { color: #928678 !important; }
+.card .bg-slate-100,
+.card .bg-slate-200,
+.card .bg-slate-700 { background: rgba(205, 183, 143, 0.06) !important; }
+.card .border-slate-100,
+.card .border-slate-200,
+.card .border-slate-700 { border-color: rgba(205, 183, 143, 0.10) !important; }
 /* divide-y border'lari da uyarla — hairline */
 .card .divide-cream-100 > * + *,
 .card .divide-cream-200 > * + *,

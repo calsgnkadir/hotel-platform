@@ -67,7 +67,7 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
             aria-hidden="true"
             style={{
               position: 'absolute', inset: 0,
-              background: 'rgba(10, 6, 24, 0.55)',
+              background: 'rgba(13, 11, 9, 0.62)',
               backdropFilter: 'blur(14px)',
               WebkitBackdropFilter: 'blur(14px)',
             }}
@@ -82,22 +82,22 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="relative w-full max-w-sm focus:outline-none"
             style={{
-              borderRadius: 24,
-              background: 'rgba(10, 6, 24, 0.95)',
-              backdropFilter: 'blur(40px)',
-              WebkitBackdropFilter: 'blur(40px)',
-              border: '1px solid rgba(212, 168, 83, 0.25)',
-              boxShadow: '0 24px 64px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(212, 168, 83, 0.06)',
+              borderRadius: '28px 12px 28px 12px',
+              background: '#1b1815',
+              border: 'none',
+              boxShadow: '0 32px 72px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(245,239,226,0.04)',
             }}>
             {/* Kapat butonu */}
             <button
               type="button"
               onClick={onClose}
               aria-label="Kapat"
-              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
-              style={{ color: 'rgba(229, 231, 235, 0.7)' }}>
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all"
+              style={{ color: '#928678' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(205, 183, 143, 0.06)'; e.currentTarget.style.color = '#ede4d3' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#928678' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
               </svg>
             </button>
@@ -106,13 +106,18 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
               {/* Logo + başlık */}
               <div className="text-center">
                 <div className="font-bebas text-2xl tracking-wider"
-                     style={{ color: '#fde9a5' }}>AJANSHOTEL</div>
+                     style={{ color: '#f5efe2' }}>AJANSHOTEL</div>
                 <h2 id="auth-modal-title"
-                    className="mt-3 text-lg font-bold"
-                    style={{ color: '#f8f6f4' }}>
+                    className="font-syne mt-4"
+                    style={{
+                      color: '#f5efe2',
+                      fontSize: '18px',
+                      fontWeight: 600,
+                      letterSpacing: '-0.015em',
+                    }}>
                   Hospitality dünyasına katıl
                 </h2>
-                <p className="mt-1 text-xs" style={{ color: '#8ba9d2' }}>
+                <p className="mt-1.5 text-[11px] uppercase tracking-[0.22em]" style={{ color: '#928678' }}>
                   Aday mısın yoksa işletme mi?
                 </p>
               </div>
@@ -138,12 +143,11 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
                 <GoogleSignInButton label="Google ile devam et" />
               </div>
 
-              {/* Ayraç */}
+              {/* Ayraç — hairline */}
               <div className="flex items-center gap-3">
-                <div className="flex-1 h-px" style={{ background: 'rgba(212, 168, 83, 0.18)' }} />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em]"
-                      style={{ color: '#8ba9d2' }}>veya</span>
-                <div className="flex-1 h-px" style={{ background: 'rgba(212, 168, 83, 0.18)' }} />
+                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(205,183,143,0.18), transparent)' }} />
+                <span className="text-[9px] uppercase tracking-[0.32em]" style={{ color: '#6b6358' }}>veya</span>
+                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(205,183,143,0.18), transparent)' }} />
               </div>
 
               {/* Email + Devam et */}
@@ -154,34 +158,40 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@adresin.com"
                   required
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all"
+                  className="w-full px-4 py-2.5 rounded-2xl text-sm outline-none transition-all"
                   style={{
-                    background: 'rgba(21, 36, 61, 0.65)',
-                    color: '#f8f6f4',
-                    border: '1px solid rgba(212, 168, 83, 0.20)',
+                    background: 'rgba(13, 11, 9, 0.55)',
+                    color: '#ede4d3',
+                    border: '1px solid rgba(205, 183, 143, 0.14)',
                   }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212, 168, 83, 0.50)' }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(212, 168, 83, 0.20)' }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.55)'
+                    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(205, 183, 143, 0.10)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.14)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
                 />
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:-translate-y-0.5"
+                  className="w-full py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, #d4a853, #f7c43c)',
-                    color: '#0a0612',
-                    boxShadow: '0 8px 24px rgba(212, 168, 83, 0.35)',
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    color: '#1a1208',
+                    boxShadow: '0 12px 28px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
                   }}>
                   Email ile devam et
                 </button>
               </form>
 
               {/* Giriş yap linki */}
-              <p className="text-center text-xs" style={{ color: '#8ba9d2' }}>
+              <p className="text-center text-[12px]" style={{ color: '#928678' }}>
                 Zaten hesabın var mı?{' '}
                 <button type="button"
                         onClick={() => { onClose(); navigate('/login') }}
-                        className="font-bold hover:underline"
-                        style={{ color: '#fde9a5' }}>
+                        className="font-semibold underline-sweep"
+                        style={{ color: '#cdb78f' }}>
                   Giriş yap
                 </button>
               </p>
@@ -198,22 +208,21 @@ function RoleCard({ active, onClick, title, subtitle }) {
     <button
       type="button"
       onClick={onClick}
-      className="relative px-3 py-3 rounded-2xl text-left transition-all hover:-translate-y-0.5"
+      className="relative px-3.5 py-3 rounded-2xl text-left transition-all hover:-translate-y-0.5"
       style={{
-        background: active ? 'rgba(212, 168, 83, 0.18)' : 'rgba(21, 36, 61, 0.55)',
+        background: active ? 'rgba(205, 183, 143, 0.12)' : 'rgba(34, 31, 27, 0.55)',
         border: active
-          ? '1px solid rgba(212, 168, 83, 0.55)'
-          : '1px solid rgba(212, 168, 83, 0.15)',
-        boxShadow: active ? '0 0 0 2px rgba(212, 168, 83, 0.20)' : 'none',
+          ? '1px solid rgba(205, 183, 143, 0.45)'
+          : '1px solid rgba(205, 183, 143, 0.10)',
       }}
       aria-pressed={active}>
-      <div className="text-sm font-bold"
-           style={{ color: active ? '#fde9a5' : '#f8f6f4' }}>{title}</div>
-      <div className="text-[11px] mt-0.5"
-           style={{ color: 'rgba(229, 231, 235, 0.55)' }}>{subtitle}</div>
+      <div className="text-sm font-semibold"
+           style={{ color: active ? '#f5efe2' : '#ede4d3', letterSpacing: '-0.005em' }}>{title}</div>
+      <div className="text-[11px] mt-1"
+           style={{ color: '#928678' }}>{subtitle}</div>
       {active && (
-        <span className="absolute top-2 right-2 w-2 h-2 rounded-full"
-              style={{ background: '#d4a853', boxShadow: '0 0 8px #d4a853' }} />
+        <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full"
+              style={{ background: '#cdb78f', boxShadow: '0 0 6px rgba(205, 183, 143, 0.55)' }} />
       )}
     </button>
   )

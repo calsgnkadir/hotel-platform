@@ -70,12 +70,12 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-bg relative overflow-hidden">
-      {/* FAZ 5.4 — DarkVeil arka plan + vinyet */}
+      {/* FAZ 5.UX3 — DarkVeil warm hue + graphite vinyet */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <DarkVeil hueShift={285} noiseIntensity={0.02} speed={0.4} warpAmount={0.3} />
+        <DarkVeil hueShift={35} noiseIntensity={0.02} speed={0.4} warpAmount={0.3} />
       </div>
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
-           style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(10,6,24,0.7) 90%)' }} />
+           style={{ background: 'radial-gradient(ellipse at center, transparent 0%, rgba(13, 11, 9, 0.72) 90%)' }} />
 
       {/* Neon üst hat */}
       <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none" />
@@ -89,34 +89,61 @@ export default function RegisterPage() {
       </div>
 
       <div className="auth-card relative z-10" style={{ maxWidth: '520px' }}>
-        {/* Header — logosuz */}
-        <div className="text-center mb-7">
-          <div className="inline-flex items-center gap-2 bg-white border border-cream-300 rounded-full px-3 py-1 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-terra-400 animate-glow-pulse" />
-            <span className="text-[10px] uppercase tracking-widest text-ink-700">Ücretsiz Kayıt</span>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-5"
+               style={{
+                 background: 'rgba(205, 183, 143, 0.08)',
+                 border: '1px solid rgba(205, 183, 143, 0.22)',
+               }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-glow-pulse"
+                  style={{ background: '#cdb78f', boxShadow: '0 0 6px rgba(205, 183, 143, 0.55)' }} />
+            <span className="text-[10px] uppercase tracking-[0.28em] font-medium" style={{ color: '#cdb78f' }}>Ücretsiz Kayıt</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight uppercase text-white">
+          <h1 className="mb-2"
+              style={{
+                color: '#f5efe2',
+                fontSize: 'clamp(28px, 4vw, 34px)',
+                lineHeight: 1.08,
+                letterSpacing: '-0.025em',
+                fontWeight: 500,
+                fontFamily: 'Inter, sans-serif',
+              }}>
             <span className="block">AjansHotel'e</span>
-            <span className="block bg-gradient-to-r from-brand-700 to-terra-500 bg-clip-text text-transparent">Katıl</span>
+            <em className="not-italic font-syne block"
+                style={{ fontWeight: 700, color: '#cdb78f', letterSpacing: '-0.015em' }}>
+              katıl
+            </em>
           </h1>
-          <p className="text-[12px] text-ink-500 mt-3">İstanbul'un iş platformu</p>
+          <p className="text-[12px] mt-3" style={{ color: '#928678' }}>İstanbul'un iş platformu</p>
         </div>
 
-        {/* Step indicator — pill stili */}
-        <div className="flex items-center gap-2 mb-6">
+        {/* Step indicator — champagne progress */}
+        <div className="flex items-center gap-2 mb-7">
           {[1, 2].map(n => (
             <div key={n} className="flex items-center gap-2 flex-1">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all
-                ${step >= n
-                  ? 'text-white shadow-glow-sm'
-                  : 'bg-cream-200 text-ink-400 border border-cream-300'}`}
-                style={step >= n ? { background: 'linear-gradient(135deg, #047857, #10b981)' } : {}}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold transition-all`}
+                style={step >= n
+                  ? {
+                      background: 'linear-gradient(135deg, #cdb78f 0%, #b8902d 100%)',
+                      color: '#1a1208',
+                      boxShadow: '0 4px 14px rgba(205, 183, 143, 0.30)',
+                    }
+                  : {
+                      background: 'rgba(205, 183, 143, 0.06)',
+                      color: '#6b6358',
+                      border: '1px solid rgba(205, 183, 143, 0.12)',
+                    }}>
                 {n}
               </div>
-              {n < 2 && <div className={`flex-1 h-0.5 rounded transition-colors ${step > n ? 'bg-emerald-500' : 'bg-slate-700'}`} />}
+              {n < 2 && (
+                <div className="flex-1 h-px rounded transition-colors"
+                     style={{ background: step > n ? '#cdb78f' : 'rgba(205, 183, 143, 0.10)' }} />
+              )}
             </div>
           ))}
-          <span className="text-[10px] uppercase tracking-widest text-ink-400 ml-1 font-bold">
+          <span className="text-[10px] uppercase tracking-[0.22em] ml-1 font-medium"
+                style={{ color: '#928678' }}>
             {step === 1 ? 'Tür' : 'Bilgi'}
           </span>
         </div>
@@ -138,19 +165,30 @@ export default function RegisterPage() {
                 key={opt.value}
                 type="button"
                 onClick={() => goToStep2(opt.value)}
-                className="w-full flex items-center gap-3 p-4 rounded-2xl border border-cream-300
-                           bg-white/40 hover:bg-white hover:border-brand-600/60
-                           transition-all duration-200 text-left group"
+                className="w-full flex items-center gap-3 p-4 rounded-2xl transition-all duration-200 text-left group hover:-translate-y-0.5"
+                style={{
+                  background: 'rgba(205, 183, 143, 0.04)',
+                  border: '1px solid rgba(205, 183, 143, 0.12)',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(205, 183, 143, 0.08)'; e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.35)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(205, 183, 143, 0.04)'; e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.12)' }}
               >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black flex-shrink-0
-                                bg-cream-200 text-ink-400 group-hover:text-brand-700 transition-colors">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[11px] font-semibold tabular-nums flex-shrink-0 transition-colors"
+                     style={{
+                       background: 'rgba(205, 183, 143, 0.06)',
+                       border: '1px solid rgba(205, 183, 143, 0.20)',
+                       color: '#cdb78f',
+                     }}>
                   {opt.value === 'CANDIDATE' ? '01' : '02'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="font-bold text-sm text-white truncate">{opt.title}</div>
-                  <div className="text-[11px] text-ink-400 mt-0.5 truncate">{opt.desc}</div>
+                  <div className="font-semibold text-[14px] truncate" style={{ color: '#f5efe2', letterSpacing: '-0.005em' }}>{opt.title}</div>
+                  <div className="text-[11px] mt-0.5 truncate" style={{ color: '#928678' }}>{opt.desc}</div>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5 text-ink-600 group-hover:text-brand-700 group-hover:translate-x-1 transition-all"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#928678"
+                     strokeWidth={2} className="w-3.5 h-3.5 group-hover:translate-x-1 group-hover:stroke-[color:#cdb78f] transition-all">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
               </button>
             ))}
 
