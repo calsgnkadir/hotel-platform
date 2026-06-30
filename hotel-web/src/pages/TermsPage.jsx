@@ -15,32 +15,33 @@ export default function TermsPage() {
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
            style={{
              background:
-               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(30, 58, 95, 0.18) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(212, 168, 83, 0.10) 0%, transparent 60%)',
+               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(74, 63, 51, 0.30) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(205, 183, 143, 0.10) 0%, transparent 60%)',
            }} />
 
       <div className="fixed top-3 left-4 z-40">
         <BackButton label="Geri" />
       </div>
 
-      <div className="relative z-10 max-w-3xl mx-auto rounded-2xl p-6 sm:p-10"
+      <div className="relative z-10 max-w-3xl mx-auto p-6 sm:p-10"
            style={{
-             background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.85), rgba(15, 23, 38, 0.85))',
-             border: '1px solid rgba(212, 168, 83, 0.20)',
-             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.40)',
+             background: '#1b1815',
+             borderRadius: '28px 12px 28px 12px',
+             border: 'none',
+             boxShadow: '0 18px 48px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(245,239,226,0.03)',
            }}>
-        <div className="mb-6">
-          <h1 className="font-bebas text-3xl sm:text-4xl tracking-wider uppercase text-white"
-              style={{ textShadow: '0 0 18px rgba(212, 168, 83, 0.40)' }}>
+        <div className="mb-7">
+          <h1 className="font-syne text-3xl sm:text-[40px] font-semibold"
+              style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kullanım Şartları
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.2em] font-bold mt-2"
-             style={{ color: '#fde9a5' }}>
+          <p className="text-[10px] uppercase tracking-[0.28em] font-medium mt-3"
+             style={{ color: '#928678' }}>
             Hizmet Sözleşmesi · Son güncelleme: 19 Haziran 2026
           </p>
         </div>
 
-        <div style={{ color: '#dde7f3', fontSize: 14, lineHeight: 1.7 }}>
+        <div style={{ color: '#ede4d3', fontSize: 14, lineHeight: 1.7 }}>
           <Section title="1. Taraflar ve Tanımlar">
             İşbu sözleşme, AjansHotel platformu ("Platform") ile platformu kullanan tüm üyeler
             arasında akdedilmiştir. Üye, aday (CANDIDATE) ya da işletme sahibi (BUSINESS_OWNER)
@@ -127,13 +128,13 @@ export default function TermsPage() {
 function Section({ title, children }) {
   return (
     <section style={{ marginBottom: 22 }}>
-      <h2 style={{
-        fontSize: 16, fontWeight: 700, color: '#fbd768',
-        marginBottom: 8, letterSpacing: '-0.005em',
+      <h2 className="font-syne" style={{
+        fontSize: 15, fontWeight: 600, color: '#cdb78f',
+        marginBottom: 12, letterSpacing: '0.22em', textTransform: 'uppercase',
       }}>
         {title}
       </h2>
-      <div style={{ color: '#dde7f3' }}>
+      <div style={{ color: '#ede4d3' }}>
         {children}
       </div>
     </section>

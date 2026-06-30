@@ -33,24 +33,34 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 text-white relative z-10">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-brand-200 p-8 text-center">
-        <h1 className="text-2xl font-bold mb-3" style={{ color: '#0c1726' }}>
+      <div className="w-full max-w-md p-8 text-center"
+           style={{
+             background: '#1b1815',
+             borderRadius: '28px 12px 28px 12px',
+             border: 'none',
+             boxShadow: '0 32px 72px rgba(0, 0, 0, 0.45)',
+           }}>
+        <h1 className="text-2xl font-bold mb-3" style={{ color: '#f5efe2' }}>
           Email Doğrulama
         </h1>
 
         {state === 'loading' && (
           <div className="py-6">
             <div className="inline-block w-8 h-8 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin"></div>
-            <p className="mt-4 text-sm" style={{ color: '#1e3a5f' }}>Doğrulanıyor...</p>
+            <p className="mt-4 text-sm" style={{ color: '#928678' }}>Doğrulanıyor...</p>
           </div>
         )}
 
         {state === 'success' && (
           <>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth={2} className="w-12 h-12 mb-3 mx-auto"><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
-            <p className="text-sm mb-6" style={{ color: '#0c1726' }}>{message}</p>
+            <p className="text-sm mb-6" style={{ color: '#f5efe2' }}>{message}</p>
             <Link to="/login" className="inline-block px-5 py-2.5 rounded-full text-white font-semibold text-sm"
-                  style={{ background: 'linear-gradient(135deg,#1e3a5f,#b8902d)' }}>
+                  style={{
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    color: '#1a1208',
+                    boxShadow: '0 10px 24px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
+                  }}>
               Giriş Yap
             </Link>
           </>
@@ -59,9 +69,13 @@ export default function VerifyEmailPage() {
         {state === 'error' && (
           <>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth={2} className="w-12 h-12 mb-3 mx-auto"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
-            <p className="text-sm mb-6" style={{ color: '#0c1726' }}>{message}</p>
+            <p className="text-sm mb-6" style={{ color: '#f5efe2' }}>{message}</p>
             <Link to="/login" className="inline-block px-5 py-2.5 rounded-full text-white font-semibold text-sm"
-                  style={{ background: 'linear-gradient(135deg,#1e3a5f,#b8902d)' }}>
+                  style={{
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    color: '#1a1208',
+                    boxShadow: '0 10px 24px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
+                  }}>
               Giriş Yap
             </Link>
           </>

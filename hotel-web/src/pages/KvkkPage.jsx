@@ -12,8 +12,8 @@ export default function KvkkPage() {
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
            style={{
              background:
-               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(30, 58, 95, 0.18) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(212, 168, 83, 0.10) 0%, transparent 60%)',
+               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(74, 63, 51, 0.30) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(205, 183, 143, 0.10) 0%, transparent 60%)',
            }} />
 
       {/* Sabit sol üst geri butonu */}
@@ -23,22 +23,23 @@ export default function KvkkPage() {
 
       <div className="relative z-10 max-w-3xl mx-auto rounded-2xl p-6 sm:p-10"
            style={{
-             background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.85), rgba(15, 23, 38, 0.85))',
-             border: '1px solid rgba(212, 168, 83, 0.20)',
-             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.40)',
+             background: '#1b1815',
+             borderRadius: '28px 12px 28px 12px',
+             border: 'none',
+             boxShadow: '0 18px 48px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(245,239,226,0.03)',
            }}>
-        <div className="mb-6">
-          <h1 className="font-bebas text-3xl sm:text-4xl tracking-wider uppercase text-white"
-              style={{ textShadow: '0 0 18px rgba(212, 168, 83, 0.40)' }}>
+        <div className="mb-7">
+          <h1 className="font-syne text-3xl sm:text-[40px] font-semibold"
+              style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kişisel Verilerin Korunması
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.2em] font-bold mt-2"
-             style={{ color: '#fde9a5' }}>
+          <p className="text-[10px] uppercase tracking-[0.28em] font-medium mt-3"
+             style={{ color: '#928678' }}>
             Aydınlatma Metni · Son güncelleme: 22 Mayıs 2026
           </p>
         </div>
 
-        <div className="space-y-6 text-sm leading-relaxed" style={{ color: '#dde7f3' }}>
+        <div className="space-y-6 text-sm leading-relaxed" style={{ color: '#ede4d3' }}>
           <Section title="1. Veri Sorumlusu">
             <p>
               AjansHotel platformunun (bundan sonra "Platform") veri sorumlusu, platformu işleten
@@ -107,11 +108,11 @@ export default function KvkkPage() {
           </Section>
 
           {/* Onay kutusu */}
-          <div className="rounded-xl p-4"
+          <div className="rounded-2xl p-4"
                style={{
-                 background: 'rgba(212, 168, 83, 0.10)',
-                 border: '1px solid rgba(212, 168, 83, 0.25)',
-                 color: '#dde7f3',
+                 background: 'rgba(205, 183, 143, 0.06)',
+                 border: '1px solid rgba(205, 183, 143, 0.22)',
+                 color: '#ede4d3',
                }}>
             <p className="font-medium">
               Platforma kayıt olarak bu aydınlatma metnini okuduğunuzu ve verilerinizin yukarıda
@@ -121,13 +122,13 @@ export default function KvkkPage() {
         </div>
 
         <div className="mt-8 pt-6 border-t text-center"
-             style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+             style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
           <Link to="/register"
-                className="inline-block text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-full transition-all hover:-translate-y-0.5"
+                className="inline-block text-[12px] font-semibold uppercase tracking-[0.14em] px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5"
                 style={{
-                  background: 'linear-gradient(135deg, #1e3a5f, #b8902d)',
-                  color: '#ffffff',
-                  boxShadow: '0 0 18px rgba(212, 168, 83, 0.40)',
+                  background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                  color: '#1a1208',
+                  boxShadow: '0 10px 24px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
                 }}>
             Kayıt sayfasına dön
           </Link>
@@ -140,11 +141,11 @@ export default function KvkkPage() {
 function Section({ title, children }) {
   return (
     <section>
-      <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-2.5"
-          style={{ color: '#fde9a5' }}>
+      <h2 className="font-syne text-[15px] font-semibold uppercase tracking-[0.22em] mb-3"
+          style={{ color: '#cdb78f' }}>
         {title}
       </h2>
-      <div style={{ color: '#dde7f3' }}>
+      <div style={{ color: '#ede4d3' }}>
         {children}
       </div>
     </section>
