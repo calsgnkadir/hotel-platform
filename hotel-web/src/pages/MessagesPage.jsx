@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
@@ -1156,6 +1157,8 @@ function saveStarred(set) {
 }
 
 export default function MessagesPage() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [activeId, setActiveId] = useState(null)
   const [showListMobile, setShowListMobile] = useState(true)
   const [search, setSearch] = useState('')
@@ -1286,17 +1289,70 @@ export default function MessagesPage() {
             {loading ? (
               <SkeletonConversationList count={4} />
             ) : conversations.length === 0 ? (
-              <div className="empty-state py-12 px-4 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-ink-300 mb-3 mx-auto">
-                  <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-                </svg>
-                <p className="text-sm text-ink-500">Henüz sohbetin yok</p>
-                <p className="text-xs text-ink-400 mt-1">
-                  Bir ilana başvurduğunda işletmeyle otomatik sohbet açılır
-                </p>
-              </div>
+              (() => {
+                const isBiz = user?.role === 'BUSINESS_OWNER'
+                const ctaLabel = isBiz ? 'İlanlarım' : 'İlanları Keşfet'
+                const ctaPath  = isBiz ? '/business' : '/candidate'
+                const helperText = isBiz
+                  ? 'Yayında bir ilanın olduğunda adaylar başvurunca otomatik sohbet açılır.'
+                  : 'Bir ilana başvurduğunda işletmeyle otomatik sohbet açılır.'
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 160, damping: 20 }}
+                    className="py-10 px-4 text-center font-geist">
+                    {/* Animated bubble illustration */}
+                    <motion.div
+                      animate={{ y: [0, -6, 0] }}
+                      transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+                      className="relative w-20 h-20 mx-auto mb-4">
+                      <div className="absolute inset-0 rounded-full"
+                           style={{
+                             background: 'radial-gradient(circle, rgba(212, 168, 83, 0.30) 0%, transparent 65%)',
+                             filter: 'blur(10px)',
+                           }} />
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className="relative w-full h-full">
+                        <defs>
+                          <linearGradient id="empty-bubble-grad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%"  stopColor="#f7c43c" />
+                            <stop offset="100%" stopColor="#b8902d" />
+                          </linearGradient>
+                        </defs>
+                        <path d="M14 12h32a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H24l-10 8V20a8 8 0 0 1 0-8z"
+                              fill="rgba(15, 23, 38, 0.85)"
+                              stroke="url(#empty-bubble-grad)" strokeWidth="1.5" />
+                        <circle cx="24" cy="29" r="1.8" fill="#fde9a5" opacity="0.9" />
+                        <circle cx="32" cy="29" r="1.8" fill="#fde9a5" opacity="0.9" />
+                        <circle cx="40" cy="29" r="1.8" fill="#fde9a5" opacity="0.9" />
+                      </svg>
+                    </motion.div>
+                    <h4 className="text-[14px] font-semibold mb-1.5" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
+                      Henüz sohbetin yok
+                    </h4>
+                    <p className="text-[11.5px] leading-relaxed mb-4" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+                      {helperText}
+                    </p>
+                    <motion.button
+                      onClick={() => navigate(ctaPath)}
+                      whileHover={{ y: -2, scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ type: 'spring', stiffness: 340, damping: 22 }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[11.5px] font-semibold"
+                      style={{
+                        background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 50%, #b8902d 100%)',
+                        color: '#0c1726',
+                        border: '1px solid rgba(212, 168, 83, 0.55)',
+                        boxShadow: '0 4px 14px rgba(212, 168, 83, 0.35), inset 0 1px 0 rgba(255,255,255,0.25)',
+                      }}>
+                      {ctaLabel}
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                      </svg>
+                    </motion.button>
+                  </motion.div>
+                )
+              })()
             ) : filteredConvs.length === 0 ? (
               <div className="py-8 px-4 text-center text-sm text-ink-400">
                 "{search}" araması için sonuç bulunamadı.

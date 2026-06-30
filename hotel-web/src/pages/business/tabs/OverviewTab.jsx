@@ -1,7 +1,9 @@
+import { motion } from 'framer-motion'
 import { StatusBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
 import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ 5.6
 import TodayWidget from '../components/TodayWidget'  // FAZ 5.12
+import ReliabilityBadge from '../../../components/ReliabilityBadge'
 
 /* ── Overview Tab — Dalga C: 2-sutun (sol stat+tablo, sag canli akis) ── */
 export default function OverviewTab({ applications, onTabChange }) {
@@ -16,36 +18,73 @@ export default function OverviewTab({ applications, onTabChange }) {
         {/* FAZ 5.12 — Bugun widget tepelik */}
         <TodayWidget applications={applications} onTabChange={onTabChange} />
 
-        {/* Stat strip — sade 4'lu + sparkline */}
+        {/* Stat strip — gradient + glow blob + hover lift (B: dark concierge) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
-            { label: 'Toplam',      value: applications.length, dot: 'bg-blue-400',  color: '#60a5fa',
+            { label: 'Toplam',      value: applications.length, color: '#60a5fa',
               data: weeklyTrend(applications, null) },
-            { label: 'Bekleyen',    value: pending,             dot: 'bg-amber-400', color: '#fbbf24',
+            { label: 'Bekleyen',    value: pending,             color: '#fbbf24',
               data: weeklyTrend(applications, a => a.status === 'PENDING') },
-            { label: 'İnceleniyor', value: reviewing,           dot: 'bg-brand-400', color: '#f7c43c',
+            { label: 'İnceleniyor', value: reviewing,           color: '#f7c43c',
               data: weeklyTrend(applications, a => a.status === 'REVIEWING') },
-            { label: 'Kabul',       value: accepted,            dot: 'bg-brand-500', color: '#d4a853',
+            { label: 'Kabul',       value: accepted,            color: '#d4a853',
               data: weeklyTrend(applications, a => a.status === 'ACCEPTED') },
           ].map(s => (
-            <div key={s.label} className="stat-card !p-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold truncate">{s.label}</span>
+            <motion.div key={s.label}
+              whileHover={{ y: -3 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 22 }}
+              className="relative overflow-hidden rounded-2xl p-3.5 min-h-[88px] group"
+              style={{
+                background: 'linear-gradient(155deg, rgba(21, 36, 61, 0.88) 0%, rgba(15, 23, 38, 0.96) 100%)',
+                border: `1px solid ${s.color}22`,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
+              }}>
+              <div aria-hidden className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none transition-opacity duration-500 opacity-35 group-hover:opacity-70"
+                   style={{ background: `radial-gradient(circle, ${s.color}55 0%, transparent 65%)`, filter: 'blur(18px)' }} />
+              <div className="relative flex items-center gap-1.5 mb-2">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
+                <span className="text-[10px] uppercase tracking-widest font-semibold truncate"
+                      style={{ color: 'rgba(253, 233, 165, 0.78)' }}>{s.label}</span>
               </div>
-              <div className="flex items-end justify-between gap-2">
-                <div className="text-xl font-black text-white leading-none">{s.value}</div>
+              <div className="relative flex items-end justify-between gap-2">
+                <div className="text-2xl font-semibold leading-none tabular-nums"
+                     style={{
+                       background: `linear-gradient(135deg, #ffffff 30%, ${s.color} 100%)`,
+                       WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                       letterSpacing: '-0.03em',
+                       filter: `drop-shadow(0 0 12px ${s.color}55)`,
+                     }}>{s.value}</div>
                 <Sparkline data={s.data} color={s.color} width={56} height={24} />
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        <div className="card">
-          <div className="card-header">
-            <h2 className="font-semibold text-ink-800 dark:text-ink-900">Son Başvurular</h2>
-            <button onClick={() => onTabChange('applications')}
-              className="text-xs font-medium text-brand-700 dark:text-brand-700">Tümünü Gör</button>
+        <div className="relative overflow-hidden rounded-2xl"
+             style={{
+               background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.75) 0%, rgba(15, 23, 38, 0.92) 100%)',
+               border: '1px solid rgba(212, 168, 83, 0.14)',
+               boxShadow: '0 10px 32px rgba(0,0,0,0.30)',
+             }}>
+          <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-30"
+               style={{ background: 'radial-gradient(circle, rgba(212, 168, 83, 0.30), transparent 70%)', filter: 'blur(24px)' }} />
+          <div className="relative px-5 py-3.5 flex items-center justify-between"
+               style={{ borderBottom: '1px solid rgba(212, 168, 83, 0.10)' }}>
+            <div>
+              <h2 className="text-[15px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
+                Son Başvurular
+              </h2>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(139, 169, 210, 0.65)' }}>
+                En son {Math.min(5, applications.length)} başvuru
+              </p>
+            </div>
+            <motion.button
+              whileHover={{ x: 3 }}
+              onClick={() => onTabChange('applications')}
+              className="text-[12px] font-medium"
+              style={{ color: '#fde9a5' }}>
+              Tümünü Gör
+            </motion.button>
           </div>
           {applications.length === 0 ? (
             <EmptyState
@@ -62,52 +101,11 @@ export default function OverviewTab({ applications, onTabChange }) {
               compact
             />
           ) : (
-            <div className="table-container rounded-none border-0 border-t border-cream-200">
-              <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
-                <colgroup>
-                  <col style={{ width: '38%' }} />
-                  <col className="hidden md:table-column" style={{ width: '24%' }} />
-                  <col style={{ width: '22%' }} />
-                  <col className="hidden sm:table-column" style={{ width: '16%' }} />
-                </colgroup>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(212, 168, 83, 0.18)' }}>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                        style={{ color: 'rgba(229, 231, 235, 0.65)' }}>Aday</th>
-                    <th className="hidden md:table-cell text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                        style={{ color: 'rgba(229, 231, 235, 0.65)' }}>İlan</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                        style={{ color: 'rgba(229, 231, 235, 0.65)' }}>Durum</th>
-                    <th className="hidden sm:table-cell text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                        style={{ color: 'rgba(229, 231, 235, 0.65)' }}>Tarih</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {applications.slice(0, 5).map((app, i, arr) => (
-                    <tr key={app.id}
-                        style={{ borderBottom: i === arr.length - 1 ? 'none' : '1px solid rgba(212, 168, 83, 0.08)' }}>
-                      <td className="px-4 py-3.5">
-                        <div className="font-semibold truncate" style={{ color: '#dde7f3' }}>
-                          {app.candidate?.fullName || 'Anonim'}
-                        </div>
-                        <div className="text-[11px] truncate mt-0.5"
-                             style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
-                          {app.candidate?.email}
-                        </div>
-                      </td>
-                      <td className="hidden md:table-cell px-4 py-3.5 truncate"
-                          style={{ color: 'rgba(229, 231, 235, 0.75)' }}>
-                        {app.listing?.title || '—'}
-                      </td>
-                      <td className="px-4 py-3.5"><StatusBadge status={app.status} /></td>
-                      <td className="hidden sm:table-cell px-4 py-3.5 text-[12px]"
-                          style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
-                        {new Date(app.createdAt).toLocaleDateString('tr-TR')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="relative">
+              {applications.slice(0, 5).map((app, i, arr) => (
+                <BizRecentRow key={app.id} app={app} last={i === arr.length - 1}
+                              onClick={() => onTabChange('applications')} />
+              ))}
             </div>
           )}
         </div>
@@ -184,6 +182,48 @@ function TodayFeed({ applications, onTabChange }) {
         </ul>
       )}
     </div>
+  )
+}
+
+/* Son başvurular satırı — accent rail + avatar gradient + hover lift (B teması) */
+function BizRecentRow({ app, last, onClick }) {
+  const accent = STATUS_DOT[app.status] || '#8ba9d2'
+  const days = Math.floor((Date.now() - new Date(app.createdAt).getTime()) / 86400_000)
+  const relative = days === 0 ? 'bugün' : days === 1 ? 'dün' : `${days} gün önce`
+  return (
+    <motion.div onClick={onClick}
+      whileHover={{ x: 3 }}
+      transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+      role="button" tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
+      className="relative px-5 py-3 flex items-center gap-3 group cursor-pointer"
+      style={{ borderBottom: last ? 'none' : '1px solid rgba(212, 168, 83, 0.06)' }}>
+      <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ background: `linear-gradient(180deg, ${accent}, ${accent}80)`,
+                     boxShadow: `0 0 10px ${accent}66` }} />
+      <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-semibold flex-shrink-0"
+           style={{
+             background: 'linear-gradient(135deg, rgba(35, 74, 130, 0.85), rgba(30, 58, 95, 0.95))',
+             border: '1px solid rgba(212, 168, 83, 0.30)',
+             color: '#fde9a5',
+           }}>
+        {(app.candidate?.fullName || '?').charAt(0).toUpperCase()}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[14px] font-medium truncate" style={{ color: '#ffffff', letterSpacing: '-0.005em' }}>
+            {app.candidate?.fullName || 'Anonim'}
+          </span>
+          <ReliabilityBadge score={app.candidate?.reliabilityScore} />
+        </div>
+        <div className="text-[11.5px] flex items-center gap-2 mt-0.5" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+          <span className="truncate">{app.listing?.title || '—'}</span>
+          <span style={{ color: 'rgba(139, 169, 210, 0.4)' }}>·</span>
+          <span className="flex-shrink-0">{relative}</span>
+        </div>
+      </div>
+      <StatusBadge status={app.status} />
+    </motion.div>
   )
 }
 
