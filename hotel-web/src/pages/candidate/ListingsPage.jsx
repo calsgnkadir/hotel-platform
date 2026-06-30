@@ -170,7 +170,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
-                 style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+                 style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.32)', color: '#cdb78f' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div>
@@ -351,7 +351,7 @@ function DetailModal({ listing, onClose, onApply }) {
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
-                 style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+                 style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.32)', color: '#cdb78f' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div className="flex-1 min-w-0">
@@ -532,27 +532,28 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
   return (
     <div
       onClick={() => onDetail(listing)}
-      className="cursor-pointer transition-all duration-300 group overflow-hidden rounded-2xl relative"
+      className="cursor-pointer transition-all duration-300 group overflow-hidden relative"
       style={{
-        background: 'linear-gradient(145deg, rgba(21, 36, 61, 0.92) 0%, rgba(15, 23, 38, 0.98) 100%)',
-        border: '1px solid rgba(212, 168, 83, 0.12)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04)',
+        background: '#1b1815',
+        borderRadius: '28px 12px 12px 12px',                /* asymmetric tl */
+        border: 'none',
+        boxShadow: '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-4px)'
-        e.currentTarget.style.borderColor = 'rgba(212, 168, 83, 0.35)'
-        e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.35), 0 0 24px rgba(212, 168, 83, 0.15), inset 0 1px 0 rgba(255,255,255,0.06)'
+        e.currentTarget.style.background = '#221f1b'
+        e.currentTarget.style.boxShadow = '0 22px 52px rgba(0,0,0,0.42), inset 0 1px 0 rgba(245,239,226,0.05)'
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0)'
-        e.currentTarget.style.borderColor = 'rgba(212, 168, 83, 0.12)'
-        e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04)'
+        e.currentTarget.style.background = '#1b1815'
+        e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)'
       }}
     >
-      {/* HERO — foto-merkezli üst alan */}
-      <div className="relative h-36 w-full overflow-hidden"
+      {/* HERO — graphite gradient + champagne wash */}
+      <div className="relative h-40 w-full overflow-hidden"
            style={{
-             background: 'linear-gradient(135deg, #15243d 0%, #234a82 100%)',
+             background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 100%)',
            }}>
         {listing.businessPhotoUrls?.length > 0 && (
           <HoverPhotoCarousel photos={listing.businessPhotoUrls}
@@ -561,11 +562,11 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
 
         {/* Verified badge — sol üst */}
         {listing.businessVerified && (
-          <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full backdrop-blur-md"
+          <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.18em] px-2 py-1 rounded-full backdrop-blur-md"
                 style={{
-                  background: 'rgba(15, 23, 38, 0.75)',
-                  color: '#fde9a5',
-                  border: '1px solid rgba(212, 168, 83, 0.45)',
+                  background: 'rgba(19, 17, 15, 0.78)',
+                  color: '#cdb78f',
+                  border: '1px solid rgba(205, 183, 143, 0.42)',
                 }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -576,11 +577,11 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         )}
 
         {/* Job type chip — sağ üst */}
-        <span className="absolute top-3 right-12 text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md z-10"
+        <span className="absolute top-3 right-12 text-[10px] font-semibold uppercase tracking-[0.18em] px-2.5 py-1 rounded-full backdrop-blur-md z-10"
               style={{
-                background: 'rgba(15, 23, 38, 0.75)',
-                color: '#dde7f3',
-                border: '1px solid rgba(212, 168, 83, 0.22)',
+                background: 'rgba(19, 17, 15, 0.78)',
+                color: '#c9bdaa',
+                border: '1px solid rgba(205, 183, 143, 0.16)',
               }}>
           {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
         </span>
@@ -593,9 +594,9 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
           title={isSaved ? 'Kaydedilenlerden çıkar' : 'Kaydet'}
           className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110"
           style={{
-            background: 'rgba(15, 23, 38, 0.75)',
-            border: `1px solid ${isSaved ? 'rgba(239, 68, 68, 0.55)' : 'rgba(212, 168, 83, 0.22)'}`,
-            color: isSaved ? '#fca5a5' : 'rgba(229, 231, 235, 0.65)',
+            background: 'rgba(19, 17, 15, 0.78)',
+            border: `1px solid ${isSaved ? 'rgba(180, 106, 85, 0.55)' : 'rgba(205, 183, 143, 0.18)'}`,
+            color: isSaved ? '#d39481' : '#928678',
           }}>
           <svg width="14" height="14" viewBox="0 0 24 24"
                fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor"
@@ -604,14 +605,14 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
           </svg>
         </button>
 
-        {/* Salary chip — altın gradient, ön plana çıkar */}
+        {/* Salary chip — champagne hairline, no neon glow */}
         {salary && (
-          <span className="absolute bottom-3 left-3 text-[12px] font-bold px-3 py-1.5 rounded-full z-10"
+          <span className="absolute bottom-3 left-3 text-[12px] font-semibold tabular-nums px-3 py-1.5 rounded-full z-10 backdrop-blur-md"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(212, 168, 83, 0.95), rgba(184, 144, 45, 0.95))',
-                  color: '#15243d',
-                  boxShadow: '0 4px 12px rgba(212, 168, 83, 0.35)',
-                  border: '1px solid rgba(247, 196, 60, 0.50)',
+                  background: 'rgba(19, 17, 15, 0.78)',
+                  color: '#cdb78f',
+                  border: '1px solid rgba(205, 183, 143, 0.32)',
+                  letterSpacing: '-0.005em',
                 }}>
             {salary}
           </span>
@@ -619,15 +620,15 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
       </div>
 
       {/* CONTENT */}
-      <div className="p-4 flex flex-col">
-        <h3 className="font-bold text-base leading-snug line-clamp-2 transition-colors duration-200"
-            style={{ color: '#f1f5fb' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#fde9a5' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#f1f5fb' }}>
+      <div className="p-5 flex flex-col">
+        <h3 className="font-syne font-semibold text-base leading-snug line-clamp-2 transition-colors duration-200"
+            style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#cdb78f' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = '#f5efe2' }}>
           {listing.title}
         </h3>
-        <div className="flex items-center gap-2 flex-wrap mt-1">
-          <p className="text-sm inline-flex items-center" style={{ color: '#fde9a5' }}>
+        <div className="flex items-center gap-2 flex-wrap mt-1.5">
+          <p className="text-[13px] inline-flex items-center" style={{ color: '#cdb78f' }}>
             {listing.businessName}
           </p>
           {listing.businessReviewCount > 0 && (
@@ -636,13 +637,13 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 mt-2 text-xs flex-wrap" style={{ color: '#fde9a5' }}>
+        <div className="flex items-center gap-1.5 mt-2 text-[12px] flex-wrap" style={{ color: '#928678' }}>
           <span>{listing.businessDistrict || 'İstanbul'}</span>
-          <span>·</span>
+          <span style={{ color: '#6b6358' }}>·</span>
           <span>{POSITION_LABELS[listing.position] || listing.position}</span>
           {shift && (
             <>
-              <span>·</span>
+              <span style={{ color: '#6b6358' }}>·</span>
               <span>{shift.icon} {shift.label}</span>
             </>
           )}
@@ -657,7 +658,8 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
             ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}`
             : null
           return (
-            <div className="text-xs font-medium mt-1.5" style={{ color: '#fbbf24' }}>
+            <div className="text-[11px] font-medium mt-2 tabular-nums"
+                 style={{ color: openCount === 0 ? '#d39481' : '#c8923a' }}>
               {slots.length} vardiya
               {openCount === 0 && ' · tümü dolu'}
               {openCount > 0 && nextStr && ` · ${nextStr}`}
@@ -665,15 +667,19 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
           )
         })()}
 
-        <p className="text-xs mt-2 line-clamp-2" style={{ color: '#fde9a5', opacity: 0.85 }}>{listing.description}</p>
+        <p className="text-[12px] mt-3 line-clamp-2" style={{ color: '#928678' }}>{listing.description}</p>
 
-        {/* Tek CTA — kart tiklamasi detaya goturur, sadece "Basvur" butonu durur */}
-        <div className="mt-4">
+        {/* Tek CTA — sole bright-gold per card */}
+        <div className="mt-5">
           <button
             onClick={(e) => { e.stopPropagation(); onApply(listing) }}
-            className="w-full py-2 px-3 text-sm font-bold text-white rounded-lg
+            className="w-full py-2.5 px-3 text-[13px] font-semibold uppercase tracking-[0.14em] rounded-2xl
                        transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #d4a853, #d4a853)', boxShadow: '0 4px 16px rgba(212, 168, 83,0.40)' }}>
+            style={{
+              background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+              color: '#1a1208',
+              boxShadow: '0 10px 24px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
+            }}>
             Başvur
           </button>
         </div>
@@ -815,7 +821,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
 
         {/* İlçe — dropdown (39 ilçe pill chip mantıksız) */}
         <div>
-          <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider block mb-1">İlçe</label>
+          <label className="block mb-2 font-syne text-[11px] font-semibold tracking-[0.22em] uppercase"
+                 style={{ color: '#928678' }}>İlçe</label>
           <select value={district} onChange={e => setDistrict(e.target.value)} className="input text-sm">
             <option value="">Tüm İstanbul</option>
             {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
@@ -841,16 +848,19 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         {/* Min Ücret — range slider + preset chips */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-semibold text-ink-500 uppercase tracking-wider">Min Ücret</label>
-            <span className="text-sm font-bold text-brand-700 dark:text-brand-300">
+            <label className="font-syne text-[11px] font-semibold tracking-[0.22em] uppercase"
+                   style={{ color: '#928678' }}>Min Ücret</label>
+            <span className="text-[13px] font-semibold tabular-nums"
+                  style={{ color: '#cdb78f', letterSpacing: '-0.005em' }}>
               {minSalary ? `${Number(minSalary).toLocaleString('tr-TR')} ₺+` : 'Tümü'}
             </span>
           </div>
           <input type="range" min="0" max="50000" step="1000"
             value={minSalary || 0}
             onChange={e => setMinSalary(e.target.value === '0' ? '' : e.target.value)}
-            className="w-full accent-brand-600 cursor-pointer" />
-          <div className="mt-2">
+            className="w-full cursor-pointer"
+            style={{ accentColor: '#cdb78f' }} />
+          <div className="mt-3">
             <FilterChipGroup
               label=""
               value={minSalary}
@@ -880,16 +890,16 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           {datePreset === 'CUSTOM' && (
             <div className="grid grid-cols-2 gap-3 mt-3">
               <div>
-                <label className="text-xs text-ink-500">Başlangıç</label>
+                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: '#928678' }}>Başlangıç</label>
                 <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="input text-sm mt-1" />
+                  className="input text-sm mt-1.5" />
               </div>
               <div>
-                <label className="text-xs text-ink-500">Bitiş</label>
+                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: '#928678' }}>Bitiş</label>
                 <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
                   min={customFrom || new Date().toISOString().split('T')[0]}
-                  className="input text-sm mt-1" />
+                  className="input text-sm mt-1.5" />
               </div>
             </div>
           )}
@@ -900,7 +910,10 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         {activeFilterCount > 0 && (
           <div className="flex justify-end pt-1">
             <button onClick={clearFilters}
-              className="text-xs text-ink-500 hover:text-brand-700 dark:text-brand-700 font-medium inline-flex items-center gap-1">
+              className="text-[11px] font-medium inline-flex items-center gap-1 transition-colors"
+              style={{ color: '#928678' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#d39481' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#928678' }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
@@ -911,7 +924,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         )}
 
         {/* FAZ 5 — Kayıtlı aramalar + "Aramayı Kaydet" */}
-        <div className="pt-3" style={{ borderTop: '1px solid rgba(212, 168, 83, 0.10)' }}>
+        <div className="pt-3" style={{ borderTop: '1px solid rgba(205, 183, 143, 0.10)' }}>
           <SavedSearchManager
             filters={{
               position, jobType, district, keyword: debouncedKeyword, minSalary,
@@ -942,8 +955,9 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       <section className="space-y-4 min-w-0">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-ink-900">İş İlanları</h2>
-            <p className="text-sm text-ink-500 mt-0.5">
+            <h2 className="font-syne text-[22px] font-semibold"
+                style={{ color: '#f5efe2', letterSpacing: '-0.02em' }}>İş İlanları</h2>
+            <p className="text-[12px] mt-1 tabular-nums" style={{ color: '#928678' }}>
               {loading ? '...' : `${listings.length} ilan`}
               {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
             </p>
@@ -960,7 +974,11 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             </svg>
             Filtreler
             {activeFilterCount > 0 && (
-              <span className="bg-brand-700 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center"
+                    style={{
+                      background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                      color: '#1a1208',
+                    }}>
                 {activeFilterCount}
               </span>
             )}
@@ -983,8 +1001,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         />
 
         <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none"
-               width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+               width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#928678"
                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
@@ -995,7 +1013,10 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           {keyword && (
             <button onClick={() => setKeyword('')}
               aria-label="Aramayı temizle"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600">
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+              style={{ color: '#928678' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#ede4d3' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#928678' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
@@ -1099,16 +1120,16 @@ function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
           <button key={c.key}
             type="button"
             onClick={() => onRemove(c.key)}
-            className="group flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all hover:-translate-y-0.5"
+            className="group flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all hover:-translate-y-0.5"
             style={{
-              background: 'rgba(212, 168, 83, 0.12)',
-              color: '#fde9a5',
-              border: '1px solid rgba(212, 168, 83, 0.28)',
+              background: 'rgba(205, 183, 143, 0.10)',
+              color: '#cdb78f',
+              border: '1px solid rgba(205, 183, 143, 0.22)',
             }}>
             <span className="truncate max-w-[180px]">{c.text}</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                 className="opacity-70 group-hover:opacity-100" aria-hidden="true">
+                 className="opacity-65 group-hover:opacity-100" aria-hidden="true">
               <path d="M18 6 6 18" /><path d="m6 6 12 12" />
             </svg>
           </button>
@@ -1116,11 +1137,11 @@ function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
       </div>
       <button onClick={onClearAll}
         type="button"
-        className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-full flex-shrink-0 transition-all hover:-translate-y-0.5"
+        className="text-[10px] font-semibold uppercase tracking-[0.18em] px-2.5 py-1.5 rounded-full flex-shrink-0 transition-all hover:-translate-y-0.5"
         style={{
-          background: 'rgba(248, 113, 113, 0.10)',
-          color: '#f87171',
-          border: '1px solid rgba(248, 113, 113, 0.30)',
+          background: 'rgba(180, 106, 85, 0.10)',
+          color: '#d39481',
+          border: '1px solid rgba(180, 106, 85, 0.28)',
         }}>
         Hepsini Temizle
       </button>
@@ -1158,8 +1179,8 @@ function FilterChipGroup({
   return (
     <div>
       {label && (
-        <label className="block mb-2 font-bebas text-xs tracking-[0.2em] uppercase"
-               style={{ color: '#fde9a5' }}>
+        <label className="block mb-2 font-syne text-[11px] font-semibold tracking-[0.22em] uppercase"
+               style={{ color: '#928678' }}>
           {label}
         </label>
       )}
@@ -1208,7 +1229,7 @@ function ListingsPagination({ page, totalPages, onChange }) {
       </ListingsPageBtn>
       {pageNumbers().map((n, i) => (
         n === '…'
-          ? <span key={`e${i}`} className="w-9 text-center text-[13px]" style={{ color: 'rgba(229, 231, 235, 0.50)' }}>…</span>
+          ? <span key={`e${i}`} className="w-9 text-center text-[13px]" style={{ color: '#6b6358' }}>…</span>
           : <ListingsPageBtn key={n} active={n === page} onClick={() => onChange(n)} ariaLabel={`Sayfa ${n}`}>
               {n}
             </ListingsPageBtn>
@@ -1228,11 +1249,11 @@ function ListingsPageBtn({ children, active, disabled, onClick, ariaLabel }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled}
             aria-label={ariaLabel} aria-current={active ? 'page' : undefined}
-            className="min-w-[36px] h-9 inline-flex items-center justify-center px-3 rounded-lg text-[13px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+            className="min-w-[36px] h-9 inline-flex items-center justify-center px-3 rounded-xl text-[12px] font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
             style={{
-              background: active ? 'rgba(212, 168, 83, 0.18)' : 'rgba(21, 36, 61, 0.55)',
-              color:      active ? '#fde9a5' : 'rgba(229, 231, 235, 0.75)',
-              border:    `1px solid ${active ? 'rgba(212, 168, 83, 0.55)' : 'rgba(212, 168, 83, 0.18)'}`,
+              background: active ? 'rgba(205, 183, 143, 0.12)' : 'rgba(27, 24, 21, 0.75)',
+              color:      active ? '#f5efe2' : '#c9bdaa',
+              border:    `1px solid ${active ? 'rgba(205, 183, 143, 0.42)' : 'rgba(205, 183, 143, 0.10)'}`,
             }}>
       {children}
     </button>
@@ -1242,24 +1263,23 @@ function ListingsPageBtn({ children, active, disabled, onClick, ariaLabel }) {
 function FilterChip({ active, sub, onClick, children }) {
   const style = active
     ? {
-        background: 'linear-gradient(135deg, #1e3a5f 0%, #b8902d 100%)',
-        color: '#ffffff',
-        border: '1px solid transparent',
-        boxShadow: '0 0 14px rgba(212, 168, 83, 0.40)',
+        background: 'rgba(205, 183, 143, 0.14)',
+        color: '#f5efe2',
+        border: '1px solid rgba(205, 183, 143, 0.45)',
       }
     : {
-        background: 'rgba(21, 36, 61, 0.65)',
-        color: '#fde9a5',
-        border: '1px solid rgba(212, 168, 83, 0.18)',
+        background: 'rgba(27, 24, 21, 0.75)',
+        color: '#c9bdaa',
+        border: '1px solid rgba(205, 183, 143, 0.10)',
       }
   return (
     <button type="button" onClick={onClick}
-      className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all hover:-translate-y-0.5"
+      className="px-3 py-1.5 rounded-full text-[11px] font-medium transition-all hover:-translate-y-0.5"
       style={style}>
       <div>{children}</div>
       {sub && (
-        <div className="text-[10px] mt-0.5 font-normal"
-             style={{ opacity: 0.75 }}>
+        <div className="text-[10px] mt-0.5 font-normal tabular-nums"
+             style={{ opacity: 0.65 }}>
           {sub}
         </div>
       )}
