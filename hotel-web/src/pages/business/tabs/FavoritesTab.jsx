@@ -105,8 +105,12 @@ export default function FavoritesTab({ onOpenMessages }) {
               loading="lazy" decoding="async"
               className="w-12 h-12 rounded-full object-cover border border-cream-300 flex-shrink-0" />
           ) : (
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                 style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg flex-shrink-0"
+                 style={{
+                   background: 'rgba(205, 183, 143, 0.08)',
+                   border: '1px solid rgba(205, 183, 143, 0.22)',
+                   color: '#cdb78f',
+                 }}>
               {f.candidateName?.charAt(0) || '?'}
             </div>
           )}
@@ -126,13 +130,22 @@ export default function FavoritesTab({ onOpenMessages }) {
           <div className="flex gap-2 flex-shrink-0">
             <button onClick={() => handleStartChat(f.candidateId)}
               disabled={openingChatId === f.candidateId}
-              className="text-xs px-2.5 py-1.5 rounded-lg text-white font-semibold transition-all hover:-translate-y-0.5 disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+              className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5 disabled:opacity-50"
+              style={{
+                background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                color: '#1a1208',
+                boxShadow: '0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22)',
+              }}>
               {openingChatId === f.candidateId ? '...' : 'Mesajla'}
             </button>
             <button onClick={() => handleRemove(f.candidateId, f.candidateName)}
               disabled={removingId === f.candidateId}
-              className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-semibold transition-colors disabled:opacity-50">
+              className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.14em] transition-colors disabled:opacity-50"
+              style={{
+                background: 'rgba(180, 106, 85, 0.10)',
+                color: '#d39481',
+                border: '1px solid rgba(180, 106, 85, 0.28)',
+              }}>
               {removingId === f.candidateId ? '...' : 'Kaldir'}
             </button>
           </div>

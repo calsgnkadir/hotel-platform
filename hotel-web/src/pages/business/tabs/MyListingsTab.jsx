@@ -45,10 +45,14 @@ export default function MyListingsTab({ applications = [] }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-ink-500">{listings.length} ilan</p>
+        <p className="text-[12px] tabular-nums" style={{ color: '#928678' }}>{listings.length} ilan</p>
         <button onClick={() => setFormTarget('new')}
-          className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+          className="px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.14em] rounded-2xl transition-all hover:-translate-y-0.5"
+          style={{
+            background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+            color: '#1a1208',
+            boxShadow: '0 10px 24px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
+          }}>
           + Yeni İlan
         </button>
       </div>
@@ -101,7 +105,7 @@ export default function MyListingsTab({ applications = [] }) {
                     {POSITION_LABELS[listing.position]} · {JOB_TYPE_LABELS[listing.jobType]}
                   </p>
                   {/* Dalga 4 / Teknik 5 — Conversion satiri */}
-                  <p className="text-[11px] mt-1 font-medium" style={{ color: '#fde9a5' }}>
+                  <p className="text-[11px] mt-1 font-medium tabular-nums" style={{ color: '#cdb78f' }}>
                     {views.toLocaleString('tr-TR')} görüntülenme · {listingApplications} başvuru
                     {conversion !== null && ` · %${conversion} dönüşüm`}
                   </p>
@@ -136,11 +140,11 @@ export default function MyListingsTab({ applications = [] }) {
                   {/* FAZ D1 — son 8 hafta başvuru trendi */}
                   <div className="flex items-center gap-1.5"
                        title={`Son 8 hafta: ${last8wTotal} başvuru`}>
-                    <span className="text-[10px] uppercase tracking-widest font-bold"
-                          style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+                    <span className="text-[10px] uppercase tracking-[0.22em] font-medium tabular-nums"
+                          style={{ color: '#928678' }}>
                       {last8wTotal}
                     </span>
-                    <Sparkline data={trendData} color="#d4a853" width={56} height={20} />
+                    <Sparkline data={trendData} color="#cdb78f" width={56} height={20} />
                   </div>
                   <div className="flex gap-2 flex-wrap justify-end">
                   {listing.status !== 'CLOSED' && (
@@ -220,7 +224,7 @@ function Pagination({ page, totalPages, onChange }) {
       </PageBtn>
       {pageNumbers().map((n, i) => (
         n === '…'
-          ? <span key={`e${i}`} className="w-9 text-center text-[13px]" style={{ color: 'rgba(229, 231, 235, 0.50)' }}>…</span>
+          ? <span key={`e${i}`} className="w-9 text-center text-[13px]" style={{ color: '#6b6358' }}>…</span>
           : <PageBtn key={n} active={n === page} onClick={() => onChange(n)} ariaLabel={`Sayfa ${n}`}>
               {n}
             </PageBtn>
@@ -240,11 +244,11 @@ function PageBtn({ children, active, disabled, onClick, ariaLabel }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled}
             aria-label={ariaLabel} aria-current={active ? 'page' : undefined}
-            className="min-w-[36px] h-9 inline-flex items-center justify-center px-3 rounded-lg text-[13px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+            className="min-w-[36px] h-9 inline-flex items-center justify-center px-3 rounded-xl text-[12px] font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
             style={{
-              background: active ? 'rgba(212, 168, 83, 0.18)' : 'rgba(21, 36, 61, 0.55)',
-              color:      active ? '#fde9a5' : 'rgba(229, 231, 235, 0.75)',
-              border:    `1px solid ${active ? 'rgba(212, 168, 83, 0.55)' : 'rgba(212, 168, 83, 0.18)'}`,
+              background: active ? 'rgba(205, 183, 143, 0.12)' : 'rgba(27, 24, 21, 0.75)',
+              color:      active ? '#f5efe2' : '#c9bdaa',
+              border:    `1px solid ${active ? 'rgba(205, 183, 143, 0.42)' : 'rgba(205, 183, 143, 0.10)'}`,
             }}>
       {children}
     </button>

@@ -91,7 +91,7 @@ function useSeoMeta({ title, description, image, url }) {
 function StarRow({ avg, count }) {
   if (!avg || !count) {
     return (
-      <span className="text-[11px] uppercase tracking-widest" style={{ color: 'rgba(229, 231, 235, 0.45)' }}>
+      <span className="text-[11px] uppercase tracking-widest" style={{ color: '#6b6358' }}>
         Henüz puan yok
       </span>
     )
@@ -102,15 +102,15 @@ function StarRow({ avg, count }) {
       <div className="flex gap-0.5">
         {[1,2,3,4,5].map(i => (
           <svg key={i} viewBox="0 0 20 20" className="w-4 h-4"
-               fill={i <= full ? '#fbbf24' : 'rgba(212, 168, 83, 0.18)'}>
+               fill={i <= full ? '#c8923a' : 'rgba(205, 183, 143, 0.16)'}>
             <path d="M9.05 2.93a1 1 0 011.9 0l1.5 4.3a1 1 0 00.95.67h4.5a1 1 0 01.6 1.8l-3.7 2.7a1 1 0 00-.35 1.1l1.4 4.3a1 1 0 01-1.55 1.1l-3.7-2.7a1 1 0 00-1.2 0l-3.7 2.7a1 1 0 01-1.55-1.1l1.4-4.3a1 1 0 00-.35-1.1l-3.7-2.7a1 1 0 01.6-1.8h4.5a1 1 0 00.95-.67l1.5-4.3z" />
           </svg>
         ))}
       </div>
-      <span className="font-bebas text-lg tracking-wider" style={{ color: '#fbbf24' }}>
+      <span className="font-bebas text-lg tracking-wider" style={{ color: '#c8923a' }}>
         {avg.toFixed(1)}
       </span>
-      <span className="text-[11px]" style={{ color: '#fde9a5' }}>
+      <span className="text-[11px]" style={{ color: '#cdb78f' }}>
         ({count} değerlendirme)
       </span>
     </div>
@@ -205,7 +205,7 @@ export default function BusinessPublicPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="font-bebas text-2xl tracking-widest" style={{ color: '#fde9a5' }}>YÜKLENİYOR...</div>
+        <div className="font-bebas text-2xl tracking-widest" style={{ color: '#cdb78f' }}>YÜKLENİYOR...</div>
       </div>
     )
   }
@@ -214,9 +214,9 @@ export default function BusinessPublicPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4">
         <div className="font-bebas text-3xl tracking-widest mb-2 text-white">404</div>
-        <div className="text-sm mb-6" style={{ color: '#fde9a5' }}>İşletme bulunamadı.</div>
+        <div className="text-sm mb-6" style={{ color: '#cdb78f' }}>İşletme bulunamadı.</div>
         <Link to="/" className="text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full"
-              style={{ background: 'linear-gradient(135deg, #1e3a5f, #b8902d)', color: '#fff' }}>
+              style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208', boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)' }}>
           Ana Sayfaya Dön
         </Link>
       </div>
@@ -275,38 +275,39 @@ export default function BusinessPublicPage() {
       <div className="relative z-10">
         {/* Top bar */}
         <header className="border-b backdrop-blur-xl"
-                style={{ background: 'rgba(15, 23, 38, 0.75)', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+                style={{ background: 'rgba(19, 17, 15, 0.78)', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link to="/" className="flex items-baseline gap-2">
               <span className="font-bebas text-xl tracking-wider text-white">AJANSHOTEL</span>
-              <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: '#fde9a5' }}>istanbul</span>
+              <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: '#cdb78f' }}>istanbul</span>
             </Link>
             <div className="flex items-center gap-2">
               <button onClick={handleShare}
                 className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
-                style={{ background: 'rgba(212, 168, 83, 0.18)', color: '#fde9a5', border: '1px solid rgba(212, 168, 83, 0.30)' }}>
+                style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#fde9a5', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
                 Paylaş
               </button>
               <button onClick={() => navigate('/login')}
                 className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                style={{ background: 'linear-gradient(135deg, #1e3a5f, #b8902d)', color: '#fff' }}>
+                style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208', boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)' }}>
                 Giriş Yap
               </button>
             </div>
           </div>
         </header>
 
-        <main className="max-w-5xl mx-auto px-4 py-8 space-y-6" style={{ color: '#dde7f3' }}>
+        <main className="max-w-5xl mx-auto px-4 py-8 space-y-6" style={{ color: '#ede4d3' }}>
           {/* HERO — logo + name + location + rating */}
           <section className="rounded-2xl p-6 lg:p-8 relative overflow-hidden"
                    style={{
-                     background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.85), rgba(15, 23, 38, 0.85))',
-                     border: '1px solid rgba(212, 168, 83, 0.20)',
+                     background: '#1b1815',
+                     border: 'none',
+                     boxShadow: '0 18px 48px rgba(0,0,0,0.32), inset 0 1px 0 rgba(245,239,226,0.03)',
                    }}>
             <div aria-hidden className="absolute pointer-events-none"
                  style={{
                    top: '-60px', right: '-60px', width: '260px', height: '260px',
-                   background: 'radial-gradient(circle, rgba(212, 168, 83, 0.18) 0%, transparent 70%)',
+                   background: 'radial-gradient(circle, rgba(205, 183, 143, 0.10) 0%, transparent 70%)',
                  }} />
             <div className="relative flex flex-col sm:flex-row items-start gap-5">
               {/* Logo */}
@@ -314,20 +315,20 @@ export default function BusinessPublicPage() {
                 <img src={cldImg(business.logoUrl, { w: ImgSize.avatarMd })}
                      alt={business.name}
                      className="w-24 h-24 rounded-2xl object-cover flex-shrink-0"
-                     style={{ border: '2px solid rgba(212, 168, 83, 0.40)', boxShadow: '0 0 24px rgba(212, 168, 83, 0.30)' }} />
+                     style={{ border: '2px solid rgba(205, 183, 143, 0.30)', boxShadow: '0 0 24px rgba(205, 183, 143, 0.22)' }} />
               ) : (
                 <div className="w-24 h-24 rounded-2xl flex items-center justify-center font-bebas text-4xl text-white flex-shrink-0"
-                     style={{ background: 'linear-gradient(135deg, #1e3a5f, #b8902d)', boxShadow: '0 0 24px rgba(212, 168, 83, 0.40)' }}>
+                     style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208', boxShadow: '0 0 24px rgba(205, 183, 143, 0.30)' }}>
                   {initial}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] uppercase tracking-[0.25em] font-bold mb-1" style={{ color: '#fde9a5' }}>
+                <div className="text-[10px] uppercase tracking-[0.25em] font-bold mb-1" style={{ color: '#cdb78f' }}>
                   {typeLabel}
                   {business.category && <span> · {business.category}</span>}
                 </div>
                 <h1 className="font-bebas text-2xl sm:text-3xl lg:text-4xl tracking-wider uppercase text-white leading-tight inline-flex items-center"
-                    style={{ textShadow: '0 0 18px rgba(212, 168, 83, 0.40)' }}>
+                    style={{ textShadow: '0 0 18px rgba(205, 183, 143, 0.30)' }}>
                   {business.name}
                   {business.verified && <VerifiedBadge size="lg" />}
                 </h1>
@@ -343,8 +344,8 @@ export default function BusinessPublicPage() {
                     <button type="button" onClick={toggleFollow}
                       className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
                       style={{
-                        background: isFollowing ? 'rgba(34, 197, 94, 0.18)' : 'rgba(212, 168, 83, 0.18)',
-                        color: isFollowing ? '#86efac' : '#fde9a5',
+                        background: isFollowing ? 'rgba(34, 197, 94, 0.18)' : 'rgba(205, 183, 143, 0.10)',
+                        color: isFollowing ? '#a8c8a8' : '#cdb78f',
                         border: `1px solid ${isFollowing ? 'rgba(34, 197, 94, 0.40)' : 'rgba(212, 168, 83, 0.45)'}`,
                       }}>
                       {isFollowing ? '✓ Takip Ediliyor' : '+ Takip Et'}
@@ -369,8 +370,8 @@ export default function BusinessPublicPage() {
           {photos.length > 0 && (
             <section className="rounded-2xl overflow-hidden"
                      style={{
-                       background: 'rgba(21, 36, 61, 0.55)',
-                       border: '1px solid rgba(212, 168, 83, 0.18)',
+                       background: 'rgba(27, 24, 21, 0.75)',
+                       border: '1px solid rgba(205, 183, 143, 0.10)',
                      }}>
               <div className="aspect-[16/9] relative bg-black">
                 <img src={cldImg(activePhoto.url, { w: 1200 })} alt=""
@@ -379,16 +380,16 @@ export default function BusinessPublicPage() {
                   <>
                     <button onClick={() => setGalleryIndex(i => (i - 1 + photos.length) % photos.length)}
                             className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-white text-lg"
-                            style={{ background: 'rgba(15, 23, 38, 0.65)', border: '1px solid rgba(212, 168, 83, 0.30)' }}
+                            style={{ background: 'rgba(34, 31, 27, 0.85)', border: '1px solid rgba(205, 183, 143, 0.22)' }}
                             aria-label="Önceki foto"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></button>
                     <button onClick={() => setGalleryIndex(i => (i + 1) % photos.length)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-white text-lg"
-                            style={{ background: 'rgba(15, 23, 38, 0.65)', border: '1px solid rgba(212, 168, 83, 0.30)' }}
+                            style={{ background: 'rgba(34, 31, 27, 0.85)', border: '1px solid rgba(205, 183, 143, 0.22)' }}
                             aria-label="Sonraki foto"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg></button>
                   </>
                 )}
                 <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold"
-                     style={{ background: 'rgba(15, 23, 38, 0.75)', color: '#fff' }}>
+                     style={{ background: 'rgba(19, 17, 15, 0.78)', color: '#fff' }}>
                   {galleryIndex + 1} / {photos.length}
                 </div>
               </div>
@@ -398,16 +399,16 @@ export default function BusinessPublicPage() {
           {/* Harita */}
           {business.latitude != null && business.longitude != null && (
             <section className="rounded-2xl overflow-hidden"
-                     style={{ background: 'rgba(21, 36, 61, 0.55)', border: '1px solid rgba(212, 168, 83, 0.18)' }}>
+                     style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
               <div className="px-5 pt-4 pb-2 flex items-baseline justify-between">
-                <h2 className="font-bebas text-lg tracking-[0.2em] uppercase" style={{ color: '#fde9a5' }}>
+                <h2 className="font-bebas text-lg tracking-[0.2em] uppercase" style={{ color: '#cdb78f' }}>
                   Konum
                 </h2>
                 {business.address && (
                   <a href={`https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`}
                      target="_blank" rel="noopener noreferrer"
                      className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                     style={{ background: 'rgba(212, 168, 83, 0.18)', color: '#fde9a5', border: '1px solid rgba(212, 168, 83, 0.30)' }}>
+                     style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#fde9a5', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
                     Google Maps
                   </a>
                 )}
@@ -434,11 +435,11 @@ export default function BusinessPublicPage() {
             <div className="lg:col-span-2 space-y-6">
               {business.description && (
                 <section className="rounded-2xl p-5"
-                         style={{ background: 'rgba(21, 36, 61, 0.55)', border: '1px solid rgba(212, 168, 83, 0.14)' }}>
-                  <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#fde9a5' }}>
+                         style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(212, 168, 83, 0.14)' }}>
+                  <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
                     Hakkında
                   </h2>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#dde7f3' }}>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#ede4d3' }}>
                     {business.description}
                   </p>
                 </section>
@@ -448,8 +449,8 @@ export default function BusinessPublicPage() {
                 const parsed = parseWorkingHours(business.workingHours)
                 return (
                   <section className="rounded-2xl p-5"
-                           style={{ background: 'rgba(21, 36, 61, 0.55)', border: '1px solid rgba(212, 168, 83, 0.14)' }}>
-                    <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#fde9a5' }}>
+                           style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(212, 168, 83, 0.14)' }}>
+                    <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
                       Çalışma Saatleri
                     </h2>
                     {parsed ? (
@@ -460,7 +461,7 @@ export default function BusinessPublicPage() {
                           return (
                             <li key={day} className="flex items-center justify-between text-sm py-1 border-b last:border-0"
                                 style={{ borderColor: 'rgba(212, 168, 83, 0.08)' }}>
-                              <span className="font-bebas text-base tracking-wider uppercase" style={{ color: '#fde9a5' }}>
+                              <span className="font-bebas text-base tracking-wider uppercase" style={{ color: '#cdb78f' }}>
                                 {DAY_LABELS_TR[day]}
                               </span>
                               {d.closed ? (
@@ -469,7 +470,7 @@ export default function BusinessPublicPage() {
                                   Kapalı
                                 </span>
                               ) : (
-                                <span className="font-mono text-[13px] font-bold" style={{ color: '#dde7f3' }}>
+                                <span className="font-mono text-[13px] font-bold" style={{ color: '#ede4d3' }}>
                                   {d.open} – {d.close}
                                 </span>
                               )}
@@ -478,7 +479,7 @@ export default function BusinessPublicPage() {
                         })}
                       </ul>
                     ) : (
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#dde7f3' }}>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#ede4d3' }}>
                         {business.workingHours}
                       </p>
                     )}
@@ -490,15 +491,15 @@ export default function BusinessPublicPage() {
             {/* Contact + Social (1 col sidebar) */}
             <aside className="space-y-4">
               <section className="rounded-2xl p-5"
-                       style={{ background: 'rgba(21, 36, 61, 0.55)', border: '1px solid rgba(212, 168, 83, 0.14)' }}>
-                <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#fde9a5' }}>
+                       style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(212, 168, 83, 0.14)' }}>
+                <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
                   İletişim
                 </h2>
                 <ul className="space-y-2 text-sm">
                   {business.address && (
                     <li>
                       <div className="text-[10px] uppercase tracking-widest" style={{ color: '#8ba9d2' }}>Adres</div>
-                      <div className="font-medium mt-0.5" style={{ color: '#dde7f3' }}>{business.address}</div>
+                      <div className="font-medium mt-0.5" style={{ color: '#ede4d3' }}>{business.address}</div>
                     </li>
                   )}
                   {business.phone && (
@@ -533,7 +534,7 @@ export default function BusinessPublicPage() {
                         <a href={business.instagram.startsWith('http') ? business.instagram : `https://instagram.com/${business.instagram}`}
                            target="_blank" rel="noopener noreferrer"
                            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                           style={{ background: 'rgba(212, 168, 83, 0.18)', color: '#fde9a5', border: '1px solid rgba(212, 168, 83, 0.30)' }}>
+                           style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#fde9a5', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
                           Instagram
                         </a>
                       )}
@@ -553,9 +554,9 @@ export default function BusinessPublicPage() {
               <button onClick={handleShare}
                 className="w-full text-[11px] font-bold uppercase tracking-wider px-4 py-2.5 rounded-full transition-all hover:-translate-y-0.5"
                 style={{
-                  background: 'linear-gradient(135deg, #1e3a5f, #b8902d)',
+                  background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208',
                   color: '#fff',
-                  boxShadow: '0 0 18px rgba(212, 168, 83, 0.40)',
+                  boxShadow: '0 0 18px rgba(205, 183, 143, 0.30)',
                 }}>
                 Profili Paylaş
               </button>

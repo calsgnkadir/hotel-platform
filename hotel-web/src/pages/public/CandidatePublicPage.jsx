@@ -17,9 +17,9 @@ const LANG_LABELS = {
   SPANISH: 'İspanyolca', ITALIAN: 'İtalyanca',
 }
 const TIER_COLORS = {
-  HIGH:   { color: '#22c55e', label: 'Yüksek' },
-  MEDIUM: { color: '#f7c43c', label: 'Orta' },
-  LOW:    { color: '#f97316', label: 'Düşük' },
+  HIGH:   { color: '#7a9f7a', label: 'Yüksek' },
+  MEDIUM: { color: '#c8923a', label: 'Orta' },
+  LOW:    { color: '#b46a55', label: 'Düşük' },
 }
 
 export default function CandidatePublicPage() {
@@ -72,7 +72,7 @@ export default function CandidatePublicPage() {
             </button>
             <button onClick={() => navigate(-1)}
               className="px-4 py-2 rounded-lg text-white font-semibold text-sm"
-              style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208' }}>
               Geri Dön
             </button>
           </div>
@@ -112,7 +112,7 @@ export default function CandidatePublicPage() {
         {/* HERO */}
         <div className="card !p-0 overflow-hidden">
           <div className="relative h-32"
-               style={{ background: 'linear-gradient(135deg, #15243d 0%, #234a82 70%, #d4a853 100%)' }}>
+               style={{ background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 50%, #1b1815 100%)' }}>
             <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-25"
                  style={{ background: 'radial-gradient(circle, #fff, transparent 70%)' }} />
           </div>
@@ -120,15 +120,15 @@ export default function CandidatePublicPage() {
             <div className="flex items-end gap-4 flex-wrap">
               <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                    style={{
-                     background: 'rgba(212, 168, 83, 0.15)',
-                     border: '3px solid rgba(15, 23, 38, 0.92)',
+                     background: 'rgba(205, 183, 143, 0.12)',
+                     border: '3px solid rgba(19, 17, 15, 0.94)',
                      boxShadow: '0 4px 16px rgba(0,0,0,0.30)',
                    }}>
                 {profile.avatarUrl ? (
                   <img src={profile.avatarUrl} alt={profile.fullName}
                        className="w-full h-full object-cover" />
                 ) : (
-                  <span className="font-bebas text-4xl" style={{ color: '#f7c43c' }}>{initial}</span>
+                  <span className="font-bebas text-4xl" style={{ color: '#cdb78f' }}>{initial}</span>
                 )}
               </div>
               <div className="flex-1 min-w-0 pb-1">
@@ -142,21 +142,21 @@ export default function CandidatePublicPage() {
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
                           style={{
                             background: 'rgba(34, 197, 94, 0.15)',
-                            color: '#86efac',
+                            color: '#a8c8a8',
                             border: '1px solid rgba(34, 197, 94, 0.40)',
                           }}>
                       <span className="w-1.5 h-1.5 rounded-full inline-block"
-                            style={{ background: '#22c55e', boxShadow: '0 0 8px rgba(34, 197, 94, 0.6)' }} />
+                            style={{ background: '#7a9f7a', boxShadow: '0 0 8px rgba(122, 159, 122, 0.55)' }} />
                       İş Arıyor
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-1 flex-wrap text-[13px]"
-                     style={{ color: '#fde9a5' }}>
+                     style={{ color: '#cdb78f' }}>
                   {profile.district && <span>{profile.district}</span>}
                   {profile.reviewCount > 0 && (
                     <>
-                      <span style={{ color: 'rgba(229, 231, 235, 0.40)' }}>·</span>
+                      <span style={{ color: '#6b6358' }}>·</span>
                       <StarRating value={profile.averageRating} count={profile.reviewCount} size="sm" />
                     </>
                   )}
@@ -184,7 +184,7 @@ export default function CandidatePublicPage() {
             label="No-show"
             value={profile.noShowCount ?? 0}
             sub="iptal/gelmedim"
-            color={profile.noShowCount > 0 ? '#f97316' : '#22c55e'}
+            color={profile.noShowCount > 0 ? '#b46a55' : '#7a9f7a'}
           />
           <MetricCard
             label="Ortalama Puan"
@@ -199,7 +199,7 @@ export default function CandidatePublicPage() {
           {/* SOL: Tercihler */}
           <div className="card p-5 space-y-4">
             <h2 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-                style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+                style={{ color: '#cdb78f', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
               İş Tercihleri
             </h2>
 
@@ -225,7 +225,7 @@ export default function CandidatePublicPage() {
           {/* SAG: Eğitim + Diğer */}
           <div className="card p-5 space-y-4">
             <h2 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-                style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+                style={{ color: '#cdb78f', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
               Genel Bilgiler
             </h2>
 
@@ -240,7 +240,7 @@ export default function CandidatePublicPage() {
         {profile.previousExperience && (
           <div className="card p-5">
             <h2 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 mb-3 border-b"
-                style={{ color: '#fde9a5', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+                style={{ color: '#cdb78f', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
               Önceki Deneyim
             </h2>
             <p className="text-[14px] leading-relaxed whitespace-pre-line"
@@ -257,11 +257,11 @@ export default function CandidatePublicPage() {
             <div className="flex items-center justify-between pb-2 mb-3 border-b"
                  style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
               <h2 className="font-bebas text-base tracking-[0.2em] uppercase"
-                  style={{ color: '#fde9a5' }}>İletişim Bilgileri</h2>
+                  style={{ color: '#cdb78f' }}>İletişim Bilgileri</h2>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
                     style={{
                       background: 'rgba(34, 197, 94, 0.15)',
-                      color: '#86efac',
+                      color: '#a8c8a8',
                       border: '1px solid rgba(34, 197, 94, 0.30)',
                     }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -320,7 +320,7 @@ export default function CandidatePublicPage() {
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
               <div className="text-[12px]" style={{ color: 'rgba(229, 231, 235, 0.75)' }}>
-                <p className="font-semibold mb-1" style={{ color: '#fde9a5' }}>
+                <p className="font-semibold mb-1" style={{ color: '#cdb78f' }}>
                   Hassas bilgiler gizli
                 </p>
                 <p style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
@@ -374,7 +374,7 @@ function ChipList({ items }) {
         <span key={it} className="inline-flex items-center text-[12px] font-medium px-2.5 py-1 rounded-full"
               style={{
                 background: 'rgba(212, 168, 83, 0.12)',
-                color: '#fde9a5',
+                color: '#cdb78f',
                 border: '1px solid rgba(212, 168, 83, 0.22)',
               }}>
           {it}

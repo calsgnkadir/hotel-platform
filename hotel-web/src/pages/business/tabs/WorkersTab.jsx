@@ -66,25 +66,34 @@ export default function WorkersTab({ applications, onOpenMessages }) {
   return (
     <div className="space-y-4">
       {/* FAZ 5.14 — Ekip vitrin satırı: avatar cluster + sayım */}
-      <div className="rounded-2xl p-4 flex items-center justify-between gap-4 flex-wrap"
+      <div className="p-5 flex items-center justify-between gap-4 flex-wrap"
            style={{
-             background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.85), rgba(15, 23, 38, 0.85))',
-             border: '1px solid rgba(212, 168, 83, 0.20)',
+             background: '#1b1815',
+             borderRadius: '28px 12px 28px 12px',
+             border: 'none',
+             boxShadow: '0 14px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
            }}>
         <div className="flex items-center gap-4">
           <AvatarCluster items={clusterItems} size={40} max={5} showOnlineDot />
           <div>
-            <div className="font-bebas text-base tracking-wider uppercase" style={{ color: '#dde7f3' }}>
+            <div className="font-syne text-[16px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
               {workers.length} kişilik ekip
             </div>
-            <div className="text-[11px]" style={{ color: '#8ba9d2' }}>
+            <div className="text-[11px] mt-0.5" style={{ color: '#928678' }}>
               yeşil nokta = şu an çevrimiçi
             </div>
           </div>
         </div>
-        <div className="font-bebas text-2xl tracking-wider"
-             style={{ color: '#fbbf24', textShadow: '0 0 12px rgba(251, 191, 36, 0.35)' }}>
-          {totalHours.toFixed(0)} <span className="text-xs" style={{ color: '#fde68a' }}>SAAT</span>
+        <div className="tabular-nums"
+             style={{
+               color: '#cdb78f',
+               fontSize: '28px',
+               fontWeight: 600,
+               letterSpacing: '-0.03em',
+               lineHeight: 1,
+               filter: 'drop-shadow(0 0 14px rgba(205, 183, 143, 0.30))',
+             }}>
+          {totalHours.toFixed(0)} <span className="text-[10px] font-medium uppercase tracking-[0.22em] ml-1" style={{ color: '#928678' }}>SAAT</span>
         </div>
       </div>
 
@@ -139,8 +148,12 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                     loading="lazy" decoding="async"
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
                 ) : (
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
+                       style={{
+                         background: 'rgba(205, 183, 143, 0.08)',
+                         border: '1px solid rgba(205, 183, 143, 0.22)',
+                         color: '#cdb78f',
+                       }}>
                     {w.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
