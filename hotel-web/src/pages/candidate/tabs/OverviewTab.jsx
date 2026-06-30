@@ -5,12 +5,13 @@ import * as hotelApi from '../../../api/hotel'
 import Sparkline, { weeklyTrend } from '../../../components/Sparkline'
 import EarningsWidget from '../../../components/candidate/EarningsWidget'
 
+/* FAZ 5.UX3 — Muted status: ochre / brick / sage / info-grey instead of neon */
 const STATUS_TINT = {
-  PENDING:   { color: '#fbbf24', text: '#fde68a' },
-  REVIEWING: { color: '#22d3ee', text: '#a5f3fc' },
-  HELD:      { color: '#f97316', text: '#fed7aa' },
-  ACCEPTED:  { color: '#22c55e', text: '#86efac' },
-  REJECTED:  { color: '#ef4444', text: '#fca5a5' },
+  PENDING:   { color: '#c8923a', text: '#e0b766' },   // ochre
+  REVIEWING: { color: '#6b8aa3', text: '#a0b1c2' },   // info-blue muted
+  HELD:      { color: '#a17b3f', text: '#cda06e' },   // deep ochre
+  ACCEPTED:  { color: '#7a9f7a', text: '#a8c8a8' },   // sage
+  REJECTED:  { color: '#b46a55', text: '#d39481' },   // brick
 }
 const STATUS_LABEL = {
   PENDING: 'Bekliyor', REVIEWING: 'İnceleniyor', HELD: 'Hold',
@@ -42,12 +43,12 @@ export default function OverviewTab({ user, applications, onTabChange }) {
       {/* Dalga H3 — Profil goruntulenme widget'i (Kariyer.net'ten uyarlama) */}
       <ProfileViewsWidget />
 
-      {/* STAT KARTLARI */}
+      {/* STAT KARTLARI — champagne / ochre / sage (muted, no neon) */}
       <motion.div variants={ITEM} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard
           label="Toplam Başvuru"
           value={applications.length}
-          color="#60a5fa"
+          color="#cdb78f"
           delta={delta}
           data={weeklyTrend(applications, null)}
           delay={0}
@@ -55,14 +56,14 @@ export default function OverviewTab({ user, applications, onTabChange }) {
         <StatCard
           label="Bekleyen"
           value={pending}
-          color="#fbbf24"
+          color="#c8923a"
           data={weeklyTrend(applications, a => a.status === 'PENDING')}
           delay={0.1}
         />
         <StatCard
           label="Kabul"
           value={accepted}
-          color="#d4a853"
+          color="#7a9f7a"
           data={weeklyTrend(applications, a => a.status === 'ACCEPTED')}
           delay={0.2}
         />
@@ -76,31 +77,32 @@ export default function OverviewTab({ user, applications, onTabChange }) {
           sekmelere erisim sagliyor, ortada redundant 5 kart gerek yok */}
 
       {applications.length > 0 && (
-        <motion.div variants={ITEM} className="relative overflow-hidden rounded-2xl"
+        <motion.div variants={ITEM} className="relative overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.75) 0%, rgba(15, 23, 38, 0.92) 100%)',
-            border: '1px solid rgba(212, 168, 83, 0.14)',
-            boxShadow: '0 10px 32px rgba(0,0,0,0.30)',
+            background: '#1b1815',
+            borderRadius: '12px 28px 12px 12px',                /* asymmetric tr */
+            border: 'none',
+            boxShadow: '0 18px 44px rgba(0,0,0,0.32)',
           }}>
-          {/* Köşe altın blob */}
+          {/* Köşe champagne blob */}
           <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-30"
-               style={{ background: 'radial-gradient(circle, rgba(212, 168, 83, 0.30), transparent 70%)', filter: 'blur(24px)' }} />
+               style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22), transparent 70%)', filter: 'blur(28px)' }} />
 
-          <div className="relative px-5 py-3.5 flex items-center justify-between"
-               style={{ borderBottom: '1px solid rgba(212, 168, 83, 0.10)' }}>
+          <div className="relative px-6 py-4 flex items-center justify-between"
+               style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
             <div>
-              <h2 className="text-[15px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
+              <h2 className="font-syne text-[16px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
                 Son başvurular
               </h2>
-              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(139, 169, 210, 0.65)' }}>
+              <p className="text-[11px] mt-1 uppercase tracking-[0.18em]" style={{ color: '#928678' }}>
                 En son {Math.min(3, applications.length)} başvurun
               </p>
             </div>
             <motion.button
               whileHover={{ x: 3 }}
               onClick={() => onTabChange('applications')}
-              className="text-[12px] font-medium"
-              style={{ color: '#fde9a5' }}>
+              className="text-[12px] font-medium underline-sweep"
+              style={{ color: '#cdb78f' }}>
               Tümü
             </motion.button>
           </div>
@@ -143,23 +145,23 @@ function ActivityStream({ applications, onTabChange }) {
   }
 
   return (
-    <div className="card p-4">
-      <div className="flex items-center justify-between mb-3 pb-2 border-b"
-           style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
-        <h3 className="font-bebas text-base tracking-[0.2em] uppercase"
-            style={{ color: '#fde9a5' }}>Aktivite</h3>
-        <span className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: 'rgba(229, 231, 235, 0.50)' }}>{sorted.length} kayıt</span>
+    <div className="card p-5">
+      <div className="flex items-center justify-between mb-4 pb-3"
+           style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
+        <h3 className="font-syne text-[14px] font-semibold tracking-tight"
+            style={{ color: '#f5efe2', letterSpacing: '-0.01em' }}>Aktivite</h3>
+        <span className="text-[10px] font-medium uppercase tracking-[0.22em]"
+              style={{ color: '#6b6358' }}>{sorted.length} kayıt</span>
       </div>
 
       {sorted.length === 0 ? (
-        <p className="text-center text-xs py-8" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+        <p className="text-center text-xs py-8" style={{ color: '#928678' }}>
           Henüz başvuru yok. İlanlar sekmesinden başla.
         </p>
       ) : (
-        <ul className="space-y-2.5">
+        <ul className="space-y-3">
           {sorted.map(app => {
-            const tint = STATUS_TINT[app.status] || { color: '#8ba9d2', text: '#dde7f3' }
+            const tint = STATUS_TINT[app.status] || { color: '#928678', text: '#c9bdaa' }
             return (
               <li key={app.id}>
                 <button onClick={() => onTabChange('applications')}
@@ -167,19 +169,19 @@ function ActivityStream({ applications, onTabChange }) {
                   <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
                         style={{
                           background: tint.color,
-                          boxShadow: `0 0 8px ${tint.color}80`,
+                          boxShadow: `0 0 6px ${tint.color}66`,
                         }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium truncate group-hover:text-white transition-colors"
-                       style={{ color: '#dde7f3' }}>
+                    <p className="text-[13px] font-medium truncate transition-colors"
+                       style={{ color: '#ede4d3' }}>
                       {app.listing?.title || 'İlan'}
                     </p>
-                    <p className="text-[11px] truncate" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+                    <p className="text-[11px] truncate mt-0.5" style={{ color: '#928678' }}>
                       {app.listing?.businessName || ''} · {STATUS_LABEL[app.status] || app.status}
                     </p>
                   </div>
-                  <span className="text-[10px] flex-shrink-0 mt-0.5"
-                        style={{ color: 'rgba(229, 231, 235, 0.38)' }}>
+                  <span className="text-[10px] flex-shrink-0 mt-1 tabular-nums"
+                        style={{ color: '#6b6358' }}>
                     {relativeTime(app.createdAt)}
                   </span>
                 </button>
@@ -240,54 +242,53 @@ function StatCard({ label, value, color, data, delta, delay = 0 }) {
       onMouseMove={onMove} onMouseLeave={onLeave}
       whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 230, damping: 22 }}
-      style={{ rotateX, rotateY, transformPerspective: 1000 }}
-      className="relative overflow-hidden rounded-2xl p-5 cursor-default min-h-[150px] group"
+      style={{ rotateX, rotateY, transformPerspective: 1000, borderRadius: '28px 12px 12px 12px' }}
+      className="relative overflow-hidden p-6 cursor-default min-h-[160px] group"
     >
-      {/* Glass icerik katmani */}
-      <div className="absolute inset-0 rounded-2xl pointer-events-none"
+      {/* Surface — graphite raised, no border (hairline only on hover blob) */}
+      <div className="absolute inset-0 pointer-events-none"
            style={{
-             background: 'linear-gradient(155deg, rgba(21, 36, 61, 0.88) 0%, rgba(15, 23, 38, 0.96) 100%)',
-             border: `1px solid ${color}22`,
-             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+             background: '#1b1815',
+             borderRadius: '28px 12px 12px 12px',
+             boxShadow: 'inset 0 1px 0 rgba(245,239,226,0.03)',
            }} />
 
-      {/* Köşede yüzen renk blob */}
-      <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full pointer-events-none transition-opacity duration-500 opacity-40 group-hover:opacity-80"
-           style={{ background: `radial-gradient(circle, ${color}66 0%, transparent 65%)`, filter: 'blur(22px)' }} />
+      {/* Köşede yüzen renk blob — muted */}
+      <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full pointer-events-none transition-opacity duration-500 opacity-40 group-hover:opacity-70"
+           style={{ background: `radial-gradient(circle, ${color}55 0%, transparent 65%)`, filter: 'blur(26px)' }} />
 
-      {/* Sparkline arka plan — daha belirgin (opacity 0.6) */}
-      <div aria-hidden className="absolute inset-x-2 bottom-2 h-14 pointer-events-none opacity-60">
+      {/* Sparkline arka plan — toned down */}
+      <div aria-hidden className="absolute inset-x-2 bottom-2 h-14 pointer-events-none opacity-45">
         <Sparkline data={data} color={color} width={400} height={56} />
       </div>
 
-      {/* İçerik — ikon kaldirildi, sadece label + delta */}
-      <div className="relative flex items-start justify-between gap-2 mb-1">
-        <span className="text-[12px] font-medium" style={{ color: 'rgba(253, 233, 165, 0.85)', letterSpacing: '-0.005em' }}>
+      {/* Label + delta */}
+      <div className="relative flex items-start justify-between gap-2 mb-2">
+        <span className="text-[10px] font-medium uppercase tracking-[0.22em]"
+              style={{ color: '#928678' }}>
           {label}
         </span>
         {typeof delta === 'number' && delta !== 0 && (
           <motion.span
             initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8, type: 'spring', stiffness: 380, damping: 20 }}
-            className="text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center"
+            className="text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center"
             style={{
-              background: delta > 0 ? 'rgba(34, 197, 94, 0.14)' : 'rgba(239, 68, 68, 0.14)',
-              color:      delta > 0 ? '#86efac' : '#fca5a5',
-              border: `1px solid ${delta > 0 ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
+              background: delta > 0 ? 'rgba(122, 159, 122, 0.14)' : 'rgba(180, 106, 85, 0.14)',
+              color:      delta > 0 ? '#a8c8a8' : '#d39481',
+              border: `1px solid ${delta > 0 ? 'rgba(122, 159, 122, 0.32)' : 'rgba(180, 106, 85, 0.32)'}`,
             }}>
             {delta > 0 ? `+${delta}` : delta}
           </motion.span>
         )}
       </div>
 
-      {/* Sayı + sub label */}
-      <div className="relative mt-2">
-        <div className="text-[48px] font-semibold leading-none tabular-nums"
+      {/* Hero numeral — editorial luxe (56px, -3% tracking, drop-shadow halo) */}
+      <div className="relative mt-3">
+        <div className="numeral-hero"
              style={{
-               background: `linear-gradient(135deg, #ffffff 30%, ${color} 100%)`,
-               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-               letterSpacing: '-0.04em',
-               filter: `drop-shadow(0 0 18px ${color}55)`,
+               color: '#f5efe2',
+               filter: `drop-shadow(0 0 16px ${color}44)`,
              }}>
           {displayed}
         </div>
@@ -339,39 +340,37 @@ function RecentAppRow({ app, last }) {
     <motion.div variants={ROW}
       whileHover={{ x: 3 }}
       transition={{ type: 'spring', stiffness: 320, damping: 24 }}
-      className="relative px-5 py-3 flex items-center gap-3 group cursor-pointer"
-      style={{ borderBottom: last ? 'none' : '1px solid rgba(212, 168, 83, 0.06)' }}>
-      {/* Sol kenar status accent rail */}
-      <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ background: `linear-gradient(180deg, ${tint.color}, ${tint.color}80)`,
-                     boxShadow: `0 0 10px ${tint.color}66` }} />
+      className="relative px-6 py-4 flex items-center gap-3 group cursor-pointer"
+      style={{ borderBottom: last ? 'none' : '1px solid rgba(205, 183, 143, 0.06)' }}>
+      {/* Sol kenar status accent rail — hairline on hover */}
+      <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ background: tint.color }} />
 
-      <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-semibold flex-shrink-0"
+      <div className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-semibold flex-shrink-0"
            style={{
-             background: 'linear-gradient(135deg, rgba(35, 74, 130, 0.85), rgba(30, 58, 95, 0.95))',
-             border: '1px solid rgba(212, 168, 83, 0.30)',
-             color: '#fde9a5',
+             background: 'rgba(205, 183, 143, 0.08)',
+             border: '1px solid rgba(205, 183, 143, 0.22)',
+             color: '#cdb78f',
            }}>
         {(app.listing?.businessName || '?').charAt(0).toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[14px] font-medium truncate" style={{ color: '#ffffff', letterSpacing: '-0.005em' }}>
+        <div className="text-[14px] font-medium truncate" style={{ color: '#ede4d3', letterSpacing: '-0.005em' }}>
           {app.listing?.title}
         </div>
-        <div className="text-[11.5px] flex items-center gap-2" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+        <div className="text-[11px] flex items-center gap-2 mt-0.5" style={{ color: '#928678' }}>
           <span className="truncate">{app.listing?.businessName}</span>
-          <span style={{ color: 'rgba(139, 169, 210, 0.4)' }}>·</span>
+          <span style={{ color: '#6b6358' }}>·</span>
           <span>{relative}</span>
         </div>
       </div>
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-semibold flex-shrink-0"
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-[0.14em] flex-shrink-0"
             style={{
-              background: `${tint.color}1a`,
-              border: `1px solid ${tint.color}55`,
+              background: `${tint.color}14`,
+              border: `1px solid ${tint.color}44`,
               color: tint.text,
-              boxShadow: `0 0 10px ${tint.color}22`,
             }}>
-        <span className="w-1.5 h-1.5 rounded-full" style={{ background: tint.color, boxShadow: `0 0 6px ${tint.color}` }} />
+        <span className="w-1.5 h-1.5 rounded-full" style={{ background: tint.color }} />
         {STATUS_LABEL[app.status] || app.status}
       </span>
     </motion.div>
@@ -391,29 +390,36 @@ function ProfileViewsWidget() {
   const unique = data?.uniqueViewers ?? 0
 
   return (
-    <div className="card p-4 flex items-center gap-4">
-      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+    <div className="card p-5 flex items-center gap-4">
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
            style={{
-             background: 'rgba(212, 168, 83, 0.12)',
-             border: '1px solid rgba(212, 168, 83, 0.30)',
+             background: 'rgba(205, 183, 143, 0.08)',
+             border: '1px solid rgba(205, 183, 143, 0.22)',
            }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f7c43c"
-             strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cdb78f"
+             strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
           <circle cx="12" cy="12" r="3" />
         </svg>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] uppercase tracking-widest font-semibold"
-             style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+        <div className="text-[10px] uppercase tracking-[0.22em] font-medium"
+             style={{ color: '#928678' }}>
           PROFIL GÖRÜNTÜLENME · SON 90 GÜN
         </div>
-        <div className="flex items-baseline gap-3 mt-0.5">
-          <span className="font-bebas text-2xl tracking-wider"
-                style={{ color: '#fde9a5', textShadow: '0 0 12px rgba(212, 168, 83, 0.35)' }}>
+        <div className="flex items-baseline gap-3 mt-1">
+          <span className="tabular-nums"
+                style={{
+                  color: '#f5efe2',
+                  fontSize: '28px',
+                  fontWeight: 600,
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1,
+                  filter: 'drop-shadow(0 0 12px rgba(205, 183, 143, 0.25))',
+                }}>
             {total}
           </span>
-          <span className="text-[11px]" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+          <span className="text-[11px]" style={{ color: '#928678' }}>
             {unique > 0 ? `${unique} işletme baktı` : 'henüz işletme bakmadı'}
           </span>
         </div>

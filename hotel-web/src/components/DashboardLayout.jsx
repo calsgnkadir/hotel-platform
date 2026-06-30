@@ -104,13 +104,13 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
   return (
     <div className="min-h-screen relative">
-      {/* Calm radial halo arka plan */}
+      {/* Calm radial halo — warm graphite + champagne wash */}
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
            style={{
              background:
-               'radial-gradient(ellipse 800px 600px at 10% 20%, rgba(30, 58, 95, 0.18) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 90% 80%, rgba(212, 168, 83, 0.10) 0%, transparent 60%),' +
-               'radial-gradient(circle at 50% 50%, transparent 0%, rgba(10, 6, 18, 0.6) 100%)',
+               'radial-gradient(ellipse 800px 600px at 10% 20%, rgba(74, 63, 51, 0.30) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 600px 500px at 90% 80%, rgba(205, 183, 143, 0.10) 0%, transparent 60%),' +
+               'radial-gradient(circle at 50% 50%, transparent 0%, rgba(13, 11, 9, 0.60) 100%)',
            }} />
 
       {/* Neon üst hat */}
@@ -128,19 +128,20 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                     transform transition-transform duration-300
                     ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
         style={{
-          background: 'rgba(15, 23, 38, 0.92)',
-          borderColor: 'rgba(212, 168, 83, 0.18)',
+          background: 'rgba(19, 17, 15, 0.94)',
+          borderColor: 'rgba(205, 183, 143, 0.08)',
         }}
         aria-label="Ana navigasyon">
         {/* Logo */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b"
-             style={{ borderColor: 'rgba(212, 168, 83, 0.12)' }}>
+             style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
           <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2">
-            <span className="font-bebas text-2xl tracking-wider text-white">AJANSHOTEL</span>
-            <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: '#fde9a5' }}>istanbul</span>
+            <span className="font-bebas text-2xl tracking-wider" style={{ color: '#f5efe2' }}>AJANSHOTEL</span>
+            <span className="text-[9px] uppercase tracking-[0.28em]" style={{ color: '#928678' }}>istanbul</span>
           </Link>
           <button onClick={() => setMobileOpen(false)}
-                  className="lg:hidden p-1 rounded text-white/60 hover:text-white"
+                  className="lg:hidden p-1 rounded"
+                  style={{ color: '#928678' }}
                   aria-label="Menüyü kapat">
             <Icon name="close" size={18} />
           </button>
@@ -159,7 +160,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
         {/* Footer */}
         <div className="border-t flex-shrink-0 p-3 space-y-2"
-             style={{ borderColor: 'rgba(212, 168, 83, 0.12)' }}>
+             style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
           <div className="flex items-center justify-between gap-2 px-1">
             <LanguageSwitcher />
             <WsConnectionBadge />
@@ -167,21 +168,21 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           {isBusiness && bizProfile?.id && (
             <a href={`/p/business/${bizProfile.id}`} target="_blank" rel="noopener noreferrer"
                title="Public profilini yeni sekmede ac"
-               className="flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-full transition-all hover:-translate-y-0.5"
+               className="flex items-center justify-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] px-3 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
                style={{
-                 background: 'rgba(212, 168, 83, 0.15)',
-                 color: '#fde9a5',
-                 border: '1px solid rgba(212, 168, 83, 0.30)',
+                 background: 'rgba(205, 183, 143, 0.08)',
+                 color: '#cdb78f',
+                 border: '1px solid rgba(205, 183, 143, 0.22)',
                }}>
               <Icon name="external" size={11} /> Public Profilim
             </a>
           )}
           <button onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-full transition-all hover:-translate-y-0.5"
+                  className="w-full flex items-center justify-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] px-4 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.20), rgba(185, 28, 28, 0.30))',
-                    color: '#fca5a5',
-                    border: '1px solid rgba(220, 38, 38, 0.30)',
+                    background: 'rgba(180, 106, 85, 0.10)',
+                    color: '#d39481',
+                    border: '1px solid rgba(180, 106, 85, 0.25)',
                   }}>
             <Icon name="logout" size={12} /> Çıkış
           </button>
@@ -193,25 +194,25 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         {/* Top bar — mobile hamburger + brand fallback, sag actions her durumda */}
         <header className="sticky top-[2px] z-20 backdrop-blur-xl border-b"
                 style={{
-                  background: 'rgba(15, 23, 38, 0.65)',
-                  borderColor: 'rgba(212, 168, 83, 0.12)',
+                  background: 'rgba(19, 17, 15, 0.72)',
+                  borderColor: 'rgba(205, 183, 143, 0.08)',
                 }}>
           <div className="px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
             {/* Mobile: hamburger + brand */}
             <div className="flex items-center gap-2 lg:hidden">
               <button onClick={() => setMobileOpen(true)}
-                      className="p-2 rounded-full"
-                      style={{ background: 'rgba(212, 168, 83, 0.15)', color: '#fde9a5' }}
+                      className="p-2 rounded-2xl"
+                      style={{ background: 'rgba(205, 183, 143, 0.08)', color: '#cdb78f' }}
                       aria-label="Menü">
                 <Icon name="menu" size={18} />
               </button>
               <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-1.5">
-                <span className="font-bebas text-xl tracking-wider text-white">AJANSHOTEL</span>
+                <span className="font-bebas text-xl tracking-wider" style={{ color: '#f5efe2' }}>AJANSHOTEL</span>
               </Link>
             </div>
             {/* Desktop: aktif sayfa basligi sol tarafta */}
-            <h2 className="hidden lg:block font-geist text-[15px] font-semibold text-white/85"
-                style={{ letterSpacing: '-0.01em' }}>
+            <h2 className="hidden lg:block text-[14px] font-medium"
+                style={{ color: '#c9bdaa', letterSpacing: '-0.01em', fontFamily: 'Inter, sans-serif' }}>
               {currentTitle}
             </h2>
 
@@ -223,22 +224,26 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           </div>
         </header>
 
-        <main className="fade-in" style={{ color: '#dde7f3' }}>
+        <main className="fade-in" style={{ color: '#ede4d3' }}>
           <EmailVerifyBanner />
 
-          {/* Page heading strip — buyuk Geist baslik */}
-          <div className="px-4 lg:px-8 pt-5 lg:pt-8 pb-3">
-            <h1 className="font-geist text-2xl sm:text-3xl lg:text-[36px] text-white"
+          {/* Page heading strip — Syne display, generous rhythm */}
+          <div className="px-4 lg:px-8 pt-8 lg:pt-12 pb-6">
+            <h1 className="font-syne"
                 style={{
+                  color: '#f5efe2',
+                  fontSize: 'clamp(32px, 4.5vw, 44px)',
                   fontWeight: 600,
-                  letterSpacing: '-0.02em',
-                  textShadow: '0 0 24px rgba(212, 168, 83, 0.20)',
+                  letterSpacing: '-0.025em',
+                  lineHeight: 1.05,
                 }}>
               {currentTitle}
             </h1>
+            <div aria-hidden className="mt-3 h-px max-w-[80px]"
+                 style={{ background: 'linear-gradient(90deg, rgba(205, 183, 143, 0.55), transparent)' }} />
           </div>
 
-          <div className="px-4 lg:px-8 pb-12 text-[14px]">
+          <div className="px-4 lg:px-8 pb-16 text-[14px]">
             {children}
           </div>
         </main>
@@ -247,39 +252,41 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   )
 }
 
-/* ───────── NavItem komponenti ───────── */
+/* ───────── NavItem komponenti — hairline + champagne accent rail ───────── */
 function NavItem({ item, active, onClick, label }) {
   return (
     <button
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-all font-geist"
+      className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all"
       style={{
-        background: active ? 'rgba(212, 168, 83, 0.14)' : 'transparent',
-        color:      active ? '#ffffff' : 'rgba(229, 231, 235, 0.62)',
-        border:     active ? '1px solid rgba(212, 168, 83, 0.30)' : '1px solid transparent',
+        background: active ? 'rgba(205, 183, 143, 0.08)' : 'transparent',
+        color:      active ? '#f5efe2' : '#928678',
+        border:     'none',
         letterSpacing: '-0.005em',
+        fontFamily: 'Inter, sans-serif',
       }}
       onMouseEnter={(e) => {
         if (!active) {
-          e.currentTarget.style.background = 'rgba(212, 168, 83, 0.06)'
-          e.currentTarget.style.color = '#fde9a5'
+          e.currentTarget.style.background = 'rgba(205, 183, 143, 0.04)'
+          e.currentTarget.style.color = '#ede4d3'
         }
       }}
       onMouseLeave={(e) => {
         if (!active) {
           e.currentTarget.style.background = 'transparent'
-          e.currentTarget.style.color = 'rgba(229, 231, 235, 0.62)'
+          e.currentTarget.style.color = '#928678'
         }
       }}>
-      <span style={{ color: active ? '#f7c43c' : 'rgba(229, 231, 235, 0.45)' }}>
+      {/* Active accent rail — champagne hairline on left edge */}
+      {active && (
+        <span aria-hidden className="absolute left-0 top-2 bottom-2 w-[2px] rounded-full"
+              style={{ background: 'linear-gradient(180deg, #cdb78f, #b89e6e)' }} />
+      )}
+      <span style={{ color: active ? '#cdb78f' : '#6b6358' }}>
         <Icon name={item.icon} size={16} />
       </span>
       <span className="flex-1 text-left">{label}</span>
-      {active && (
-        <span aria-hidden className="w-1 h-1 rounded-full"
-              style={{ background: '#d4a853', boxShadow: '0 0 8px rgba(212, 168, 83, 0.8)' }} />
-      )}
     </button>
   )
 }
