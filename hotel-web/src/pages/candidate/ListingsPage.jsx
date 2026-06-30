@@ -24,6 +24,7 @@ import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
 import EmptyState from '../../components/EmptyState'
 import { SkeletonListingGrid } from '../../components/Skeleton'
+import SavedSearchManager from '../../components/SavedSearchManager'
 // ListingsMapView kaldirildi (kullanici istegi)
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
@@ -761,11 +762,13 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   }, [keyword])
 
   // FAZ 0/#10 — useQuery: filtreler dependency, otomatik refetch + cache
+  // FAZ 5 — ranked=true: aday tercihlerine göre "sana özel" sıralama
   const filters = {
     position, jobType, shifts, district, minSalary,
     keyword: debouncedKeyword,
     dateFrom: dateRange.dateFrom,
     dateTo:   dateRange.dateTo,
+    ranked: true,
   }
   const { data: listings = [], isLoading: loading, error } = useQuery({
     queryKey: keys.listings.list(filters),
@@ -906,6 +909,32 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             </button>
           </div>
         )}
+
+        {/* FAZ 5 — Kayıtlı aramalar + "Aramayı Kaydet" */}
+        <div className="pt-3" style={{ borderTop: '1px solid rgba(212, 168, 83, 0.10)' }}>
+          <SavedSearchManager
+            filters={{
+              position, jobType, district, keyword: debouncedKeyword, minSalary,
+              dateFrom: dateRange.dateFrom, dateTo: dateRange.dateTo, shifts,
+            }}
+            onApply={(s) => {
+              setPosition(s.position || '')
+              setJobType(s.jobType || '')
+              setDistrict(s.district || '')
+              setKeyword(s.keyword || '')
+              setMinSalary(s.minSalary != null ? String(s.minSalary) : '')
+              setShifts(s.shifts ? Array.from(s.shifts) : [])
+              if (s.dateFrom && s.dateTo) {
+                setDatePreset('CUSTOM')
+                setCustomFrom(s.dateFrom)
+                setCustomTo(s.dateTo)
+              } else {
+                setDatePreset(''); setCustomFrom(''); setCustomTo('')
+              }
+              toast.success(`"${s.name}" uygulandı`)
+            }}
+          />
+        </div>
         </div>  {/* card filtre paneli kapanis */}
       </aside>
 

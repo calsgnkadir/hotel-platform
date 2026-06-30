@@ -2,12 +2,14 @@ package com.hotelapp.service;
 
 import com.hotelapp.entity.Business;
 import com.hotelapp.entity.JobListing;
+import com.hotelapp.entity.User;
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.ListingStatus;
 import com.hotelapp.enums.Position;
 import com.hotelapp.enums.Shift;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.JobListingRepository;
+import com.hotelapp.repository.UserRepository;
 import com.hotelapp.service.JobListingService.ListingResponse;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -41,6 +43,7 @@ public class JobListingQueryService {
 
     private final JobListingRepository jobListingRepository;
     private final JobListingService jobListingService;  // mapping delegasyonu icin
+    private final UserRepository userRepository;        // FAZ 5 — ranked sort
 
     /** Public: aktif ilan listele, dinamik filtre (Specification). */
     @Transactional(readOnly = true)
@@ -52,6 +55,105 @@ public class JobListingQueryService {
         Specification<JobListing> spec = buildActiveListingSpec(
                 position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo);
         return jobListingService.toResponses(jobListingRepository.findAll(spec));
+    }
+
+    /**
+     * FAZ 5 — Kişiselleştirilmiş "Sana Özel" sıralama.
+     *
+     * Skor (max 110):
+     *  - position ∈ preferredPositions  → +50
+     *  - district ∈ preferredDistricts  → +30
+     *  - jobType ∈ availabilityTypes    → +20
+     *  - createdAt recency (son 30 gün) → +10 (lineer azalır)
+     *
+     * Kullanıcı yoksa veya aday değilse skor 0 — sıralama createdAt DESC olur.
+     */
+    @Transactional(readOnly = true)
+    public List<ListingResponse> getActiveListingsRanked(
+            Long candidateUserId,
+            Position position, JobType jobType, List<Shift> shifts,
+            String district, BigDecimal minSalary, String keyword,
+            LocalDate dateFrom, LocalDate dateTo
+    ) {
+        Specification<JobListing> spec = buildActiveListingSpec(
+                position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo);
+        List<JobListing> raw = jobListingRepository.findAll(spec);
+
+        if (candidateUserId == null || raw.isEmpty()) {
+            return jobListingService.toResponses(raw);
+        }
+
+        User candidate = userRepository.findById(candidateUserId).orElse(null);
+        if (candidate == null) {
+            return jobListingService.toResponses(raw);
+        }
+
+        java.util.Set<Position> prefPositions = candidate.getPreferredPositions();
+        java.util.Set<String>   prefDistricts = candidate.getPreferredDistricts();
+        java.util.Set<JobType>  prefJobTypes  = candidate.getAvailabilityTypes();
+
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+        // Score'u entity üzerinde hesapla, sıralayıp sonra DTO'ya map et
+        raw.sort((a, b) -> {
+            int sa = scoreListing(a, prefPositions, prefDistricts, prefJobTypes, now);
+            int sb = scoreListing(b, prefPositions, prefDistricts, prefJobTypes, now);
+            if (sa != sb) return Integer.compare(sb, sa);  // higher score first
+            // tiebreak: yeni → eski
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        });
+
+        return jobListingService.toResponses(raw);
+    }
+
+    private static int scoreListing(JobListing l,
+                                    java.util.Set<Position> prefPositions,
+                                    java.util.Set<String> prefDistricts,
+                                    java.util.Set<JobType> prefJobTypes,
+                                    java.time.LocalDateTime now) {
+        int score = 0;
+        if (prefPositions != null && !prefPositions.isEmpty()
+                && l.getPosition() != null && prefPositions.contains(l.getPosition())) {
+            score += 50;
+        }
+        if (prefDistricts != null && !prefDistricts.isEmpty()
+                && l.getBusiness() != null
+                && l.getBusiness().getDistrict() != null
+                && prefDistricts.contains(l.getBusiness().getDistrict())) {
+            score += 30;
+        }
+        if (prefJobTypes != null && !prefJobTypes.isEmpty()
+                && l.getJobType() != null && prefJobTypes.contains(l.getJobType())) {
+            score += 20;
+        }
+        if (l.getCreatedAt() != null) {
+            long hoursOld = java.time.Duration.between(l.getCreatedAt(), now).toHours();
+            if (hoursOld < 0) hoursOld = 0;
+            long maxHours = 30L * 24;  // 30 gün
+            if (hoursOld < maxHours) {
+                score += (int) (10L * (maxHours - hoursOld) / maxHours);
+            }
+        }
+        return score;
+    }
+
+    /**
+     * FAZ 5 — SavedSearch matcher: aynı filtre seti, ek olarak createdAt > since.
+     * Entity döner ki scheduler id/title/createdAt'e doğrudan erişebilsin.
+     */
+    @Transactional(readOnly = true)
+    public List<JobListing> findActiveSince(
+            java.time.LocalDateTime since,
+            Position position, JobType jobType, List<Shift> shifts,
+            String district, BigDecimal minSalary, String keyword,
+            LocalDate dateFrom, LocalDate dateTo
+    ) {
+        Specification<JobListing> spec = buildActiveListingSpec(
+                position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo);
+        if (since != null) {
+            spec = spec.and((root, q, cb) -> cb.greaterThan(root.get("createdAt"), since));
+        }
+        return jobListingRepository.findAll(spec);
     }
 
     /** Business owner: kendi ilanları (defensive 500 cap). */

@@ -149,6 +149,7 @@ export async function getListings(filters = {}) {
   if (filters.keyword?.trim())     params.keyword   = filters.keyword.trim()
   if (filters.dateFrom)            params.dateFrom  = filters.dateFrom  // YYYY-MM-DD
   if (filters.dateTo)              params.dateTo    = filters.dateTo
+  if (filters.ranked)              params.ranked    = 'true'  // FAZ 5 — sana özel sıralama
   const { data } = await api.get('/api/listings', { params })
   return data
 }
@@ -645,4 +646,29 @@ export async function validatePasswordResetToken(token) {
 export async function confirmPasswordReset(token, newPassword) {
   const { data } = await api.post('/api/auth/password-reset/confirm', { token, newPassword })
   return data
+}
+
+/* ── FAZ 5 — Saved Search / Kayıtlı Aramalar ── */
+
+/** Kullanıcının kayıtlı aramalarını listeler. */
+export async function listSavedSearches() {
+  const { data } = await api.get('/api/saved-searches')
+  return data
+}
+
+/** Yeni kayıtlı arama oluşturur. payload: { name, position, jobType, district, keyword, minSalary, dateFrom, dateTo, shifts } */
+export async function createSavedSearch(payload) {
+  const { data } = await api.post('/api/saved-searches', payload)
+  return data
+}
+
+/** Kayıtlı arama günceller (rename / notifications toggle). */
+export async function updateSavedSearch(id, payload) {
+  const { data } = await api.patch(`/api/saved-searches/${id}`, payload)
+  return data
+}
+
+/** Kayıtlı aramayı siler. */
+export async function deleteSavedSearch(id) {
+  await api.delete(`/api/saved-searches/${id}`)
 }

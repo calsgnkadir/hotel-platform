@@ -36,7 +36,7 @@ public class JobListingController {
 
     @Operation(
             summary = "Aktif ilanları listele",
-            description = "Tüm parametreler opsiyonel. shifts çoklu (MORNING,EVENING,NIGHT), keyword başlıkta arar. dateFrom/dateTo YYYY-MM-DD formatında."
+            description = "Tüm parametreler opsiyonel. shifts çoklu (MORNING,EVENING,NIGHT), keyword başlıkta arar. dateFrom/dateTo YYYY-MM-DD formatında. ranked=true: aday tercihlerine göre 'sana özel' sıralama (sadece authenticated)."
     )
     @GetMapping
     public ResponseEntity<List<ListingResponse>> listActiveListings(
@@ -47,7 +47,15 @@ public class JobListingController {
             @RequestParam(required = false) BigDecimal minSalary,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam(required = false, defaultValue = "false") boolean ranked,
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
+        if (ranked && currentUser != null) {
+            return ResponseEntity.ok(
+                    jobListingQueryService.getActiveListingsRanked(
+                            currentUser.getId(),
+                            position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo));
+        }
         return ResponseEntity.ok(
                 jobListingQueryService.getActiveListings(position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo));
     }
