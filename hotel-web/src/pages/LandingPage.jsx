@@ -22,54 +22,68 @@ export default function LandingPage() {
   const openAuth = (role = null) => { setAuthRole(role); setAuthOpen(true) }
   const closeAuth = () => setAuthOpen(false)
   return (
-    <div className="min-h-screen text-white">
-      {/* Üst hat — sıcak gradient */}
+    <div className="min-h-screen" style={{ background: '#13110f', color: '#ede4d3' }}>
+      {/* Champagne hairline strip */}
       <div className="neon-strip" />
 
       {/* ───── Header ───── */}
-      <header className="border-b border-cream-300 sticky top-0 z-30 bg-cream-100/90 backdrop-blur-md">
+      <header className="sticky top-0 z-30 backdrop-blur-md"
+              style={{
+                background: 'rgba(19, 17, 15, 0.78)',
+                borderBottom: '1px solid rgba(205, 183, 143, 0.08)',
+              }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-baseline gap-2">
-            <span className="font-display font-bold text-lg tracking-tight text-ink-900">
+            <span className="font-syne font-semibold text-lg tracking-tight"
+                  style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
               AjansHotel
             </span>
-            <span className="text-[9px] uppercase tracking-[0.18em] text-ink-400 font-medium">
+            <span className="text-[9px] uppercase tracking-[0.28em] font-medium"
+                  style={{ color: '#6b6358' }}>
               istanbul
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8 text-[13px] text-ink-600 font-medium">
-            <a href="#features" className="hover:text-brand-700 transition-colors">Özellikler</a>
-            <a href="#demo"     className="hover:text-brand-700 transition-colors">Demo</a>
-            <a href="#contact"  className="hover:text-brand-700 transition-colors">İletişim</a>
+          <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium"
+               style={{ color: '#928678' }}>
+            <a href="#features" className="transition-colors hover:text-[color:#cdb78f]">Özellikler</a>
+            <a href="#demo"     className="transition-colors hover:text-[color:#cdb78f]">Demo</a>
+            <a href="#contact"  className="transition-colors hover:text-[color:#cdb78f]">İletişim</a>
           </nav>
 
           <div className="flex items-center gap-2">
             <Link to="/login"
-              className="text-[13px] font-medium px-4 py-1.5 rounded-full text-ink-700 hover:bg-cream-200 transition-colors">
+              className="text-[13px] font-medium px-4 py-1.5 rounded-full transition-colors"
+              style={{ color: '#c9bdaa' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(205, 183, 143, 0.06)'; e.currentTarget.style.color = '#ede4d3' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#c9bdaa' }}>
               Giriş Yap
             </Link>
             <button type="button" onClick={openAuth}
-              className="text-[13px] font-semibold px-4 py-1.5 rounded-full text-white shadow-terra-sm hover:shadow-terra transition-all hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)' }}>
+              className="text-[13px] font-semibold px-4 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
+              style={{
+                background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                color: '#1a1208',
+                boxShadow: '0 8px 20px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.24)',
+              }}>
               Kayıt Ol
             </button>
           </div>
         </div>
       </header>
 
-      {/* ───── Hero (FAZ 5.4 — Dark Island) ───── */}
-      <section className="relative overflow-hidden" style={{ minHeight: '92vh' }}>
-        {/* FAZ 5.4 — WebGL CPPN shader arka plan, mor brand'e hue-shift */}
-        <DarkVeil hueShift={285} noiseIntensity={0.025} speed={0.45} warpAmount={0.35} />
+      {/* ───── Hero (FAZ 5.UX3 — Editorial Dark Luxe) ───── */}
+      <section className="relative overflow-hidden" style={{ minHeight: '92vh', background: '#13110f' }}>
+        {/* WebGL CPPN shader — warm hue (champagne range, not purple) */}
+        <DarkVeil hueShift={35} noiseIntensity={0.02} speed={0.40} warpAmount={0.30} />
 
-        {/* Hafif vinyet — kenar koyu, merkez aydinlik */}
+        {/* Warm graphite vinyet — kenar koyu, merkez aydinlik */}
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none z-[1]"
           style={{
             background:
-              'radial-gradient(ellipse at center, transparent 0%, rgba(10,6,24,0.65) 90%)',
+              'radial-gradient(ellipse at center, transparent 0%, rgba(13, 11, 9, 0.72) 90%)',
           }}
         />
 
@@ -77,10 +91,11 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             {/* Sol: baslik + CTA */}
             <div className="lg:col-span-7 animate-fade-up">
-              <div className="inline-flex items-center gap-2 glass-panel rounded-full px-3 py-1.5 mb-7">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-glow-pulse" />
-                <span className="text-[11px] uppercase tracking-widest font-semibold"
-                      style={{ color: '#dde7f3' }}>
+              <div className="inline-flex items-center gap-2 glass-panel rounded-full px-3 py-1.5 mb-8">
+                <span className="w-1.5 h-1.5 rounded-full animate-glow-pulse"
+                      style={{ background: '#cdb78f', boxShadow: '0 0 8px rgba(205, 183, 143, 0.55)' }} />
+                <span className="text-[10px] uppercase tracking-[0.28em] font-medium"
+                      style={{ color: '#c9bdaa' }}>
                   Yeni Sezon Açık
                 </span>
               </div>
@@ -106,34 +121,36 @@ export default function LandingPage() {
               </HeroHeading>
 
               {/* RotatingText alt baslik */}
-              <div className="flex flex-wrap items-baseline gap-2 mb-7 mt-4 font-bebas uppercase tracking-wider text-3xl sm:text-4xl text-white/85">
+              <div className="flex flex-wrap items-baseline gap-2 mb-7 mt-4 font-bebas uppercase tracking-wider text-3xl sm:text-4xl"
+                   style={{ color: '#ede4d3' }}>
                 <span>Bugün</span>
                 <RotatingText
                   texts={['GARSON', 'RESEPSIYON', 'BELLBOY', 'KAT HİZMETLERİ', 'BARİSTA']}
                   rotationInterval={2200}
-                  className="text-brand-400 font-bebas"
+                  className="font-bebas"
+                  style={{ color: '#cdb78f' }}
                 />
                 <span>arıyor.</span>
               </div>
 
-              <p className="text-base sm:text-lg leading-relaxed mb-9 max-w-xl"
-                 style={{ color: '#fde9a5' }}>
+              <p className="text-base sm:text-lg leading-relaxed mb-10 max-w-xl"
+                 style={{ color: '#c9bdaa' }}>
                 Hotel, restoran ve kafelerde günlük, sezonluk veya sürekli iş arıyorsan
                 doğru yerdesin. Vardiya seç, başvur, mesajlaş — gerisini bize bırak.
               </p>
 
-              {/* Dalga 4 — Dual CTA: iki rol icin ayri buton (Workday/Jora pattern) */}
+              {/* Dual CTA — primary (gold) + secondary (champagne hairline) */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <button type="button" onClick={() => openAuth('CANDIDATE')}
                   className="group flex-1 sm:flex-initial sm:min-w-[220px] inline-flex items-center justify-between gap-3 text-left px-5 py-4 rounded-2xl transition-all hover:-translate-y-0.5"
                   style={{
                     background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-                    boxShadow: '0 8px 24px rgba(212, 168, 83, 0.35)',
-                    color: '#0a0612',
+                    boxShadow: '0 14px 36px rgba(212, 168, 83, 0.34), inset 0 1px 0 rgba(255,255,255,0.24)',
+                    color: '#1a1208',
                   }}>
                   <div>
-                    <div className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-70">Aday için</div>
-                    <div className="text-base font-bold">İş arıyorum</div>
+                    <div className="text-[10px] uppercase tracking-[0.22em] font-semibold opacity-70">Aday için</div>
+                    <div className="text-base font-semibold mt-0.5">İş arıyorum</div>
                   </div>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                        strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
@@ -144,13 +161,13 @@ export default function LandingPage() {
                 <button type="button" onClick={() => openAuth('BUSINESS_OWNER')}
                   className="group flex-1 sm:flex-initial sm:min-w-[220px] inline-flex items-center justify-between gap-3 text-left px-5 py-4 rounded-2xl transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'rgba(212, 168, 83, 0.10)',
-                    border: '1px solid rgba(212, 168, 83, 0.45)',
-                    color: '#fde9a5',
+                    background: 'rgba(205, 183, 143, 0.06)',
+                    border: '1px solid rgba(205, 183, 143, 0.32)',
+                    color: '#ede4d3',
                   }}>
                   <div>
-                    <div className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-65">İşletme için</div>
-                    <div className="text-base font-bold">Eleman arıyorum</div>
+                    <div className="text-[10px] uppercase tracking-[0.22em] font-semibold" style={{ color: '#928678' }}>İşletme için</div>
+                    <div className="text-base font-semibold mt-0.5">Eleman arıyorum</div>
                   </div>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                        strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
@@ -161,19 +178,21 @@ export default function LandingPage() {
               </div>
               <div className="mt-4">
                 <a href="#features"
-                   className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-full glass-panel hover:bg-white/10 transition-colors"
-                   style={{ color: '#dde7f3' }}>
+                   className="inline-flex items-center gap-2 text-[12px] font-medium px-4 py-2 rounded-full glass-panel transition-colors"
+                   style={{ color: '#c9bdaa' }}
+                   onMouseEnter={(e) => { e.currentTarget.style.color = '#ede4d3' }}
+                   onMouseLeave={(e) => { e.currentTarget.style.color = '#c9bdaa' }}>
                   Nasıl çalışır?
                 </a>
               </div>
 
               {/* Trust strip */}
-              <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs"
-                   style={{ color: '#fde9a5' }}>
+              <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px]"
+                   style={{ color: '#928678' }}>
                 {['KVKK uyumlu', 'Belge cüzdanı', 'Otomatik mesajlaşma'].map(label => (
                   <span key={label} className="flex items-center gap-1.5">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"
-                         style={{ color: '#d4a853' }}>
+                         style={{ color: '#cdb78f' }}>
                       <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
                     </svg>
                     {label}
@@ -188,31 +207,41 @@ export default function LandingPage() {
               <LandingPulse />
 
               <div className="relative animate-float-y">
-                <div className="glass-panel rounded-3xl p-7 shadow-glow-lg">
+                <div className="glass-panel p-7"
+                     style={{ borderRadius: '28px 12px 28px 12px' }}>
                   <div className="flex items-center gap-3 mb-5">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bebas text-2xl tracking-wider"
-                         style={{ background: 'linear-gradient(135deg, #1e3a5f, #d4a853)' }}>
-                      O
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-syne text-xl font-semibold"
+                         style={{
+                           background: 'rgba(205, 183, 143, 0.08)',
+                           border: '1px solid rgba(205, 183, 143, 0.30)',
+                           color: '#cdb78f',
+                         }}>
+                      C
                     </div>
                     <div>
-                      <div className="font-display text-base font-bold text-white">Conrad İstanbul</div>
-                      <div className="text-xs" style={{ color: '#fde9a5' }}>Beşiktaş · 5 yıldız</div>
+                      <div className="font-syne text-base font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>Conrad İstanbul</div>
+                      <div className="text-[11px] mt-0.5" style={{ color: '#928678' }}>Beşiktaş · 5 yıldız</div>
                     </div>
                   </div>
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     <ListingPreview pos="Garson" time="Cumartesi · 18:00–02:00" wage="₺550/vardiya" dark />
                     <ListingPreview pos="Resepsiyon" time="Pazar · 08:00–16:00" wage="₺480/vardiya" dark />
                     <ListingPreview pos="Bellboy" time="Hafta sonu · gece" wage="₺520/vardiya" dark />
                   </div>
-                  <button className="w-full mt-5 py-2.5 rounded-full text-white text-sm font-semibold cta-glow transition-all"
-                          style={{ background: 'linear-gradient(135deg, #d4a853 0%, #d4a853 100%)' }}>
+                  <button className="w-full mt-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5"
+                          style={{
+                            background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                            color: '#1a1208',
+                            boxShadow: '0 12px 28px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
+                          }}>
                     3 vardiyaya başvur
                   </button>
                 </div>
 
-                <div className="absolute -bottom-4 -left-4 glass-panel rounded-2xl px-4 py-3 shadow-glow hidden xl:flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-brand-400 animate-pulse" />
-                  <span className="text-xs font-semibold text-white">Aday yazıyor…</span>
+                <div className="absolute -bottom-4 -left-4 glass-panel rounded-2xl px-4 py-3 hidden xl:flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full animate-pulse"
+                       style={{ background: '#cdb78f', boxShadow: '0 0 8px rgba(205, 183, 143, 0.55)' }} />
+                  <span className="text-[11px] font-medium" style={{ color: '#ede4d3' }}>Aday yazıyor…</span>
                 </div>
               </div>
             </div>
@@ -221,17 +250,35 @@ export default function LandingPage() {
       </section>
 
       {/* ───── Features ───── */}
-      <section id="features" className="border-t border-cream-300 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+      <section id="features"
+               style={{
+                 background: '#13110f',
+                 borderTop: '1px solid rgba(205, 183, 143, 0.08)',
+               }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-24">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-200 rounded-full px-3 py-1 mb-5">
-              <span className="text-[11px] uppercase tracking-widest text-brand-800 font-bold">Özellikler</span>
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-6"
+                 style={{
+                   background: 'rgba(205, 183, 143, 0.08)',
+                   border: '1px solid rgba(205, 183, 143, 0.22)',
+                 }}>
+              <span className="text-[10px] uppercase tracking-[0.28em] font-semibold"
+                    style={{ color: '#cdb78f' }}>Özellikler</span>
             </div>
-            <h2 className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-ink-900 mb-3">
+            <h2 className="font-syne mb-4"
+                style={{
+                  color: '#f5efe2',
+                  fontSize: 'clamp(32px, 5vw, 48px)',
+                  fontWeight: 600,
+                  letterSpacing: '-0.025em',
+                  lineHeight: 1.05,
+                }}>
               İhtiyacın olan her şey,
-              <span className="block text-brand-700 italic">tek platformda</span>
+              <span className="block italic"
+                    style={{ color: '#cdb78f', fontWeight: 600 }}>tek platformda</span>
             </h2>
-            <p className="text-base text-ink-600 max-w-2xl mx-auto">
+            <p className="text-[15px] max-w-2xl mx-auto leading-relaxed"
+               style={{ color: '#928678' }}>
               Belge cüzdanı, otomatik mesajlaşma, sesli/görüntülü arama — başvuru hiç bu kadar
               insani olmamıştı.
             </p>
@@ -273,19 +320,35 @@ export default function LandingPage() {
       </section>
 
       {/* ───── CTA ───── */}
-      <section id="demo" className="border-t border-cream-300">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-20 text-center">
-          <h2 className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-ink-900 mb-4">
+      <section id="demo"
+               style={{
+                 background: '#1b1815',
+                 borderTop: '1px solid rgba(205, 183, 143, 0.08)',
+               }}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-24 text-center">
+          <h2 className="font-syne mb-5"
+              style={{
+                color: '#f5efe2',
+                fontSize: 'clamp(32px, 5vw, 48px)',
+                fontWeight: 600,
+                letterSpacing: '-0.025em',
+                lineHeight: 1.05,
+              }}>
             Bir sonraki vardiyan
-            <span className="block text-terra-500 italic">bir tık uzakta</span>
+            <span className="block italic" style={{ color: '#cdb78f' }}>bir tık uzakta</span>
           </h2>
-          <p className="text-base text-ink-600 mb-9 max-w-xl mx-auto">
+          <p className="text-[15px] mb-10 max-w-xl mx-auto leading-relaxed"
+             style={{ color: '#928678' }}>
             Aday veya işletme — kayıt 2 dakika. Aktif sezonda %78 başvuru kabul oranı.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button type="button" onClick={openAuth}
-              className="inline-flex items-center gap-2 text-base font-semibold px-7 py-3.5 rounded-full text-white shadow-terra hover:-translate-y-0.5 transition-all"
-              style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)' }}>
+              className="inline-flex items-center gap-2 text-[14px] font-semibold uppercase tracking-[0.14em] px-8 py-4 rounded-2xl hover:-translate-y-0.5 transition-all"
+              style={{
+                background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                color: '#1a1208',
+                boxShadow: '0 14px 36px rgba(212, 168, 83, 0.34), inset 0 1px 0 rgba(255,255,255,0.24)',
+              }}>
               Hemen Kayıt Ol
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
@@ -293,7 +356,14 @@ export default function LandingPage() {
               </svg>
             </button>
             <Link to="/login"
-              className="inline-flex items-center gap-2 text-base font-semibold px-7 py-3.5 rounded-full border-2 border-brand-700 text-brand-700 hover:bg-brand-50 transition-colors">
+              className="inline-flex items-center gap-2 text-[14px] font-semibold uppercase tracking-[0.14em] px-8 py-4 rounded-2xl transition-colors"
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(205, 183, 143, 0.32)',
+                color: '#ede4d3',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(205, 183, 143, 0.06)'; e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.55)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.32)' }}>
               Giriş Yap
             </Link>
           </div>
@@ -301,15 +371,20 @@ export default function LandingPage() {
       </section>
 
       {/* ───── Footer ───── */}
-      <footer id="contact" className="border-t border-cream-300 bg-cream-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-wrap items-center justify-between gap-4 text-xs text-ink-500">
+      <footer id="contact"
+              style={{
+                background: '#13110f',
+                borderTop: '1px solid rgba(205, 183, 143, 0.08)',
+              }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-wrap items-center justify-between gap-4 text-[11px]"
+             style={{ color: '#6b6358' }}>
           <div className="flex items-baseline gap-2">
-            <span className="font-display font-bold text-base text-ink-700">AjansHotel</span>
-            <span className="text-[9px] uppercase tracking-[0.18em] text-ink-400">istanbul</span>
+            <span className="font-syne font-semibold text-base" style={{ color: '#ede4d3', letterSpacing: '-0.01em' }}>AjansHotel</span>
+            <span className="text-[9px] uppercase tracking-[0.28em]" style={{ color: '#6b6358' }}>istanbul</span>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <Link to="/kvkk" className="hover:text-brand-700 transition-colors">KVKK</Link>
-            <a href="mailto:destek@ajanshotel.com" className="hover:text-brand-700 transition-colors">
+            <Link to="/kvkk" className="transition-colors hover:text-[color:#cdb78f]" style={{ color: '#928678' }}>KVKK</Link>
+            <a href="mailto:destek@ajanshotel.com" className="transition-colors hover:text-[color:#cdb78f]" style={{ color: '#928678' }}>
               destek@ajanshotel.com
             </a>
             <span>© 2026 AjansHotel</span>
@@ -325,17 +400,20 @@ export default function LandingPage() {
 
 function Feature({ iconPath, title, text }) {
   return (
-    <div className="card hover:-translate-y-1 hover:shadow-glow transition-all">
-      <div className="w-11 h-11 rounded-xl mb-4 grid place-items-center
-                      bg-gradient-to-br from-brand-100 to-brand-50
-                      border border-brand-200">
+    <div className="card hover:-translate-y-1 transition-all">
+      <div className="w-11 h-11 rounded-2xl mb-5 grid place-items-center"
+           style={{
+             background: 'rgba(205, 183, 143, 0.08)',
+             border: '1px solid rgba(205, 183, 143, 0.22)',
+           }}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-             strokeWidth={1.8} stroke="currentColor" className="w-5 h-5 text-brand-800">
+             strokeWidth={1.6} stroke="#cdb78f" className="w-5 h-5">
           <path strokeLinecap="round" strokeLinejoin="round" d={iconPath} />
         </svg>
       </div>
-      <h3 className="font-display text-lg font-bold text-ink-900 mb-1.5">{title}</h3>
-      <p className="text-sm text-ink-600 leading-relaxed">{text}</p>
+      <h3 className="font-syne text-base font-semibold mb-2"
+          style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>{title}</h3>
+      <p className="text-[13px] leading-relaxed" style={{ color: '#928678' }}>{text}</p>
     </div>
   )
 }
@@ -343,23 +421,24 @@ function Feature({ iconPath, title, text }) {
 function ListingPreview({ pos, time, wage, dark = false }) {
   if (dark) {
     return (
-      <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl"
-           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212, 168, 83,0.18)' }}>
+      <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-colors"
+           style={{ background: 'rgba(205, 183, 143, 0.05)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
         <div className="min-w-0">
-          <div className="font-semibold text-sm text-white truncate">{pos}</div>
-          <div className="text-[11px] truncate" style={{ color: '#fde9a5' }}>{time}</div>
+          <div className="font-semibold text-[13px] truncate" style={{ color: '#ede4d3' }}>{pos}</div>
+          <div className="text-[11px] truncate mt-0.5" style={{ color: '#928678' }}>{time}</div>
         </div>
-        <div className="text-sm font-bold shrink-0" style={{ color: '#f7c43c' }}>{wage}</div>
+        <div className="text-[13px] font-semibold tabular-nums shrink-0" style={{ color: '#cdb78f' }}>{wage}</div>
       </div>
     )
   }
   return (
-    <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-cream-50 border border-cream-200">
+    <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl"
+         style={{ background: 'rgba(205, 183, 143, 0.05)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
       <div className="min-w-0">
-        <div className="font-semibold text-sm text-ink-800 truncate">{pos}</div>
-        <div className="text-[11px] text-ink-500 truncate">{time}</div>
+        <div className="font-semibold text-[13px] truncate" style={{ color: '#ede4d3' }}>{pos}</div>
+        <div className="text-[11px] truncate mt-0.5" style={{ color: '#928678' }}>{time}</div>
       </div>
-      <div className="text-sm font-bold text-brand-700 shrink-0">{wage}</div>
+      <div className="text-[13px] font-semibold tabular-nums shrink-0" style={{ color: '#cdb78f' }}>{wage}</div>
     </div>
   )
 }
