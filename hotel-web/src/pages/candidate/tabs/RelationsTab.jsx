@@ -47,15 +47,15 @@ export default function RelationsTab({ onTabChange }) {
           const active = tab === t.id
           return (
             <button key={t.id} type="button" onClick={() => setTab(t.id)}
-              className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
               style={{
-                background: active ? 'rgba(212, 168, 83, 0.20)' : 'rgba(21, 36, 61, 0.55)',
-                color: active ? '#fde9a5' : 'rgba(229, 231, 235, 0.65)',
-                border: `1px solid ${active ? 'rgba(212, 168, 83, 0.50)' : 'rgba(212, 168, 83, 0.15)'}`,
+                background: active ? 'rgba(205, 183, 143, 0.14)' : 'rgba(27, 24, 21, 0.75)',
+                color: active ? '#f5efe2' : '#928678',
+                border: `1px solid ${active ? 'rgba(205, 183, 143, 0.42)' : 'rgba(205, 183, 143, 0.10)'}`,
               }}>
               {t.label}
               {t.count > 0 && (
-                <span className="text-[10px] font-bold opacity-80">{t.count > 9 ? '9+' : t.count}</span>
+                <span className="text-[10px] font-semibold tabular-nums opacity-80">{t.count > 9 ? '9+' : t.count}</span>
               )}
             </button>
           )
@@ -78,31 +78,39 @@ export default function RelationsTab({ onTabChange }) {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {list.map(b => (
+          {list.map((b, i) => (
             <div key={b.id}
-                 className="rounded-2xl p-4 transition-all relative"
+                 className="p-5 transition-all relative hover:-translate-y-0.5"
                  style={{
-                   background: 'linear-gradient(145deg, rgba(21, 36, 61, 0.92) 0%, rgba(15, 23, 38, 0.98) 100%)',
-                   border: '1px solid rgba(212, 168, 83, 0.14)',
+                   background: '#1b1815',
+                   borderRadius: i % 2 === 0 ? '28px 12px 12px 12px' : '12px 28px 12px 12px',
+                   border: 'none',
+                   boxShadow: '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
                  }}>
               <button type="button"
                       onClick={() => navigate(`/p/business/${b.id}`)}
                       className="w-full text-left">
-                <h3 className="font-bebas text-lg tracking-wider uppercase truncate"
-                    style={{ color: '#ffffff' }}>{b.name}</h3>
-                <div className="text-[12px] mt-1 truncate" style={{ color: 'rgba(229, 231, 235, 0.65)' }}>
+                <h3 className="font-syne text-[16px] font-semibold truncate"
+                    style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>{b.name}</h3>
+                <div className="text-[12px] mt-1 truncate" style={{ color: '#928678' }}>
                   {TYPE_LABELS[b.type] || b.type}
                   {b.district && ` · ${b.district}`}
                 </div>
               </button>
               <button type="button"
                 onClick={() => tab === 'following' ? handleUnfollow(b.id) : handleUnblock(b.id)}
-                className="mt-3 w-full text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                style={{
-                  background: tab === 'following' ? 'rgba(15, 23, 38, 0.55)' : 'rgba(34, 197, 94, 0.18)',
-                  color: tab === 'following' ? 'rgba(229, 231, 235, 0.75)' : '#86efac',
-                  border: `1px solid ${tab === 'following' ? 'rgba(229, 231, 235, 0.20)' : 'rgba(34, 197, 94, 0.40)'}`,
-                }}>
+                className="mt-4 w-full text-[10px] font-semibold uppercase tracking-[0.18em] px-3 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
+                style={tab === 'following'
+                  ? {
+                      background: 'rgba(205, 183, 143, 0.06)',
+                      color: '#c9bdaa',
+                      border: '1px solid rgba(205, 183, 143, 0.18)',
+                    }
+                  : {
+                      background: 'rgba(122, 159, 122, 0.10)',
+                      color: '#a8c8a8',
+                      border: '1px solid rgba(122, 159, 122, 0.32)',
+                    }}>
                 {tab === 'following' ? 'Takipten Çık' : 'Engeli Kaldır'}
               </button>
             </div>

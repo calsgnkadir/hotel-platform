@@ -60,7 +60,7 @@ export default function DocumentsTab() {
   const completion = Math.round((uploadedTypes.size / totalTypes) * 100)
 
   if (loading) {
-    return <div className="font-geist p-8 text-center" style={{ color: 'rgba(139, 169, 210, 0.7)' }}>Belgeler yükleniyor...</div>
+    return <div className="p-8 text-center" style={{ color: '#928678' }}>Belgeler yükleniyor...</div>
   }
 
   return (
@@ -94,11 +94,11 @@ export default function DocumentsTab() {
       </motion.div>
 
       <motion.div variants={ITEM}
-        className="px-4 py-3 rounded-xl text-[12px] italic flex items-start gap-2"
+        className="px-4 py-3 rounded-2xl text-[12px] italic flex items-start gap-2"
         style={{
-          background: 'rgba(212, 168, 83, 0.05)',
-          border: '1px solid rgba(212, 168, 83, 0.12)',
-          color: 'rgba(253, 233, 165, 0.85)',
+          background: 'rgba(205, 183, 143, 0.04)',
+          border: '1px solid rgba(205, 183, 143, 0.10)',
+          color: '#c9bdaa',
         }}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" strokeWidth={1.6} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5">
@@ -127,55 +127,57 @@ export default function DocumentsTab() {
 function HeroCard({ completion, uploaded, total }) {
   return (
     <motion.div variants={ITEM}
-      className="relative overflow-hidden rounded-[28px] p-6 sm:p-7"
+      className="relative overflow-hidden p-7 sm:p-8"
       style={{
-        background: 'linear-gradient(135deg, rgba(15, 23, 38, 0.85) 0%, rgba(30, 58, 95, 0.65) 100%)',
-        border: '1px solid rgba(212, 168, 83, 0.20)',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
+        background: '#1b1815',
+        borderRadius: '28px 12px 28px 12px',
+        border: 'none',
+        boxShadow: '0 18px 48px rgba(0,0,0,0.32), inset 0 1px 0 rgba(245,239,226,0.03)',
       }}>
-      {/* Orbital altın yörünge */}
+      {/* Orbital champagne yörünge */}
       <div aria-hidden className="absolute -top-32 -right-32 w-96 h-96 pointer-events-none"
            style={{ animation: 'doc-orbit 40s linear infinite' }}>
         <div className="absolute inset-0 rounded-full"
              style={{
-               background: 'radial-gradient(circle, rgba(212, 168, 83, 0.20) 0%, transparent 60%)',
-               filter: 'blur(20px)',
+               background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22) 0%, transparent 60%)',
+               filter: 'blur(28px)',
              }} />
       </div>
       <div className="relative flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight"
-              style={{ color: '#ffffff', letterSpacing: '-0.02em' }}>
-            Sertifika <em className="not-italic font-semibold" style={{
-              background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>cüzdanım</em>
+          <h2 className="font-syne text-2xl sm:text-[28px] font-semibold"
+              style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.08 }}>
+            Sertifika{' '}
+            <em className="not-italic font-syne font-semibold"
+                style={{ color: '#cdb78f', letterSpacing: '-0.015em' }}>
+              cüzdanım
+            </em>
           </h2>
-          <p className="text-[12.5px] mt-2 max-w-md" style={{ color: 'rgba(139, 169, 210, 0.85)' }}>
+          <p className="text-[13px] mt-2 max-w-md leading-relaxed" style={{ color: '#928678' }}>
             Belgelerini güvenle sakla — başvurularına otomatik eklensin.
           </p>
         </div>
         <CountUpBadge value={completion} />
       </div>
-      <div className="relative mt-5 h-1.5 rounded-full overflow-hidden"
-           style={{ background: 'rgba(212, 168, 83, 0.10)' }}>
+      <div className="relative mt-6 h-1.5 rounded-full overflow-hidden"
+           style={{ background: 'rgba(205, 183, 143, 0.08)' }}>
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${completion}%` }}
           transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
           className="absolute inset-y-0 left-0 rounded-full"
           style={{
-            background: 'linear-gradient(90deg, #b8902d, #d4a853, #f7c43c)',
-            boxShadow: '0 0 12px rgba(212, 168, 83, 0.45)',
+            background: 'linear-gradient(90deg, #b8902d, #cdb78f, #d4a853)',
+            boxShadow: '0 0 12px rgba(205, 183, 143, 0.42)',
           }} />
         <span aria-hidden className="absolute inset-y-0 -left-1/4 w-1/4 pointer-events-none"
               style={{
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+                background: 'linear-gradient(90deg, transparent, rgba(245,239,226,0.28), transparent)',
                 animation: 'doc-shimmer 2.4s ease-in-out infinite',
               }} />
       </div>
-      <div className="flex items-center justify-between mt-3 text-[11px] uppercase tracking-[0.25em]"
-           style={{ color: 'rgba(253, 233, 165, 0.7)' }}>
+      <div className="flex items-center justify-between mt-3 text-[10px] uppercase tracking-[0.28em] font-medium"
+           style={{ color: '#928678' }}>
         <span>{uploaded} yüklendi</span>
         <span>{total} toplam</span>
       </div>
@@ -201,9 +203,9 @@ function CategoryCard({ cat, idx, filled, docs, uploadingType, deletingId, onUpl
       transition={{ type: 'spring', stiffness: 220, damping: 20 }}
       className={`relative overflow-hidden ${cornerPattern} group`}
       style={{
-        background: 'linear-gradient(155deg, rgba(21, 36, 61, 0.75) 0%, rgba(15, 23, 38, 0.95) 100%)',
-        border: `1px solid ${cat.color}28`,
-        boxShadow: `0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.03)`,
+        background: '#1b1815',
+        border: 'none',
+        boxShadow: `0 14px 36px rgba(0,0,0,0.28), inset 0 1px 0 rgba(245,239,226,0.03)`,
       }}>
       {/* Köşede yüzen kategori rengi blob */}
       <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full pointer-events-none transition-opacity duration-500 opacity-50 group-hover:opacity-80"
@@ -229,30 +231,30 @@ function CategoryCard({ cat, idx, filled, docs, uploadingType, deletingId, onUpl
               {cat.label.charAt(0)}
             </div>
             <div>
-              <h3 className="text-[14px] font-semibold tracking-tight" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
+              <h3 className="font-syne text-[15px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
                 {cat.label}
               </h3>
-              <p className="text-[10px] uppercase tracking-[0.2em] mt-0.5"
-                 style={{ color: 'rgba(139, 169, 210, 0.65)' }}>
+              <p className="text-[10px] uppercase tracking-[0.22em] mt-1 font-medium"
+                 style={{ color: '#928678' }}>
                 {cat.types.length} belge
               </p>
             </div>
           </div>
           {/* Sağ üst tamamlama badge */}
           <div className="text-right">
-            <div className="text-[18px] font-semibold tabular-nums leading-none"
-                 style={{ color: complete ? '#86efac' : cat.color, letterSpacing: '-0.02em' }}>
-              {filled}<span style={{ color: 'rgba(139, 169, 210, 0.55)' }}>/{cat.types.length}</span>
+            <div className="text-[20px] font-semibold tabular-nums leading-none"
+                 style={{ color: complete ? '#a8c8a8' : cat.color, letterSpacing: '-0.03em' }}>
+              {filled}<span style={{ color: '#6b6358' }}>/{cat.types.length}</span>
             </div>
             {complete && (
-              <span className="text-[8px] uppercase tracking-wider font-bold mt-0.5 inline-block"
-                    style={{ color: '#86efac' }}>tamam</span>
+              <span className="text-[9px] uppercase tracking-[0.22em] font-semibold mt-1 inline-block"
+                    style={{ color: '#a8c8a8' }}>tamam</span>
             )}
           </div>
         </div>
         {/* Mini progress */}
         <div className="mt-3 h-1 rounded-full overflow-hidden"
-             style={{ background: 'rgba(212, 168, 83, 0.08)' }}>
+             style={{ background: 'rgba(205, 183, 143, 0.08)' }}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
@@ -303,28 +305,28 @@ function DocTile({ t, doc, isUploaded, catColor, uploading, deleting, onUpload, 
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       className="relative rounded-xl overflow-hidden transition-colors"
       style={{
-        background: isUploaded ? `${catColor}0a` : 'rgba(10, 18, 32, 0.45)',
-        border: `1px solid ${isUploaded ? catColor + '30' : 'rgba(212, 168, 83, 0.10)'}`,
+        background: isUploaded ? `${catColor}0a` : 'rgba(13, 11, 9, 0.55)',
+        border: `1px solid ${isUploaded ? catColor + '30' : 'rgba(205, 183, 143, 0.08)'}`,
       }}>
       <div className="relative p-3 flex items-center gap-2.5">
         <StatusIcon isUploaded={isUploaded} color={catColor} size={36} />
         <div className="flex-1 min-w-0">
           <div className="text-[12.5px] font-medium flex items-center gap-1.5"
-               style={{ color: '#ffffff', letterSpacing: '-0.005em' }}>
+               style={{ color: '#ede4d3', letterSpacing: '-0.005em' }}>
             <span className="truncate">{t.label}</span>
             {t.required && !isUploaded && (
-              <span className="text-[8px] px-1 py-0.5 rounded font-bold uppercase tracking-wider flex-shrink-0"
+              <span className="text-[8px] px-1 py-0.5 rounded font-semibold uppercase tracking-[0.16em] flex-shrink-0"
                     style={{
-                      background: 'rgba(239, 68, 68, 0.14)',
-                      color: '#fca5a5',
-                      border: '1px solid rgba(239, 68, 68, 0.30)',
+                      background: 'rgba(180, 106, 85, 0.12)',
+                      color: '#d39481',
+                      border: '1px solid rgba(180, 106, 85, 0.30)',
                     }}>
                 zorunlu
               </span>
             )}
           </div>
           <div className="text-[10px] truncate mt-0.5"
-               style={{ color: 'rgba(139, 169, 210, 0.7)' }}>
+               style={{ color: '#928678' }}>
             {isUploaded
               ? `${doc.originalFileName.length > 22 ? doc.originalFileName.slice(0, 22) + '…' : doc.originalFileName}`
               : `${t.ext} · max 15 MB`}
@@ -364,7 +366,7 @@ function DocTile({ t, doc, isUploaded, catColor, uploading, deleting, onUpload, 
             className="relative overflow-hidden text-[11px] font-semibold px-2.5 py-1.5 rounded-lg cursor-pointer inline-flex items-center gap-1 flex-shrink-0"
             style={{
               background: `linear-gradient(135deg, ${catColor}, ${catColor}cc)`,
-              color: '#0c1726',
+              color: '#1a1208',
               boxShadow: `0 4px 12px ${catColor}40, inset 0 1px 0 rgba(255,255,255,0.25)`,
             }}>
             <span aria-hidden className="absolute inset-y-0 -left-1/3 w-1/3 pointer-events-none"
@@ -427,16 +429,16 @@ function CountUpBadge({ value }) {
   }, [value])
   return (
     <div className="text-right flex-shrink-0">
-      <div className="text-4xl sm:text-5xl font-semibold tabular-nums leading-none"
+      <div className="text-4xl sm:text-[44px] font-semibold tabular-nums leading-none"
            style={{
-             background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
-             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+             color: '#f5efe2',
              letterSpacing: '-0.04em',
+             filter: 'drop-shadow(0 0 16px rgba(205, 183, 143, 0.30))',
            }}>
         %{displayed}
       </div>
-      <div className="text-[10px] uppercase tracking-[0.25em] font-semibold mt-1.5"
-           style={{ color: 'rgba(253, 233, 165, 0.7)' }}>
+      <div className="text-[10px] uppercase tracking-[0.28em] font-medium mt-2"
+           style={{ color: '#928678' }}>
         Doluluk
       </div>
     </div>
@@ -450,8 +452,8 @@ function StatusIcon({ isUploaded, color, size = 36 }) {
            width: size, height: size,
            background: isUploaded
              ? `linear-gradient(135deg, ${color}28, ${color}10)`
-             : 'rgba(212, 168, 83, 0.06)',
-           border: `1px solid ${isUploaded ? color + '50' : 'rgba(212, 168, 83, 0.18)'}`,
+             : 'rgba(205, 183, 143, 0.06)',
+           border: `1px solid ${isUploaded ? color + '50' : 'rgba(205, 183, 143, 0.14)'}`,
            boxShadow: isUploaded ? `0 0 10px ${color}30` : 'none',
          }}>
       <AnimatePresence mode="wait">
@@ -491,13 +493,13 @@ function IconBtn({ children, onClick, disabled, color, variant, title }) {
       className="w-7 h-7 grid place-items-center rounded-lg transition-colors disabled:opacity-50"
       style={isDanger
         ? {
-            background: 'rgba(239, 68, 68, 0.12)',
-            color: '#fca5a5',
-            border: '1px solid rgba(239, 68, 68, 0.25)',
+            background: 'rgba(180, 106, 85, 0.10)',
+            color: '#d39481',
+            border: '1px solid rgba(180, 106, 85, 0.28)',
           }
         : {
             background: `${color}18`,
-            color: '#fde9a5',
+            color: '#cdb78f',
             border: `1px solid ${color}40`,
           }}>
       {children}

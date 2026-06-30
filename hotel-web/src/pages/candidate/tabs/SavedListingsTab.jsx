@@ -53,15 +53,16 @@ export default function SavedListingsTab({ onTabChange }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm" style={{ color: 'rgba(229, 231, 235, 0.70)' }}>
+        <p className="text-[12px]" style={{ color: '#928678' }}>
           {saved.length} kayıtlı ilan
         </p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {saved.map(listing => (
+        {saved.map((listing, i) => (
           <SavedCard key={listing.id}
             listing={listing}
+            idx={i}
             onOpen={() => navigate(`/listings/${listing.id}`)}
             onUnsave={() => handleUnsave(listing.id)} />
         ))}
@@ -70,39 +71,45 @@ export default function SavedListingsTab({ onTabChange }) {
   )
 }
 
-function SavedCard({ listing, onOpen, onUnsave }) {
+function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
   const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   return (
     <div onClick={onOpen}
-         className="rounded-2xl overflow-hidden cursor-pointer transition-all relative"
+         className="overflow-hidden cursor-pointer transition-all relative"
          style={{
-           background: 'linear-gradient(145deg, rgba(21, 36, 61, 0.92) 0%, rgba(15, 23, 38, 0.98) 100%)',
-           border: '1px solid rgba(212, 168, 83, 0.18)',
-           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)',
+           background: '#1b1815',
+           borderRadius: idx % 2 === 0 ? '28px 12px 12px 12px' : '12px 28px 12px 12px',
+           border: 'none',
+           boxShadow: '0 12px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(245,239,226,0.03)',
          }}
          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)' }}
          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}>
-      <div className="relative h-32"
-           style={{ background: 'linear-gradient(135deg, #15243d, #234a82)' }}>
-        {/* Salary chip */}
+      <div className="relative h-36"
+           style={{ background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 100%)' }}>
+        {/* Champagne blob accent */}
+        <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-40 pointer-events-none"
+             style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.30), transparent 65%)', filter: 'blur(28px)' }} />
+        {/* Salary chip — champagne hairline */}
         {salary && (
-          <span className="absolute bottom-3 left-3 text-[12px] font-bold px-2.5 py-1 rounded-full"
+          <span className="absolute bottom-3 left-3 text-[12px] font-semibold tabular-nums px-3 py-1.5 rounded-full z-10 backdrop-blur-md"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(212, 168, 83, 0.95), rgba(184, 144, 45, 0.95))',
-                  color: '#15243d',
+                  background: 'rgba(19, 17, 15, 0.78)',
+                  color: '#cdb78f',
+                  border: '1px solid rgba(205, 183, 143, 0.32)',
+                  letterSpacing: '-0.005em',
                 }}>
             {salary}
           </span>
         )}
-        {/* Unsave (dolu kalp) */}
+        {/* Unsave (dolu kalp) — brick */}
         <button type="button"
                 onClick={(e) => { e.stopPropagation(); onUnsave() }}
                 title="Kaydedilenlerden cikar"
-                className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110"
+                className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110"
                 style={{
-                  background: 'rgba(15, 23, 38, 0.75)',
-                  border: '1px solid rgba(239, 68, 68, 0.55)',
-                  color: '#fca5a5',
+                  background: 'rgba(19, 17, 15, 0.78)',
+                  border: '1px solid rgba(180, 106, 85, 0.45)',
+                  color: '#d39481',
                 }}>
           <svg width="14" height="14" viewBox="0 0 24 24"
                fill="currentColor" stroke="currentColor"
@@ -112,20 +119,20 @@ function SavedCard({ listing, onOpen, onUnsave }) {
         </button>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-bold text-[15px] leading-snug line-clamp-2"
-            style={{ color: '#f1f5fb' }}>
+      <div className="p-5">
+        <h3 className="font-syne font-semibold text-[15px] leading-snug line-clamp-2"
+            style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
           {listing.title}
         </h3>
-        <p className="text-sm mt-1" style={{ color: '#fde9a5' }}>
+        <p className="text-[13px] mt-1.5" style={{ color: '#cdb78f' }}>
           {listing.businessName}
         </p>
-        <div className="flex items-center gap-1.5 mt-2 text-xs flex-wrap"
-             style={{ color: 'rgba(229, 231, 235, 0.70)' }}>
+        <div className="flex items-center gap-1.5 mt-2 text-[12px] flex-wrap"
+             style={{ color: '#928678' }}>
           <span>{listing.businessDistrict || 'İstanbul'}</span>
-          <span style={{ opacity: 0.5 }}>·</span>
+          <span style={{ color: '#6b6358' }}>·</span>
           <span>{POSITION_LABELS[listing.position] || listing.position}</span>
-          <span style={{ opacity: 0.5 }}>·</span>
+          <span style={{ color: '#6b6358' }}>·</span>
           <span>{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
         </div>
       </div>
