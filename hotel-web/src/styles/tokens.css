@@ -1,97 +1,150 @@
 /*
- * FAZ 5.1 — Design Tokens (Hibrit Tema)
+ * FAZ 5.UX3 — Design Token Rewrite (Editorial Dark Luxe)
  *
- * Iki rol = iki mood:
- *   - CAND (default)       → "Hospitality SaaS" : krem + zumrut accent, sicak/light
- *   - BIZ  (data-role="business") → "Dark Concierge" : koyu + mor glow, premium-luxury
+ * Eski navy + neon-gold paletini (Vegas-luxe) bırakıp warm graphite + champagne'a
+ * geçtik (Aman / Edition / Aesop ekonomisi). Strüktür:
  *
- * Mor brand backbone (--accent-action) iki temada da korunur — kimlik degismez.
+ *   - 3 surface tokens (base / raised / floating) — warm-tint shift'le ayrışır,
+ *     border kalınlığıyla değil. Borders artık container değil, separator.
+ *   - Champagne (#cdb78f) primary accent — bright #d4a853 yalnız CTA'da kalır.
+ *   - Ivory (#ede4d3) text — pages start to read like printed paper.
+ *   - Muted status colors (sage / brick / ochre) — neon yok.
+ *
+ * Eski isimler (--bg-app, --accent-action vb.) korundu; sadece değerler değişti.
+ * Bu sayede mevcut helper class'lar (.surface, .accent-text vb.) breakage yok.
  */
 
-/* FAZ 5.4 — WordPlay benchmark: Bebas Neue display fontu (stratejik vurgu).
- * display=swap → FOIT yok, CLS minimum. */
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&display=swap');
 
 :root {
-  /* ================== HOSPITALITY NIGHT — GLOBAL DEFAULT ================== */
-  /* FAZ D2 — Mor concierge yerine "lacivert + altın" hospitality paleti.
-   * Primary: koyu lacivert (#1e3a5f anchor), Accent: sıcak altın (#d4a853).
-   * Otel sektörünün premium kimliği — guven verici + lüks his.
-   * Eski mor varyantlar token icinde tutulmadi; hardcoded hex'ler
-   * incremental olarak temizlenecek. */
+  /* ================== SURFACES — 3-tier warm graphite ================== */
+  --surface-base:     #13110f;
+  --surface-raised:   #1b1815;
+  --surface-floating: #221f1b;
 
-  /* Surface — koyu lacivert katmanlar (gece-gokyuzu mood) */
-  --bg-app:        #0c1726;  /* sayfa zemini — derin lacivert */
-  --bg-surface:    #15243d;  /* kart, modal */
-  --bg-elevated:   #1e3a5f;  /* dropdown, popover */
-  --bg-subtle:     #15243d;  /* hover, secondary */
-  --bg-muted:      #15243d;
+  /* Legacy aliases — eski kodun kırılmaması için */
+  --bg-app:           #13110f;
+  --bg-surface:       #1b1815;
+  --bg-elevated:      #221f1b;
+  --bg-subtle:        #1b1815;
+  --bg-muted:         #1b1815;
 
-  /* Border — altın accent ipucu */
-  --border-subtle: rgba(212, 168, 83, 0.18);
-  --border-strong: #d4a853;
+  /* ================== BORDERS — hairlines, not boxes ================== */
+  --hairline:        rgba(205, 183, 143, 0.08);   /* default ayraç */
+  --hairline-strong: rgba(205, 183, 143, 0.22);   /* hover / vurgu */
+  --hairline-cta:    rgba(212, 168, 83, 0.45);    /* yalnız CTA */
+  --border-subtle:   rgba(205, 183, 143, 0.08);
+  --border-strong:   rgba(205, 183, 143, 0.35);
 
-  /* Text — beyaz/altin/krem tonlar */
-  --text-primary:   #f8f6f4;  /* near-white */
-  --text-secondary: #fde9a5;  /* light cream-gold — okunur */
-  --text-muted:     #8ba9d2;  /* faded ice-blue */
-  --text-inverse:   #0c1726;
+  /* ================== TEXT — ivory, no cool whites ================== */
+  --text-primary:    #ede4d3;   /* ivory — page body */
+  --text-secondary:  #c9bdaa;   /* muted ivory — secondary */
+  --text-muted:      #928678;   /* faint warm — tertiary / hint */
+  --text-faint:      #6b6358;
+  --text-inverse:    #13110f;
+  --text-headline:   #f5efe2;   /* slightly brighter for h1/h2 */
 
-  /* Accent — Altin brand (sicak, lüks vurgu) */
-  --accent-action:        #d4a853;  /* gold-500 */
-  --accent-action-hover:  #f7c43c;  /* gold-400 daha parlak */
-  --accent-action-soft:   rgba(212, 168, 83, 0.15);
-  --accent-action-glow:   0 0 24px rgba(212, 168, 83, 0.45);
+  /* ================== ACCENT — champagne default, gold CTA-only ================== */
+  --accent-action:        #cdb78f;             /* champagne — default */
+  --accent-action-hover:  #d4a853;             /* warm gold — hover/highlight only */
+  --accent-action-cta:    #d4a853;             /* CTA gradient anchor */
+  --accent-action-cta-2:  #b8902d;             /* CTA gradient end */
+  --accent-action-soft:   rgba(205, 183, 143, 0.12);
+  --accent-action-glow:   0 0 24px rgba(205, 183, 143, 0.30);
 
-  /* Accent — Mavi (linkler + ikincil vurgu) */
-  --accent-positive:       #5b85bf;  /* navy-light */
-  --accent-positive-hover: #8ba9d2;
-  --accent-positive-soft:  rgba(91, 133, 191, 0.15);
-  --accent-positive-text:  #b8cae5;
+  /* Link / info — muted blue-grey, not bright navy */
+  --accent-positive:       #8a9bb0;
+  --accent-positive-hover: #a8b7c9;
+  --accent-positive-soft:  rgba(138, 155, 176, 0.12);
+  --accent-positive-text:  #b8c4d2;
 
-  /* Status — doygun, koyu zemine uygun (degismedi) */
-  --accent-warning:    #fbbf24;
-  --accent-warning-bg: rgba(251, 191, 36, 0.12);
-  --accent-danger:     #f87171;
-  --accent-danger-bg:  rgba(248, 113, 113, 0.12);
-  --accent-info:       #22d3ee;
-  --accent-info-bg:    rgba(34, 211, 238, 0.12);
+  /* ================== STATUS — muted, never neon ================== */
+  --signal-green:       #7a9f7a;                   /* sage — accept / active */
+  --signal-green-soft:  rgba(122, 159, 122, 0.12);
+  --signal-coral:       #b46a55;                   /* brick — reject / ban */
+  --signal-coral-soft:  rgba(180, 106, 85, 0.12);
+  --signal-amber:       #c8923a;                   /* ochre — pending / hold */
+  --signal-amber-soft:  rgba(200, 146, 58, 0.12);
+  --signal-info:        #6b8aa3;
+  --signal-info-soft:   rgba(107, 138, 163, 0.12);
 
-  /* FAZ G.0 — SIGNAL renkleri (durum sinyalleri: kabul, red, ban, bekliyor).
-   * Altin "CTA/vurgu" rolunu surdurur — signal'lar yalnizca durum gosterimi
-   * (kanban kart, status badge, toast type) icin kullanilir. Altinla cakismaz. */
-  --signal-green:      #3ddc97;  /* Kabul, Aktif, Online */
-  --signal-green-soft: rgba(61, 220, 151, 0.14);
-  --signal-coral:      #ef6461;  /* Red, Ban, Dead-letter */
-  --signal-coral-soft: rgba(239, 100, 97, 0.14);
-  --signal-amber:      #f59e0b;  /* Bekliyor, Hold, Warning */
-  --signal-amber-soft: rgba(245, 158, 11, 0.14);
+  /* Legacy status alias'ları (eski koddan) — yeni muted'a yönlendir */
+  --accent-warning:    var(--signal-amber);
+  --accent-warning-bg: var(--signal-amber-soft);
+  --accent-danger:     var(--signal-coral);
+  --accent-danger-bg:  var(--signal-coral-soft);
+  --accent-info:       var(--signal-info);
+  --accent-info-bg:    var(--signal-info-soft);
+
+  /* ================== TYPE — Syne display + Inter body ================== */
+  --font-display: 'Syne', 'Fraunces', Georgia, serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, monospace;
+
+  /* ================== RHYTHM — sectional spacing ================== */
+  --rhythm-tight:   16px;
+  --rhythm-base:    24px;
+  --rhythm-section: 40px;
+  --rhythm-page:    64px;
+
+  /* ================== RADIUS — asymmetric defaults ================== */
+  --radius-quiet:  10px;
+  --radius-base:   16px;
+  --radius-hero:   28px;
 }
 
-/* FAZ 5.4 — Eski hibrit role-based override (data-role="business") iptal edildi.
- * Tum uygulama tek dark theme'de calisir. */
-
-/* ================== HELPERS ================== */
-
-/* Sayfa zemini — App.jsx body veya main'e uygulanir */
+/* ================== BODY / GLOBAL ================== */
 body, .role-app-bg {
-  background: var(--bg-app);
+  background: var(--surface-base);
   color: var(--text-primary);
-  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: var(--font-body);
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
-/* Token-bazli yardimci sinif'lar — kademeli gecis icin */
-.surface       { background: var(--bg-surface); }
-.surface-elev  { background: var(--bg-elevated); }
-.text-token    { color: var(--text-primary); }
-.text-token-2  { color: var(--text-secondary); }
-.text-token-3  { color: var(--text-muted); }
-.border-token  { border-color: var(--border-subtle); }
+/* ================== HELPERS — token-based utilities ================== */
+
+.surface-base     { background: var(--surface-base); }
+.surface-raised   { background: var(--surface-raised); }
+.surface-floating { background: var(--surface-floating); }
+
+/* Eski .surface / .surface-elev — yeni tier'lara map */
+.surface       { background: var(--surface-raised); }
+.surface-elev  { background: var(--surface-floating); }
+
+/* Text utilities — pages read like printed paper */
+.text-token,
+.text-ivory       { color: var(--text-primary); }
+.text-token-2,
+.text-ivory-muted { color: var(--text-secondary); }
+.text-token-3,
+.text-ivory-faint { color: var(--text-muted); }
+.text-headline    { color: var(--text-headline); }
+
+.border-token,
+.border-hairline   { border-color: var(--hairline); }
+.border-strong     { border-color: var(--hairline-strong); }
+
 .accent-bg     { background: var(--accent-action); }
 .accent-text   { color: var(--accent-action); }
 .accent-glow   { box-shadow: var(--accent-action-glow); }
 
-/* ================== FAZ 5.4 — WordPlay benchmark helpers ================== */
+/* ================== ASYMMETRIC CORNER UTILITIES ================== */
+/* Her kart bir köşeyi 28px alır, diğerleri quiet (10–12px). Identical rounded-2xl
+ * grid'i wireframe'a çevirir; corner rhythm break eder.
+ *
+ * Kullanım: <div className="card-asym-tl"> ... </div>
+ */
+.card-asym-tl { border-radius: var(--radius-hero) var(--radius-quiet) var(--radius-quiet) var(--radius-quiet); }
+.card-asym-tr { border-radius: var(--radius-quiet) var(--radius-hero) var(--radius-quiet) var(--radius-quiet); }
+.card-asym-br { border-radius: var(--radius-quiet) var(--radius-quiet) var(--radius-hero) var(--radius-quiet); }
+.card-asym-bl { border-radius: var(--radius-quiet) var(--radius-quiet) var(--radius-quiet) var(--radius-hero); }
+
+/* Diagonal — iki köşe 28px, kalanlar 12px */
+.card-asym-diag-1 { border-radius: var(--radius-hero) var(--radius-quiet) var(--radius-hero) var(--radius-quiet); }
+.card-asym-diag-2 { border-radius: var(--radius-quiet) var(--radius-hero) var(--radius-quiet) var(--radius-hero); }
+
+/* ================== TYPOGRAPHY ================== */
 
 /* Bebas display utility — Tailwind'in font-bebas class'i ile esdeger */
 .font-bebas {
@@ -100,32 +153,60 @@ body, .role-app-bg {
   letter-spacing: 0.02em;
 }
 
-/* Hero baslik glow gardrobu — mor brand uyumlu (textShadow layered) */
-.hero-glow {
-  text-shadow:
-    0 0 10px rgba(168, 85, 247, 0.5),
-    0 0 24px rgba(147, 51, 234, 0.35),
-    0 0 40px rgba(107, 33, 168, 0.25);
+.font-syne {
+  font-family: var(--font-display);
+  font-feature-settings: "ss01" on;
 }
 
-/* CTA buton double-glow — altın (D2) */
-.cta-glow {
-  box-shadow: 0 0 5px #1e3a5f, 0 0 20px rgba(184, 144, 45, 0.6);
-}
-.cta-glow:hover {
-  box-shadow: 0 0 8px #b8902d, 0 0 28px rgba(212, 168, 83, 0.8);
+/* Hero numerals — 56-72px with negative tracking */
+.numeral-hero {
+  font-family: var(--font-body);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-size: clamp(48px, 6vw, 72px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
 }
 
-/* "Cam" katman — DarkVeil arka plan uzerinde icerik gozlukse */
+/* Headline gradient — used only on Page H1, never on stat numerals */
+.headline-champagne {
+  background: linear-gradient(135deg, #ede4d3 0%, #cdb78f 60%, #b8a274 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ================== GLASS PANELS — used over DarkVeil/AmbientBackdrop ================== */
 .glass-panel {
-  background: rgba(15, 10, 30, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: rgba(19, 17, 15, 0.62);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--hairline);
 }
 .glass-panel-light {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(245, 239, 226, 0.06);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(168, 85, 247, 0.18);
+  border: 1px solid var(--hairline);
+}
+
+/* CTA double-glow — bright gold ONLY here */
+.cta-glow {
+  box-shadow:
+    0 0 0 1px rgba(212, 168, 83, 0.45),
+    0 8px 24px rgba(212, 168, 83, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.cta-glow:hover {
+  box-shadow:
+    0 0 0 1px rgba(212, 168, 83, 0.65),
+    0 12px 32px rgba(212, 168, 83, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+/* Hero glow legacy — re-tinted to champagne, kept for back-compat */
+.hero-glow {
+  text-shadow:
+    0 0 12px rgba(205, 183, 143, 0.32),
+    0 0 28px rgba(184, 144, 45, 0.22);
 }

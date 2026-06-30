@@ -11,14 +11,16 @@ export default {
     extend: {
       fontFamily: {
         sans:    ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Fraunces', 'Georgia', 'serif'],
+        display: ['Syne', 'Fraunces', 'Georgia', 'serif'],
+        // FAZ 5.UX3 — editorial display font (gerekirse 'Syne' override)
+        syne:    ['Syne', 'Fraunces', 'Georgia', 'serif'],
         // FAZ 5.4 — WordPlay benchmark: stratejik kelime vurgusu icin
         bebas:   ['"Bebas Neue"', 'Impact', 'sans-serif'],
         // FAZ Auth Redesign — modern geometrik, premium SaaS hissi
         geist:   ['Geist', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // ── PRIMARY: Koyu lacivert (hospitality classic)
+        // ── PRIMARY: Koyu lacivert (legacy — yeni Tailwind class'lar graphite/champagne kullanmali)
         brand: {
           50:  '#f1f5fb',
           100: '#dde7f3',
@@ -27,9 +29,51 @@ export default {
           400: '#5b85bf',
           500: '#3461a3',
           600: '#234a82',
-          700: '#1e3a5f',   // ← ana brand (koyu lacivert)
+          700: '#1e3a5f',
           800: '#15243d',
-          900: '#0c1726',   // ← en koyu
+          900: '#0c1726',
+        },
+
+        // ── FAZ 5.UX3 — Warm graphite (yeni surface base)
+        graphite: {
+          50:  '#e8e4dc',
+          100: '#c8c0b3',
+          200: '#a89c89',
+          300: '#7a6e5f',
+          400: '#4a3f33',
+          500: '#332a20',
+          600: '#221f1b',   // surface-floating
+          700: '#1b1815',   // surface-raised
+          800: '#13110f',   // surface-base — body bg
+          900: '#0c0a08',
+        },
+
+        // ── FAZ 5.UX3 — Champagne (yeni primary accent — neon-gold yerine)
+        champagne: {
+          50:  '#f5efde',
+          100: '#ebe1c8',
+          200: '#dccaa5',
+          300: '#cdb78f',   // ana accent — default
+          400: '#b89e6e',
+          500: '#a08654',
+          600: '#8a7349',
+          700: '#6e5b39',
+          800: '#52442b',
+          900: '#352c1c',
+        },
+
+        // ── FAZ 5.UX3 — Ivory text family (cool white yerine)
+        ivory: {
+          50:  '#faf6ec',
+          100: '#f5efe2',   // headline ivory
+          200: '#ede4d3',   // body ivory
+          300: '#dfd2bb',
+          400: '#c9bdaa',   // secondary muted
+          500: '#a89c89',
+          600: '#928678',   // tertiary muted
+          700: '#6b6358',
+          800: '#4d4740',
+          900: '#2c2823',
         },
 
         // ── ACCENT: Sıcak altın (CTA + vurgu)
@@ -78,31 +122,29 @@ export default {
           600: '#b8902d',
         },
 
-        // FAZ G.0 — SIGNAL renkleri (durum sinyalleri: kabul, red, ban).
-        // Altin "vurgu/CTA" rolunu surdurur, signal'lar yalnizca durum
-        // gosterimi (kanban, badge, toast) icin kullanilir. Altinla cakismaz.
+        // FAZ 5.UX3 — Muted status colors (sage/brick/ochre — never neon)
         signal: {
-          // Yesil — Kabul, Aktif Vardiya, Online presence
+          // Sage — Kabul, Aktif Vardiya, Online presence
           green: {
-            DEFAULT: '#3ddc97',
-            50:  '#e8fbf2',
-            500: '#3ddc97',
-            600: '#1fb87a',
-            700: '#15875a',
+            DEFAULT: '#7a9f7a',
+            50:  '#eaf2ea',
+            500: '#7a9f7a',
+            600: '#5e8460',
+            700: '#456649',
           },
-          // Mercan/kirmizi — Red, Ban, Dead-letter, kritik hata
+          // Brick — Red, Ban, Dead-letter, kritik hata
           coral: {
-            DEFAULT: '#ef6461',
-            50:  '#fdeceb',
-            500: '#ef6461',
-            600: '#d83d3a',
-            700: '#a82c2a',
+            DEFAULT: '#b46a55',
+            50:  '#f5e7e2',
+            500: '#b46a55',
+            600: '#94503f',
+            700: '#723b2d',
           },
-          // Amber — Bekliyor / hold / warning (mevcut terra'dan ayri durum tonu)
+          // Ochre — Bekliyor / hold / warning
           amber: {
-            DEFAULT: '#f59e0b',
-            500: '#f59e0b',
-            600: '#d97706',
+            DEFAULT: '#c8923a',
+            500: '#c8923a',
+            600: '#a3762d',
           },
         },
       },
