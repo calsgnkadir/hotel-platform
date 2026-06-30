@@ -10,6 +10,7 @@ import useFocusTrap from '../../../lib/useFocusTrap'
 import ApplicationsKanban from '../components/ApplicationsKanban'
 import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
 import ReliabilityBadge from '../../../components/ReliabilityBadge'
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog'
 
 const VIEW_STORAGE_KEY = 'biz-applications-view'
 
@@ -19,6 +20,12 @@ const APPS_PAGE_SIZE = 15
 export default function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
   const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 200)
+    return () => clearTimeout(t)
+  }, [search])
+  const [confirmState, setConfirmState] = useState(null)
   const [page, setPage] = useState(0)
   const [selected, setSelected] = useState(null)
   const [view, setView] = useState(() => {
@@ -52,12 +59,12 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
     }
   }
 
-  // #84: status filtresi + aday adı araması
+  // #84: status filtresi + aday adı araması (debounced)
   const filtered = applications.filter(a => {
     if (filter !== 'ALL' && a.status !== filter) return false
-    if (search.trim()) {
+    if (debouncedSearch.trim()) {
       const name = (a.candidate?.fullName || '').toLowerCase()
-      if (!name.includes(search.trim().toLowerCase())) return false
+      if (!name.includes(debouncedSearch.trim().toLowerCase())) return false
     }
     return true
   })
@@ -66,10 +73,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
   const safePage = Math.min(page, pageCount - 1)
   const pageItems = filtered.slice(safePage * APPS_PAGE_SIZE, safePage * APPS_PAGE_SIZE + APPS_PAGE_SIZE)
 
-  async function handleNoShow(appId) {
-    if (!confirm('Bu adayı NO-SHOW olarak işaretlemek istediğinize emin misiniz?\n\nBu işlem geri alınamaz. Adayın strike hakkı 1 düşecek, sıfıra inerse 30 gün otomatik banlanacak.')) {
-      return
-    }
+  async function doNoShow(appId) {
     setActionLoading(true)
     try {
       const result = await hotelApi.markNoShow(appId)
@@ -83,6 +87,16 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
       onRefresh()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionLoading(false) }
+  }
+
+  function handleNoShow(appId) {
+    setConfirmState({
+      title: 'NO-SHOW olarak işaretle',
+      description: 'Bu işlem geri alınamaz. Adayın strike hakkı 1 düşecek, sıfıra inerse 30 gün otomatik banlanacak.',
+      confirmLabel: 'Evet, işaretle',
+      destructive: true,
+      onConfirm: () => { setConfirmState(null); doNoShow(appId) },
+    })
   }
 
   async function handleRequestDoc() {
@@ -99,12 +113,8 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
   }
 
   // Chat-v2'de kaldirildiydi, geri eklendi: isletme modal'dan direkt karar verebilir
-  async function handleDecide(decision) {
+  async function doDecide(decision) {
     if (!selected) return
-    const confirmMsg = decision === 'ACCEPTED'
-      ? 'Bu adayi KABUL etmek istediginize emin misiniz?\n\nAday bildirim alacak ve calismaya baslayabilecek.'
-      : 'Bu adayi REDDETMEK istediginize emin misiniz?\n\nAday bildirim alacak. Karari sonra degistiremezsiniz.'
-    if (!confirm(confirmMsg)) return
     setActionLoading(true)
     try {
       const updated = await hotelApi.reviewApplication(selected.id, decision)
@@ -114,6 +124,20 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
       onRefresh()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionLoading(false) }
+  }
+
+  function handleDecide(decision) {
+    if (!selected) return
+    const isAccept = decision === 'ACCEPTED'
+    setConfirmState({
+      title: isAccept ? 'Adayı kabul et' : 'Adayı reddet',
+      description: isAccept
+        ? 'Aday bildirim alacak ve çalışmaya başlayabilecek.'
+        : 'Aday bildirim alacak. Kararı sonra değiştiremezsiniz.',
+      confirmLabel: isAccept ? 'Evet, kabul et' : 'Evet, reddet',
+      destructive: !isAccept,
+      onConfirm: () => { setConfirmState(null); doDecide(decision) },
+    })
   }
 
   // FAZ 2/#32 — Favori toggle
@@ -145,17 +169,27 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
   }
 
   // FAZ 2/#28 — HOLD'a al (24 saat aday cevap versin)
-  async function handleHold() {
+  async function doHold() {
     if (!selected) return
-    if (!confirm('Bu adayi 24 saat HOLD\'a almak istediginize emin misiniz?\n\nAday 24 saat icinde Onayla/Reddet secmezse basvuru otomatik dusucek.\n\nBu, adayin gercek niyetini test eden bir adimdir.')) return
     setActionLoading(true)
     try {
       const updated = await hotelApi.holdApplication(selected.id)
-      toast.success('Aday HOLD\'a alindi - 24 saat bekleniyor')
+      toast.success('Aday HOLD\'a alındı — 24 saat bekleniyor')
       setSelected(updated)
       onRefresh()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionLoading(false) }
+  }
+
+  function handleHold() {
+    if (!selected) return
+    setConfirmState({
+      title: 'Adayı 24 saat HOLD\'a al',
+      description: 'Aday 24 saat içinde Onayla/Reddet seçmezse başvuru otomatik düşecek. Bu, adayın gerçek niyetini test eden bir adımdır.',
+      confirmLabel: 'Evet, HOLD\'a al',
+      destructive: false,
+      onConfirm: () => { setConfirmState(null); doHold() },
+    })
   }
 
   return (
@@ -214,9 +248,9 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
         ) : (
           <ApplicationsKanban
             applications={applications.filter(a => {
-              if (!search.trim()) return true
+              if (!debouncedSearch.trim()) return true
               const name = (a.candidate?.fullName || '').toLowerCase()
-              return name.includes(search.trim().toLowerCase())
+              return name.includes(debouncedSearch.trim().toLowerCase())
             })}
             statusFilter={filter}  /* Dalga H4 — chip secimi kanban'i filtrele */
             onRefresh={onRefresh}
@@ -605,6 +639,16 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
         </div>
       )}
 
+      <ConfirmDialog
+        open={!!confirmState}
+        onClose={() => setConfirmState(null)}
+        title={confirmState?.title}
+        description={confirmState?.description}
+        confirmLabel={confirmState?.confirmLabel}
+        destructive={confirmState?.destructive}
+        loading={actionLoading}
+        onConfirm={() => confirmState?.onConfirm?.()}
+      />
     </div>
   )
 }
