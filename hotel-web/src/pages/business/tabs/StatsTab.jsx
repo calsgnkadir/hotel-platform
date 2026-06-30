@@ -20,7 +20,7 @@ export default function StatsTab() {
   })
 
   if (isLoading) return <SkeletonList count={4} />
-  if (error) return <div style={{ color: '#ef4444' }}>İstatistikler yüklenemedi.</div>
+  if (error) return <div style={{ color: '#b46a55' }}>İstatistikler yüklenemedi.</div>
   if (!data) return null
 
   const {
@@ -79,7 +79,7 @@ function Kpi({ label, value, delta, color = '#d4a853' }) {
       <div className="relative">
         <div style={{
           fontSize: 11,
-          color: 'rgba(253, 233, 165, 0.78)',
+          color: '#928678',
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
           fontWeight: 600,
@@ -104,9 +104,9 @@ function Kpi({ label, value, delta, color = '#d4a853' }) {
               fontWeight: 700,
               padding: '2px 8px',
               borderRadius: 999,
-              background: deltaPos ? 'rgba(34, 197, 94, 0.14)' : 'rgba(239, 68, 68, 0.14)',
-              color:      deltaPos ? '#86efac' : '#fca5a5',
-              border: `1px solid ${deltaPos ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
+              background: deltaPos ? 'rgba(122, 159, 122, 0.12)' : 'rgba(180, 106, 85, 0.12)',
+              color:      deltaPos ? '#a8c8a8' : '#fca5a5',
+              border: `1px solid ${deltaPos ? 'rgba(122, 159, 122, 0.30)' : 'rgba(180, 106, 85, 0.30)'}`,
             }}>
               {deltaPos ? '+' : ''}{delta}%
             </span>
@@ -122,7 +122,7 @@ function FunnelCard({ funnel, total }) {
   const stages = [
     { label: 'Alındı',  count: funnel.received,  color: '#d4a853' },
     { label: 'İncelendi', count: funnel.reviewed, color: '#3b82f6' },
-    { label: 'Kabul',   count: funnel.accepted,  color: '#10b981' },
+    { label: 'Kabul',   count: funnel.accepted,  color: '#5e8460' },
     { label: 'Tamamlandı', count: funnel.completed, color: '#047857' },
   ]
   const max = funnel.received || 1
@@ -133,11 +133,11 @@ function FunnelCard({ funnel, total }) {
   return (
     <div className="card p-5">
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#fde9a5', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#cdb78f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           İşe Alım Hunisi
         </h3>
-        <span style={{ fontSize: 11, color: 'rgba(139, 169, 210, 0.75)' }}>
-          Dönüşüm <strong style={{ color: '#86efac' }}>%{overallConversion}</strong>
+        <span style={{ fontSize: 11, color: '#c9bdaa' }}>
+          Dönüşüm <strong style={{ color: '#a8c8a8' }}>%{overallConversion}</strong>
         </span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -148,15 +148,15 @@ function FunnelCard({ funnel, total }) {
           return (
             <div key={s.label}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                <span style={{ color: 'rgba(229, 231, 235, 0.75)' }}>{s.label}</span>
+                <span style={{ color: '#c9bdaa' }}>{s.label}</span>
                 <span style={{ color: '#ffffff', fontWeight: 600 }}>
                   {s.count}
                   {stageConv !== null && (
-                    <span style={{ color: 'rgba(139, 169, 210, 0.65)', marginLeft: 6, fontWeight: 400 }}>· %{stageConv}</span>
+                    <span style={{ color: '#928678', marginLeft: 6, fontWeight: 400 }}>· %{stageConv}</span>
                   )}
                 </span>
               </div>
-              <div style={{ height: 8, borderRadius: 4, background: 'rgba(212, 168, 83, 0.10)', overflow: 'hidden' }}>
+              <div style={{ height: 8, borderRadius: 4, background: 'rgba(205, 183, 143, 0.08)', overflow: 'hidden' }}>
                 <div style={{
                   width: `${pct}%`,
                   height: '100%',
@@ -177,10 +177,10 @@ function HireTimeCard({ data }) {
   if (!data || data.length === 0) {
     return (
       <div className="card p-5">
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#fde9a5', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#cdb78f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           İşe Alım Süresi
         </h3>
-        <div style={{ padding: 32, textAlign: 'center', color: 'rgba(139, 169, 210, 0.65)', fontSize: 12 }}>
+        <div style={{ padding: 32, textAlign: 'center', color: '#928678', fontSize: 12 }}>
           Henüz kabul edilmiş başvuru yok.
         </div>
       </div>
@@ -191,35 +191,35 @@ function HireTimeCard({ data }) {
   return (
     <div className="card p-5">
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 1 }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#fde9a5', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#cdb78f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           İşe Alım Süresi
         </h3>
-        <span style={{ fontSize: 11, color: 'rgba(139, 169, 210, 0.75)' }}>
+        <span style={{ fontSize: 11, color: '#c9bdaa' }}>
           Başvuru → Kabul · {total} aday
         </span>
       </div>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={data} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
-          <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'rgba(229, 231, 235, 0.65)' }} axisLine={false} tickLine={false} />
-          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'rgba(229, 231, 235, 0.65)' }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#928678' }} axisLine={false} tickLine={false} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#928678' }} axisLine={false} tickLine={false} />
           <Tooltip
-            cursor={{ fill: 'rgba(212, 168, 83, 0.10)' }}
+            cursor={{ fill: 'rgba(205, 183, 143, 0.08)' }}
             contentStyle={{
               background: 'rgba(15, 23, 38, 0.95)',
-              border: '1px solid rgba(212, 168, 83, 0.35)',
+              border: '1px solid rgba(205, 183, 143, 0.28)',
               borderRadius: 8,
               fontSize: 12,
-              color: '#fde9a5',
+              color: '#cdb78f',
               boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
             }}
-            labelStyle={{ color: '#fde9a5' }}
+            labelStyle={{ color: '#cdb78f' }}
             itemStyle={{ color: '#dde7f3' }}
           />
           <Bar dataKey="count" radius={[6, 6, 0, 0]}>
             {data.map((_, i) => (
-              <Cell key={i} fill={['#10b981', '#0ea5e9', '#f59e0b', '#ef4444'][i] || '#94a3b8'} />
+              <Cell key={i} fill={['#5e8460', '#0ea5e9', '#f59e0b', '#b46a55'][i] || '#94a3b8'} />
             ))}
-            <LabelList dataKey="count" position="top" style={{ fontSize: 11, fill: '#fde9a5', fontWeight: 700 }} />
+            <LabelList dataKey="count" position="top" style={{ fontSize: 11, fill: '#cdb78f', fontWeight: 700 }} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

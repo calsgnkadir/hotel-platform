@@ -39,9 +39,9 @@ function SearchInput({ value, onChange }) {
   return (
     <motion.div
       animate={{
-        borderColor: focused ? 'rgba(212, 168, 83, 0.55)' : 'rgba(212, 168, 83, 0.18)',
+        borderColor: focused ? 'rgba(205, 183, 143, 0.45)' : 'rgba(205, 183, 143, 0.10)',
         boxShadow: focused
-          ? '0 0 0 3px rgba(212, 168, 83, 0.10), 0 4px 14px rgba(0,0,0,0.20)'
+          ? '0 0 0 3px rgba(205, 183, 143, 0.08), 0 4px 14px rgba(0,0,0,0.20)'
           : '0 0 0 0px rgba(212, 168, 83, 0)',
       }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
@@ -53,7 +53,7 @@ function SearchInput({ value, onChange }) {
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
            strokeWidth={1.8} stroke="currentColor"
            className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-           style={{ color: focused ? '#fde9a5' : 'rgba(139, 169, 210, 0.65)' }}>
+           style={{ color: focused ? '#cdb78f' : '#928678' }}>
         <path strokeLinecap="round" strokeLinejoin="round"
               d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
       </svg>
@@ -67,7 +67,7 @@ function SearchInput({ value, onChange }) {
         <button type="button" onClick={() => onChange('')}
                 title="Temizle"
                 className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 grid place-items-center rounded-full hover:bg-white/5 transition-colors"
-                style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+                style={{ color: '#c9bdaa' }}>
           ×
         </button>
       )}
@@ -89,7 +89,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
       className="relative w-full text-left px-3 py-3 group overflow-hidden rounded-xl cursor-pointer"
       style={{
         background: isActive
-          ? 'linear-gradient(90deg, rgba(212, 168, 83, 0.10), rgba(212, 168, 83, 0.02))'
+          ? 'linear-gradient(90deg, rgba(205, 183, 143, 0.08), rgba(212, 168, 83, 0.02))'
           : 'transparent',
         marginBottom: 4,
       }}
@@ -98,8 +98,8 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
       {isActive && (
         <motion.span layoutId="conv-active-rail"
           className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
-          style={{ background: 'linear-gradient(180deg, #f7c43c, #d4a853, #b8902d)',
-                   boxShadow: '0 0 12px rgba(212, 168, 83, 0.55)' }} />
+          style={{ background: 'linear-gradient(180deg, #cdb78f, #d4a853, #b8902d)',
+                   boxShadow: '0 0 12px rgba(205, 183, 143, 0.45)' }} />
       )}
       {/* Hover sweep — altın yumuşak geçiş */}
       <span aria-hidden className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
@@ -111,13 +111,13 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
             <img src={cldImg(conv.otherPartyAvatarUrl, { w: ImgSize.avatarSm })} alt={conv.otherPartyName}
               loading="lazy" decoding="async"
               className="w-10 h-10 rounded-full object-cover"
-              style={{ border: '1px solid rgba(212, 168, 83, 0.25)' }} />
+              style={{ border: '1px solid rgba(205, 183, 143, 0.18)' }} />
           ) : (
             <div className="w-10 h-10 rounded-full flex items-center justify-center font-geist font-semibold text-[15px]"
                  style={{
-                   background: 'linear-gradient(135deg, rgba(35, 74, 130, 0.65), rgba(30, 58, 95, 0.85))',
-                   border: '1px solid rgba(212, 168, 83, 0.25)',
-                   color: '#fde9a5',
+                   background: 'linear-gradient(135deg, rgba(74, 63, 51, 0.55), rgba(34, 31, 27, 0.85))',
+                   border: '1px solid rgba(205, 183, 143, 0.18)',
+                   color: '#cdb78f',
                  }}>
               {(conv.otherPartyName || '?').charAt(0).toUpperCase()}
             </div>
@@ -126,9 +126,9 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
           {online && (
             <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full"
                   style={{
-                    background: '#22c55e',
+                    background: '#7a9f7a',
                     border: '2px solid rgba(15, 23, 38, 0.95)',
-                    boxShadow: '0 0 0 2px rgba(34, 197, 94, 0.35)',
+                    boxShadow: '0 0 0 2px rgba(122, 159, 122, 0.30)',
                     animation: 'conv-pulse 2.4s ease-in-out infinite',
                   }} title="Çevrimiçi" />
           )}
@@ -147,13 +147,13 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
           </div>
           {conv.listingTitle && (
             <div className="text-[10px] truncate mt-0.5 uppercase tracking-wider font-geist font-semibold"
-                 style={{ color: 'rgba(253, 233, 165, 0.7)' }}>
+                 style={{ color: '#cdb78f' }}>
               {conv.listingTitle}
             </div>
           )}
           <div className="flex items-center justify-between gap-2 mt-1.5">
             <div className={`text-[12px] truncate font-geist ${hasUnread ? 'font-medium' : 'font-normal'}`}
-                 style={{ color: hasUnread ? '#fde9a5' : 'rgba(139, 169, 210, 0.85)' }}>
+                 style={{ color: hasUnread ? '#cdb78f' : '#c9bdaa' }}>
               {conv.lastMessagePreview || <span className="italic" style={{ color: 'rgba(139, 169, 210, 0.5)' }}>Henüz mesaj yok</span>}
             </div>
             {hasUnread && (
@@ -161,7 +161,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
                 transition={{ type: 'spring', stiffness: 380, damping: 18 }}
                 className="flex-shrink-0 text-[10px] font-bold rounded-full px-1.5 min-w-[20px] text-center font-geist"
                 style={{
-                  background: 'linear-gradient(135deg, #f7c43c, #d4a853)',
+                  background: 'linear-gradient(135deg, #cdb78f, #d4a853)',
                   color: '#1a1208',
                   boxShadow: '0 0 12px rgba(212, 168, 83, 0.45)',
                 }}>
@@ -177,14 +177,14 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
         onClick={(e) => { e.stopPropagation(); onToggleStar?.() }}
         title={isStarred ? 'Yildizi kaldir' : 'Yildizla'}
         className="absolute top-2 right-2 p-1 rounded-md transition-colors opacity-60 hover:opacity-100"
-        style={{ color: isStarred ? '#f7c43c' : 'rgba(229, 231, 235, 0.45)' }}
+        style={{ color: isStarred ? '#cdb78f' : '#6b6358' }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill={isStarred ? 'currentColor' : 'none'}
              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
         </svg>
       </button>
-      <style>{`@keyframes conv-pulse { 0%,100% { box-shadow: 0 0 0 2px rgba(34,197,94,0.35) } 50% { box-shadow: 0 0 0 5px rgba(34,197,94,0.15) } }`}</style>
+      <style>{`@keyframes conv-pulse { 0%,100% { box-shadow: 0 0 0 2px rgba(122, 159, 122, 0.28) } 50% { box-shadow: 0 0 0 5px rgba(122, 159, 122, 0.12) } }`}</style>
     </motion.div>
   )
 }
@@ -256,18 +256,18 @@ function fileTypeMeta(ext) {
   const docPath = 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z'
   switch (ext) {
     case 'pdf':
-      return { label: 'PDF', bg: 'rgba(239, 68, 68, 0.12)', border: 'rgba(239, 68, 68, 0.30)',
+      return { label: 'PDF', bg: 'rgba(180, 106, 85, 0.12)', border: 'rgba(180, 106, 85, 0.28)',
                iconColor: '#dc2626', iconPath: docPath }
     case 'doc': case 'docx':
-      return { label: ext.toUpperCase(), bg: 'rgba(37, 99, 235, 0.12)', border: 'rgba(37, 99, 235, 0.30)',
-               iconColor: '#2563eb', iconPath: docPath }
+      return { label: ext.toUpperCase(), bg: 'rgba(107, 138, 163, 0.12)', border: 'rgba(107, 138, 163, 0.28)',
+               iconColor: '#6b8aa3', iconPath: docPath }
     case 'xls': case 'xlsx': case 'csv':
       return { label: ext.toUpperCase(), bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.30)',
                iconColor: '#059669', iconPath: docPath }
     default:
       return { label: ext.toUpperCase().slice(0, 4) || 'FILE',
-               bg: 'rgba(212, 168, 83, 0.12)', border: 'rgba(212, 168, 83, 0.30)',
-               iconColor: '#234a82', iconPath: docPath }
+               bg: 'rgba(212, 168, 83, 0.12)', border: 'rgba(205, 183, 143, 0.22)',
+               iconColor: '#8a7349', iconPath: docPath }
   }
 }
 
@@ -290,10 +290,10 @@ function MessageBubble({ m }) {
         ${m.mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
         style={{
           background: m.mine
-            ? 'linear-gradient(135deg, #fde9a5 0%, #a78bfa 100%)'   /* purple-300 purple-400 */
+            ? 'linear-gradient(135deg, #cdb78f 0%, #a78bfa 100%)'   /* purple-300 purple-400 */
             : 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)',   /* purple-100 purple-200 */
-          color: '#0c1726',  /* koyu mor yazı — kontrast garantili */
-          border: '1px solid rgba(212, 168, 83, 0.35)',
+          color: '#13110f',  /* koyu mor yazı — kontrast garantili */
+          border: '1px solid rgba(205, 183, 143, 0.28)',
         }}>
 
         {/* Attachment */}
@@ -335,7 +335,7 @@ function MessageBubble({ m }) {
 
 /* Dalga 4 / UX 4 — WhatsApp-style cift tik (gonderildi/okundu) */
 function ReadReceipt({ isRead }) {
-  const color = isRead ? '#2563eb' : 'rgba(12, 23, 38, 0.45)'  // mavi / gri
+  const color = isRead ? '#6b8aa3' : 'rgba(12, 23, 38, 0.45)'  // mavi / gri
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color}
          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
@@ -769,31 +769,31 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
           >
             <div className="absolute inset-0 rounded-full"
                  style={{
-                   background: 'radial-gradient(circle, rgba(212, 168, 83, 0.30) 0%, transparent 65%)',
+                   background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22) 0%, transparent 65%)',
                    filter: 'blur(12px)',
                  }} />
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className="relative w-full h-full">
               <defs>
                 <linearGradient id="bubble-grad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%"  stopColor="#f7c43c" />
+                  <stop offset="0%"  stopColor="#cdb78f" />
                   <stop offset="100%" stopColor="#b8902d" />
                 </linearGradient>
               </defs>
               <path d="M14 12h32a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H24l-10 8V20a8 8 0 0 1 0-8z"
-                    fill="rgba(15, 23, 38, 0.85)"
+                    fill="rgba(13, 11, 9, 0.85)"
                     stroke="url(#bubble-grad)" strokeWidth="1.5" />
-              <circle cx="24" cy="29" r="2" fill="#fde9a5" opacity="0.9" />
-              <circle cx="32" cy="29" r="2" fill="#fde9a5" opacity="0.9" />
-              <circle cx="40" cy="29" r="2" fill="#fde9a5" opacity="0.9" />
+              <circle cx="24" cy="29" r="2" fill="#cdb78f" opacity="0.9" />
+              <circle cx="32" cy="29" r="2" fill="#cdb78f" opacity="0.9" />
+              <circle cx="40" cy="29" r="2" fill="#cdb78f" opacity="0.9" />
             </svg>
           </motion.div>
           <h3 className="text-[18px] font-semibold mb-2" style={{ color: '#ffffff', letterSpacing: '-0.015em' }}>
             <em className="not-italic font-semibold" style={{
-              background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
+              background: 'linear-gradient(135deg, #cdb78f 0%, #d4a853 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>Sohbet</em> seçin
           </h3>
-          <p className="text-[12.5px] leading-relaxed" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+          <p className="text-[12.5px] leading-relaxed" style={{ color: '#c9bdaa' }}>
             Soldan bir sohbet seç veya yeni bir ilana başvur — her başvuru otomatik bir sohbet açar.
           </p>
         </motion.div>
@@ -1027,7 +1027,7 @@ function SendButton({ sending, disabled }) {
         borderRadius: 10,
         background: disabled
           ? 'rgba(148, 163, 184, 0.25)'
-          : 'linear-gradient(135deg, #1e3a5f, #234a82)',
+          : 'linear-gradient(135deg, #1b1815, #8a7349)',
         color: '#fff',
         fontSize: 13,
         fontWeight: 700,
@@ -1035,7 +1035,7 @@ function SendButton({ sending, disabled }) {
         border: 'none',
         flexShrink: 0,
         cursor: disabled ? 'not-allowed' : 'pointer',
-        boxShadow: disabled ? 'none' : '0 6px 18px rgba(30, 58, 95, 0.32)',
+        boxShadow: disabled ? 'none' : '0 6px 18px rgba(34, 31, 27, 0.32)',
         transition: 'transform 150ms, box-shadow 200ms, background 200ms',
       }}
       onMouseDown={e => !disabled && (e.currentTarget.style.transform = 'translateY(1px) scale(0.98)')}
@@ -1133,8 +1133,8 @@ function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
             onClick={() => onPick?.(c.t)}
             className="px-3 py-1.5 rounded-full text-[12px] whitespace-nowrap transition-all hover:-translate-y-0.5"
             style={{
-              background: 'rgba(212, 168, 83, 0.10)',
-              color: '#1e3a5f',
+              background: 'rgba(205, 183, 143, 0.08)',
+              color: '#1b1815',
               border: '1px solid rgba(212, 168, 83, 0.28)',
               flexShrink: 0,
             }}>
@@ -1241,16 +1241,16 @@ export default function MessagesPage() {
         {/* Sol — Sohbet listesi */}
         <div className={`${showListMobile ? 'flex' : 'hidden sm:flex'} flex-col w-full sm:w-80 sm:min-w-[20rem] border-r border-cream-200 dark:border-cream-300 bg-white dark:bg-ink-800`}>
           <div className="px-4 py-3 space-y-2.5 font-geist"
-               style={{ borderBottom: '1px solid rgba(212, 168, 83, 0.10)' }}>
+               style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-[14px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
                 Sohbetler
               </h3>
               <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full"
                     style={{
-                      background: 'rgba(212, 168, 83, 0.10)',
-                      border: '1px solid rgba(212, 168, 83, 0.25)',
-                      color: '#fde9a5',
+                      background: 'rgba(205, 183, 143, 0.08)',
+                      border: '1px solid rgba(205, 183, 143, 0.18)',
+                      color: '#cdb78f',
                     }}>
                 {filteredConvs.length}{search ? ` / ${conversations.length}` : ''}
               </span>
@@ -1270,8 +1270,8 @@ export default function MessagesPage() {
                     onClick={() => setFilter(opt.id)}
                     className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
                     style={{
-                      background: active ? 'rgba(212, 168, 83, 0.20)' : 'rgba(21, 36, 61, 0.55)',
-                      color: active ? '#fde9a5' : 'rgba(229, 231, 235, 0.65)',
+                      background: active ? 'rgba(212, 168, 83, 0.20)' : 'rgba(27, 24, 21, 0.75)',
+                      color: active ? '#cdb78f' : '#928678',
                       border: `1px solid ${active ? 'rgba(212, 168, 83, 0.50)' : 'rgba(212, 168, 83, 0.15)'}`,
                     }}>
                     {opt.label}
@@ -1308,28 +1308,28 @@ export default function MessagesPage() {
                       className="relative w-20 h-20 mx-auto mb-4">
                       <div className="absolute inset-0 rounded-full"
                            style={{
-                             background: 'radial-gradient(circle, rgba(212, 168, 83, 0.30) 0%, transparent 65%)',
+                             background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22) 0%, transparent 65%)',
                              filter: 'blur(10px)',
                            }} />
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className="relative w-full h-full">
                         <defs>
                           <linearGradient id="empty-bubble-grad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%"  stopColor="#f7c43c" />
+                            <stop offset="0%"  stopColor="#cdb78f" />
                             <stop offset="100%" stopColor="#b8902d" />
                           </linearGradient>
                         </defs>
                         <path d="M14 12h32a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H24l-10 8V20a8 8 0 0 1 0-8z"
-                              fill="rgba(15, 23, 38, 0.85)"
+                              fill="rgba(13, 11, 9, 0.85)"
                               stroke="url(#empty-bubble-grad)" strokeWidth="1.5" />
-                        <circle cx="24" cy="29" r="1.8" fill="#fde9a5" opacity="0.9" />
-                        <circle cx="32" cy="29" r="1.8" fill="#fde9a5" opacity="0.9" />
-                        <circle cx="40" cy="29" r="1.8" fill="#fde9a5" opacity="0.9" />
+                        <circle cx="24" cy="29" r="1.8" fill="#cdb78f" opacity="0.9" />
+                        <circle cx="32" cy="29" r="1.8" fill="#cdb78f" opacity="0.9" />
+                        <circle cx="40" cy="29" r="1.8" fill="#cdb78f" opacity="0.9" />
                       </svg>
                     </motion.div>
                     <h4 className="text-[14px] font-semibold mb-1.5" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
                       Henüz sohbetin yok
                     </h4>
-                    <p className="text-[11.5px] leading-relaxed mb-4" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+                    <p className="text-[11.5px] leading-relaxed mb-4" style={{ color: '#c9bdaa' }}>
                       {helperText}
                     </p>
                     <motion.button
@@ -1339,10 +1339,10 @@ export default function MessagesPage() {
                       transition={{ type: 'spring', stiffness: 340, damping: 22 }}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[11.5px] font-semibold"
                       style={{
-                        background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 50%, #b8902d 100%)',
-                        color: '#0c1726',
-                        border: '1px solid rgba(212, 168, 83, 0.55)',
-                        boxShadow: '0 4px 14px rgba(212, 168, 83, 0.35), inset 0 1px 0 rgba(255,255,255,0.25)',
+                        background: 'linear-gradient(135deg, #cdb78f 0%, #d4a853 50%, #b8902d 100%)',
+                        color: '#13110f',
+                        border: '1px solid rgba(205, 183, 143, 0.45)',
+                        boxShadow: '0 4px 14px rgba(205, 183, 143, 0.28), inset 0 1px 0 rgba(255,255,255,0.25)',
                       }}>
                       {ctaLabel}
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -1407,13 +1407,13 @@ function ConversationDetailPanel({ conversation }) {
       <div
         className="hidden lg:flex flex-col w-80 min-w-[20rem] border-l overflow-hidden relative"
         style={{
-          background: 'linear-gradient(180deg, rgba(21, 36, 61, 0.92) 0%, rgba(15, 23, 38, 0.92) 100%)',
-          borderColor: 'rgba(212, 168, 83, 0.18)',
+          background: 'linear-gradient(180deg, rgba(19, 17, 15, 0.94) 0%, rgba(13, 11, 9, 0.94) 100%)',
+          borderColor: 'rgba(205, 183, 143, 0.10)',
           zIndex: 5,  // FAZ 5.8 polish — ReportModal (z-50) ile catismayi onler
         }}
       >
         {/* Avatar + isim header — Bebas + radial glow */}
-        <div className="relative px-5 py-6 text-center border-b" style={{ borderColor: 'rgba(212, 168, 83, 0.14)' }}>
+        <div className="relative px-5 py-6 text-center border-b" style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
           {/* Dekoratif glow */}
           <div
             aria-hidden
@@ -1442,15 +1442,15 @@ function ConversationDetailPanel({ conversation }) {
                   alt={c.otherPartyName}
                   loading="lazy" decoding="async"
                   className="w-20 h-20 rounded-full object-cover"
-                  style={{ border: '2px solid rgba(212, 168, 83, 0.40)', boxShadow: '0 0 24px rgba(212, 168, 83, 0.30)' }}
+                  style={{ border: '2px solid rgba(205, 183, 143, 0.30)', boxShadow: '0 0 24px rgba(205, 183, 143, 0.22)' }}
                 />
               ) : (
                 <div
                   className="w-20 h-20 rounded-full flex items-center justify-center font-bebas text-3xl text-white"
                   style={{
-                    background: 'linear-gradient(135deg, #1e3a5f 0%, #b8902d 100%)',
-                    boxShadow: '0 0 24px rgba(212, 168, 83, 0.40)',
-                    border: '2px solid rgba(212, 168, 83, 0.30)',
+                    background: 'linear-gradient(135deg, #1b1815 0%, #b8902d 100%)',
+                    boxShadow: '0 0 24px rgba(205, 183, 143, 0.30)',
+                    border: '2px solid rgba(205, 183, 143, 0.22)',
                   }}
                 >
                   {initial}
@@ -1459,29 +1459,29 @@ function ConversationDetailPanel({ conversation }) {
               {online && (
                 <span
                   className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full"
-                  style={{ background: '#22c55e', border: '2.5px solid #15243d', boxShadow: '0 0 10px rgba(34, 197, 94, 0.55)' }}
+                  style={{ background: '#7a9f7a', border: '2.5px solid #15243d', boxShadow: '0 0 10px rgba(122, 159, 122, 0.45)' }}
                   title="Çevrimiçi"
                 />
               )}
             </a>
             <h3
               className="font-bebas text-xl tracking-wider uppercase text-white truncate"
-              style={{ textShadow: '0 0 12px rgba(212, 168, 83, 0.40)' }}
+              style={{ textShadow: '0 0 12px rgba(205, 183, 143, 0.30)' }}
             >
               {c.otherPartyName}
             </h3>
             <div className="flex items-center justify-center gap-2 mt-1.5">
               <span
                 className="w-1.5 h-1.5 rounded-full"
-                style={{ background: online ? '#22c55e' : '#52525b', boxShadow: online ? '0 0 6px #22c55e' : 'none' }}
+                style={{ background: online ? '#7a9f7a' : '#52525b', boxShadow: online ? '0 0 6px #7a9f7a' : 'none' }}
               />
-              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: online ? '#86efac' : '#8ba9d2' }}>
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: online ? '#86efac' : '#928678' }}>
                 {online ? 'Çevrimiçi' : 'Çevrimdışı'}
               </span>
               {c.otherPartyRole && (
                 <>
-                  <span style={{ color: '#234a82' }}>·</span>
-                  <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#fde9a5' }}>
+                  <span style={{ color: '#8a7349' }}>·</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#cdb78f' }}>
                     {isBiz ? 'İşletme' : 'Aday'}
                   </span>
                 </>
@@ -1492,15 +1492,15 @@ function ConversationDetailPanel({ conversation }) {
 
         {/* Ilan kart */}
         {c.listingTitle && (
-          <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(212, 168, 83, 0.10)' }}>
-            <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2" style={{ color: '#fde9a5' }}>
+          <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
+            <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2" style={{ color: '#cdb78f' }}>
               İlan
             </div>
             <div
               className="rounded-xl p-3"
               style={{
-                background: 'rgba(21, 36, 61, 0.55)',
-                border: '1px solid rgba(212, 168, 83, 0.18)',
+                background: 'rgba(27, 24, 21, 0.75)',
+                border: '1px solid rgba(205, 183, 143, 0.10)',
               }}
             >
               <div className="text-sm font-semibold text-white line-clamp-2 mb-2">{c.listingTitle}</div>
@@ -1511,9 +1511,9 @@ function ConversationDetailPanel({ conversation }) {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, #1e3a5f, #b8902d)',
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208',
                     color: '#ffffff',
-                    boxShadow: '0 0 12px rgba(212, 168, 83, 0.40)',
+                    boxShadow: '0 0 12px rgba(205, 183, 143, 0.30)',
                   }}
                 >
                   İlana Git
@@ -1524,28 +1524,28 @@ function ConversationDetailPanel({ conversation }) {
         )}
 
         {/* Sohbet istatistik — kompakt */}
-        <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(212, 168, 83, 0.10)' }}>
-          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2.5" style={{ color: '#fde9a5' }}>
+        <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
+          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2.5" style={{ color: '#cdb78f' }}>
             Sohbet
           </div>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between items-center">
-              <span style={{ color: '#8ba9d2' }}>Başladı</span>
-              <span className="font-bold" style={{ color: '#dde7f3' }}>{startedLabel}</span>
+              <span style={{ color: '#928678' }}>Başladı</span>
+              <span className="font-bold" style={{ color: '#ede4d3' }}>{startedLabel}</span>
             </div>
             {c.lastMessageAt && (
               <div className="flex justify-between items-center">
-                <span style={{ color: '#8ba9d2' }}>Son mesaj</span>
-                <span className="font-bold" style={{ color: '#dde7f3' }}>{formatRelative(c.lastMessageAt)}</span>
+                <span style={{ color: '#928678' }}>Son mesaj</span>
+                <span className="font-bold" style={{ color: '#ede4d3' }}>{formatRelative(c.lastMessageAt)}</span>
               </div>
             )}
             {c.unreadCount > 0 && (
               <div className="flex justify-between items-center">
-                <span style={{ color: '#8ba9d2' }}>Okunmamış</span>
+                <span style={{ color: '#928678' }}>Okunmamış</span>
                 <span
                   className="font-bold text-[10px] px-2 py-0.5 rounded-full"
                   style={{
-                    background: 'linear-gradient(135deg, #1e3a5f, #b8902d)',
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208',
                     color: '#ffffff',
                   }}
                 >
@@ -1558,7 +1558,7 @@ function ConversationDetailPanel({ conversation }) {
 
         {/* Hizli islemler */}
         <div className="px-5 py-4 space-y-2 flex-1">
-          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: '#fde9a5' }}>
+          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: '#cdb78f' }}>
             Hızlı İşlemler
           </div>
           {/* Dalga G — Kullanici profilini gor (role'a gore /p/business/:id veya /p/candidate/:id) */}
@@ -1573,12 +1573,12 @@ function ConversationDetailPanel({ conversation }) {
             disabled={!c?.otherPartyId}
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: 'rgba(21, 36, 61, 0.55)',
-              color: '#fde9a5',
-              border: '1px solid rgba(212, 168, 83, 0.18)',
+              background: 'rgba(27, 24, 21, 0.75)',
+              color: '#cdb78f',
+              border: '1px solid rgba(205, 183, 143, 0.10)',
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f7c43c" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#cdb78f" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
             <span className="font-semibold">
               {c?.otherPartyRole === 'BUSINESS_OWNER' ? 'İşletme Profili' : 'Aday Profili'}
             </span>
@@ -1590,12 +1590,12 @@ function ConversationDetailPanel({ conversation }) {
             disabled={!c.listingId}
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: 'rgba(21, 36, 61, 0.55)',
-              color: '#fde9a5',
-              border: '1px solid rgba(212, 168, 83, 0.18)',
+              background: 'rgba(27, 24, 21, 0.75)',
+              color: '#cdb78f',
+              border: '1px solid rgba(205, 183, 143, 0.10)',
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f7c43c" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5 19.5 4.5m0 0v15m0-15h-15" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#cdb78f" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5 19.5 4.5m0 0v15m0-15h-15" /></svg>
             <span className="font-semibold">İlanı Görüntüle</span>
           </button>
           <button
@@ -1604,7 +1604,7 @@ function ConversationDetailPanel({ conversation }) {
             style={{
               background: 'rgba(239, 68, 68, 0.10)',
               color: '#fca5a5',
-              border: '1px solid rgba(239, 68, 68, 0.25)',
+              border: '1px solid rgba(180, 106, 85, 0.22)',
             }}
           >
             <span className="font-bebas text-base">!</span>
@@ -1613,8 +1613,8 @@ function ConversationDetailPanel({ conversation }) {
         </div>
 
         {/* Alt imza */}
-        <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'rgba(212, 168, 83, 0.10)' }}>
-          <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: '#234a82' }}>
+        <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
+          <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: '#8a7349' }}>
             AjansHotel · Sohbet
           </span>
         </div>

@@ -23,7 +23,7 @@ export default function OverviewTab({ applications, onTabChange }) {
           {[
             { label: 'Toplam',      value: applications.length, color: '#60a5fa',
               data: weeklyTrend(applications, null) },
-            { label: 'Bekleyen',    value: pending,             color: '#fbbf24',
+            { label: 'Bekleyen',    value: pending,             color: '#c8923a',
               data: weeklyTrend(applications, a => a.status === 'PENDING') },
             { label: 'İnceleniyor', value: reviewing,           color: '#f7c43c',
               data: weeklyTrend(applications, a => a.status === 'REVIEWING') },
@@ -35,7 +35,7 @@ export default function OverviewTab({ applications, onTabChange }) {
               transition={{ type: 'spring', stiffness: 240, damping: 22 }}
               className="relative overflow-hidden rounded-2xl p-3.5 min-h-[88px] group"
               style={{
-                background: 'linear-gradient(155deg, rgba(21, 36, 61, 0.88) 0%, rgba(15, 23, 38, 0.96) 100%)',
+                background: 'linear-gradient(155deg, rgba(27, 24, 21, 0.88) 0%, rgba(13, 11, 9, 0.96) 100%)',
                 border: `1px solid ${s.color}22`,
                 boxShadow: '0 8px 24px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
               }}>
@@ -44,7 +44,7 @@ export default function OverviewTab({ applications, onTabChange }) {
               <div className="relative flex items-center gap-1.5 mb-2">
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
                 <span className="text-[10px] uppercase tracking-widest font-semibold truncate"
-                      style={{ color: 'rgba(253, 233, 165, 0.78)' }}>{s.label}</span>
+                      style={{ color: '#928678' }}>{s.label}</span>
               </div>
               <div className="relative flex items-end justify-between gap-2">
                 <div className="text-2xl font-semibold leading-none tabular-nums"
@@ -62,14 +62,14 @@ export default function OverviewTab({ applications, onTabChange }) {
 
         <div className="relative overflow-hidden rounded-2xl"
              style={{
-               background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.75) 0%, rgba(15, 23, 38, 0.92) 100%)',
-               border: '1px solid rgba(212, 168, 83, 0.14)',
+               background: 'linear-gradient(135deg, rgba(27, 24, 21, 0.75) 0%, rgba(13, 11, 9, 0.92) 100%)',
+               border: '1px solid rgba(205, 183, 143, 0.10)',
                boxShadow: '0 10px 32px rgba(0,0,0,0.30)',
              }}>
           <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-30"
-               style={{ background: 'radial-gradient(circle, rgba(212, 168, 83, 0.30), transparent 70%)', filter: 'blur(24px)' }} />
+               style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22), transparent 70%)', filter: 'blur(24px)' }} />
           <div className="relative px-5 py-3.5 flex items-center justify-between"
-               style={{ borderBottom: '1px solid rgba(212, 168, 83, 0.10)' }}>
+               style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
             <div>
               <h2 className="text-[15px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
                 Son Başvurular
@@ -82,7 +82,7 @@ export default function OverviewTab({ applications, onTabChange }) {
               whileHover={{ x: 3 }}
               onClick={() => onTabChange('applications')}
               className="text-[12px] font-medium"
-              style={{ color: '#fde9a5' }}>
+              style={{ color: '#cdb78f' }}>
               Tümünü Gör
             </motion.button>
           </div>
@@ -142,15 +142,15 @@ function TodayFeed({ applications, onTabChange }) {
   return (
     <div className="card p-4">
       <div className="flex items-center justify-between mb-3 pb-2 border-b"
-           style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+           style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
         <h3 className="font-bebas text-base tracking-[0.2em] uppercase"
-            style={{ color: '#fde9a5' }}>Bugünkü Akış</h3>
+            style={{ color: '#cdb78f' }}>Bugünkü Akış</h3>
         <span className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: 'rgba(229, 231, 235, 0.50)' }}>{recent.length} olay</span>
+              style={{ color: '#6b6358' }}>{recent.length} olay</span>
       </div>
 
       {recent.length === 0 ? (
-        <p className="text-center text-xs py-6" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+        <p className="text-center text-xs py-6" style={{ color: '#6b6358' }}>
           Son 24 saat sessiz.
         </p>
       ) : (
@@ -161,19 +161,19 @@ function TodayFeed({ applications, onTabChange }) {
                 className="w-full text-left flex items-start gap-2.5 group">
                 <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
                       style={{
-                        background:   STATUS_DOT[app.status] || '#8ba9d2',
-                        boxShadow: `0 0 8px ${STATUS_DOT[app.status] || '#8ba9d2'}`,
+                        background:   STATUS_DOT[app.status] || '#928678',
+                        boxShadow: `0 0 8px ${STATUS_DOT[app.status] || '#928678'}`,
                       }} />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium truncate" style={{ color: '#dde7f3' }}>
                     {app.candidate?.fullName || 'Aday'}
                   </p>
-                  <p className="text-[11px] truncate" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+                  <p className="text-[11px] truncate" style={{ color: '#6b6358' }}>
                     {app.listing?.title || 'İlan'} · {STATUS_LABEL[app.status] || app.status}
                   </p>
                 </div>
                 <span className="text-[10px] flex-shrink-0 mt-0.5"
-                      style={{ color: 'rgba(229, 231, 235, 0.38)' }}>
+                      style={{ color: '#6b6358' }}>
                   {relativeTime(app.createdAt)}
                 </span>
               </button>
@@ -187,7 +187,7 @@ function TodayFeed({ applications, onTabChange }) {
 
 /* Son başvurular satırı — accent rail + avatar gradient + hover lift (B teması) */
 function BizRecentRow({ app, last, onClick }) {
-  const accent = STATUS_DOT[app.status] || '#8ba9d2'
+  const accent = STATUS_DOT[app.status] || '#928678'
   const days = Math.floor((Date.now() - new Date(app.createdAt).getTime()) / 86400_000)
   const relative = days === 0 ? 'bugün' : days === 1 ? 'dün' : `${days} gün önce`
   return (
@@ -197,15 +197,15 @@ function BizRecentRow({ app, last, onClick }) {
       role="button" tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
       className="relative px-5 py-3 flex items-center gap-3 group cursor-pointer"
-      style={{ borderBottom: last ? 'none' : '1px solid rgba(212, 168, 83, 0.06)' }}>
+      style={{ borderBottom: last ? 'none' : '1px solid rgba(205, 183, 143, 0.05)' }}>
       <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             style={{ background: `linear-gradient(180deg, ${accent}, ${accent}80)`,
                      boxShadow: `0 0 10px ${accent}66` }} />
       <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-semibold flex-shrink-0"
            style={{
-             background: 'linear-gradient(135deg, rgba(35, 74, 130, 0.85), rgba(30, 58, 95, 0.95))',
-             border: '1px solid rgba(212, 168, 83, 0.30)',
-             color: '#fde9a5',
+             background: 'linear-gradient(135deg, rgba(205, 183, 143, 0.08), rgba(205, 183, 143, 0.06))',
+             border: '1px solid rgba(205, 183, 143, 0.22)',
+             color: '#cdb78f',
            }}>
         {(app.candidate?.fullName || '?').charAt(0).toUpperCase()}
       </div>
@@ -228,7 +228,7 @@ function BizRecentRow({ app, last, onClick }) {
 }
 
 const STATUS_DOT = {
-  PENDING:   '#fbbf24',
+  PENDING:   '#c8923a',
   REVIEWING: '#22d3ee',
   HELD:      '#f97316',
   ACCEPTED:  '#22c55e',

@@ -38,7 +38,7 @@ const COLUMNS = [
     id: 'HELD',
     label: 'Hold',
     sub: 'Aday onayı bekleniyor (24 sa)',
-    color: '#f59e0b',
+    color: '#c8923a',
     bg: 'rgba(245, 158, 11, 0.08)',
     border: 'rgba(245, 158, 11, 0.25)',
   },
@@ -47,16 +47,16 @@ const COLUMNS = [
     label: 'Kabul',
     sub: 'Çalışmaya hazır',
     color: '#22c55e',
-    bg: 'rgba(34, 197, 94, 0.08)',
-    border: 'rgba(34, 197, 94, 0.25)',
+    bg: 'rgba(122, 159, 122, 0.08)',
+    border: 'rgba(122, 159, 122, 0.22)',
   },
   {
     id: 'REJECTED',
     label: 'Red',
     sub: 'Süreç kapandı',
     color: '#ef4444',
-    bg: 'rgba(239, 68, 68, 0.08)',
-    border: 'rgba(239, 68, 68, 0.25)',
+    bg: 'rgba(180, 106, 85, 0.08)',
+    border: 'rgba(180, 106, 85, 0.22)',
   },
 ]
 
@@ -206,8 +206,8 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
       {selectedIds.size > 0 && (
         <div className="mb-4 sticky top-0 z-10 rounded-xl px-4 py-3 flex items-center justify-between gap-3 backdrop-blur-md"
              style={{
-               background: 'rgba(212, 168, 83, 0.18)',
-               border: '1px solid rgba(212, 168, 83, 0.45)',
+               background: 'rgba(205, 183, 143, 0.10)',
+               border: '1px solid rgba(205, 183, 143, 0.35)',
                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
              }}>
           <div className="flex items-center gap-2">
@@ -215,24 +215,24 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
               {selectedIds.size}
             </span>
             <span className="text-[12px] uppercase tracking-wider font-semibold"
-                  style={{ color: 'rgba(229, 231, 235, 0.85)' }}>
+                  style={{ color: '#ede4d3' }}>
               başvuru seçildi
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => handleBulkAction('ACCEPTED')}
               className="text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
-              style={{ background: 'rgba(34, 197, 94, 0.20)', color: '#86efac', border: '1px solid rgba(34, 197, 94, 0.45)' }}>
+              style={{ background: 'rgba(122, 159, 122, 0.18)', color: '#86efac', border: '1px solid rgba(122, 159, 122, 0.40)' }}>
               Toplu Kabul
             </button>
             <button type="button" onClick={() => handleBulkAction('REJECTED')}
               className="text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
-              style={{ background: 'rgba(239, 68, 68, 0.20)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.45)' }}>
+              style={{ background: 'rgba(180, 106, 85, 0.18)', color: '#fca5a5', border: '1px solid rgba(180, 106, 85, 0.40)' }}>
               Toplu Red
             </button>
             <button type="button" onClick={() => setSelectedIds(new Set())}
               className="text-[11px] uppercase tracking-wider px-2 py-1 rounded-full"
-              style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+              style={{ color: '#6b6358' }}>
               İptal
             </button>
           </div>
@@ -245,7 +245,7 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
           <Column key={col.id} col={col} count={grouped[col.id]?.length || 0}>
             {(grouped[col.id]?.length || 0) === 0 ? (
               <div className="text-[11px] italic py-6 text-center uppercase tracking-widest"
-                   style={{ color: 'rgba(229, 231, 235, 0.30)' }}>
+                   style={{ color: '#6b6358' }}>
                 Bu kolonda başvuru yok
               </div>
             ) : (
@@ -313,7 +313,7 @@ function Column({ col, count, children }) {
               {count}
             </span>
           </div>
-          <div className="text-[10px] mt-0.5" style={{ color: 'rgba(229, 231, 235, 0.50)' }}>
+          <div className="text-[10px] mt-0.5" style={{ color: '#6b6358' }}>
             {col.sub}
           </div>
         </div>
@@ -370,7 +370,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
         style={{
           // Dalga H4 — Kullanici 'beyaz kart' istedi: koyu lacivert -> krem/beyaz tema
           background: selected ? '#fef3c7' : '#fefefc',
-          border: `1px solid ${selected ? '#f59e0b' : 'rgba(15, 23, 38, 0.10)'}`,
+          border: `1px solid ${selected ? '#c8923a' : 'rgba(13, 11, 9, 0.10)'}`,
           boxShadow: selected
             ? '0 4px 16px rgba(245, 158, 11, 0.30), 0 0 0 3px rgba(245, 158, 11, 0.15)'
             : '0 2px 8px rgba(15, 23, 38, 0.08), 0 1px 2px rgba(15, 23, 38, 0.04)',
@@ -404,7 +404,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
                 title={selected ? 'Seç kaldır' : 'Toplu işlem için seç'}
                 className="absolute top-2 right-2 w-5 h-5 rounded-md flex items-center justify-center transition-all"
                 style={{
-                  background: selected ? '#f59e0b' : '#ffffff',
+                  background: selected ? '#c8923a' : '#ffffff',
                   border: `2px solid ${selected ? '#d97706' : 'rgba(15, 23, 38, 0.25)'}`,
                   color: '#ffffff',
                 }}>
@@ -465,7 +465,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
             {/* Pozisyon + ilçe chip seti — kullanici 'duzgun yazilsin' istedi */}
             {(app.listing?.position || app.candidate?.district) && (
               <div className="flex items-center gap-1.5 mt-1 text-[10.5px]"
-                   style={{ color: 'rgba(15, 23, 38, 0.55)' }}>
+                   style={{ color: 'rgba(27, 24, 21, 0.55)' }}>
                 {app.listing?.position && <span>{app.listing.position}</span>}
                 {app.listing?.position && app.candidate?.district && <span style={{ opacity: 0.4 }}>·</span>}
                 {app.candidate?.district && <span>{app.candidate.district}</span>}
@@ -475,9 +475,9 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
         </div>
 
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t"
-             style={{ borderColor: 'rgba(15, 23, 38, 0.10)' }}>
+             style={{ borderColor: 'rgba(13, 11, 9, 0.10)' }}>
           <span className="text-[10px] uppercase tracking-wider font-semibold" title={dateTooltip}
-                style={{ color: 'rgba(15, 23, 38, 0.55)' }}>
+                style={{ color: 'rgba(27, 24, 21, 0.55)' }}>
             {date}
           </span>
           <div className="flex items-center gap-1.5">
@@ -486,7 +486,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
                 onClick={(e) => { e.stopPropagation(); onMessage?.() }}
                 onPointerDown={(e) => e.stopPropagation()}
                 className="text-[10.5px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition-all hover:scale-105"
-                style={{ background: 'rgba(35, 74, 130, 0.10)', color: '#1e3a5f', border: '1px solid rgba(35, 74, 130, 0.25)' }}
+                style={{ background: 'rgba(205, 183, 143, 0.10)', color: '#1e3a5f', border: '1px solid rgba(205, 183, 143, 0.22)' }}
               >
                 Mesaj
               </button>
@@ -495,7 +495,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
               onClick={(e) => { e.stopPropagation(); onClick?.() }}
               onPointerDown={(e) => e.stopPropagation()}
               className="text-[10.5px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition-all hover:scale-105"
-              style={{ background: 'rgba(212, 168, 83, 0.18)', color: '#7c5618', border: '1px solid rgba(212, 168, 83, 0.45)' }}
+              style={{ background: 'rgba(205, 183, 143, 0.10)', color: '#7c5618', border: '1px solid rgba(205, 183, 143, 0.35)' }}
             >
               Aç
             </button>
@@ -513,7 +513,7 @@ function CardSilhouette({ app }) {
       className="rounded-xl p-3 pointer-events-none"
       style={{
         background: 'rgba(15, 23, 38, 0.95)',
-        border: '1.5px solid rgba(212, 168, 83, 0.55)',
+        border: '1.5px solid rgba(205, 183, 143, 0.45)',
         boxShadow: '0 16px 40px rgba(212, 168, 83, 0.30)',
         transform: 'rotate(-2deg)',
         width: '260px',
@@ -522,7 +522,7 @@ function CardSilhouette({ app }) {
       <div className="text-[13px] font-semibold text-white truncate">
         {app.candidate?.fullName || 'Anonim'}
       </div>
-      <div className="text-[10px] truncate" style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+      <div className="text-[10px] truncate" style={{ color: '#6b6358' }}>
         {app.listing?.title || '—'}
       </div>
     </div>
