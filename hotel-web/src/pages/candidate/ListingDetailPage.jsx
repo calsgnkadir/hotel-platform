@@ -79,8 +79,12 @@ export default function ListingDetailPage() {
           <h2 className="text-xl font-bold mb-2">İlan bulunamadı</h2>
           <p className="text-sm opacity-80 mb-4">Bu ilan kaldırılmış veya yayında değil olabilir.</p>
           <button onClick={() => navigate(-1)}
-            className="px-5 py-2.5 rounded-lg text-white font-semibold"
-            style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+            className="px-5 py-2.5 rounded-2xl font-semibold transition-all hover:-translate-y-0.5"
+            style={{
+              background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+              color: '#1a1208',
+              boxShadow: '0 10px 24px rgba(212, 168, 83, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+            }}>
             Geri Dön
           </button>
         </div>
@@ -121,20 +125,27 @@ export default function ListingDetailPage() {
   return (
     <div className="min-h-screen text-white relative z-10">
       {/* Top bar — geri butonu + breadcrumb */}
-      <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 bg-cream-100/85 backdrop-blur-lg border-b border-cream-300">
+      <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 backdrop-blur-lg"
+              style={{
+                background: 'rgba(19, 17, 15, 0.72)',
+                borderBottom: '1px solid rgba(205, 183, 143, 0.08)',
+              }}>
         <div className="flex items-center gap-3">
           <button onClick={handleBack}
-            className="p-2 rounded-lg hover:bg-cream-200 transition-colors text-ink-700"
+            className="p-2 rounded-2xl transition-colors"
+            style={{ color: '#c9bdaa' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(205, 183, 143, 0.06)'; e.currentTarget.style.color = '#ede4d3' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#c9bdaa' }}
             title="Geri">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                  strokeWidth={2} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
           </button>
-          <div className="text-xs text-ink-500 truncate">
-            <Link to="/candidate" className="hover:text-brand-700">İlanlar</Link>
-            <span className="mx-1.5">/</span>
-            <span className="text-ink-700 font-medium">{listing.title}</span>
+          <div className="text-xs truncate" style={{ color: '#928678' }}>
+            <Link to="/candidate" className="transition-colors hover:text-[color:#cdb78f]" style={{ color: '#c9bdaa' }}>İlanlar</Link>
+            <span className="mx-1.5" style={{ color: '#6b6358' }}>/</span>
+            <span className="font-medium" style={{ color: '#ede4d3' }}>{listing.title}</span>
           </div>
         </div>
       </header>
@@ -142,34 +153,52 @@ export default function ListingDetailPage() {
       <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
         <div className="xl:grid xl:grid-cols-[1fr_340px] xl:gap-5 space-y-5 xl:space-y-0">
         <div className="space-y-5 min-w-0">
-        {/* HERO — büyük gradient kart */}
+        {/* HERO — graphite + champagne wash, editorial monogram */}
         <div className="card !p-0 overflow-hidden">
-          <div className="relative h-48 w-full flex items-center justify-center overflow-hidden"
+          <div className="relative h-56 w-full flex items-center justify-center overflow-hidden"
                style={{
-                 background: 'linear-gradient(135deg, #15243d 0%, #234a82 50%, #d4a853 100%)',
+                 background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 50%, #1b1815 100%)',
                }}>
-            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full opacity-20"
-                 style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
-            <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-15"
-                 style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)' }} />
+            {/* Champagne blob — top right */}
+            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full opacity-50"
+                 style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.40) 0%, transparent 65%)', filter: 'blur(40px)' }} />
+            {/* Deep champagne blob — bottom left */}
+            <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full opacity-30"
+                 style={{ background: 'radial-gradient(circle, rgba(184, 144, 45, 0.50) 0%, transparent 65%)', filter: 'blur(36px)' }} />
+            {/* Subtle paper-grain wash */}
+            <div className="absolute inset-0 opacity-[0.08] pointer-events-none"
+                 style={{ background: 'repeating-linear-gradient(45deg, rgba(205,183,143,0.10) 0 1px, transparent 1px 8px)' }} />
 
-            <div className="text-white font-black opacity-90 relative z-10"
-                 style={{ fontSize: '6rem', textShadow: '0 6px 24px rgba(0,0,0,0.4)', fontFamily: '"Fraunces", serif' }}>
+            {/* Editorial monogram — Syne, large, ivory + champagne drop-shadow */}
+            <div className="font-syne relative z-10"
+                 style={{
+                   fontSize: '7rem',
+                   fontWeight: 700,
+                   color: '#f5efe2',
+                   letterSpacing: '-0.04em',
+                   lineHeight: 1,
+                   filter: 'drop-shadow(0 8px 32px rgba(205, 183, 143, 0.30))',
+                 }}>
               {businessLetter}
             </div>
 
-            <span className="absolute top-4 right-4 text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md"
-                  style={{ background: 'rgba(255,255,255,0.25)', color: '#fff' }}>
+            <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-[0.22em] px-3 py-1.5 rounded-full backdrop-blur-md"
+                  style={{
+                    background: 'rgba(205, 183, 143, 0.12)',
+                    color: '#cdb78f',
+                    border: '1px solid rgba(205, 183, 143, 0.32)',
+                  }}>
               {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
             </span>
           </div>
 
-          <div className="p-5">
-            <h1 className="text-2xl font-bold leading-tight" style={{ color: '#f1f5fb' }}>
+          <div className="p-6">
+            <h1 className="font-syne text-2xl sm:text-[28px] font-semibold leading-tight"
+                style={{ color: '#f5efe2', letterSpacing: '-0.025em' }}>
               {listing.title}
             </h1>
             <div className="flex items-center gap-2 flex-wrap mt-2">
-              <p className="text-base" style={{ color: '#fde9a5' }}>{listing.businessName}</p>
+              <p className="text-base" style={{ color: '#cdb78f' }}>{listing.businessName}</p>
               {listing.businessReviewCount > 0 && (
                 <StarRating value={listing.businessAverageRating}
                   count={listing.businessReviewCount} size="sm" />
@@ -194,9 +223,9 @@ export default function ListingDetailPage() {
             ...(salary ? [{ label: 'Ücret', value: salary }] : []),
           ].map(s => (
             <div key={s.label} className="card !p-3 text-center">
-              <div className="text-[10px] uppercase tracking-wider opacity-70">{s.label}</div>
-              <div className="text-sm font-semibold mt-0.5" style={{ color: '#f1f5fb' }}>{s.value}</div>
-              {s.sub && <div className="text-[10px] opacity-60 mt-0.5">{s.sub}</div>}
+              <div className="text-[10px] uppercase tracking-[0.22em] font-medium" style={{ color: '#928678' }}>{s.label}</div>
+              <div className="text-sm font-semibold mt-1" style={{ color: '#f5efe2', letterSpacing: '-0.005em' }}>{s.value}</div>
+              {s.sub && <div className="text-[10px] mt-0.5" style={{ color: '#6b6358' }}>{s.sub}</div>}
             </div>
           ))}
         </div>
@@ -205,15 +234,16 @@ export default function ListingDetailPage() {
         {benchmark && benchmark.count > 0 && benchmark.avgMin && (
           <div className="card !p-4 flex items-center gap-3">
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wider opacity-70 mb-1">
+              <div className="text-[10px] uppercase tracking-[0.22em] font-medium mb-1" style={{ color: '#928678' }}>
                 İstanbul {POSITION_LABELS[listing.position] || listing.position} ortalaması
               </div>
-              <div className="text-base font-bold" style={{ color: '#fde9a5' }}>
+              <div className="text-base font-semibold tabular-nums"
+                   style={{ color: '#cdb78f', letterSpacing: '-0.01em' }}>
                 {Number(benchmark.avgMin).toLocaleString('tr-TR')}₺
                 {benchmark.avgMax && Number(benchmark.avgMax) !== Number(benchmark.avgMin) &&
                   ` – ${Number(benchmark.avgMax).toLocaleString('tr-TR')}₺`}
               </div>
-              <div className="text-[11px] opacity-65 mt-0.5">
+              <div className="text-[11px] mt-0.5" style={{ color: '#928678' }}>
                 {benchmark.count} aktif ilan baz alındı
                 {listing.salaryMin && benchmark.avgMin &&
                   ` · Bu ilan ${Number(listing.salaryMin) >= Number(benchmark.avgMin) ? 'ortalamanın üzerinde' : 'ortalamanın altında'}`}
@@ -223,26 +253,26 @@ export default function ListingDetailPage() {
         )}
 
         {/* Açıklama */}
-        <div className="card p-5">
-          <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Açıklama</h3>
-          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#dde7f3' }}>
+        <div className="card p-6">
+          <h3 className="font-syne text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Açıklama</h3>
+          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#ede4d3' }}>
             {listing.description || 'Açıklama eklenmemiş.'}
           </p>
         </div>
 
         {listing.requirements && (
-          <div className="card p-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Gereksinimler</h3>
-            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#dde7f3' }}>
+          <div className="card p-6">
+            <h3 className="font-syne text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Gereksinimler</h3>
+            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#ede4d3' }}>
               {listing.requirements}
             </p>
           </div>
         )}
 
         {hasDates && (
-          <div className="card p-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Kontrat Dönemi</h3>
-            <p className="text-sm" style={{ color: '#dde7f3' }}>
+          <div className="card p-6">
+            <h3 className="font-syne text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Kontrat Dönemi</h3>
+            <p className="text-sm" style={{ color: '#ede4d3' }}>
               {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
               {listing.startDate && listing.endDate && ' — '}
               {listing.endDate && new Date(listing.endDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -252,8 +282,8 @@ export default function ListingDetailPage() {
 
         {/* Vardiyalar */}
         {slots.length > 0 && (
-          <div className="card p-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">
+          <div className="card p-6">
+            <h3 className="font-syne text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>
               Vardiyalar ({slots.length})
             </h3>
             <div className="space-y-1.5">
@@ -264,14 +294,20 @@ export default function ListingDetailPage() {
                 })
                 return (
                   <div key={s.id}
-                    className="flex items-center justify-between rounded-lg px-3 py-2"
-                    style={{ background: full ? 'rgba(0,0,0,0.25)' : 'rgba(212, 168, 83,0.20)', opacity: full ? 0.6 : 1 }}>
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5"
+                    style={{
+                      background: full ? 'rgba(13, 11, 9, 0.55)' : 'rgba(205, 183, 143, 0.06)',
+                      border: `1px solid ${full ? 'rgba(146, 134, 120, 0.10)' : 'rgba(205, 183, 143, 0.16)'}`,
+                      opacity: full ? 0.55 : 1,
+                    }}>
                     <div className="text-sm">
-                      <span className="font-semibold" style={{ color: '#f1f5fb' }}>{dateLabel}</span>
-                      <span className="ml-2" style={{ color: '#fde9a5' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
+                      <span className="font-semibold" style={{ color: '#ede4d3' }}>{dateLabel}</span>
+                      <span className="ml-2 tabular-nums" style={{ color: '#cdb78f' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
                     </div>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                          style={{ background: full ? '#dc2626' : '#d4a853', color: '#fff' }}>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full"
+                          style={full
+                            ? { background: 'rgba(180, 106, 85, 0.14)', color: '#d39481', border: '1px solid rgba(180, 106, 85, 0.32)' }
+                            : { background: 'rgba(122, 159, 122, 0.14)', color: '#a8c8a8', border: '1px solid rgba(122, 159, 122, 0.32)' }}>
                       {full ? 'DOLU' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
                     </span>
                   </div>
@@ -285,19 +321,26 @@ export default function ListingDetailPage() {
 
         {/* === SAG KOLON: Basvur Card + Konum + Isletme bilgileri === */}
         <aside className="space-y-4">
-          {/* Basvur Card */}
-          <div className="card p-5">
-            <div className="text-[10px] uppercase tracking-widest font-semibold mb-1"
-                 style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+          {/* Başvur Card — sole bright-gold CTA on this page */}
+          <div className="card p-6">
+            <div className="text-[10px] uppercase tracking-[0.22em] font-medium mb-2"
+                 style={{ color: '#928678' }}>
               ÜCRET
             </div>
-            <div className="font-bebas text-3xl tracking-wider mb-3"
-                 style={{ color: '#fde9a5', textShadow: '0 0 16px rgba(212, 168, 83, 0.35)' }}>
+            <div className="font-syne mb-4 tabular-nums"
+                 style={{
+                   color: '#f5efe2',
+                   fontSize: '32px',
+                   fontWeight: 600,
+                   letterSpacing: '-0.03em',
+                   lineHeight: 1,
+                   filter: 'drop-shadow(0 0 16px rgba(205, 183, 143, 0.30))',
+                 }}>
               {salary || '—'}
             </div>
 
-            <div className="space-y-2 mb-4 pb-4 border-b"
-                 style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+            <div className="space-y-2 mb-5 pb-5"
+                 style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.10)' }}>
               <DetailRow label="Pozisyon" value={POSITION_LABELS[listing.position] || listing.position} />
               <DetailRow label="İlçe"     value={listing.businessDistrict || '—'} />
               {shift && <DetailRow label="Vardiya" value={shift.label} sub={shift.time} />}
@@ -307,17 +350,24 @@ export default function ListingDetailPage() {
             <button
               onClick={handleApply}
               disabled={!hasFuture || applying}
-              className="w-full py-3.5 text-[15px] font-bold text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
-              style={{ background: hasFuture
-                ? 'linear-gradient(135deg, #d4a853, #d4a853)'
-                : '#6b7280',
-                boxShadow: '0 8px 24px rgba(212, 168, 83, 0.40)' }}>
+              className="w-full py-3.5 text-[14px] font-semibold uppercase tracking-[0.14em] rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
+              style={hasFuture
+                ? {
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    color: '#1a1208',
+                    boxShadow: '0 14px 36px rgba(212, 168, 83, 0.36), inset 0 1px 0 rgba(255,255,255,0.28)',
+                  }
+                : {
+                    background: 'rgba(146, 134, 120, 0.12)',
+                    color: '#928678',
+                    border: '1px solid rgba(146, 134, 120, 0.22)',
+                  }}>
               {hasFuture ? 'Bu İlana Başvur' : 'Süresi Doldu'}
             </button>
 
             {hasFuture && (
               <p className="text-[11px] text-center mt-3"
-                 style={{ color: 'rgba(229, 231, 235, 0.50)' }}>
+                 style={{ color: '#6b6358' }}>
                 Başvurmak 30 saniye sürer
               </p>
             )}
@@ -340,7 +390,7 @@ export default function ListingDetailPage() {
                 <p className="text-[12px] mt-3 opacity-90">{listing.businessAddress}</p>
               )}
               {listing.businessLatitude == null && (
-                <p className="text-[11px] mt-1 italic" style={{ color: '#fbbf24' }}>
+                <p className="text-[11px] mt-1 italic" style={{ color: '#c8923a' }}>
                   Yaklaşık konum — işletme tam adresi haritada işaretlememiş.
                 </p>
               )}
@@ -383,9 +433,9 @@ export default function ListingDetailPage() {
 function TrustSignal({ label, value, sub }) {
   return (
     <div className="text-left">
-      <div className="text-[10px] uppercase tracking-wider opacity-65">{label}</div>
-      <div className="text-base font-bold mt-0.5" style={{ color: '#fde9a5' }}>{value}</div>
-      {sub && <div className="text-[10px] opacity-55">{sub}</div>}
+      <div className="text-[10px] uppercase tracking-[0.22em] font-medium" style={{ color: '#928678' }}>{label}</div>
+      <div className="text-base font-semibold mt-1 tabular-nums" style={{ color: '#cdb78f', letterSpacing: '-0.01em' }}>{value}</div>
+      {sub && <div className="text-[10px] mt-0.5" style={{ color: '#6b6358' }}>{sub}</div>}
     </div>
   )
 }
@@ -403,11 +453,11 @@ function memberSince(iso) {
 function DetailRow({ label, value, sub }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-[11px] uppercase tracking-wider flex-shrink-0"
-            style={{ color: 'rgba(229, 231, 235, 0.50)' }}>{label}</span>
+      <span className="text-[10px] uppercase tracking-[0.22em] flex-shrink-0 font-medium"
+            style={{ color: '#928678' }}>{label}</span>
       <div className="text-right min-w-0">
-        <div className="text-[13px] font-semibold truncate" style={{ color: '#dde7f3' }}>{value}</div>
-        {sub && <div className="text-[10px]" style={{ color: 'rgba(229, 231, 235, 0.45)' }}>{sub}</div>}
+        <div className="text-[13px] font-semibold truncate" style={{ color: '#ede4d3' }}>{value}</div>
+        {sub && <div className="text-[10px]" style={{ color: '#6b6358' }}>{sub}</div>}
       </div>
     </div>
   )

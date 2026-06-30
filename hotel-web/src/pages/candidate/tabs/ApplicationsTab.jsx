@@ -11,15 +11,15 @@ import EmptyState from '../../../components/EmptyState'
 import ReviewModal from '../../../components/ReviewModal'
 import { CAND_STATUS_FILTERS } from '../../../components/candidate/StatusBadge'
 
-/* Durum konfigurasyonu — her status icin renk + label + accent gradient */
+/* FAZ 5.UX3 — muted status config (sage/brick/ochre/info-grey) */
 const STATUS_CONFIG = {
-  PENDING:   { label: 'Bekliyor',     color: '#fbbf24', accent: 'rgba(251, 191, 36, 0.45)',  text: '#fde68a' },
-  REVIEWING: { label: 'İnceleniyor',  color: '#22d3ee', accent: 'rgba(34, 211, 238, 0.45)',  text: '#a5f3fc' },
-  HELD:      { label: 'Hold · 24sa',  color: '#f97316', accent: 'rgba(249, 115, 22, 0.45)',  text: '#fed7aa' },
-  ACCEPTED:  { label: 'Kabul',        color: '#22c55e', accent: 'rgba(34, 197, 94, 0.45)',   text: '#86efac' },
-  REJECTED:  { label: 'Red',          color: '#ef4444', accent: 'rgba(239, 68, 68, 0.45)',   text: '#fca5a5' },
-  WITHDRAWN: { label: 'İptal',        color: '#94a3b8', accent: 'rgba(148, 163, 184, 0.45)', text: '#cbd5e1' },
-  EXPIRED:   { label: 'Süresi Doldu', color: '#94a3b8', accent: 'rgba(148, 163, 184, 0.45)', text: '#cbd5e1' },
+  PENDING:   { label: 'Bekliyor',     color: '#c8923a', accent: 'rgba(200, 146, 58, 0.42)',  text: '#e0b766' },   // ochre
+  REVIEWING: { label: 'İnceleniyor',  color: '#6b8aa3', accent: 'rgba(107, 138, 163, 0.40)', text: '#a0b1c2' },   // info muted
+  HELD:      { label: 'Hold · 24sa',  color: '#a17b3f', accent: 'rgba(161, 123, 63, 0.42)',  text: '#cda06e' },   // deep ochre
+  ACCEPTED:  { label: 'Kabul',        color: '#7a9f7a', accent: 'rgba(122, 159, 122, 0.42)', text: '#a8c8a8' },   // sage
+  REJECTED:  { label: 'Red',          color: '#b46a55', accent: 'rgba(180, 106, 85, 0.42)',  text: '#d39481' },   // brick
+  WITHDRAWN: { label: 'İptal',        color: '#928678', accent: 'rgba(146, 134, 120, 0.32)', text: '#c9bdaa' },   // muted ivory
+  EXPIRED:   { label: 'Süresi Doldu', color: '#6b6358', accent: 'rgba(107, 99, 88, 0.32)',   text: '#928678' },   // faint
 }
 
 const DOC_TYPE_LABELS = {
@@ -130,8 +130,8 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                     style={{ fontWeight: isActive ? 600 : 500, letterSpacing: '-0.005em', textTransform: 'none' }}>
                 {f.label}
               </span>
-              <span className={`text-[11px] tabular-nums font-geist font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-black/25' : ''}`}
-                    style={!isActive ? { background: 'rgba(212, 168, 83, 0.18)', color: '#fde9a5' } : {}}>
+              <span className={`text-[11px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-black/25' : ''}`}
+                    style={!isActive ? { background: 'rgba(205, 183, 143, 0.10)', color: '#cdb78f' } : {}}>
                 {count}
               </span>
             </button>
@@ -168,53 +168,52 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
             className={`relative overflow-hidden group ${corners}`}
             style={{
-              background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.75) 0%, rgba(15, 23, 38, 0.92) 100%)',
-              border: `1px solid ${sc.accent.replace('0.45', '0.18')}`,
-              boxShadow: '0 8px 28px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.03)',
+              background: '#1b1815',
+              border: 'none',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.32), inset 0 1px 0 rgba(245,239,226,0.03)',
             }}>
-            {/* Sol kenar status accent rail */}
-            <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full"
-                  style={{ background: `linear-gradient(180deg, ${sc.color}, ${sc.color}80)`,
-                           boxShadow: `0 0 14px ${sc.accent}` }} />
-            {/* Köşede yüzen status renk blob */}
-            <span aria-hidden className="absolute -top-16 -right-16 w-44 h-44 rounded-full pointer-events-none transition-opacity duration-500 opacity-30 group-hover:opacity-50"
-                  style={{ background: `radial-gradient(circle, ${sc.accent} 0%, transparent 70%)`, filter: 'blur(24px)' }} />
+            {/* Sol kenar status accent rail — muted, no glow */}
+            <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full"
+                  style={{ background: sc.color }} />
+            {/* Köşede yüzen status renk blob — quieter */}
+            <span aria-hidden className="absolute -top-16 -right-16 w-44 h-44 rounded-full pointer-events-none transition-opacity duration-500 opacity-25 group-hover:opacity-45"
+                  style={{ background: `radial-gradient(circle, ${sc.accent} 0%, transparent 70%)`, filter: 'blur(28px)' }} />
 
             <div className="relative p-5 flex items-start gap-4">
-              {/* SOL: Date Capsule */}
+              {/* SOL: Date Capsule — champagne hairline, no gold gradient text */}
               <div className="flex-shrink-0 text-center px-3 py-2.5 rounded-2xl"
                    style={{
-                     background: 'rgba(212, 168, 83, 0.08)',
-                     border: '1px solid rgba(212, 168, 83, 0.18)',
+                     background: 'rgba(205, 183, 143, 0.06)',
+                     border: '1px solid rgba(205, 183, 143, 0.16)',
                      minWidth: 60,
                    }}>
-                <div className="text-2xl font-semibold tabular-nums leading-none"
+                <div className="text-[24px] font-semibold tabular-nums leading-none"
                      style={{
-                       background: 'linear-gradient(135deg, #f7c43c, #d4a853)',
-                       WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                       letterSpacing: '-0.03em',
+                       color: '#f5efe2',
+                       letterSpacing: '-0.04em',
+                       filter: 'drop-shadow(0 0 12px rgba(205, 183, 143, 0.22))',
                      }}>{day}</div>
-                <div className="text-[10px] uppercase tracking-[0.18em] font-semibold mt-1"
-                     style={{ color: 'rgba(253, 233, 165, 0.75)' }}>{month}</div>
+                <div className="text-[10px] uppercase tracking-[0.22em] font-medium mt-1.5"
+                     style={{ color: '#928678' }}>{month}</div>
               </div>
 
               {/* ORTA: avatar + işletme + ilan */}
               <div className="flex-1 min-w-0 flex items-start gap-3">
                 <div className="w-11 h-11 rounded-full flex items-center justify-center font-semibold text-[15px] flex-shrink-0"
                      style={{
-                       background: 'linear-gradient(135deg, rgba(35, 74, 130, 0.85), rgba(30, 58, 95, 0.95))',
-                       border: '1px solid rgba(212, 168, 83, 0.30)',
-                       color: '#fde9a5',
+                       background: 'rgba(205, 183, 143, 0.08)',
+                       border: '1px solid rgba(205, 183, 143, 0.22)',
+                       color: '#cdb78f',
                      }}>
                   {initial}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[15px] font-semibold truncate"
-                       style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
+                       style={{ color: '#f5efe2', letterSpacing: '-0.01em' }}>
                     {app.listing?.title || '—'}
                   </div>
                   <div className="text-[12px] mt-0.5 flex items-center gap-1.5"
-                       style={{ color: 'rgba(139, 169, 210, 0.85)' }}>
+                       style={{ color: '#928678' }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" strokeWidth={1.6} className="w-3 h-3 flex-shrink-0">
                       <path strokeLinecap="round" strokeLinejoin="round"
@@ -276,7 +275,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                   ) : (
                     <span className="text-[10px] italic"
                           title="Vardiya günü geçince puanlayabilirsiniz"
-                          style={{ color: 'rgba(139, 169, 210, 0.55)' }}>
+                          style={{ color: '#928678' }}>
                       Çalışma sonrası puanlanır
                     </span>
                   )
@@ -288,9 +287,9 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
               <div className="relative px-5 pb-4">
                 <div className="rounded-xl p-3 text-[13px] flex items-start gap-2"
                      style={{
-                       background: 'rgba(251, 191, 36, 0.08)',
-                       border: '1px solid rgba(251, 191, 36, 0.20)',
-                       color: '#fde68a',
+                       background: 'rgba(200, 146, 58, 0.08)',
+                       border: '1px solid rgba(200, 146, 58, 0.22)',
+                       color: '#e0b766',
                      }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        stroke="currentColor" strokeWidth={1.7} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5">
@@ -397,35 +396,36 @@ function StatusPill({ cfg }) {
 }
 
 function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, small }) {
+  /* FAZ 5.UX3 — muted button variants. 'gold' kept bright (CTA exception). */
   const styles = {
     primary: {
-      background: 'linear-gradient(135deg, #1e3a5f, #234a82)',
-      color: '#ffffff',
-      boxShadow: '0 4px 14px rgba(35, 74, 130, 0.40), inset 0 1px 0 rgba(255,255,255,0.10)',
-      border: '1px solid rgba(91, 133, 191, 0.40)',
+      background: 'rgba(205, 183, 143, 0.10)',
+      color: '#ede4d3',
+      boxShadow: 'inset 0 1px 0 rgba(245,239,226,0.04)',
+      border: '1px solid rgba(205, 183, 143, 0.28)',
     },
     success: {
-      background: 'linear-gradient(135deg, #16a34a, #15803d)',
-      color: '#ffffff',
-      boxShadow: '0 4px 14px rgba(22, 163, 74, 0.35)',
-      border: '1px solid rgba(34, 197, 94, 0.40)',
+      background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)',
+      color: '#f5efe2',
+      boxShadow: '0 6px 16px rgba(122, 159, 122, 0.28)',
+      border: '1px solid rgba(122, 159, 122, 0.40)',
     },
     danger: {
-      background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
-      color: '#ffffff',
-      boxShadow: '0 4px 14px rgba(220, 38, 38, 0.35)',
-      border: '1px solid rgba(239, 68, 68, 0.40)',
+      background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)',
+      color: '#f5efe2',
+      boxShadow: '0 6px 16px rgba(180, 106, 85, 0.28)',
+      border: '1px solid rgba(180, 106, 85, 0.40)',
     },
     gold: {
-      background: 'linear-gradient(135deg, #d4a853, #b8902d)',
-      color: '#0c1726',
-      boxShadow: '0 4px 14px rgba(212, 168, 83, 0.40), inset 0 1px 0 rgba(255,255,255,0.25)',
+      background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+      color: '#1a1208',
+      boxShadow: '0 6px 18px rgba(212, 168, 83, 0.36), inset 0 1px 0 rgba(255,255,255,0.24)',
       border: '1px solid rgba(212, 168, 83, 0.55)',
     },
     'ghost-danger': {
-      background: 'rgba(239, 68, 68, 0.10)',
-      color: '#fca5a5',
-      border: '1px solid rgba(239, 68, 68, 0.25)',
+      background: 'rgba(180, 106, 85, 0.08)',
+      color: '#d39481',
+      border: '1px solid rgba(180, 106, 85, 0.22)',
     },
   }
   const padding = small ? 'px-2.5 py-1' : 'px-3 py-1.5'
@@ -436,7 +436,7 @@ function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, sma
       whileHover={{ y: -1, scale: 1.03 }}
       whileTap={{ scale: 0.95 }}
       transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-      className={`relative overflow-hidden text-[11.5px] font-semibold rounded-lg ${padding} inline-flex items-center gap-1.5 disabled:opacity-50`}
+      className={`relative overflow-hidden text-[11.5px] font-semibold rounded-2xl ${padding} inline-flex items-center gap-1.5 disabled:opacity-50`}
       style={styles[variant]}>
       {/* Sheen sweep — primary/gold/success butonlarda */}
       {(variant === 'primary' || variant === 'gold' || variant === 'success') && (

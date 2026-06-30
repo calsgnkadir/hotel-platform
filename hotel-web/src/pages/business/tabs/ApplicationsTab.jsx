@@ -202,12 +202,9 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             const count = f === 'ALL' ? applications.length : applications.filter(a => a.status === f).length
             return (
               <button key={f} onClick={() => { setFilter(f); setPage(0) }}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150
-                  ${filter === f
-                    ? 'text-white shadow-sm'
-                    : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-                style={filter === f ? { background: 'linear-gradient(135deg, #1e3a5f, #234a82)' } : {}}>
-                {labels[f]} ({count})
+                className={`chip ${filter === f ? 'is-active' : ''}`}>
+                {labels[f]}
+                <span className="text-[10px] tabular-nums opacity-80 ml-1">({count})</span>
               </button>
             )
           })}
@@ -217,18 +214,18 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             onChange={e => { setSearch(e.target.value); setPage(0) }}
             placeholder="Aday adı ara..." className="input text-sm" />
         </div>
-        {/* FAZ 5.5 — Liste / Kanban view toggle */}
+        {/* FAZ 5.UX3 — Liste / Kanban view toggle (graphite raised + champagne tint) */}
         <div className="inline-flex rounded-full p-1 self-start"
-             style={{ background: 'rgba(15, 23, 38, 0.55)', border: '1px solid rgba(212, 168, 83, 0.18)' }}>
+             style={{ background: 'rgba(27, 24, 21, 0.85)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
           {[
             { id: 'list',   label: 'Liste' },
             { id: 'kanban', label: 'Kanban' },
           ].map(v => (
             <button key={v.id} onClick={() => setView(v.id)}
-              className="px-3 py-1 rounded-full text-[11px] font-bebas tracking-widest uppercase transition-all"
+              className="px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-[0.22em] transition-all"
               style={view === v.id
-                ? { background: 'linear-gradient(135deg, #1e3a5f, #b8902d)', color: '#fff', boxShadow: '0 0 12px rgba(212, 168, 83,0.40)' }
-                : { color: '#fde9a5' }}>
+                ? { background: 'rgba(205, 183, 143, 0.14)', color: '#f5efe2', border: '1px solid rgba(205, 183, 143, 0.42)' }
+                : { color: '#928678', border: '1px solid transparent' }}>
               {v.label}
             </button>
           ))}
@@ -286,7 +283,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+                       style={{ background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)' }}>
                     {app.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
@@ -308,7 +305,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                 {/* Chat-v2: 'İncelemeye Al' yerine direkt 'Mesajlaşmaya git' */}
                 <button onClick={e => { e.stopPropagation(); onOpenMessages?.(app.conversationId) }}
                   className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
-                  style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+                  style={{ background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                     <path strokeLinecap="round" strokeLinejoin="round"
@@ -365,7 +362,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                       className="w-14 h-14 rounded-full object-cover border border-cream-300 flex-shrink-0" />
                   ) : (
                     <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                         style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+                         style={{ background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)' }}>
                       {selected.candidate?.fullName?.charAt(0) || '?'}
                     </div>
                   )}
@@ -395,7 +392,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                         ? 'text-white shadow-md'
                         : 'bg-cream-100 dark:bg-ink-800 text-ink-500 hover:bg-amber-50 hover:text-amber-600'
                     }`}
-                    style={isFavorited ? { background: 'linear-gradient(135deg, #f59e0b, #d97706)' } : {}}>
+                    style={isFavorited ? { background: 'linear-gradient(135deg, #cdb78f 0%, #b8902d 100%)' } : {}}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                          fill={isFavorited ? 'currentColor' : 'none'} stroke="currentColor"
                          strokeWidth={1.8} className="w-4 h-4">
@@ -441,7 +438,12 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
               {selected.note && (
                 <div>
                   <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Notunuz</h3>
-                  <div className="bg-amber-50 rounded-lg p-3 text-sm text-amber-700 border border-amber-200">
+                  <div className="rounded-2xl p-3 text-sm"
+                       style={{
+                         background: 'rgba(200, 146, 58, 0.10)',
+                         border: '1px solid rgba(200, 146, 58, 0.28)',
+                         color: '#e0b766',
+                       }}>
                     {selected.note}
                   </div>
                 </div>
@@ -521,7 +523,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                       </select>
                       <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
                         className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all"
-                        style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+                        style={{ background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)' }}>
                         Talep Et
                       </button>
                     </div>
@@ -544,21 +546,30 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                   )}
                   <div className="grid grid-cols-3 gap-2">
                     <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
-                      className="py-2.5 rounded-lg text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                      style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                      className="py-2.5 rounded-2xl text-xs font-semibold uppercase tracking-[0.14em] text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                      style={{
+                        background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)',
+                        boxShadow: '0 8px 22px rgba(122, 159, 122, 0.30)',
+                      }}>
                       Kabul
                     </button>
                     {/* FAZ 2/#28 - HOLD butonu sadece PENDING/REVIEWING'de */}
                     {selected.status !== 'HELD' && (
                       <button onClick={handleHold} disabled={actionLoading}
-                        className="py-2.5 rounded-lg text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                        style={{ background: 'linear-gradient(135deg, #d97706, #b45309)' }}>
+                        className="py-2.5 rounded-2xl text-xs font-semibold uppercase tracking-[0.14em] text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                        style={{
+                          background: 'linear-gradient(135deg, #c8923a 0%, #a3762d 100%)',
+                          boxShadow: '0 8px 22px rgba(200, 146, 58, 0.28)',
+                        }}>
                         HOLD 24sa
                       </button>
                     )}
                     <button onClick={() => handleDecide('REJECTED')} disabled={actionLoading}
-                      className={`py-2.5 rounded-lg text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 ${selected.status === 'HELD' ? 'col-span-2' : ''}`}
-                      style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
+                      className={`py-2.5 rounded-2xl text-xs font-semibold uppercase tracking-[0.14em] text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 ${selected.status === 'HELD' ? 'col-span-2' : ''}`}
+                      style={{
+                        background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)',
+                        boxShadow: '0 8px 22px rgba(180, 106, 85, 0.30)',
+                      }}>
                       Reddet
                     </button>
                   </div>
@@ -570,8 +581,12 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                 <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">İletişim</h3>
                 <button
                   onClick={() => onOpenMessages?.(selected.conversationId)}
-                  className="w-full py-2.5 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                  style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)', boxShadow: '0 3px 12px rgba(35, 74, 130,0.35)' }}>
+                  className="w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                  style={{
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    color: '#1a1208',
+                    boxShadow: '0 12px 28px rgba(212, 168, 83, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+                  }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                     <path strokeLinecap="round" strokeLinejoin="round"
@@ -591,7 +606,12 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                   </p>
                   <button onClick={() => handleNoShow(selected.id)}
                     disabled={actionLoading}
-                    className="w-full py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors disabled:opacity-60">
+                    className="w-full py-3 rounded-2xl text-sm font-semibold transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                    style={{
+                      background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)',
+                      color: '#f5efe2',
+                      boxShadow: '0 10px 24px rgba(180, 106, 85, 0.28)',
+                    }}>
                     Aday İşe Gelmedi (No-Show) Olarak İşaretle
                   </button>
                 </div>
@@ -599,11 +619,16 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
 
               {/* No-show işaretlenmişse uyarı banner */}
               {selected.noShow && (
-                <div className="border-t border-cream-200 pt-4">
-                  <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
+                <div className="pt-4" style={{ borderTop: '1px solid rgba(205, 183, 143, 0.10)' }}>
+                  <div className="rounded-2xl px-4 py-3 text-sm flex items-start gap-2"
+                       style={{
+                         background: 'rgba(180, 106, 85, 0.10)',
+                         border: '1px solid rgba(180, 106, 85, 0.28)',
+                         color: '#d39481',
+                       }}>
                     <div>
-                      <div className="font-semibold">No-show olarak işaretlendi</div>
-                      <div className="text-xs text-red-600 mt-0.5">
+                      <div className="font-semibold" style={{ color: '#e3a896' }}>No-show olarak işaretlendi</div>
+                      <div className="text-xs mt-0.5" style={{ color: '#d39481' }}>
                         Bu aday kabul edilen iş için işe gelmediğini bildirdiniz. Strike hakkı düşürüldü.
                       </div>
                     </div>
@@ -630,7 +655,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                     }
                   }}
                   className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
-                  style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+                  style={{ background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)' }}>
                   Mesaj Gönder
                 </button>
               )}
