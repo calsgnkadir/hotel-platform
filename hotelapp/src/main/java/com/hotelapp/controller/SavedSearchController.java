@@ -47,7 +47,7 @@ public class SavedSearchController {
     public SavedSearchDto update(
             @AuthenticationPrincipal UserPrincipal currentUser,
             @PathVariable Long id,
-            @RequestBody SavedSearchService.UpdatePayload payload
+            @Valid @RequestBody SavedSearchService.UpdatePayload payload
     ) {
         return SavedSearchDto.from(service.update(currentUser.getId(), id, payload));
     }

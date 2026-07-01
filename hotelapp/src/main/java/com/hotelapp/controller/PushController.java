@@ -5,6 +5,8 @@ import com.hotelapp.repository.PushSubscriptionRepository;
 import com.hotelapp.security.UserPrincipal;
 import com.hotelapp.service.VapidService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +36,8 @@ public class PushController {
     @PostMapping("/subscribe")
     @Transactional
     public ResponseEntity<Void> subscribe(@AuthenticationPrincipal UserPrincipal currentUser,
-                                          @RequestBody SubscriptionDto body) {
-        if (currentUser == null || body == null || body.endpoint == null) {
+                                          @Valid @RequestBody SubscriptionDto body) {
+        if (currentUser == null) {
             return ResponseEntity.badRequest().build();
         }
         PushSubscription sub = repo.findByEndpoint(body.endpoint)
@@ -52,14 +54,14 @@ public class PushController {
     /** Aboneligi sil (kullanici browser bildirim izinini kaldirinca). */
     @DeleteMapping("/subscribe")
     @Transactional
-    public ResponseEntity<Void> unsubscribe(@RequestBody SubscriptionDto body) {
-        if (body == null || body.endpoint == null) return ResponseEntity.badRequest().build();
+    public ResponseEntity<Void> unsubscribe(@Valid @RequestBody SubscriptionDto body) {
         repo.deleteByEndpoint(body.endpoint);
         return ResponseEntity.noContent().build();
     }
 
     @Data
     public static class SubscriptionDto {
+        @NotBlank
         private String endpoint;
         private String p256dh;
         private String auth;

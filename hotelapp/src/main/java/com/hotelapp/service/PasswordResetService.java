@@ -77,14 +77,16 @@ public class PasswordResetService {
         String html = emailService.buildPasswordResetHtml(user.getFullName(), resetLink);
         try {
             emailService.queue(user.getEmail(), "AjansHotel — Şifre Sıfırlama", html);
-            log.info("[PWD-RESET] Token oluşturuldu + email gönderildi: userId={} link={}",
-                    user.getId(), resetLink);
+            // FAZ 9.6 — Link INFO seviyeden DEBUG'a: prod log'larinda reset link sizmaz.
+            // Dev'de logging.level ayari ile gorulebilir.
+            log.info("[PWD-RESET] Token oluşturuldu + email gönderildi: userId={}", user.getId());
+            log.debug("[PWD-RESET] Reset link: {}", resetLink);
         } catch (Exception e) {
             // Resend ücretsiz tier'da yalnızca hesabına bağlı email'lere izin verir.
-            // Hata olsa bile token DB'de var; kullanıcı dev modda log'dan link'i kopyalayabilir.
-            log.warn("[PWD-RESET] Email gönderilemedi (Resend hatası) userId={} ama token aktif. Link:", user.getId());
-            log.warn("[PWD-RESET] >>> {}", resetLink);
-            log.warn("[PWD-RESET] Sebep: {}", e.getMessage());
+            // FAZ 9.6 — Link WARN'dan DEBUG'a: prod log'larinda hata anindaki link de sizmaz.
+            log.warn("[PWD-RESET] Email gönderilemedi (Resend hatası) userId={} ama token aktif. Sebep: {}",
+                    user.getId(), e.getMessage());
+            log.debug("[PWD-RESET] >>> {}", resetLink);
             // Sessiz başarı — UI'da "gönderildi" görünmeli ki kullanıcı süreçten haberdar olsun.
             // Gerçek hata sadece log'da görünür (security + UX dengesi).
         }

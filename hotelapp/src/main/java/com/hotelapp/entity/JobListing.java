@@ -7,6 +7,7 @@ import com.hotelapp.enums.SalaryType;
 import com.hotelapp.enums.Shift;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -79,7 +80,10 @@ public class JobListing {
     private ListingStatus status = ListingStatus.ACTIVE;
 
     // Faz E1: Bu ilana ait spesifik vardiya slotları (date+startTime+endTime+slotsNeeded)
+    // FAZ 9.2 — N+1 fix: shiftSlots her listing icin ayri sorgu yerine
+    // Hibernate 50 listing'in slot'larini tek IN(...) sorgusuyla toplar.
     @OneToMany(mappedBy = "jobListing", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50)
     @Builder.Default
     private List<ShiftSlot> shiftSlots = new ArrayList<>();
 

@@ -61,12 +61,14 @@ public class EmailVerificationService {
         try {
             String html = emailTemplates.verifyEmail(user.getFullName(), verifyLink);
             emailService.queue(user.getEmail(), "AjansHotel — Email Doğrulama", html);
-            log.info("[EMAIL-VERIFY] Token olusturuldu + mail gonderildi: userId={} link={}",
-                    user.getId(), verifyLink);
+            // FAZ 9.6 — Link INFO seviyeden DEBUG'a: prod log'larinda verify link sizmaz.
+            log.info("[EMAIL-VERIFY] Token olusturuldu + mail gonderildi: userId={}", user.getId());
+            log.debug("[EMAIL-VERIFY] Verify link: {}", verifyLink);
         } catch (Exception e) {
-            log.warn("[EMAIL-VERIFY] Mail gonderilemedi userId={}. Link:", user.getId());
-            log.warn("[EMAIL-VERIFY] >>> {}", verifyLink);
-            log.warn("[EMAIL-VERIFY] Sebep: {}", e.getMessage());
+            // FAZ 9.6 — Link WARN'dan DEBUG'a: hata anindaki link de sizmaz.
+            log.warn("[EMAIL-VERIFY] Mail gonderilemedi userId={}. Sebep: {}",
+                    user.getId(), e.getMessage());
+            log.debug("[EMAIL-VERIFY] >>> {}", verifyLink);
         }
     }
 

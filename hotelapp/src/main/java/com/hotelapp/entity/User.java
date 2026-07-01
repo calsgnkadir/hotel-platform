@@ -7,6 +7,7 @@ import com.hotelapp.enums.Language;
 import com.hotelapp.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +20,10 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+// FAZ 9.2 — N+1 fix: Application.candidate/Business.owner LAZY yuklendiginde
+// Hibernate 50 user'i tek IN(...) sorgusuyla toplar. Application list'lerinde
+// (getBusinessApplications, getMyApplications) 20 user -> 1 sorgu.
+@BatchSize(size = 50)
 public class User {
 
     @Id

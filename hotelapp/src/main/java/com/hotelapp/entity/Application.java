@@ -3,6 +3,7 @@ package com.hotelapp.entity;
 import com.hotelapp.enums.ApplicationStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -62,21 +63,27 @@ public class Application {
 
     // Faz E1 öncesi: keyfi haftalık müsaitlik. Yeni akış slot kullanır;
     // bu liste eski başvurularda kalır ama yeni başvurularda boş kalır.
+    // FAZ 9.2 — N+1 fix: BatchSize ile 50 app'in availability'sini tek IN(...) sorgusuyla topla.
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50)
     @Builder.Default
     private List<Availability> availabilities = new ArrayList<>();
 
     // Faz E1: Adayın başvurduğu spesifik vardiya slotları (ManyToMany)
+    // FAZ 9.2 — N+1 fix: BatchSize
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "application_shift_slots",
         joinColumns = @JoinColumn(name = "application_id"),
         inverseJoinColumns = @JoinColumn(name = "shift_slot_id")
     )
+    @BatchSize(size = 50)
     @Builder.Default
     private Set<ShiftSlot> requestedSlots = new HashSet<>();
 
+    // FAZ 9.2 — N+1 fix: BatchSize
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50)
     @Builder.Default
     private List<DocumentRequest> documentRequests = new ArrayList<>();
 

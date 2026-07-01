@@ -3,6 +3,7 @@ package com.hotelapp.entity;
 import com.hotelapp.enums.BusinessType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +13,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+// FAZ 9.2 — N+1 fix: JobListing.business ManyToOne LAZY yuklendiginde Hibernate
+// 50 farkli business'i tek IN(...) sorgusuyla toplar. 20 listing'lik listede
+// 20 SELECT -> 1 SELECT. Sadece proxy yukleme davranisi degisir, JPA semantik ayni.
+@BatchSize(size = 50)
 public class Business {
 
     @Id

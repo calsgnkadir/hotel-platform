@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -111,6 +112,11 @@ public class SecurityConfig {
                                 "camera=(), microphone=(), geolocation=(self), payment=()"))
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // FAZ 9.1 — POST /api/listings/{id}/view anonim (landing SEO + widget).
+                        // Rate-limit filter view spam'ini engeller. AUTH gerektiren
+                        // diger /api/listings/** endpoint'lerinden (detail, my, salary-benchmark)
+                        // once tanimli olmasi lazim; Spring Security first-match uygular.
+                        .requestMatchers(HttpMethod.POST, "/api/listings/*/view").permitAll()
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/businesses/**",
