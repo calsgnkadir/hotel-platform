@@ -273,17 +273,22 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             />
           </div>
         ) : pageItems.map(app => (
-          <div key={app.id} className="card hover:border-brand-300 dark:hover:border-brand-700 cursor-pointer transition-all"
+          <div key={app.id} className="card cursor-pointer"
                onClick={() => setSelected(app)}>
-            <div className="p-4 flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
                 {app.candidate?.avatarUrl ? (
                   <img src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })} alt={app.candidate.fullName}
                     loading="lazy" decoding="async"
-                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
+                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                    style={{ border: '1px solid rgba(205, 183, 143, 0.22)' }} />
                 ) : (
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
+                       style={{
+                         background: 'rgba(205, 183, 143, 0.08)',
+                         border: '1px solid rgba(205, 183, 143, 0.22)',
+                         color: '#cdb78f',
+                       }}>
                     {app.candidate?.fullName?.charAt(0) || '?'}
                   </div>
                 )}
@@ -299,13 +304,17 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-2">
+              <div className="ml-auto flex flex-col items-end gap-2 flex-shrink-0">
                 <StatusBadge status={app.status} />
                 {app.noShow && <NoShowBadge />}
                 {/* Chat-v2: 'İncelemeye Al' yerine direkt 'Mesajlaşmaya git' */}
                 <button onClick={e => { e.stopPropagation(); onOpenMessages?.(app.conversationId) }}
-                  className="text-xs px-2.5 py-1.5 rounded-lg font-semibold text-white transition-all flex items-center gap-1"
-                  style={{ background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)' }}>
+                  className="text-[11px] px-3 py-1.5 rounded-full font-semibold uppercase tracking-[0.14em] transition-all flex items-center gap-1"
+                  style={{
+                    background: 'rgba(205, 183, 143, 0.06)',
+                    border: '1px solid rgba(205, 183, 143, 0.22)',
+                    color: '#cdb78f',
+                  }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                     <path strokeLinecap="round" strokeLinejoin="round"

@@ -192,11 +192,11 @@ function BizRecentRow({ app, last, onClick }) {
       transition={{ type: 'spring', stiffness: 320, damping: 24 }}
       role="button" tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
-      className="relative px-5 py-3 flex items-center gap-3 group cursor-pointer"
+      className="relative pl-6 pr-5 py-3 flex items-center gap-3 group cursor-pointer"
       style={{ borderBottom: last ? 'none' : '1px solid rgba(205, 183, 143, 0.05)' }}>
-      <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ background: `linear-gradient(180deg, ${accent}, ${accent}80)`,
-                     boxShadow: `0 0 10px ${accent}66` }} />
+      {/* Sol accent bar — always visible per UX4 spec */}
+      <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
+            style={{ background: accent }} />
       <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-semibold flex-shrink-0"
            style={{
              background: 'linear-gradient(135deg, rgba(205, 183, 143, 0.08), rgba(205, 183, 143, 0.06))',
