@@ -91,10 +91,10 @@ export default function SavedSearchManager({ filters, onApply }) {
             className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
             style={{
               background: hasActiveFilters
-                ? 'linear-gradient(135deg, #1e3a5f, #234a82)'
-                : 'rgba(21, 36, 61, 0.55)',
-              color: hasActiveFilters ? '#ffffff' : 'rgba(229, 231, 235, 0.55)',
-              border: `1px solid ${hasActiveFilters ? 'rgba(212, 168, 83, 0.35)' : 'rgba(212, 168, 83, 0.15)'}`,
+                ? 'linear-gradient(135deg, #1b1815, #8a7349)'
+                : 'rgba(27, 24, 21, 0.75)',
+              color: hasActiveFilters ? '#ffffff' : '#6b6358',
+              border: `1px solid ${hasActiveFilters ? 'rgba(205, 183, 143, 0.28)' : 'rgba(205, 183, 143, 0.12)'}`,
               boxShadow: hasActiveFilters ? '0 4px 14px rgba(35, 74, 130, 0.30)' : 'none',
             }}
             title={hasActiveFilters ? 'Bu filtreleri kaydet' : 'Önce bir filtre seç'}>
@@ -121,16 +121,16 @@ export default function SavedSearchManager({ filters, onApply }) {
               <button type="button" onClick={handleSubmitName}
                 disabled={createMut.isPending}
                 className="flex-1 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+                style={{ background: 'linear-gradient(135deg, #1b1815, #8a7349)' }}>
                 {createMut.isPending ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
               <button type="button"
                 onClick={() => { setShowSaveInput(false); setName('') }}
                 className="px-3 py-1.5 rounded-lg text-[12px] font-medium"
                 style={{
-                  background: 'rgba(21, 36, 61, 0.55)',
-                  color: 'rgba(229, 231, 235, 0.75)',
-                  border: '1px solid rgba(212, 168, 83, 0.18)',
+                  background: 'rgba(27, 24, 21, 0.75)',
+                  color: '#c9bdaa',
+                  border: '1px solid rgba(205, 183, 143, 0.10)',
                 }}>
                 İptal
               </button>
@@ -142,9 +142,9 @@ export default function SavedSearchManager({ filters, onApply }) {
       {/* Saved list */}
       {!isLoading && saved.length > 0 && (
         <div className="space-y-1.5 pt-2"
-             style={{ borderTop: '1px solid rgba(212, 168, 83, 0.10)' }}>
+             style={{ borderTop: '1px solid rgba(205, 183, 143, 0.08)' }}>
           <div className="text-[10px] font-bold uppercase tracking-widest pt-2"
-               style={{ color: 'rgba(253, 233, 165, 0.78)' }}>
+               style={{ color: '#928678' }}>
             Kayıtlı Aramalar · {saved.length}
           </div>
           <AnimatePresence initial={false}>
@@ -154,8 +154,8 @@ export default function SavedSearchManager({ filters, onApply }) {
                 exit={{ opacity: 0, x: -8 }}
                 className="group relative rounded-lg px-2.5 py-2 transition-all hover:-translate-y-0.5"
                 style={{
-                  background: 'rgba(21, 36, 61, 0.55)',
-                  border: '1px solid rgba(212, 168, 83, 0.15)',
+                  background: 'rgba(27, 24, 21, 0.75)',
+                  border: '1px solid rgba(205, 183, 143, 0.12)',
                 }}>
                 <div className="flex items-center gap-2">
                   <button onClick={() => onApply?.(s)}
@@ -164,7 +164,7 @@ export default function SavedSearchManager({ filters, onApply }) {
                     <div className="text-[12px] font-semibold truncate" style={{ color: '#ffffff' }}>
                       {s.name}
                     </div>
-                    <div className="text-[10px] truncate" style={{ color: 'rgba(139, 169, 210, 0.65)' }}>
+                    <div className="text-[10px] truncate" style={{ color: '#928678' }}>
                       {buildPreview(s)}
                     </div>
                   </button>
@@ -172,8 +172,8 @@ export default function SavedSearchManager({ filters, onApply }) {
                     title={s.notificationsEnabled ? 'Bildirimleri kapat' : 'Bildirimleri aç'}
                     className="w-6 h-6 grid place-items-center rounded-full transition-colors flex-shrink-0"
                     style={{
-                      color: s.notificationsEnabled ? '#fde9a5' : 'rgba(139, 169, 210, 0.5)',
-                      background: s.notificationsEnabled ? 'rgba(212, 168, 83, 0.12)' : 'transparent',
+                      color: s.notificationsEnabled ? '#cdb78f' : 'rgba(139, 169, 210, 0.5)',
+                      background: s.notificationsEnabled ? 'rgba(205, 183, 143, 0.10)' : 'transparent',
                     }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={s.notificationsEnabled ? 'currentColor' : 'none'}
                          stroke="currentColor" strokeWidth={1.8} className="w-3 h-3">

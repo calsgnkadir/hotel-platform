@@ -149,8 +149,8 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
            className="card max-w-lg w-full p-0 overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="px-5 py-4 border-b border-cream-200 dark:border-cream-300">
-          <h3 id="avatar-crop-title" className="font-bold text-base" style={{ color: '#f1f5fb' }}>Profil Fotoğrafı</h3>
-          <p className="text-xs mt-0.5" style={{ color: '#fde9a5' }}>
+          <h3 id="avatar-crop-title" className="font-bold text-base" style={{ color: '#f5efe2' }}>Profil Fotoğrafı</h3>
+          <p className="text-xs mt-0.5" style={{ color: '#cdb78f' }}>
             Foto yükle kare bölgeyi sürükle kullan.
           </p>
         </div>
@@ -174,14 +174,14 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
               }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.6} stroke="currentColor"
-                   className="w-12 h-12 mx-auto mb-3" style={{ color: '#fde9a5' }}>
+                   className="w-12 h-12 mx-auto mb-3" style={{ color: '#cdb78f' }}>
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
               </svg>
-              <p className="font-semibold text-sm" style={{ color: '#f1f5fb' }}>
+              <p className="font-semibold text-sm" style={{ color: '#f5efe2' }}>
                 Foto buraya sürükle veya tıkla
               </p>
-              <p className="text-xs mt-1" style={{ color: '#fde9a5' }}>
+              <p className="text-xs mt-1" style={{ color: '#cdb78f' }}>
                 JPG/PNG/WEBP/HEIC · Maks {MAX_SIZE_MB} MB · Kare olarak kaydedilir
               </p>
               <input ref={fileInputRef} type="file"
@@ -205,7 +205,7 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
               </ReactCrop>
               <button type="button" onClick={reset}
                 className="mt-3 text-xs font-medium hover:underline"
-                style={{ color: '#fde9a5' }}>
+                style={{ color: '#cdb78f' }}>
                 Başka foto seç
               </button>
             </div>

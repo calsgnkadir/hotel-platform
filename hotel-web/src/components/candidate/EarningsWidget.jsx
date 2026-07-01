@@ -50,32 +50,32 @@ export default function EarningsWidget({ applications }) {
     <div className="relative overflow-hidden rounded-2xl font-geist"
          style={{
            background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.78) 0%, rgba(30, 58, 95, 0.55) 100%)',
-           border: '1px solid rgba(212, 168, 83, 0.18)',
+           border: '1px solid rgba(205, 183, 143, 0.10)',
            boxShadow: '0 10px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
          }}>
       {/* Köşede yüzen altın daire — saat ikonlu medallion */}
       <div aria-hidden className="absolute -top-10 -right-10 w-48 h-48 rounded-full pointer-events-none opacity-40"
-           style={{ background: 'radial-gradient(circle, rgba(212, 168, 83, 0.30) 0%, transparent 60%)', filter: 'blur(24px)' }} />
+           style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22) 0%, transparent 60%)', filter: 'blur(24px)' }} />
 
       {/* HEADER */}
       <div className="relative px-5 py-3.5 flex items-center justify-between"
-           style={{ borderBottom: '1px solid rgba(212, 168, 83, 0.10)' }}>
+           style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
         <div>
           <h2 className="text-[15px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
             Çalışma <em className="not-italic font-semibold" style={{
-              background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
+              background: 'linear-gradient(135deg, #cdb78f 0%, #d4a853 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>& kazanç</em>
           </h2>
-          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(139, 169, 210, 0.65)' }}>
+          <p className="text-[11px] mt-0.5" style={{ color: '#928678' }}>
             Tamamlanmış vardiyalardan hesaplanır
           </p>
         </div>
         <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
               style={{
-                background: 'rgba(212, 168, 83, 0.10)',
-                border: '1px solid rgba(212, 168, 83, 0.25)',
-                color: '#fde9a5',
+                background: 'rgba(205, 183, 143, 0.08)',
+                border: '1px solid rgba(205, 183, 143, 0.18)',
+                color: '#cdb78f',
               }}>
           {completed.length} iş
         </span>
@@ -93,9 +93,9 @@ export default function EarningsWidget({ applications }) {
       {totalE === 0 && totalH > 0 && (
         <div className="relative mx-5 mb-4 mt-1 px-3 py-2 rounded-lg flex items-start gap-2 text-[11.5px]"
              style={{
-               background: 'rgba(212, 168, 83, 0.06)',
-               border: '1px solid rgba(212, 168, 83, 0.14)',
-               color: 'rgba(253, 233, 165, 0.85)',
+               background: 'rgba(205, 183, 143, 0.05)',
+               border: '1px solid rgba(205, 183, 143, 0.10)',
+               color: '#c9bdaa',
              }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" strokeWidth={1.7} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5">
@@ -114,12 +114,12 @@ function Metric({ label, hours, earned, accent }) {
   return (
     <div className="px-5 py-4">
       <div className="text-[10.5px] uppercase tracking-[0.2em] font-semibold mb-1.5"
-           style={{ color: accent ? '#fde9a5' : 'rgba(139, 169, 210, 0.70)' }}>
+           style={{ color: accent ? '#cdb78f' : 'rgba(139, 169, 210, 0.70)' }}>
         {label}
       </div>
       <CountUpValue value={hours < 1 ? 0 : Math.round(hours)} suffix="sa" accent={accent} />
       <div className="text-[12px] font-medium mt-1.5 tabular-nums"
-           style={{ color: 'rgba(139, 169, 210, 0.85)' }}>
+           style={{ color: '#c9bdaa' }}>
         {earned < 1 ? '0' : Math.round(earned).toLocaleString('tr-TR')} ₺
       </div>
     </div>
@@ -143,13 +143,13 @@ function CountUpValue({ value, suffix, accent }) {
     <div className="text-[28px] font-semibold leading-none tabular-nums"
          style={{
            background: accent
-             ? 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)'
-             : 'linear-gradient(135deg, #ffffff, #fde9a5)',
+             ? 'linear-gradient(135deg, #cdb78f 0%, #d4a853 100%)'
+             : 'linear-gradient(135deg, #ffffff, #cdb78f)',
            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
            letterSpacing: '-0.03em',
          }}>
       {n} <span className="text-[15px] font-medium" style={{
-        background: 'none', WebkitBackgroundClip: 'unset', WebkitTextFillColor: accent ? '#d4a853' : '#fde9a5',
+        background: 'none', WebkitBackgroundClip: 'unset', WebkitTextFillColor: accent ? '#d4a853' : '#cdb78f',
       }}>{suffix}</span>
     </div>
   )
@@ -160,7 +160,7 @@ function Divider() {
   return (
     <div aria-hidden className="absolute top-4 bottom-4 w-px hidden sm:block"
          style={{
-           background: 'linear-gradient(180deg, transparent, rgba(212, 168, 83, 0.30), transparent)',
+           background: 'linear-gradient(180deg, transparent, rgba(205, 183, 143, 0.22), transparent)',
          }} />
   )
 }

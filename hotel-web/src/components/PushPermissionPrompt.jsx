@@ -50,10 +50,10 @@ export default function PushPermissionPrompt() {
 
   return (
     <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm z-40 animate-fade-in">
-      <div className="card !p-4 shadow-2xl" style={{ background: 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)' }}>
+      <div className="card !p-4 shadow-2xl" style={{ background: 'linear-gradient(135deg, #ede4d3 0%, #ddd6fe 100%)' }}>
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-               style={{ background: 'linear-gradient(135deg, #d4a853, #234a82)' }}>
+               style={{ background: 'linear-gradient(135deg, #d4a853, #8a7349)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" strokeWidth={1.8} className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round"
@@ -61,21 +61,21 @@ export default function PushPermissionPrompt() {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-sm mb-0.5" style={{ color: '#0c1726' }}>
+            <h3 className="font-bold text-sm mb-0.5" style={{ color: '#13110f' }}>
               {t('push.promptTitle')}
             </h3>
-            <p className="text-xs mb-3" style={{ color: '#1e3a5f' }}>
+            <p className="text-xs mb-3" style={{ color: '#1b1815' }}>
               {t('push.promptBody')}
             </p>
             <div className="flex gap-2">
               <button onClick={enable}
                 className="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
-                style={{ background: 'linear-gradient(135deg, #d4a853, #234a82)' }}>
+                style={{ background: 'linear-gradient(135deg, #d4a853, #8a7349)' }}>
                 {t('push.enable')}
               </button>
               <button onClick={later}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold"
-                style={{ background: 'rgba(255,255,255,0.50)', color: '#1e3a5f' }}>
+                style={{ background: 'rgba(255,255,255,0.50)', color: '#1b1815' }}>
                 {t('push.later')}
               </button>
             </div>

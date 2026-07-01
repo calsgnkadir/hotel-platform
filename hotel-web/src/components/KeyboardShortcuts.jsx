@@ -123,22 +123,22 @@ export default function KeyboardShortcuts() {
           <div
             className="px-3 py-2 rounded-full flex items-center gap-2"
             style={{
-              background: 'rgba(21, 36, 61, 0.92)',
-              border: '1px solid rgba(212, 168, 83, 0.40)',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.40), 0 0 16px rgba(212, 168, 83, 0.30)',
+              background: 'rgba(19, 17, 15, 0.94)',
+              border: '1px solid rgba(205, 183, 143, 0.30)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.40), 0 0 16px rgba(205, 183, 143, 0.22)',
             }}
           >
             <kbd
               className="font-mono text-[11px] font-bold px-2 py-0.5 rounded"
               style={{
-                background: 'rgba(212, 168, 83, 0.25)',
+                background: 'rgba(205, 183, 143, 0.18)',
                 color: '#ffffff',
-                border: '1px solid rgba(212, 168, 83, 0.50)',
+                border: '1px solid rgba(205, 183, 143, 0.40)',
               }}
             >
               g
             </kbd>
-            <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#fde9a5' }}>
+            <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#cdb78f' }}>
               ikinci tuşu bekliyor...
             </span>
           </div>
@@ -162,16 +162,16 @@ export default function KeyboardShortcuts() {
         className="relative max-w-md w-full rounded-2xl p-6"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.92), rgba(15, 23, 38, 0.92))',
-          border: '1px solid rgba(212, 168, 83, 0.25)',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(212, 168, 83, 0.20)',
+          background: 'linear-gradient(135deg, rgba(19, 17, 15, 0.94), rgba(13, 11, 9, 0.94))',
+          border: '1px solid rgba(205, 183, 143, 0.18)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(205, 183, 143, 0.14)',
         }}
       >
         <div className="flex items-baseline justify-between mb-5">
           <h2
             id="kbd-help-title"
             className="font-bebas text-2xl tracking-wider uppercase text-white"
-            style={{ textShadow: '0 0 14px rgba(212, 168, 83, 0.35)' }}
+            style={{ textShadow: '0 0 14px rgba(205, 183, 143, 0.28)' }}
           >
             Klavye Kısayolları
           </h2>
@@ -179,9 +179,9 @@ export default function KeyboardShortcuts() {
             onClick={() => setHelpOpen(false)}
             className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
             style={{
-              background: 'rgba(212, 168, 83, 0.18)',
-              color: '#fde9a5',
-              border: '1px solid rgba(212, 168, 83, 0.30)',
+              background: 'rgba(205, 183, 143, 0.10)',
+              color: '#cdb78f',
+              border: '1px solid rgba(205, 183, 143, 0.22)',
             }}
             aria-label="Kapat"
           >
@@ -203,23 +203,23 @@ export default function KeyboardShortcuts() {
               key={i}
               className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
               style={{
-                background: 'rgba(15, 23, 38, 0.55)',
-                border: '1px solid rgba(212, 168, 83, 0.12)',
+                background: 'rgba(13, 11, 9, 0.55)',
+                border: '1px solid rgba(205, 183, 143, 0.10)',
               }}
             >
-              <span className="text-[13px]" style={{ color: '#dde7f3' }}>
+              <span className="text-[13px]" style={{ color: '#ede4d3' }}>
                 {row.label}
               </span>
               <span className="flex items-center gap-1">
                 {row.keys.map((k, j) => (
                   <span key={j} className="flex items-center gap-1">
-                    {j > 0 && <span className="text-[10px]" style={{ color: '#234a82' }}>·</span>}
+                    {j > 0 && <span className="text-[10px]" style={{ color: '#8a7349' }}>·</span>}
                     <kbd
                       className="font-mono text-[11px] font-bold px-2 py-1 rounded-md"
                       style={{
-                        background: 'rgba(212, 168, 83, 0.18)',
+                        background: 'rgba(205, 183, 143, 0.10)',
                         color: '#ffffff',
-                        border: '1px solid rgba(212, 168, 83, 0.35)',
+                        border: '1px solid rgba(205, 183, 143, 0.28)',
                         minWidth: '24px',
                         textAlign: 'center',
                       }}
@@ -233,7 +233,7 @@ export default function KeyboardShortcuts() {
           ))}
         </ul>
 
-        <p className="mt-5 text-[11px]" style={{ color: '#8ba9d2' }}>
+        <p className="mt-5 text-[11px]" style={{ color: '#928678' }}>
           Input alanına yazıyorsan kısayollar devre dışıdır. <kbd className="font-mono">g</kbd> bastıktan sonra 1.5 saniye içinde ikinci tuşa bas.
         </p>
       </div>

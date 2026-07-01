@@ -17,32 +17,32 @@ const VARIANTS = {
   default: {
     cls: 'bg-transparent',
     style: {
-      borderColor: 'rgba(212, 168, 83, 0.20)',
-      color: 'rgba(229, 231, 235, 0.85)',
+      borderColor: 'rgba(205, 183, 143, 0.14)',
+      color: '#ede4d3',
     },
   },
   success: {
     cls: 'border',
     style: {
-      borderColor: 'rgba(34, 197, 94, 0.40)',
-      background: 'rgba(34, 197, 94, 0.08)',
-      color: '#86efac',
+      borderColor: 'rgba(122, 159, 122, 0.35)',
+      background: 'rgba(122, 159, 122, 0.08)',
+      color: '#a8c8a8',
     },
   },
   error: {
     cls: 'border',
     style: {
-      borderColor: 'rgba(239, 68, 68, 0.40)',
-      background: 'rgba(239, 68, 68, 0.08)',
-      color: '#fca5a5',
+      borderColor: 'rgba(180, 106, 85, 0.35)',
+      background: 'rgba(180, 106, 85, 0.08)',
+      color: '#d39481',
     },
   },
   warning: {
     cls: 'border',
     style: {
-      borderColor: 'rgba(251, 191, 36, 0.40)',
+      borderColor: 'rgba(200, 146, 58, 0.35)',
       background: 'rgba(251, 191, 36, 0.08)',
-      color: '#fde68a',
+      color: '#e0b766',
     },
   },
   info: {
@@ -50,7 +50,7 @@ const VARIANTS = {
     style: {
       borderColor: 'rgba(34, 211, 238, 0.40)',
       background: 'rgba(34, 211, 238, 0.08)',
-      color: '#a5f3fc',
+      color: '#c9bdaa',
     },
   },
 }

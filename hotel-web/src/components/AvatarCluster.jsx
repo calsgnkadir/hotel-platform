@@ -46,9 +46,9 @@ export default function AvatarCluster({
             width: size,
             height: size,
             marginLeft: -overlapPx,
-            background: 'rgba(21, 36, 61, 0.85)',
-            border: '2px solid #15243d',
-            color: '#fde9a5',
+            background: 'rgba(13, 11, 9, 0.85)',
+            border: '2px solid #221f1b',
+            color: '#cdb78f',
             fontSize: Math.floor(size * 0.42),
             zIndex: 0,
           }}
@@ -75,14 +75,14 @@ function AvatarBubble({ item, size, showOnlineDot, style }) {
           loading="lazy"
           decoding="async"
           className="w-full h-full rounded-full object-cover"
-          style={{ border: '2px solid #15243d' }}
+          style={{ border: '2px solid #221f1b' }}
         />
       ) : (
         <div
           className="w-full h-full rounded-full flex items-center justify-center font-bebas text-white"
           style={{
-            background: 'linear-gradient(135deg, #1e3a5f 0%, #b8902d 100%)',
-            border: '2px solid #15243d',
+            background: 'linear-gradient(135deg, #1b1815 0%, #b8902d 100%)',
+            border: '2px solid #221f1b',
             fontSize: Math.floor(size * 0.45),
             lineHeight: 1,
           }}
@@ -98,8 +98,8 @@ function AvatarBubble({ item, size, showOnlineDot, style }) {
             right: 0,
             width: dotSize,
             height: dotSize,
-            background: '#22c55e',
-            border: '2px solid #15243d',
+            background: '#7a9f7a',
+            border: '2px solid #221f1b',
             boxShadow: '0 0 6px rgba(34, 197, 94, 0.55)',
           }}
           title="Çevrimiçi"

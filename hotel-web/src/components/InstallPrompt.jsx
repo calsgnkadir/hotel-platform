@@ -81,11 +81,11 @@ export default function InstallPrompt() {
     return (
       <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm z-[1000]">
         <div className="rounded-2xl shadow-2xl overflow-hidden"
-             style={{ background: 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)' }}>
+             style={{ background: 'linear-gradient(135deg, #ede4d3 0%, #ddd6fe 100%)' }}>
           <div className="p-4">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-                   style={{ background: 'linear-gradient(135deg, #d4a853, #234a82)' }}>
+                   style={{ background: 'linear-gradient(135deg, #d4a853, #8a7349)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
@@ -93,16 +93,16 @@ export default function InstallPrompt() {
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-sm" style={{ color: '#0c1726' }}>
+                <h3 className="font-bold text-sm" style={{ color: '#13110f' }}>
                   Ana ekrana ekle
                 </h3>
-                <p className="text-xs mt-1" style={{ color: '#1e3a5f' }}>
+                <p className="text-xs mt-1" style={{ color: '#1b1815' }}>
                   Safari'de paylaş ikonuna bas, ardından
                   <span className="font-bold"> "Ana Ekrana Ekle"</span> seç.
                 </p>
                 <button onClick={handleLater}
                   className="mt-3 text-xs font-semibold"
-                  style={{ color: '#234a82' }}>
+                  style={{ color: '#8a7349' }}>
                   Şimdi değil
                 </button>
               </div>
@@ -117,11 +117,11 @@ export default function InstallPrompt() {
   return (
     <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm z-[1000]">
       <div className="rounded-2xl shadow-2xl overflow-hidden"
-           style={{ background: 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)' }}>
+           style={{ background: 'linear-gradient(135deg, #ede4d3 0%, #ddd6fe 100%)' }}>
         <div className="p-4">
           <div className="flex items-start gap-3">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-                 style={{ background: 'linear-gradient(135deg, #d4a853, #234a82)' }}>
+                 style={{ background: 'linear-gradient(135deg, #d4a853, #8a7349)' }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -130,21 +130,21 @@ export default function InstallPrompt() {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-sm" style={{ color: '#0c1726' }}>
+              <h3 className="font-bold text-sm" style={{ color: '#13110f' }}>
                 AjansHotel'i yükle
               </h3>
-              <p className="text-xs mb-3" style={{ color: '#1e3a5f' }}>
+              <p className="text-xs mb-3" style={{ color: '#1b1815' }}>
                 Ana ekrandan tek tıkla aç, native uygulama hissi yaşa.
               </p>
               <div className="flex gap-2">
                 <button onClick={handleInstall}
                   className="flex-1 px-3 py-2 rounded-lg text-xs font-bold text-white shadow-sm"
-                  style={{ background: 'linear-gradient(135deg, #d4a853, #234a82)' }}>
+                  style={{ background: 'linear-gradient(135deg, #d4a853, #8a7349)' }}>
                   Yükle
                 </button>
                 <button onClick={handleLater}
                   className="px-3 py-2 rounded-lg text-xs font-semibold"
-                  style={{ background: 'rgba(255,255,255,0.50)', color: '#1e3a5f' }}>
+                  style={{ background: 'rgba(255,255,255,0.50)', color: '#1b1815' }}>
                   Sonra
                 </button>
               </div>

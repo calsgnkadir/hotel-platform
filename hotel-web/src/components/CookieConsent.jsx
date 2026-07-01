@@ -93,8 +93,8 @@ export default function CookieConsent() {
         border: '1px solid rgba(212, 168, 83, 0.32)',
         borderRadius: 14,
         padding: '18px 20px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(212, 168, 83, 0.10) inset',
-        color: '#dde7f3',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(205, 183, 143, 0.08) inset',
+        color: '#ede4d3',
       }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8,
@@ -105,18 +105,18 @@ export default function CookieConsent() {
           <circle cx="15.5" cy="11" r="1" fill="#d4a853" />
           <circle cx="11" cy="15" r="1" fill="#d4a853" />
         </svg>
-        <h2 style={{ fontSize: 14, fontWeight: 700, color: '#fbd768', letterSpacing: '0.04em' }}>
+        <h2 style={{ fontSize: 14, fontWeight: 700, color: '#cdb78f', letterSpacing: '0.04em' }}>
           Çerez Tercihleri
         </h2>
       </div>
 
       {!showDetails ? (
         <>
-          <p style={{ fontSize: 13, lineHeight: 1.55, color: '#cbd5e1', marginBottom: 14 }}>
-            AjansHotel deneyimini iyileştirmek için çerezler kullanır. <strong style={{ color: '#fde9a5' }}>Gerekli çerezler</strong> oturumun açık kalması için
+          <p style={{ fontSize: 13, lineHeight: 1.55, color: 'rgba(205, 183, 143, 0.14)', marginBottom: 14 }}>
+            AjansHotel deneyimini iyileştirmek için çerezler kullanır. <strong style={{ color: '#cdb78f' }}>Gerekli çerezler</strong> oturumun açık kalması için
             zorunludur. Analitik ve pazarlama çerezleri opsiyoneldir.
             {' '}
-            <a href="/kvkk" style={{ color: '#fbd768', textDecoration: 'underline' }}>KVKK metni</a>.
+            <a href="/kvkk" style={{ color: '#cdb78f', textDecoration: 'underline' }}>KVKK metni</a>.
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button onClick={acceptAll} style={btnPrimary}>Tümünü Kabul Et</button>
@@ -149,7 +149,7 @@ function Row({ label, subtitle, checked, onChange, disabled }) {
       display: 'flex', alignItems: 'flex-start', gap: 12,
       padding: 10, borderRadius: 8,
       background: 'rgba(255,255,255,0.03)',
-      border: '1px solid rgba(212, 168, 83, 0.10)',
+      border: '1px solid rgba(205, 183, 143, 0.08)',
       cursor: disabled ? 'not-allowed' : 'pointer',
     }}>
       <input
@@ -160,7 +160,7 @@ function Row({ label, subtitle, checked, onChange, disabled }) {
         style={{ marginTop: 2, accentColor: '#d4a853' }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#fde9a5' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#cdb78f' }}>
           {label}
           {disabled && <span style={{ marginLeft: 8, fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>(zorunlu)</span>}
         </div>
@@ -177,16 +177,16 @@ export function getCookiePrefs() {
 
 const btnPrimary = {
   padding: '8px 16px', borderRadius: 8,
-  background: 'linear-gradient(135deg, #d4a853, #f7c43c)',
-  color: '#0c1726', fontSize: 12, fontWeight: 700,
+  background: 'linear-gradient(135deg, #d4a853, #cdb78f)',
+  color: '#13110f', fontSize: 12, fontWeight: 700,
   border: 'none', cursor: 'pointer',
   whiteSpace: 'nowrap',
 }
 const btnGhost = {
   padding: '8px 16px', borderRadius: 8,
-  background: 'rgba(212, 168, 83, 0.12)',
-  color: '#fde9a5', fontSize: 12, fontWeight: 600,
-  border: '1px solid rgba(212, 168, 83, 0.30)',
+  background: 'rgba(205, 183, 143, 0.10)',
+  color: '#cdb78f', fontSize: 12, fontWeight: 600,
+  border: '1px solid rgba(205, 183, 143, 0.22)',
   cursor: 'pointer', whiteSpace: 'nowrap',
 }
 const btnLink = {

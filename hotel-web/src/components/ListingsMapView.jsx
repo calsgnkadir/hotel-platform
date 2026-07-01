@@ -22,7 +22,7 @@ import { formatSalary } from '../lib/salary'  // FAZ 2/#25
 function makeIcon(size = 32, hot = false) {
   const grad = hot
     ? 'linear-gradient(135deg, #d4a853, #d4a853)'
-    : 'linear-gradient(135deg, #1e3a5f, #234a82)'
+    : 'linear-gradient(135deg, #1b1815, #8a7349)'
   const shadow = hot ? '0 4px 16px rgba(212, 168, 83, 0.7)' : '0 4px 12px rgba(30, 58, 95, 0.5)'
   return L.divIcon({
     className: 'custom-map-marker',
@@ -124,7 +124,7 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
     return (
       <div className="rounded-2xl border flex items-center justify-center h-full"
            style={{ background: 'rgba(212, 168, 83,0.08)', borderColor: 'rgba(212, 168, 83,0.30)' }}>
-        <p className="text-sm" style={{ color: '#1e3a5f' }}>İlan yok — haritada gösterilecek yer yok</p>
+        <p className="text-sm" style={{ color: '#1b1815' }}>İlan yok — haritada gösterilecek yer yok</p>
       </div>
     )
   }
@@ -155,14 +155,14 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
               }}>
               <Popup>
                 <div className="text-[12px]" style={{ minWidth: 180 }}>
-                  <div className="font-bold mb-0.5" style={{ color: '#0c1726' }}>{p.listing.title}</div>
+                  <div className="font-bold mb-0.5" style={{ color: '#13110f' }}>{p.listing.title}</div>
                   <div className="text-ink-700 mb-1">{p.listing.businessName}</div>
                   <div className="text-ink-500 text-[10px] mb-1">
                     {p.listing.businessDistrict || 'İstanbul'}
                     {p.approx && <span className="italic"> (yaklaşık)</span>}
                   </div>
                   {formatSalary(p.listing.salaryMin, p.listing.salaryMax, p.listing.salaryType, p.listing.tipsIncluded) && (
-                    <div className="font-semibold" style={{ color: '#234a82' }}>
+                    <div className="font-semibold" style={{ color: '#8a7349' }}>
                       {formatSalary(p.listing.salaryMin, p.listing.salaryMax, p.listing.salaryType, p.listing.tipsIncluded)}
                     </div>
                   )}
@@ -183,7 +183,7 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
 
       {/* Toplam ilan etiketi */}
       <div className="absolute top-3 left-3 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md"
-           style={{ background: 'rgba(255,255,255,0.85)', color: '#0c1726' }}>
+           style={{ background: 'rgba(255,255,255,0.85)', color: '#13110f' }}>
         {listings.length} ilan haritada
       </div>
 

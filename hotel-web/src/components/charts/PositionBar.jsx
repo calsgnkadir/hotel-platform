@@ -11,7 +11,7 @@ const POSITION_LABELS = {
 }
 
 // Dalga G3 — dark altin tema icin yuksek kontrast palet (eski koyu yesil/mavi okunmuyor)
-const COLORS = ['#f7c43c', '#d4a853', '#5b85bf', '#8ba9d2', '#22d3ee', '#a78bfa', '#fbbf24']
+const COLORS = ['#cdb78f', '#d4a853', '#5b85bf', '#928678', '#6b8aa3', '#a78bfa', '#c8923a']
 
 /**
  * Pozisyona göre başvuru bar chart.
@@ -45,15 +45,15 @@ export default function PositionBar({ data, title = 'Pozisyon Dağılımı', hei
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={chartData} layout="vertical"
           margin={{ top: 5, right: 16, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(212, 168, 83, 0.10)" horizontal={false} />
-          <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(229, 231, 235, 0.65)' }}
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(205, 183, 143, 0.08)" horizontal={false} />
+          <XAxis type="number" tick={{ fontSize: 10, fill: '#928678' }}
             tickLine={false} axisLine={false} allowDecimals={false} />
           <YAxis type="category" dataKey="label"
-            tick={{ fontSize: 11, fill: '#fde9a5', fontWeight: 600 }} tickLine={false} axisLine={false} width={90} />
+            tick={{ fontSize: 11, fill: '#cdb78f', fontWeight: 600 }} tickLine={false} axisLine={false} width={90} />
           <Tooltip
-            contentStyle={{ borderRadius: 8, fontSize: 12, background: 'rgba(15, 23, 38, 0.95)',
-                            border: '1px solid rgba(212, 168, 83, 0.30)', color: '#fde9a5' }}
-            cursor={{ fill: 'rgba(212, 168, 83, 0.08)' }}
+            contentStyle={{ borderRadius: 8, fontSize: 12, background: 'rgba(13, 11, 9, 0.95)',
+                            border: '1px solid rgba(205, 183, 143, 0.22)', color: '#cdb78f' }}
+            cursor={{ fill: 'rgba(205, 183, 143, 0.06)' }}
             formatter={(v) => [`${v} başvuru`, '']} />
           <Bar dataKey="count" radius={[0, 4, 4, 0]}>
             {chartData.map((_, i) => (

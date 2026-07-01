@@ -71,7 +71,7 @@ export default function LandingPulse() {
       backdropFilter: 'blur(18px)',
       WebkitBackdropFilter: 'blur(18px)',
       border: '1px solid rgba(212, 168, 83, 0.28)',
-      boxShadow: '0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(212, 168, 83, 0.10) inset',
+      boxShadow: '0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(205, 183, 143, 0.08) inset',
       overflow: 'hidden',
       minWidth: 320,
     }}>
@@ -84,7 +84,7 @@ export default function LandingPulse() {
           <PulseDot active={pulse != null} />
           <span style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.25em',
-            textTransform: 'uppercase', color: '#fbd768',
+            textTransform: 'uppercase', color: '#cdb78f',
           }}>
             Vardiya Nabzı · Canlı
           </span>
@@ -103,8 +103,8 @@ export default function LandingPulse() {
         {pulse?.generatedAt && (
           <div style={{
             marginTop: 12, paddingTop: 10,
-            borderTop: '1px solid rgba(212, 168, 83, 0.12)',
-            fontSize: 10, color: 'rgba(229, 231, 235, 0.45)',
+            borderTop: '1px solid rgba(205, 183, 143, 0.10)',
+            fontSize: 10, color: '#6b6358',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <span>Son güncelleme</span>
@@ -129,7 +129,7 @@ function Stat({ label, value }) {
         color: loading ? 'rgba(229, 231, 235, 0.25)' : '#fdfbf7',
         letterSpacing: '-0.025em',
         fontVariantNumeric: 'tabular-nums',
-        textShadow: loading ? 'none' : '0 0 18px rgba(212, 168, 83, 0.35)',
+        textShadow: loading ? 'none' : '0 0 18px rgba(205, 183, 143, 0.28)',
         transition: 'color 300ms',
       }}>
         {loading ? '—' : display.toLocaleString('tr-TR')}
@@ -211,7 +211,7 @@ function PulseWave() {
         <defs>
           <linearGradient id="pulse-grad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%"   stopColor="#d4a853" stopOpacity="0" />
-            <stop offset="50%"  stopColor="#fbd768" stopOpacity="0.7" />
+            <stop offset="50%"  stopColor="#cdb78f" stopOpacity="0.7" />
             <stop offset="100%" stopColor="#d4a853" stopOpacity="0" />
           </linearGradient>
         </defs>
