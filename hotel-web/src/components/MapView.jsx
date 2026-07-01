@@ -27,7 +27,7 @@ const brandIcon = L.divIcon({
   html: `
     <div style="
       width: 32px; height: 32px;
-      background: linear-gradient(135deg, #1e3a5f, #234a82);
+      background: linear-gradient(135deg, #1b1815, #8a7349);
       border: 2px solid white;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);

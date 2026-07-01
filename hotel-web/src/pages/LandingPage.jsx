@@ -64,7 +64,7 @@ export default function LandingPage() {
               style={{
                 background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                 color: '#1a1208',
-                boxShadow: '0 8px 20px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.24)',
+                boxShadow: '0 8px 20px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.24)',
               }}>
               Kayıt Ol
             </button>
@@ -109,10 +109,10 @@ export default function LandingPage() {
                 <span className="block text-white">İstanbul'un</span>
                 <span className="block">
                   <span style={{
-                    background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 100%)',
+                    background: 'linear-gradient(135deg, #cdb78f 0%, #d4a853 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    filter: 'drop-shadow(0 0 24px rgba(212, 168, 83, 0.45))',
+                    filter: 'drop-shadow(0 0 24px rgba(205, 183, 143, 0.35))',
                   }}>
                     Hospitality
                   </span>
@@ -145,7 +145,7 @@ export default function LandingPage() {
                   className="group flex-1 sm:flex-initial sm:min-w-[220px] inline-flex items-center justify-between gap-3 text-left px-5 py-4 rounded-2xl transition-all hover:-translate-y-0.5"
                   style={{
                     background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-                    boxShadow: '0 14px 36px rgba(212, 168, 83, 0.34), inset 0 1px 0 rgba(255,255,255,0.24)',
+                    boxShadow: '0 14px 36px rgba(205, 183, 143, 0.28), inset 0 1px 0 rgba(255,255,255,0.24)',
                     color: '#1a1208',
                   }}>
                   <div>
@@ -232,7 +232,7 @@ export default function LandingPage() {
                           style={{
                             background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                             color: '#1a1208',
-                            boxShadow: '0 12px 28px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
+                            boxShadow: '0 12px 28px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
                           }}>
                     3 vardiyaya başvur
                   </button>
@@ -347,7 +347,7 @@ export default function LandingPage() {
               style={{
                 background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                 color: '#1a1208',
-                boxShadow: '0 14px 36px rgba(212, 168, 83, 0.34), inset 0 1px 0 rgba(255,255,255,0.24)',
+                boxShadow: '0 14px 36px rgba(205, 183, 143, 0.28), inset 0 1px 0 rgba(255,255,255,0.24)',
               }}>
               Hemen Kayıt Ol
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

@@ -23,7 +23,7 @@ function makeIcon(size = 32, hot = false) {
   const grad = hot
     ? 'linear-gradient(135deg, #d4a853, #d4a853)'
     : 'linear-gradient(135deg, #1b1815, #8a7349)'
-  const shadow = hot ? '0 4px 16px rgba(212, 168, 83, 0.7)' : '0 4px 12px rgba(30, 58, 95, 0.5)'
+  const shadow = hot ? '0 4px 16px rgba(205, 183, 143, 0.55)' : '0 4px 12px rgba(74, 63, 51, 0.45)'
   return L.divIcon({
     className: 'custom-map-marker',
     html: `
@@ -123,14 +123,14 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
   if (listings.length === 0) {
     return (
       <div className="rounded-2xl border flex items-center justify-center h-full"
-           style={{ background: 'rgba(212, 168, 83,0.08)', borderColor: 'rgba(212, 168, 83,0.30)' }}>
+           style={{ background: 'rgba(205, 183, 143, 0.06)', borderColor: 'rgba(205, 183, 143, 0.22)' }}>
         <p className="text-sm" style={{ color: '#1b1815' }}>İlan yok — haritada gösterilecek yer yok</p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden relative h-full" style={{ border: '1px solid rgba(212, 168, 83,0.30)' }}>
+    <div className="rounded-2xl overflow-hidden relative h-full" style={{ border: '1px solid rgba(205, 183, 143, 0.22)' }}>
       <MapContainer
         center={ISTANBUL_CENTER}
         zoom={11}

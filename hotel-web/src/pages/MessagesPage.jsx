@@ -42,7 +42,7 @@ function SearchInput({ value, onChange }) {
         borderColor: focused ? 'rgba(205, 183, 143, 0.45)' : 'rgba(205, 183, 143, 0.10)',
         boxShadow: focused
           ? '0 0 0 3px rgba(205, 183, 143, 0.08), 0 4px 14px rgba(0,0,0,0.20)'
-          : '0 0 0 0px rgba(212, 168, 83, 0)',
+          : '0 0 0 0px rgba(205, 183, 143, 0)',
       }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       className="relative rounded-xl"
@@ -89,7 +89,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
       className="relative w-full text-left px-3 py-3 group overflow-hidden rounded-xl cursor-pointer"
       style={{
         background: isActive
-          ? 'linear-gradient(90deg, rgba(205, 183, 143, 0.08), rgba(212, 168, 83, 0.02))'
+          ? 'linear-gradient(90deg, rgba(205, 183, 143, 0.08), rgba(205, 183, 143, 0.02))'
           : 'transparent',
         marginBottom: 4,
       }}
@@ -103,7 +103,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
       )}
       {/* Hover sweep — altın yumuşak geçiş */}
       <span aria-hidden className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-            style={{ background: 'linear-gradient(90deg, rgba(212, 168, 83, 0.08) 0%, transparent 60%)' }} />
+            style={{ background: 'linear-gradient(90deg, rgba(205, 183, 143, 0.06) 0%, transparent 60%)' }} />
 
       <div className="relative flex items-start gap-3">
         <div className="relative flex-shrink-0">
@@ -127,7 +127,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
             <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full"
                   style={{
                     background: '#7a9f7a',
-                    border: '2px solid rgba(15, 23, 38, 0.95)',
+                    border: '2px solid rgba(13, 11, 9, 0.95)',
                     boxShadow: '0 0 0 2px rgba(122, 159, 122, 0.30)',
                     animation: 'conv-pulse 2.4s ease-in-out infinite',
                   }} title="Çevrimiçi" />
@@ -141,7 +141,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
               {conv.otherPartyName}
             </div>
             <div className="text-[10px] flex-shrink-0 font-geist"
-                 style={{ color: 'rgba(139, 169, 210, 0.7)' }}>
+                 style={{ color: '#c9bdaa' }}>
               {formatRelative(conv.lastMessageAt)}
             </div>
           </div>
@@ -154,7 +154,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
           <div className="flex items-center justify-between gap-2 mt-1.5">
             <div className={`text-[12px] truncate font-geist ${hasUnread ? 'font-medium' : 'font-normal'}`}
                  style={{ color: hasUnread ? '#cdb78f' : '#c9bdaa' }}>
-              {conv.lastMessagePreview || <span className="italic" style={{ color: 'rgba(139, 169, 210, 0.5)' }}>Henüz mesaj yok</span>}
+              {conv.lastMessagePreview || <span className="italic" style={{ color: '#928678' }}>Henüz mesaj yok</span>}
             </div>
             {hasUnread && (
               <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
@@ -163,7 +163,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
                 style={{
                   background: 'linear-gradient(135deg, #cdb78f, #d4a853)',
                   color: '#1a1208',
-                  boxShadow: '0 0 12px rgba(212, 168, 83, 0.45)',
+                  boxShadow: '0 0 12px rgba(205, 183, 143, 0.35)',
                 }}>
                 {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
               </motion.span>
@@ -266,7 +266,7 @@ function fileTypeMeta(ext) {
                iconColor: '#059669', iconPath: docPath }
     default:
       return { label: ext.toUpperCase().slice(0, 4) || 'FILE',
-               bg: 'rgba(212, 168, 83, 0.12)', border: 'rgba(205, 183, 143, 0.22)',
+               bg: 'rgba(205, 183, 143, 0.10)', border: 'rgba(205, 183, 143, 0.22)',
                iconColor: '#8a7349', iconPath: docPath }
   }
 }
@@ -291,7 +291,7 @@ function MessageBubble({ m }) {
         style={{
           background: m.mine
             ? 'linear-gradient(135deg, #cdb78f 0%, #a78bfa 100%)'   /* purple-300 purple-400 */
-            : 'linear-gradient(135deg, #dde7f3 0%, #ddd6fe 100%)',   /* purple-100 purple-200 */
+            : 'linear-gradient(135deg, #ede4d3 0%, #ddd6fe 100%)',   /* purple-100 purple-200 */
           color: '#13110f',  /* koyu mor yazı — kontrast garantili */
           border: '1px solid rgba(205, 183, 143, 0.28)',
         }}>
@@ -1055,7 +1055,7 @@ function SendButton({ sending, disabled }) {
         <span className="inline-flex items-center gap-1.5">
           Gönder
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M3 12 21 3 14 21l-3-8-8-1Z" stroke="#fbd768" strokeWidth="2" strokeLinejoin="round" />
+            <path d="M3 12 21 3 14 21l-3-8-8-1Z" stroke="#cdb78f" strokeWidth="2" strokeLinejoin="round" />
           </svg>
         </span>
       )}
@@ -1135,7 +1135,7 @@ function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
             style={{
               background: 'rgba(205, 183, 143, 0.08)',
               color: '#1b1815',
-              border: '1px solid rgba(212, 168, 83, 0.28)',
+              border: '1px solid rgba(205, 183, 143, 0.22)',
               flexShrink: 0,
             }}>
             {c.t}
@@ -1270,9 +1270,9 @@ export default function MessagesPage() {
                     onClick={() => setFilter(opt.id)}
                     className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
                     style={{
-                      background: active ? 'rgba(212, 168, 83, 0.20)' : 'rgba(27, 24, 21, 0.75)',
+                      background: active ? 'rgba(205, 183, 143, 0.14)' : 'rgba(27, 24, 21, 0.75)',
                       color: active ? '#cdb78f' : '#928678',
-                      border: `1px solid ${active ? 'rgba(212, 168, 83, 0.50)' : 'rgba(212, 168, 83, 0.15)'}`,
+                      border: `1px solid ${active ? 'rgba(205, 183, 143, 0.40)' : 'rgba(205, 183, 143, 0.12)'}`,
                     }}>
                     {opt.label}
                     {opt.count > 0 && (
@@ -1420,7 +1420,7 @@ function ConversationDetailPanel({ conversation }) {
             className="absolute pointer-events-none inset-0"
             style={{
               background:
-                'radial-gradient(circle 200px at 50% 0%, rgba(212, 168, 83, 0.22) 0%, transparent 65%)',
+                'radial-gradient(circle 200px at 50% 0%, rgba(205, 183, 143, 0.18) 0%, transparent 65%)',
             }}
           />
           <div className="relative">
@@ -1459,7 +1459,7 @@ function ConversationDetailPanel({ conversation }) {
               {online && (
                 <span
                   className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full"
-                  style={{ background: '#7a9f7a', border: '2.5px solid #15243d', boxShadow: '0 0 10px rgba(122, 159, 122, 0.45)' }}
+                  style={{ background: '#7a9f7a', border: '2.5px solid #221f1b', boxShadow: '0 0 10px rgba(122, 159, 122, 0.45)' }}
                   title="Çevrimiçi"
                 />
               )}
@@ -1475,7 +1475,7 @@ function ConversationDetailPanel({ conversation }) {
                 className="w-1.5 h-1.5 rounded-full"
                 style={{ background: online ? '#7a9f7a' : '#52525b', boxShadow: online ? '0 0 6px #7a9f7a' : 'none' }}
               />
-              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: online ? '#86efac' : '#928678' }}>
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: online ? '#a8c8a8' : '#928678' }}>
                 {online ? 'Çevrimiçi' : 'Çevrimdışı'}
               </span>
               {c.otherPartyRole && (
@@ -1602,8 +1602,8 @@ function ConversationDetailPanel({ conversation }) {
             onClick={() => setReportOpen(true)}
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5"
             style={{
-              background: 'rgba(239, 68, 68, 0.10)',
-              color: '#fca5a5',
+              background: 'rgba(180, 106, 85, 0.10)',
+              color: '#d39481',
               border: '1px solid rgba(180, 106, 85, 0.22)',
             }}
           >

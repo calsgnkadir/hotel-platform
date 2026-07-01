@@ -95,7 +95,7 @@ export default function SavedSearchManager({ filters, onApply }) {
                 : 'rgba(27, 24, 21, 0.75)',
               color: hasActiveFilters ? '#ffffff' : '#6b6358',
               border: `1px solid ${hasActiveFilters ? 'rgba(205, 183, 143, 0.28)' : 'rgba(205, 183, 143, 0.12)'}`,
-              boxShadow: hasActiveFilters ? '0 4px 14px rgba(35, 74, 130, 0.30)' : 'none',
+              boxShadow: hasActiveFilters ? '0 4px 14px rgba(205, 183, 143, 0.28)' : 'none',
             }}
             title={hasActiveFilters ? 'Bu filtreleri kaydet' : 'Önce bir filtre seç'}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -172,7 +172,7 @@ export default function SavedSearchManager({ filters, onApply }) {
                     title={s.notificationsEnabled ? 'Bildirimleri kapat' : 'Bildirimleri aç'}
                     className="w-6 h-6 grid place-items-center rounded-full transition-colors flex-shrink-0"
                     style={{
-                      color: s.notificationsEnabled ? '#cdb78f' : 'rgba(139, 169, 210, 0.5)',
+                      color: s.notificationsEnabled ? '#cdb78f' : '#928678',
                       background: s.notificationsEnabled ? 'rgba(205, 183, 143, 0.10)' : 'transparent',
                     }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={s.notificationsEnabled ? 'currentColor' : 'none'}

@@ -196,8 +196,8 @@ export default function CommandPalette() {
                     onMouseEnter={() => setActiveIdx(a._idx)}
                     className="w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center justify-between gap-3 transition-colors"
                     style={{
-                      background: active ? 'var(--accent-action-soft, #dde7f3)' : 'transparent',
-                      color: active ? 'var(--accent-action, #1e3a5f)' : 'var(--text-primary, #171513)',
+                      background: active ? 'var(--accent-action-soft, #ede4d3)' : 'transparent',
+                      color: active ? 'var(--accent-action, #1b1815)' : 'var(--text-primary, #171513)',
                     }}
                   >
                     <span className="font-medium">{a.label}</span>

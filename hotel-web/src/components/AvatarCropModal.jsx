@@ -169,8 +169,8 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
               onClick={() => fileInputRef.current?.click()}
               className="cursor-pointer rounded-2xl text-center py-12 px-4 transition-all"
               style={{
-                background: dragOver ? 'rgba(212, 168, 83,0.20)' : 'rgba(212, 168, 83,0.08)',
-                border: `2px dashed ${dragOver ? '#d4a853' : 'rgba(212, 168, 83,0.40)'}`,
+                background: dragOver ? 'rgba(205, 183, 143, 0.14)' : 'rgba(205, 183, 143, 0.06)',
+                border: `2px dashed ${dragOver ? '#d4a853' : 'rgba(205, 183, 143, 0.30)'}`,
               }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.6} stroke="currentColor"
@@ -216,13 +216,13 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
         <div className="px-5 py-4 border-t border-cream-200 dark:border-cream-300 flex gap-2 justify-end">
           <button type="button" onClick={() => { reset(); onClose() }}
             className="px-4 py-2 text-sm font-semibold rounded-lg"
-            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(253, 233, 165,0.30)' }}>
+            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(205, 183, 143, 0.28)' }}>
             İptal
           </button>
           <button type="button" onClick={handleConfirm}
             disabled={!src || saving}
             className="px-5 py-2 text-sm font-bold rounded-lg disabled:opacity-50 transition-all hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #d4a853, #d4a853)', color: '#fff', boxShadow: '0 4px 16px rgba(212, 168, 83,0.40)' }}>
+            style={{ background: 'linear-gradient(135deg, #d4a853, #d4a853)', color: '#fff', boxShadow: '0 4px 16px rgba(205, 183, 143, 0.30)' }}>
             {saving ? 'Yükleniyor...' : 'Kullan'}
           </button>
         </div>

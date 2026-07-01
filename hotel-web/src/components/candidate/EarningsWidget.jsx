@@ -49,7 +49,7 @@ export default function EarningsWidget({ applications }) {
   return (
     <div className="relative overflow-hidden rounded-2xl font-geist"
          style={{
-           background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.78) 0%, rgba(30, 58, 95, 0.55) 100%)',
+           background: 'linear-gradient(135deg, rgba(27, 24, 21, 0.78) 0%, rgba(74, 63, 51, 0.50) 100%)',
            border: '1px solid rgba(205, 183, 143, 0.10)',
            boxShadow: '0 10px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
          }}>
@@ -114,7 +114,7 @@ function Metric({ label, hours, earned, accent }) {
   return (
     <div className="px-5 py-4">
       <div className="text-[10.5px] uppercase tracking-[0.2em] font-semibold mb-1.5"
-           style={{ color: accent ? '#cdb78f' : 'rgba(139, 169, 210, 0.70)' }}>
+           style={{ color: accent ? '#cdb78f' : '#c9bdaa' }}>
         {label}
       </div>
       <CountUpValue value={hours < 1 ? 0 : Math.round(hours)} suffix="sa" accent={accent} />

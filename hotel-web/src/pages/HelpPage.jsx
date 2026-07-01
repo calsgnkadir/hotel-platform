@@ -168,7 +168,7 @@ function FaqItem({ cat, q, a }) {
           <span className="font-semibold text-[14px] truncate" style={{ color: '#f5efe2' }}>{q}</span>
         </span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-             style={{ flexShrink: 0, color: '#1e3a5f', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }}>
+             style={{ flexShrink: 0, color: '#1b1815', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }}>
           <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>

@@ -141,9 +141,9 @@ export default function CandidatePublicPage() {
                   {profile.isAvailable && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
                           style={{
-                            background: 'rgba(34, 197, 94, 0.15)',
+                            background: 'rgba(122, 159, 122, 0.12)',
                             color: '#a8c8a8',
-                            border: '1px solid rgba(34, 197, 94, 0.40)',
+                            border: '1px solid rgba(122, 159, 122, 0.35)',
                           }}>
                       <span className="w-1.5 h-1.5 rounded-full inline-block"
                             style={{ background: '#7a9f7a', boxShadow: '0 0 8px rgba(122, 159, 122, 0.55)' }} />
@@ -190,7 +190,7 @@ export default function CandidatePublicPage() {
             label="Ortalama Puan"
             value={profile.averageRating ? profile.averageRating.toFixed(1) : '—'}
             sub={`${profile.reviewCount ?? 0} değerlendirme`}
-            color="#fbbf24"
+            color="#c8923a"
           />
         </div>
 
@@ -199,7 +199,7 @@ export default function CandidatePublicPage() {
           {/* SOL: Tercihler */}
           <div className="card p-5 space-y-4">
             <h2 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-                style={{ color: '#cdb78f', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+                style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
               İş Tercihleri
             </h2>
 
@@ -225,7 +225,7 @@ export default function CandidatePublicPage() {
           {/* SAG: Eğitim + Diğer */}
           <div className="card p-5 space-y-4">
             <h2 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
-                style={{ color: '#cdb78f', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+                style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
               Genel Bilgiler
             </h2>
 
@@ -240,11 +240,11 @@ export default function CandidatePublicPage() {
         {profile.previousExperience && (
           <div className="card p-5">
             <h2 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 mb-3 border-b"
-                style={{ color: '#cdb78f', borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+                style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
               Önceki Deneyim
             </h2>
             <p className="text-[14px] leading-relaxed whitespace-pre-line"
-               style={{ color: 'rgba(229, 231, 235, 0.85)' }}>
+               style={{ color: '#ede4d3' }}>
               {profile.previousExperience}
             </p>
           </div>
@@ -253,16 +253,16 @@ export default function CandidatePublicPage() {
         {/* Dalga G2 — Hassas iletisim bilgileri (sadece basvuru aldıysa açık) */}
         {profile.sensitiveUnlocked ? (
           <div className="card p-5"
-               style={{ border: '1px solid rgba(212, 168, 83, 0.35)' }}>
+               style={{ border: '1px solid rgba(205, 183, 143, 0.28)' }}>
             <div className="flex items-center justify-between pb-2 mb-3 border-b"
-                 style={{ borderColor: 'rgba(212, 168, 83, 0.18)' }}>
+                 style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
               <h2 className="font-bebas text-base tracking-[0.2em] uppercase"
                   style={{ color: '#cdb78f' }}>İletişim Bilgileri</h2>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
                     style={{
-                      background: 'rgba(34, 197, 94, 0.15)',
+                      background: 'rgba(122, 159, 122, 0.12)',
                       color: '#a8c8a8',
-                      border: '1px solid rgba(34, 197, 94, 0.30)',
+                      border: '1px solid rgba(122, 159, 122, 0.28)',
                     }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -291,8 +291,8 @@ export default function CandidatePublicPage() {
                  className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5"
                  style={{
                    background: 'linear-gradient(135deg, #d4a853, #b8902d)',
-                   color: '#15243d',
-                   boxShadow: '0 4px 16px rgba(212, 168, 83, 0.35)',
+                   color: '#221f1b',
+                   boxShadow: '0 4px 16px rgba(205, 183, 143, 0.28)',
                  }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -304,26 +304,26 @@ export default function CandidatePublicPage() {
               </a>
             )}
             <p className="text-[11px] mt-3 italic"
-               style={{ color: 'rgba(229, 231, 235, 0.50)' }}>
+               style={{ color: '#6b6358' }}>
               KVKK kapsamında bu bilgiler sadece adayın size başvurmuş olması nedeniyle gösteriliyor.
               Üçüncü kişilerle paylaşmayın.
             </p>
           </div>
         ) : (
           <div className="card p-4"
-               style={{ background: 'rgba(15, 23, 38, 0.55)', border: '1px dashed rgba(212, 168, 83, 0.25)' }}>
+               style={{ background: 'rgba(13, 11, 9, 0.55)', border: '1px dashed rgba(205, 183, 143, 0.18)' }}>
             <div className="flex items-start gap-3">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24"
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c8923a"
                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                    className="flex-shrink-0 mt-0.5" aria-hidden="true">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
-              <div className="text-[12px]" style={{ color: 'rgba(229, 231, 235, 0.75)' }}>
+              <div className="text-[12px]" style={{ color: '#c9bdaa' }}>
                 <p className="font-semibold mb-1" style={{ color: '#cdb78f' }}>
                   Hassas bilgiler gizli
                 </p>
-                <p style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+                <p style={{ color: '#6b6358' }}>
                   Email, telefon, mahalle ve doğum tarihi gibi bilgiler yalnızca aday
                   size başvurduğunda görüntülenebilir. İlanlarınız üzerinden başvuru
                   bekleyiniz.
@@ -341,14 +341,14 @@ function MetricCard({ label, value, sub, color }) {
   return (
     <div className="card !p-4">
       <div className="text-[10px] uppercase tracking-widest font-semibold mb-1"
-           style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+           style={{ color: '#6b6358' }}>
         {label}
       </div>
       <div className="font-bebas text-2xl tracking-wider mb-0.5" style={{ color }}>
         {value}
       </div>
       <div className="text-[10px] uppercase tracking-wider"
-           style={{ color: 'rgba(229, 231, 235, 0.50)' }}>
+           style={{ color: '#6b6358' }}>
         {sub}
       </div>
     </div>
@@ -359,7 +359,7 @@ function Section({ label, children }) {
   return (
     <div>
       <div className="text-[10px] uppercase tracking-widest font-semibold mb-2"
-           style={{ color: 'rgba(229, 231, 235, 0.55)' }}>
+           style={{ color: '#6b6358' }}>
         {label}
       </div>
       {children}
@@ -373,9 +373,9 @@ function ChipList({ items }) {
       {items.map(it => (
         <span key={it} className="inline-flex items-center text-[12px] font-medium px-2.5 py-1 rounded-full"
               style={{
-                background: 'rgba(212, 168, 83, 0.12)',
+                background: 'rgba(205, 183, 143, 0.10)',
                 color: '#cdb78f',
-                border: '1px solid rgba(212, 168, 83, 0.22)',
+                border: '1px solid rgba(205, 183, 143, 0.18)',
               }}>
           {it}
         </span>
@@ -388,8 +388,8 @@ function DetailRow({ label, value }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-1">
       <span className="text-[11px] uppercase tracking-wider"
-            style={{ color: 'rgba(229, 231, 235, 0.50)' }}>{label}</span>
-      <span className="text-[13px] font-semibold" style={{ color: '#dde7f3' }}>{value}</span>
+            style={{ color: '#6b6358' }}>{label}</span>
+      <span className="text-[13px] font-semibold" style={{ color: '#ede4d3' }}>{value}</span>
     </div>
   )
 }

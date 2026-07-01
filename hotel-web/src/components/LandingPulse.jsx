@@ -70,7 +70,7 @@ export default function LandingPulse() {
       background: 'rgba(12, 23, 38, 0.55)',
       backdropFilter: 'blur(18px)',
       WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(212, 168, 83, 0.28)',
+      border: '1px solid rgba(205, 183, 143, 0.22)',
       boxShadow: '0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(205, 183, 143, 0.08) inset',
       overflow: 'hidden',
       minWidth: 320,
@@ -126,7 +126,7 @@ function Stat({ label, value }) {
     <div>
       <div style={{
         fontSize: 32, lineHeight: 1, fontWeight: 700,
-        color: loading ? 'rgba(229, 231, 235, 0.25)' : '#fdfbf7',
+        color: loading ? 'rgba(205, 183, 143, 0.18)' : '#fdfbf7',
         letterSpacing: '-0.025em',
         fontVariantNumeric: 'tabular-nums',
         textShadow: loading ? 'none' : '0 0 18px rgba(205, 183, 143, 0.28)',

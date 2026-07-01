@@ -268,8 +268,8 @@ export default function BusinessPublicPage() {
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
            style={{
              background:
-               'radial-gradient(ellipse 800px 600px at 10% 0%, rgba(30, 58, 95, 0.20) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 90% 100%, rgba(212, 168, 83, 0.12) 0%, transparent 60%)',
+               'radial-gradient(ellipse 800px 600px at 10% 0%, rgba(74, 63, 51, 0.22) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 600px 500px at 90% 100%, rgba(205, 183, 143, 0.10) 0%, transparent 60%)',
            }} />
 
       <div className="relative z-10">
@@ -284,7 +284,7 @@ export default function BusinessPublicPage() {
             <div className="flex items-center gap-2">
               <button onClick={handleShare}
                 className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
-                style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#fde9a5', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
+                style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#cdb78f', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
                 Paylaş
               </button>
               <button onClick={() => navigate('/login')}
@@ -332,7 +332,7 @@ export default function BusinessPublicPage() {
                   {business.name}
                   {business.verified && <VerifiedBadge size="lg" />}
                 </h1>
-                <div className="text-sm mt-1.5" style={{ color: '#8ba9d2' }}>
+                <div className="text-sm mt-1.5" style={{ color: '#928678' }}>
                   {fullLocation || business.city || '—'}
                 </div>
                 <div className="mt-3">
@@ -344,18 +344,18 @@ export default function BusinessPublicPage() {
                     <button type="button" onClick={toggleFollow}
                       className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
                       style={{
-                        background: isFollowing ? 'rgba(34, 197, 94, 0.18)' : 'rgba(205, 183, 143, 0.10)',
+                        background: isFollowing ? 'rgba(122, 159, 122, 0.14)' : 'rgba(205, 183, 143, 0.10)',
                         color: isFollowing ? '#a8c8a8' : '#cdb78f',
-                        border: `1px solid ${isFollowing ? 'rgba(34, 197, 94, 0.40)' : 'rgba(212, 168, 83, 0.45)'}`,
+                        border: `1px solid ${isFollowing ? 'rgba(122, 159, 122, 0.35)' : 'rgba(205, 183, 143, 0.35)'}`,
                       }}>
                       {isFollowing ? '✓ Takip Ediliyor' : '+ Takip Et'}
                     </button>
                     <button type="button" onClick={() => setReportOpen(true)}
                       className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
                       style={{
-                        background: 'rgba(239, 68, 68, 0.10)',
-                        color: '#fca5a5',
-                        border: '1px solid rgba(239, 68, 68, 0.30)',
+                        background: 'rgba(180, 106, 85, 0.10)',
+                        color: '#d39481',
+                        border: '1px solid rgba(180, 106, 85, 0.28)',
                       }}>
                       <span className="font-bebas text-base">!</span>
                       Kullanıcıyı Bildir
@@ -408,7 +408,7 @@ export default function BusinessPublicPage() {
                   <a href={`https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`}
                      target="_blank" rel="noopener noreferrer"
                      className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                     style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#fde9a5', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
+                     style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#cdb78f', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
                     Google Maps
                   </a>
                 )}
@@ -416,7 +416,7 @@ export default function BusinessPublicPage() {
               <div className="h-[280px] lg:h-[320px] relative">
                 <Suspense fallback={
                   <div className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-widest"
-                       style={{ color: '#8ba9d2' }}>
+                       style={{ color: '#928678' }}>
                     Harita yükleniyor...
                   </div>
                 }>
@@ -435,7 +435,7 @@ export default function BusinessPublicPage() {
             <div className="lg:col-span-2 space-y-6">
               {business.description && (
                 <section className="rounded-2xl p-5"
-                         style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(212, 168, 83, 0.14)' }}>
+                         style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
                   <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
                     Hakkında
                   </h2>
@@ -449,7 +449,7 @@ export default function BusinessPublicPage() {
                 const parsed = parseWorkingHours(business.workingHours)
                 return (
                   <section className="rounded-2xl p-5"
-                           style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(212, 168, 83, 0.14)' }}>
+                           style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
                     <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
                       Çalışma Saatleri
                     </h2>
@@ -460,13 +460,13 @@ export default function BusinessPublicPage() {
                           if (!d) return null
                           return (
                             <li key={day} className="flex items-center justify-between text-sm py-1 border-b last:border-0"
-                                style={{ borderColor: 'rgba(212, 168, 83, 0.08)' }}>
+                                style={{ borderColor: 'rgba(205, 183, 143, 0.06)' }}>
                               <span className="font-bebas text-base tracking-wider uppercase" style={{ color: '#cdb78f' }}>
                                 {DAY_LABELS_TR[day]}
                               </span>
                               {d.closed ? (
                                 <span className="text-[11px] font-bold uppercase tracking-widest"
-                                      style={{ color: '#fca5a5' }}>
+                                      style={{ color: '#d39481' }}>
                                   Kapalı
                                 </span>
                               ) : (
@@ -491,50 +491,50 @@ export default function BusinessPublicPage() {
             {/* Contact + Social (1 col sidebar) */}
             <aside className="space-y-4">
               <section className="rounded-2xl p-5"
-                       style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(212, 168, 83, 0.14)' }}>
+                       style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
                 <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
                   İletişim
                 </h2>
                 <ul className="space-y-2 text-sm">
                   {business.address && (
                     <li>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#8ba9d2' }}>Adres</div>
+                      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#928678' }}>Adres</div>
                       <div className="font-medium mt-0.5" style={{ color: '#ede4d3' }}>{business.address}</div>
                     </li>
                   )}
                   {business.phone && (
                     <li>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#8ba9d2' }}>Telefon</div>
+                      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#928678' }}>Telefon</div>
                       <a href={`tel:${business.phone}`} className="font-medium block mt-0.5 hover:underline"
-                         style={{ color: '#f7c43c' }}>{business.phone}</a>
+                         style={{ color: '#cdb78f' }}>{business.phone}</a>
                     </li>
                   )}
                   {business.email && (
                     <li>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#8ba9d2' }}>E-posta</div>
+                      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#928678' }}>E-posta</div>
                       <a href={`mailto:${business.email}`} className="font-medium block mt-0.5 hover:underline truncate"
-                         style={{ color: '#f7c43c' }}>{business.email}</a>
+                         style={{ color: '#cdb78f' }}>{business.email}</a>
                     </li>
                   )}
                   {business.website && (
                     <li>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#8ba9d2' }}>Web</div>
+                      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#928678' }}>Web</div>
                       <a href={business.website} target="_blank" rel="noopener noreferrer"
                          className="font-medium block mt-0.5 hover:underline truncate"
-                         style={{ color: '#f7c43c' }}>{business.website}</a>
+                         style={{ color: '#cdb78f' }}>{business.website}</a>
                     </li>
                   )}
                 </ul>
 
                 {(business.instagram || business.facebook) && (
-                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'rgba(212, 168, 83, 0.14)' }}>
-                    <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: '#8ba9d2' }}>Sosyal Medya</div>
+                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
+                    <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: '#928678' }}>Sosyal Medya</div>
                     <div className="flex gap-2 flex-wrap">
                       {business.instagram && (
                         <a href={business.instagram.startsWith('http') ? business.instagram : `https://instagram.com/${business.instagram}`}
                            target="_blank" rel="noopener noreferrer"
                            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                           style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#fde9a5', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
+                           style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#cdb78f', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
                           Instagram
                         </a>
                       )}
@@ -565,7 +565,7 @@ export default function BusinessPublicPage() {
 
           {/* Footer */}
           <footer className="text-center py-6">
-            <Link to="/" className="text-[10px] uppercase tracking-[0.3em]" style={{ color: '#234a82' }}>
+            <Link to="/" className="text-[10px] uppercase tracking-[0.3em]" style={{ color: '#8a7349' }}>
               AjansHotel · İstanbul Hospitality Network
             </Link>
           </footer>

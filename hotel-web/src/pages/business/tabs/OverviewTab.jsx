@@ -25,7 +25,7 @@ export default function OverviewTab({ applications, onTabChange }) {
               data: weeklyTrend(applications, null) },
             { label: 'Bekleyen',    value: pending,             color: '#c8923a',
               data: weeklyTrend(applications, a => a.status === 'PENDING') },
-            { label: 'İnceleniyor', value: reviewing,           color: '#f7c43c',
+            { label: 'İnceleniyor', value: reviewing,           color: '#cdb78f',
               data: weeklyTrend(applications, a => a.status === 'REVIEWING') },
             { label: 'Kabul',       value: accepted,            color: '#d4a853',
               data: weeklyTrend(applications, a => a.status === 'ACCEPTED') },
@@ -74,7 +74,7 @@ export default function OverviewTab({ applications, onTabChange }) {
               <h2 className="text-[15px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
                 Son Başvurular
               </h2>
-              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(139, 169, 210, 0.65)' }}>
+              <p className="text-[11px] mt-0.5" style={{ color: '#928678' }}>
                 En son {Math.min(5, applications.length)} başvuru
               </p>
             </div>
@@ -165,7 +165,7 @@ function TodayFeed({ applications, onTabChange }) {
                         boxShadow: `0 0 8px ${STATUS_DOT[app.status] || '#928678'}`,
                       }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium truncate" style={{ color: '#dde7f3' }}>
+                  <p className="text-[13px] font-medium truncate" style={{ color: '#ede4d3' }}>
                     {app.candidate?.fullName || 'Aday'}
                   </p>
                   <p className="text-[11px] truncate" style={{ color: '#6b6358' }}>
@@ -216,9 +216,9 @@ function BizRecentRow({ app, last, onClick }) {
           </span>
           <ReliabilityBadge score={app.candidate?.reliabilityScore} />
         </div>
-        <div className="text-[11.5px] flex items-center gap-2 mt-0.5" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+        <div className="text-[11.5px] flex items-center gap-2 mt-0.5" style={{ color: '#c9bdaa' }}>
           <span className="truncate">{app.listing?.title || '—'}</span>
-          <span style={{ color: 'rgba(139, 169, 210, 0.4)' }}>·</span>
+          <span style={{ color: '#6b6358' }}>·</span>
           <span className="flex-shrink-0">{relative}</span>
         </div>
       </div>
@@ -229,10 +229,10 @@ function BizRecentRow({ app, last, onClick }) {
 
 const STATUS_DOT = {
   PENDING:   '#c8923a',
-  REVIEWING: '#22d3ee',
-  HELD:      '#f97316',
-  ACCEPTED:  '#22c55e',
-  REJECTED:  '#ef4444',
+  REVIEWING: '#6b8aa3',
+  HELD:      '#a17b3f',
+  ACCEPTED:  '#7a9f7a',
+  REJECTED:  '#b46a55',
 }
 const STATUS_LABEL = {
   PENDING: 'yeni başvuru', REVIEWING: 'inceleniyor', HELD: 'beklemede',

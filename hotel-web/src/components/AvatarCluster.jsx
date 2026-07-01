@@ -100,7 +100,7 @@ function AvatarBubble({ item, size, showOnlineDot, style }) {
             height: dotSize,
             background: '#7a9f7a',
             border: '2px solid #221f1b',
-            boxShadow: '0 0 6px rgba(34, 197, 94, 0.55)',
+            boxShadow: '0 0 6px rgba(122, 159, 122, 0.45)',
           }}
           title="Çevrimiçi"
         />

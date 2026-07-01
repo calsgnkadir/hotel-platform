@@ -646,7 +646,7 @@ function ListingsTab() {
                     {l.status}
                   </span>
                 </div>
-                <div className="text-xs mt-1" style={{ color: '#8ba9d2' }}>
+                <div className="text-xs mt-1" style={{ color: '#928678' }}>
                   {l.position} · {l.businessName} · {l.ownerEmail}
                 </div>
                 <div className="text-[10px] mt-0.5" style={{ color: '#928678' }}>
@@ -657,21 +657,21 @@ function ListingsTab() {
                 {l.status !== 'ACTIVE' && (
                   <button onClick={() => setStatus(l, 'ACTIVE')} disabled={busy === l.id}
                     className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: 'rgba(34, 197, 94, 0.18)', color: '#86efac', border: '1px solid rgba(34, 197, 94, 0.40)' }}>
+                    style={{ background: 'rgba(122, 159, 122, 0.14)', color: '#a8c8a8', border: '1px solid rgba(122, 159, 122, 0.35)' }}>
                     Aktive Et
                   </button>
                 )}
                 {l.status !== 'PAUSED' && (
                   <button onClick={() => setStatus(l, 'PAUSED')} disabled={busy === l.id}
                     className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: 'rgba(251, 191, 36, 0.18)', color: '#fcd34d', border: '1px solid rgba(251, 191, 36, 0.40)' }}>
+                    style={{ background: 'rgba(200, 146, 58, 0.14)', color: '#fcd34d', border: '1px solid rgba(200, 146, 58, 0.35)' }}>
                     Askıya Al
                   </button>
                 )}
                 {l.status !== 'CLOSED' && (
                   <button onClick={() => setStatus(l, 'CLOSED')} disabled={busy === l.id}
                     className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: 'rgba(239, 68, 68, 0.18)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.40)' }}>
+                    style={{ background: 'rgba(180, 106, 85, 0.14)', color: '#d39481', border: '1px solid rgba(180, 106, 85, 0.35)' }}>
                     Kapat
                   </button>
                 )}
@@ -797,7 +797,7 @@ function SupportTab() {
                         background: s.bg, color: s.color,
                         fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
                       }}>{t.status}</span>
-                      <span style={{ color: '#cbd5e1', fontSize: 12, fontWeight: 700 }}>#{t.id}</span>
+                      <span style={{ color: 'rgba(205, 183, 143, 0.14)', fontSize: 12, fontWeight: 700 }}>#{t.id}</span>
                       <span style={{ color: '#d4a853', fontSize: 11, fontWeight: 600 }}>
                         {SUBJECT_LABEL[t.subject] || t.subject}
                       </span>
@@ -877,8 +877,8 @@ function SupportTab() {
 }
 
 const btnBlue  = { padding: '6px 12px', borderRadius: 6, background: 'rgba(59,130,246,0.15)', color: '#93c5fd', border: '1px solid rgba(59,130,246,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
-const btnGreen = { padding: '6px 12px', borderRadius: 6, background: 'rgba(22,163,74,0.15)', color: '#86efac', border: '1px solid rgba(22,163,74,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
-const btnRed   = { padding: '6px 12px', borderRadius: 6, background: 'rgba(239,100,97,0.15)', color: '#fca5a5', border: '1px solid rgba(239,100,97,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+const btnGreen = { padding: '6px 12px', borderRadius: 6, background: 'rgba(22,163,74,0.15)', color: '#a8c8a8', border: '1px solid rgba(22,163,74,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+const btnRed   = { padding: '6px 12px', borderRadius: 6, background: 'rgba(239,100,97,0.15)', color: '#d39481', border: '1px solid rgba(239,100,97,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
 const btnGhost = { padding: '6px 12px', borderRadius: 6, background: 'transparent', color: '#94a3b8', border: '1px solid #475569', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
 
 /* FAZ G.3 — İşletme doğrulama tab */
@@ -965,7 +965,7 @@ function BusinessesTab() {
                     <span style={{
                       padding: '2px 8px', borderRadius: 999,
                       background: 'rgba(205, 183, 143, 0.12)',
-                      color: '#fbd768', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+                      color: '#cdb78f', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
                     }}>DOĞRULANDI</span>
                   )}
                 </div>
@@ -1088,7 +1088,7 @@ function OutboxTab() {
                       fontWeight: 700,
                       letterSpacing: '0.05em',
                     }}>{e.status}</span>
-                    <span style={{ color: '#cbd5e1', fontSize: 13, fontWeight: 600 }}>#{e.id}</span>
+                    <span style={{ color: 'rgba(205, 183, 143, 0.14)', fontSize: 13, fontWeight: 600 }}>#{e.id}</span>
                     <span style={{ color: '#d4a853', fontSize: 11, fontWeight: 600 }}>{e.eventType}</span>
                     <span style={{ color: '#94a3b8', fontSize: 11 }}>
                       deneme {e.attempts}
@@ -1101,7 +1101,7 @@ function OutboxTab() {
                     <div style={{
                       marginTop: 6,
                       fontSize: 11,
-                      color: '#fca5a5',
+                      color: '#d39481',
                       fontFamily: 'monospace',
                       lineHeight: 1.4,
                     }}>

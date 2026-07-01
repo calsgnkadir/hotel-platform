@@ -73,11 +73,11 @@ export default function GdprCard() {
           style={{
             padding: '10px 16px',
             borderRadius: 8,
-            background: 'rgba(30, 58, 95, 0.08)',
-            color: '#1e3a5f',
+            background: 'rgba(74, 63, 51, 0.10)',
+            color: '#1b1815',
             fontSize: 13,
             fontWeight: 600,
-            border: '1px solid rgba(30, 58, 95, 0.2)',
+            border: '1px solid rgba(74, 63, 51, 0.22)',
             cursor: exporting ? 'wait' : 'pointer',
             transition: 'all 200ms',
           }}>

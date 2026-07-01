@@ -364,7 +364,7 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
             <button type="button" onClick={onClose} className="btn-secondary flex-1">İptal</button>
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+              style={{ background: 'linear-gradient(135deg, #1b1815, #8a7349)' }}>
               {loading
                 ? (isEdit ? 'Güncelleniyor...' : 'Oluşturuluyor...')
                 : (isEdit ? 'Güncelle' : 'İlan Oluştur')}
@@ -392,7 +392,7 @@ function SortableSlot({ slot, index, totalCount, todayStr, onUpdate, onDuplicate
     transition,
     opacity: isDragging ? 0.55 : 1,
     zIndex: isDragging ? 30 : 'auto',
-    boxShadow: isDragging ? '0 12px 30px rgba(35, 74, 130, 0.35)' : undefined,
+    boxShadow: isDragging ? '0 12px 30px rgba(205, 183, 143, 0.30)' : undefined,
   }
 
   const locked = (slot.slotsFilled || 0) > 0

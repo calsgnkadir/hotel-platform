@@ -419,8 +419,8 @@ function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, sma
     gold: {
       background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
       color: '#1a1208',
-      boxShadow: '0 6px 18px rgba(212, 168, 83, 0.36), inset 0 1px 0 rgba(255,255,255,0.24)',
-      border: '1px solid rgba(212, 168, 83, 0.55)',
+      boxShadow: '0 6px 18px rgba(205, 183, 143, 0.30), inset 0 1px 0 rgba(255,255,255,0.24)',
+      border: '1px solid rgba(205, 183, 143, 0.45)',
     },
     'ghost-danger': {
       background: 'rgba(180, 106, 85, 0.08)',

@@ -20,7 +20,7 @@ export default function VerifiedBadge({ size = 'sm', title = 'Doğrulanmış iş
       <svg width={dim} height={dim} viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <defs>
           <linearGradient id={`vb-grad-${size}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%"  stopColor="#fbd768" />
+            <stop offset="0%"  stopColor="#cdb78f" />
             <stop offset="100%" stopColor="#d4a853" />
           </linearGradient>
         </defs>
@@ -31,7 +31,7 @@ export default function VerifiedBadge({ size = 'sm', title = 'Doğrulanmış iş
         />
         <path
           d="M8.5 12 L11 14.5 L15.5 9.5"
-          stroke="#0c1726"
+          stroke="#13110f"
           strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"

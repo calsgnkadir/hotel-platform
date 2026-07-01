@@ -14,13 +14,13 @@ export default function ReliabilityBadge({ score, size = 'sm', showLabel = false
 
   let color, bg, border
   if (score >= 80) {
-    color = '#86efac'; bg = 'rgba(34, 197, 94, 0.18)';  border = 'rgba(34, 197, 94, 0.40)'
+    color = '#a8c8a8'; bg = 'rgba(122, 159, 122, 0.14)';  border = 'rgba(122, 159, 122, 0.35)'
   } else if (score >= 60) {
     color = '#fcd34d'; bg = 'rgba(245, 158, 11, 0.18)'; border = 'rgba(245, 158, 11, 0.40)'
   } else if (score >= 40) {
     color = '#fdba74'; bg = 'rgba(251, 146, 60, 0.18)'; border = 'rgba(251, 146, 60, 0.40)'
   } else {
-    color = '#fca5a5'; bg = 'rgba(239, 68, 68, 0.20)';  border = 'rgba(239, 68, 68, 0.45)'
+    color = '#d39481'; bg = 'rgba(180, 106, 85, 0.18)';  border = 'rgba(180, 106, 85, 0.40)'
   }
 
   const isSm = size === 'sm'

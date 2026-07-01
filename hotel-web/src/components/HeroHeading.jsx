@@ -51,15 +51,15 @@ export default function HeroHeading({
 
   const accentStyle = glow
     ? {
-        background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 40%, #d4a853 100%)',
+        background: 'linear-gradient(135deg, #cdb78f 0%, #d4a853 40%, #d4a853 100%)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
-        textShadow: '0 0 24px rgba(212, 168, 83, 0.45)',
-        filter: 'drop-shadow(0 0 12px rgba(212, 168, 83, 0.35))',
+        textShadow: '0 0 24px rgba(205, 183, 143, 0.35)',
+        filter: 'drop-shadow(0 0 12px rgba(205, 183, 143, 0.28))',
       }
     : {
-        background: 'linear-gradient(135deg, #f7c43c 0%, #d4a853 40%, #d4a853 100%)',
+        background: 'linear-gradient(135deg, #cdb78f 0%, #d4a853 40%, #d4a853 100%)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',

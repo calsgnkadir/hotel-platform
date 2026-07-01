@@ -21,7 +21,7 @@ describe('Sparkline (FAZ 0/#4d smoke)', () => {
 
   it('width/height props uygulanir', () => {
     const data = Array.from({ length: 8 }, (_, i) => ({ w: i, c: i }))
-    const { container } = render(<Sparkline data={data} color="#fbbf24" width={100} height={40} />)
+    const { container } = render(<Sparkline data={data} color="#c8923a" width={100} height={40} />)
     const wrapper = container.firstChild
     expect(wrapper.style.width).toBe('100px')
     expect(wrapper.style.height).toBe('40px')

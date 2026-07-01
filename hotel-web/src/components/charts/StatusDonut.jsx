@@ -13,7 +13,7 @@ const STATUS_COLORS = {
   PENDING:   '#f59e0b',  // amber
   REVIEWING: '#3b82f6',  // blue
   ACCEPTED:  '#10b981',  // emerald
-  REJECTED:  '#ef4444',  // red
+  REJECTED:  '#b46a55',  // red
   EXPIRED:   '#94a3b8',  // slate
   WITHDRAWN: '#6b7280',  // gray
 }

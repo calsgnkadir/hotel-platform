@@ -90,7 +90,7 @@ export default function CookieConsent() {
         background: 'rgba(12, 23, 38, 0.96)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(212, 168, 83, 0.32)',
+        border: '1px solid rgba(205, 183, 143, 0.25)',
         borderRadius: 14,
         padding: '18px 20px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(205, 183, 143, 0.08) inset',

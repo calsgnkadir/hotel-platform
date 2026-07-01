@@ -165,7 +165,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
       <div
         className="max-w-md w-full rounded-2xl overflow-hidden relative"
         style={{
-          background: 'linear-gradient(135deg, rgba(21, 36, 61, 0.95), rgba(13, 11, 9, 0.95))',
+          background: 'linear-gradient(135deg, rgba(19, 17, 15, 0.94), rgba(13, 11, 9, 0.95))',
           border: '1px solid rgba(205, 183, 143, 0.18)',
           boxShadow: '0 24px 60px rgba(0, 0, 0, 0.60), 0 0 40px rgba(205, 183, 143, 0.14)',
         }}
@@ -228,7 +228,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                 className="h-1.5 rounded-full transition-all duration-300"
                 style={{
                   width: i === stepIdx ? '28px' : '6px',
-                  background: i <= stepIdx ? '#d4a853' : 'rgba(253, 233, 165, 0.28)',
+                  background: i <= stepIdx ? '#d4a853' : 'rgba(205, 183, 143, 0.28)',
                   boxShadow: i === stepIdx ? '0 0 10px rgba(205, 183, 143, 0.45)' : 'none',
                 }}
               />

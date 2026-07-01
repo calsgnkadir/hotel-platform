@@ -32,7 +32,7 @@ export default function LanguageSwitcher() {
     <div className="relative" ref={ref}>
       <button onClick={() => setOpen(o => !o)}
         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-cream-200 transition-colors"
-        title="Dil seç" style={{ color: '#0c1726' }}>
+        title="Dil seç" style={{ color: '#13110f' }}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
           <path strokeLinecap="round" strokeLinejoin="round"
@@ -46,14 +46,14 @@ export default function LanguageSwitcher() {
       </button>
       {open && (
         <div className="absolute right-0 mt-1 min-w-[140px] rounded-xl overflow-hidden shadow-lg z-50"
-             style={{ background: '#fff', border: '1px solid rgba(212, 168, 83,0.30)' }}>
+             style={{ background: '#fff', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
           {SUPPORTED_LANGS.map(l => (
             <button key={l.code} onClick={() => selectLang(l.code)}
               className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors hover:bg-purple-50
                 ${l.code === current.code ? 'font-bold' : ''}`}
-              style={{ color: '#0c1726' }}>
+              style={{ color: '#13110f' }}>
               <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded"
-                    style={{ background: '#dde7f3', color: '#1e3a5f' }}>{l.code}</span>
+                    style={{ background: '#ede4d3', color: '#1b1815' }}>{l.code}</span>
               <span>{l.label}</span>
               {l.code === current.code && <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="ml-auto w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>}
             </button>

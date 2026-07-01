@@ -27,7 +27,7 @@ export default function StarRating({ value = 0, onChange, count, size = 'md' }) 
       else if (v >= i - 0.5) fillRatio = 0.5
       else                fillRatio = 0
     }
-    const gold = '#fbbf24'
+    const gold = '#c8923a'
     const empty = '#475569'
     const gradientId = `star-grad-${i}-${fillRatio}`
     const star = (

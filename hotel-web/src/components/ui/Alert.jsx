@@ -41,7 +41,7 @@ const VARIANTS = {
     cls: 'border',
     style: {
       borderColor: 'rgba(200, 146, 58, 0.35)',
-      background: 'rgba(251, 191, 36, 0.08)',
+      background: 'rgba(200, 146, 58, 0.08)',
       color: '#e0b766',
     },
   },
@@ -113,7 +113,7 @@ export function AlertTitle({ children, className = '' }) {
 export function AlertDescription({ children, className = '' }) {
   return (
     <div className={`text-[12.5px] mt-0.5 flex flex-col gap-1 ${className}`}
-         style={{ color: 'rgba(229, 231, 235, 0.78)' }}>
+         style={{ color: '#c9bdaa' }}>
       {children}
     </div>
   )

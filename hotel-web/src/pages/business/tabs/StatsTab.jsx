@@ -39,8 +39,8 @@ export default function StatsTab() {
       {/* KPI row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
         <Kpi label="Bu Ay Başvuru" value={thisMonthApplications} delta={monthDelta} color="#60a5fa" />
-        <Kpi label="Geçen Ay"      value={lastMonthApplications}                          color="#8ba9d2" />
-        <Kpi label="Kabul Oranı"   value={`%${Math.round(acceptanceRate * 100)}`}        color="#22c55e" />
+        <Kpi label="Geçen Ay"      value={lastMonthApplications}                          color="#928678" />
+        <Kpi label="Kabul Oranı"   value={`%${Math.round(acceptanceRate * 100)}`}        color="#7a9f7a" />
         <Kpi label="Aktif İlan"    value={activeListings}                                 color="#d4a853" />
       </div>
 
@@ -70,7 +70,7 @@ function Kpi({ label, value, delta, color = '#d4a853' }) {
       className="relative overflow-hidden rounded-2xl group"
       style={{
         padding: 16,
-        background: 'linear-gradient(155deg, rgba(21, 36, 61, 0.88) 0%, rgba(15, 23, 38, 0.96) 100%)',
+        background: 'linear-gradient(155deg, rgba(27, 24, 21, 0.88) 0%, rgba(13, 11, 9, 0.96) 100%)',
         border: `1px solid ${color}22`,
         boxShadow: '0 8px 24px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
       }}>
@@ -105,7 +105,7 @@ function Kpi({ label, value, delta, color = '#d4a853' }) {
               padding: '2px 8px',
               borderRadius: 999,
               background: deltaPos ? 'rgba(122, 159, 122, 0.12)' : 'rgba(180, 106, 85, 0.12)',
-              color:      deltaPos ? '#a8c8a8' : '#fca5a5',
+              color:      deltaPos ? '#a8c8a8' : '#d39481',
               border: `1px solid ${deltaPos ? 'rgba(122, 159, 122, 0.30)' : 'rgba(180, 106, 85, 0.30)'}`,
             }}>
               {deltaPos ? '+' : ''}{delta}%
@@ -205,7 +205,7 @@ function HireTimeCard({ data }) {
           <Tooltip
             cursor={{ fill: 'rgba(205, 183, 143, 0.08)' }}
             contentStyle={{
-              background: 'rgba(15, 23, 38, 0.95)',
+              background: 'rgba(13, 11, 9, 0.95)',
               border: '1px solid rgba(205, 183, 143, 0.28)',
               borderRadius: 8,
               fontSize: 12,
@@ -213,7 +213,7 @@ function HireTimeCard({ data }) {
               boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
             }}
             labelStyle={{ color: '#cdb78f' }}
-            itemStyle={{ color: '#dde7f3' }}
+            itemStyle={{ color: '#ede4d3' }}
           />
           <Bar dataKey="count" radius={[6, 6, 0, 0]}>
             {data.map((_, i) => (

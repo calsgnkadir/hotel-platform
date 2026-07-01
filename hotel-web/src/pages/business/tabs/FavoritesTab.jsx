@@ -77,7 +77,7 @@ export default function FavoritesTab({ onOpenMessages }) {
     <div className="space-y-3">
       {/* Header */}
       <div className="card p-4"
-           style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', borderColor: 'rgba(217,119,6,0.2)' }}>
+           style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #e0b766 100%)', borderColor: 'rgba(217,119,6,0.2)' }}>
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-black flex items-center gap-2" style={{ color: '#78350f' }}>
@@ -134,7 +134,7 @@ export default function FavoritesTab({ onOpenMessages }) {
               style={{
                 background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                 color: '#1a1208',
-                boxShadow: '0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22)',
+                boxShadow: '0 8px 20px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
               }}>
               {openingChatId === f.candidateId ? '...' : 'Mesajla'}
             </button>

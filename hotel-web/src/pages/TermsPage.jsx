@@ -111,9 +111,9 @@ export default function TermsPage() {
 
           <Section title="10. İletişim">
             Sözleşmeyle ilgili sorularınız için: <a href="/iletisim"
-            style={{ color: '#fbd768', textDecoration: 'underline' }}>iletişim sayfası</a>. KVKK
+            style={{ color: '#cdb78f', textDecoration: 'underline' }}>iletişim sayfası</a>. KVKK
             veri sorumlusu başvuruları için: <a href="/kvkk"
-            style={{ color: '#fbd768', textDecoration: 'underline' }}>KVKK metni</a>.
+            style={{ color: '#cdb78f', textDecoration: 'underline' }}>KVKK metni</a>.
           </Section>
 
           <p style={{ marginTop: 24, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>

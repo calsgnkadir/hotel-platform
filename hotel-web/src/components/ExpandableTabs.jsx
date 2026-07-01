@@ -83,7 +83,7 @@ export default function ExpandableTabs({
         background: 'rgba(12, 23, 38, 0.55)',
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
-        border: '1px solid rgba(212, 168, 83, 0.22)',
+        border: '1px solid rgba(205, 183, 143, 0.18)',
         boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)',
       }}>
       {tabs.map((tab, index) => {
@@ -93,7 +93,7 @@ export default function ExpandableTabs({
                  aria-hidden="true"
                  style={{
                    width: 1, height: 22, margin: '0 4px',
-                   background: 'rgba(212, 168, 83, 0.28)',
+                   background: 'rgba(205, 183, 143, 0.22)',
                  }} />
           )
         }
@@ -123,12 +123,12 @@ export default function ExpandableTabs({
               letterSpacing: '0.01em',
               border: 'none',
               cursor: 'pointer',
-              color: isActive ? activeColor : 'rgba(229, 231, 235, 0.65)',
-              background: isActive ? 'rgba(212, 168, 83, 0.12)' : 'transparent',
+              color: isActive ? activeColor : '#928678',
+              background: isActive ? 'rgba(205, 183, 143, 0.10)' : 'transparent',
               transition: 'color 220ms, background 220ms',
             }}
-            onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#fde9a5' }}
-            onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = 'rgba(229, 231, 235, 0.65)' }}>
+            onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#cdb78f' }}
+            onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = '#928678' }}>
             <Icon size={20} active={isActive} />
             {tab.badge > 0 && !isActive && (
               <span style={{

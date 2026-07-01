@@ -585,7 +585,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                   style={{
                     background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                     color: '#1a1208',
-                    boxShadow: '0 12px 28px rgba(212, 168, 83, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+                    boxShadow: '0 12px 28px rgba(205, 183, 143, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)',
                   }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-4 h-4">

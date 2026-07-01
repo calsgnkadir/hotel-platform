@@ -294,7 +294,7 @@ export default function ProfileTab() {
       <div className="flex justify-end gap-3">
         <button type="submit" disabled={saving}
           className="px-6 py-2.5 font-bebas text-base tracking-wider uppercase text-white rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208', boxShadow: '0 12px 28px rgba(212, 168, 83, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)' }}>
+          style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208', boxShadow: '0 12px 28px rgba(205, 183, 143, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
       </div>

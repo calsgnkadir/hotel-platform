@@ -222,7 +222,7 @@ function SortablePhoto({ photo, busy, onSetCover, onDelete }) {
     transition,
     opacity: isDragging ? 0.4 : 1,
     zIndex: isDragging ? 20 : 'auto',
-    boxShadow: isDragging ? '0 16px 36px rgba(35, 74, 130, 0.40)' : undefined,
+    boxShadow: isDragging ? '0 16px 36px rgba(205, 183, 143, 0.32)' : undefined,
   }
 
   // Butona dokununca drag baslamasin

@@ -53,13 +53,13 @@ export default function VerifyEmailPage() {
 
         {state === 'success' && (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth={2} className="w-12 h-12 mb-3 mx-auto"><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#7a9f7a" strokeWidth={2} className="w-12 h-12 mb-3 mx-auto"><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
             <p className="text-sm mb-6" style={{ color: '#f5efe2' }}>{message}</p>
             <Link to="/login" className="inline-block px-5 py-2.5 rounded-full text-white font-semibold text-sm"
                   style={{
                     background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                     color: '#1a1208',
-                    boxShadow: '0 10px 24px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
+                    boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
                   }}>
               Giriş Yap
             </Link>
@@ -74,7 +74,7 @@ export default function VerifyEmailPage() {
                   style={{
                     background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                     color: '#1a1208',
-                    boxShadow: '0 10px 24px rgba(212, 168, 83, 0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
+                    boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
                   }}>
               Giriş Yap
             </Link>

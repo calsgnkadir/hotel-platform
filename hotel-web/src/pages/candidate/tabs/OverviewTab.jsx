@@ -309,7 +309,7 @@ function QuickActionTile({ label, desc, color, onClick }) {
       {/* Glass icerik */}
       <div className="absolute inset-0 rounded-2xl pointer-events-none"
            style={{
-             background: 'linear-gradient(155deg, rgba(21, 36, 61, 0.85) 0%, rgba(15, 23, 38, 0.96) 100%)',
+             background: 'linear-gradient(155deg, rgba(13, 11, 9, 0.85) 0%, rgba(13, 11, 9, 0.96) 100%)',
              border: `1px solid ${color}22`,
              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
            }} />
@@ -318,7 +318,7 @@ function QuickActionTile({ label, desc, color, onClick }) {
         <div className="text-[14px] font-semibold mb-0.5" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
           {label}
         </div>
-        <div className="text-[11px] line-clamp-1" style={{ color: 'rgba(139, 169, 210, 0.75)' }}>
+        <div className="text-[11px] line-clamp-1" style={{ color: '#c9bdaa' }}>
           {desc}
         </div>
       </div>

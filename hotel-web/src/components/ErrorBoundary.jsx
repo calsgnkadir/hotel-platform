@@ -37,7 +37,7 @@ export default class ErrorBoundary extends Component {
       <div className="min-h-screen flex items-center justify-center bg-cream-100 p-6">
         <div className="card max-w-md w-full p-6 text-center">
           <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white"
-               style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}>
+               style={{ background: 'linear-gradient(135deg, #b46a55, #b91c1c)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" strokeWidth={1.8} className="w-8 h-8">
               <path strokeLinecap="round" strokeLinejoin="round"
@@ -65,7 +65,7 @@ export default class ErrorBoundary extends Component {
             </button>
             <button onClick={this.handleReload}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg"
-              style={{ background: 'linear-gradient(135deg, #1e3a5f, #234a82)' }}>
+              style={{ background: 'linear-gradient(135deg, #1b1815, #8a7349)' }}>
               Sayfayı Yenile
             </button>
           </div>

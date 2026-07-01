@@ -166,7 +166,7 @@ export default function AvailabilityBlocksEditor() {
                   title="Bu bloğu sil"
                   className="ml-auto w-7 h-7 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'rgba(239, 68, 68, 0.15)',
+                    background: 'rgba(180, 106, 85, 0.12)',
                     color: '#d39481',
                     border: '1px solid rgba(180, 106, 85, 0.28)',
                   }}>

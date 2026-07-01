@@ -69,7 +69,7 @@ export function ConfirmDialog({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md rounded-2xl border p-6 space-y-4"
         style={{
-          background: 'linear-gradient(145deg, rgba(21, 36, 61, 0.98) 0%, rgba(15, 23, 38, 1) 100%)',
+          background: 'linear-gradient(145deg, rgba(19, 17, 15, 0.94) 0%, rgba(13, 11, 9, 1) 100%)',
           borderColor: destructive ? 'rgba(180, 106, 85, 0.30)' : 'rgba(205, 183, 143, 0.22)',
           boxShadow: '0 24px 64px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
         }}
@@ -132,7 +132,7 @@ export function ConfirmDialog({
                 : 'linear-gradient(135deg, #1b1815 0%, #8a7349 100%)',
               boxShadow: destructive
                 ? '0 4px 16px rgba(220, 38, 38, 0.40)'
-                : '0 4px 16px rgba(35, 74, 130, 0.40)',
+                : '0 4px 16px rgba(205, 183, 143, 0.32)',
             }}
           >
             {loading ? 'İşleniyor…' : confirmLabel}

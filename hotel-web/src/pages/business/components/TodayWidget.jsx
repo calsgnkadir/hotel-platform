@@ -161,7 +161,7 @@ export default function TodayWidget({ applications, onTabChange }) {
                   onClick={() => onTabChange?.('workers')}
                   className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
                   style={{
-                    background: 'rgba(21, 36, 61, 0.65)',
+                    background: 'rgba(27, 24, 21, 0.75)',
                     color: '#cdb78f',
                     border: '1px solid rgba(205, 183, 143, 0.14)',
                   }}

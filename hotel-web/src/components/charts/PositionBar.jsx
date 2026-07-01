@@ -11,7 +11,7 @@ const POSITION_LABELS = {
 }
 
 // Dalga G3 — dark altin tema icin yuksek kontrast palet (eski koyu yesil/mavi okunmuyor)
-const COLORS = ['#cdb78f', '#d4a853', '#5b85bf', '#928678', '#6b8aa3', '#a78bfa', '#c8923a']
+const COLORS = ['#cdb78f', '#d4a853', '#8a9bb0', '#928678', '#6b8aa3', '#a78bfa', '#c8923a']
 
 /**
  * Pozisyona göre başvuru bar chart.
