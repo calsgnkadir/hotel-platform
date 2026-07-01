@@ -106,11 +106,12 @@ public class JobListingQueryService {
         return jobListingService.toResponses(raw);
     }
 
-    private static int scoreListing(JobListing l,
-                                    java.util.Set<Position> prefPositions,
-                                    java.util.Set<String> prefDistricts,
-                                    java.util.Set<JobType> prefJobTypes,
-                                    java.time.LocalDateTime now) {
+    /** Package-private for testability (unit test JobListingQueryServiceRankingTest). */
+    static int scoreListing(JobListing l,
+                            java.util.Set<Position> prefPositions,
+                            java.util.Set<String> prefDistricts,
+                            java.util.Set<JobType> prefJobTypes,
+                            java.time.LocalDateTime now) {
         int score = 0;
         if (prefPositions != null && !prefPositions.isEmpty()
                 && l.getPosition() != null && prefPositions.contains(l.getPosition())) {
