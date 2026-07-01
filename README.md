@@ -90,6 +90,8 @@ Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya 
 - **Vardiya bazlı başvuru** — Tek bir ilana birden fazla vardiya seçeneğiyle başvuru
 - **Belge yönetimi** — CV, transkript, adli sicil, sağlık raporu (Cloudinary)
 - **Hassas belge izni** — Kimlik/adli sicil sadece **açık rıza** ile işletmeye açılır
+- **Akıllı sıralama** — İlanlar tercihine göre puanlanır (position/district/jobType/recency); "sana özel" default listing sıralaması
+- **Kayıtlı Aramalar** — Filtre setini kaydet; yeni eşleşen ilan gelince otomatik bildirim (30 dk scan)
 - **Tercih bazlı eşleştirme** — İlgi alanına uygun ilan açılınca otomatik bildirim
 - **Geçmiş işlerim** — Çalışılmış vardiyalar + saat toplamı + puanlama hakkı
 - **Çift yönlü puanlama** — İşletmeye yıldız + yorum
@@ -105,12 +107,13 @@ Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya 
 
 ### Sistem
 
-- **Mesajlaşma** — Sohbet + listing context + 5 sn polling + okundu bilgisi
-- **Bildirim sistemi** — 12 bildirim tipi, 30 sn polling, dropdown
+- **Mesajlaşma** — Sohbet + listing context + WebSocket real-time + okundu bilgisi
+- **Bildirim sistemi** — 13 bildirim tipi (`MATCHING_LISTING` dahil), WebSocket push + Web Push (VAPID) + in-app dropdown
+- **Outbox pattern** — Email + audit log async publish, at-least-once delivery + retry (max 5 attempt)
 - **Şikayet sistemi** — Kullanıcı bildir + admin moderasyon
 - **Audit log** — Ban / no-show / şikayet işlemleri loglanır
 - **Admin paneli** — Kullanıcı yönetimi + şikayet inceleme + işlem geçmişi
-- **Karanlık tema** — Default dark + toggle + glow efektler
+- **Editorial dark luxe UI** — Warm graphite + champagne + ivory palet, tek font (Inter 400/500/600/700), unified rounded-2xl card sistemi, hairline separators, muted status colors (sage/brick/ochre — no neon)
 - **KVKK uyumlu** — Açık rıza akışı + aydınlatma metni
 
 ---
@@ -269,6 +272,10 @@ Tarayıcı: <http://localhost:5173>
 | `/api/candidate/stats`                | GET    | CANDIDATE  | Kabul oranı + yanıt süresi|
 | `/api/admin/users`                    | GET    | ADMIN      | Kullanıcı listesi         |
 | `/api/reports`                        | POST   | *          | Şikayet oluştur           |
+| `/api/listings?ranked=true`           | GET    | CANDIDATE  | Weighted ranking (sana özel sıralama) |
+| `/api/saved-searches`                 | GET/POST | CANDIDATE| Kayıtlı aramalar listesi + oluştur |
+| `/api/saved-searches/{id}`            | PATCH/DELETE | CANDIDATE | Bildirim toggle / sil |
+| `/api/public/pulse`                   | GET    | -          | Landing canlı vardiya nabzı |
 
 Tam liste: <http://localhost:8080/swagger-ui.html>
 
@@ -286,18 +293,32 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 
 **`AVG(...) Object` Hibernate hatası** → `ApplicationRepository.avgResponseSecondsForCandidate` için `CAST AS double` kullanıldı (hotfix `0add1c7`).
 
+**Lokal Hibernate SQL log gürültüsü** → Dev config (`application-dev.yml`) default olarak SQL log'unu kapalı tutar. Belirli bir sorguyu tek seferlik görmek için: `JPA_SHOW_SQL=true mvn spring-boot:run` (veya IntelliJ'de env var ekle).
+
+**OutboxRelay + LandingPulse çok sık sorgu atıyor** → Dev'de scheduler'lar sakinleşti (Outbox 15 sn, Pulse 60 sn). Prod default'ları 5 sn / 30 sn — dev override'ları `application-dev.yml`'de `app.outbox.relayDelayMs` + `app.pulse.intervalMs`.
+
 ---
 
 ## Yol Haritası
 
+### Tamamlanan
 - [x] Vardiya bazlı ilan + başvuru
-- [x] Mesajlaşma + bildirimler
+- [x] Mesajlaşma + bildirimler (WebSocket + Web Push)
 - [x] Çift yönlü puanlama
 - [x] Cloudinary entegrasyonu
 - [x] Dashboard istatistikleri (Recharts)
-- [x] Hibrit dark UI (Wordplay + StoryHell + Randex karışımı)
-- [ ] Email + şifre sıfırlama (Resend SMTP)
-- [ ] Harita konum gösterimi (Leaflet + OpenStreetMap)
+- [x] Email + şifre sıfırlama (Resend SMTP + Outbox pattern)
+- [x] Harita konum gösterimi (Leaflet + OpenStreetMap)
+- [x] **Kayıtlı Aramalar** — kullanıcı filtre setini kaydeder, yeni eşleşmede bildirim (scheduled matcher, 30 dk)
+- [x] **Akıllı sıralama** — aday tercihlerine göre weighted ranking (position +50, district +30, jobType +20, recency +10)
+- [x] **Editorial dark luxe UI** — warm graphite + champagne + ivory palet, tek font ailesi (Inter), unified rounded-2xl card sistemi
+- [x] Landing "Vardiya Nabzı" canlı widget (WebSocket broadcast)
+
+### Sıradaki
+- [ ] Test coverage (backend unit + frontend vitest + E2E Playwright)
+- [ ] Metrics dashboard (Grafana / Prometheus)
+- [ ] Public rate-limit ayrı tier (anonim read için, k6 baseline ~1 req/s)
+- [ ] Sanal liste (react-window) — 1000+ kayıt için
 
 ---
 
