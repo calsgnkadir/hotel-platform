@@ -65,7 +65,7 @@ export default function DocumentsTab() {
 
   return (
     <motion.div
-      className="space-y-4 font-geist"
+      className="space-y-4"
       initial="hidden" animate="visible"
       variants={{ visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } } }}
     >
@@ -145,10 +145,10 @@ function HeroCard({ completion, uploaded, total }) {
       </div>
       <div className="relative flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="font-syne text-2xl sm:text-[28px] font-semibold"
+          <h2 className="text-2xl sm:text-[28px] font-semibold"
               style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.08 }}>
             Sertifika{' '}
-            <em className="not-italic font-syne font-semibold"
+            <em className="not-italic font-semibold"
                 style={{ color: '#cdb78f', letterSpacing: '-0.015em' }}>
               cüzdanım
             </em>
@@ -231,7 +231,7 @@ function CategoryCard({ cat, idx, filled, docs, uploadingType, deletingId, onUpl
               {cat.label.charAt(0)}
             </div>
             <div>
-              <h3 className="font-syne text-[15px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
+              <h3 className="text-[15px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
                 {cat.label}
               </h3>
               <p className="text-[10px] uppercase tracking-[0.22em] mt-1 font-medium"

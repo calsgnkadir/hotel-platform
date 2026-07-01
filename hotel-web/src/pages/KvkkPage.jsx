@@ -29,7 +29,7 @@ export default function KvkkPage() {
              boxShadow: '0 18px 48px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(245,239,226,0.03)',
            }}>
         <div className="mb-7">
-          <h1 className="font-syne text-3xl sm:text-[40px] font-semibold"
+          <h1 className="text-3xl sm:text-[40px] font-semibold"
               style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kişisel Verilerin Korunması
           </h1>
@@ -141,7 +141,7 @@ export default function KvkkPage() {
 function Section({ title, children }) {
   return (
     <section>
-      <h2 className="font-syne text-[15px] font-semibold uppercase tracking-[0.22em] mb-3"
+      <h2 className="text-[15px] font-semibold uppercase tracking-[0.22em] mb-3"
           style={{ color: '#cdb78f' }}>
         {title}
       </h2>

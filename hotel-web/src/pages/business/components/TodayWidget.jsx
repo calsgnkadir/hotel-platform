@@ -106,7 +106,7 @@ export default function TodayWidget({ applications, onTabChange }) {
         <div className="flex items-baseline justify-between mb-4 flex-wrap gap-y-2">
           <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
             <h2
-              className="font-bebas text-2xl sm:text-3xl tracking-wider uppercase text-white"
+              className="text-2xl sm:text-3xl tracking-wider uppercase text-white"
               style={{ textShadow: '0 0 18px rgba(205, 183, 143, 0.30)' }}
             >
               Bugün
@@ -139,7 +139,7 @@ export default function TodayWidget({ applications, onTabChange }) {
               style={{ background: '#7a9f7a' }}
             />
             <div>
-              <div className="font-bebas text-lg tracking-wider uppercase" style={{ color: '#a8c8a8' }}>
+              <div className="text-lg tracking-wider uppercase" style={{ color: '#a8c8a8' }}>
                 Her şey yolunda
               </div>
               <div className="text-[11px] mt-0.5" style={{ color: '#928678' }}>
@@ -189,7 +189,7 @@ export default function TodayWidget({ applications, onTabChange }) {
                   />
                   <div className="min-w-0">
                     <div
-                      className="font-bebas text-sm tracking-wider uppercase"
+                      className="text-sm tracking-wider uppercase"
                       style={{ color: it.color }}
                     >
                       {it.label}

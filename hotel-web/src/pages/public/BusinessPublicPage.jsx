@@ -107,7 +107,7 @@ function StarRow({ avg, count }) {
           </svg>
         ))}
       </div>
-      <span className="font-bebas text-lg tracking-wider" style={{ color: '#c8923a' }}>
+      <span className="text-lg tracking-wider" style={{ color: '#c8923a' }}>
         {avg.toFixed(1)}
       </span>
       <span className="text-[11px]" style={{ color: '#cdb78f' }}>
@@ -205,7 +205,7 @@ export default function BusinessPublicPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="font-bebas text-2xl tracking-widest" style={{ color: '#cdb78f' }}>YÜKLENİYOR...</div>
+        <div className="text-2xl tracking-widest" style={{ color: '#cdb78f' }}>YÜKLENİYOR...</div>
       </div>
     )
   }
@@ -213,7 +213,7 @@ export default function BusinessPublicPage() {
   if (error || !business) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4">
-        <div className="font-bebas text-3xl tracking-widest mb-2 text-white">404</div>
+        <div className="text-3xl tracking-widest mb-2 text-white">404</div>
         <div className="text-sm mb-6" style={{ color: '#cdb78f' }}>İşletme bulunamadı.</div>
         <Link to="/" className="text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full"
               style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208', boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)' }}>
@@ -278,7 +278,7 @@ export default function BusinessPublicPage() {
                 style={{ background: 'rgba(19, 17, 15, 0.78)', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link to="/" className="flex items-baseline gap-2">
-              <span className="font-bebas text-xl tracking-wider text-white">AJANSHOTEL</span>
+              <span className="text-xl tracking-wider text-white">AJANSHOTEL</span>
               <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: '#cdb78f' }}>istanbul</span>
             </Link>
             <div className="flex items-center gap-2">
@@ -317,7 +317,7 @@ export default function BusinessPublicPage() {
                      className="w-24 h-24 rounded-2xl object-cover flex-shrink-0"
                      style={{ border: '2px solid rgba(205, 183, 143, 0.30)', boxShadow: '0 0 24px rgba(205, 183, 143, 0.22)' }} />
               ) : (
-                <div className="w-24 h-24 rounded-2xl flex items-center justify-center font-bebas text-4xl text-white flex-shrink-0"
+                <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-4xl text-white flex-shrink-0"
                      style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208', boxShadow: '0 0 24px rgba(205, 183, 143, 0.30)' }}>
                   {initial}
                 </div>
@@ -327,7 +327,7 @@ export default function BusinessPublicPage() {
                   {typeLabel}
                   {business.category && <span> · {business.category}</span>}
                 </div>
-                <h1 className="font-bebas text-2xl sm:text-3xl lg:text-4xl tracking-wider uppercase text-white leading-tight inline-flex items-center"
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl tracking-wider uppercase text-white leading-tight inline-flex items-center"
                     style={{ textShadow: '0 0 18px rgba(205, 183, 143, 0.30)' }}>
                   {business.name}
                   {business.verified && <VerifiedBadge size="lg" />}
@@ -357,7 +357,7 @@ export default function BusinessPublicPage() {
                         color: '#d39481',
                         border: '1px solid rgba(180, 106, 85, 0.28)',
                       }}>
-                      <span className="font-bebas text-base">!</span>
+                      <span className="text-base">!</span>
                       Kullanıcıyı Bildir
                     </button>
                   </div>
@@ -401,7 +401,7 @@ export default function BusinessPublicPage() {
             <section className="rounded-2xl overflow-hidden"
                      style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
               <div className="px-5 pt-4 pb-2 flex items-baseline justify-between">
-                <h2 className="font-bebas text-lg tracking-[0.2em] uppercase" style={{ color: '#cdb78f' }}>
+                <h2 className="text-lg tracking-[0.2em] uppercase" style={{ color: '#cdb78f' }}>
                   Konum
                 </h2>
                 {business.address && (
@@ -436,7 +436,7 @@ export default function BusinessPublicPage() {
               {business.description && (
                 <section className="rounded-2xl p-5"
                          style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
-                  <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
+                  <h2 className="text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
                     Hakkında
                   </h2>
                   <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#ede4d3' }}>
@@ -450,7 +450,7 @@ export default function BusinessPublicPage() {
                 return (
                   <section className="rounded-2xl p-5"
                            style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
-                    <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
+                    <h2 className="text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
                       Çalışma Saatleri
                     </h2>
                     {parsed ? (
@@ -461,7 +461,7 @@ export default function BusinessPublicPage() {
                           return (
                             <li key={day} className="flex items-center justify-between text-sm py-1 border-b last:border-0"
                                 style={{ borderColor: 'rgba(205, 183, 143, 0.06)' }}>
-                              <span className="font-bebas text-base tracking-wider uppercase" style={{ color: '#cdb78f' }}>
+                              <span className="text-base tracking-wider uppercase" style={{ color: '#cdb78f' }}>
                                 {DAY_LABELS_TR[day]}
                               </span>
                               {d.closed ? (
@@ -492,7 +492,7 @@ export default function BusinessPublicPage() {
             <aside className="space-y-4">
               <section className="rounded-2xl p-5"
                        style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
-                <h2 className="font-bebas text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
+                <h2 className="text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
                   İletişim
                 </h2>
                 <ul className="space-y-2 text-sm">

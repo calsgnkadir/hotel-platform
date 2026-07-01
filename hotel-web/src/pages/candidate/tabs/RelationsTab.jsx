@@ -90,7 +90,7 @@ export default function RelationsTab({ onTabChange }) {
               <button type="button"
                       onClick={() => navigate(`/p/business/${b.id}`)}
                       className="w-full text-left">
-                <h3 className="font-syne text-[16px] font-semibold truncate"
+                <h3 className="text-[16px] font-semibold truncate"
                     style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>{b.name}</h3>
                 <div className="text-[12px] mt-1 truncate" style={{ color: '#928678' }}>
                   {TYPE_LABELS[b.type] || b.type}

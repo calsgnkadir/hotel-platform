@@ -211,7 +211,7 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
              }}>
           <div className="flex items-center gap-2">
-            <span className="font-bebas text-xl tracking-wider" style={{ color: '#cdb78f' }}>
+            <span className="text-xl tracking-wider" style={{ color: '#cdb78f' }}>
               {selectedIds.size}
             </span>
             <span className="text-[12px] uppercase tracking-wider font-semibold"
@@ -305,7 +305,7 @@ function Column({ col, count, children }) {
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: col.color }} />
-            <span className="font-bebas text-base tracking-wider uppercase" style={{ color: col.color }}>
+            <span className="text-base tracking-wider uppercase" style={{ color: col.color }}>
               {col.label}
             </span>
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
@@ -440,7 +440,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
                 />
               ) : (
                 <div
-                  className="w-full h-full flex items-center justify-center font-bebas text-base text-white"
+                  className="w-full h-full flex items-center justify-center text-base text-white"
                   style={{ background: `linear-gradient(135deg, ${accent}, ${accent}80)` }}
                 >
                   {initial}

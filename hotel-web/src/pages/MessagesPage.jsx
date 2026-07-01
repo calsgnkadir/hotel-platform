@@ -61,7 +61,7 @@ function SearchInput({ value, onChange }) {
              onChange={e => onChange(e.target.value)}
              onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
              placeholder="Kişi, ilan veya mesaj…"
-             className="w-full bg-transparent outline-none h-9 pl-8 pr-7 text-[12.5px] font-geist"
+             className="w-full bg-transparent outline-none h-9 pl-8 pr-7 text-[12.5px]"
              style={{ color: '#ffffff', caretColor: '#d4a853' }} />
       {value && (
         <button type="button" onClick={() => onChange('')}
@@ -113,7 +113,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
               className="w-10 h-10 rounded-full object-cover"
               style={{ border: '1px solid rgba(205, 183, 143, 0.18)' }} />
           ) : (
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-geist font-semibold text-[15px]"
+            <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-[15px]"
                  style={{
                    background: 'linear-gradient(135deg, rgba(74, 63, 51, 0.55), rgba(34, 31, 27, 0.85))',
                    border: '1px solid rgba(205, 183, 143, 0.18)',
@@ -136,30 +136,30 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <div className="font-geist font-semibold text-[13.5px] truncate"
+            <div className="font-semibold text-[13.5px] truncate"
                  style={{ color: hasUnread ? '#ffffff' : '#e9d5ff', letterSpacing: '-0.01em' }}>
               {conv.otherPartyName}
             </div>
-            <div className="text-[10px] flex-shrink-0 font-geist"
+            <div className="text-[10px] flex-shrink-0"
                  style={{ color: '#c9bdaa' }}>
               {formatRelative(conv.lastMessageAt)}
             </div>
           </div>
           {conv.listingTitle && (
-            <div className="text-[10px] truncate mt-0.5 uppercase tracking-wider font-geist font-semibold"
+            <div className="text-[10px] truncate mt-0.5 uppercase tracking-wider font-semibold"
                  style={{ color: '#cdb78f' }}>
               {conv.listingTitle}
             </div>
           )}
           <div className="flex items-center justify-between gap-2 mt-1.5">
-            <div className={`text-[12px] truncate font-geist ${hasUnread ? 'font-medium' : 'font-normal'}`}
+            <div className={`text-[12px] truncate ${hasUnread ? 'font-medium' : 'font-normal'}`}
                  style={{ color: hasUnread ? '#cdb78f' : '#c9bdaa' }}>
               {conv.lastMessagePreview || <span className="italic" style={{ color: '#928678' }}>Henüz mesaj yok</span>}
             </div>
             {hasUnread && (
               <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 380, damping: 18 }}
-                className="flex-shrink-0 text-[10px] font-bold rounded-full px-1.5 min-w-[20px] text-center font-geist"
+                className="flex-shrink-0 text-[10px] font-bold rounded-full px-1.5 min-w-[20px] text-center"
                 style={{
                   background: 'linear-gradient(135deg, #cdb78f, #d4a853)',
                   color: '#1a1208',
@@ -759,7 +759,7 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 140, damping: 18 }}
-          className="text-center max-w-xs relative font-geist"
+          className="text-center max-w-xs relative"
         >
           {/* Floating chat bubble illustrasyonu */}
           <motion.div
@@ -1240,7 +1240,7 @@ export default function MessagesPage() {
       <div className="flex h-full">
         {/* Sol — Sohbet listesi */}
         <div className={`${showListMobile ? 'flex' : 'hidden sm:flex'} flex-col w-full sm:w-80 sm:min-w-[20rem] border-r border-cream-200 dark:border-cream-300 bg-white dark:bg-ink-800`}>
-          <div className="px-4 py-3 space-y-2.5 font-geist"
+          <div className="px-4 py-3 space-y-2.5"
                style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-[14px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
@@ -1300,7 +1300,7 @@ export default function MessagesPage() {
                   <motion.div
                     initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ type: 'spring', stiffness: 160, damping: 20 }}
-                    className="py-10 px-4 text-center font-geist">
+                    className="py-10 px-4 text-center">
                     {/* Animated bubble illustration */}
                     <motion.div
                       animate={{ y: [0, -6, 0] }}
@@ -1446,7 +1446,7 @@ function ConversationDetailPanel({ conversation }) {
                 />
               ) : (
                 <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center font-bebas text-3xl text-white"
+                  className="w-20 h-20 rounded-full flex items-center justify-center text-3xl text-white"
                   style={{
                     background: 'linear-gradient(135deg, #1b1815 0%, #b8902d 100%)',
                     boxShadow: '0 0 24px rgba(205, 183, 143, 0.30)',
@@ -1465,7 +1465,7 @@ function ConversationDetailPanel({ conversation }) {
               )}
             </a>
             <h3
-              className="font-bebas text-xl tracking-wider uppercase text-white truncate"
+              className="text-xl tracking-wider uppercase text-white truncate"
               style={{ textShadow: '0 0 12px rgba(205, 183, 143, 0.30)' }}
             >
               {c.otherPartyName}
@@ -1493,7 +1493,7 @@ function ConversationDetailPanel({ conversation }) {
         {/* Ilan kart */}
         {c.listingTitle && (
           <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
-            <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2" style={{ color: '#cdb78f' }}>
+            <div className="text-[10px] tracking-[0.25em] uppercase mb-2" style={{ color: '#cdb78f' }}>
               İlan
             </div>
             <div
@@ -1525,7 +1525,7 @@ function ConversationDetailPanel({ conversation }) {
 
         {/* Sohbet istatistik — kompakt */}
         <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
-          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-2.5" style={{ color: '#cdb78f' }}>
+          <div className="text-[10px] tracking-[0.25em] uppercase mb-2.5" style={{ color: '#cdb78f' }}>
             Sohbet
           </div>
           <div className="space-y-2 text-xs">
@@ -1558,7 +1558,7 @@ function ConversationDetailPanel({ conversation }) {
 
         {/* Hizli islemler */}
         <div className="px-5 py-4 space-y-2 flex-1">
-          <div className="font-bebas text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: '#cdb78f' }}>
+          <div className="text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: '#cdb78f' }}>
             Hızlı İşlemler
           </div>
           {/* Dalga G — Kullanici profilini gor (role'a gore /p/business/:id veya /p/candidate/:id) */}
@@ -1607,7 +1607,7 @@ function ConversationDetailPanel({ conversation }) {
               border: '1px solid rgba(180, 106, 85, 0.22)',
             }}
           >
-            <span className="font-bebas text-base">!</span>
+            <span className="text-base">!</span>
             <span className="font-semibold">Kullanıcıyı Bildir</span>
           </button>
         </div>

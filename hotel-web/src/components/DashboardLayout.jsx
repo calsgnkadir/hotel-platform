@@ -134,7 +134,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b"
              style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
           <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2">
-            <span className="font-bebas text-2xl tracking-wider" style={{ color: '#f5efe2' }}>AJANSHOTEL</span>
+            <span className="text-2xl tracking-wider" style={{ color: '#f5efe2' }}>AJANSHOTEL</span>
             <span className="text-[9px] uppercase tracking-[0.28em]" style={{ color: '#928678' }}>istanbul</span>
           </Link>
           <button onClick={() => setMobileOpen(false)}
@@ -205,7 +205,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                 <Icon name="menu" size={18} />
               </button>
               <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-1.5">
-                <span className="font-bebas text-xl tracking-wider" style={{ color: '#f5efe2' }}>AJANSHOTEL</span>
+                <span className="text-xl tracking-wider" style={{ color: '#f5efe2' }}>AJANSHOTEL</span>
               </Link>
             </div>
             {/* Desktop: aktif sayfa basligi sol tarafta */}
@@ -227,7 +227,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
           {/* Page heading strip — Syne display, generous rhythm */}
           <div className="px-4 lg:px-8 pt-8 lg:pt-12 pb-6">
-            <h1 className="font-syne"
+            <h1 className=""
                 style={{
                   color: '#f5efe2',
                   fontSize: 'clamp(32px, 4.5vw, 44px)',

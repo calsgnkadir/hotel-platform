@@ -76,7 +76,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
         <div className="flex items-center gap-4">
           <AvatarCluster items={clusterItems} size={40} max={5} showOnlineDot />
           <div>
-            <div className="font-syne text-[16px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
+            <div className="text-[16px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
               {workers.length} kişilik ekip
             </div>
             <div className="text-[11px] mt-0.5" style={{ color: '#928678' }}>

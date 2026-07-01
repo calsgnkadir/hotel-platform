@@ -114,7 +114,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     : applications
 
   return (
-    <motion.div className="space-y-3 font-geist"
+    <motion.div className="space-y-3"
       initial="hidden" animate="visible"
       variants={{ visible: { transition: { staggerChildren: 0.06 } } }}>
 
@@ -126,7 +126,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           return (
             <button key={f.value} onClick={() => setStatusFilter(f.value)}
               className={`chip ${isActive ? 'is-active' : ''}`}>
-              <span className="font-geist text-[13.5px]"
+              <span className="text-[13.5px]"
                     style={{ fontWeight: isActive ? 600 : 500, letterSpacing: '-0.005em', textTransform: 'none' }}>
                 {f.label}
               </span>

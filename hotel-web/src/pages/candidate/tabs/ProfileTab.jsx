@@ -181,7 +181,7 @@ export default function ProfileTab() {
             </svg>
           </div>
           <div className="min-w-0">
-            <p className="font-bebas text-base tracking-[0.15em] uppercase"
+            <p className="text-base tracking-[0.15em] uppercase"
                style={{ color: form.isAvailable ? '#a8c8a8' : '#c9bdaa' }}>
               {form.isAvailable ? 'İş Arıyorum' : 'Şu anda iş aramıyorum'}
             </p>
@@ -217,13 +217,13 @@ export default function ProfileTab() {
                    loading="lazy" decoding="async"
                    className="w-full h-full object-cover" />
             ) : (
-              <span className="font-bebas text-5xl tracking-wider"
+              <span className="text-5xl tracking-wider"
                     style={{ color: '#cdb78f', textShadow: '0 0 16px rgba(205, 183, 143, 0.32)' }}>
                 {(profile?.fullName || 'A').charAt(0).toUpperCase()}
               </span>
             )}
           </div>
-          <h2 className="font-bebas text-2xl tracking-wider uppercase text-white mb-1">
+          <h2 className="text-2xl tracking-wider uppercase text-white mb-1">
             {profile?.fullName || 'Aday'}
           </h2>
           <p className="text-xs mb-3" style={{ color: '#928678' }}>
@@ -250,7 +250,7 @@ export default function ProfileTab() {
               <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#928678' }}>
                 Email Doğrulama
               </p>
-              <p className="font-bebas text-xl tracking-wider mt-1 uppercase"
+              <p className="text-xl tracking-wider mt-1 uppercase"
                  style={{ color: profile?.emailVerifiedAt ? '#cdb78f' : '#c8923a' }}>
                 {profile?.emailVerifiedAt ? 'Doğrulandı' : 'Beklemede'}
               </p>
@@ -279,7 +279,7 @@ export default function ProfileTab() {
                    loading="lazy" decoding="async"
                    className="w-full h-full object-cover" />
             ) : (
-              <span className="font-bebas text-4xl tracking-wider" style={{ color: '#cdb78f' }}>
+              <span className="text-4xl tracking-wider" style={{ color: '#cdb78f' }}>
                 {(profile?.fullName || 'A').charAt(0).toUpperCase()}
               </span>
             )}
@@ -306,7 +306,7 @@ export default function ProfileTab() {
         </div>
           </div>
         <div className="card p-5 space-y-4">
-          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
               style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>Temel Bilgiler</h3>
 
           <div>
@@ -353,7 +353,7 @@ export default function ProfileTab() {
 
         {/* SOL: Ilgilendigin Ilceler (uzayan otomatik tamamlama) */}
         <div className="card p-5 space-y-3">
-          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
               style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>İlgilendiğin İlçeler</h3>
           <p className="text-xs" style={{ color: '#928678' }}>
             Bu ilçelerde yeni ilan açıldığında otomatik bildirim alırsın.
@@ -372,7 +372,7 @@ export default function ProfileTab() {
 
           {/* Egitim + Ehliyet */}
         <div className="card p-5 space-y-4">
-          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
               style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>Eğitim & Ek</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -394,7 +394,7 @@ export default function ProfileTab() {
         </div>
 
         <div className="card p-5 space-y-4">
-          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
               style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>İş Tercihleri</h3>
 
           <div>
@@ -425,7 +425,7 @@ export default function ProfileTab() {
 
         {/* SAG: Ilgilendigin Pozisyonlar */}
         <div className="card p-5 space-y-3">
-          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
               style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>İlgilendiğin Pozisyonlar</h3>
           <p className="text-xs" style={{ color: '#928678' }}>
             Bu pozisyonlarda yeni ilan acildiginda otomatik bildirim alirsin.
@@ -597,7 +597,7 @@ function ReliabilityCard({ data }) {
             Güvenilirlik Skoru
           </p>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="font-bebas text-4xl tracking-wider" style={{ color: '#ffffff' }}>{score}</span>
+            <span className="text-4xl tracking-wider" style={{ color: '#ffffff' }}>{score}</span>
             <span className="text-xs" style={{ color: '#928678' }}>/ 100</span>
             <span className="ml-2 text-[11px] font-bold uppercase tracking-wider" style={{ color }}>{band}</span>
           </div>

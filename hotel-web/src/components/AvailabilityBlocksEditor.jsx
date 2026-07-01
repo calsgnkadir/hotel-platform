@@ -93,7 +93,7 @@ export default function AvailabilityBlocksEditor() {
          }}>
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div>
-          <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-1"
+          <h3 className="text-base tracking-[0.2em] uppercase pb-1"
               style={{ color: '#cdb78f' }}>
             Haftalık Müsaitlik
           </h3>

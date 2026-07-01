@@ -92,7 +92,7 @@ export function ConfirmDialog({
           )}
           <div className="flex-1 min-w-0">
             <h2 id="confirm-dialog-title"
-                className="font-bebas text-xl tracking-wider uppercase"
+                className="text-xl tracking-wider uppercase"
                 style={{ color: destructive ? '#d39481' : '#cdb78f' }}>
               {title}
             </h2>

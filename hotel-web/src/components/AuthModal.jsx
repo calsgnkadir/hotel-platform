@@ -105,10 +105,10 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
             <div className="p-7 space-y-5">
               {/* Logo + başlık */}
               <div className="text-center">
-                <div className="font-bebas text-2xl tracking-wider"
+                <div className="text-2xl tracking-wider"
                      style={{ color: '#f5efe2' }}>AJANSHOTEL</div>
                 <h2 id="auth-modal-title"
-                    className="font-syne mt-4"
+                    className="mt-4"
                     style={{
                       color: '#f5efe2',
                       fontSize: '18px',

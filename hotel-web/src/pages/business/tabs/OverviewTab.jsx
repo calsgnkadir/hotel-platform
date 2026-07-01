@@ -139,7 +139,7 @@ function TodayFeed({ applications, onTabChange }) {
     <div className="card p-4">
       <div className="flex items-center justify-between mb-3 pb-2 border-b"
            style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
-        <h3 className="font-bebas text-base tracking-[0.2em] uppercase"
+        <h3 className="text-base tracking-[0.2em] uppercase"
             style={{ color: '#cdb78f' }}>Bugünkü Akış</h3>
         <span className="text-[10px] font-semibold uppercase tracking-wider"
               style={{ color: '#6b6358' }}>{recent.length} olay</span>

@@ -34,7 +34,7 @@ export default function LandingPage() {
               }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-baseline gap-2">
-            <span className="font-syne font-semibold text-lg tracking-tight"
+            <span className="font-semibold text-lg tracking-tight"
                   style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
               AjansHotel
             </span>
@@ -121,13 +121,13 @@ export default function LandingPage() {
               </HeroHeading>
 
               {/* RotatingText alt baslik */}
-              <div className="flex flex-wrap items-baseline gap-2 mb-7 mt-4 font-bebas uppercase tracking-wider text-3xl sm:text-4xl"
+              <div className="flex flex-wrap items-baseline gap-2 mb-7 mt-4 uppercase tracking-wider text-3xl sm:text-4xl"
                    style={{ color: '#ede4d3' }}>
                 <span>Bugün</span>
                 <RotatingText
                   texts={['GARSON', 'RESEPSIYON', 'BELLBOY', 'KAT HİZMETLERİ', 'BARİSTA']}
                   rotationInterval={2200}
-                  className="font-bebas"
+                  className=""
                   style={{ color: '#cdb78f' }}
                 />
                 <span>arıyor.</span>
@@ -210,7 +210,7 @@ export default function LandingPage() {
                 <div className="glass-panel p-7"
                      style={{ borderRadius: '28px 12px 28px 12px' }}>
                   <div className="flex items-center gap-3 mb-5">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-syne text-xl font-semibold"
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-semibold"
                          style={{
                            background: 'rgba(205, 183, 143, 0.08)',
                            border: '1px solid rgba(205, 183, 143, 0.30)',
@@ -219,7 +219,7 @@ export default function LandingPage() {
                       C
                     </div>
                     <div>
-                      <div className="font-syne text-base font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>Conrad İstanbul</div>
+                      <div className="text-base font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>Conrad İstanbul</div>
                       <div className="text-[11px] mt-0.5" style={{ color: '#928678' }}>Beşiktaş · 5 yıldız</div>
                     </div>
                   </div>
@@ -265,7 +265,7 @@ export default function LandingPage() {
               <span className="text-[10px] uppercase tracking-[0.28em] font-semibold"
                     style={{ color: '#cdb78f' }}>Özellikler</span>
             </div>
-            <h2 className="font-syne mb-4"
+            <h2 className="mb-4"
                 style={{
                   color: '#f5efe2',
                   fontSize: 'clamp(32px, 5vw, 48px)',
@@ -326,7 +326,7 @@ export default function LandingPage() {
                  borderTop: '1px solid rgba(205, 183, 143, 0.08)',
                }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-24 text-center">
-          <h2 className="font-syne mb-5"
+          <h2 className="mb-5"
               style={{
                 color: '#f5efe2',
                 fontSize: 'clamp(32px, 5vw, 48px)',
@@ -379,7 +379,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-wrap items-center justify-between gap-4 text-[11px]"
              style={{ color: '#6b6358' }}>
           <div className="flex items-baseline gap-2">
-            <span className="font-syne font-semibold text-base" style={{ color: '#ede4d3', letterSpacing: '-0.01em' }}>AjansHotel</span>
+            <span className="font-semibold text-base" style={{ color: '#ede4d3', letterSpacing: '-0.01em' }}>AjansHotel</span>
             <span className="text-[9px] uppercase tracking-[0.28em]" style={{ color: '#6b6358' }}>istanbul</span>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -411,7 +411,7 @@ function Feature({ iconPath, title, text }) {
           <path strokeLinecap="round" strokeLinejoin="round" d={iconPath} />
         </svg>
       </div>
-      <h3 className="font-syne text-base font-semibold mb-2"
+      <h3 className="text-base font-semibold mb-2"
           style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>{title}</h3>
       <p className="text-[13px] leading-relaxed" style={{ color: '#928678' }}>{text}</p>
     </div>

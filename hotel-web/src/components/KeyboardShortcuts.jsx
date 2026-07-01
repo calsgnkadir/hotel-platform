@@ -170,7 +170,7 @@ export default function KeyboardShortcuts() {
         <div className="flex items-baseline justify-between mb-5">
           <h2
             id="kbd-help-title"
-            className="font-bebas text-2xl tracking-wider uppercase text-white"
+            className="text-2xl tracking-wider uppercase text-white"
             style={{ textShadow: '0 0 14px rgba(205, 183, 143, 0.28)' }}
           >
             Klavye Kısayolları

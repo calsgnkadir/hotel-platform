@@ -31,7 +31,7 @@ export default function TermsPage() {
              boxShadow: '0 18px 48px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(245,239,226,0.03)',
            }}>
         <div className="mb-7">
-          <h1 className="font-syne text-3xl sm:text-[40px] font-semibold"
+          <h1 className="text-3xl sm:text-[40px] font-semibold"
               style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kullanım Şartları
           </h1>
@@ -128,7 +128,7 @@ export default function TermsPage() {
 function Section({ title, children }) {
   return (
     <section style={{ marginBottom: 22 }}>
-      <h2 className="font-syne" style={{
+      <h2 className="" style={{
         fontSize: 15, fontWeight: 600, color: '#cdb78f',
         marginBottom: 12, letterSpacing: '0.22em', textTransform: 'uppercase',
       }}>

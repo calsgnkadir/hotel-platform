@@ -621,7 +621,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
 
       {/* CONTENT */}
       <div className="p-5 flex flex-col">
-        <h3 className="font-syne font-semibold text-base leading-snug line-clamp-2 transition-colors duration-200"
+        <h3 className="font-semibold text-base leading-snug line-clamp-2 transition-colors duration-200"
             style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}
             onMouseEnter={(e) => { e.currentTarget.style.color = '#cdb78f' }}
             onMouseLeave={(e) => { e.currentTarget.style.color = '#f5efe2' }}>
@@ -821,7 +821,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
 
         {/* İlçe — dropdown (39 ilçe pill chip mantıksız) */}
         <div>
-          <label className="block mb-2 font-syne text-[11px] font-semibold tracking-[0.22em] uppercase"
+          <label className="block mb-2 text-[11px] font-semibold tracking-[0.22em] uppercase"
                  style={{ color: '#928678' }}>İlçe</label>
           <select value={district} onChange={e => setDistrict(e.target.value)} className="input text-sm">
             <option value="">Tüm İstanbul</option>
@@ -848,7 +848,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         {/* Min Ücret — range slider + preset chips */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="font-syne text-[11px] font-semibold tracking-[0.22em] uppercase"
+            <label className="text-[11px] font-semibold tracking-[0.22em] uppercase"
                    style={{ color: '#928678' }}>Min Ücret</label>
             <span className="text-[13px] font-semibold tabular-nums"
                   style={{ color: '#cdb78f', letterSpacing: '-0.005em' }}>
@@ -955,7 +955,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       <section className="space-y-4 min-w-0">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="font-syne text-[22px] font-semibold"
+            <h2 className="text-[22px] font-semibold"
                 style={{ color: '#f5efe2', letterSpacing: '-0.02em' }}>İş İlanları</h2>
             <p className="text-[12px] mt-1 tabular-nums" style={{ color: '#928678' }}>
               {loading ? '...' : `${listings.length} ilan`}
@@ -1179,7 +1179,7 @@ function FilterChipGroup({
   return (
     <div>
       {label && (
-        <label className="block mb-2 font-syne text-[11px] font-semibold tracking-[0.22em] uppercase"
+        <label className="block mb-2 text-[11px] font-semibold tracking-[0.22em] uppercase"
                style={{ color: '#928678' }}>
           {label}
         </label>

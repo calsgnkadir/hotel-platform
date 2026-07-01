@@ -211,7 +211,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
         <div className="p-6 sm:p-7 text-center">
           <h2
             id="onboarding-title"
-            className="font-bebas text-3xl tracking-wider uppercase text-white mb-2.5"
+            className="text-3xl tracking-wider uppercase text-white mb-2.5"
             style={{ textShadow: '0 0 16px rgba(205, 183, 143, 0.30)' }}
           >
             {step.title}
@@ -240,7 +240,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
             {step.cta && (
               <button
                 onClick={handleCta}
-                className="w-full py-3 font-bebas text-base tracking-wider uppercase text-white rounded-full transition-all hover:-translate-y-0.5"
+                className="w-full py-3 text-base tracking-wider uppercase text-white rounded-full transition-all hover:-translate-y-0.5"
                 style={{
                   background: 'linear-gradient(135deg, #d4a853, #d4a853)',
                   boxShadow: '0 0 20px rgba(205, 183, 143, 0.35)',
@@ -251,7 +251,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
             )}
             <button
               onClick={handleNext}
-              className="w-full py-3 font-bebas text-base tracking-wider uppercase rounded-full transition-all hover:-translate-y-0.5"
+              className="w-full py-3 text-base tracking-wider uppercase rounded-full transition-all hover:-translate-y-0.5"
               style={
                 step.cta
                   ? {

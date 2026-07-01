@@ -120,7 +120,7 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
       </div>
 
       <div className="p-5">
-        <h3 className="font-syne font-semibold text-[15px] leading-snug line-clamp-2"
+        <h3 className="font-semibold text-[15px] leading-snug line-clamp-2"
             style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
           {listing.title}
         </h3>

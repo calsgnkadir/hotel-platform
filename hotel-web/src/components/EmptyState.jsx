@@ -253,7 +253,7 @@ export default function EmptyState({
     <div className={`flex flex-col items-center text-center ${compact ? 'py-8' : 'py-12'} px-4`}>
       <div className="mb-4">{illustration}</div>
       {title && (
-        <h3 className="font-syne text-2xl font-semibold mb-2"
+        <h3 className="text-2xl font-semibold mb-2"
             style={{ color: '#f5efe2', letterSpacing: '-0.02em' }}>
           {title}
         </h3>
@@ -273,7 +273,7 @@ export default function EmptyState({
                   background: 'rgba(205, 183, 143, 0.04)',
                   border: '1px solid rgba(205, 183, 143, 0.10)',
                 }}>
-              <span className="font-syne text-[14px] font-semibold tabular-nums flex-shrink-0 w-7 text-center"
+              <span className="text-[14px] font-semibold tabular-nums flex-shrink-0 w-7 text-center"
                     style={{ color: '#cdb78f', letterSpacing: '-0.005em' }}>
                 {String(i + 1).padStart(2, '0')}
               </span>

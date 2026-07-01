@@ -177,7 +177,7 @@ export default function ProfileTab() {
 
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
-        <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+        <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
             style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
           Temel Bilgiler
         </h3>
@@ -227,7 +227,7 @@ export default function ProfileTab() {
 
       {/* İletişim */}
       <div className="card p-5 space-y-4">
-        <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+        <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
             style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
           İletişim
         </h3>
@@ -279,7 +279,7 @@ export default function ProfileTab() {
       )}
 
       <div className="card p-5 space-y-3">
-        <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+        <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
             style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
           Çalışma Saatleri
         </h3>
@@ -293,7 +293,7 @@ export default function ProfileTab() {
 
       <div className="flex justify-end gap-3">
         <button type="submit" disabled={saving}
-          className="px-6 py-2.5 font-bebas text-base tracking-wider uppercase text-white rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
+          className="px-6 py-2.5 text-base tracking-wider uppercase text-white rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
           style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208', boxShadow: '0 12px 28px rgba(205, 183, 143, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)' }}>
           {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
         </button>
@@ -321,7 +321,7 @@ function BusinessPreviewCard({ form, logoUrl }) {
     <div className="card overflow-hidden">
       <div className="px-4 py-3 border-b flex items-center justify-between"
            style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
-        <h3 className="font-bebas text-base tracking-[0.2em] uppercase"
+        <h3 className="text-base tracking-[0.2em] uppercase"
             style={{ color: '#cdb78f' }}>Canlı Önizleme</h3>
         <span className="text-[10px] font-semibold uppercase tracking-wider"
               style={{ color: '#6b6358' }}>aday bu şekilde görür</span>
@@ -337,11 +337,11 @@ function BusinessPreviewCard({ form, logoUrl }) {
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
             ) : (
-              <span className="font-bebas text-2xl" style={{ color: '#cdb78f' }}>{initial}</span>
+              <span className="text-2xl" style={{ color: '#cdb78f' }}>{initial}</span>
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-bebas text-xl tracking-wider uppercase truncate"
+            <div className="text-xl tracking-wider uppercase truncate"
                  style={{ color: '#ffffff' }}>
               {form.name || 'İşletme adınız'}
             </div>

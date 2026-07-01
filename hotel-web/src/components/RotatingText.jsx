@@ -17,7 +17,7 @@ import './RotatingText.css'
  *   className      — wrapper class
  *
  * Kullanim:
- *   <RotatingText texts={['Garson','Resepsiyon','Bellboy']} className="font-bebas text-7xl" />
+ *   <RotatingText texts={['Garson','Resepsiyon','Bellboy']} className="text-7xl" />
  */
 export default function RotatingText({
   texts,

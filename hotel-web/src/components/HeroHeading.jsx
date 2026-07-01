@@ -67,7 +67,7 @@ export default function HeroHeading({
 
   return (
     <Tag
-      className={`font-bebas uppercase tracking-wider leading-[0.95] font-extrabold ${sizeCls} ${alignCls} ${className}`}
+      className={`uppercase tracking-wider leading-[0.95] font-extrabold ${sizeCls} ${alignCls} ${className}`}
     >
       {parts && parts.length > 0
         ? parts.map((p, i) => (

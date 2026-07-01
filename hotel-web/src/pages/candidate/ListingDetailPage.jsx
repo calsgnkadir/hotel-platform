@@ -170,7 +170,7 @@ export default function ListingDetailPage() {
                  style={{ background: 'repeating-linear-gradient(45deg, rgba(205,183,143,0.10) 0 1px, transparent 1px 8px)' }} />
 
             {/* Editorial monogram — Syne, large, ivory + champagne drop-shadow */}
-            <div className="font-syne relative z-10"
+            <div className="relative z-10"
                  style={{
                    fontSize: '7rem',
                    fontWeight: 700,
@@ -193,7 +193,7 @@ export default function ListingDetailPage() {
           </div>
 
           <div className="p-6">
-            <h1 className="font-syne text-2xl sm:text-[28px] font-semibold leading-tight"
+            <h1 className="text-2xl sm:text-[28px] font-semibold leading-tight"
                 style={{ color: '#f5efe2', letterSpacing: '-0.025em' }}>
               {listing.title}
             </h1>
@@ -254,7 +254,7 @@ export default function ListingDetailPage() {
 
         {/* Açıklama */}
         <div className="card p-6">
-          <h3 className="font-syne text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Açıklama</h3>
+          <h3 className="text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Açıklama</h3>
           <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#ede4d3' }}>
             {listing.description || 'Açıklama eklenmemiş.'}
           </p>
@@ -262,7 +262,7 @@ export default function ListingDetailPage() {
 
         {listing.requirements && (
           <div className="card p-6">
-            <h3 className="font-syne text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Gereksinimler</h3>
+            <h3 className="text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Gereksinimler</h3>
             <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#ede4d3' }}>
               {listing.requirements}
             </p>
@@ -271,7 +271,7 @@ export default function ListingDetailPage() {
 
         {hasDates && (
           <div className="card p-6">
-            <h3 className="font-syne text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Kontrat Dönemi</h3>
+            <h3 className="text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Kontrat Dönemi</h3>
             <p className="text-sm" style={{ color: '#ede4d3' }}>
               {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
               {listing.startDate && listing.endDate && ' — '}
@@ -283,7 +283,7 @@ export default function ListingDetailPage() {
         {/* Vardiyalar */}
         {slots.length > 0 && (
           <div className="card p-6">
-            <h3 className="font-syne text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>
+            <h3 className="text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>
               Vardiyalar ({slots.length})
             </h3>
             <div className="space-y-1.5">
@@ -327,7 +327,7 @@ export default function ListingDetailPage() {
                  style={{ color: '#928678' }}>
               ÜCRET
             </div>
-            <div className="font-syne mb-4 tabular-nums"
+            <div className="mb-4 tabular-nums"
                  style={{
                    color: '#f5efe2',
                    fontSize: '32px',

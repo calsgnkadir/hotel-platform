@@ -9,7 +9,7 @@ export default function NotFoundPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 text-white relative z-10">
       <div className="text-center max-w-md">
-        <div className="font-syne tabular-nums inline-flex items-center justify-center w-28 h-28 rounded-full mb-7 text-5xl font-semibold"
+        <div className="tabular-nums inline-flex items-center justify-center w-28 h-28 rounded-full mb-7 text-5xl font-semibold"
              style={{
                background: 'rgba(205, 183, 143, 0.08)',
                border: '1px solid rgba(205, 183, 143, 0.22)',
@@ -19,7 +19,7 @@ export default function NotFoundPage() {
              }}>
           404
         </div>
-        <h1 className="font-syne text-2xl font-semibold mb-2" style={{ color: '#f5efe2', letterSpacing: '-0.02em' }}>Sayfa bulunamadı</h1>
+        <h1 className="text-2xl font-semibold mb-2" style={{ color: '#f5efe2', letterSpacing: '-0.02em' }}>Sayfa bulunamadı</h1>
         <p className="text-[13px] mb-7" style={{ color: '#928678' }}>
           Aradığın sayfa silinmiş, taşınmış olabilir veya hiç var olmadı.
         </p>

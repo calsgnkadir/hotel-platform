@@ -50,7 +50,7 @@ export default function MediaBlock({
 
   return (
     <div className="card p-5 space-y-5">
-      <h3 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+      <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
           style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
         Görseller
       </h3>

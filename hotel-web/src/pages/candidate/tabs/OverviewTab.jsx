@@ -34,7 +34,7 @@ export default function OverviewTab({ user, applications, onTabChange }) {
 
   return (
     <motion.div
-      className="relative grid xl:grid-cols-[1fr_320px] gap-4 items-start font-geist"
+      className="relative grid xl:grid-cols-[1fr_320px] gap-4 items-start"
       initial="hidden" animate="visible"
       variants={{ visible: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } }}
     >
@@ -89,7 +89,7 @@ export default function OverviewTab({ user, applications, onTabChange }) {
           <div className="relative px-6 py-4 flex items-center justify-between"
                style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
             <div>
-              <h2 className="font-syne text-[16px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
+              <h2 className="text-[16px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
                 Son başvurular
               </h2>
               <p className="text-[11px] mt-1 uppercase tracking-[0.18em]" style={{ color: '#928678' }}>
@@ -146,7 +146,7 @@ function ActivityStream({ applications, onTabChange }) {
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4 pb-3"
            style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
-        <h3 className="font-syne text-[14px] font-semibold tracking-tight"
+        <h3 className="text-[14px] font-semibold tracking-tight"
             style={{ color: '#f5efe2', letterSpacing: '-0.01em' }}>Aktivite</h3>
         <span className="text-[10px] font-medium uppercase tracking-[0.22em]"
               style={{ color: '#6b6358' }}>{sorted.length} kayıt</span>

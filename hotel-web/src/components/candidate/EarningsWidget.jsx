@@ -47,7 +47,7 @@ export default function EarningsWidget({ applications }) {
   })
 
   return (
-    <div className="relative overflow-hidden rounded-2xl font-geist"
+    <div className="relative overflow-hidden rounded-2xl"
          style={{
            background: 'linear-gradient(135deg, rgba(27, 24, 21, 0.78) 0%, rgba(74, 63, 51, 0.50) 100%)',
            border: '1px solid rgba(205, 183, 143, 0.10)',

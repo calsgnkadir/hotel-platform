@@ -41,7 +41,7 @@ export default function AvatarCluster({
       ))}
       {overflow > 0 && (
         <div
-          className="flex items-center justify-center font-bebas tracking-wider rounded-full"
+          className="flex items-center justify-center tracking-wider rounded-full"
           style={{
             width: size,
             height: size,
@@ -79,7 +79,7 @@ function AvatarBubble({ item, size, showOnlineDot, style }) {
         />
       ) : (
         <div
-          className="w-full h-full rounded-full flex items-center justify-center font-bebas text-white"
+          className="w-full h-full rounded-full flex items-center justify-center text-white"
           style={{
             background: 'linear-gradient(135deg, #1b1815 0%, #b8902d 100%)',
             border: '2px solid #221f1b',

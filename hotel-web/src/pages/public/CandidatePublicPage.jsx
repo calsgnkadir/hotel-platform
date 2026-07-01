@@ -128,12 +128,12 @@ export default function CandidatePublicPage() {
                   <img src={profile.avatarUrl} alt={profile.fullName}
                        className="w-full h-full object-cover" />
                 ) : (
-                  <span className="font-bebas text-4xl" style={{ color: '#cdb78f' }}>{initial}</span>
+                  <span className="text-4xl" style={{ color: '#cdb78f' }}>{initial}</span>
                 )}
               </div>
               <div className="flex-1 min-w-0 pb-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="font-bebas text-3xl tracking-wider uppercase truncate"
+                  <h1 className="text-3xl tracking-wider uppercase truncate"
                       style={{ color: '#ffffff' }}>
                     {profile.fullName}
                   </h1>
@@ -198,7 +198,7 @@ export default function CandidatePublicPage() {
         <div className="grid lg:grid-cols-2 gap-4">
           {/* SOL: Tercihler */}
           <div className="card p-5 space-y-4">
-            <h2 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+            <h2 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
                 style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
               İş Tercihleri
             </h2>
@@ -224,7 +224,7 @@ export default function CandidatePublicPage() {
 
           {/* SAG: Eğitim + Diğer */}
           <div className="card p-5 space-y-4">
-            <h2 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 border-b"
+            <h2 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
                 style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
               Genel Bilgiler
             </h2>
@@ -239,7 +239,7 @@ export default function CandidatePublicPage() {
         {/* Deneyim */}
         {profile.previousExperience && (
           <div className="card p-5">
-            <h2 className="font-bebas text-base tracking-[0.2em] uppercase pb-2 mb-3 border-b"
+            <h2 className="text-base tracking-[0.2em] uppercase pb-2 mb-3 border-b"
                 style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
               Önceki Deneyim
             </h2>
@@ -256,7 +256,7 @@ export default function CandidatePublicPage() {
                style={{ border: '1px solid rgba(205, 183, 143, 0.28)' }}>
             <div className="flex items-center justify-between pb-2 mb-3 border-b"
                  style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
-              <h2 className="font-bebas text-base tracking-[0.2em] uppercase"
+              <h2 className="text-base tracking-[0.2em] uppercase"
                   style={{ color: '#cdb78f' }}>İletişim Bilgileri</h2>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
                     style={{
@@ -344,7 +344,7 @@ function MetricCard({ label, value, sub, color }) {
            style={{ color: '#6b6358' }}>
         {label}
       </div>
-      <div className="font-bebas text-2xl tracking-wider mb-0.5" style={{ color }}>
+      <div className="text-2xl tracking-wider mb-0.5" style={{ color }}>
         {value}
       </div>
       <div className="text-[10px] uppercase tracking-wider"
