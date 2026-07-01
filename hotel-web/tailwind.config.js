@@ -10,14 +10,14 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        // FAZ 5.UX4 — ONE family: Inter across all UI (400/500/600/700).
+        // display/syne/bebas/geist alias'lari geriye donuk uyumluluk icin Inter'e
+        // yonlendirildi; artik hicbir yerde ayri bir aile yuklenmiyor.
         sans:    ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Syne', 'Fraunces', 'Georgia', 'serif'],
-        // FAZ 5.UX3 — editorial display font (gerekirse 'Syne' override)
-        syne:    ['Syne', 'Fraunces', 'Georgia', 'serif'],
-        // FAZ 5.4 — WordPlay benchmark: stratejik kelime vurgusu icin
-        bebas:   ['"Bebas Neue"', 'Impact', 'sans-serif'],
-        // FAZ Auth Redesign — modern geometrik, premium SaaS hissi
-        geist:   ['Geist', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
+        syne:    ['Inter', 'system-ui', 'sans-serif'],
+        bebas:   ['Inter', 'system-ui', 'sans-serif'],
+        geist:   ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         // ── PRIMARY: Koyu lacivert (legacy — yeni Tailwind class'lar graphite/champagne kullanmali)

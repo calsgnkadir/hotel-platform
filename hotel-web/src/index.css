@@ -22,6 +22,13 @@ body {
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s, color 0.2s;
 }
+/* FAZ 5.UX4 — Family lock: hicbir inline override farkli aile yukleyemez */
+body, body * {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+code, pre, kbd, samp {
+  font-variant-numeric: tabular-nums;
+}
 
 /* Dark/light fark kalktı — tüm sayfalar warm graphite zeminde */
 .dark body {
@@ -55,20 +62,20 @@ body {
 
 .auth-card {
   background: #1b1815;
-  border: none;
-  border-radius: 28px 12px 28px 12px;                /* diagonal asymmetric */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;                                /* rounded-2xl uniform */
   padding: 2rem;
   width: 100%;
   max-width: 440px;
   color: #ede4d3;
-  box-shadow: 0 32px 72px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.40);
   animation: slideUp 0.4s ease-out;
 }
 .dark .auth-card {
   background: #1b1815;
   color: #ede4d3;
-  border: none;
-  box-shadow: 0 32px 72px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.40);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -261,87 +268,68 @@ body {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   CARD — FAZ 5.UX3: Editorial dark luxe (no decorative border)
-   3-surface system; borders become separators, not containers.
+   CARD — FAZ 5.UX4: Unified card token system
+   Radius rounded-2xl (16px), border-white/5, p-6, hover glow.
+   Asymmetric corners kaldirildi — uniform.
    ──────────────────────────────────────────────────────────────── */
 .card {
-  @apply p-6 transition-all duration-300 relative;
-  background: #1b1815;                              /* surface-raised */
-  border-radius: 28px 12px 12px 12px;               /* asymmetric default */
+  @apply p-6 rounded-2xl transition-all duration-300 relative;
+  background: #1b1815;
   color: #ede4d3;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: none;
 }
 .card:hover {
-  background: #221f1b;                              /* surface-floating on hover */
-  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.42);
+  border-color: rgba(205, 183, 143, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(205, 183, 143, 0.12),
+    0 20px 44px rgba(0, 0, 0, 0.28);
 }
 .dark .card {
   background: #1b1815;
   color: #ede4d3;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* ────────────────────────────────────────────────────────────────
-   3-TIER KART SISTEMI — warm-tint shift, not border thickness
-   Borders go from container role → separator role only.
-   ──────────────────────────────────────────────────────────────── */
-.card-metric {
-  position: relative;
-  border-radius: 28px 12px 12px 12px;
-  padding: 1.75rem;
-  background: #1b1815;
-  border: none;
-  color: #ede4d3;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
-  transition: background 220ms, transform 220ms, box-shadow 220ms;
-}
-.card-metric:hover {
-  background: #221f1b;
-  transform: translateY(-2px);
-  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.38);
-}
-
+/* 3-tier: hepsi ayni radius + border, ic hierarchy uzerinden ayrisir */
+.card-metric,
 .card-content {
-  position: relative;
-  border-radius: 12px 28px 12px 12px;
-  padding: 1.5rem;
+  @apply p-6 rounded-2xl relative;
   background: #1b1815;
-  border: none;
   color: #ede4d3;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.26);
-  transition: background 220ms;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: border-color 220ms, box-shadow 220ms, transform 220ms;
 }
+.card-metric:hover,
 .card-content:hover {
-  background: #221f1b;
+  border-color: rgba(205, 183, 143, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(205, 183, 143, 0.12),
+    0 20px 44px rgba(0, 0, 0, 0.28);
+  transform: translateY(-1px);
 }
 
 .card-row {
-  position: relative;
-  border-radius: 12px;
-  padding: 0.85rem 1.1rem;
+  @apply p-4 rounded-2xl relative transition-all duration-200;
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   color: #ede4d3;
-  transition: background 200ms, transform 160ms;
-}
-.card-row + .card-row {
-  /* Hairline separator only — no row container border */
-  border-top: 1px solid rgba(205, 183, 143, 0.08);
 }
 .card-row:hover {
-  background: rgba(205, 183, 143, 0.05);
+  background: rgba(205, 183, 143, 0.04);
+  border-color: rgba(205, 183, 143, 0.10);
 }
 .card-row.is-active {
-  background: rgba(205, 183, 143, 0.10);
+  background: rgba(205, 183, 143, 0.08);
+  border-color: rgba(205, 183, 143, 0.18);
 }
 
 .card-header {
   @apply pb-4 mb-4;
-  border-bottom: 1px solid rgba(205, 183, 143, 0.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 .dark .card-header {
-  border-color: rgba(205, 183, 143, 0.10);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Card icindeki form elemanlari — warm graphite inputs */
@@ -459,16 +447,40 @@ body {
    STAT-CARD — FAZ 5.4: buyuk Bebas sayilar + glow
    ──────────────────────────────────────────────────────────────── */
 .stat-card {
-  @apply p-5 relative overflow-hidden transition-all duration-300;
-  border-radius: 28px 12px 12px 12px;                /* asymmetric */
+  @apply p-6 rounded-2xl relative overflow-hidden transition-all duration-300;
   background: #1b1815;
-  border: none;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: none;
 }
 .stat-card:hover {
-  background: #221f1b;
-  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.40);
-  transform: translateY(-3px);
+  border-color: rgba(205, 183, 143, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(205, 183, 143, 0.12),
+    0 20px 44px rgba(0, 0, 0, 0.28);
+  transform: translateY(-2px);
+}
+/* Number → hairline → label hierarchy */
+.stat-card-number {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #f5efe2;
+  font-variant-numeric: tabular-nums;
+}
+.stat-card-divider {
+  height: 1px;
+  background: rgba(205, 183, 143, 0.14);
+  margin: 12px 0;
+}
+.stat-card-label {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #928678;
 }
 .stat-card::after {
   content: '';
@@ -534,22 +546,25 @@ body {
    ──────────────────────────────────────────────────────────────── */
 .chip {
   @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all duration-200;
-  background: rgba(27, 24, 21, 0.75);
-  border: 1px solid rgba(205, 183, 143, 0.10);
+  background: transparent;                              /* ghost inactive */
+  border: 1px solid rgba(205, 183, 143, 0.14);
   color: #c9bdaa;
   cursor: pointer;
-  backdrop-filter: blur(8px);
 }
 .chip:hover {
-  border-color: rgba(205, 183, 143, 0.30);
+  border-color: rgba(205, 183, 143, 0.32);
   color: #ede4d3;
-  background: rgba(34, 31, 27, 0.85);
+  background: rgba(205, 183, 143, 0.04);
 }
 .chip.is-active {
-  background: rgba(205, 183, 143, 0.14);
-  border-color: rgba(205, 183, 143, 0.42);
-  color: #f5efe2;
-  box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.18);
+  background: linear-gradient(135deg, #d4a853 0%, #b8902d 100%);   /* filled amber CTA */
+  border-color: rgba(212, 168, 83, 0.55);
+  color: #1a1208;
+  box-shadow: 0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.chip.is-active:hover {
+  background: linear-gradient(135deg, #e0b766 0%, #c89e3a 100%);
+  color: #1a1208;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -570,10 +585,11 @@ body {
 .modal-content {
   background: #221f1b;
   color: #ede4d3;
-  border-radius: 28px 12px 28px 12px;                /* diagonal asymmetric */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;                                /* rounded-2xl uniform */
   width: 100%;
   max-width: 540px;
-  box-shadow: 0 32px 72px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.50);
   animation: slideUp 0.3s ease-out;
 }
 .dark .modal-content {

@@ -14,8 +14,7 @@
  * Bu sayede mevcut helper class'lar (.surface, .accent-text vb.) breakage yok.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&display=swap');
+/* FAZ 5.UX4 — Single family: Inter. Bebas/Syne import'lari kaldirildi. */
 
 :root {
   /* ================== SURFACES — 3-tier warm graphite ================== */
@@ -77,10 +76,10 @@
   --accent-info:       var(--signal-info);
   --accent-info-bg:    var(--signal-info-soft);
 
-  /* ================== TYPE — Syne display + Inter body ================== */
-  --font-display: 'Syne', 'Fraunces', Georgia, serif;
+  /* ================== TYPE — ONE family: Inter ================== */
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
   --font-body:    'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono:    'Geist Mono', ui-monospace, monospace;
+  --font-mono:    ui-monospace, 'SF Mono', 'Menlo', monospace;
 
   /* ================== RHYTHM — sectional spacing ================== */
   --rhythm-tight:   16px;
@@ -146,16 +145,9 @@ body, .role-app-bg {
 
 /* ================== TYPOGRAPHY ================== */
 
-/* Bebas display utility — Tailwind'in font-bebas class'i ile esdeger */
-.font-bebas {
-  font-family: 'Bebas Neue', Impact, sans-serif;
-  font-display: swap;
-  letter-spacing: 0.02em;
-}
-
-.font-syne {
-  font-family: var(--font-display);
-  font-feature-settings: "ss01" on;
+/* FAZ 5.UX4 — Tum font-* legacy class'lari Inter'e yonlendirir (family lock) */
+.font-bebas, .font-syne, .font-display, .font-geist {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
 }
 
 /* Hero numerals — 56-72px with negative tracking */

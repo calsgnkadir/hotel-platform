@@ -26,10 +26,9 @@ import HistoryTab from './tabs/HistoryTab'
 import DocumentsTab from './tabs/DocumentsTab'
 import ProfileTab from './tabs/ProfileTab'
 import SavedListingsTab from './tabs/SavedListingsTab'  // Dalga H1
-import RecentlyViewedTab from './tabs/RecentlyViewedTab'  // Dalga I2
 import RelationsTab from './tabs/RelationsTab'              // Dalga I1
 
-const VALID_TABS = ['overview','listings','saved','recent','relations','applications','history','documents','messages','profile']
+const VALID_TABS = ['overview','listings','saved','relations','applications','history','documents','messages','profile']
 
 export default function CandidateDashboard() {
   const { user } = useAuth()
@@ -81,7 +80,6 @@ export default function CandidateDashboard() {
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
           {activeTab === 'saved'         && <SavedListingsTab onTabChange={handleTabChange} />}
-          {activeTab === 'recent'        && <RecentlyViewedTab onTabChange={handleTabChange} />}
           {activeTab === 'relations'     && <RelationsTab onTabChange={handleTabChange} />}
         </div>
       )}

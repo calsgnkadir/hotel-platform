@@ -150,30 +150,24 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
             compact
           />
         </div>
-      ) : filtered.map((app, idx) => {
+      ) : filtered.map((app) => {
         const sc = STATUS_CONFIG[app.status] || STATUS_CONFIG.PENDING
         const date = new Date(app.createdAt)
         const day = date.getDate()
         const month = date.toLocaleDateString('tr-TR', { month: 'short' }).replace('.', '')
         const initial = (app.listing?.businessName || '?').charAt(0).toUpperCase()
-        // Asimetrik corner — kart başına farklı
-        const corners = [
-          'rounded-tl-[24px] rounded-tr-[10px] rounded-br-[24px] rounded-bl-[10px]',
-          'rounded-tl-[10px] rounded-tr-[24px] rounded-br-[10px] rounded-bl-[24px]',
-        ][idx % 2]
 
         return (
           <motion.div key={app.id} variants={CARD}
             whileHover={{ y: -2 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-            className={`relative overflow-hidden group ${corners}`}
+            className="relative overflow-hidden group rounded-2xl transition-all"
             style={{
               background: '#1b1815',
-              border: 'none',
-              boxShadow: '0 16px 40px rgba(0,0,0,0.32), inset 0 1px 0 rgba(245,239,226,0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
             }}>
-            {/* Sol kenar status accent rail — muted, no glow */}
-            <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full"
+            {/* Sol accent rail — always visible, uniform 3px */}
+            <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
                   style={{ background: sc.color }} />
             {/* Köşede yüzen status renk blob — quieter */}
             <span aria-hidden className="absolute -top-16 -right-16 w-44 h-44 rounded-full pointer-events-none transition-opacity duration-500 opacity-25 group-hover:opacity-45"

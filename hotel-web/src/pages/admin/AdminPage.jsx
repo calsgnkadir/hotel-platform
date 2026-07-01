@@ -1102,7 +1102,7 @@ function OutboxTab() {
                       marginTop: 6,
                       fontSize: 11,
                       color: '#d39481',
-                      fontFamily: 'monospace',
+                      fontFamily: 'Inter, sans-serif',
                       lineHeight: 1.4,
                     }}>
                       {e.lastError}
@@ -1112,7 +1112,7 @@ function OutboxTab() {
                     marginTop: 6,
                     fontSize: 10,
                     color: '#64748b',
-                    fontFamily: 'monospace',
+                    fontFamily: 'Inter, sans-serif',
                     wordBreak: 'break-all',
                   }}>
                     {e.payloadPreview}

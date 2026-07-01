@@ -47,9 +47,7 @@ function Icon({ name, size = 16 }) {
 const candidateNav = [
   { id: 'overview',      tKey: 'nav.overview',     icon: 'overview' },
   { id: 'listings',      tKey: 'nav.listings',     icon: 'briefcase' },
-  { id: 'saved',         label: 'Kaydettiklerim',  icon: 'heart' },    // Dalga H1
-  { id: 'recent',        label: 'İncelediklerim',  icon: 'eye' },      // Dalga I2
-  // 'relations' (Takip ettiklerim) -> SettingsMenu icine tasindi
+  { id: 'saved',         label: 'Kaydettiklerim',  icon: 'heart' },
   { id: 'applications',  tKey: 'nav.applications', icon: 'send' },
   { id: 'messages',      tKey: 'nav.messages',     icon: 'messages' },
   { id: 'profile',       label: 'Profilim',        icon: 'user' },

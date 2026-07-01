@@ -202,7 +202,7 @@ export default function LoginPage() {
                   </svg>
                   Demo hesaplar
                 </summary>
-                <div className="mt-3 space-y-1.5 text-[12px]" style={{ fontFamily: '"Geist Mono", monospace' }}>
+                <div className="mt-3 space-y-1.5 text-[12px]" style={{ fontFamily: 'Inter, sans-serif' }}>
                   <DemoRow k="Aday"    v="aday1@test.com" />
                   <DemoRow k="İşletme" v="isletme1@test.com" />
                   <DemoRow k="Şifre"   v="Password123!" />
