@@ -14,7 +14,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update   # İlk çalışmada tabloları otomatik oluşturur
-    show-sql: true       # Dev'de SQL'i console'a yaz
+    # show-sql KAPALI — Hibernate SQL log'lari konsol tikamasin. Belirli bir sorguya
+    # bakman gerekirse tek seferlik JPA_SHOW_SQL=true env var ile ac.
+    show-sql: false
 
 jwt:
   # Dev varsayılanı; production'da JWT_SECRET environment variable ile override edilir
@@ -23,13 +25,24 @@ jwt:
 file:
   upload-dir: ./uploads
 
-# FAZ F.6 — Dev'de HSTS kapali (localhost TLS yok; aksi halde browser
-# bu domain'i 1 yil HTTPS-only isaretler, dev'i bozar)
 app:
+  # FAZ F.6 — Dev'de HSTS kapali (localhost TLS yok; aksi halde browser
+  # bu domain'i 1 yil HTTPS-only isaretler, dev'i bozar)
   security:
     hsts-enabled: false
+  # Dev'de scheduler'lari sakinlestir — konsol noise + gereksiz DB yuku dusurulur.
+  # (Prod varsayilan degerleri: outbox 5sn, pulse 30sn.)
+  outbox:
+    relayDelayMs: 15000
+  pulse:
+    intervalMs: 60000
 
 logging:
   level:
     com.hotelapp: DEBUG
-    org.springframework.security: DEBUG
+    # Security DEBUG cok spam yapiyor (her istekte SecurityContext dump) -> INFO
+    # Auth flow'unda sorun cikarsa tek seferlik LOG_LEVEL_SECURITY=DEBUG env ile ac
+    org.springframework.security: INFO
+    # Belt & suspenders — base'de zaten WARN ama override edilirse yakalar
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
