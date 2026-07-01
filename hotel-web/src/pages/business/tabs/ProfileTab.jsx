@@ -6,6 +6,7 @@ import ChangePasswordCard from '../../../components/ChangePasswordCard'
 import GdprCard from '../../../components/GdprCard'
 import { SkeletonForm } from '../../../components/Skeleton'
 import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../../utils/validation'
+import { useConfirm } from '../../../lib/useConfirm'
 import DistrictNeighborhoodSelect from '../../../components/DistrictNeighborhoodSelect'
 import GalleryEditor from '../../../components/GalleryEditor'
 import { BUSINESS_TYPE_LABELS } from '../lib/constants'
@@ -18,6 +19,7 @@ import { calculateBusinessCompleteness } from '../../../lib/profileCompleteness'
 
 /* ── Profile Tab ── */
 export default function ProfileTab() {
+  const confirm = useConfirm()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(null)
@@ -64,7 +66,13 @@ export default function ProfileTab() {
   }
 
   async function handleLogoDelete() {
-    if (!confirm('Logo silinsin mi?')) return
+    const ok = await confirm({
+      title: 'Logoyu sil',
+      description: 'İşletme logosu kaldırılacak. Yenisini istediğin zaman yükleyebilirsin.',
+      confirmLabel: 'Evet, sil',
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await hotelApi.deleteBusinessLogo()
       setLogoUrl(null)
@@ -81,7 +89,13 @@ export default function ProfileTab() {
   }
 
   async function handlePhotoDelete(photoId) {
-    if (!confirm('Foto silinsin mi?')) return
+    const ok = await confirm({
+      title: 'Fotoğrafı sil',
+      description: 'Bu fotoğraf galeriden kaldırılacak.',
+      confirmLabel: 'Evet, sil',
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await hotelApi.deleteBusinessPhoto(photoId)
       setPhotos(prev => prev.filter(p => p.id !== photoId))

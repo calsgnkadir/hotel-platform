@@ -45,6 +45,8 @@ import { MotionConfig } from 'framer-motion'
 import CookieConsent from './components/CookieConsent'
 // Global arka plan (tüm sayfalarda)
 import BeamsBackground from './components/BeamsBackground'
+// FAZ 8 — Global imperative confirm dialog (Promise-based useConfirm hook)
+import { ConfirmProvider } from './lib/useConfirm'
 
 export default function App() {
   useEffect(() => { initHapticForToasts() }, [])  // FAZ 3 - mobile haptic
@@ -55,6 +57,7 @@ export default function App() {
     <MotionConfig reducedMotion="user" transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
+      <ConfirmProvider>
         <SkipLink />              {/* FAZ 3 / A11y — klavye Tab ilk durak */}
         <BeamsBackground />       {/* Global koyu zemin + altın huzme ışınlar */}
         <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
@@ -68,6 +71,7 @@ export default function App() {
         <main id="main">
           <AnimatedRoutes />
         </main>
+      </ConfirmProvider>
       </AuthProvider>
     </BrowserRouter>
     </MotionConfig>

@@ -18,6 +18,7 @@ import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
 import ReliabilityBadge from '../../../components/ReliabilityBadge'
 import ReliabilityRing from '../../../components/ReliabilityRing'
+import { useConfirm } from '../../../lib/useConfirm'
 
 /*
  * FAZ 5.5a — Basvuru Kanban
@@ -82,6 +83,7 @@ function computeResponseHeat(createdAt) {
 }
 
 export default function ApplicationsKanban({ applications, statusFilter = 'ALL', onRefresh, onCardClick, onOpenMessages }) {
+  const confirm = useConfirm()
   // Dalga H4 — chip filtresine gore hangi kolonlar gosterilecek
   // ALL: tum kolonlar, digerleri: sadece eslesen kolon
   const FILTER_TO_COLUMN_ID = {
@@ -106,8 +108,14 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
   async function handleBulkAction(targetStatus) {
     const ids = [...selectedIds]
     if (ids.length === 0) return
-    const label = targetStatus === 'ACCEPTED' ? 'kabul edilecek' : 'red edilecek'
-    if (!window.confirm(`${ids.length} başvuru ${label}. Emin misiniz?`)) return
+    const label = targetStatus === 'ACCEPTED' ? 'kabul' : 'red'
+    const ok = await confirm({
+      title: `Toplu ${label} işlemi`,
+      description: `${ids.length} başvuru ${label} edilecek. Bu işlem geri alınamaz.`,
+      confirmLabel: `Evet, ${label} et`,
+      destructive: targetStatus === 'REJECTED',
+    })
+    if (!ok) return
     try {
       // Sirayla tek tek update — backend bulk endpoint yoksa
       const hotelApi = await import('../../../api/hotel')
@@ -146,27 +154,42 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
     if (from === targetCol) return
     if (busy) return
 
-    let confirmMsg = ''
+    let confirmOpts = null
     let action = null
+    const candidateName = app.candidate?.fullName || 'Bu aday'
     if (targetCol === 'ACCEPTED') {
-      confirmMsg = `${app.candidate?.fullName} adayını KABUL etmek istediğine emin misin?\n\nAday bildirim alacak ve çalışmaya başlayabilecek.`
+      confirmOpts = {
+        title: `${candidateName} kabul edilsin`,
+        description: 'Aday bildirim alacak ve çalışmaya başlayabilecek. Karar bağlayıcıdır.',
+        confirmLabel: 'Evet, kabul et',
+      }
       action = () => hotelApi.reviewApplication(app.id, 'ACCEPTED')
     } else if (targetCol === 'REJECTED') {
-      confirmMsg = `${app.candidate?.fullName} adayını REDDETMEK istediğine emin misin?\n\nKararı sonra değiştiremezsin.`
+      confirmOpts = {
+        title: `${candidateName} reddedilsin`,
+        description: 'Aday bildirim alacak. Kararı sonra değiştiremezsin.',
+        confirmLabel: 'Evet, reddet',
+        destructive: true,
+      }
       action = () => hotelApi.reviewApplication(app.id, 'REJECTED')
     } else if (targetCol === 'HELD') {
       if (from !== 'PENDING') {
         toast.error('Sadece bekleyen başvurular hold\'a alınabilir.')
         return
       }
-      confirmMsg = `${app.candidate?.fullName} adayını 24 saat HOLD'a almak istediğine emin misin?\n\nAday 24 saatte yanıt vermezse başvuru otomatik düşer.`
+      confirmOpts = {
+        title: `${candidateName} 24 saat HOLD'a alınsın`,
+        description: 'Aday 24 saat içinde yanıt vermezse başvuru otomatik düşer.',
+        confirmLabel: 'Evet, HOLD\'a al',
+      }
       action = () => hotelApi.holdApplication(app.id)
     } else {
       toast.error('Bu yönde geçiş desteklenmiyor.')
       return
     }
 
-    if (!window.confirm(confirmMsg)) return
+    const ok = await confirm(confirmOpts)
+    if (!ok) return
 
     setBusy(true)
     try {

@@ -12,8 +12,10 @@ import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import EmptyState from '../../../components/EmptyState'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
+import { useConfirm } from '../../../lib/useConfirm'
 
 export default function FavoritesTab({ onOpenMessages }) {
+  const confirm = useConfirm()
   const [favorites, setFavorites] = useState([])
   const [loading, setLoading] = useState(true)
   const [removingId, setRemovingId] = useState(null)
@@ -30,7 +32,13 @@ export default function FavoritesTab({ onOpenMessages }) {
   useEffect(() => { load() }, [])
 
   async function handleRemove(candidateId, name) {
-    if (!confirm(`"${name}" adayini favorilerden kaldirmak istiyor musun?`)) return
+    const ok = await confirm({
+      title: 'Favoriden kaldır',
+      description: `"${name}" adayı favori listenden çıkarılacak.`,
+      confirmLabel: 'Evet, kaldır',
+      destructive: true,
+    })
+    if (!ok) return
     setRemovingId(candidateId)
     try {
       await hotelApi.removeFavorite(candidateId)

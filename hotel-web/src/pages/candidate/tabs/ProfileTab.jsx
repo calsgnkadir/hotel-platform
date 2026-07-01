@@ -7,6 +7,7 @@ import cldImg, { ImgSize } from '../../../lib/cldImg'
 import ProfileCompletenessCard from '../../../components/ProfileCompletenessCard'
 import { calculateCandidateCompleteness } from '../../../lib/profileCompleteness'
 import AvatarCropModal from '../../../components/AvatarCropModal'
+import { useConfirm } from '../../../lib/useConfirm'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
 import GdprCard from '../../../components/GdprCard'
 import { SkeletonForm } from '../../../components/Skeleton'
@@ -21,6 +22,7 @@ import {
 } from '../../../utils/labels'
 
 export default function ProfileTab() {
+  const confirm = useConfirm()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState(null)  // Dalga G3 — Alert success goster
@@ -74,7 +76,13 @@ export default function ProfileTab() {
   }
 
   async function handleAvatarDelete() {
-    if (!confirm('Profil fotoğrafı silinsin mi?')) return
+    const ok = await confirm({
+      title: 'Profil fotoğrafını sil',
+      description: 'Fotoğrafın kaldırılır, tekrar yükleyebilirsin.',
+      confirmLabel: 'Evet, sil',
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await hotelApi.deleteCandidateAvatar()
       setProfile(prev => ({ ...prev, avatarUrl: null }))

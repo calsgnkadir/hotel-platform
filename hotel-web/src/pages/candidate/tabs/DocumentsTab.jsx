@@ -5,8 +5,10 @@ import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import { DOC_CATEGORIES } from '../../../utils/labels'
+import { useConfirm } from '../../../lib/useConfirm'
 
 export default function DocumentsTab() {
+  const confirm = useConfirm()
   const [docs, setDocs] = useState([])
   const [loading, setLoading] = useState(true)
   const [uploadingType, setUploadingType] = useState(null)
@@ -38,7 +40,13 @@ export default function DocumentsTab() {
   }
 
   async function handleDelete(docId, label) {
-    if (!confirm(`"${label}" belgesini silmek istiyor musun?\n\nBu işlem geri alınamaz.`)) return
+    const ok = await confirm({
+      title: `"${label}" belgesini sil`,
+      description: 'Bu işlem geri alınamaz.',
+      confirmLabel: 'Evet, sil',
+      destructive: true,
+    })
+    if (!ok) return
     setDeletingId(docId)
     try {
       await hotelApi.deleteDocument(docId)

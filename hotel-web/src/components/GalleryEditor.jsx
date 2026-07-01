@@ -20,6 +20,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useConfirm } from '../lib/useConfirm'
 
 const MAX_PHOTOS = 10
 const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']
@@ -33,6 +34,7 @@ const MAX_SIZE = 10 * 1024 * 1024  // 10 MB
  * - Limit: 10 foto, max 10 MB her biri
  */
 export default function GalleryEditor() {
+  const confirm = useConfirm()
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -92,7 +94,13 @@ export default function GalleryEditor() {
   }
 
   async function handleDelete(photoId) {
-    if (!confirm('Bu fotoğraf silinsin mi?')) return
+    const ok = await confirm({
+      title: 'Fotoğrafı sil',
+      description: 'Bu fotoğraf galeriden kaldırılacak.',
+      confirmLabel: 'Evet, sil',
+      destructive: true,
+    })
+    if (!ok) return
     setBusyId(photoId)
     try {
       await hotelApi.deleteBusinessPhoto(photoId)

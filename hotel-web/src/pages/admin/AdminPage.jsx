@@ -3,6 +3,7 @@ import DashboardLayout from '../../components/DashboardLayout'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
+import { useConfirm } from '../../lib/useConfirm'
 // Ayarlar + Yardım header'daki Ayarlar SettingsMenu'ye taşındı
 
 /* ── Inline SVG helper (Heroicons stroke stili) ── */
@@ -88,6 +89,7 @@ function OverviewTab() {
 
 /* ── User Detail Modal ── */
 function UserDetailModal({ user, onClose, onUpdated }) {
+  const confirm = useConfirm()
   const [actionLoading, setActionLoading] = useState(false)
   const [banDays, setBanDays] = useState(30)
 
@@ -102,7 +104,13 @@ function UserDetailModal({ user, onClose, onUpdated }) {
   }
 
   async function handleBan() {
-    if (!confirm(`Bu kullanıcı ${banDays} gün banlanacak. Devam edilsin mi?`)) return
+    const ok = await confirm({
+      title: 'Kullanıcıyı banla',
+      description: `Bu kullanıcı ${banDays} gün süreyle banlanacak. Ban süresi bitince otomatik açılır.`,
+      confirmLabel: `Evet, ${banDays} gün banla`,
+      destructive: true,
+    })
+    if (!ok) return
     setActionLoading(true)
     try {
       const updated = await hotelApi.adminBanUser(user.id, banDays)
@@ -569,6 +577,7 @@ function AuditTab() {
 /* ── Main Page ── */
 /* ── FAZ 6.3 — Listing moderation tab ── */
 function ListingsTab() {
+  const confirm = useConfirm()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(null)
@@ -587,7 +596,13 @@ function ListingsTab() {
 
   async function setStatus(listing, newStatus) {
     const verb = newStatus === 'PAUSED' ? 'askıya alınacak' : (newStatus === 'CLOSED' ? 'kapatılacak' : 'aktif edilecek')
-    if (!confirm(`"${listing.title}" ilanı ${verb}. Devam edilsin mi?`)) return
+    const ok = await confirm({
+      title: `İlanı ${newStatus === 'ACTIVE' ? 'aktifleştir' : (newStatus === 'PAUSED' ? 'askıya al' : 'kapat')}`,
+      description: `"${listing.title}" ilanı ${verb}.`,
+      confirmLabel: 'Evet, devam et',
+      destructive: newStatus === 'CLOSED',
+    })
+    if (!ok) return
     setBusy(listing.id)
     try {
       await hotelApi.adminSetListingStatus(listing.id, newStatus)

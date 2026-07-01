@@ -112,10 +112,10 @@ export function ConfirmDialog({
             type="button"
             disabled={loading}
             onClick={() => onClose?.()}
-            className="px-4 py-2 text-[13px] font-semibold rounded-lg transition-all disabled:opacity-50 hover:-translate-y-0.5"
+            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] rounded-full transition-all disabled:opacity-50 hover:-translate-y-0.5"
             style={{
-              background: 'rgba(27, 24, 21, 0.75)',
-              color: '#ede4d3',
+              background: 'transparent',
+              color: '#c9bdaa',
               border: '1px solid rgba(205, 183, 143, 0.14)',
             }}
           >
@@ -125,15 +125,22 @@ export function ConfirmDialog({
             type="button"
             disabled={loading}
             onClick={() => onConfirm?.()}
-            className="px-4 py-2 text-[13px] font-bold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-            style={{
-              background: destructive
-                ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
-                : 'linear-gradient(135deg, #1b1815 0%, #8a7349 100%)',
-              boxShadow: destructive
-                ? '0 4px 16px rgba(220, 38, 38, 0.40)'
-                : '0 4px 16px rgba(205, 183, 143, 0.32)',
-            }}
+            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
+            style={
+              destructive
+                ? {
+                    background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(180, 106, 85, 0.55)',
+                    boxShadow: '0 8px 20px rgba(180, 106, 85, 0.30), inset 0 1px 0 rgba(255,255,255,0.16)',
+                  }
+                : {
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    color: '#1a1208',
+                    border: '1px solid rgba(212, 168, 83, 0.55)',
+                    boxShadow: '0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22)',
+                  }
+            }
           >
             {loading ? 'İşleniyor…' : confirmLabel}
           </button>

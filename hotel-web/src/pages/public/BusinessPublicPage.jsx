@@ -6,6 +6,7 @@ import * as hotelApi from '../../api/hotel'
 import { useAuth } from '../../context/AuthContext'
 import ReportModal from '../../components/ReportModal'
 import { keys } from '../../lib/queryClient'
+import { useConfirm } from '../../lib/useConfirm'
 import cldImg, { ImgSize } from '../../lib/cldImg'
 import VerifiedBadge from '../../components/VerifiedBadge'
 
@@ -118,6 +119,7 @@ function StarRow({ avg, count }) {
 }
 
 export default function BusinessPublicPage() {
+  const confirm = useConfirm()
   const { id } = useParams()
   const navigate = useNavigate()
   const [galleryIndex, setGalleryIndex] = useState(0)
@@ -161,7 +163,13 @@ export default function BusinessPublicPage() {
       if (isBlocked) {
         await hotelApi.unblockBusiness(id)
       } else {
-        if (!window.confirm('Bu işletmeyi engellemek istediğinize emin misiniz? İlanları feed\'inizde gözükmez.')) return
+        const ok = await confirm({
+          title: 'İşletmeyi engelle',
+          description: 'İşletmenin ilanları feed\'inde bir daha görünmez. İstediğin zaman engeli kaldırabilirsin.',
+          confirmLabel: 'Evet, engelle',
+          destructive: true,
+        })
+        if (!ok) return
         await hotelApi.blockBusiness(id)
       }
       queryClient.invalidateQueries({ queryKey: ['my-blocked-businesses'] })

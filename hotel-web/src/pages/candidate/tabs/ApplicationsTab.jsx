@@ -10,6 +10,7 @@ import { keys } from '../../../lib/queryClient'
 import EmptyState from '../../../components/EmptyState'
 import ReviewModal from '../../../components/ReviewModal'
 import { CAND_STATUS_FILTERS } from '../../../components/candidate/StatusBadge'
+import { useConfirm } from '../../../lib/useConfirm'
 
 /* FAZ 5.UX3 — muted status config (sage/brick/ochre/info-grey) */
 const STATUS_CONFIG = {
@@ -32,6 +33,7 @@ const DOC_TYPE_LABELS = {
 }
 
 export default function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessages, onTabChange }) {
+  const confirm = useConfirm()
   // Suresi gecen + tamamlanmis isler "Basvurularim"da gorunmez (Gecmis Islerim'e gider)
   const applications = (rawApplications || []).filter(a => {
     if (a.status === 'EXPIRED') return false
@@ -65,7 +67,13 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
   const [withdrawingId, setWithdrawingId] = useState(null)
   async function handleWithdraw(appId) {
-    if (!confirm('Bu başvuruyu iptal etmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz.')) return
+    const ok = await confirm({
+      title: 'Başvuruyu iptal et',
+      description: 'Bu işlem geri alınamaz. Emin misin?',
+      confirmLabel: 'Evet, iptal et',
+      destructive: true,
+    })
+    if (!ok) return
     setWithdrawingId(appId)
     try {
       await hotelApi.withdrawApplication(appId)
@@ -77,10 +85,19 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
   const [holdRespondingId, setHoldRespondingId] = useState(null)
   async function handleHoldRespond(appId, accept) {
-    const msg = accept
-      ? 'Bu isi ONAYLAMAK istediginize emin misiniz?\n\nBaglayici bir kabul olusturacaktir.'
-      : 'Bu HOLDU REDDETMEK istediginize emin misiniz?\n\nIsletme baska bir aday secebilir.'
-    if (!confirm(msg)) return
+    const ok = await confirm(accept
+      ? {
+          title: 'İşi onayla',
+          description: 'Bağlayıcı bir kabul oluşturacaktır. Emin misin?',
+          confirmLabel: 'Evet, onayla',
+        }
+      : {
+          title: 'HOLD\'u reddet',
+          description: 'İşletme başka bir aday seçebilir. Emin misin?',
+          confirmLabel: 'Evet, reddet',
+          destructive: true,
+        })
+    if (!ok) return
     setHoldRespondingId(appId)
     try {
       await hotelApi.respondToHold(appId, accept)
