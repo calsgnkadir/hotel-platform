@@ -76,32 +76,32 @@ export default function LoginPage() {
           style={{ rotateX, rotateY, transformPerspective: 1100 }}
           className="w-full max-w-md relative"
         >
-          {/* Card — asymmetric diagonal corners (28/12/28/12), no decorative border */}
-          <div className="relative p-8 sm:p-10"
+          {/* Card — uniform rounded-2xl, subtle border, no asymmetric corners */}
+          <div className="relative rounded-2xl p-8 sm:p-10"
                style={{
                  background: '#1b1815',
-                 borderRadius: '28px 12px 28px 12px',
-                 boxShadow: '0 32px 80px rgba(0,0,0,0.50), inset 0 1px 0 rgba(245,239,226,0.04)',
+                 border: '1px solid rgba(255, 255, 255, 0.05)',
+                 boxShadow: '0 24px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(245,239,226,0.03)',
                }}>
             <Stagger>
-              {/* Brand row — minimal, no neon dot */}
+              {/* Brand row — Inter bold wordmark, no separate display family */}
               <motion.div variants={ITEM} className="flex items-baseline justify-between mb-12">
                 <Link to="/" className="flex items-baseline gap-2">
-                  <span className="font-bebas text-2xl tracking-wider" style={{ color: '#f5efe2' }}>
-                    AJANSHOTEL
+                  <span className="text-[20px] font-bold tracking-[0.02em]" style={{ color: '#f5efe2' }}>
+                    AjansHotel
                   </span>
-                  <span className="text-[9px] uppercase tracking-[0.28em]"
-                        style={{ color: '#928678', fontFamily: 'Inter, sans-serif' }}>
+                  <span className="text-[9px] uppercase tracking-[0.28em] font-medium"
+                        style={{ color: '#928678' }}>
                     istanbul
                   </span>
                 </Link>
-                <span className="hidden sm:inline text-[10px] uppercase tracking-[0.28em]"
+                <span className="hidden sm:inline text-[10px] uppercase tracking-[0.28em] font-medium"
                       style={{ color: '#6b6358' }}>
                   giriş
                 </span>
               </motion.div>
 
-              {/* Headline — Syne emphasis only, no gradient on the noun */}
+              {/* Headline — single family, weight variation only */}
               <motion.h1 variants={ITEM}
                 className="mb-10"
                 style={{
@@ -110,10 +110,9 @@ export default function LoginPage() {
                   lineHeight: 1.08,
                   letterSpacing: '-0.025em',
                   fontWeight: 500,
-                  fontFamily: 'Inter, sans-serif',
                 }}>
                 Tekrar{' '}
-                <em className="not-italic font-syne"
+                <em className="not-italic"
                     style={{
                       fontWeight: 700,
                       color: '#cdb78f',

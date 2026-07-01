@@ -77,12 +77,10 @@ export default function OverviewTab({ user, applications, onTabChange }) {
           sekmelere erisim sagliyor, ortada redundant 5 kart gerek yok */}
 
       {applications.length > 0 && (
-        <motion.div variants={ITEM} className="relative overflow-hidden"
+        <motion.div variants={ITEM} className="relative overflow-hidden rounded-2xl"
           style={{
             background: '#1b1815',
-            borderRadius: '12px 28px 12px 12px',                /* asymmetric tr */
-            border: 'none',
-            boxShadow: '0 18px 44px rgba(0,0,0,0.32)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
           }}>
           {/* Köşe champagne blob */}
           <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-30"
@@ -240,58 +238,42 @@ function StatCard({ label, value, color, data, delta, delay = 0 }) {
     <motion.div
       ref={ref}
       onMouseMove={onMove} onMouseLeave={onLeave}
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 230, damping: 22 }}
-      style={{ rotateX, rotateY, transformPerspective: 1000, borderRadius: '28px 12px 12px 12px' }}
-      className="relative overflow-hidden p-6 cursor-default min-h-[160px] group"
+      style={{ rotateX, rotateY, transformPerspective: 1000 }}
+      className="stat-card cursor-default group"
     >
-      {/* Surface — graphite raised, no border (hairline only on hover blob) */}
-      <div className="absolute inset-0 pointer-events-none"
-           style={{
-             background: '#1b1815',
-             borderRadius: '28px 12px 12px 12px',
-             boxShadow: 'inset 0 1px 0 rgba(245,239,226,0.03)',
-           }} />
-
-      {/* Köşede yüzen renk blob — muted */}
-      <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full pointer-events-none transition-opacity duration-500 opacity-40 group-hover:opacity-70"
+      {/* Köşede yüzen renk blob — quiet accent */}
+      <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full pointer-events-none transition-opacity duration-500 opacity-30 group-hover:opacity-55"
            style={{ background: `radial-gradient(circle, ${color}55 0%, transparent 65%)`, filter: 'blur(26px)' }} />
 
-      {/* Sparkline arka plan — toned down */}
-      <div aria-hidden className="absolute inset-x-2 bottom-2 h-14 pointer-events-none opacity-45">
-        <Sparkline data={data} color={color} width={400} height={56} />
+      {/* Sparkline arka plan — toned way down */}
+      <div aria-hidden className="absolute inset-x-3 bottom-3 h-10 pointer-events-none opacity-30">
+        <Sparkline data={data} color={color} width={400} height={40} />
       </div>
 
-      {/* Label + delta */}
-      <div className="relative flex items-start justify-between gap-2 mb-2">
-        <span className="text-[10px] font-medium uppercase tracking-[0.22em]"
-              style={{ color: '#928678' }}>
-          {label}
-        </span>
-        {typeof delta === 'number' && delta !== 0 && (
-          <motion.span
-            initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.8, type: 'spring', stiffness: 380, damping: 20 }}
-            className="text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center"
-            style={{
-              background: delta > 0 ? 'rgba(122, 159, 122, 0.14)' : 'rgba(180, 106, 85, 0.14)',
-              color:      delta > 0 ? '#a8c8a8' : '#d39481',
-              border: `1px solid ${delta > 0 ? 'rgba(122, 159, 122, 0.32)' : 'rgba(180, 106, 85, 0.32)'}`,
-            }}>
-            {delta > 0 ? `+${delta}` : delta}
-          </motion.span>
-        )}
-      </div>
+      {/* Delta pill — top-right anchor (independent of number/label stack) */}
+      {typeof delta === 'number' && delta !== 0 && (
+        <motion.span
+          initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, type: 'spring', stiffness: 380, damping: 20 }}
+          className="absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center"
+          style={{
+            background: delta > 0 ? 'rgba(122, 159, 122, 0.14)' : 'rgba(180, 106, 85, 0.14)',
+            color:      delta > 0 ? '#a8c8a8' : '#d39481',
+            border: `1px solid ${delta > 0 ? 'rgba(122, 159, 122, 0.32)' : 'rgba(180, 106, 85, 0.32)'}`,
+          }}>
+          {delta > 0 ? `+${delta}` : delta}
+        </motion.span>
+      )}
 
-      {/* Hero numeral — editorial luxe (56px, -3% tracking, drop-shadow halo) */}
-      <div className="relative mt-3">
-        <div className="numeral-hero"
-             style={{
-               color: '#f5efe2',
-               filter: `drop-shadow(0 0 16px ${color}44)`,
-             }}>
+      {/* Number → hairline → label hierarchy (spec: tighter, thin divider under number) */}
+      <div className="relative">
+        <div className="stat-card-number" style={{ filter: `drop-shadow(0 0 12px ${color}44)` }}>
           {displayed}
         </div>
+        <div className="stat-card-divider" />
+        <div className="stat-card-label">{label}</div>
       </div>
 
     </motion.div>

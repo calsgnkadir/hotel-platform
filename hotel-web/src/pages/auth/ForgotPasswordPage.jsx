@@ -71,10 +71,10 @@ export default function ForgotPasswordPage() {
                   lineHeight: 1.08,
                   letterSpacing: '-0.025em',
                   fontWeight: 500,
-                  fontFamily: 'Inter, sans-serif',
+  
                 }}>
               <span className="block">Şifreni</span>
-              <em className="not-italic font-syne block"
+              <em className="not-italic block"
                   style={{ fontWeight: 700, color: '#cdb78f', letterSpacing: '-0.015em' }}>
                 unuttun mu?
               </em>
