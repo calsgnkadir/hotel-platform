@@ -79,10 +79,11 @@ function AvatarBubble({ item, size, showOnlineDot, style }) {
         />
       ) : (
         <div
-          className="w-full h-full rounded-full flex items-center justify-center text-white"
+          className="w-full h-full rounded-full flex items-center justify-center font-semibold"
           style={{
-            background: 'linear-gradient(135deg, #1b1815 0%, #b8902d 100%)',
+            background: 'rgba(205, 183, 143, 0.08)',
             border: '2px solid #221f1b',
+            color: '#cdb78f',
             fontSize: Math.floor(size * 0.45),
             lineHeight: 1,
           }}

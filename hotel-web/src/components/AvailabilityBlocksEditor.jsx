@@ -184,10 +184,12 @@ export default function AvailabilityBlocksEditor() {
       {!loading && (
         <div className="flex justify-end mt-4">
           <button type="button" onClick={save} disabled={!dirty || saving}
-            className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-white rounded-full transition-all hover:-translate-y-0.5 disabled:opacity-40"
+            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] rounded-full transition-all hover:-translate-y-0.5 disabled:opacity-40"
             style={{
-              background: 'linear-gradient(135deg, #1b1815, #b8902d)',
-              boxShadow: '0 0 14px rgba(205, 183, 143, 0.30)',
+              background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+              color: '#1a1208',
+              border: '1px solid rgba(212, 168, 83, 0.55)',
+              boxShadow: '0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22)',
             }}>
             {saving ? 'Kaydediliyor...' : 'Müsaitliği Kaydet'}
           </button>
