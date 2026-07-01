@@ -88,15 +88,21 @@ export default function SavedSearchManager({ filters, onApply }) {
             type="button"
             disabled={!hasActiveFilters}
             onClick={() => setShowSaveInput(true)}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
-            style={{
-              background: hasActiveFilters
-                ? 'linear-gradient(135deg, #1b1815, #8a7349)'
-                : 'rgba(27, 24, 21, 0.75)',
-              color: hasActiveFilters ? '#ffffff' : '#6b6358',
-              border: `1px solid ${hasActiveFilters ? 'rgba(205, 183, 143, 0.28)' : 'rgba(205, 183, 143, 0.12)'}`,
-              boxShadow: hasActiveFilters ? '0 4px 14px rgba(205, 183, 143, 0.28)' : 'none',
-            }}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+            style={
+              hasActiveFilters
+                ? {
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    color: '#1a1208',
+                    border: '1px solid rgba(212, 168, 83, 0.55)',
+                    boxShadow: '0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22)',
+                  }
+                : {
+                    background: 'transparent',
+                    color: '#6b6358',
+                    border: '1px solid rgba(205, 183, 143, 0.14)',
+                  }
+            }
             title={hasActiveFilters ? 'Bu filtreleri kaydet' : 'Önce bir filtre seç'}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
@@ -120,17 +126,22 @@ export default function SavedSearchManager({ filters, onApply }) {
             <div className="flex gap-2">
               <button type="button" onClick={handleSubmitName}
                 disabled={createMut.isPending}
-                className="flex-1 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #1b1815, #8a7349)' }}>
+                className="flex-1 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] disabled:opacity-50 transition-all"
+                style={{
+                  background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                  color: '#1a1208',
+                  border: '1px solid rgba(212, 168, 83, 0.55)',
+                  boxShadow: '0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22)',
+                }}>
                 {createMut.isPending ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
               <button type="button"
                 onClick={() => { setShowSaveInput(false); setName('') }}
-                className="px-3 py-1.5 rounded-lg text-[12px] font-medium"
+                className="px-3 py-2 rounded-full text-[11px] font-medium uppercase tracking-[0.14em] transition-all"
                 style={{
-                  background: 'rgba(27, 24, 21, 0.75)',
+                  background: 'transparent',
                   color: '#c9bdaa',
-                  border: '1px solid rgba(205, 183, 143, 0.10)',
+                  border: '1px solid rgba(205, 183, 143, 0.14)',
                 }}>
                 İptal
               </button>
@@ -143,28 +154,30 @@ export default function SavedSearchManager({ filters, onApply }) {
       {!isLoading && saved.length > 0 && (
         <div className="space-y-1.5 pt-2"
              style={{ borderTop: '1px solid rgba(205, 183, 143, 0.08)' }}>
-          <div className="text-[10px] font-bold uppercase tracking-widest pt-2"
+          <div className="text-[10px] font-medium uppercase tracking-[0.22em] pt-2"
                style={{ color: '#928678' }}>
-            Kayıtlı Aramalar · {saved.length}
+            Kayıtlı Aramalar · <span className="tabular-nums">{saved.length}</span>
           </div>
           <AnimatePresence initial={false}>
             {saved.map(s => (
               <motion.div key={s.id}
                 initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
-                className="group relative rounded-lg px-2.5 py-2 transition-all hover:-translate-y-0.5"
+                className="group relative rounded-xl px-3 py-2.5 transition-all"
                 style={{
-                  background: 'rgba(27, 24, 21, 0.75)',
-                  border: '1px solid rgba(205, 183, 143, 0.12)',
-                }}>
+                  background: 'transparent',
+                  border: '1px solid rgba(205, 183, 143, 0.10)',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(205, 183, 143, 0.04)'; e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.22)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.10)' }}>
                 <div className="flex items-center gap-2">
                   <button onClick={() => onApply?.(s)}
                     title="Bu aramayı uygula"
                     className="flex-1 min-w-0 text-left">
-                    <div className="text-[12px] font-semibold truncate" style={{ color: '#ffffff' }}>
+                    <div className="text-[12px] font-semibold truncate" style={{ color: '#f5efe2' }}>
                       {s.name}
                     </div>
-                    <div className="text-[10px] truncate" style={{ color: '#928678' }}>
+                    <div className="text-[10px] truncate mt-0.5" style={{ color: '#928678' }}>
                       {buildPreview(s)}
                     </div>
                   </button>
