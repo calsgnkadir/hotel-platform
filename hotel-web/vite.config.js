@@ -11,6 +11,26 @@ export default defineConfig({
     setupFiles: ['./src/test-setup.js'],
     css: false,
     include: ['src/**/*.test.{js,jsx}'],
+    // FAZ 6 — coverage threshold (npm run test -- --coverage ile calisir)
+    // Kritik business logic'te regresyon olursa CI'da kirmizi.
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'json-summary'],
+      include: [
+        'src/lib/useConfirm.jsx',
+        'src/components/ui/ConfirmDialog.jsx',
+        'src/components/EmptyState.jsx',
+        'src/components/Sparkline.jsx',
+      ],
+      thresholds: {
+        // Sadece testli dosyalar icin — global threshold suanlik yok
+        // (progressive coverage: yeni dosyalar test yazildikca include listesine)
+        lines: 70,
+        functions: 70,
+        branches: 60,
+        statements: 70,
+      },
+    },
   },
   // sockjs-client browser'da Node 'global' degiskenini kullanir → polyfill
   define: {
