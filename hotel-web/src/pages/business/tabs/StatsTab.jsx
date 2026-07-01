@@ -61,57 +61,37 @@ export default function StatsTab() {
   )
 }
 
-function Kpi({ label, value, delta, color = '#d4a853' }) {
+function Kpi({ label, value, delta, color = '#cdb78f' }) {
   const deltaPos = typeof delta === 'number' && delta >= 0
   return (
     <motion.div
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 240, damping: 22 }}
-      className="relative overflow-hidden rounded-2xl group"
-      style={{
-        padding: 16,
-        background: 'linear-gradient(155deg, rgba(27, 24, 21, 0.88) 0%, rgba(13, 11, 9, 0.96) 100%)',
-        border: `1px solid ${color}22`,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
-      }}>
-      <div aria-hidden className="absolute -top-12 -right-12 w-36 h-36 rounded-full pointer-events-none transition-opacity duration-500 opacity-35 group-hover:opacity-70"
+      className="stat-card group cursor-default"
+    >
+      {/* Blob accent — quiet */}
+      <div aria-hidden className="absolute -top-12 -right-12 w-36 h-36 rounded-full pointer-events-none transition-opacity duration-500 opacity-30 group-hover:opacity-55"
            style={{ background: `radial-gradient(circle, ${color}55 0%, transparent 65%)`, filter: 'blur(20px)' }} />
+
+      {/* Delta pill — top-right anchor */}
+      {typeof delta === 'number' && (
+        <span className="absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={{
+                background: deltaPos ? 'rgba(122, 159, 122, 0.12)' : 'rgba(180, 106, 85, 0.12)',
+                color:      deltaPos ? '#a8c8a8' : '#d39481',
+                border: `1px solid ${deltaPos ? 'rgba(122, 159, 122, 0.30)' : 'rgba(180, 106, 85, 0.30)'}`,
+              }}>
+          {deltaPos ? '+' : ''}{delta}%
+        </span>
+      )}
+
+      {/* Number → hairline → label */}
       <div className="relative">
-        <div style={{
-          fontSize: 11,
-          color: '#928678',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          fontWeight: 600,
-        }}>
-          {label}
+        <div className="stat-card-number" style={{ filter: `drop-shadow(0 0 12px ${color}44)` }}>
+          {value}
         </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
-          <div style={{
-            fontSize: 32,
-            fontWeight: 600,
-            background: `linear-gradient(135deg, #ffffff 30%, ${color} 100%)`,
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.03em',
-            filter: `drop-shadow(0 0 14px ${color}55)`,
-            lineHeight: 1,
-          }}>
-            {value}
-          </div>
-          {typeof delta === 'number' && (
-            <span style={{
-              fontSize: 11,
-              fontWeight: 700,
-              padding: '2px 8px',
-              borderRadius: 999,
-              background: deltaPos ? 'rgba(122, 159, 122, 0.12)' : 'rgba(180, 106, 85, 0.12)',
-              color:      deltaPos ? '#a8c8a8' : '#d39481',
-              border: `1px solid ${deltaPos ? 'rgba(122, 159, 122, 0.30)' : 'rgba(180, 106, 85, 0.30)'}`,
-            }}>
-              {deltaPos ? '+' : ''}{delta}%
-            </span>
-          )}
-        </div>
+        <div className="stat-card-divider" />
+        <div className="stat-card-label">{label}</div>
       </div>
     </motion.div>
   )

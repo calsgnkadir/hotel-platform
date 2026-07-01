@@ -18,43 +18,39 @@ export default function OverviewTab({ applications, onTabChange }) {
         {/* FAZ 5.12 — Bugun widget tepelik */}
         <TodayWidget applications={applications} onTabChange={onTabChange} />
 
-        {/* Stat strip — gradient + glow blob + hover lift (B: dark concierge) */}
+        {/* Stat strip — number → hairline → label hierarchy (UX4 spec) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
-            { label: 'Toplam',      value: applications.length, color: '#60a5fa',
+            { label: 'Toplam',      value: applications.length, color: '#cdb78f',
               data: weeklyTrend(applications, null) },
             { label: 'Bekleyen',    value: pending,             color: '#c8923a',
               data: weeklyTrend(applications, a => a.status === 'PENDING') },
-            { label: 'İnceleniyor', value: reviewing,           color: '#cdb78f',
+            { label: 'İnceleniyor', value: reviewing,           color: '#6b8aa3',
               data: weeklyTrend(applications, a => a.status === 'REVIEWING') },
-            { label: 'Kabul',       value: accepted,            color: '#d4a853',
+            { label: 'Kabul',       value: accepted,            color: '#7a9f7a',
               data: weeklyTrend(applications, a => a.status === 'ACCEPTED') },
           ].map(s => (
             <motion.div key={s.label}
               whileHover={{ y: -3 }}
               transition={{ type: 'spring', stiffness: 240, damping: 22 }}
-              className="relative overflow-hidden rounded-2xl p-3.5 min-h-[88px] group"
-              style={{
-                background: 'linear-gradient(155deg, rgba(27, 24, 21, 0.88) 0%, rgba(13, 11, 9, 0.96) 100%)',
-                border: `1px solid ${s.color}22`,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
-              }}>
-              <div aria-hidden className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none transition-opacity duration-500 opacity-35 group-hover:opacity-70"
+              className="stat-card group cursor-default"
+            >
+              {/* Blob accent — quiet */}
+              <div aria-hidden className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none transition-opacity duration-500 opacity-30 group-hover:opacity-55"
                    style={{ background: `radial-gradient(circle, ${s.color}55 0%, transparent 65%)`, filter: 'blur(18px)' }} />
-              <div className="relative flex items-center gap-1.5 mb-2">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
-                <span className="text-[10px] uppercase tracking-widest font-semibold truncate"
-                      style={{ color: '#928678' }}>{s.label}</span>
+
+              {/* Sparkline arka plan */}
+              <div aria-hidden className="absolute inset-x-3 bottom-3 h-8 pointer-events-none opacity-30">
+                <Sparkline data={s.data} color={s.color} width={200} height={32} />
               </div>
-              <div className="relative flex items-end justify-between gap-2">
-                <div className="text-2xl font-semibold leading-none tabular-nums"
-                     style={{
-                       background: `linear-gradient(135deg, #ffffff 30%, ${s.color} 100%)`,
-                       WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                       letterSpacing: '-0.03em',
-                       filter: `drop-shadow(0 0 12px ${s.color}55)`,
-                     }}>{s.value}</div>
-                <Sparkline data={s.data} color={s.color} width={56} height={24} />
+
+              {/* Number → hairline → label */}
+              <div className="relative">
+                <div className="stat-card-number" style={{ filter: `drop-shadow(0 0 10px ${s.color}44)` }}>
+                  {s.value}
+                </div>
+                <div className="stat-card-divider" />
+                <div className="stat-card-label">{s.label}</div>
               </div>
             </motion.div>
           ))}

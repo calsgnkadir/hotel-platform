@@ -128,20 +128,8 @@ body, .role-app-bg {
 .accent-text   { color: var(--accent-action); }
 .accent-glow   { box-shadow: var(--accent-action-glow); }
 
-/* ================== ASYMMETRIC CORNER UTILITIES ================== */
-/* Her kart bir köşeyi 28px alır, diğerleri quiet (10–12px). Identical rounded-2xl
- * grid'i wireframe'a çevirir; corner rhythm break eder.
- *
- * Kullanım: <div className="card-asym-tl"> ... </div>
- */
-.card-asym-tl { border-radius: var(--radius-hero) var(--radius-quiet) var(--radius-quiet) var(--radius-quiet); }
-.card-asym-tr { border-radius: var(--radius-quiet) var(--radius-hero) var(--radius-quiet) var(--radius-quiet); }
-.card-asym-br { border-radius: var(--radius-quiet) var(--radius-quiet) var(--radius-hero) var(--radius-quiet); }
-.card-asym-bl { border-radius: var(--radius-quiet) var(--radius-quiet) var(--radius-quiet) var(--radius-hero); }
-
-/* Diagonal — iki köşe 28px, kalanlar 12px */
-.card-asym-diag-1 { border-radius: var(--radius-hero) var(--radius-quiet) var(--radius-hero) var(--radius-quiet); }
-.card-asym-diag-2 { border-radius: var(--radius-quiet) var(--radius-hero) var(--radius-quiet) var(--radius-hero); }
+/* FAZ 5.UX4 — Asymmetric corner utilities (card-asym-*) KALDIRILDI.
+ * Uniform rounded-2xl kart sistemine gecildi; artik consumer yok. */
 
 /* ================== TYPOGRAPHY ================== */
 
