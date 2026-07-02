@@ -225,37 +225,31 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      {/* Dalga H4 — Toplu islem toolbar (secim varsa gozukur) */}
+      {/* Toplu islem toolbar — .tier-featured: sayfada sadece secim varken beliriyor,
+          FEATURED tier (calls action, deserves attention). */}
       {selectedIds.size > 0 && (
-        <div className="mb-4 sticky top-0 z-10 rounded-xl px-4 py-3 flex items-center justify-between gap-3 backdrop-blur-md"
-             style={{
-               background: 'rgba(205, 183, 143, 0.10)',
-               border: '1px solid rgba(205, 183, 143, 0.35)',
-               boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
-             }}>
+        <div className="tier-featured mb-4 sticky top-0 z-10 px-4 py-3 flex items-center justify-between gap-3 backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <span className="text-xl tracking-wider" style={{ color: '#cdb78f' }}>
+            <span className="numeral-hero text-champagne-300" style={{ fontSize: '22px' }}>
               {selectedIds.size}
             </span>
-            <span className="text-[12px] uppercase tracking-wider font-semibold"
-                  style={{ color: '#ede4d3' }}>
+            <span className="type-overline text-ivory-200">
               başvuru seçildi
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => handleBulkAction('ACCEPTED')}
-              className="text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
+              className="type-overline px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
               style={{ background: 'rgba(122, 159, 122, 0.18)', color: '#a8c8a8', border: '1px solid rgba(122, 159, 122, 0.40)' }}>
               Toplu Kabul
             </button>
             <button type="button" onClick={() => handleBulkAction('REJECTED')}
-              className="text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
+              className="type-overline px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
               style={{ background: 'rgba(180, 106, 85, 0.18)', color: '#d39481', border: '1px solid rgba(180, 106, 85, 0.40)' }}>
               Toplu Red
             </button>
             <button type="button" onClick={() => setSelectedIds(new Set())}
-              className="text-[11px] uppercase tracking-wider px-2 py-1 rounded-full"
-              style={{ color: '#6b6358' }}>
+              className="type-overline px-2 py-1 rounded-full text-ivory-700 hover:text-ivory-400">
               İptal
             </button>
           </div>
@@ -267,8 +261,7 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
         {visibleColumns.map(col => (
           <Column key={col.id} col={col} count={grouped[col.id]?.length || 0}>
             {(grouped[col.id]?.length || 0) === 0 ? (
-              <div className="text-[11px] italic py-6 text-center uppercase tracking-widest"
-                   style={{ color: '#6b6358' }}>
+              <div className="type-overline italic py-6 text-center">
                 Bu kolonda başvuru yok
               </div>
             ) : (
@@ -295,12 +288,8 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
       </DragOverlay>
 
       {busy && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest"
-             style={{
-               background: 'rgba(205, 183, 143, 0.14)',
-               color: '#ede4d3',
-               border: '1px solid rgba(205, 183, 143, 0.30)',
-             }}>
+        <div className="fixed bottom-6 right-6 z-50 tier-featured px-4 py-2 type-overline text-ivory-200"
+             style={{ borderRadius: '999px' }}>
           Güncelleniyor...
         </div>
       )}
@@ -313,30 +302,30 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
 function Column({ col, count, children }) {
   const { setNodeRef, isOver } = useDroppable({ id: col.id })
 
+  // Column bg neutral (graphite.700) — status color yalniz header chip + drop-over rim'de.
+  // Boylece 4 kolon = 4 status renkli blok yerine 1 tier + accent rail hierarchy.
   return (
     <div
       ref={setNodeRef}
-      className="rounded-2xl flex flex-col min-h-[480px] transition-all"
+      className={`flex flex-col min-h-[480px] transition-all ${isOver ? 'tier-featured' : 'tier-raised'}`}
       style={{
-        background: isOver ? `${col.color}18` : col.bg,
-        border: isOver ? `1.5px solid ${col.color}` : `1px solid ${col.border}`,
-        boxShadow: isOver ? `0 0 24px ${col.color}40` : 'none',
+        borderColor: isOver ? col.color : undefined,
+        boxShadow: isOver ? `0 0 24px ${col.color}55, inset 0 1px 0 rgba(205,183,143,0.12)` : undefined,
       }}
     >
-      <div className="px-4 py-3 flex items-center justify-between border-b"
-           style={{ borderColor: col.border }}>
+      <div className="px-4 py-3 flex items-center justify-between border-b border-hairline">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: col.color }} />
-            <span className="text-base tracking-wider uppercase" style={{ color: col.color }}>
+            <span className="type-overline" style={{ color: col.color, fontSize: '11px' }}>
               {col.label}
             </span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                  style={{ background: `${col.color}25`, color: col.color, minWidth: '22px', textAlign: 'center' }}>
+            <span className="type-overline px-1.5 py-0.5 rounded-full tabular-nums"
+                  style={{ background: `${col.color}22`, color: col.color, minWidth: '22px', textAlign: 'center' }}>
               {count}
             </span>
           </div>
-          <div className="text-[10px] mt-0.5" style={{ color: '#6b6358' }}>
+          <div className="type-caption mt-0.5">
             {col.sub}
           </div>
         </div>
@@ -391,11 +380,12 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
       <div
         className="rounded-xl p-3"
         style={{
-          // Dalga H4 — Kullanici 'beyaz kart' istedi: koyu lacivert -> krem/beyaz tema
-          background: selected ? '#fef3c7' : '#fefefc',
-          border: `1px solid ${selected ? '#c8923a' : 'rgba(13, 11, 9, 0.10)'}`,
+          // Beyaz kart korundu (dark kolon uzerinde okunabilirlik icin). Selected
+          // state artik champagne (marka accent), amber degil.
+          background: selected ? '#f9f1e0' : '#fefefc',
+          border: `1px solid ${selected ? '#cdb78f' : 'rgba(13, 11, 9, 0.10)'}`,
           boxShadow: selected
-            ? '0 4px 16px rgba(245, 158, 11, 0.30), 0 0 0 3px rgba(245, 158, 11, 0.15)'
+            ? '0 6px 18px rgba(205, 183, 143, 0.35), 0 0 0 3px rgba(205, 183, 143, 0.18)'
             : '0 2px 8px rgba(13, 11, 9, 0.08), 0 1px 2px rgba(13, 11, 9, 0.04)',
           position: 'relative',
           overflow: 'hidden',
@@ -427,9 +417,9 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
                 title={selected ? 'Seç kaldır' : 'Toplu işlem için seç'}
                 className="absolute top-2 right-2 w-5 h-5 rounded-md flex items-center justify-center transition-all"
                 style={{
-                  background: selected ? '#c8923a' : '#ffffff',
-                  border: `2px solid ${selected ? '#d97706' : 'rgba(13, 11, 9, 0.25)'}`,
-                  color: '#ffffff',
+                  background: selected ? '#cdb78f' : '#ffffff',
+                  border: `2px solid ${selected ? '#a08654' : 'rgba(13, 11, 9, 0.25)'}`,
+                  color: '#1a1208',
                 }}>
           {selected && (
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -473,22 +463,22 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
           </a>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              {/* Aday adi — koyu lacivert text */}
-              <div className="text-[14px] font-semibold truncate flex-1 min-w-0"
+              {/* Aday adi — koyu graphite text (beyaz kart uzerinde) */}
+              <div className="type-body font-semibold truncate flex-1 min-w-0"
                    style={{ color: '#13110f', letterSpacing: '-0.005em' }}>
                 {app.candidate?.fullName || 'Anonim'}
               </div>
               <ReliabilityBadge score={app.candidate?.reliabilityScore} />
             </div>
             {/* Ilan basligi — daha belirgin */}
-            <div className="text-[12px] font-medium truncate mt-0.5"
+            <div className="type-caption font-medium truncate mt-0.5"
                  style={{ color: 'rgba(19, 17, 15, 0.78)' }}>
               {app.listing?.title || 'İlan bilgisi yok'}
             </div>
-            {/* Pozisyon + ilçe chip seti — kullanici 'duzgun yazilsin' istedi */}
+            {/* Pozisyon + ilçe chip seti */}
             {(app.listing?.position || app.candidate?.district) && (
-              <div className="flex items-center gap-1.5 mt-1 text-[10.5px]"
-                   style={{ color: 'rgba(27, 24, 21, 0.55)' }}>
+              <div className="flex items-center gap-1.5 mt-1 type-caption"
+                   style={{ color: 'rgba(27, 24, 21, 0.55)', fontSize: '10.5px' }}>
                 {app.listing?.position && <span>{app.listing.position}</span>}
                 {app.listing?.position && app.candidate?.district && <span style={{ opacity: 0.4 }}>·</span>}
                 {app.candidate?.district && <span>{app.candidate.district}</span>}
@@ -499,7 +489,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
 
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t"
              style={{ borderColor: 'rgba(13, 11, 9, 0.10)' }}>
-          <span className="text-[10px] uppercase tracking-wider font-semibold" title={dateTooltip}
+          <span className="type-overline" title={dateTooltip}
                 style={{ color: 'rgba(27, 24, 21, 0.55)' }}>
             {date}
           </span>
@@ -508,7 +498,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
               <button
                 onClick={(e) => { e.stopPropagation(); onMessage?.() }}
                 onPointerDown={(e) => e.stopPropagation()}
-                className="text-[10.5px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition-all hover:scale-105"
+                className="type-overline px-2.5 py-1 rounded-md transition-all hover:scale-105"
                 style={{ background: 'rgba(205, 183, 143, 0.10)', color: '#1b1815', border: '1px solid rgba(205, 183, 143, 0.22)' }}
               >
                 Mesaj
@@ -517,8 +507,8 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
             <button
               onClick={(e) => { e.stopPropagation(); onClick?.() }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="text-[10.5px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition-all hover:scale-105"
-              style={{ background: 'rgba(205, 183, 143, 0.10)', color: '#7c5618', border: '1px solid rgba(205, 183, 143, 0.35)' }}
+              className="type-overline px-2.5 py-1 rounded-md transition-all hover:scale-105"
+              style={{ background: 'rgba(205, 183, 143, 0.18)', color: '#7c5618', border: '1px solid rgba(205, 183, 143, 0.45)' }}
             >
               Aç
             </button>
@@ -542,10 +532,10 @@ function CardSilhouette({ app }) {
         width: '260px',
       }}
     >
-      <div className="text-[13px] font-semibold text-white truncate">
+      <div className="type-body font-semibold text-white truncate">
         {app.candidate?.fullName || 'Anonim'}
       </div>
-      <div className="text-[10px] truncate" style={{ color: '#6b6358' }}>
+      <div className="type-caption truncate" style={{ color: 'var(--text-faint)' }}>
         {app.listing?.title || '—'}
       </div>
     </div>

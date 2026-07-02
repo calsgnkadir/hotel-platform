@@ -111,12 +111,12 @@ function FunnelCard({ funnel, total }) {
     : 0
 
   return (
-    <div className="card p-5">
+    <div className="tier-raised p-5">
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#cdb78f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <h3 className="type-overline" style={{ color: 'var(--accent-action)', fontSize: 12 }}>
           İşe Alım Hunisi
         </h3>
-        <span style={{ fontSize: 11, color: '#c9bdaa' }}>
+        <span className="type-caption" style={{ color: 'var(--text-secondary)' }}>
           Dönüşüm <strong style={{ color: '#a8c8a8' }}>%{overallConversion}</strong>
         </span>
       </div>
@@ -127,12 +127,12 @@ function FunnelCard({ funnel, total }) {
             (stages[i - 1].count > 0 ? Math.round((s.count / stages[i - 1].count) * 100) : 0)
           return (
             <div key={s.label}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                <span style={{ color: '#c9bdaa' }}>{s.label}</span>
-                <span style={{ color: '#ffffff', fontWeight: 600 }}>
+              <div className="flex justify-between mb-1 type-caption">
+                <span style={{ color: 'var(--text-secondary)' }}>{s.label}</span>
+                <span style={{ color: 'var(--text-headline)', fontWeight: 600 }}>
                   {s.count}
                   {stageConv !== null && (
-                    <span style={{ color: '#928678', marginLeft: 6, fontWeight: 400 }}>· %{stageConv}</span>
+                    <span style={{ color: 'var(--text-muted)', marginLeft: 6, fontWeight: 400 }}>· %{stageConv}</span>
                   )}
                 </span>
               </div>
@@ -156,11 +156,11 @@ function FunnelCard({ funnel, total }) {
 function HireTimeCard({ data }) {
   if (!data || data.length === 0) {
     return (
-      <div className="card p-5">
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#cdb78f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+      <div className="tier-raised p-5">
+        <h3 className="type-overline" style={{ color: 'var(--accent-action)', fontSize: 12 }}>
           İşe Alım Süresi
         </h3>
-        <div style={{ padding: 32, textAlign: 'center', color: '#928678', fontSize: 12 }}>
+        <div className="type-body text-center" style={{ padding: 32, color: 'var(--text-muted)' }}>
           Henüz kabul edilmiş başvuru yok.
         </div>
       </div>
@@ -169,12 +169,12 @@ function HireTimeCard({ data }) {
   const total = data.reduce((s, b) => s + b.count, 0)
 
   return (
-    <div className="card p-5">
+    <div className="tier-raised p-5">
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 1 }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#cdb78f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <h3 className="type-overline" style={{ color: 'var(--accent-action)', fontSize: 12 }}>
           İşe Alım Süresi
         </h3>
-        <span style={{ fontSize: 11, color: '#c9bdaa' }}>
+        <span className="type-caption" style={{ color: 'var(--text-secondary)' }}>
           Başvuru → Kabul · {total} aday
         </span>
       </div>

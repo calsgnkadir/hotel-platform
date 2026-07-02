@@ -178,11 +178,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           <motion.div key={app.id} variants={CARD}
             whileHover={{ y: -2 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-            className="relative overflow-hidden group rounded-2xl transition-all"
-            style={{
-              background: '#1b1815',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
-            }}>
+            className="tier-raised tier-raised-hover relative overflow-hidden group">
             {/* Sol accent rail — always visible, uniform 3px */}
             <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
                   style={{ background: sc.color }} />
@@ -198,14 +194,15 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                      border: '1px solid rgba(205, 183, 143, 0.16)',
                      minWidth: 60,
                    }}>
-                <div className="text-[24px] font-semibold tabular-nums leading-none"
+                <div className="tabular-nums leading-none"
                      style={{
-                       color: '#f5efe2',
+                       color: 'var(--text-headline)',
+                       fontSize: '24px',
+                       fontWeight: 600,
                        letterSpacing: '-0.04em',
                        filter: 'drop-shadow(0 0 12px rgba(205, 183, 143, 0.22))',
                      }}>{day}</div>
-                <div className="text-[10px] uppercase tracking-[0.22em] font-medium mt-1.5"
-                     style={{ color: '#928678' }}>{month}</div>
+                <div className="type-overline mt-1.5">{month}</div>
               </div>
 
               {/* ORTA: avatar + işletme + ilan */}
@@ -219,12 +216,10 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                   {initial}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[15px] font-semibold truncate"
-                       style={{ color: '#f5efe2', letterSpacing: '-0.01em' }}>
+                  <div className="type-heading truncate" style={{ fontSize: '15px' }}>
                     {app.listing?.title || '—'}
                   </div>
-                  <div className="text-[12px] mt-0.5 flex items-center gap-1.5"
-                       style={{ color: '#928678' }}>
+                  <div className="type-caption mt-0.5 flex items-center gap-1.5">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" strokeWidth={1.6} className="w-3 h-3 flex-shrink-0">
                       <path strokeLinecap="round" strokeLinejoin="round"
@@ -314,7 +309,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
           {app.documentRequests?.length > 0 && (
             <div className="px-4 pb-4">
-              <div className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Belge Talepleri</div>
+              <div className="type-overline mb-2">Belge Talepleri</div>
               <div className="space-y-2">
                 {app.documentRequests.map(dr => {
                   const label = DOC_TYPE_LABELS[dr.documentType] || dr.documentType
@@ -322,13 +317,15 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                   const hasUploaded = uploadedTypes.has(dr.documentType)
                   return (
                     <div key={dr.id}
-                      className={`rounded-lg px-3 py-2.5 ${isPending ? 'bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800' : 'bg-cream-50'}`}>
+                      className="rounded-lg px-3 py-2.5"
+                      style={{
+                        background: isPending ? 'rgba(200, 146, 58, 0.08)' : 'rgba(205, 183, 143, 0.05)',
+                        border: `1px solid ${isPending ? 'rgba(200, 146, 58, 0.22)' : 'rgba(205, 183, 143, 0.10)'}`,
+                      }}>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span className="text-sm text-ink-700 font-medium">{label}</span>
+                        <span className="type-body font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</span>
                         {!isPending && (
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                            dr.status === 'GRANTED' ? 'bg-brand-50 text-brand-700' : 'bg-red-50 text-red-700'
-                          }`}>
+                          <span className={`badge ${dr.status === 'GRANTED' ? 'badge-accepted' : 'badge-rejected'}`}>
                             {dr.status === 'GRANTED' ? 'İzin Verdin' : 'Reddettin'}
                           </span>
                         )}
@@ -336,7 +333,12 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                       {isPending && (
                         <>
                           {!hasUploaded && (
-                            <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5 mt-2">
+                            <div className="type-caption rounded-md px-2 py-1.5 mt-2"
+                                 style={{
+                                   background: 'rgba(200, 146, 58, 0.08)',
+                                   border: '1px solid rgba(200, 146, 58, 0.22)',
+                                   color: '#e0b766',
+                                 }}>
                               Bu belgeyi henüz yüklemedin. <b>Belgelerim</b> sekmesinden yükledikten sonra izin verebilirsin.
                             </div>
                           )}
@@ -344,12 +346,22 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                             <button onClick={() => handleRespond(dr.id, true)}
                               disabled={respondingId === dr.id || !hasUploaded}
                               title={!hasUploaded ? 'Önce bu belgeyi yükle' : ''}
-                              className="flex-1 py-1.5 rounded-md bg-brand-700 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                              className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                              style={{
+                                background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)',
+                                color: '#f5efe2',
+                                border: '1px solid rgba(122, 159, 122, 0.45)',
+                              }}>
                               İzin Ver
                             </button>
                             <button onClick={() => handleRespond(dr.id, false)}
                               disabled={respondingId === dr.id}
-                              className="flex-1 py-1.5 rounded-md bg-cream-200 hover:bg-cream-300 text-ink-700 text-xs font-semibold transition-colors disabled:opacity-50">
+                              className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-50"
+                              style={{
+                                background: 'rgba(180, 106, 85, 0.08)',
+                                color: '#d39481',
+                                border: '1px solid rgba(180, 106, 85, 0.22)',
+                              }}>
                               Reddet
                             </button>
                           </div>

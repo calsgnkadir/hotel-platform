@@ -6,9 +6,7 @@ import toast from 'react-hot-toast'
 
 /**
  * Header'daki dişli (Ayarlar) ikonu — tıklayınca dropdown açılır.
- * İçerik: Tema seçimi + Bildirim kapama + Yardım/SSS + Çıkış
- *
- * Sidebar'da Ayarlar/Yardım sekmeleri kaldırıldı; her şey buraya toplandı.
+ * İçerik: Tema seçimi + Bildirim kapama + Profil linkleri + Yardım + Çıkış
  */
 export default function SettingsMenu({ onTabChange }) {
   const [open, setOpen]   = useState(false)
@@ -17,7 +15,6 @@ export default function SettingsMenu({ onTabChange }) {
   const navigate = useNavigate()
   const ref = useRef(null)
 
-  // Profilim hem aday hem işletme'de var, label farklı
   const isCandidate = user?.role === 'CANDIDATE'
   const isBusiness  = user?.role === 'BUSINESS_OWNER'
 
@@ -26,7 +23,6 @@ export default function SettingsMenu({ onTabChange }) {
     onTabChange?.(tabId)
   }
 
-  // Bildirim sustur (localStorage)
   const [muted, setMuted] = useState(() => {
     try { return localStorage.getItem('ajanshotel.notifications.muted') === '1' }
     catch { return false }
@@ -39,7 +35,6 @@ export default function SettingsMenu({ onTabChange }) {
     } catch {}
   }, [muted])
 
-  // Dış tıklama
   useEffect(() => {
     function onClick(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false)
@@ -57,31 +52,30 @@ export default function SettingsMenu({ onTabChange }) {
 
   return (
     <div className="relative" ref={ref}>
-      {/* Dişli butonu */}
+      {/* Dişli butonu — .tier-raised quiet icon slot */}
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
         title="Ayarlar"
-        className="w-9 h-9 grid place-items-center rounded-full bg-white border border-cream-300
-                   text-ink-600 hover:text-brand-700 hover:border-brand-500 transition-colors shadow-sm"
+        className="tier-raised tier-raised-hover w-9 h-9 grid place-items-center transition-colors"
+        style={{ borderRadius: '999px', color: 'var(--text-secondary)' }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             strokeWidth={1.8} stroke="currentColor" className="w-4.5 h-4.5"
+             strokeWidth={1.8} stroke="currentColor"
              style={{ width: 18, height: 18 }}>
           <path strokeLinecap="round" strokeLinejoin="round"
                 d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.281Z" />
-          <path strokeLinecap="round" strokeLinejoin="round"
-                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
         </svg>
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown — .tier-featured (dikkat cekicidir cunki modal-alternatif) */}
       {open && (
-        <div className="absolute right-0 mt-2 w-72 z-50 rounded-2xl border border-cream-300
-                        bg-white backdrop-blur-xl shadow-2xl overflow-hidden">
+        <div className="tier-featured absolute right-0 mt-2 w-72 z-50 overflow-hidden backdrop-blur-xl"
+             style={{ background: 'rgba(19, 17, 15, 0.96)' }}>
           {/* Tema */}
-          <div className="px-4 py-3 border-b border-cream-300">
-            <div className="text-[10px] uppercase tracking-widest text-ink-500 mb-2">Görünüm</div>
+          <div className="px-4 py-3 border-b border-hairline">
+            <div className="type-overline mb-2">Görünüm</div>
             <div className="flex items-center gap-1.5">
               <ThemePill active={theme === 'light'} label="Açık"
                 onClick={() => { if (theme !== 'light') toggleTheme() }} />
@@ -91,124 +85,56 @@ export default function SettingsMenu({ onTabChange }) {
           </div>
 
           {/* Bildirim */}
-          <div className="px-4 py-3 border-b border-cream-300 flex items-center justify-between gap-3">
+          <div className="px-4 py-3 border-b border-hairline flex items-center justify-between gap-3">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-ink-500 mb-0.5">Bildirimler</div>
-              <div className="text-[12px] text-ink-800">{muted ? 'Kapalı' : 'Açık'}</div>
+              <div className="type-overline mb-0.5">Bildirimler</div>
+              <div className="type-body" style={{ color: 'var(--text-headline)' }}>{muted ? 'Kapalı' : 'Açık'}</div>
             </div>
             <ToggleSwitch checked={!muted} onChange={(v) => setMuted(!v)} />
           </div>
 
           {/* Profilim — aday + işletme */}
           {(isCandidate || isBusiness) && (
-            <button
-              type="button"
-              onClick={() => goTab('profile')}
-              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
-                         hover:bg-cream-200 transition-colors border-b border-cream-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-              </svg>
-              <span>{isBusiness ? 'İşletme Profili' : 'Profilim'}</span>
-            </button>
+            <MenuItem icon={<UserIcon />} label={isBusiness ? 'İşletme Profili' : 'Profilim'}
+                      onClick={() => goTab('profile')} />
           )}
 
-          {/* Takip Ettiklerim — sadece aday (sidebar'dan tasindi) */}
+          {/* Takip Ettiklerim — sadece aday */}
           {isCandidate && (
-            <button
-              type="button"
-              onClick={() => goTab('relations')}
-              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
-                         hover:bg-cream-200 transition-colors border-b border-cream-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
-              </svg>
-              <span>Takip Ettiklerim</span>
-            </button>
+            <MenuItem icon={<BuildingIcon />} label="Takip Ettiklerim"
+                      onClick={() => goTab('relations')} />
           )}
 
-          {/* Bizde Çalışanlar — sadece isletme (sidebar'dan tasindi) */}
+          {/* Bizde Çalışanlar — sadece isletme */}
           {isBusiness && (
-            <button
-              type="button"
-              onClick={() => goTab('workers')}
-              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
-                         hover:bg-cream-200 transition-colors border-b border-cream-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-              </svg>
-              <span>Bizde Çalışanlar</span>
-            </button>
+            <MenuItem icon={<UsersIcon />} label="Bizde Çalışanlar"
+                      onClick={() => goTab('workers')} />
           )}
 
           {/* Geçmiş İşlerim — sadece aday */}
           {isCandidate && (
-            <button
-              type="button"
-              onClick={() => goTab('history')}
-              className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
-                         hover:bg-cream-200 transition-colors border-b border-cream-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
-              <span>Geçmiş İşlerim</span>
-            </button>
+            <MenuItem icon={<ClockIcon />} label="Geçmiş İşlerim"
+                      onClick={() => goTab('history')} />
           )}
 
           {/* Yardım */}
-          <Link
-            to="/yardim"
-            onClick={() => setOpen(false)}
-            className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
-                       hover:bg-cream-200 transition-colors border-b border-cream-300"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-            </svg>
-            <span>Yardım & Destek</span>
-          </Link>
+          <MenuItem icon={<HelpIcon />} label="Yardım & Destek"
+                    href="/yardim" onNavigate={() => setOpen(false)} />
 
           {/* KVKK */}
-          <Link
-            to="/kvkk"
-            onClick={() => setOpen(false)}
-            className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-ink-800
-                       hover:bg-cream-200 transition-colors border-b border-cream-300"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-400">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-            </svg>
-            <span>KVKK Aydınlatma Metni</span>
-          </Link>
+          <MenuItem icon={<DocIcon />} label="KVKK Aydınlatma Metni"
+                    href="/kvkk" onNavigate={() => setOpen(false)} />
 
-          {/* Çıkış */}
+          {/* Çıkış — brick signal */}
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-red-300
-                       hover:bg-red-950/40 transition-colors"
+            className="w-full px-4 py-3 flex items-center gap-3 type-body transition-colors"
+            style={{ color: '#d39481' }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(180, 106, 85, 0.10)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
-            </svg>
+            <LogoutIcon />
             <span className="font-semibold">Çıkış Yap</span>
           </button>
         </div>
@@ -218,15 +144,37 @@ export default function SettingsMenu({ onTabChange }) {
   )
 }
 
+function MenuItem({ icon, label, onClick, href, onNavigate }) {
+  const cls = "w-full px-4 py-3 flex items-center gap-3 type-body transition-colors border-b border-hairline"
+  const style = { color: 'var(--text-primary)' }
+  const hover = {
+    onMouseEnter: (e) => e.currentTarget.style.background = 'rgba(205, 183, 143, 0.06)',
+    onMouseLeave: (e) => e.currentTarget.style.background = 'transparent',
+  }
+  if (href) {
+    return (
+      <Link to={href} onClick={onNavigate} className={cls} style={style} {...hover}>
+        <span className="text-ivory-700">{icon}</span><span>{label}</span>
+      </Link>
+    )
+  }
+  return (
+    <button type="button" onClick={onClick} className={cls} style={style} {...hover}>
+      <span className="text-ivory-700">{icon}</span><span>{label}</span>
+    </button>
+  )
+}
+
+/* Active theme pill = tier-featured champagne; passive = tier-raised */
 function ThemePill({ active, label, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors
-        ${active
-          ? 'bg-brand-500 text-white border-brand-500'
-          : 'bg-cream-200 text-ink-300 border-slate-700 hover:bg-slate-700/60'}`}
+      className={`flex-1 px-3 py-1.5 rounded-full type-overline transition-colors ${active ? 'tier-featured' : 'tier-raised tier-raised-hover'}`}
+      style={{
+        color: active ? 'var(--text-headline)' : 'var(--text-muted)',
+      }}
     >
       {label}
     </button>
@@ -240,12 +188,83 @@ function ToggleSwitch({ checked, onChange }) {
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full border transition-colors shrink-0
-        ${checked ? 'bg-brand-500 border-brand-500' : 'bg-slate-700 border-slate-600'}`}
+      className="relative inline-flex h-6 w-11 items-center rounded-full border transition-colors shrink-0"
+      style={{
+        background: checked ? 'rgba(205, 183, 143, 0.35)' : 'rgba(146, 134, 120, 0.18)',
+        borderColor: checked ? 'rgba(205, 183, 143, 0.55)' : 'rgba(146, 134, 120, 0.32)',
+      }}
     >
-      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-        ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+      <span
+        className="inline-block h-4 w-4 transform rounded-full transition-transform"
+        style={{
+          background: checked ? '#1a1208' : '#c9bdaa',
+          transform: `translateX(${checked ? '24px' : '4px'})`,
+        }}
+      />
     </button>
   )
 }
 
+/* Icons */
+function UserIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round"
+            d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  )
+}
+function BuildingIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round"
+            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+    </svg>
+  )
+}
+function UsersIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round"
+            d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+    </svg>
+  )
+}
+function ClockIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  )
+}
+function HelpIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round"
+            d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+    </svg>
+  )
+}
+function DocIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round"
+            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+    </svg>
+  )
+}
+function LogoutIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round"
+            d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+    </svg>
+  )
+}

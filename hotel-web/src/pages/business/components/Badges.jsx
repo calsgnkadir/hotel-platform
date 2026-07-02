@@ -12,11 +12,7 @@ export function StatusBadge({ status }) {
   return <span className={`badge ${s.cls}`}>{s.label}</span>
 }
 
-/* ── No-show Badge — işe gelmedi ── */
+/* ── No-show Badge — işe gelmedi (brick signal, uniform badge scale) ── */
 export function NoShowBadge() {
-  return (
-    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-      İşe Gelmedi
-    </span>
-  )
+  return <span className="badge badge-rejected">İşe Gelmedi</span>
 }

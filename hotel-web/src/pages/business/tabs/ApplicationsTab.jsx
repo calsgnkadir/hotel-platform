@@ -214,18 +214,17 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             onChange={e => { setSearch(e.target.value); setPage(0) }}
             placeholder="Aday adı ara..." className="input text-sm" />
         </div>
-        {/* FAZ 5.UX3 — Liste / Kanban view toggle (graphite raised + champagne tint) */}
-        <div className="inline-flex rounded-full p-1 self-start"
-             style={{ background: 'rgba(27, 24, 21, 0.85)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
+        {/* Liste / Kanban view toggle — segmented control (raised container, featured active pill) */}
+        <div className="tier-raised inline-flex p-1 self-start" style={{ borderRadius: '999px' }}>
           {[
             { id: 'list',   label: 'Liste' },
             { id: 'kanban', label: 'Kanban' },
           ].map(v => (
             <button key={v.id} onClick={() => setView(v.id)}
-              className="px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-[0.22em] transition-all"
+              className="type-overline px-3 py-1 rounded-full transition-all"
               style={view === v.id
-                ? { background: 'rgba(205, 183, 143, 0.14)', color: '#f5efe2', border: '1px solid rgba(205, 183, 143, 0.42)' }
-                : { color: '#928678', border: '1px solid transparent' }}>
+                ? { background: 'rgba(205, 183, 143, 0.18)', color: 'var(--text-headline)', border: '1px solid rgba(205, 183, 143, 0.42)' }
+                : { color: 'var(--text-muted)', border: '1px solid transparent' }}>
               {v.label}
             </button>
           ))}
@@ -294,12 +293,12 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                 )}
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-ink-800 dark:text-ink-900">{app.candidate?.fullName}</span>
+                    <span className="type-body font-semibold" style={{ color: 'var(--text-headline)' }}>{app.candidate?.fullName}</span>
                     <ReliabilityBadge score={app.candidate?.reliabilityScore} />
                   </div>
-                  <div className="text-xs text-ink-500">{app.candidate?.email}</div>
-                  <div className="text-xs text-ink-400 mt-0.5">{app.listing?.title}</div>
-                  <div className="text-xs text-ink-400">
+                  <div className="type-caption">{app.candidate?.email}</div>
+                  <div className="type-caption mt-0.5">{app.listing?.title}</div>
+                  <div className="type-caption">
                     {new Date(app.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </div>
                 </div>
@@ -309,11 +308,11 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                 {app.noShow && <NoShowBadge />}
                 {/* Chat-v2: 'İncelemeye Al' yerine direkt 'Mesajlaşmaya git' */}
                 <button onClick={e => { e.stopPropagation(); onOpenMessages?.(app.conversationId) }}
-                  className="text-[11px] px-3 py-1.5 rounded-full font-semibold uppercase tracking-[0.14em] transition-all flex items-center gap-1"
+                  className="type-overline px-3 py-1.5 rounded-full transition-all flex items-center gap-1"
                   style={{
                     background: 'rgba(205, 183, 143, 0.06)',
                     border: '1px solid rgba(205, 183, 143, 0.22)',
-                    color: '#cdb78f',
+                    color: 'var(--accent-action)',
                   }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                        strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">

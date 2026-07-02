@@ -285,15 +285,16 @@ function MessageBubble({ m }) {
 
   return (
     <div className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
-      {/* Tüm balonlar açık mor (kullanici isteği). Mine biraz daha koyu (purple-300), karşı taraf en açık (purple-100). */}
+      {/* Msg bubble: mine = champagne tinted (aktif konusan tarafi belirginlestirir),
+          karsi taraf = ivory soft. Eski mor tint (#a78bfa/#ddd6fe) kaldirildi. */}
       <div className={`max-w-[75%] rounded-2xl text-sm shadow-sm overflow-hidden
         ${m.mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
         style={{
           background: m.mine
-            ? 'linear-gradient(135deg, #cdb78f 0%, #a78bfa 100%)'   /* purple-300 purple-400 */
-            : 'linear-gradient(135deg, #ede4d3 0%, #ddd6fe 100%)',   /* purple-100 purple-200 */
-          color: '#13110f',  /* koyu mor yazı — kontrast garantili */
-          border: '1px solid rgba(205, 183, 143, 0.28)',
+            ? 'linear-gradient(135deg, #cdb78f 0%, #b89e6e 100%)'
+            : 'linear-gradient(135deg, #ede4d3 0%, #dfd2bb 100%)',
+          color: '#13110f',
+          border: `1px solid ${m.mine ? 'rgba(184, 158, 110, 0.45)' : 'rgba(205, 183, 143, 0.28)'}`,
         }}>
 
         {/* Attachment */}
@@ -804,25 +805,30 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
   const initials = (conversation.otherPartyName || '?').charAt(0).toUpperCase()
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white dark:bg-ink-800 relative"
+    <div className="flex-1 flex flex-col h-full relative"
+         style={{ background: 'var(--surface-base)' }}
          onDragEnter={handleDragEnter}
          onDragLeave={handleDragLeave}
          onDragOver={handleDragOver}
          onDrop={handleDrop}>
       {/* Drag overlay — dosya sürüklenirken sohbet alanını kaplar */}
       {isDragging && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none
-                        bg-brand-900/40 backdrop-blur-sm border-4 border-dashed border-brand-400 rounded-lg">
-          <div className="bg-white dark:bg-ink-700 rounded-2xl shadow-2xl px-8 py-6 text-center">
+        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none rounded-lg"
+             style={{
+               background: 'rgba(205, 183, 143, 0.10)',
+               backdropFilter: 'blur(4px)',
+               border: '4px dashed rgba(205, 183, 143, 0.45)',
+             }}>
+          <div className="tier-featured px-8 py-6 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto text-brand-600 mb-2">
+                 strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto mb-2 text-champagne-300">
               <path strokeLinecap="round" strokeLinejoin="round"
                     d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
             </svg>
-            <div className="text-base font-bold text-ink-800 dark:text-ink-900">
+            <div className="type-heading" style={{ fontSize: '16px' }}>
               Dosyayı buraya bırak
             </div>
-            <div className="text-xs text-ink-500 mt-1">
+            <div className="type-caption mt-1">
               PDF, JPG, PNG, MP3 — her biri max 15 MB
             </div>
           </div>
@@ -830,9 +836,9 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       )}
 
       {/* Üst başlık */}
-      <div className="px-4 py-3 border-b border-cream-200 dark:border-cream-300 flex items-center gap-3 flex-shrink-0">
+      <div className="px-4 py-3 border-b border-hairline flex items-center gap-3 flex-shrink-0">
         <button onClick={onBack}
-          className="sm:hidden p-1 -ml-1 text-ink-500 dark:text-ink-400 hover:text-ink-700 dark:hover:text-ink-800">
+          className="sm:hidden p-1 -ml-1 text-ivory-600 hover:text-ivory-200">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -841,34 +847,41 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
         {conversation.otherPartyAvatarUrl ? (
           <img src={cldImg(conversation.otherPartyAvatarUrl, { w: ImgSize.avatarSm })} alt={conversation.otherPartyName}
             loading="lazy" decoding="async"
-            className="w-9 h-9 rounded-full object-cover border border-cream-300" />
+            className="w-9 h-9 rounded-full object-cover"
+            style={{ border: '1px solid rgba(205, 183, 143, 0.22)' }} />
         ) : (
-          <div className="w-9 h-9 rounded-full flex items-center justify-center bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center"
+               style={{
+                 background: 'rgba(205, 183, 143, 0.08)',
+                 border: '1px solid rgba(205, 183, 143, 0.22)',
+                 color: 'var(--accent-action)',
+               }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-ink-400 dark:text-ink-500">
+                 strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
             </svg>
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-ink-800 dark:text-ink-900 text-sm truncate">
+          <div className="type-body font-semibold truncate" style={{ color: 'var(--text-headline)' }}>
             {conversation.otherPartyName}
           </div>
           {conversation.listingTitle && (
-            <div className="text-xs text-brand-700 dark:text-brand-700 truncate">
+            <div className="type-caption truncate" style={{ color: 'var(--accent-action)' }}>
               {conversation.listingTitle}
             </div>
           )}
         </div>
       </div>
 
-      {/* Mesaj akışı */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-cream-50 dark:bg-ink-900">
+      {/* Mesaj akışı — GROUND tier (page bg, cards konusuyor uzerinde) */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
+           style={{ background: 'var(--surface-base)' }}>
         {loading ? (
           <SkeletonMessages count={5} />
         ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-sm text-ink-400">
+          <div className="flex items-center justify-center h-full type-body" style={{ color: 'var(--text-muted)' }}>
             Sohbete ilk mesajı sen yaz
           </div>
         ) : messages.map(m => <MessageBubble key={m.id} m={m} />)}
@@ -893,27 +906,28 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       )}
 
       {/* Kompozer — dosya ekle + metin + sesli mesaj + gönder */}
-      <form onSubmit={handleSend} className="px-3 py-3 border-t border-cream-200 dark:border-cream-300 flex items-center gap-2 flex-shrink-0">
-        {/* Kayıt modu: özel UI */}
+      <form onSubmit={handleSend} className="px-3 py-3 border-t border-hairline flex items-center gap-2 flex-shrink-0">
+        {/* Kayıt modu: özel UI (brick signal, dark theme) */}
         {recording ? (
           <>
             <button type="button" onClick={() => stopRecording(true)}
-                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-200 dark:bg-slate-700
-                               text-ink-600 dark:text-ink-300 hover:bg-cream-300 transition-colors shrink-0"
+                    className="w-10 h-10 grid place-items-center rounded-full transition-colors shrink-0"
+                    style={{ background: 'rgba(205, 183, 143, 0.08)', color: 'var(--text-secondary)', border: '1px solid rgba(205, 183, 143, 0.18)' }}
                     title="İptal">
               ×
             </button>
-            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-sm text-red-700 dark:text-red-300 font-mono">
+            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg"
+                 style={{ background: 'rgba(180, 106, 85, 0.12)', border: '1px solid rgba(180, 106, 85, 0.32)' }}>
+              <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: '#b46a55' }} />
+              <span className="type-body font-mono" style={{ color: '#d39481' }}>
                 Kayıt {fmtDuration(recDuration)}
               </span>
-              <span className="text-[11px] text-ink-500 ml-auto">Göndermek için durdur</span>
+              <span className="type-caption ml-auto">Göndermek için durdur</span>
             </div>
             <button type="button" onClick={() => stopRecording(false)}
                     disabled={sending}
-                    className="px-4 py-2 rounded-lg text-white text-sm font-semibold flex-shrink-0
-                               bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-50">
+                    className="type-overline px-4 py-2 rounded-lg text-white flex-shrink-0 transition-colors disabled:opacity-50"
+                    style={{ background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)', border: '1px solid rgba(180, 106, 85, 0.45)' }}>
               Durdur
             </button>
           </>
@@ -927,9 +941,8 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={sending}
                     title="Dosya / Foto ekle"
-                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-100 dark:bg-ink-700
-                               hover:bg-cream-200 dark:hover:bg-slate-700 text-ink-600 dark:text-ink-300
-                               disabled:opacity-50 transition-colors shrink-0">
+                    className="tier-raised tier-raised-hover w-10 h-10 grid place-items-center disabled:opacity-50 shrink-0"
+                    style={{ borderRadius: '999px', color: 'var(--text-secondary)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -942,9 +955,8 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                     onClick={startRecording}
                     disabled={sending}
                     title="Sesli mesaj kaydet"
-                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-100 dark:bg-ink-700
-                               hover:bg-cream-200 dark:hover:bg-slate-700 text-ink-600 dark:text-ink-300
-                               disabled:opacity-50 transition-colors shrink-0">
+                    className="tier-raised tier-raised-hover w-10 h-10 grid place-items-center disabled:opacity-50 shrink-0"
+                    style={{ borderRadius: '999px', color: 'var(--text-secondary)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -957,9 +969,8 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                     onClick={() => handleCall('audio')}
                     disabled={sending}
                     title="Sesli arama başlat (Jitsi)"
-                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-100 dark:bg-ink-700
-                               hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-ink-600 dark:text-ink-300
-                               hover:text-brand-700 disabled:opacity-50 transition-colors shrink-0">
+                    className="tier-raised tier-raised-hover w-10 h-10 grid place-items-center disabled:opacity-50 shrink-0"
+                    style={{ borderRadius: '999px', color: 'var(--text-secondary)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -972,9 +983,8 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
                     onClick={() => handleCall('video')}
                     disabled={sending}
                     title="Görüntülü arama başlat (Jitsi)"
-                    className="w-10 h-10 grid place-items-center rounded-full bg-cream-100 dark:bg-ink-700
-                               hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-ink-600 dark:text-ink-300
-                               hover:text-brand-700 disabled:opacity-50 transition-colors shrink-0">
+                    className="tier-raised tier-raised-hover w-10 h-10 grid place-items-center disabled:opacity-50 shrink-0"
+                    style={{ borderRadius: '999px', color: 'var(--text-secondary)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -1025,17 +1035,19 @@ function SendButton({ sending, disabled }) {
         position: 'relative',
         padding: '0 18px', height: 40,
         borderRadius: 10,
+        // Send = filled amber CTA (sayfada tek accent-filled element kurali):
+        // uzun bir konusmada bu buton sohbet penceresi icindeki ana eylem.
         background: disabled
-          ? 'rgba(148, 163, 184, 0.25)'
-          : 'linear-gradient(135deg, #1b1815, #8a7349)',
-        color: '#fff',
+          ? 'rgba(146, 134, 120, 0.20)'
+          : 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+        color: disabled ? 'var(--text-faint)' : '#1a1208',
         fontSize: 13,
         fontWeight: 700,
         letterSpacing: '0.02em',
-        border: 'none',
+        border: disabled ? '1px solid rgba(205, 183, 143, 0.10)' : '1px solid rgba(205, 183, 143, 0.45)',
         flexShrink: 0,
         cursor: disabled ? 'not-allowed' : 'pointer',
-        boxShadow: disabled ? 'none' : '0 6px 18px rgba(34, 31, 27, 0.32)',
+        boxShadow: disabled ? 'none' : '0 6px 18px rgba(205, 183, 143, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
         transition: 'transform 150ms, box-shadow 200ms, background 200ms',
       }}
       onMouseDown={e => !disabled && (e.currentTarget.style.transform = 'translateY(1px) scale(0.98)')}
@@ -1055,7 +1067,7 @@ function SendButton({ sending, disabled }) {
         <span className="inline-flex items-center gap-1.5">
           Gönder
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M3 12 21 3 14 21l-3-8-8-1Z" stroke="#cdb78f" strokeWidth="2" strokeLinejoin="round" />
+            <path d="M3 12 21 3 14 21l-3-8-8-1Z" stroke="#1a1208" strokeWidth="2" strokeLinejoin="round" />
           </svg>
         </span>
       )}

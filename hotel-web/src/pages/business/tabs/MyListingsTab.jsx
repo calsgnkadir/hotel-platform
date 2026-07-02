@@ -45,13 +45,13 @@ export default function MyListingsTab({ applications = [] }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-[12px] tabular-nums" style={{ color: '#928678' }}>{listings.length} ilan</p>
+        <p className="type-caption tabular-nums">{listings.length} ilan</p>
+        {/* '+ Yeni İlan' = sayfadaki tek filled-amber CTA (spec: max 1 accent element/page) */}
         <button onClick={() => setFormTarget('new')}
-          className="px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.14em] rounded-2xl transition-all hover:-translate-y-0.5"
+          className="type-overline px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5 cta-glow"
           style={{
             background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
             color: '#1a1208',
-            boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
           }}>
           + Yeni İlan
         </button>
@@ -89,30 +89,30 @@ export default function MyListingsTab({ applications = [] }) {
             const views = listing.viewCount || 0
             const conversion = views > 0 ? Math.round((listingApplications / views) * 100) : null
             return (
-            <div key={listing.id} className="card p-4">
+            <div key={listing.id} className="tier-raised tier-raised-hover p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-ink-800 dark:text-ink-900">{listing.title}</h3>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      listing.status === 'ACTIVE' ? 'bg-brand-50 text-brand-700' :
-                      listing.status === 'PAUSED' ? 'bg-amber-50 text-amber-700' :
-                      'bg-cream-100 text-ink-500'}`}>
+                    <h3 className="type-heading" style={{ fontSize: '16px' }}>{listing.title}</h3>
+                    <span className={`badge ${
+                      listing.status === 'ACTIVE' ? 'badge-accepted' :
+                      listing.status === 'PAUSED' ? 'badge-pending' :
+                      'badge-expired'}`}>
                       {STATUS_LABELS[listing.status]}
                     </span>
                   </div>
-                  <p className="text-xs text-ink-500 mt-1">
+                  <p className="type-caption mt-1">
                     {POSITION_LABELS[listing.position]} · {JOB_TYPE_LABELS[listing.jobType]}
                   </p>
-                  {/* Dalga 4 / Teknik 5 — Conversion satiri */}
-                  <p className="text-[11px] mt-1 font-medium tabular-nums" style={{ color: '#cdb78f' }}>
+                  {/* Conversion — champagne accent bilgi satiri */}
+                  <p className="type-caption mt-1 tabular-nums" style={{ color: 'var(--accent-action)' }}>
                     {views.toLocaleString('tr-TR')} görüntülenme · {listingApplications} başvuru
                     {conversion !== null && ` · %${conversion} dönüşüm`}
                   </p>
                   {(() => {
                     const s = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
                     return s ? (
-                      <p className="text-xs text-brand-700 font-medium mt-0.5">{s}</p>
+                      <p className="type-caption font-medium mt-0.5" style={{ color: 'var(--accent-action)' }}>{s}</p>
                     ) : null
                   })()}
                   {/* Faz E2: slot özeti */}
@@ -125,23 +125,22 @@ export default function MyListingsTab({ applications = [] }) {
                       ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}–${next.endTime?.slice(0, 5)}`
                       : null
                     return (
-                      <p className="text-xs text-brand-700 dark:text-brand-700 font-medium mt-0.5">
+                      <p className="type-caption font-medium mt-0.5" style={{ color: 'var(--accent-action)' }}>
                         {total} vardiya
                         {nextStr && ` · en yakın: ${nextStr}`}
                         {totalSeats > 0 && ` · ${filled}/${totalSeats} dolu`}
                       </p>
                     )
                   })()}
-                  <p className="text-xs text-ink-400 mt-0.5">
+                  <p className="type-caption mt-0.5">
                     {new Date(listing.createdAt).toLocaleDateString('tr-TR')}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                  {/* FAZ D1 — son 8 hafta başvuru trendi */}
+                  {/* Son 8 hafta başvuru trendi */}
                   <div className="flex items-center gap-1.5"
                        title={`Son 8 hafta: ${last8wTotal} başvuru`}>
-                    <span className="text-[10px] uppercase tracking-[0.22em] font-medium tabular-nums"
-                          style={{ color: '#928678' }}>
+                    <span className="type-overline tabular-nums">
                       {last8wTotal}
                     </span>
                     <Sparkline data={trendData} color="#cdb78f" width={56} height={20} />
@@ -149,25 +148,29 @@ export default function MyListingsTab({ applications = [] }) {
                   <div className="flex gap-2 flex-wrap justify-end">
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => setFormTarget(listing)}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">
+                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
+                      style={{ background: 'rgba(205, 183, 143, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
                       Düzenle
                     </button>
                   )}
                   {listing.status === 'ACTIVE' && (
                     <button onClick={() => handleStatusChange(listing.id, 'PAUSED')}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
+                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
+                      style={{ background: 'rgba(200, 146, 58, 0.10)', color: '#e0b766', border: '1px solid rgba(200, 146, 58, 0.28)' }}>
                       Durdur
                     </button>
                   )}
                   {listing.status === 'PAUSED' && (
                     <button onClick={() => handleStatusChange(listing.id, 'ACTIVE')}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-emerald-100 transition-colors font-medium">
+                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
+                      style={{ background: 'rgba(122, 159, 122, 0.12)', color: '#a8c8a8', border: '1px solid rgba(122, 159, 122, 0.30)' }}>
                       Aktifleştir
                     </button>
                   )}
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => handleStatusChange(listing.id, 'CLOSED')}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-cream-100 text-ink-600 hover:bg-cream-200 transition-colors font-medium">
+                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
+                      style={{ background: 'rgba(180, 106, 85, 0.08)', color: '#d39481', border: '1px solid rgba(180, 106, 85, 0.22)' }}>
                       Kapat
                     </button>
                   )}
@@ -224,7 +227,7 @@ function Pagination({ page, totalPages, onChange }) {
       </PageBtn>
       {pageNumbers().map((n, i) => (
         n === '…'
-          ? <span key={`e${i}`} className="w-9 text-center text-[13px]" style={{ color: '#6b6358' }}>…</span>
+          ? <span key={`e${i}`} className="w-9 text-center type-body" style={{ color: 'var(--text-faint)' }}>…</span>
           : <PageBtn key={n} active={n === page} onClick={() => onChange(n)} ariaLabel={`Sayfa ${n}`}>
               {n}
             </PageBtn>
@@ -241,14 +244,16 @@ function Pagination({ page, totalPages, onChange }) {
 }
 
 function PageBtn({ children, active, disabled, onClick, ariaLabel }) {
+  // Active pagination = FEATURED equivalent (single item highlight); passive = raised
   return (
     <button type="button" onClick={onClick} disabled={disabled}
             aria-label={ariaLabel} aria-current={active ? 'page' : undefined}
-            className="min-w-[36px] h-9 inline-flex items-center justify-center px-3 rounded-xl text-[12px] font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+            className={`min-w-[36px] h-9 inline-flex items-center justify-center px-3 rounded-xl type-caption transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5 ${
+              active ? 'tier-featured' : 'tier-raised'
+            }`}
             style={{
-              background: active ? 'rgba(205, 183, 143, 0.12)' : 'rgba(27, 24, 21, 0.75)',
-              color:      active ? '#f5efe2' : '#c9bdaa',
-              border:    `1px solid ${active ? 'rgba(205, 183, 143, 0.42)' : 'rgba(205, 183, 143, 0.10)'}`,
+              color: active ? 'var(--text-headline)' : 'var(--text-secondary)',
+              fontWeight: active ? 600 : 500,
             }}>
       {children}
     </button>

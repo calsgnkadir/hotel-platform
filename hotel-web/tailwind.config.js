@@ -75,14 +75,19 @@ export default {
           800: '#52442b', 900: '#352c1c',
         },
         neon:  { 400: '#d4a853', 500: '#cdb78f', 600: '#b8902d' },
+        // cream.* was "light bg / light border" legacy. Remapped so bg-cream-*
+        // reads as subtle raised surface and border-cream-* reads as visible
+        // (but low-contrast) hairline separator on dark bg.
         cream: {
-          50: '#221f1b', 100: '#1b1815', 200: '#13110f', 300: '#0c0a08',
-          400: '#0c0a08', 500: '#0c0a08',
+          50: '#221f1b', 100: '#1b1815', 200: '#332e26', 300: '#3a352d',
+          400: '#4a3f33', 500: '#5a4d3e',
         },
+        // ink.* was "dark-text-on-light" in legacy light theme. Ramp INVERTED so
+        // old text-ink-800/900 (headline) renders BRIGHT on dark bg, not dark.
         ink: {
-          50:  '#f5efe2', 100: '#ede4d3', 200: '#dfd2bb', 300: '#c9bdaa',
-          400: '#a89c89', 500: '#928678', 600: '#6b6358', 700: '#4d4740',
-          800: '#2c2823', 900: '#13110f',
+          50:  '#2c2823', 100: '#4d4740', 200: '#6b6358', 300: '#928678',
+          400: '#a89c89', 500: '#c9bdaa', 600: '#dfd2bb', 700: '#ede4d3',
+          800: '#f5efe2', 900: '#faf6ec',
         },
       },
       scale: { '98': '0.98' },
