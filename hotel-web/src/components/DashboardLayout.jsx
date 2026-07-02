@@ -10,7 +10,7 @@ import EmailVerifyBanner from './EmailVerifyBanner'
 import NotificationBell from './NotificationBell'
 import SettingsMenu from './SettingsMenu'
 
-/* ───────── Lucide-style inline SVG ikonlar ───────── */
+/* ───────── Lucide-style inline SVG ikonlar (active state: fill + stroke) ───────── */
 const Icons = {
   overview:     <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>,
   listings:     <><path d="M20 7h-9M20 12h-9M20 17h-9"/><circle cx="5" cy="7" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="5" cy="17" r="1"/></>,
@@ -33,10 +33,13 @@ const Icons = {
   eye:          <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>,
 }
 
-function Icon({ name, size = 16 }) {
+function Icon({ name, size = 16, active = false }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    <svg width={size} height={size} viewBox="0 0 24 24"
+         fill={active ? 'currentColor' : 'none'}
+         fillOpacity={active ? 0.14 : 0}
+         stroke="currentColor" strokeWidth={active ? 1.8 : 1.6}
+         strokeLinecap="round" strokeLinejoin="round"
          aria-hidden="true" className="flex-shrink-0">
       {Icons[name] || Icons.overview}
     </svg>
@@ -57,7 +60,6 @@ const businessNav = [
   { id: 'overview',      tKey: 'nav.overview',             icon: 'overview' },
   { id: 'mylistings',    tKey: 'nav.myListings',           icon: 'briefcase' },
   { id: 'applications',  tKey: 'nav.incomingApplications', icon: 'inbox' },
-  // 'workers' (Bizde Calisanlar) — SettingsMenu icine tasindi
   { id: 'analytics',     label: 'Analitik',                icon: 'trending' },
   { id: 'messages',      tKey: 'nav.messages',             icon: 'messages' },
   { id: 'profile',       label: 'Profilim',                icon: 'building' },
@@ -122,31 +124,26 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
       {/* === SIDEBAR === */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-[240px] z-40 flex flex-col backdrop-blur-xl border-r
+        className={`fixed top-0 left-0 bottom-0 w-[240px] z-40 flex flex-col backdrop-blur-xl border-r border-hairline
                     transform transition-transform duration-300
                     ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-        style={{
-          background: 'rgba(19, 17, 15, 0.94)',
-          borderColor: 'rgba(205, 183, 143, 0.08)',
-        }}
+        style={{ background: 'rgba(19, 17, 15, 0.94)' }}
         aria-label="Ana navigasyon">
         {/* Logo */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b"
-             style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-hairline">
           <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2">
-            <span className="text-2xl tracking-wider" style={{ color: '#f5efe2' }}>AJANSHOTEL</span>
-            <span className="text-[9px] uppercase tracking-[0.28em]" style={{ color: '#928678' }}>istanbul</span>
+            <span className="type-heading tracking-wider">AJANSHOTEL</span>
+            <span className="type-overline">istanbul</span>
           </Link>
           <button onClick={() => setMobileOpen(false)}
-                  className="lg:hidden p-1 rounded"
-                  style={{ color: '#928678' }}
+                  className="lg:hidden p-1 rounded text-ivory-600 hover:text-ivory-200"
                   aria-label="Menüyü kapat">
             <Icon name="close" size={18} />
           </button>
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {navItems.map(item => (
             <NavItem key={item.id}
                      item={item}
@@ -156,9 +153,8 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           ))}
         </nav>
 
-        {/* Footer */}
-        <div className="border-t flex-shrink-0 p-3 space-y-2"
-             style={{ borderColor: 'rgba(205, 183, 143, 0.08)' }}>
+        {/* Footer — quiet tier (never champagne bg — active nav zaten champagne) */}
+        <div className="border-t border-hairline flex-shrink-0 p-3 space-y-2">
           <div className="flex items-center justify-between gap-2 px-1">
             <LanguageSwitcher />
             <WsConnectionBadge />
@@ -166,21 +162,16 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           {isBusiness && bizProfile?.id && (
             <a href={`/p/business/${bizProfile.id}`} target="_blank" rel="noopener noreferrer"
                title="Public profilini yeni sekmede ac"
-               className="flex items-center justify-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] px-3 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
-               style={{
-                 background: 'rgba(205, 183, 143, 0.08)',
-                 color: '#cdb78f',
-                 border: '1px solid rgba(205, 183, 143, 0.22)',
-               }}>
+               className="tier-raised tier-raised-hover flex items-center justify-center gap-1.5 px-3 py-2 type-overline text-ivory-400 hover:text-ivory-200">
               <Icon name="external" size={11} /> Public Profilim
             </a>
           )}
           <button onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] px-4 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-2xl type-overline transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'rgba(180, 106, 85, 0.10)',
+                    background: 'rgba(180, 106, 85, 0.08)',
                     color: '#d39481',
-                    border: '1px solid rgba(180, 106, 85, 0.25)',
+                    border: '1px solid rgba(180, 106, 85, 0.22)',
                   }}>
             <Icon name="logout" size={12} /> Çıkış
           </button>
@@ -189,28 +180,23 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
       {/* === MAIN CONTENT === */}
       <div className="lg:pl-[240px] min-h-screen relative z-10">
-        {/* Top bar — mobile hamburger + brand fallback, sag actions her durumda */}
-        <header className="sticky top-[2px] z-20 backdrop-blur-xl border-b"
-                style={{
-                  background: 'rgba(19, 17, 15, 0.72)',
-                  borderColor: 'rgba(205, 183, 143, 0.08)',
-                }}>
+        {/* Top bar — hairline, no competing brightness */}
+        <header className="sticky top-[2px] z-20 backdrop-blur-xl border-b border-hairline"
+                style={{ background: 'rgba(19, 17, 15, 0.72)' }}>
           <div className="px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
             {/* Mobile: hamburger + brand */}
             <div className="flex items-center gap-2 lg:hidden">
               <button onClick={() => setMobileOpen(true)}
-                      className="p-2 rounded-2xl"
-                      style={{ background: 'rgba(205, 183, 143, 0.08)', color: '#cdb78f' }}
+                      className="tier-raised p-2 text-champagne-300"
                       aria-label="Menü">
                 <Icon name="menu" size={18} />
               </button>
               <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-1.5">
-                <span className="text-xl tracking-wider" style={{ color: '#f5efe2' }}>AJANSHOTEL</span>
+                <span className="type-heading tracking-wider">AJANSHOTEL</span>
               </Link>
             </div>
             {/* Desktop: aktif sayfa basligi sol tarafta */}
-            <h2 className="hidden lg:block text-[14px] font-medium"
-                style={{ color: '#c9bdaa', letterSpacing: '-0.01em', fontFamily: 'Inter, sans-serif' }}>
+            <h2 className="hidden lg:block type-subhead">
               {currentTitle}
             </h2>
 
@@ -222,26 +208,19 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           </div>
         </header>
 
-        <main className="fade-in" style={{ color: '#ede4d3' }}>
+        <main className="fade-in text-ivory-200">
           <EmailVerifyBanner />
 
-          {/* Page heading strip — Syne display, generous rhythm */}
+          {/* Page heading strip — type-display + hairline underline */}
           <div className="px-4 lg:px-8 pt-8 lg:pt-12 pb-6">
-            <h1 className=""
-                style={{
-                  color: '#f5efe2',
-                  fontSize: 'clamp(32px, 4.5vw, 44px)',
-                  fontWeight: 600,
-                  letterSpacing: '-0.025em',
-                  lineHeight: 1.05,
-                }}>
+            <h1 className="type-display" style={{ fontSize: 'clamp(32px, 4.5vw, 44px)', lineHeight: 1.05 }}>
               {currentTitle}
             </h1>
             <div aria-hidden className="mt-3 h-px max-w-[80px]"
                  style={{ background: 'linear-gradient(90deg, rgba(205, 183, 143, 0.55), transparent)' }} />
           </div>
 
-          <div className="px-4 lg:px-8 pb-16 text-[14px]">
+          <div className="px-4 lg:px-8 pb-16">
             {children}
           </div>
         </main>
@@ -250,41 +229,32 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   )
 }
 
-/* ───────── NavItem komponenti — hairline + champagne accent rail ───────── */
+/* ───────── NavItem — active = FEATURED tier, passive = quiet type-caption ───────── */
 function NavItem({ item, active, onClick, label }) {
   return (
     <button
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all"
+      className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+        active
+          ? 'tier-featured'
+          : 'hover:bg-graphite-700/40'
+      }`}
       style={{
-        background: active ? 'rgba(205, 183, 143, 0.08)' : 'transparent',
-        color:      active ? '#f5efe2' : '#928678',
-        border:     'none',
-        letterSpacing: '-0.005em',
-        fontFamily: 'Inter, sans-serif',
-      }}
-      onMouseEnter={(e) => {
-        if (!active) {
-          e.currentTarget.style.background = 'rgba(205, 183, 143, 0.04)'
-          e.currentTarget.style.color = '#ede4d3'
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!active) {
-          e.currentTarget.style.background = 'transparent'
-          e.currentTarget.style.color = '#928678'
-        }
+        color: active ? 'var(--text-headline)' : 'var(--text-muted)',
       }}>
       {/* Active accent rail — champagne hairline on left edge */}
       {active && (
         <span aria-hidden className="absolute left-0 top-2 bottom-2 w-[2px] rounded-full"
               style={{ background: 'linear-gradient(180deg, #cdb78f, #b89e6e)' }} />
       )}
-      <span style={{ color: active ? '#cdb78f' : '#6b6358' }}>
-        <Icon name={item.icon} size={16} />
+      <span className={active ? 'text-champagne-300' : 'text-ivory-700'}>
+        <Icon name={item.icon} size={16} active={active} />
       </span>
-      <span className="flex-1 text-left">{label}</span>
+      <span className={`flex-1 text-left ${active ? 'type-body' : 'type-caption'}`}
+            style={{ fontWeight: active ? 600 : 500 }}>
+        {label}
+      </span>
     </button>
   )
 }

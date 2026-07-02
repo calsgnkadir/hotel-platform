@@ -190,3 +190,94 @@ body, .role-app-bg {
     0 0 12px rgba(205, 183, 143, 0.32),
     0 0 28px rgba(184, 144, 45, 0.22);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * FAZ 5.UX6 — 3-tier card hierarchy (bkz DESIGN_TOKENS.md)
+ *
+ *   .tier-ground    — page bg ile aynidir, border yok. Passive wrapper.
+ *   .tier-raised    — surface shift + hairline border. StatCard, list row.
+ *   .tier-featured  — champagne border + shadow. Yalnizca 1 element/page.
+ *
+ * Kural: bir sayfada 2+ FEATURED olmasin. Goz sadece bir yere yerlesmeli.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.tier-ground {
+  background: var(--surface-base);
+  border-radius: 12px;
+}
+
+.tier-raised {
+  background: var(--surface-raised);
+  border: 1px solid rgba(205, 183, 143, 0.08);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+.tier-raised-hover {
+  transition: background-color 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+.tier-raised-hover:hover {
+  background: var(--surface-floating);
+  border-color: rgba(205, 183, 143, 0.18);
+}
+
+.tier-featured {
+  background: var(--surface-floating);
+  border: 1px solid rgba(205, 183, 143, 0.35);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(205, 183, 143, 0.12);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * FAZ 5.UX6 — Typography scale (Inter only). Uniform siniflandirma.
+ *
+ *   .type-display   32/40  600  -0.02em   H1 (page heading)
+ *   .type-heading   20/28  600  -0.01em   H2 (card title)
+ *   .type-subhead   15/22  500   0        H3 (subsection)
+ *   .type-body      14/20  400   0        prose
+ *   .type-caption   12/16  500   0.02em   meta (timestamps, hints)
+ *   .type-overline  10/14  600   0.22em   uppercase eyebrow / label
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.type-display {
+  font-size: clamp(28px, 4.5vw, 32px);
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-headline);
+}
+.type-heading {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-headline);
+}
+.type-subhead {
+  font-size: 15px;
+  line-height: 1.47;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.type-body {
+  font-size: 14px;
+  line-height: 1.43;
+  font-weight: 400;
+  color: var(--text-primary);
+}
+.type-caption {
+  font-size: 12px;
+  line-height: 1.33;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+.type-overline {
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}

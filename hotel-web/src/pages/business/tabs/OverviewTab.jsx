@@ -56,29 +56,23 @@ export default function OverviewTab({ applications, onTabChange }) {
           ))}
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl"
-             style={{
-               background: 'linear-gradient(135deg, rgba(27, 24, 21, 0.75) 0%, rgba(13, 11, 9, 0.92) 100%)',
-               border: '1px solid rgba(205, 183, 143, 0.10)',
-               boxShadow: '0 10px 32px rgba(0,0,0,0.30)',
-             }}>
+        <div className="tier-raised relative overflow-hidden">
           <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-30"
                style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22), transparent 70%)', filter: 'blur(24px)' }} />
-          <div className="relative px-5 py-3.5 flex items-center justify-between"
-               style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
+          <div className="relative px-5 py-3.5 flex items-center justify-between border-b border-hairline">
             <div>
-              <h2 className="text-[15px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
+              <h2 className="type-heading" style={{ fontSize: '15px' }}>
                 Son Başvurular
               </h2>
-              <p className="text-[11px] mt-0.5" style={{ color: '#928678' }}>
+              <p className="type-caption mt-0.5">
                 En son {Math.min(5, applications.length)} başvuru
               </p>
             </div>
             <motion.button
               whileHover={{ x: 3 }}
               onClick={() => onTabChange('applications')}
-              className="text-[12px] font-medium"
-              style={{ color: '#cdb78f' }}>
+              className="type-caption text-champagne-300"
+              style={{ fontWeight: 500 }}>
               Tümünü Gör
             </motion.button>
           </div>
@@ -136,17 +130,14 @@ function TodayFeed({ applications, onTabChange }) {
   }
 
   return (
-    <div className="card p-4">
-      <div className="flex items-center justify-between mb-3 pb-2 border-b"
-           style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
-        <h3 className="text-base tracking-[0.2em] uppercase"
-            style={{ color: '#cdb78f' }}>Bugünkü Akış</h3>
-        <span className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: '#6b6358' }}>{recent.length} olay</span>
+    <div className="tier-raised p-4">
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-hairline">
+        <h3 className="type-overline text-champagne-300" style={{ fontSize: '11px' }}>Bugünkü Akış</h3>
+        <span className="type-overline">{recent.length} olay</span>
       </div>
 
       {recent.length === 0 ? (
-        <p className="text-center text-xs py-6" style={{ color: '#6b6358' }}>
+        <p className="type-body text-center py-6" style={{ color: 'var(--text-faint)' }}>
           Son 24 saat sessiz.
         </p>
       ) : (
@@ -161,15 +152,15 @@ function TodayFeed({ applications, onTabChange }) {
                         boxShadow: `0 0 8px ${STATUS_DOT[app.status] || '#928678'}`,
                       }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium truncate" style={{ color: '#ede4d3' }}>
+                  <p className="type-body font-medium truncate">
                     {app.candidate?.fullName || 'Aday'}
                   </p>
-                  <p className="text-[11px] truncate" style={{ color: '#6b6358' }}>
+                  <p className="type-caption truncate" style={{ color: 'var(--text-faint)' }}>
                     {app.listing?.title || 'İlan'} · {STATUS_LABEL[app.status] || app.status}
                   </p>
                 </div>
-                <span className="text-[10px] flex-shrink-0 mt-0.5"
-                      style={{ color: '#6b6358' }}>
+                <span className="type-caption flex-shrink-0 mt-0.5"
+                      style={{ color: 'var(--text-faint)' }}>
                   {relativeTime(app.createdAt)}
                 </span>
               </button>
@@ -207,14 +198,14 @@ function BizRecentRow({ app, last, onClick }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[14px] font-medium truncate" style={{ color: '#ffffff', letterSpacing: '-0.005em' }}>
+          <span className="type-body font-medium truncate" style={{ color: 'var(--text-headline)' }}>
             {app.candidate?.fullName || 'Anonim'}
           </span>
           <ReliabilityBadge score={app.candidate?.reliabilityScore} />
         </div>
-        <div className="text-[11.5px] flex items-center gap-2 mt-0.5" style={{ color: '#c9bdaa' }}>
+        <div className="type-caption flex items-center gap-2 mt-0.5" style={{ color: 'var(--text-secondary)' }}>
           <span className="truncate">{app.listing?.title || '—'}</span>
-          <span style={{ color: '#6b6358' }}>·</span>
+          <span style={{ color: 'var(--text-faint)' }}>·</span>
           <span className="flex-shrink-0">{relative}</span>
         </div>
       </div>

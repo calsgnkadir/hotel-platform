@@ -1,18 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
-  // Tema v5 — FAZ D2 "Hospitality Night" (lacivert + altin):
-  // Brand: koyu lacivert (#1e3a5f) — sofistike, guven verici.
-  // Accent: sicak altin (#d4a853) — lüks his + sektör kimliği.
-  // Cream zemin korundu, ink antrasit korundu. Eski mor brand/terra adlari
-  // korundu (Tailwind class breakage olmasin), degerleri yeni paletle degisti.
+  // FAZ 5.UX6 — Token consolidation.
+  //   PRIMARY names: graphite / champagne / ivory / signal.
+  //   Legacy aliases (brand/terra/neon/cream/ink) remapped to new palette
+  //   values (46 dosyada 561 kullanim var — silmek yerine yeni degere baglandi).
+  //   Class isimleri isliyor, tonlar dogru gorunuyor.
   darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
-        // FAZ 5.UX4 — ONE family: Inter across all UI (400/500/600/700).
-        // display/syne/bebas/geist alias'lari geriye donuk uyumluluk icin Inter'e
-        // yonlendirildi; artik hicbir yerde ayri bir aile yuklenmiyor.
+        // ONE family — Inter (400/500/600/700). Legacy alias'lar Inter'e yonlendirir.
         sans:    ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         display: ['Inter', 'system-ui', 'sans-serif'],
         syne:    ['Inter', 'system-ui', 'sans-serif'],
@@ -20,21 +18,7 @@ export default {
         geist:   ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // ── PRIMARY: Koyu lacivert (legacy — yeni Tailwind class'lar graphite/champagne kullanmali)
-        brand: {
-          50:  '#f1f5fb',
-          100: '#dde7f3',
-          200: '#b8cae5',
-          300: '#8ba9d2',
-          400: '#5b85bf',
-          500: '#3461a3',
-          600: '#234a82',
-          700: '#1e3a5f',
-          800: '#15243d',
-          900: '#0c1726',
-        },
-
-        // ── FAZ 5.UX3 — Warm graphite (yeni surface base)
+        // ── PRIMARY palette ───────────────────────────────────────────────
         graphite: {
           50:  '#e8e4dc',
           100: '#c8c0b3',
@@ -44,16 +28,14 @@ export default {
           500: '#332a20',
           600: '#221f1b',   // surface-floating
           700: '#1b1815',   // surface-raised
-          800: '#13110f',   // surface-base — body bg
+          800: '#13110f',   // surface-base (body bg)
           900: '#0c0a08',
         },
-
-        // ── FAZ 5.UX3 — Champagne (yeni primary accent — neon-gold yerine)
         champagne: {
           50:  '#f5efde',
           100: '#ebe1c8',
           200: '#dccaa5',
-          300: '#cdb78f',   // ana accent — default
+          300: '#cdb78f',   // default accent
           400: '#b89e6e',
           500: '#a08654',
           600: '#8a7349',
@@ -61,154 +43,76 @@ export default {
           800: '#52442b',
           900: '#352c1c',
         },
-
-        // ── FAZ 5.UX3 — Ivory text family (cool white yerine)
         ivory: {
           50:  '#faf6ec',
-          100: '#f5efe2',   // headline ivory
-          200: '#ede4d3',   // body ivory
+          100: '#f5efe2',   // headline
+          200: '#ede4d3',   // body
           300: '#dfd2bb',
-          400: '#c9bdaa',   // secondary muted
+          400: '#c9bdaa',   // secondary
           500: '#a89c89',
-          600: '#928678',   // tertiary muted
+          600: '#928678',   // tertiary
           700: '#6b6358',
           800: '#4d4740',
           900: '#2c2823',
         },
-
-        // ── ACCENT: Sıcak altın (CTA + vurgu)
-        // Eski 'terra' adı korundu uyumluluk için, değer altin/amber-warm
-        terra: {
-          50:  '#fefcf2',
-          100: '#fef7d7',
-          200: '#fde9a5',
-          300: '#fbd768',
-          400: '#f7c43c',
-          500: '#d4a853',   // ← accent ana ton (sicak altin)
-          600: '#b8902d',
-          700: '#936b1e',
-          800: '#6e4f17',
-          900: '#4a3510',
-        },
-
-        // ── BACKGROUND: Kremsi off-white (sıcak nötr — korunur)
-        cream: {
-          50:  '#fdfbf7',
-          100: '#faf7f2',
-          200: '#f4ede2',
-          300: '#ebe0cc',
-          400: '#ddccae',
-          500: '#c9b388',
-        },
-
-        // ── TEXT: Antrasit (korunur)
-        ink: {
-          50:  '#f8f6f4',
-          100: '#e8e4df',
-          200: '#cfc8c0',
-          300: '#a9a097',
-          400: '#766c61',
-          500: '#544c45',
-          600: '#3d3631',
-          700: '#2a2522',
-          800: '#1f1c1a',
-          900: '#171513',
-        },
-
-        // ── LEGACY uyumluluk (eski "neon" mor referansları — yeni paletle altın)
-        neon: {
-          400: '#f7c43c',
-          500: '#d4a853',
-          600: '#b8902d',
-        },
-
-        // FAZ 5.UX3 — Muted status colors (sage/brick/ochre — never neon)
         signal: {
-          // Sage — Kabul, Aktif Vardiya, Online presence
-          green: {
-            DEFAULT: '#7a9f7a',
-            50:  '#eaf2ea',
-            500: '#7a9f7a',
-            600: '#5e8460',
-            700: '#456649',
-          },
-          // Brick — Red, Ban, Dead-letter, kritik hata
-          coral: {
-            DEFAULT: '#b46a55',
-            50:  '#f5e7e2',
-            500: '#b46a55',
-            600: '#94503f',
-            700: '#723b2d',
-          },
-          // Ochre — Bekliyor / hold / warning
-          amber: {
-            DEFAULT: '#c8923a',
-            500: '#c8923a',
-            600: '#a3762d',
-          },
+          green: { DEFAULT: '#7a9f7a', 50: '#eaf2ea', 500: '#7a9f7a', 600: '#5e8460', 700: '#456649' },
+          coral: { DEFAULT: '#b46a55', 50: '#f5e7e2', 500: '#b46a55', 600: '#94503f', 700: '#723b2d' },
+          amber: { DEFAULT: '#c8923a', 500: '#c8923a', 600: '#a3762d' },
+        },
+
+        // ── LEGACY aliases — remapped to primary palette (breakage yok) ─────
+        // brand.* -> graphite.*, terra.* -> champagne.*, neon.* -> champagne.*
+        // cream.* -> ivory.* (dark theme uyumu icin), ink.* -> ivory.* invert
+        brand: {
+          50:  '#f5efde', 100: '#ebe1c8', 200: '#dccaa5', 300: '#cdb78f',
+          400: '#b89e6e', 500: '#a08654', 600: '#8a7349', 700: '#6e5b39',
+          800: '#52442b', 900: '#352c1c',
+        },
+        terra: {
+          50:  '#f5efde', 100: '#ebe1c8', 200: '#dccaa5', 300: '#cdb78f',
+          400: '#b89e6e', 500: '#d4a853', 600: '#b8902d', 700: '#8a7349',
+          800: '#52442b', 900: '#352c1c',
+        },
+        neon:  { 400: '#d4a853', 500: '#cdb78f', 600: '#b8902d' },
+        cream: {
+          50: '#221f1b', 100: '#1b1815', 200: '#13110f', 300: '#0c0a08',
+          400: '#0c0a08', 500: '#0c0a08',
+        },
+        ink: {
+          50:  '#f5efe2', 100: '#ede4d3', 200: '#dfd2bb', 300: '#c9bdaa',
+          400: '#a89c89', 500: '#928678', 600: '#6b6358', 700: '#4d4740',
+          800: '#2c2823', 900: '#13110f',
         },
       },
       scale: { '98': '0.98' },
       keyframes: {
-        shimmer: {
-          '0%':   { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
-        fadeUp: {
-          '0%':   { opacity: '0', transform: 'translateY(10px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
+        shimmer:   { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+        fadeUp:    { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
         glowPulse: {
-          '0%, 100%': { boxShadow: '0 0 0 0 rgba(107, 33, 168, 0.30)' },
-          '50%':       { boxShadow: '0 0 0 10px rgba(107, 33, 168, 0)' },
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(205, 183, 143, 0.30)' },
+          '50%':      { boxShadow: '0 0 0 10px rgba(205, 183, 143, 0)' },
         },
-        // FAZ 5.4 — WordPlay benchmark keyframes (mor brand'imize uyarlanmis)
-        // textShadow 3 mor ton arasinda gecis — hero baslik icin neon his
-        textGlow: {
-          // D2: lacivert + altin tonlarinda gecis (eski mor neon yerine)
-          '0%':   { textShadow: '0 0 5px #1e3a5f, 0 0 15px #b8902d, 0 0 20px #d4a853' },
-          '50%':  { textShadow: '0 0 8px #d4a853, 0 0 20px #f7c43c, 0 0 30px #234a82' },
-          '100%': { textShadow: '0 0 10px #0c1726, 0 0 25px #f7c43c, 0 0 35px #1e3a5f' },
-        },
-        // -10px ile +10px arasinda nazikce kaymasi
-        floatY: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%':       { transform: 'translateY(-10px)' },
-        },
-        // Background gradient'i 15sn boyunca konum degistirir — sayfa nefes alir
+        floatY:     { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
         gradientXY: {
           '0%, 100%': { backgroundSize: '400% 400%', backgroundPosition: 'left center' },
-          '50%':       { backgroundSize: '200% 200%', backgroundPosition: 'right center' },
-        },
-        // Decorative ikon icin — scale + 360deg rotate
-        sparkle: {
-          '0%':   { transform: 'scale(1) rotate(0deg)' },
-          '50%':  { transform: 'scale(1.2) rotate(180deg)' },
-          '100%': { transform: 'scale(1) rotate(360deg)' },
+          '50%':      { backgroundSize: '200% 200%', backgroundPosition: 'right center' },
         },
       },
       animation: {
-        shimmer:     'shimmer 1.5s infinite',
-        'fade-up':   'fadeUp 0.6s ease-out',
+        shimmer:      'shimmer 1.5s infinite',
+        'fade-up':    'fadeUp 0.6s ease-out',
         'glow-pulse': 'glowPulse 2s infinite',
-        // FAZ 5.4 — WordPlay benchmark
-        'text-glow':   'textGlow 2s ease-in-out infinite alternate',
-        'float-y':     'floatY 3s ease-in-out infinite',
+        'float-y':    'floatY 3s ease-in-out infinite',
         'gradient-xy': 'gradientXY 15s ease infinite',
-        sparkle:       'sparkle 10s linear infinite',
       },
       boxShadow: {
-        // Mor glow tonları (eski teal/terra yerine)
-        'glow-sm':  '0 2px 12px rgba(107, 33, 168, 0.15)',
-        'glow':     '0 4px 20px rgba(107, 33, 168, 0.22)',
-        'glow-lg':  '0 8px 32px rgba(107, 33, 168, 0.35)',
-        'terra-sm': '0 2px 12px rgba(217, 70, 239, 0.20)',
-        'terra':    '0 4px 20px rgba(217, 70, 239, 0.30)',
-        // FAZ 5.4 — WordPlay benchmark: double-layer neon glow CTA butonlar icin
-        // D2: 'purple-glow' / 'magenta-glow' isimleri korundu (Tailwind class refs varsa kırılmasın), tonlar lacivert+altin
-        'purple-glow':  '0 0 5px #1e3a5f, 0 0 20px #b8902d',
-        'magenta-glow': '0 0 5px #d4a853, 0 0 20px #f7c43c',
-        'soft-glow':    '0 0 5px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.3)',
+        // 3-tier tokens (see DESIGN_TOKENS.md)
+        'tier-raised':   'inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+        'tier-featured': '0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(205, 183, 143, 0.12)',
+        // Champagne CTA / active nav glow
+        'accent-glow':   '0 0 24px rgba(205, 183, 143, 0.30)',
+        'cta-glow':      '0 0 0 1px rgba(212, 168, 83, 0.45), 0 8px 24px rgba(212, 168, 83, 0.30)',
       },
     },
   },

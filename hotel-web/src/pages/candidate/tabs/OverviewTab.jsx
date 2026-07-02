@@ -77,30 +77,25 @@ export default function OverviewTab({ user, applications, onTabChange }) {
           sekmelere erisim sagliyor, ortada redundant 5 kart gerek yok */}
 
       {applications.length > 0 && (
-        <motion.div variants={ITEM} className="relative overflow-hidden rounded-2xl"
-          style={{
-            background: '#1b1815',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-          }}>
+        <motion.div variants={ITEM} className="tier-raised relative overflow-hidden">
           {/* Köşe champagne blob */}
           <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-30"
                style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22), transparent 70%)', filter: 'blur(28px)' }} />
 
-          <div className="relative px-6 py-4 flex items-center justify-between"
-               style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
+          <div className="relative px-6 py-4 flex items-center justify-between border-b border-hairline">
             <div>
-              <h2 className="text-[16px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
+              <h2 className="type-heading" style={{ fontSize: '16px' }}>
                 Son başvurular
               </h2>
-              <p className="text-[11px] mt-1 uppercase tracking-[0.18em]" style={{ color: '#928678' }}>
+              <p className="type-overline mt-1">
                 En son {Math.min(3, applications.length)} başvurun
               </p>
             </div>
             <motion.button
               whileHover={{ x: 3 }}
               onClick={() => onTabChange('applications')}
-              className="text-[12px] font-medium underline-sweep"
-              style={{ color: '#cdb78f' }}>
+              className="type-caption underline-sweep text-champagne-300"
+              style={{ fontWeight: 500 }}>
               Tümü
             </motion.button>
           </div>
@@ -143,17 +138,14 @@ function ActivityStream({ applications, onTabChange }) {
   }
 
   return (
-    <div className="card p-5">
-      <div className="flex items-center justify-between mb-4 pb-3"
-           style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
-        <h3 className="text-[14px] font-semibold tracking-tight"
-            style={{ color: '#f5efe2', letterSpacing: '-0.01em' }}>Aktivite</h3>
-        <span className="text-[10px] font-medium uppercase tracking-[0.22em]"
-              style={{ color: '#6b6358' }}>{sorted.length} kayıt</span>
+    <div className="tier-raised p-5">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-hairline">
+        <h3 className="type-subhead" style={{ color: 'var(--text-headline)', fontWeight: 600 }}>Aktivite</h3>
+        <span className="type-overline">{sorted.length} kayıt</span>
       </div>
 
       {sorted.length === 0 ? (
-        <p className="text-center text-xs py-8" style={{ color: '#928678' }}>
+        <p className="type-body text-center py-8" style={{ color: 'var(--text-muted)' }}>
           Henüz başvuru yok. İlanlar sekmesinden başla.
         </p>
       ) : (
@@ -170,16 +162,15 @@ function ActivityStream({ applications, onTabChange }) {
                           boxShadow: `0 0 6px ${tint.color}66`,
                         }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium truncate transition-colors"
-                       style={{ color: '#ede4d3' }}>
+                    <p className="type-body font-medium truncate transition-colors">
                       {app.listing?.title || 'İlan'}
                     </p>
-                    <p className="text-[11px] truncate mt-0.5" style={{ color: '#928678' }}>
+                    <p className="type-caption truncate mt-0.5">
                       {app.listing?.businessName || ''} · {STATUS_LABEL[app.status] || app.status}
                     </p>
                   </div>
-                  <span className="text-[10px] flex-shrink-0 mt-1 tabular-nums"
-                        style={{ color: '#6b6358' }}>
+                  <span className="type-caption flex-shrink-0 mt-1 tabular-nums"
+                        style={{ color: 'var(--text-faint)' }}>
                     {relativeTime(app.createdAt)}
                   </span>
                 </button>
@@ -280,35 +271,6 @@ function StatCard({ label, value, color, data, delta, delay = 0 }) {
   )
 }
 
-function QuickActionTile({ label, desc, color, onClick }) {
-  return (
-    <motion.button onClick={onClick}
-      whileHover={{ y: -5, scale: 1.025 }}
-      whileTap={{ scale: 0.96 }}
-      transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-      className="relative overflow-hidden rounded-2xl text-left p-4 group min-h-[150px] flex flex-col justify-between cursor-pointer"
-    >
-      {/* Glass icerik */}
-      <div className="absolute inset-0 rounded-2xl pointer-events-none"
-           style={{
-             background: 'linear-gradient(155deg, rgba(13, 11, 9, 0.85) 0%, rgba(13, 11, 9, 0.96) 100%)',
-             border: `1px solid ${color}22`,
-             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
-           }} />
-
-      <div className="relative">
-        <div className="text-[14px] font-semibold mb-0.5" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
-          {label}
-        </div>
-        <div className="text-[11px] line-clamp-1" style={{ color: '#c9bdaa' }}>
-          {desc}
-        </div>
-      </div>
-
-    </motion.button>
-  )
-}
-
 const ROW = {
   hidden:  { opacity: 0, x: -10 },
   visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 220, damping: 24 } },
@@ -337,16 +299,16 @@ function RecentAppRow({ app, last }) {
         {(app.listing?.businessName || '?').charAt(0).toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[14px] font-medium truncate" style={{ color: '#ede4d3', letterSpacing: '-0.005em' }}>
+        <div className="type-body font-medium truncate">
           {app.listing?.title}
         </div>
-        <div className="text-[11px] flex items-center gap-2 mt-0.5" style={{ color: '#928678' }}>
+        <div className="type-caption flex items-center gap-2 mt-0.5">
           <span className="truncate">{app.listing?.businessName}</span>
-          <span style={{ color: '#6b6358' }}>·</span>
+          <span style={{ color: 'var(--text-faint)' }}>·</span>
           <span>{relative}</span>
         </div>
       </div>
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-[0.14em] flex-shrink-0"
+      <span className="type-overline inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full flex-shrink-0"
             style={{
               background: `${tint.color}14`,
               border: `1px solid ${tint.color}44`,
@@ -372,7 +334,7 @@ function ProfileViewsWidget() {
   const unique = data?.uniqueViewers ?? 0
 
   return (
-    <div className="card p-5 flex items-center gap-4">
+    <div className="tier-raised p-5 flex items-center gap-4">
       <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
            style={{
              background: 'rgba(205, 183, 143, 0.08)',
@@ -385,14 +347,13 @@ function ProfileViewsWidget() {
         </svg>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] uppercase tracking-[0.22em] font-medium"
-             style={{ color: '#928678' }}>
+        <div className="type-overline">
           PROFIL GÖRÜNTÜLENME · SON 90 GÜN
         </div>
         <div className="flex items-baseline gap-3 mt-1">
           <span className="tabular-nums"
                 style={{
-                  color: '#f5efe2',
+                  color: 'var(--text-headline)',
                   fontSize: '28px',
                   fontWeight: 600,
                   letterSpacing: '-0.03em',
@@ -401,7 +362,7 @@ function ProfileViewsWidget() {
                 }}>
             {total}
           </span>
-          <span className="text-[11px]" style={{ color: '#928678' }}>
+          <span className="type-caption">
             {unique > 0 ? `${unique} işletme baktı` : 'henüz işletme bakmadı'}
           </span>
         </div>
