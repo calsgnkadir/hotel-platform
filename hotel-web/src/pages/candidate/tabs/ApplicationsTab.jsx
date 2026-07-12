@@ -11,6 +11,8 @@ import EmptyState from '../../../components/EmptyState'
 import ReviewModal from '../../../components/ReviewModal'
 import { CAND_STATUS_FILTERS } from '../../../components/candidate/StatusBadge'
 import { useConfirm } from '../../../lib/useConfirm'
+import SlotChipGroup from '../../../components/SlotChipGroup'
+import { formatSalary } from '../../../lib/salary'
 
 /* FAZ 5.UX3 — muted status config (sage/brick/ochre/info-grey) */
 const STATUS_CONFIG = {
@@ -43,6 +45,9 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
   const [respondingId, setRespondingId] = useState(null)
   const [statusFilter, setStatusFilter] = useState('')
+  // FAZ 11.W1.1 — Rich card: anywhere-click expands detail inline.
+  // Wave 2'de split-panel gelince bu state kaldirilir.
+  const [expandedId, setExpandedId] = useState(null)
 
   const { data: myDocs = [] } = useQuery({
     queryKey: keys.documents.my(),
@@ -172,66 +177,77 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
         const date = new Date(app.createdAt)
         const day = date.getDate()
         const month = date.toLocaleDateString('tr-TR', { month: 'short' }).replace('.', '')
-        const initial = (app.listing?.businessName || '?').charAt(0).toUpperCase()
+        const dayName = date.toLocaleDateString('tr-TR', { weekday: 'short' }).replace('.', '')
+
+        // FAZ 11.W1.1 — Meta strip: slot ozeti + salary + district
+        const requestedSlots = app.requestedSlots || []
+        const salaryStr = formatSalary(
+          app.listing?.salaryMin, app.listing?.salaryMax,
+          app.listing?.salaryType, app.listing?.tipsIncluded
+        )
+        const isExpanded = expandedId === app.id
+        const hasPendingDoc = (app.documentRequests || []).some(dr => dr.status === 'PENDING')
+        const hasAttention = !!app.note || hasPendingDoc
 
         return (
           <motion.div key={app.id} variants={CARD}
             whileHover={{ y: -2 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-            className="tier-raised tier-raised-hover relative overflow-hidden group">
+            className="tier-raised tier-raised-hover relative overflow-hidden group cursor-pointer"
+            onClick={() => setExpandedId(isExpanded ? null : app.id)}>
             {/* Sol accent rail — always visible, uniform 3px */}
             <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
                   style={{ background: sc.color }} />
-            {/* Köşede yüzen status renk blob — quieter */}
-            <span aria-hidden className="absolute -top-16 -right-16 w-44 h-44 rounded-full pointer-events-none transition-opacity duration-500 opacity-25 group-hover:opacity-45"
-                  style={{ background: `radial-gradient(circle, ${sc.accent} 0%, transparent 70%)`, filter: 'blur(28px)' }} />
 
-            <div className="relative p-5 flex items-start gap-4">
-              {/* SOL: Date Capsule — champagne hairline, no gold gradient text */}
-              <div className="flex-shrink-0 text-center px-3 py-2.5 rounded-2xl"
+            <div className="relative p-4 pl-5 flex items-start gap-4">
+              {/* SOL: Date capsule — day + dayName + month (Airbnb Trips pattern) */}
+              <div className="flex-shrink-0 text-center px-2.5 py-2 rounded-2xl"
                    style={{
                      background: 'rgba(205, 183, 143, 0.06)',
                      border: '1px solid rgba(205, 183, 143, 0.16)',
-                     minWidth: 60,
+                     minWidth: 56,
                    }}>
                 <div className="tabular-nums leading-none"
                      style={{
                        color: 'var(--text-headline)',
-                       fontSize: '24px',
+                       fontSize: '22px',
                        fontWeight: 600,
                        letterSpacing: '-0.04em',
-                       filter: 'drop-shadow(0 0 12px rgba(205, 183, 143, 0.22))',
                      }}>{day}</div>
-                <div className="type-overline mt-1.5">{month}</div>
+                <div className="type-caption mt-0.5" style={{ fontSize: '10px', textTransform: 'lowercase' }}>{month}</div>
+                <div className="type-overline mt-0.5" style={{ fontSize: '9px', letterSpacing: '0.15em' }}>{dayName}</div>
               </div>
 
-              {/* ORTA: avatar + işletme + ilan */}
-              <div className="flex-1 min-w-0 flex items-start gap-3">
-                <div className="w-11 h-11 rounded-full flex items-center justify-center font-semibold text-[15px] flex-shrink-0"
-                     style={{
-                       background: 'rgba(205, 183, 143, 0.08)',
-                       border: '1px solid rgba(205, 183, 143, 0.22)',
-                       color: '#cdb78f',
-                     }}>
-                  {initial}
+              {/* ORTA: scannable primary line + meta chip strip */}
+              <div className="flex-1 min-w-0">
+                {/* Primary line: position · businessName (title-weight) */}
+                <div className="type-heading truncate" style={{ fontSize: '15px', lineHeight: 1.3 }}>
+                  {app.listing?.title || 'İlan'}
+                  {app.listing?.businessName && (
+                    <>
+                      <span className="mx-1.5" style={{ color: 'var(--text-faint)', fontWeight: 400 }}>·</span>
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{app.listing.businessName}</span>
+                    </>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="type-heading truncate" style={{ fontSize: '15px' }}>
-                    {app.listing?.title || '—'}
-                  </div>
-                  <div className="type-caption mt-0.5 flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" strokeWidth={1.6} className="w-3 h-3 flex-shrink-0">
-                      <path strokeLinecap="round" strokeLinejoin="round"
-                            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-                    </svg>
-                    <span className="truncate">{app.listing?.businessName || '—'}</span>
-                  </div>
+
+                {/* Meta chip strip: slot + salary + district */}
+                <div className="mt-1.5">
+                  <SlotChipGroup
+                    items={[
+                      requestedSlots.length > 0 && `${requestedSlots.length} vardiya`,
+                      requestedSlots[0] && `${new Date(requestedSlots[0].date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${(requestedSlots[0].startTime || '').slice(0, 5)}`,
+                      salaryStr,
+                      app.listing?.businessDistrict,
+                    ].filter(Boolean)}
+                    max={4}
+                  />
                 </div>
               </div>
 
-              {/* SAĞ: status badge + butonlar */}
-              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+              {/* SAĞ: status badge + primary action (secondary butonlar rail'e alindi) */}
+              <div className="flex flex-col items-end gap-2 flex-shrink-0"
+                   onClick={(e) => e.stopPropagation()}>
                 <StatusPill cfg={sc} />
 
                 {app.status === 'HELD' && (
@@ -289,9 +305,55 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
               </div>
             </div>
 
-            {app.note && (
-              <div className="relative px-5 pb-4">
-                <div className="rounded-xl p-3 text-[13px] flex items-start gap-2"
+            {/* FAZ 11.W1.1 — Attention rail: collapsed state'de note/doc req varsa mini badge */}
+            {hasAttention && !isExpanded && (
+              <div className="relative px-5 pb-3 -mt-1 flex items-center gap-2 flex-wrap"
+                   onClick={(e) => e.stopPropagation()}>
+                {app.note && (
+                  <span className="inline-flex items-center gap-1.5 type-caption px-2 py-1 rounded-full"
+                        style={{
+                          background: 'rgba(200, 146, 58, 0.10)',
+                          border: '1px solid rgba(200, 146, 58, 0.28)',
+                          color: '#e0b766',
+                        }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    İşletme notu
+                  </span>
+                )}
+                {hasPendingDoc && (
+                  <span className="inline-flex items-center gap-1.5 type-caption px-2 py-1 rounded-full"
+                        style={{
+                          background: 'rgba(205, 183, 143, 0.08)',
+                          border: '1px solid rgba(205, 183, 143, 0.28)',
+                          color: 'var(--accent-action)',
+                        }}>
+                    {(app.documentRequests || []).filter(dr => dr.status === 'PENDING').length} belge talebi
+                  </span>
+                )}
+                <button type="button" onClick={() => setExpandedId(app.id)}
+                        className="type-caption ml-auto text-champagne-300 hover:text-ivory-100 transition-colors"
+                        style={{ fontWeight: 500 }}>
+                  Detay ▽
+                </button>
+              </div>
+            )}
+
+            {/* Collapse toggle when expanded — top-right of expanded region */}
+            {isExpanded && (
+              <div className="relative px-5 pb-1 flex justify-end"
+                   onClick={(e) => e.stopPropagation()}>
+                <button type="button" onClick={() => setExpandedId(null)}
+                        className="type-overline text-ivory-600 hover:text-champagne-300 transition-colors">
+                  Kapat ▲
+                </button>
+              </div>
+            )}
+
+            {isExpanded && app.note && (
+              <div className="relative px-5 pb-4" onClick={(e) => e.stopPropagation()}>
+                <div className="rounded-xl p-3 flex items-start gap-2"
                      style={{
                        background: 'rgba(200, 146, 58, 0.08)',
                        border: '1px solid rgba(200, 146, 58, 0.22)',
@@ -302,12 +364,12 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                     <path strokeLinecap="round" strokeLinejoin="round"
                           d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
                   </svg>
-                  <span><b className="font-semibold">İşletme Notu:</b> {app.note}</span>
+                  <span className="type-body"><b className="font-semibold">İşletme Notu:</b> {app.note}</span>
                 </div>
               </div>
             )}
 
-          {app.documentRequests?.length > 0 && (
+          {isExpanded && app.documentRequests?.length > 0 && (
             <div className="px-4 pb-4">
               <div className="type-overline mb-2">Belge Talepleri</div>
               <div className="space-y-2">

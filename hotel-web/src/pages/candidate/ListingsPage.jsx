@@ -72,6 +72,10 @@ const SENSITIVE_DOC_TYPES = Object.keys(SENSITIVE_DOC_LABELS)
 export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   const [coverLetter, setCoverLetter] = useState('')
   const [loading, setLoading] = useState(false)
+  // FAZ 11.W1.3 — Success choreography state
+  // idle -> submitting -> success -> (auto-close 6s or user acts)
+  const [submitState, setSubmitState] = useState('idle')
+  const [successResp, setSuccessResp] = useState(null)  // { conversationId, applicationId }
 
   const [selectedSlotIds, setSelectedSlotIds] = useState([])
   const [files, setFiles] = useState([])   // [{file, type}]
@@ -128,19 +132,19 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
     }
 
     setLoading(true)
+    setSubmitState('submitting')
     try {
       // 1) Application gönder backend conversation açar + sistem mesajı yazar
       const appResp = await hotelApi.applyToListing({
         jobListingId: listing.id,
         coverLetter,
         slotIds: selectedSlotIds,
-        grantedSensitiveTypes: [],   // legacy alan — yeni akışta kullanılmaz
+        grantedSensitiveTypes: [],
       })
 
       const convId = appResp.conversationId
       // 2) Seçili dosyaları conversation'a attachment olarak yükle
       if (convId && files.length > 0) {
-        toast.loading(`${files.length} belge yükleniyor...`, { id: 'upload' })
         for (const f of files) {
           try {
             await hotelApi.sendMessageAttachment(convId, f, '')
@@ -148,34 +152,127 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             toast.error(`${f.name} yüklenemedi: ${extractErrorMessage(err)}`, { id: f.name })
           }
         }
-        toast.dismiss('upload')
       }
 
-      toast.success('Başvurun gönderildi! Mesajlaşma açıldı.')
+      // FAZ 11.W1.3 — success state: summary card + auto-close 6s
+      setSuccessResp({ conversationId: convId, applicationId: appResp.id })
+      setSubmitState('success')
       onSuccess?.()
-      onClose()
-      // 3) Mesajlaşma sekmesine yönlendir
-      onMessagesOpen?.(convId)
     } catch (err) {
       toast.error(extractErrorMessage(err))
+      setSubmitState('idle')
     } finally {
       setLoading(false)
     }
+  }
+
+  // Auto-close after 6s in success state
+  useEffect(() => {
+    if (submitState !== 'success') return
+    const t = setTimeout(() => onClose(), 6000)
+    return () => clearTimeout(t)
+  }, [submitState, onClose])
+
+  function handleOpenMessages() {
+    onMessagesOpen?.(successResp?.conversationId)
+    onClose()
+  }
+
+  // FAZ 11.W1.3 — Success view (submit sonrasi 6sn kalir)
+  if (submitState === 'success') {
+    const firstSlot = allSlots.find(s => selectedSlotIds.includes(s.id))
+    const firstSlotStr = firstSlot
+      ? `${new Date(firstSlot.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })} · ${(firstSlot.startTime || '').slice(0, 5)}`
+      : null
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="p-8 flex flex-col items-center text-center">
+            {/* Check morph icon */}
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                 style={{
+                   background: 'rgba(122, 159, 122, 0.14)',
+                   border: '1px solid rgba(122, 159, 122, 0.42)',
+                   boxShadow: '0 0 24px rgba(122, 159, 122, 0.25)',
+                 }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7a9f7a"
+                   strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
+                   style={{ animation: 'check-morph 400ms ease-out forwards' }}>
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <style>{`
+                @keyframes check-morph {
+                  0% { stroke-dasharray: 30; stroke-dashoffset: 30; transform: scale(0.9); }
+                  100% { stroke-dasharray: 30; stroke-dashoffset: 0; transform: scale(1); }
+                }
+              `}</style>
+            </div>
+
+            <h2 className="type-display" style={{ fontSize: '22px' }}>Başvurun gönderildi</h2>
+            <p className="type-body mt-2" style={{ color: 'var(--text-secondary)' }}>
+              <b>{listing.businessName}</b> · {listing.title}
+            </p>
+            {firstSlotStr && (
+              <p className="type-caption mt-1">İlk vardiya: {firstSlotStr}</p>
+            )}
+
+            {/* Timeline preview: 3 nodes */}
+            <div className="w-full max-w-[280px] mt-6 flex items-center justify-between">
+              {['Başvuruldu', 'İnceleniyor', 'Karar'].map((label, i) => (
+                <div key={label} className="flex flex-col items-center flex-1">
+                  <span className="w-3 h-3 rounded-full"
+                        style={{
+                          background: i === 0 ? '#cdb78f' : 'rgba(205, 183, 143, 0.20)',
+                          border: '1px solid rgba(205, 183, 143, 0.42)',
+                          boxShadow: i === 0 ? '0 0 12px rgba(205, 183, 143, 0.55)' : 'none',
+                        }} />
+                  <span className="type-overline mt-2"
+                        style={{ color: i === 0 ? 'var(--accent-action)' : 'var(--text-faint)' }}>
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3 mt-8 w-full max-w-[320px]">
+              <button type="button" onClick={onClose}
+                      className="tier-raised tier-raised-hover flex-1 py-2.5 type-overline"
+                      style={{ color: 'var(--text-secondary)' }}>
+                Başka ilan bul
+              </button>
+              <button type="button" onClick={handleOpenMessages}
+                      className="flex-1 py-2.5 type-overline rounded-2xl transition-all hover:-translate-y-0.5"
+                      style={{
+                        background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                        color: '#1a1208',
+                        boxShadow: '0 6px 18px rgba(205, 183, 143, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+                      }}>
+                Mesajlaşmayı Aç
+              </button>
+            </div>
+
+            <p className="type-caption mt-4" style={{ color: 'var(--text-faint)' }}>
+              6 saniye içinde otomatik kapanır
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
+        <div className="p-6 border-b border-hairline sticky top-0 z-10" style={{ background: 'var(--surface-raised)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
-                 style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.32)', color: '#cdb78f' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                 style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.32)', color: 'var(--accent-action)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-ink-900">{listing.title}</h2>
-              <p className="text-sm text-ink-500">{listing.businessName} · {listing.businessDistrict}</p>
+              <h2 className="type-heading">{listing.title}</h2>
+              <p className="type-caption">{listing.businessName} · {listing.businessDistrict}</p>
             </div>
           </div>
         </div>
@@ -315,13 +412,38 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             </p>
           </div>
 
-          {/* Footer */}
-          <div className="flex gap-3 pt-2 sticky bottom-0 bg-white dark:bg-ink-800 py-3 -mx-6 px-6 border-t border-cream-200">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm">İptal</button>
+          {/* Footer — filled amber CTA (modal-icinde tek accent) */}
+          <div className="flex gap-3 pt-2 sticky bottom-0 py-3 -mx-6 px-6 border-t border-hairline"
+               style={{ background: 'var(--surface-raised)' }}>
+            <button type="button" onClick={onClose}
+                    className="tier-raised tier-raised-hover flex-1 py-2.5 type-overline"
+                    style={{ color: 'var(--text-secondary)' }}>
+              İptal
+            </button>
             <button type="submit" disabled={loading || !hasFutureSlots}
-              className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-              style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
-              {loading ? 'Gönderiliyor...' : !hasFutureSlots ? 'Süresi Doldu' : 'Başvur'}
+              className="relative overflow-hidden flex-1 py-2.5 type-overline rounded-2xl transition-all disabled:opacity-60 hover:-translate-y-0.5"
+              style={{
+                background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                color: '#1a1208',
+                border: '1px solid rgba(205, 183, 143, 0.45)',
+                boxShadow: '0 6px 18px rgba(205, 183, 143, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+              }}>
+              {loading && (
+                <span aria-hidden className="absolute bottom-0 left-0 h-[2px]"
+                      style={{
+                        background: '#1a1208',
+                        opacity: 0.55,
+                        animation: 'submit-progress 1400ms ease-in-out infinite',
+                      }} />
+              )}
+              {loading ? 'Gönderiliyor…' : !hasFutureSlots ? 'Süresi Doldu' : 'Başvur'}
+              <style>{`
+                @keyframes submit-progress {
+                  0% { width: 0%; left: 0%; }
+                  50% { width: 60%; left: 20%; }
+                  100% { width: 0%; left: 100%; }
+                }
+              `}</style>
             </button>
           </div>
         </form>
