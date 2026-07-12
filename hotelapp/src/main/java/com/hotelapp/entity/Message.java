@@ -63,6 +63,12 @@ public class Message {
     @Builder.Default
     private Boolean isRead = false;
 
+    // FAZ 11.W3 — Quoted reply: bu mesaj baska bir mesaja yanit mi?
+    // Parent silinirse SET NULL (yanit ayakta kalir, "silinmis mesaj" gosterilir).
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_message_id")
+    private Message parentMessage;
+
     @PrePersist
     protected void onCreate() {
         if (sentAt == null) sentAt = LocalDateTime.now();

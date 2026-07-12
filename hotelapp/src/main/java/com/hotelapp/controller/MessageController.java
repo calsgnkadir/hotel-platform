@@ -116,4 +116,20 @@ public class MessageController {
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(Map.of("unread", messageService.countUnread(currentUser.getId())));
     }
+
+    /** FAZ 11.W3 — Reaksiyon toggle. Ayni reaksiyon = kaldir, farkli = degistir. */
+    @Operation(summary = "Mesaja reaksiyon ekle/kaldır (toggle)")
+    @PostMapping("/conversations/{conversationId}/messages/{messageId}/reaction")
+    @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<java.util.List<MessageDto.ReactionSummary>> toggleReaction(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long conversationId,
+            @PathVariable Long messageId,
+            @Valid @RequestBody ReactionRequest req) {
+        return ResponseEntity.ok(
+                messageService.toggleReaction(conversationId, messageId, currentUser.getId(), req.reaction()));
+    }
+
+    public record ReactionRequest(@jakarta.validation.constraints.NotBlank String reaction) {}
 }

@@ -23,4 +23,16 @@ public class PresenceController {
     public ResponseEntity<Set<Long>> online() {
         return ResponseEntity.ok(presenceService.getOnlineUserIds());
     }
+
+    /** FAZ 11.W3 — Tek kullanicinin son gorulme zamani (online ise lastSeen=null + online=true). */
+    @GetMapping("/last-seen/{userId}")
+    public ResponseEntity<java.util.Map<String, Object>> lastSeen(
+            @org.springframework.web.bind.annotation.PathVariable Long userId) {
+        boolean online = presenceService.getOnlineUserIds().contains(userId);
+        var lastSeen = presenceService.getLastSeen(userId);
+        var body = new java.util.HashMap<String, Object>();
+        body.put("online", online);
+        body.put("lastSeenAt", online ? null : (lastSeen != null ? lastSeen.toString() : null));
+        return ResponseEntity.ok(body);
+    }
 }

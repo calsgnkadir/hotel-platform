@@ -271,72 +271,191 @@ function fileTypeMeta(ext) {
   }
 }
 
-/* ── Tek mesaj balonu (attachment render dahil) ── */
-function MessageBubble({ m }) {
+/* ── FAZ 11.W3.3 — Reaction SVG preset (emoji yasak — proje kurali) ── */
+const REACTION_ICONS = {
+  heart:       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>,
+  check:       <polyline points="20 6 9 17 4 12"/>,
+  question:    <><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></>,
+  'thumbs-up': <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>,
+  alert:       <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>,
+  x:           <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
+}
+const REACTION_ORDER = ['heart', 'check', 'question', 'thumbs-up', 'alert', 'x']
+
+function ReactionIcon({ type, size = 12, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+         strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {REACTION_ICONS[type] || REACTION_ICONS.check}
+    </svg>
+  )
+}
+
+/* ── Tek mesaj balonu (attachment + reactions + quoted reply + turn grouping) ── */
+function MessageBubble({ m, showMeta = true, onReply, onReact }) {
   const isImage = m.attachmentType === 'image'
   const isAudio = m.attachmentType === 'audio'
   const isFile  = m.attachmentType === 'file'
   const hasAttach = !!m.attachmentUrl
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   // Sesli/Görüntülü arama davet mesajı?
   const call = !hasAttach ? parseCallInvite(m.content) : null
   if (call) return <CallInviteBubble m={m} type={call.type} url={call.url} />
 
+  const reactions = m.reactions || []
 
   return (
-    <div className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
-      {/* Msg bubble: mine = champagne tinted (aktif konusan tarafi belirginlestirir),
-          karsi taraf = ivory soft. Eski mor tint (#a78bfa/#ddd6fe) kaldirildi. */}
-      <div className={`max-w-[75%] rounded-2xl text-sm shadow-sm overflow-hidden
-        ${m.mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
-        style={{
-          background: m.mine
-            ? 'linear-gradient(135deg, #cdb78f 0%, #b89e6e 100%)'
-            : 'linear-gradient(135deg, #ede4d3 0%, #dfd2bb 100%)',
-          color: '#13110f',
-          border: `1px solid ${m.mine ? 'rgba(184, 158, 110, 0.45)' : 'rgba(205, 183, 143, 0.28)'}`,
-        }}>
+    <div className={`flex flex-col ${m.mine ? 'items-end' : 'items-start'}`}>
+      {/* FAZ 11.W3.2 — Turn header: gonderen + saat, sadece turn boundary'de */}
+      {showMeta && !m.mine && (
+        <div className="type-caption mb-1 px-1" style={{ color: 'var(--text-muted)' }}>
+          {m.senderName} · {formatTime(m.sentAt)}
+        </div>
+      )}
 
-        {/* Attachment */}
-        {hasAttach && isImage && (
-          <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer" className="block">
-            <img src={cldImg(m.attachmentUrl, { w: ImgSize.card })} alt={m.attachmentName || 'foto'}
-                 loading="lazy" decoding="async"
-                 className="max-h-72 w-auto object-contain bg-cream-100 dark:bg-ink-800" />
-          </a>
-        )}
-        {hasAttach && isAudio && (
-          <div className={`flex items-center gap-2 px-3 py-2.5 ${m.mine ? 'bg-brand-800/30' : 'bg-cream-100 dark:bg-ink-800/40'}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={1.8} stroke="currentColor"
-                 className={`w-5 h-5 shrink-0 ${m.mine ? 'text-white' : 'text-ink-500'}`}>
-              <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+      <div className="relative group/msg max-w-[75%]">
+        {/* Hover action bar — yanitla + reaksiyon */}
+        <div className={`absolute top-1 ${m.mine ? '-left-16' : '-right-16'} flex items-center gap-1
+                         opacity-0 group-hover/msg:opacity-100 transition-opacity z-10`}>
+          <button type="button" onClick={() => onReply?.(m)}
+                  title="Yanıtla"
+                  className="w-7 h-7 grid place-items-center rounded-full"
+                  style={{
+                    background: 'rgba(27, 24, 21, 0.92)',
+                    border: '1px solid rgba(205, 183, 143, 0.22)',
+                    color: '#cdb78f',
+                  }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" />
             </svg>
-            <audio controls preload="metadata" src={m.attachmentUrl} className="h-8 max-w-[200px]" />
+          </button>
+          <div className="relative">
+            <button type="button" onClick={() => setPickerOpen(v => !v)}
+                    title="Reaksiyon ekle"
+                    className="w-7 h-7 grid place-items-center rounded-full"
+                    style={{
+                      background: 'rgba(27, 24, 21, 0.92)',
+                      border: '1px solid rgba(205, 183, 143, 0.22)',
+                      color: '#cdb78f',
+                    }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+            {/* Reaksiyon secici popover */}
+            {pickerOpen && (
+              <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1.5 rounded-full z-20"
+                   style={{
+                     background: 'rgba(19, 17, 15, 0.97)',
+                     border: '1px solid rgba(205, 183, 143, 0.28)',
+                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
+                   }}>
+                {REACTION_ORDER.map(r => (
+                  <button key={r} type="button"
+                          onClick={() => { setPickerOpen(false); onReact?.(m, r) }}
+                          title={r}
+                          className="w-7 h-7 grid place-items-center rounded-full transition-all hover:scale-125"
+                          style={{ color: '#cdb78f' }}>
+                    <ReactionIcon type={r} size={14} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bubble */}
+        <div className={`rounded-2xl text-sm shadow-sm overflow-hidden
+          ${m.mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
+          style={{
+            background: m.mine
+              ? 'linear-gradient(135deg, #cdb78f 0%, #b89e6e 100%)'
+              : 'linear-gradient(135deg, #ede4d3 0%, #dfd2bb 100%)',
+            color: '#13110f',
+            border: `1px solid ${m.mine ? 'rgba(184, 158, 110, 0.45)' : 'rgba(205, 183, 143, 0.28)'}`,
+          }}>
+
+          {/* FAZ 11.W3.3 — Quoted reply stub */}
+          {m.parentMessageId && (
+            <div className="mx-2 mt-2 px-2.5 py-1.5 rounded-lg border-l-2"
+                 style={{
+                   background: 'rgba(19, 17, 15, 0.08)',
+                   borderLeftColor: '#8a7349',
+                 }}>
+              <div className="text-[10px] font-semibold" style={{ color: '#6e5b39' }}>
+                {m.parentSenderName || 'Mesaj'}
+              </div>
+              <div className="text-[11px] truncate" style={{ color: 'rgba(19, 17, 15, 0.65)' }}>
+                {m.parentPreview || 'Silinmiş mesaj'}
+              </div>
+            </div>
+          )}
+
+          {/* Attachment */}
+          {hasAttach && isImage && (
+            <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer" className="block">
+              <img src={cldImg(m.attachmentUrl, { w: ImgSize.card })} alt={m.attachmentName || 'foto'}
+                   loading="lazy" decoding="async"
+                   className="max-h-72 w-auto object-contain"
+                   style={{ background: 'rgba(19, 17, 15, 0.06)' }} />
+            </a>
+          )}
+          {hasAttach && isAudio && (
+            <div className="flex items-center gap-2 px-3 py-2.5"
+                 style={{ background: 'rgba(19, 17, 15, 0.06)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={1.8} stroke="currentColor"
+                   className="w-5 h-5 shrink-0" style={{ color: 'rgba(19, 17, 15, 0.55)' }}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+              </svg>
+              <audio controls preload="metadata" src={m.attachmentUrl} className="h-8 max-w-[200px]" />
+            </div>
+          )}
+          {hasAttach && isFile && <FileAttachment m={m} />}
+
+          {/* Metin (varsa) */}
+          {m.content && m.content.trim() && (
+            <div className="px-3.5 py-2 whitespace-pre-wrap break-words">{m.content}</div>
+          )}
+
+          {/* Zaman + read receipt */}
+          <div className="text-[10px] px-3 pb-1 text-right inline-flex items-center justify-end gap-1 w-full"
+               style={{ color: 'rgba(12, 23, 38, 0.60)' }}>
+            <span>{formatTime(m.sentAt)}</span>
+            {m.mine && <ReadReceipt isRead={m.isRead} />}
+          </div>
+        </div>
+
+        {/* FAZ 11.W3.3 — Reaksiyon chip'leri (bubble altina overlap) */}
+        {reactions.length > 0 && (
+          <div className={`flex items-center gap-1 -mt-1.5 relative z-[1] ${m.mine ? 'justify-end pr-2' : 'pl-2'}`}>
+            {reactions.map(r => (
+              <button key={r.reaction} type="button"
+                      onClick={() => onReact?.(m, r.reaction)}
+                      title={r.reaction}
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] tabular-nums transition-all hover:scale-110"
+                      style={{
+                        background: r.mine ? 'rgba(205, 183, 143, 0.30)' : 'rgba(19, 17, 15, 0.85)',
+                        border: `1px solid ${r.mine ? 'rgba(205, 183, 143, 0.55)' : 'rgba(205, 183, 143, 0.22)'}`,
+                        color: r.mine ? '#1a1208' : '#cdb78f',
+                      }}>
+                <ReactionIcon type={r.reaction} size={10} />
+                {r.count > 1 && <span className="font-semibold">{r.count}</span>}
+              </button>
+            ))}
           </div>
         )}
-        {hasAttach && isFile && <FileAttachment m={m} />}
-
-        {/* Metin (varsa) */}
-        {m.content && m.content.trim() && (
-          <div className="px-3.5 py-2 whitespace-pre-wrap break-words">{m.content}</div>
-        )}
-
-        {/* Zaman + WhatsApp-style read receipt (cift tik) */}
-        <div className="text-[10px] px-3 pb-1 text-right inline-flex items-center justify-end gap-1 w-full"
-             style={{ color: 'rgba(12, 23, 38, 0.60)' }}>
-          <span>{formatTime(m.sentAt)}</span>
-          {m.mine && <ReadReceipt isRead={m.isRead} />}
-        </div>
       </div>
     </div>
   )
 }
 
-/* Dalga 4 / UX 4 — WhatsApp-style cift tik (gonderildi/okundu) */
+/* Dalga 4 / UX 4 — WhatsApp-style cift tik (gonderildi/okundu)
+   FAZ 11.W3.2 — okundu rengi champagne (palet uyumu; eski info-blue idi) */
 function ReadReceipt({ isRead }) {
-  const color = isRead ? '#6b8aa3' : 'rgba(12, 23, 38, 0.45)'  // mavi / gri
+  const color = isRead ? '#8a7349' : 'rgba(12, 23, 38, 0.45)'  // champagne-koyu / gri
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color}
          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
@@ -407,8 +526,14 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
   const fileInputRef = useRef(null)
   const lastSeenIdRef = useRef(0)
   const scrollAnchorRef = useRef(null)
+  const scrollContainerRef = useRef(null)  // FAZ 11.W3.4 — scroll pill icin
   const queryClient = useQueryClient()
   const wsOk = useWsConnected()  // FAZ 4.8 — WS bağlıyken polling KAPALI
+
+  // FAZ 11.W3.3 — Quoted reply state
+  const [replyTo, setReplyTo] = useState(null)
+  // FAZ 11.W3.4 — Scroll pill: kullanici yukaridayken gelen mesaj sayisi
+  const [pendingNewCount, setPendingNewCount] = useState(0)
 
   // F0.10 + FAZ 1/#12 — Mesajlar useQuery
   // WS aktifken push gelir; sadece WS kopuksa 30sn fallback polling devreye girer.
@@ -431,6 +556,11 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     const subMsg = wsSubscribe('/user/queue/messages', (payload) => {
       if (payload?.conversationId === conversation.id) {
         queryClient.invalidateQueries({ queryKey: keys.conversations.messages(conversation.id) })
+        // FAZ 11.W3.4 — kullanici yukaridaysa scroll pill sayacini artir
+        const el = scrollContainerRef.current
+        if (el && el.scrollHeight - el.scrollTop - el.clientHeight > 200) {
+          setPendingNewCount(c => c + 1)
+        }
       }
       // Her durumda sohbet listesi de yenilensin (preview/lastMessageAt)
       queryClient.invalidateQueries({ queryKey: keys.conversations.list() })
@@ -447,12 +577,78 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       clearTimeout(typingTimeoutRef.current)
       typingTimeoutRef.current = setTimeout(() => setOtherTyping(false), 3000)
     })
+    // FAZ 11.W3.3 — Reaksiyon guncellemeleri: cache'deki mesajin reactions alanini yaz
+    const subReactions = wsSubscribe('/user/queue/reactions', (payload) => {
+      if (payload?.conversationId !== conversation.id) return
+      queryClient.setQueryData(keys.conversations.messages(conversation.id), (old) => {
+        if (!old?.content) return old
+        return {
+          ...old,
+          content: old.content.map(msg =>
+            msg.id === payload.messageId ? { ...msg, reactions: payload.reactions } : msg
+          ),
+        }
+      })
+    })
     return () => {
       subMsg.unsubscribe()
       subTyping.unsubscribe()
+      subReactions.unsubscribe()
       clearTimeout(typingTimeoutRef.current)
     }
   }, [conversation?.id, queryClient])
+
+  // FAZ 11.W3.3 — Reaksiyon toggle (optimistic yok — WS push aninda gelir)
+  async function handleReact(msg, reaction) {
+    try {
+      const updated = await hotelApi.toggleMessageReaction(conversation.id, msg.id, reaction)
+      queryClient.setQueryData(keys.conversations.messages(conversation.id), (old) => {
+        if (!old?.content) return old
+        return {
+          ...old,
+          content: old.content.map(m => m.id === msg.id ? { ...m, reactions: updated } : m),
+        }
+      })
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    }
+  }
+
+  // FAZ 11.W3.4 — Offline send queue: WS/agin koptugu anda gonderilen mesajlar
+  // sessionStorage'a yazilir, baglanti gelince otomatik drain edilir.
+  const OFFLINE_QUEUE_KEY = `ajanshotel.offline-queue.${conversation?.id}`
+  function queueOffline(content, parentMessageId) {
+    try {
+      const q = JSON.parse(sessionStorage.getItem(OFFLINE_QUEUE_KEY) || '[]')
+      q.push({ content, parentMessageId, at: Date.now() })
+      sessionStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q))
+    } catch {}
+  }
+  useEffect(() => {
+    if (!wsOk || !conversation) return
+    // Baglanti geldi — kuyrugu drain et
+    let cancelled = false
+    async function drain() {
+      let q = []
+      try { q = JSON.parse(sessionStorage.getItem(OFFLINE_QUEUE_KEY) || '[]') } catch {}
+      if (q.length === 0) return
+      sessionStorage.removeItem(OFFLINE_QUEUE_KEY)
+      for (const item of q) {
+        if (cancelled) return
+        try {
+          const msg = await hotelApi.sendMessage(conversation.id, item.content, item.parentMessageId || null)
+          appendMsg(msg)
+        } catch {
+          queueOffline(item.content, item.parentMessageId)  // tekrar kuyrukla
+          return
+        }
+      }
+      toast.success(`${q.length} bekleyen mesaj gönderildi`)
+      onMessageSent?.()
+    }
+    drain()
+    return () => { cancelled = true }
+  }, [wsOk, conversation?.id])
 
   // Backend page'i son→eski. UI eski→yeni istiyor.
   const messages = (messagesData?.content ?? []).slice().reverse()
@@ -493,15 +689,28 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
     const content = draft.trim()
     if (!content || sending) return
     setSending(true)
+    const parentId = replyTo?.id || null
     try {
-      const msg = await hotelApi.sendMessage(conversation.id, content)
+      const msg = await hotelApi.sendMessage(conversation.id, content, parentId)
       appendMsg(msg)
       setDraft('')
+      setReplyTo(null)
       lastSeenIdRef.current = msg.id
       setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
       onMessageSent?.()
     } catch (err) {
-      toast.error(extractErrorMessage(err))
+      // FAZ 11.W3.4 — Network hatasi ise offline kuyruga al, form'u bosaltma
+      const isNetwork = !err.response || err.code === 'ERR_NETWORK'
+      if (isNetwork) {
+        queueOffline(content, parentId)
+        setDraft('')
+        setReplyTo(null)
+        toast('Bağlantı yok — mesaj kuyruğa alındı, bağlanınca gönderilecek', {
+          icon: null, duration: 4000,
+        })
+      } else {
+        toast.error(extractErrorMessage(err))
+      }
     } finally {
       setSending(false)
     }
@@ -876,15 +1085,35 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
       </div>
 
       {/* Mesaj akışı — GROUND tier (page bg, cards konusuyor uzerinde) */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
-           style={{ background: 'var(--surface-base)' }}>
+      <div ref={scrollContainerRef}
+           className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5 relative"
+           style={{ background: 'var(--surface-base)' }}
+           onScroll={(e) => {
+             // Dibe yaklasinca pill'i sifirla
+             const el = e.currentTarget
+             if (el.scrollHeight - el.scrollTop - el.clientHeight < 200 && pendingNewCount > 0) {
+               setPendingNewCount(0)
+             }
+           }}>
         {loading ? (
           <SkeletonMessages count={5} />
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full type-body" style={{ color: 'var(--text-muted)' }}>
             Sohbete ilk mesajı sen yaz
           </div>
-        ) : messages.map(m => <MessageBubble key={m.id} m={m} />)}
+        ) : messages.map((m, i) => {
+          // FAZ 11.W3.2 — Turn-change grouping: farkli gonderen VEYA 5dk+ gap = yeni turn
+          const prev = messages[i - 1]
+          const isNewTurn = !prev
+            || prev.senderId !== m.senderId
+            || (new Date(m.sentAt) - new Date(prev.sentAt)) > 5 * 60_000
+          return (
+            <div key={m.id} className={isNewTurn ? 'pt-2.5' : ''}>
+              <MessageBubble m={m} showMeta={isNewTurn}
+                             onReply={setReplyTo} onReact={handleReact} />
+            </div>
+          )
+        })}
         {/* FAZ 1/#60 + G.7 — Karşı taraf yazıyor göstergesi (altın sine wave) */}
         {otherTyping && (
           <div className="flex items-center gap-2 px-3 py-2 text-xs text-ink-500 fade-in">
@@ -895,8 +1124,53 @@ function ChatWindow({ conversation, onBack, onMessageSent }) {
         <div ref={scrollAnchorRef} />
       </div>
 
+      {/* FAZ 11.W3.4 — Scroll pill: kullanici yukarida + yeni mesaj geldi */}
+      {pendingNewCount > 0 && (
+        <div className="relative">
+          <button type="button"
+                  onClick={() => {
+                    setPendingNewCount(0)
+                    scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className="absolute -top-12 left-1/2 -translate-x-1/2 z-20 px-3.5 py-1.5 rounded-full type-overline flex items-center gap-1.5 transition-all hover:-translate-y-0.5"
+                  style={{
+                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    color: '#1a1208',
+                    boxShadow: '0 6px 18px rgba(205, 183, 143, 0.40)',
+                  }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+            {pendingNewCount} yeni mesaj
+          </button>
+        </div>
+      )}
+
+      {/* FAZ 11.W3.3 — Quoted reply composer stub */}
+      {replyTo && (
+        <div className="px-4 py-2 border-t border-hairline flex items-center gap-2.5"
+             style={{ background: 'rgba(205, 183, 143, 0.04)' }}>
+          <div className="w-[3px] self-stretch rounded-full" style={{ background: '#cdb78f' }} />
+          <div className="flex-1 min-w-0">
+            <div className="type-caption font-semibold" style={{ color: 'var(--accent-action)' }}>
+              {replyTo.mine ? 'Kendine yanıt' : replyTo.senderName || 'Yanıt'}
+            </div>
+            <div className="type-caption truncate">
+              {replyTo.content?.trim() || replyTo.attachmentName || 'Ek dosya'}
+            </div>
+          </div>
+          <button type="button" onClick={() => setReplyTo(null)}
+                  className="w-6 h-6 grid place-items-center rounded-full text-ivory-600 hover:text-ivory-200"
+                  title="Yanıtı iptal et">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       {/* FAZ G.6 — Bağlamlı hızlı yanıt çipleri */}
-      {!recording && !sending && (
+      {!recording && !sending && !replyTo && (
         <QuickReplyChips
           role={user?.role}
           listingTitle={conversation?.listingTitle}
@@ -1168,12 +1442,24 @@ function saveStarred(set) {
   try { localStorage.setItem(STAR_KEY, JSON.stringify([...set])) } catch {}
 }
 
+const PANEL_KEY = 'ajanshotel.messages.context-panel'
+
 export default function MessagesPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [activeId, setActiveId] = useState(null)
   const [showListMobile, setShowListMobile] = useState(true)
   const [search, setSearch] = useState('')
+  // FAZ 11.W3.1 — Sag context panel toggle (kullanici tercihi: kalici)
+  const [panelOpen, setPanelOpen] = useState(() => {
+    try { return localStorage.getItem(PANEL_KEY) !== '0' } catch { return true }
+  })
+  function togglePanel() {
+    setPanelOpen(v => {
+      try { localStorage.setItem(PANEL_KEY, v ? '0' : '1') } catch {}
+      return !v
+    })
+  }
   // Dalga G3 — LinkedIn'den uyarlama: filter chip (tumu/okunmamis/yildizli)
   const [filter, setFilter] = useState('all')  // 'all' | 'unread' | 'starred'
   const [starred, setStarred] = useState(loadStarred)
@@ -1380,24 +1666,43 @@ export default function MessagesPage() {
         </div>
 
         {/* Orta — Aktif sohbet */}
-        <div className={`${!showListMobile ? 'flex' : 'hidden sm:flex'} flex-1 flex-col min-w-0`}>
+        <div className={`${!showListMobile ? 'flex' : 'hidden sm:flex'} flex-1 flex-col min-w-0 relative`}>
+          {/* FAZ 11.W3.1 — Context panel toggle (lg+ gorunur) */}
+          {active && (
+            <button type="button" onClick={togglePanel}
+                    title={panelOpen ? 'Detay panelini gizle' : 'Detay panelini göster'}
+                    className="hidden lg:grid absolute top-3 right-3 z-20 w-8 h-8 place-items-center rounded-full transition-all hover:-translate-y-0.5"
+                    style={{
+                      background: 'rgba(27, 24, 21, 0.92)',
+                      border: `1px solid ${panelOpen ? 'rgba(205, 183, 143, 0.42)' : 'rgba(205, 183, 143, 0.18)'}`,
+                      color: panelOpen ? '#cdb78f' : '#928678',
+                    }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {panelOpen
+                  ? <><polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" /></>
+                  : <><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></>}
+              </svg>
+            </button>
+          )}
           <ChatWindow
             conversation={active}
             onBack={() => setShowListMobile(true)}
             onMessageSent={refetchConvs} />
         </div>
 
-        {/* Sağ — Detay paneli (FAZ 1/#48 — sadece desktop xl+) */}
-        {active && (
-          <ConversationDetailPanel conversation={active} />
+        {/* Sağ — Context panel (FAZ 11.W3.1 — toggle'li, lg+) */}
+        {active && panelOpen && (
+          <ConversationDetailPanel conversation={active} userRole={user?.role} navigate={navigate} />
         )}
       </div>
     </div>
   )
 }
 
-/* FAZ 5.8 — Slack tarzi 3. sutun: sohbet detay paneli (lg+ ekranlarda, dark glass) */
-function ConversationDetailPanel({ conversation }) {
+/* FAZ 5.8 — Slack tarzi 3. sutun: sohbet detay paneli (lg+ ekranlarda, dark glass)
+   FAZ 11.W3.1 — Basvuru linki: business ise Wave 2 split-view'a derin link */
+function ConversationDetailPanel({ conversation, userRole, navigate }) {
   const c = conversation
   const online = useOnline(c?.otherPartyId)
   const [reportOpen, setReportOpen] = useState(false)
@@ -1610,6 +1915,23 @@ function ConversationDetailPanel({ conversation }) {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#cdb78f" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5 19.5 4.5m0 0v15m0-15h-15" /></svg>
             <span className="font-semibold">İlanı Görüntüle</span>
           </button>
+          {/* FAZ 11.W3.1 — Business: basvuruyu split-view'da ac (Wave 2 URL entegrasyonu) */}
+          {userRole === 'BUSINESS_OWNER' && c.applicationId && (
+            <button
+              onClick={() => navigate?.(`/business?tab=applications&id=${c.applicationId}`)}
+              className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5"
+              style={{
+                background: 'linear-gradient(135deg, rgba(212, 168, 83, 0.16) 0%, rgba(184, 144, 45, 0.10) 100%)',
+                color: '#d4a853',
+                border: '1px solid rgba(212, 168, 83, 0.35)',
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
+                <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              <span className="font-semibold">Başvuruyu Yönet</span>
+            </button>
+          )}
           <button
             onClick={() => setReportOpen(true)}
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5"

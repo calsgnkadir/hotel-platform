@@ -10,4 +10,7 @@ public class MessageRequest {
     @NotBlank(message = "Mesaj boş olamaz")
     @Size(max = 2000, message = "Mesaj en fazla 2000 karakter olabilir")
     private String content;
+
+    /** FAZ 11.W3 — Quoted reply: yanitlanan mesajin id'si (opsiyonel) */
+    private Long parentMessageId;
 }

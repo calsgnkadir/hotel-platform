@@ -582,13 +582,22 @@ export async function getConversationMessages(conversationId, { page = 0, size =
   return data  // PageResponse<MessageDto>
 }
 
-/** Mesaj gönder. */
-export async function sendMessage(conversationId, content) {
+/** Mesaj gönder. parentMessageId — quoted reply (FAZ 11.W3). */
+export async function sendMessage(conversationId, content, parentMessageId = null) {
   const { data } = await api.post(
     `/api/messages/conversations/${conversationId}/messages`,
-    { content }
+    { content, parentMessageId }
   )
   return data  // MessageDto
+}
+
+/** FAZ 11.W3 — Mesaja reaksiyon toggle. Doner: guncel aggregate [{reaction, count, mine}] */
+export async function toggleMessageReaction(conversationId, messageId, reaction) {
+  const { data } = await api.post(
+    `/api/messages/conversations/${conversationId}/messages/${messageId}/reaction`,
+    { reaction }
+  )
+  return data
 }
 
 /** Chat refactor v2: dosya/foto ekli mesaj gönder (multipart). */

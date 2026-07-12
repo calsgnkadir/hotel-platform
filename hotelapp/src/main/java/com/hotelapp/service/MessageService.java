@@ -8,6 +8,7 @@ import com.hotelapp.dto.StartConversationRequest;
 import com.hotelapp.entity.Application;
 import com.hotelapp.entity.Conversation;
 import com.hotelapp.entity.Message;
+import com.hotelapp.entity.MessageReaction;
 import com.hotelapp.entity.User;
 import com.hotelapp.enums.NotificationType;
 import com.hotelapp.enums.Role;
@@ -16,6 +17,7 @@ import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.ConversationRepository;
+import com.hotelapp.repository.MessageReactionRepository;
 import com.hotelapp.repository.MessageRepository;
 import com.hotelapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,11 +47,16 @@ public class MessageService {
 
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
+    private final MessageReactionRepository messageReactionRepository;  // FAZ 11.W3
     private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
     private final NotificationService notificationService;
     private final FileStorageService fileStorageService;
     private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#12 — WS broadcast
+
+    /** FAZ 11.W3 — Reaction whitelist (UI'da SVG render, emoji yok) */
+    private static final Set<String> ALLOWED_REACTIONS =
+            Set.of("heart", "check", "question", "thumbs-up", "alert", "x");
 
     // ----------------------------------------------------------------
     // Sohbet listesi (sayfalı, son mesaja göre azalan)
@@ -125,7 +132,17 @@ public class MessageService {
         Conversation conv = getConversationForUser(conversationId, userId);
         Page<Message> page = messageRepository.findByConversationIdOrderBySentAtDesc(
                 conv.getId(), pageable);
-        return PageResponse.of(page, m -> toMessageDto(m, userId));
+
+        // FAZ 11.W3 — Reaksiyonlari sayfa icin tek sorguda topla (N+1 onleme)
+        var messageIds = page.getContent().stream().map(Message::getId).toList();
+        java.util.Map<Long, java.util.List<MessageReaction>> reactionsByMsg = new java.util.HashMap<>();
+        if (!messageIds.isEmpty()) {
+            for (var r : messageReactionRepository.findAllByMessageIdIn(messageIds)) {
+                reactionsByMsg.computeIfAbsent(r.getMessage().getId(), k -> new java.util.ArrayList<>()).add(r);
+            }
+        }
+        return PageResponse.of(page, m -> toMessageDto(m, userId,
+                aggregateReactions(reactionsByMsg.get(m.getId()), userId)));
     }
 
     // ----------------------------------------------------------------
@@ -137,10 +154,21 @@ public class MessageService {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", senderId));
 
+        // FAZ 11.W3 — Quoted reply: parent ayni conversation'da olmali
+        Message parent = null;
+        if (req.getParentMessageId() != null) {
+            parent = messageRepository.findById(req.getParentMessageId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Mesaj", req.getParentMessageId()));
+            if (!parent.getConversation().getId().equals(conversationId)) {
+                throw new BusinessRuleException("Yanıtlanan mesaj bu sohbete ait değil");
+            }
+        }
+
         Message msg = Message.builder()
                 .conversation(conv)
                 .sender(sender)
                 .content(req.getContent().trim())
+                .parentMessage(parent)
                 .isRead(false)
                 .build();
         msg = messageRepository.save(msg);
@@ -330,6 +358,87 @@ public class MessageService {
     public record WsMessagePayload(Long conversationId, MessageDto message) {}
 
     // ----------------------------------------------------------------
+    // FAZ 11.W3 — Reaction toggle
+    // ----------------------------------------------------------------
+
+    /**
+     * WhatsApp modeli: kullanici basina mesaj basina 1 reaksiyon.
+     * - Ayni reaksiyon tekrar -> kaldir
+     * - Farkli reaksiyon -> degistir
+     * - Yoksa -> ekle
+     * Sonucta guncel aggregate her iki tarafa /user/queue/reactions ile push edilir.
+     */
+    @Transactional
+    public java.util.List<MessageDto.ReactionSummary> toggleReaction(
+            Long conversationId, Long messageId, Long userId, String reaction) {
+        if (!ALLOWED_REACTIONS.contains(reaction)) {
+            throw new BusinessRuleException("Geçersiz reaksiyon tipi");
+        }
+        Conversation conv = getConversationForUser(conversationId, userId);
+        Message msg = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mesaj", messageId));
+        if (!msg.getConversation().getId().equals(conversationId)) {
+            throw new BusinessRuleException("Mesaj bu sohbete ait değil");
+        }
+
+        var existing = messageReactionRepository.findByMessageIdAndUserId(messageId, userId);
+        if (existing.isPresent()) {
+            if (existing.get().getReaction().equals(reaction)) {
+                messageReactionRepository.delete(existing.get());   // toggle off
+            } else {
+                existing.get().setReaction(reaction);               // degistir
+                messageReactionRepository.save(existing.get());
+            }
+        } else {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", userId));
+            messageReactionRepository.save(MessageReaction.builder()
+                    .message(msg).user(user).reaction(reaction).build());
+        }
+
+        // Her iki tarafa guncel aggregate push (viewer-bazli 'mine' farkli)
+        Long candidateId = conv.getCandidate().getId();
+        Long ownerId     = conv.getBusinessOwner().getId();
+        try {
+            messagingTemplate.convertAndSendToUser(
+                    conv.getCandidate().getEmail(), "/queue/reactions",
+                    new WsReactionPayload(conversationId, messageId, reactionsFor(messageId, candidateId)));
+            messagingTemplate.convertAndSendToUser(
+                    conv.getBusinessOwner().getEmail(), "/queue/reactions",
+                    new WsReactionPayload(conversationId, messageId, reactionsFor(messageId, ownerId)));
+        } catch (Exception e) {
+            log.warn("WS reaction broadcast failed msg={}: {}", messageId, e.getMessage());
+        }
+
+        return reactionsFor(messageId, userId);
+    }
+
+    /** Tek mesajin aggregate reaksiyonlari — viewer perspektifiyle. */
+    private java.util.List<MessageDto.ReactionSummary> reactionsFor(Long messageId, Long viewerId) {
+        var all = messageReactionRepository.findAllByMessageId(messageId);
+        return aggregateReactions(all, viewerId);
+    }
+
+    private java.util.List<MessageDto.ReactionSummary> aggregateReactions(
+            java.util.List<MessageReaction> reactions, Long viewerId) {
+        if (reactions == null || reactions.isEmpty()) return java.util.List.of();
+        java.util.Map<String, java.util.List<MessageReaction>> byType = new java.util.LinkedHashMap<>();
+        for (var r : reactions) {
+            byType.computeIfAbsent(r.getReaction(), k -> new java.util.ArrayList<>()).add(r);
+        }
+        return byType.entrySet().stream()
+                .map(e -> MessageDto.ReactionSummary.builder()
+                        .reaction(e.getKey())
+                        .count(e.getValue().size())
+                        .mine(e.getValue().stream().anyMatch(r -> r.getUser().getId().equals(viewerId)))
+                        .build())
+                .toList();
+    }
+
+    public record WsReactionPayload(Long conversationId, Long messageId,
+                                    java.util.List<MessageDto.ReactionSummary> reactions) {}
+
+    // ----------------------------------------------------------------
     // Helpers
     // ----------------------------------------------------------------
 
@@ -376,7 +485,31 @@ public class MessageService {
     }
 
     private MessageDto toMessageDto(Message m, Long viewerId) {
+        // Tekli yol (send/broadcast) — reaksiyonlar yeni mesajda henuz yok
+        return toMessageDto(m, viewerId, java.util.List.of());
+    }
+
+    private MessageDto toMessageDto(Message m, Long viewerId,
+                                    java.util.List<MessageDto.ReactionSummary> reactions) {
         boolean mine = m.getSender().getId().equals(viewerId);
+
+        // FAZ 11.W3 — Quoted reply projeksiyonu
+        Long parentId = null;
+        String parentPreview = null;
+        String parentSenderName = null;
+        Message parent = m.getParentMessage();
+        if (parent != null) {
+            parentId = parent.getId();
+            String pc = parent.getContent();
+            if (pc == null || pc.isBlank()) {
+                parentPreview = parent.getAttachmentName() != null
+                        ? parent.getAttachmentName() : "Ek dosya";
+            } else {
+                parentPreview = pc.length() > 80 ? pc.substring(0, 80) + "…" : pc;
+            }
+            parentSenderName = parent.getSender().getFullName();
+        }
+
         return MessageDto.builder()
                 .id(m.getId())
                 .senderId(m.getSender().getId())
@@ -389,7 +522,11 @@ public class MessageService {
                 .attachmentType(m.getAttachmentType())
                 .attachmentName(m.getAttachmentName())
                 .attachmentSize(m.getAttachmentSize())
-                .system(false)   // ileride explicit system message için ayrı flag eklenebilir
+                .system(false)
+                .parentMessageId(parentId)
+                .parentPreview(parentPreview)
+                .parentSenderName(parentSenderName)
+                .reactions(reactions == null ? java.util.List.of() : reactions)
                 .build();
     }
 }

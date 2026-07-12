@@ -38,6 +38,10 @@ public class PresenceService {
     /** email → userId (multi-tab durumunda sayım için sessionId set'i tutulur) */
     private final ConcurrentHashMap<String, Set<String>> emailToSessions = new ConcurrentHashMap<>();
 
+    /** FAZ 11.W3 — userId → son cikis zamani. In-memory (restart'ta sifirlanir,
+     *  kritik degil — 'son gorulme' UX iyilestirmesi, audit degil). */
+    private final ConcurrentHashMap<Long, java.time.Instant> lastSeenByUserId = new ConcurrentHashMap<>();
+
     @EventListener
     public void onConnect(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
@@ -76,8 +80,10 @@ public class PresenceService {
             emailToSessions.remove(email);
             userRepository.findByEmail(email).ifPresent(u -> {
                 log.info("[PRESENCE] offline: {} (userId={})", email, u.getId());
+                // FAZ 11.W3 — son gorulme kaydi
+                lastSeenByUserId.put(u.getId(), java.time.Instant.now());
                 messagingTemplate.convertAndSend("/topic/presence",
-                        new PresencePayload(u.getId(), false));
+                        new PresencePayload(u.getId(), false, java.time.Instant.now()));
             });
         }
     }
@@ -91,5 +97,13 @@ public class PresenceService {
         return result;
     }
 
-    public record PresencePayload(Long userId, boolean online) {}
+    /** FAZ 11.W3 — Kullanicinin son cikis zamani (online ise null; hic gorulmemisse null). */
+    public java.time.Instant getLastSeen(Long userId) {
+        return lastSeenByUserId.get(userId);
+    }
+
+    /** FAZ 11.W3 — lastSeenAt: offline event'te dolu, online event'te null. */
+    public record PresencePayload(Long userId, boolean online, java.time.Instant lastSeenAt) {
+        public PresencePayload(Long userId, boolean online) { this(userId, online, null); }
+    }
 }
