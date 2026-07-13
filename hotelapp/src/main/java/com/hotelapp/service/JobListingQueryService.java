@@ -106,7 +106,16 @@ public class JobListingQueryService {
         return jobListingService.toResponses(raw);
     }
 
-    /** Package-private for testability (unit test JobListingQueryServiceRankingTest). */
+    /**
+     * Package-private for testability (unit test JobListingQueryServiceRankingTest).
+     *
+     * FAZ 11.W4.2 — 2 yeni sinyal:
+     *  - Komsu ilce: tam district eslesmesi yoksa ama ilan, tercih edilen bir
+     *    ilcenin KOMSUSUNDA ise +15 (tam eslesmenin yarisi).
+     *  - Odakli tercih: aday tek pozisyon secmisse eslesme daha guclu sinyal
+     *    -> ek +10; iki pozisyon -> +5.
+     * Yeni max: (50+10) + 30 + 20 + 10 = 120.
+     */
     static int scoreListing(JobListing l,
                             java.util.Set<Position> prefPositions,
                             java.util.Set<String> prefDistricts,
@@ -116,12 +125,20 @@ public class JobListingQueryService {
         if (prefPositions != null && !prefPositions.isEmpty()
                 && l.getPosition() != null && prefPositions.contains(l.getPosition())) {
             score += 50;
+            // FAZ 11.W4.2 — odakli tercih bonusu: dar tercih seti = guclu sinyal
+            if (prefPositions.size() == 1)      score += 10;
+            else if (prefPositions.size() == 2) score += 5;
         }
-        if (prefDistricts != null && !prefDistricts.isEmpty()
-                && l.getBusiness() != null
-                && l.getBusiness().getDistrict() != null
-                && prefDistricts.contains(l.getBusiness().getDistrict())) {
-            score += 30;
+        String bizDistrict = (l.getBusiness() != null) ? l.getBusiness().getDistrict() : null;
+        if (prefDistricts != null && !prefDistricts.isEmpty() && bizDistrict != null) {
+            if (prefDistricts.contains(bizDistrict)) {
+                score += 30;
+            } else {
+                // FAZ 11.W4.2 — komsu ilce bonusu (tam eslesmenin yarisi)
+                boolean neighbor = prefDistricts.stream()
+                        .anyMatch(d -> IstanbulDistricts.areNeighbors(d, bizDistrict));
+                if (neighbor) score += 15;
+            }
         }
         if (prefJobTypes != null && !prefJobTypes.isEmpty()
                 && l.getJobType() != null && prefJobTypes.contains(l.getJobType())) {

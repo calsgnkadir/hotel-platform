@@ -32,25 +32,48 @@ public class NotificationService {
     private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#22 — WS push
     private final WebPushService webPushService;            // FAZ 1/#23 — Web Push (pure Java)
 
+    /** FAZ 11.W4.1 — Dedupe penceresi: bu sure icinde ayni type+recipient collapse edilir. */
+    private static final java.time.Duration DEDUPE_WINDOW = java.time.Duration.ofMinutes(5);
+
     /**
      * Bildirim oluştur. REQUIRES_NEW ile kendi tx'ında çalışır — başarısız olursa
      * çağıran metodun transaction'ını etkilemez (örn. ilan oluşturma).
+     *
+     * FAZ 11.W4.1 — Dedupe: son 5dk icinde ayni recipient+type'ta OKUNMAMIS bir
+     * bildirim varsa yeni kayit acilmaz; mevcidin aggregateCount'u artar, message
+     * en yenisiyle degistirilir, createdAt tazelenir (listede uste cikar).
+     * "24 ayri bildirim" yerine "Yeni basvuru (×24)".
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notify(Long recipientId, NotificationType type, String title, String message, String link) {
         try {
             User recipient = userRepository.findById(recipientId).orElse(null);
             if (recipient == null) return;
-            Notification n = Notification.builder()
-                    .recipient(recipient)
-                    .type(type)
-                    .title(title)
-                    .message(message)
-                    .link(link)
-                    .isRead(false)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-            n = notificationRepository.save(n);
+
+            Notification n;
+            var existing = notificationRepository
+                    .findFirstByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
+                            recipientId, type, LocalDateTime.now().minus(DEDUPE_WINDOW));
+            if (existing.isPresent()) {
+                n = existing.get();
+                n.setAggregateCount((n.getAggregateCount() == null ? 1 : n.getAggregateCount()) + 1);
+                n.setMessage(message);          // en yeni icerik gorunur
+                n.setTitle(title);
+                n.setLink(link);
+                n.setCreatedAt(LocalDateTime.now());  // listede uste tasi
+                n = notificationRepository.save(n);
+            } else {
+                n = Notification.builder()
+                        .recipient(recipient)
+                        .type(type)
+                        .title(title)
+                        .message(message)
+                        .link(link)
+                        .isRead(false)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+                n = notificationRepository.save(n);
+            }
 
             // FAZ 1/#22 — WebSocket push: kullanıcıya anında bildirim
             try {
@@ -110,6 +133,7 @@ public class NotificationService {
                 .link(n.getLink())
                 .isRead(n.getIsRead())
                 .createdAt(n.getCreatedAt())
+                .aggregateCount(n.getAggregateCount() == null ? 1 : n.getAggregateCount())
                 .build();
     }
 
@@ -122,5 +146,7 @@ public class NotificationService {
         private String link;
         private Boolean isRead;
         private LocalDateTime createdAt;
+        /** FAZ 11.W4.1 — kac bildirim bu kayda collapse edildi (1 = tekil) */
+        private Integer aggregateCount;
     }
 }

@@ -71,15 +71,18 @@ class RateLimitFilterTest {
     @Test
     @DisplayName("Sensitive bucket general bucket'tan ayrik — 60 GET tuketmeyen sensitive limit")
     void sensitiveBucket_isolated_fromGeneralBucket() throws Exception {
+        // W4.4 not: /api/listings artik public-read tier'inda (180/dk).
+        // General bucket'i doldurmak icin general-tier bir GET path kullaniyoruz.
+        String generalPath = "/api/notifications/unread-count";
         // 60 genel GET — general bucket fullen tuketilir
         for (int i = 0; i < 60; i++) {
-            MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/listings");
+            MockHttpServletRequest req = new MockHttpServletRequest("GET", generalPath);
             req.setRemoteAddr("10.0.0.2");
             MockHttpServletResponse res = new MockHttpServletResponse();
             filter.doFilter(req, res, chain);
         }
         // Genel artik bos: 61. GET 429 olur
-        MockHttpServletRequest gReq = new MockHttpServletRequest("GET", "/api/listings");
+        MockHttpServletRequest gReq = new MockHttpServletRequest("GET", generalPath);
         gReq.setRemoteAddr("10.0.0.2");
         MockHttpServletResponse gRes = new MockHttpServletResponse();
         filter.doFilter(gReq, gRes, chain);
@@ -91,6 +94,31 @@ class RateLimitFilterTest {
         MockHttpServletResponse pRes = new MockHttpServletResponse();
         filter.doFilter(pReq, pRes, chain);
         assertThat(pRes.getStatus()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    @Test
+    @DisplayName("FAZ 11.W4.4 — Public read GET (/api/listings) 180/dk tier'inda: 61. istek hala 200")
+    void publicRead_tier_higherQuota() throws Exception {
+        // Eski general tier'da (60/dk) 61. istek 429 olurdu — H.5 finding.
+        // Public-read tier'inda 180 kota var: 100 istek de rahat gecer.
+        for (int i = 0; i < 100; i++) {
+            MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/listings");
+            req.setRemoteAddr("10.0.0.4");
+            MockHttpServletResponse res = new MockHttpServletResponse();
+            filter.doFilter(req, res, chain);
+            assertThat(res.getStatus()).isEqualTo(HttpStatus.OK.value());
+        }
+        // 181. istek 429 (kota gercekten sonlu)
+        for (int i = 0; i < 80; i++) {
+            MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/listings");
+            req.setRemoteAddr("10.0.0.4");
+            filter.doFilter(req, new MockHttpServletResponse(), chain);
+        }
+        MockHttpServletRequest req181 = new MockHttpServletRequest("GET", "/api/listings");
+        req181.setRemoteAddr("10.0.0.4");
+        MockHttpServletResponse res181 = new MockHttpServletResponse();
+        filter.doFilter(req181, res181, chain);
+        assertThat(res181.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS.value());
     }
 
     @Test

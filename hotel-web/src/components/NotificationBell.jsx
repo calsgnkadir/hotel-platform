@@ -197,8 +197,19 @@ export default function NotificationBell({ onNavigate }) {
                   {/* Sol: tip renkli küçük dot */}
                   <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${TYPE_COLOR[n.type] || 'bg-slate-400'}`} />
                   <div className="min-w-0 flex-1">
-                    <div className={`text-sm ${!n.isRead ? 'font-semibold text-ink-800 dark:text-ink-900' : 'text-ink-600 dark:text-ink-300'}`}>
-                      {n.title}
+                    <div className={`text-sm flex items-center gap-1.5 ${!n.isRead ? 'font-semibold text-ink-800 dark:text-ink-900' : 'text-ink-600 dark:text-ink-300'}`}>
+                      <span className="truncate">{n.title}</span>
+                      {/* FAZ 11.W4.1 — dedupe rozeti: kac bildirim collapse edildi */}
+                      {n.aggregateCount > 1 && (
+                        <span className="flex-shrink-0 text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded-full"
+                              style={{
+                                background: 'rgba(205, 183, 143, 0.16)',
+                                border: '1px solid rgba(205, 183, 143, 0.40)',
+                                color: '#cdb78f',
+                              }}>
+                          ×{n.aggregateCount}
+                        </span>
+                      )}
                     </div>
                     {n.message && <div className="text-xs text-ink-500 dark:text-ink-400 mt-0.5 line-clamp-2">{n.message}</div>}
                     <div className="text-[11px] text-ink-400 dark:text-ink-500 mt-1">{timeAgo(n.createdAt)}</div>

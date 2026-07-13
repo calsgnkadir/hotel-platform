@@ -16,11 +16,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * FAZ 6 — JobListingQueryService.scoreListing unit test.
  *
- * Weighted ranking formulu (dokuman: FAZ 5 weighted ranking):
+ * Weighted ranking formulu (FAZ 5 + FAZ 11.W4.2 sinyalleri):
  *  - position match          -> +50
+ *  - odakli tercih (W4.2)    -> tek pozisyon +10, iki pozisyon +5 (match'e ek)
  *  - district match          -> +30
+ *  - komsu ilce (W4.2)       -> tam eslesme yoksa +15
  *  - jobType match           -> +20
  *  - recency (30 gun icinde) -> lineer decay, max +10
+ * Max: 120
  *
  * Scorer'in kendisi pure fonksiyon (state yok, side-effect yok), package-private
  * static — Spring context'e gerek yok. Ordering davranisi (Comparator behaviour)
@@ -49,7 +52,7 @@ class JobListingQueryServiceRankingTest {
     class MatchScores {
 
         @Test
-        @DisplayName("Position match tek basina +50 verir")
+        @DisplayName("Position match: +50 + tek-pozisyon odak bonusu +10")
         void positionMatchOnly() {
             JobListing l = listing(Position.WAITER, null, null, NOW);   // en yeni -> +10 recency
             int score = JobListingQueryService.scoreListing(
@@ -57,8 +60,8 @@ class JobListingQueryServiceRankingTest {
                     Set.of(Position.WAITER),
                     null, null,
                     NOW);
-            // 50 (position) + 10 (recency, ayni an)
-            assertThat(score).isEqualTo(60);
+            // 50 (position) + 10 (W4.2 odak: tek pozisyon) + 10 (recency)
+            assertThat(score).isEqualTo(70);
         }
 
         @Test
@@ -89,7 +92,7 @@ class JobListingQueryServiceRankingTest {
         }
 
         @Test
-        @DisplayName("Tum kategoriler match -> 100 kategori + 10 recency = 110")
+        @DisplayName("Tum kategoriler match (tek pozisyon) -> 120 max")
         void allMatch() {
             JobListing l = listing(Position.WAITER, JobType.DAILY, "Besiktas", NOW);
             int score = JobListingQueryService.scoreListing(
@@ -98,7 +101,8 @@ class JobListingQueryServiceRankingTest {
                     Set.of("Besiktas"),
                     Set.of(JobType.DAILY),
                     NOW);
-            assertThat(score).isEqualTo(50 + 30 + 20 + 10);
+            // 50 + 10 (odak) + 30 + 20 + 10 (recency)
+            assertThat(score).isEqualTo(120);
         }
 
         @Test
@@ -160,8 +164,8 @@ class JobListingQueryServiceRankingTest {
                     Set.of(Position.WAITER),
                     null, null,
                     NOW);
-            // Sadece position: 50, recency skip
-            assertThat(score).isEqualTo(50);
+            // Position 50 + odak 10, recency skip
+            assertThat(score).isEqualTo(60);
         }
 
         @Test
@@ -187,8 +191,8 @@ class JobListingQueryServiceRankingTest {
                     Set.of("Besiktas"),        // farkli
                     Set.of(JobType.SEASONAL),  // farkli
                     NOW);
-            // 50 (position) + 10 recency, district/jobType ekleme yok
-            assertThat(score).isEqualTo(60);
+            // 50 (position) + 10 (odak) + 10 recency; Besiktas-Kadikoy komsu DEGIL -> district 0
+            assertThat(score).isEqualTo(70);
         }
 
         @Test
@@ -201,7 +205,7 @@ class JobListingQueryServiceRankingTest {
                     Set.of("Besiktas"),
                     Set.of(JobType.SEASONAL),   // eslesme yok
                     NOW);
-            assertThat(score).isEqualTo(50 + 30 + 10);
+            assertThat(score).isEqualTo(50 + 10 + 30 + 10);  // +10 odak (W4.2)
         }
 
         @Test
@@ -215,8 +219,8 @@ class JobListingQueryServiceRankingTest {
                     Set.of("Besiktas"),
                     null,
                     NOW);
-            // Position eklenir, district'te business null oldugu icin skip, recency +10
-            assertThat(score).isEqualTo(60);
+            // Position 50 + odak 10, district'te business null oldugu icin skip, recency +10
+            assertThat(score).isEqualTo(70);
         }
 
         @Test
@@ -234,7 +238,70 @@ class JobListingQueryServiceRankingTest {
                     Set.of("Besiktas"),
                     null,
                     NOW);
-            assertThat(score).isEqualTo(60);
+            assertThat(score).isEqualTo(70);  // 50 + 10 odak + 10 recency
+        }
+    }
+
+    /* ── FAZ 11.W4.2 — Yeni sinyaller ── */
+
+    @Nested @DisplayName("W4.2 — Komsu ilce + odakli tercih")
+    class Wave4Signals {
+
+        @Test
+        @DisplayName("Komsu ilce: Besiktas tercihli aday, Sisli ilani -> +15")
+        void neighborDistrictBonus() {
+            JobListing l = listing(null, null, "Sisli", NOW);
+            int score = JobListingQueryService.scoreListing(
+                    l, null, Set.of("Besiktas"), null, NOW);
+            // 15 (komsu) + 10 (recency)
+            assertThat(score).isEqualTo(25);
+        }
+
+        @Test
+        @DisplayName("Komsu olmayan ilce: Besiktas tercihli, Tuzla ilani -> 0 district puani")
+        void nonNeighborNoBonus() {
+            JobListing l = listing(null, null, "Tuzla", NOW);
+            int score = JobListingQueryService.scoreListing(
+                    l, null, Set.of("Besiktas"), null, NOW);
+            assertThat(score).isEqualTo(10);  // sadece recency
+        }
+
+        @Test
+        @DisplayName("Tam eslesme komsu bonusunu ezer (30, 15 degil)")
+        void exactMatchBeatsNeighbor() {
+            JobListing l = listing(null, null, "Sisli", NOW);
+            int score = JobListingQueryService.scoreListing(
+                    l, null, Set.of("Sisli", "Besiktas"), null, NOW);
+            assertThat(score).isEqualTo(40);  // 30 tam + 10 recency
+        }
+
+        @Test
+        @DisplayName("Turkce karakter normalize: 'Beşiktaş' tercihi 'Şişli' ilanina komsu")
+        void turkishCharNormalization() {
+            JobListing l = listing(null, null, "Şişli", NOW);
+            int score = JobListingQueryService.scoreListing(
+                    l, null, Set.of("Beşiktaş"), null, NOW);
+            assertThat(score).isEqualTo(25);  // 15 komsu + 10 recency
+        }
+
+        @Test
+        @DisplayName("Odak bonusu: 2 pozisyon secilmisse +5")
+        void twoPositionFocusBonus() {
+            JobListing l = listing(Position.WAITER, null, null, NOW);
+            int score = JobListingQueryService.scoreListing(
+                    l, Set.of(Position.WAITER, Position.RECEPTION), null, null, NOW);
+            assertThat(score).isEqualTo(65);  // 50 + 5 + 10 recency
+        }
+
+        @Test
+        @DisplayName("Odak bonusu: 3+ pozisyon secilmisse ek bonus yok")
+        void threePlusPositionsNoBonus() {
+            JobListing l = listing(Position.WAITER, null, null, NOW);
+            int score = JobListingQueryService.scoreListing(
+                    l,
+                    Set.of(Position.WAITER, Position.RECEPTION, Position.SECURITY),
+                    null, null, NOW);
+            assertThat(score).isEqualTo(60);  // 50 + 0 + 10 recency
         }
     }
 
@@ -242,7 +309,7 @@ class JobListingQueryServiceRankingTest {
     class BoundaryChecks {
 
         @Test
-        @DisplayName("Maksimum skor = 110 (tum kategoriler + full recency)")
+        @DisplayName("Maksimum skor = 120 (tum kategoriler + odak + full recency)")
         void maxPossibleScore() {
             JobListing l = listing(Position.WAITER, JobType.DAILY, "Besiktas", NOW);
             int score = JobListingQueryService.scoreListing(
@@ -251,8 +318,8 @@ class JobListingQueryServiceRankingTest {
                     Set.of("Besiktas"),
                     Set.of(JobType.DAILY),
                     NOW);
-            assertThat(score).isLessThanOrEqualTo(110);
-            assertThat(score).isEqualTo(110);
+            assertThat(score).isLessThanOrEqualTo(120);
+            assertThat(score).isEqualTo(120);
         }
 
         @Test

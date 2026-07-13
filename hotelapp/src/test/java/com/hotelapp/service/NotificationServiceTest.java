@@ -128,6 +128,55 @@ class NotificationServiceTest {
         }
     }
 
+    @Nested @DisplayName("notify() dedupe — FAZ 11.W4.1")
+    class NotifyDedupe {
+
+        @Test
+        @DisplayName("Pencere icinde ayni type varsa yeni kayit acilmaz, count artar")
+        void aggregatesWithinWindow() {
+            when(userRepository.findById(42L)).thenReturn(Optional.of(user));
+            Notification existing = Notification.builder()
+                    .id(7L).recipient(user)
+                    .type(NotificationType.NEW_APPLICATION)
+                    .title("Yeni başvuru").message("Ali başvurdu")
+                    .isRead(false).aggregateCount(2)
+                    .createdAt(java.time.LocalDateTime.now().minusMinutes(2))
+                    .build();
+            when(notificationRepository
+                    .findFirstByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
+                            eq(42L), eq(NotificationType.NEW_APPLICATION), any()))
+                    .thenReturn(Optional.of(existing));
+            when(notificationRepository.save(any(Notification.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            service.notify(42L, NotificationType.NEW_APPLICATION, "Yeni başvuru", "Zeynep başvurdu", "applications");
+
+            ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+            verify(notificationRepository).save(captor.capture());
+            Notification saved = captor.getValue();
+            assertThat(saved.getId()).isEqualTo(7L);              // ayni kayit
+            assertThat(saved.getAggregateCount()).isEqualTo(3);   // 2 -> 3
+            assertThat(saved.getMessage()).isEqualTo("Zeynep başvurdu");  // en yeni mesaj
+        }
+
+        @Test
+        @DisplayName("Pencere disinda (veya okunmus) ise yeni kayit acilir")
+        void createsNewOutsideWindow() {
+            when(userRepository.findById(42L)).thenReturn(Optional.of(user));
+            when(notificationRepository
+                    .findFirstByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
+                            eq(42L), any(), any()))
+                    .thenReturn(Optional.empty());
+            when(notificationRepository.save(any(Notification.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            service.notify(42L, NotificationType.NEW_APPLICATION, "Yeni başvuru", "Can başvurdu", "applications");
+
+            ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+            verify(notificationRepository).save(captor.capture());
+            assertThat(captor.getValue().getId()).isNull();               // yeni kayit
+            assertThat(captor.getValue().getAggregateCount()).isEqualTo(1);
+        }
+    }
+
     @Nested @DisplayName("markRead()")
     class MarkRead {
 

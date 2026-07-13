@@ -133,7 +133,9 @@ public class SecurityConfig {
                                 "/actuator/health/**",       // FAZ 4.2 — liveness + readiness probes
                                 "/actuator/info",             // FAZ 2/#18 — info (public, hassas degil)
                                 "/api/dev/**",               // FAZ 4.4 — DEV-only test (@Profile("dev"))
-                                "/api/public/**"             // FAZ G.8 — landing pulse + public widget'lar
+                                "/api/public/**",            // FAZ G.8 — landing pulse + public widget'lar
+                                "/sitemap.xml",              // FAZ 11.W4.3 — SEO crawl
+                                "/robots.txt"                // FAZ 11.W4.3
                         ).permitAll()
                         .requestMatchers("/api/candidate/**").hasRole("CANDIDATE")
                         .requestMatchers("/api/business/**").hasRole("BUSINESS_OWNER")

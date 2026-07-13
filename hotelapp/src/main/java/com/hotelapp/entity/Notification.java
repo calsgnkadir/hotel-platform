@@ -47,6 +47,12 @@ public class Notification {
     @Builder.Default
     private Boolean isRead = false;
 
+    // FAZ 11.W4.1 — Dedupe: 5dk penceresinde ayni type+recipient bildirimleri
+    // tek kayda collapse edilir; bu alan kacinin birlestigini tutar.
+    @Column(name = "aggregate_count", nullable = false)
+    @Builder.Default
+    private Integer aggregateCount = 1;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -54,5 +60,6 @@ public class Notification {
     protected void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
         if (isRead == null) isRead = false;
+        if (aggregateCount == null) aggregateCount = 1;
     }
 }
