@@ -107,7 +107,7 @@ class NotificationServiceTest {
             doThrow(new RuntimeException("WS broker down"))
                     .when(messagingTemplate).convertAndSendToUser(any(), any(), any());
 
-            service.notify(42L, NotificationType.MESSAGE_RECEIVED, "T", "M", null);
+            service.notify(42L, NotificationType.NEW_MESSAGE, "T", "M", null);
 
             // Web push yine de cagrilmali
             verify(webPushService).sendToUser(42L);
@@ -122,7 +122,7 @@ class NotificationServiceTest {
                     .when(webPushService).sendToUser(anyLong());
 
             // Crash olmamali
-            service.notify(42L, NotificationType.LISTING_APPROVED, "T", "M", null);
+            service.notify(42L, NotificationType.GENERIC, "T", "M", null);
 
             verify(notificationRepository).save(any(Notification.class));
         }
