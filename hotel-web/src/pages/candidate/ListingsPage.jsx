@@ -645,6 +645,55 @@ function DetailModal({ listing, onClose, onApply }) {
   )
 }
 
+/* ── FAZ 14.5.2 — Dekoratif kapak: foto yoksa bos gri alan yerine
+   position-bazli kompozisyon (renk wash + dev outline ikon + cizgi dokusu).
+   Her pozisyonun kendi tonu + ikonu var — kartlar ayirt edilebilir. ── */
+const COVER_ART = {
+  WAITER:        { tint: '205, 183, 143', icon: <path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8v2M10 8h4" /> },                                         // servis kubbesi
+  DISHWASHER:    { tint: '107, 138, 163', icon: <><path d="M7 21c0-4 2-5 2-8a4 4 0 0 0-8 0" /><path d="M12 3c3 3 8 4 8 9a8 8 0 0 1-8 9" /><circle cx="16" cy="7" r="1.5" /></> },  // su
+  HOUSEKEEPING:  { tint: '122, 159, 122', icon: <><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6" /><path d="M3 18h18M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" /></> },        // yatak
+  RECEPTION:     { tint: '200, 146, 58',  icon: <><path d="M12 4v3" /><path d="M5 15a7 7 0 0 1 14 0" /><path d="M3 15h18v3H3z" /></> },            // resepsiyon cani
+  KITCHEN_STAFF: { tint: '180, 106, 85',  icon: <><path d="M7 8a4 4 0 0 1 3-6 4 4 0 0 1 4 0 4 4 0 0 1 3 6v3H7z" /><path d="M8 11v8M12 11v8M16 11v8M7 21h10" /></> },              // sef sapkasi
+  BELLBOY:       { tint: '205, 183, 143', icon: <><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M9 8V6a3 3 0 0 1 6 0v2M4 13h16" /></> },  // valiz
+  SECURITY:      { tint: '107, 138, 163', icon: <path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z" /> },                              // kalkan
+  DEFAULT:       { tint: '205, 183, 143', icon: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01" /></> },  // bina
+}
+
+function CoverArt({ position, businessName }) {
+  const art = COVER_ART[position] || COVER_ART.DEFAULT
+  const initial = (businessName || '?').trim().charAt(0).toUpperCase()
+  return (
+    <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* Position renk wash — diagonal */}
+      <div className="absolute inset-0"
+           style={{ background: `linear-gradient(125deg, rgba(${art.tint}, 0.14) 0%, transparent 55%, rgba(${art.tint}, 0.05) 100%)` }} />
+      {/* Ince diagonal cizgi dokusu */}
+      <div className="absolute inset-0 opacity-[0.05]"
+           style={{
+             backgroundImage: `repeating-linear-gradient(115deg, rgba(${art.tint}, 1) 0px, rgba(${art.tint}, 1) 1px, transparent 1px, transparent 14px)`,
+           }} />
+      {/* Dev outline position ikonu — sag altta kirpilmis */}
+      <svg viewBox="0 0 24 24" fill="none"
+           stroke={`rgba(${art.tint}, 0.16)`} strokeWidth="0.9"
+           strokeLinecap="round" strokeLinejoin="round"
+           className="absolute -bottom-8 -right-6 w-44 h-44 rotate-[8deg] transition-transform duration-500 group-hover:rotate-[2deg] group-hover:scale-105">
+        {art.icon}
+      </svg>
+      {/* Isletme monogrami — sol merkez, editorial serif hissi */}
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 select-none"
+           style={{
+             fontSize: '72px',
+             fontWeight: 700,
+             lineHeight: 1,
+             letterSpacing: '-0.05em',
+             color: `rgba(${art.tint}, 0.10)`,
+           }}>
+        {initial}
+      </div>
+    </div>
+  )
+}
+
 /* ── Listing Card ── */
 function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
   const shift = null  // legacy shift kategorisi kaldirildi
@@ -672,14 +721,16 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)'
       }}
     >
-      {/* HERO — graphite gradient + champagne wash */}
+      {/* HERO — foto varsa carousel; yoksa position-bazli dekoratif kapak (14.5.2) */}
       <div className="relative h-40 w-full overflow-hidden"
            style={{
              background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 100%)',
            }}>
-        {listing.businessPhotoUrls?.length > 0 && (
+        {listing.businessPhotoUrls?.length > 0 ? (
           <HoverPhotoCarousel photos={listing.businessPhotoUrls}
                               alt={`${listing.businessName} galeri`} />
+        ) : (
+          <CoverArt position={listing.position} businessName={listing.businessName} />
         )}
 
         {/* Verified badge — sol üst */}

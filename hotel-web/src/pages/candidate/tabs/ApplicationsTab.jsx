@@ -162,7 +162,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
       </motion.div>
 
       {filtered.length === 0 ? (
-        <div className="card">
+        <div className="tier-raised p-6">
           <EmptyState
             type="applications"
             title="Bu filtrede başvuru yok"
@@ -172,7 +172,15 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
             compact
           />
         </div>
-      ) : filtered.map((app) => {
+      ) : (
+      /* FAZ 14.5.3 — Timeline ray: kartlar dikey raya dugumlerle bagli.
+         Tarih kapsulu karttan cikti, ray sutununa tasindi. */
+      <div className="relative">
+        {/* Dikey ray — ust/alt fade */}
+        <div aria-hidden className="absolute left-[27px] top-3 bottom-3 w-px pointer-events-none hidden sm:block"
+             style={{ background: 'linear-gradient(180deg, transparent, rgba(205, 183, 143, 0.20) 8%, rgba(205, 183, 143, 0.20) 92%, transparent)' }} />
+        <div className="space-y-3">
+        {filtered.map((app) => {
         const sc = STATUS_CONFIG[app.status] || STATUS_CONFIG.PENDING
         const date = new Date(app.createdAt)
         const day = date.getDate()
@@ -190,32 +198,41 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
         const hasAttention = !!app.note || hasPendingDoc
 
         return (
-          <motion.div key={app.id} variants={CARD}
+          <div key={app.id} className="relative flex gap-3 sm:gap-4">
+            {/* RAY SUTUNU: tarih + status dugumu (desktop) */}
+            <div className="hidden sm:flex w-14 flex-shrink-0 flex-col items-center pt-3 relative z-[1]">
+              <div className="tabular-nums leading-none"
+                   style={{
+                     color: 'var(--text-headline)',
+                     fontSize: '20px',
+                     fontWeight: 600,
+                     letterSpacing: '-0.04em',
+                   }}>{day}</div>
+              <div className="type-caption" style={{ fontSize: '10px', textTransform: 'lowercase' }}>{month}</div>
+              <div className="type-overline" style={{ fontSize: '9px', letterSpacing: '0.15em' }}>{dayName}</div>
+              {/* Ray dugumu — status renkli */}
+              <span aria-hidden className="mt-2 w-2.5 h-2.5 rounded-full"
+                    style={{
+                      background: sc.color,
+                      boxShadow: `0 0 0 3px rgba(19, 17, 15, 1), 0 0 10px ${sc.color}88`,
+                    }} />
+            </div>
+
+          <motion.div variants={CARD}
             whileHover={{ y: -2 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-            className="tier-raised tier-raised-hover relative overflow-hidden group cursor-pointer"
+            className="tier-raised tier-raised-hover relative overflow-hidden group cursor-pointer flex-1 min-w-0"
             onClick={() => setExpandedId(isExpanded ? null : app.id)}>
             {/* Sol accent rail — always visible, uniform 3px */}
             <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
                   style={{ background: sc.color }} />
 
             <div className="relative p-4 pl-5 flex items-start gap-4">
-              {/* SOL: Date capsule — day + dayName + month (Airbnb Trips pattern) */}
-              <div className="flex-shrink-0 text-center px-2.5 py-2 rounded-2xl"
-                   style={{
-                     background: 'rgba(205, 183, 143, 0.06)',
-                     border: '1px solid rgba(205, 183, 143, 0.16)',
-                     minWidth: 56,
-                   }}>
-                <div className="tabular-nums leading-none"
-                     style={{
-                       color: 'var(--text-headline)',
-                       fontSize: '22px',
-                       fontWeight: 600,
-                       letterSpacing: '-0.04em',
-                     }}>{day}</div>
-                <div className="type-caption mt-0.5" style={{ fontSize: '10px', textTransform: 'lowercase' }}>{month}</div>
-                <div className="type-overline mt-0.5" style={{ fontSize: '9px', letterSpacing: '0.15em' }}>{dayName}</div>
+              {/* Mobil: tarih inline (ray gizli) */}
+              <div className="sm:hidden flex-shrink-0 text-center px-2 py-1.5 rounded-xl"
+                   style={{ background: 'rgba(205, 183, 143, 0.06)', border: '1px solid rgba(205, 183, 143, 0.16)', minWidth: 46 }}>
+                <div className="tabular-nums leading-none" style={{ color: 'var(--text-headline)', fontSize: '18px', fontWeight: 600 }}>{day}</div>
+                <div className="type-caption" style={{ fontSize: '9px', textTransform: 'lowercase' }}>{month}</div>
               </div>
 
               {/* ORTA: scannable primary line + meta chip strip */}
@@ -436,8 +453,12 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
             </div>
           )}
         </motion.div>
+          </div>
         )
-      })}
+        })}
+        </div>
+      </div>
+      )}
 
       {reviewTarget && (
         <ReviewModal

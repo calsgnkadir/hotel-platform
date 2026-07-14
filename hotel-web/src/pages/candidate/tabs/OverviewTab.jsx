@@ -40,33 +40,34 @@ export default function OverviewTab({ user, applications, onTabChange }) {
     >
       {/* === SOL KOLON === */}
       <div className="space-y-4 min-w-0">
-      {/* Dalga H3 — Profil goruntulenme widget'i (Kariyer.net'ten uyarlama) */}
-      <ProfileViewsWidget />
 
-      {/* STAT KARTLARI — champagne / ochre / sage (muted, no neon) */}
-      <motion.div variants={ITEM} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <StatCard
+      {/* FAZ 14.5.1 — BENTO GRID: esit kutu yiginindan asimetrik kompozisyona.
+          Hero numeral (buyuk) + profil goruntulenme (dar) ustte;
+          altta 2 mini stat + kabul orani halkasi. */}
+      <motion.div variants={ITEM} className="grid grid-cols-12 gap-3">
+        {/* Hero — Toplam Basvuru (genis, numeral-hero + sparkline zemin) */}
+        <HeroStat
+          className="col-span-12 sm:col-span-7"
           label="Toplam Başvuru"
           value={applications.length}
-          color="#cdb78f"
           delta={delta}
           data={weeklyTrend(applications, null)}
-          delay={0}
         />
-        <StatCard
-          label="Bekleyen"
-          value={pending}
-          color="#c8923a"
-          data={weeklyTrend(applications, a => a.status === 'PENDING')}
-          delay={0.1}
-        />
-        <StatCard
-          label="Kabul"
-          value={accepted}
-          color="#7a9f7a"
-          data={weeklyTrend(applications, a => a.status === 'ACCEPTED')}
-          delay={0.2}
-        />
+        {/* Profil goruntulenme — dar dikey hucre */}
+        <div className="col-span-12 sm:col-span-5">
+          <ProfileViewsWidget bento />
+        </div>
+
+        {/* Alt sira: mini stat'lar + oran halkasi */}
+        <MiniStat className="col-span-4"
+                  label="Bekleyen" value={pending} color="#c8923a"
+                  data={weeklyTrend(applications, a => a.status === 'PENDING')} />
+        <MiniStat className="col-span-4"
+                  label="Kabul" value={accepted} color="#7a9f7a"
+                  data={weeklyTrend(applications, a => a.status === 'ACCEPTED')} />
+        <RatioRing className="col-span-4"
+                   label="Kabul Oranı"
+                   ratio={applications.length > 0 ? accepted / applications.length : 0} />
       </motion.div>
 
       <motion.div variants={ITEM}>
@@ -194,23 +195,10 @@ const ITEM = {
 
 /* QUICK_ACTIONS + ICONS sokuldu — Dalga 3 dead code temizligi */
 
-function StatCard({ label, value, color, data, delta, delay = 0 }) {
+/* ── FAZ 14.5.1 — Bento parcalari ── */
 
-  // Mouse parallax
-  const ref = useRef(null)
-  const mx = useMotionValue(0)
-  const my = useMotionValue(0)
-  const rotateX = useSpring(useTransform(my, [-0.5, 0.5], [3, -3]), { stiffness: 200, damping: 25 })
-  const rotateY = useSpring(useTransform(mx, [-0.5, 0.5], [-3, 3]), { stiffness: 200, damping: 25 })
-  function onMove(e) {
-    if (!ref.current) return
-    const r = ref.current.getBoundingClientRect()
-    mx.set((e.clientX - r.left) / r.width  - 0.5)
-    my.set((e.clientY - r.top)  / r.height - 0.5)
-  }
-  function onLeave() { mx.set(0); my.set(0) }
-
-  // Count-up
+/** Count-up hook — numeral'lar 0'dan hedefe ease-out sayar. */
+function useCountUp(value, delay = 0) {
   const [displayed, setDisplayed] = useState(0)
   useEffect(() => {
     let raf, start = performance.now() + delay * 1000, duration = 1200
@@ -224,49 +212,125 @@ function StatCard({ label, value, color, data, delta, delay = 0 }) {
     raf = requestAnimationFrame(step)
     return () => cancelAnimationFrame(raf)
   }, [value, delay])
+  return displayed
+}
+
+/** Hero stat — bento'nun buyuk hucresi: numeral-hero + genis sparkline + delta. */
+function HeroStat({ className = '', label, value, delta, data }) {
+  const ref = useRef(null)
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const rotateX = useSpring(useTransform(my, [-0.5, 0.5], [2, -2]), { stiffness: 200, damping: 25 })
+  const rotateY = useSpring(useTransform(mx, [-0.5, 0.5], [-2, 2]), { stiffness: 200, damping: 25 })
+  function onMove(e) {
+    if (!ref.current) return
+    const r = ref.current.getBoundingClientRect()
+    mx.set((e.clientX - r.left) / r.width  - 0.5)
+    my.set((e.clientY - r.top)  / r.height - 0.5)
+  }
+  const displayed = useCountUp(value)
 
   return (
     <motion.div
       ref={ref}
-      onMouseMove={onMove} onMouseLeave={onLeave}
+      onMouseMove={onMove} onMouseLeave={() => { mx.set(0); my.set(0) }}
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 230, damping: 22 }}
       style={{ rotateX, rotateY, transformPerspective: 1000 }}
-      className="stat-card cursor-default group"
+      className={`tier-raised relative overflow-hidden cursor-default group p-6 min-h-[180px] flex flex-col justify-end ${className}`}
     >
-      {/* Köşede yüzen renk blob — quiet accent */}
-      <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full pointer-events-none transition-opacity duration-500 opacity-30 group-hover:opacity-55"
-           style={{ background: `radial-gradient(circle, ${color}55 0%, transparent 65%)`, filter: 'blur(26px)' }} />
-
-      {/* Sparkline arka plan — toned way down */}
-      <div aria-hidden className="absolute inset-x-3 bottom-3 h-10 pointer-events-none opacity-30">
-        <Sparkline data={data} color={color} width={400} height={40} />
+      {/* Katmanli zemin: champagne diagonal wash + genis sparkline */}
+      <div aria-hidden className="absolute inset-0 pointer-events-none"
+           style={{ background: 'linear-gradient(125deg, rgba(205, 183, 143, 0.10) 0%, transparent 45%)' }} />
+      <div aria-hidden className="absolute inset-x-0 bottom-0 h-20 pointer-events-none opacity-40">
+        <Sparkline data={data} color="#cdb78f" width={640} height={80} />
       </div>
 
-      {/* Delta pill — top-right anchor (independent of number/label stack) */}
       {typeof delta === 'number' && delta !== 0 && (
         <motion.span
           initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8, type: 'spring', stiffness: 380, damping: 20 }}
-          className="absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center"
+          className="absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
           style={{
             background: delta > 0 ? 'rgba(122, 159, 122, 0.14)' : 'rgba(180, 106, 85, 0.14)',
             color:      delta > 0 ? '#a8c8a8' : '#d39481',
             border: `1px solid ${delta > 0 ? 'rgba(122, 159, 122, 0.32)' : 'rgba(180, 106, 85, 0.32)'}`,
           }}>
-          {delta > 0 ? `+${delta}` : delta}
+          {delta > 0 ? `+${delta}` : delta} bu hafta
         </motion.span>
       )}
 
-      {/* Number → hairline → label hierarchy (spec: tighter, thin divider under number) */}
       <div className="relative">
-        <div className="stat-card-number" style={{ filter: `drop-shadow(0 0 12px ${color}44)` }}>
+        <div className="tabular-nums"
+             style={{
+               fontSize: 'clamp(44px, 6vw, 64px)',
+               fontWeight: 600,
+               lineHeight: 0.95,
+               letterSpacing: '-0.04em',
+               color: 'var(--text-headline)',
+               filter: 'drop-shadow(0 0 18px rgba(205, 183, 143, 0.28))',
+             }}>
           {displayed}
         </div>
-        <div className="stat-card-divider" />
-        <div className="stat-card-label">{label}</div>
+        <div className="mt-2 h-px w-12" style={{ background: 'rgba(205, 183, 143, 0.35)' }} />
+        <div className="type-overline mt-2">{label}</div>
       </div>
+    </motion.div>
+  )
+}
 
+/** Mini stat — bento alt sirasi: sol renk rayi + kompakt numeral. */
+function MiniStat({ className = '', label, value, color, data }) {
+  const displayed = useCountUp(value, 0.15)
+  return (
+    <motion.div
+      whileHover={{ y: -2 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      className={`tier-raised relative overflow-hidden cursor-default p-4 ${className}`}
+    >
+      <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full"
+            style={{ background: color, boxShadow: `0 0 10px ${color}55` }} />
+      <div aria-hidden className="absolute inset-x-2 bottom-1.5 h-6 pointer-events-none opacity-25">
+        <Sparkline data={data} color={color} width={220} height={24} />
+      </div>
+      <div className="relative pl-2">
+        <div className="tabular-nums" style={{ fontSize: '28px', fontWeight: 600, lineHeight: 1, color, letterSpacing: '-0.03em' }}>
+          {displayed}
+        </div>
+        <div className="type-overline mt-1.5">{label}</div>
+      </div>
+    </motion.div>
+  )
+}
+
+/** Oran halkasi — SVG progress ring; kutu monotonini kiran dairesel form. */
+function RatioRing({ className = '', label, ratio }) {
+  const pct = Math.round(ratio * 100)
+  const R = 26
+  const CIRC = 2 * Math.PI * R
+  return (
+    <motion.div
+      whileHover={{ y: -2 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      className={`tier-raised relative cursor-default p-4 flex items-center gap-3 ${className}`}
+    >
+      <svg width="64" height="64" viewBox="0 0 64 64" className="flex-shrink-0 -rotate-90">
+        <circle cx="32" cy="32" r={R} fill="none"
+                stroke="rgba(205, 183, 143, 0.10)" strokeWidth="5" />
+        <motion.circle cx="32" cy="32" r={R} fill="none"
+                stroke="#7a9f7a" strokeWidth="5" strokeLinecap="round"
+                strokeDasharray={CIRC}
+                initial={{ strokeDashoffset: CIRC }}
+                animate={{ strokeDashoffset: CIRC * (1 - ratio) }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                style={{ filter: 'drop-shadow(0 0 6px rgba(122, 159, 122, 0.45))' }} />
+      </svg>
+      <div className="min-w-0">
+        <div className="tabular-nums" style={{ fontSize: '22px', fontWeight: 600, lineHeight: 1, color: '#a8c8a8', letterSpacing: '-0.02em' }}>
+          %{pct}
+        </div>
+        <div className="type-overline mt-1.5">{label}</div>
+      </div>
     </motion.div>
   )
 }
@@ -321,8 +385,10 @@ function RecentAppRow({ app, last }) {
   )
 }
 
-/* Dalga H3 — Profil goruntulenme widget'i (Kariyer.net 90 gun pattern) */
-function ProfileViewsWidget() {
+/* Dalga H3 — Profil goruntulenme widget'i (Kariyer.net 90 gun pattern)
+   FAZ 14.5.1 — bento variant: hero ile ayni yukseklikte dikey hucre,
+   buyuk goz ikonu zeminde dekoratif. */
+function ProfileViewsWidget({ bento = false }) {
   const { data, isLoading } = useQuery({
     queryKey: ['my-profile-views', 90],
     queryFn: () => hotelApi.getMyProfileViews(90),
@@ -332,6 +398,40 @@ function ProfileViewsWidget() {
   if (isLoading) return null
   const total = data?.totalViews ?? 0
   const unique = data?.uniqueViewers ?? 0
+
+  if (bento) {
+    return (
+      <motion.div
+        whileHover={{ y: -3 }}
+        transition={{ type: 'spring', stiffness: 230, damping: 22 }}
+        className="tier-raised relative overflow-hidden cursor-default p-6 min-h-[180px] h-full flex flex-col justify-end">
+        {/* Dev dekoratif goz — zeminde, kirpilmis */}
+        <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="rgba(205, 183, 143, 0.10)"
+             strokeWidth="1" className="absolute -top-6 -right-6 w-40 h-40 pointer-events-none">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" stroke="rgba(205, 183, 143, 0.18)" />
+        </svg>
+        <div className="relative">
+          <div className="tabular-nums"
+               style={{
+                 fontSize: 'clamp(36px, 4vw, 48px)',
+                 fontWeight: 600,
+                 lineHeight: 0.95,
+                 letterSpacing: '-0.04em',
+                 color: 'var(--accent-action)',
+                 filter: 'drop-shadow(0 0 14px rgba(205, 183, 143, 0.30))',
+               }}>
+            {total}
+          </div>
+          <div className="mt-2 h-px w-12" style={{ background: 'rgba(205, 183, 143, 0.35)' }} />
+          <div className="type-overline mt-2">Profil Görüntülenme · 90 gün</div>
+          <div className="type-caption mt-0.5">
+            {unique > 0 ? `${unique} işletme baktı` : 'henüz işletme bakmadı'}
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <div className="tier-raised p-5 flex items-center gap-4">
