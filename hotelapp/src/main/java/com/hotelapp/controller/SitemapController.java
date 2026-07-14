@@ -1,7 +1,9 @@
 package com.hotelapp.controller;
 
+import com.hotelapp.entity.Business;
 import com.hotelapp.entity.JobListing;
 import com.hotelapp.enums.ListingStatus;
+import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.JobListingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SitemapController {
 
     private final JobListingRepository jobListingRepository;
+    private final BusinessRepository businessRepository;
 
     /** Frontend base URL — prod'da Vercel domain'i (APP_BASE_URL env). */
     @Value("${app.base-url:http://localhost:5173}")
@@ -80,6 +83,12 @@ public class SitemapController {
         for (JobListing l : jobListingRepository.findAll()) {
             if (l.getStatus() != ListingStatus.ACTIVE) continue;
             appendUrl(sb, base + "/listings/" + l.getId(), "daily", "0.9", l.getCreatedAt(), fmt);
+        }
+
+        // FAZ 14.3 — Isletme public profilleri (login gerektirmez, paylasilir).
+        // Aday profilleri PII + auth'lu — sitemap'e GIRMEZ.
+        for (Business b : businessRepository.findAll()) {
+            appendUrl(sb, base + "/p/business/" + b.getId(), "weekly", "0.7", b.getCreatedAt(), fmt);
         }
 
         sb.append("</urlset>\n");

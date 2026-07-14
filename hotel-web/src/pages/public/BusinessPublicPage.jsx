@@ -409,7 +409,7 @@ export default function BusinessPublicPage() {
             <section className="rounded-2xl overflow-hidden"
                      style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
               <div className="px-5 pt-4 pb-2 flex items-baseline justify-between">
-                <h2 className="text-lg tracking-[0.2em] uppercase" style={{ color: '#cdb78f' }}>
+                <h2 className="type-overline" style={{ color: "var(--accent-action)", fontSize: "13px" }}>
                   Konum
                 </h2>
                 {business.address && (
@@ -444,7 +444,7 @@ export default function BusinessPublicPage() {
               {business.description && (
                 <section className="rounded-2xl p-5"
                          style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
-                  <h2 className="text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
+                  <h2 className="type-overline mb-3" style={{ color: "var(--accent-action)", fontSize: "13px" }}>
                     Hakkında
                   </h2>
                   <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#ede4d3' }}>
@@ -458,7 +458,7 @@ export default function BusinessPublicPage() {
                 return (
                   <section className="rounded-2xl p-5"
                            style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
-                    <h2 className="text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
+                    <h2 className="type-overline mb-3" style={{ color: "var(--accent-action)", fontSize: "13px" }}>
                       Çalışma Saatleri
                     </h2>
                     {parsed ? (
@@ -500,7 +500,7 @@ export default function BusinessPublicPage() {
             <aside className="space-y-4">
               <section className="rounded-2xl p-5"
                        style={{ background: 'rgba(27, 24, 21, 0.75)', border: '1px solid rgba(205, 183, 143, 0.10)' }}>
-                <h2 className="text-lg tracking-[0.2em] uppercase mb-3" style={{ color: '#cdb78f' }}>
+                <h2 className="type-overline mb-3" style={{ color: "var(--accent-action)", fontSize: "13px" }}>
                   İletişim
                 </h2>
                 <ul className="space-y-2 text-sm">

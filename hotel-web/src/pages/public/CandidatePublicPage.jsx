@@ -7,6 +7,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import * as hotelApi from '../../api/hotel'
 import StarRating from '../../components/StarRating'
+import usePageTitle from '../../lib/usePageTitle'
 import { POSITION_LABELS } from '../../utils/labels'
 
 const EDUCATION_LABELS = { HIGH_SCHOOL: 'Lise', UNIVERSITY_GRADUATE: 'Üniversite' }
@@ -32,6 +33,9 @@ export default function CandidatePublicPage() {
     enabled: !!id,
     retry: false,
   })
+
+  // FAZ 14.3 — tab basligi (sayfa auth'lu, sitemap'e girmez — PII)
+  usePageTitle(profile?.fullName ? `${profile.fullName} — Aday Profili` : null)
 
   if (isLoading) {
     return (
@@ -67,7 +71,7 @@ export default function CandidatePublicPage() {
           <div className="flex gap-2 justify-center">
             <button onClick={() => window.location.reload()}
               className="px-4 py-2 rounded-lg text-white font-semibold text-sm"
-              style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+              style={{ background: 'linear-gradient(135deg, #7a9f7a, #5e8460)' }}>
               Tekrar Dene
             </button>
             <button onClick={() => navigate(-1)}
@@ -90,27 +94,29 @@ export default function CandidatePublicPage() {
   return (
     <div className="min-h-screen text-white relative z-10">
       {/* Top bar */}
-      <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 bg-cream-100/85 backdrop-blur-lg border-b border-cream-300">
+      <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 backdrop-blur-lg border-b border-hairline"
+              style={{ background: 'rgba(19, 17, 15, 0.85)' }}>
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)}
-            className="p-2 rounded-lg hover:bg-cream-200 transition-colors text-ink-700"
+            className="tier-raised tier-raised-hover p-2"
+            style={{ borderRadius: '10px', color: 'var(--text-secondary)' }}
             title="Geri">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                  strokeWidth={2} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
           </button>
-          <div className="text-xs text-ink-500 truncate">
-            <Link to="/business" className="hover:text-brand-700">Panel</Link>
+          <div className="type-caption truncate">
+            <Link to="/business" className="hover:text-champagne-300 transition-colors">Panel</Link>
             <span className="mx-1.5">/</span>
-            <span className="text-ink-700 font-medium">{profile.fullName}</span>
+            <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>{profile.fullName}</span>
           </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 lg:px-6 py-6 space-y-5">
         {/* HERO */}
-        <div className="card !p-0 overflow-hidden">
+        <div className="tier-raised !p-0 overflow-hidden">
           <div className="relative h-32"
                style={{ background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 50%, #1b1815 100%)' }}>
             <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-25"
@@ -133,8 +139,7 @@ export default function CandidatePublicPage() {
               </div>
               <div className="flex-1 min-w-0 pb-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-3xl tracking-wider uppercase truncate"
-                      style={{ color: '#ffffff' }}>
+                  <h1 className="type-display truncate">
                     {profile.fullName}
                   </h1>
                   {/* Dalga H2 — Is ariyorum rozeti (LinkedIn Open to Work) */}
@@ -197,9 +202,9 @@ export default function CandidatePublicPage() {
         {/* 2-sütun: sol info + sag detay */}
         <div className="grid lg:grid-cols-2 gap-4">
           {/* SOL: Tercihler */}
-          <div className="card p-5 space-y-4">
-            <h2 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-                style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
+          <div className="tier-raised p-5 space-y-4">
+            <h2 className="type-overline pb-2 border-b border-hairline"
+                style={{ color: 'var(--accent-action)', fontSize: '12px' }}>
               İş Tercihleri
             </h2>
 
@@ -223,9 +228,9 @@ export default function CandidatePublicPage() {
           </div>
 
           {/* SAG: Eğitim + Diğer */}
-          <div className="card p-5 space-y-4">
-            <h2 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-                style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
+          <div className="tier-raised p-5 space-y-4">
+            <h2 className="type-overline pb-2 border-b border-hairline"
+                style={{ color: 'var(--accent-action)', fontSize: '12px' }}>
               Genel Bilgiler
             </h2>
 
@@ -238,13 +243,12 @@ export default function CandidatePublicPage() {
 
         {/* Deneyim */}
         {profile.previousExperience && (
-          <div className="card p-5">
-            <h2 className="text-base tracking-[0.2em] uppercase pb-2 mb-3 border-b"
-                style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>
+          <div className="tier-raised p-5">
+            <h2 className="type-overline pb-2 mb-3 border-b border-hairline"
+                style={{ color: 'var(--accent-action)', fontSize: '12px' }}>
               Önceki Deneyim
             </h2>
-            <p className="text-[14px] leading-relaxed whitespace-pre-line"
-               style={{ color: '#ede4d3' }}>
+            <p className="type-body leading-relaxed whitespace-pre-line">
               {profile.previousExperience}
             </p>
           </div>
@@ -252,12 +256,10 @@ export default function CandidatePublicPage() {
 
         {/* Dalga G2 — Hassas iletisim bilgileri (sadece basvuru aldıysa açık) */}
         {profile.sensitiveUnlocked ? (
-          <div className="card p-5"
-               style={{ border: '1px solid rgba(205, 183, 143, 0.28)' }}>
-            <div className="flex items-center justify-between pb-2 mb-3 border-b"
-                 style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
-              <h2 className="text-base tracking-[0.2em] uppercase"
-                  style={{ color: '#cdb78f' }}>İletişim Bilgileri</h2>
+          <div className="tier-featured p-5">
+            <div className="flex items-center justify-between pb-2 mb-3 border-b border-hairline">
+              <h2 className="type-overline"
+                  style={{ color: 'var(--accent-action)', fontSize: '12px' }}>İletişim Bilgileri</h2>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
                     style={{
                       background: 'rgba(122, 159, 122, 0.12)',
@@ -310,7 +312,7 @@ export default function CandidatePublicPage() {
             </p>
           </div>
         ) : (
-          <div className="card p-4"
+          <div className="rounded-2xl p-4"
                style={{ background: 'rgba(13, 11, 9, 0.55)', border: '1px dashed rgba(205, 183, 143, 0.18)' }}>
             <div className="flex items-start gap-3">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c8923a"
@@ -339,16 +341,14 @@ export default function CandidatePublicPage() {
 
 function MetricCard({ label, value, sub, color }) {
   return (
-    <div className="card !p-4">
-      <div className="text-[10px] uppercase tracking-widest font-semibold mb-1"
-           style={{ color: '#6b6358' }}>
+    <div className="tier-raised p-4">
+      <div className="type-overline mb-1">
         {label}
       </div>
-      <div className="text-2xl tracking-wider mb-0.5" style={{ color }}>
+      <div className="text-2xl tracking-wider mb-0.5 tabular-nums" style={{ color, fontWeight: 600 }}>
         {value}
       </div>
-      <div className="text-[10px] uppercase tracking-wider"
-           style={{ color: '#6b6358' }}>
+      <div className="type-overline" style={{ color: 'var(--text-faint)' }}>
         {sub}
       </div>
     </div>
@@ -358,8 +358,7 @@ function MetricCard({ label, value, sub, color }) {
 function Section({ label, children }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-widest font-semibold mb-2"
-           style={{ color: '#6b6358' }}>
+      <div className="type-overline mb-2">
         {label}
       </div>
       {children}
@@ -371,10 +370,10 @@ function ChipList({ items }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {items.map(it => (
-        <span key={it} className="inline-flex items-center text-[12px] font-medium px-2.5 py-1 rounded-full"
+        <span key={it} className="type-caption inline-flex items-center font-medium px-2.5 py-1 rounded-full"
               style={{
                 background: 'rgba(205, 183, 143, 0.10)',
-                color: '#cdb78f',
+                color: 'var(--accent-action)',
                 border: '1px solid rgba(205, 183, 143, 0.18)',
               }}>
           {it}
@@ -387,9 +386,8 @@ function ChipList({ items }) {
 function DetailRow({ label, value }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-1">
-      <span className="text-[11px] uppercase tracking-wider"
-            style={{ color: '#6b6358' }}>{label}</span>
-      <span className="text-[13px] font-semibold" style={{ color: '#ede4d3' }}>{value}</span>
+      <span className="type-overline">{label}</span>
+      <span className="type-body font-semibold" style={{ color: 'var(--text-primary)' }}>{value}</span>
     </div>
   )
 }
