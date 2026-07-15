@@ -11,6 +11,8 @@ import com.hotelapp.service.ReliabilityService;
 import com.hotelapp.service.ReliabilityService.ReliabilityScore;
 import com.hotelapp.service.ProfileViewService;
 import com.hotelapp.service.ProfileViewService.ProfileViewStats;
+import com.hotelapp.service.EarningsService;
+import com.hotelapp.dto.EarningsResponse;
 
 import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +35,7 @@ public class CandidateController {
     private final ReliabilityService reliabilityService;
     private final AvailabilityBlockService availabilityBlockService;
     private final ProfileViewService profileViewService;
+    private final EarningsService earningsService;  // FAZ 13
 
     @Operation(summary = "Kendi profilim — sadece CANDIDATE")
     @GetMapping("/api/candidate/profile")
@@ -40,6 +43,15 @@ public class CandidateController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<CandidateProfileDto> getMyProfile(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         return ResponseEntity.ok(candidateProfileService.getMyProfile(currentUser.getId()));
+    }
+
+    @Operation(summary = "FAZ 13 — Kazanç ledger'i: vardiya bazlı brüt kazanç + özet")
+    @GetMapping("/api/candidate/earnings")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<EarningsResponse> getMyEarnings(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
+        return ResponseEntity.ok(earningsService.getMyEarnings(currentUser.getId()));
     }
 
     @Operation(summary = "Profil güncelle — sadece CANDIDATE")

@@ -1,8 +1,10 @@
 // FAZ 5.2 — Aday saat/kazanc widget'i — redesign (glass + count-up + dekoratif)
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import EarningsLedgerModal from './EarningsLedgerModal'  // FAZ 13
 
 export default function EarningsWidget({ applications }) {
+  const [ledgerOpen, setLedgerOpen] = useState(false)  // FAZ 13
   const completed = applications.filter(a => a.workCompleted)
   if (completed.length === 0) return null
 
@@ -71,14 +73,26 @@ export default function EarningsWidget({ applications }) {
             Tamamlanmış vardiyalardan hesaplanır
           </p>
         </div>
-        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
-              style={{
-                background: 'rgba(205, 183, 143, 0.08)',
-                border: '1px solid rgba(205, 183, 143, 0.18)',
-                color: '#cdb78f',
-              }}>
-          {completed.length} iş
-        </span>
+        <div className="flex items-center gap-2">
+          {/* FAZ 13 — Kazanç defteri (vardiya bazlı gerçek/planlı brüt) */}
+          <button onClick={() => setLedgerOpen(true)}
+            className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5 inline-flex items-center gap-1"
+            style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.30)', color: '#cdb78f' }}
+            title="Vardiya bazlı kazanç defteri">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            Defter
+          </button>
+          <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                style={{
+                  background: 'rgba(205, 183, 143, 0.08)',
+                  border: '1px solid rgba(205, 183, 143, 0.18)',
+                  color: '#cdb78f',
+                }}>
+            {completed.length} iş
+          </span>
+        </div>
       </div>
 
       {/* 3 METRIC — vertical decorative dividers */}
@@ -105,6 +119,9 @@ export default function EarningsWidget({ applications }) {
           <span>Kazanç tutarı yalnızca ücret tipi belirtilmiş ilanlarda hesaplanır.</span>
         </div>
       )}
+
+      {/* FAZ 13 — Kazanç defteri modal */}
+      {ledgerOpen && <EarningsLedgerModal onClose={() => setLedgerOpen(false)} />}
     </div>
   )
 }
