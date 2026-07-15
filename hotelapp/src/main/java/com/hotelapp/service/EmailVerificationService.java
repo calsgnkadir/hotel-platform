@@ -76,7 +76,7 @@ public class EmailVerificationService {
     @Transactional
     public void verify(String token) {
         EmailVerificationToken evt = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new BusinessRuleException("Geçersiz veya kullanılmış bağlantı."));
+                .orElseThrow(() -> BusinessRuleException.keyed("error.auth.resetLinkInvalid"));
 
         if (evt.isUsed()) {
             throw new BusinessRuleException("Bu bağlantı zaten kullanılmış.");

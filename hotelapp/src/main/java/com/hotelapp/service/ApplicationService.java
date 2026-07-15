@@ -73,12 +73,12 @@ public class ApplicationService {
                         ApplicationStatus.REVIEWING,
                         ApplicationStatus.ACCEPTED))
             .ifPresent(existing -> {
-                String msg = switch (existing.getStatus()) {
-                    case ACCEPTED  -> "Bu ilan için başvurunuz zaten kabul edildi. Tekrar başvuramazsınız.";
-                    case REVIEWING -> "Bu ilana yaptığınız başvuru işletme tarafından inceleniyor.";
-                    default        -> "Bu ilana zaten aktif bir başvurunuz var.";
+                String key = switch (existing.getStatus()) {
+                    case ACCEPTED  -> "error.application.dupAccepted";
+                    case REVIEWING -> "error.application.dupReviewing";
+                    default        -> "error.application.dupActive";
                 };
-                throw new BusinessRuleException(msg);
+                throw BusinessRuleException.keyed(key);
             });
 
         Application application = Application.builder()
@@ -111,7 +111,7 @@ public class ApplicationService {
                 ShiftSlot slot = shiftSlotRepository.findById(slotId)
                         .orElseThrow(() -> new ResourceNotFoundException("Vardiya slotu", slotId));
                 if (!slot.getJobListing().getId().equals(listing.getId())) {
-                    throw new BusinessRuleException("Slot bu ilana ait değil: " + slotId);
+                    throw BusinessRuleException.keyed("error.listing.slotNotBelong", slotId);
                 }
                 if (slot.isFull()) {
                     throw new BusinessRuleException(
@@ -210,7 +210,7 @@ public class ApplicationService {
 
         if (request.getDecision() != ApplicationStatus.ACCEPTED
                 && request.getDecision() != ApplicationStatus.REJECTED) {
-            throw new BusinessRuleException("Geçersiz karar. Sadece ACCEPTED veya REJECTED gönderin");
+            throw BusinessRuleException.keyed("error.application.decisionInvalid");
         }
 
         // Faz E1: ACCEPTED ise slot kapasitelerini güncelle
@@ -281,7 +281,7 @@ public class ApplicationService {
         Application app = getApplicationForBusinessOwner(applicationId, ownerId);
         ApplicationStatus s = app.getStatus();
         if (s != ApplicationStatus.PENDING && s != ApplicationStatus.REVIEWING) {
-            throw new BusinessRuleException("Yalniz PENDING/REVIEWING basvuru HOLD'a alinabilir. Mevcut: " + s);
+            throw BusinessRuleException.keyed("error.application.holdOnlyPending", s);
         }
         app.setStatus(ApplicationStatus.HELD);
         app.setHoldDeadline(LocalDateTime.now().plusHours(24));
@@ -305,16 +305,16 @@ public class ApplicationService {
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
         if (!app.getCandidate().getId().equals(candidateId)) {
-            throw new UnauthorizedException("Bu başvuru size ait değil");
+            throw UnauthorizedException.keyed("error.application.notOwner");
         }
         if (app.getStatus() != ApplicationStatus.HELD) {
-            throw new BusinessRuleException("Sadece HOLD durumundaki basvuruya cevap verilebilir. Mevcut: " + app.getStatus());
+            throw BusinessRuleException.keyed("error.application.holdRespondOnly", app.getStatus());
         }
         if (app.getHoldDeadline() != null && LocalDateTime.now().isAfter(app.getHoldDeadline())) {
             // Suresi gecmis - scheduler EXPIRED yapacak ama burada da tutarli olalim
             app.setStatus(ApplicationStatus.EXPIRED);
             applicationRepository.save(app);
-            throw new BusinessRuleException("HOLD süresi dolmuş — başvuru sona erdi");
+            throw BusinessRuleException.keyed("error.application.holdExpired");
         }
 
         if (accept) {
@@ -367,7 +367,7 @@ public class ApplicationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
 
         if (!application.getCandidate().getId().equals(candidateId)) {
-            throw new UnauthorizedException("Bu başvuru size ait değil");
+            throw UnauthorizedException.keyed("error.application.notOwner");
         }
 
         ApplicationStatus current = application.getStatus();
@@ -509,7 +509,7 @@ public class ApplicationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Belge talebi", requestId));
 
         if (!docRequest.getApplication().getCandidate().getId().equals(candidateId)) {
-            throw new UnauthorizedException("Bu talep size ait değil");
+            throw UnauthorizedException.keyed("error.request.notOwner");
         }
 
         if (docRequest.getStatus() != DocumentRequestStatus.PENDING) {
@@ -539,7 +539,7 @@ public class ApplicationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
 
         if (!application.getJobListing().getBusiness().getOwner().getId().equals(ownerId)) {
-            throw new UnauthorizedException("Bu başvuru size ait değil");
+            throw UnauthorizedException.keyed("error.application.notOwner");
         }
         return application;
     }

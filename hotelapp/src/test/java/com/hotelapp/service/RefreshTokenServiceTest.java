@@ -110,7 +110,7 @@ class RefreshTokenServiceTest {
 
         assertThatThrownBy(() -> service.validateAndRotate("some-raw-token"))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessageContaining("ihlali");  // "güvenlik ihlali" Türkçe i = ASCII güvenli kelime
+                .hasMessageContaining("error.auth.tokenBreach");  // "güvenlik ihlali" Türkçe i = ASCII güvenli kelime
 
         // Tum user token'lari revoke edilmis olmali (replay saldirisi defense)
         verify(repo).revokeAllForUser(eq(42L));
@@ -129,7 +129,7 @@ class RefreshTokenServiceTest {
 
         assertThatThrownBy(() -> service.validateAndRotate("raw"))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessageContaining("Tekrar giri");  // "süresi dolmuş. Tekrar giriş"
+                .hasMessageContaining("error.auth.refreshExpired");  // "süresi dolmuş. Tekrar giriş"
 
         verify(repo, never()).revokeAllForUser(anyLong());
     }
@@ -141,7 +141,7 @@ class RefreshTokenServiceTest {
 
         assertThatThrownBy(() -> service.validateAndRotate("missing"))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessageContaining("Refresh token");  // ASCII safe prefix
+                .hasMessageContaining("error.auth.refreshInvalid");  // ASCII safe prefix
     }
 
     @Test

@@ -172,7 +172,7 @@ public class BusinessService {
                 .orElseThrow(() -> new ResourceNotFoundException("Foto", photoId));
 
         if (!photo.getBusiness().getOwner().getId().equals(ownerId)) {
-            throw new UnauthorizedException("Bu foto size ait değil");
+            throw UnauthorizedException.keyed("error.photo.notOwner");
         }
 
         boolean wasCover = Boolean.TRUE.equals(photo.getIsCover());
@@ -207,7 +207,7 @@ public class BusinessService {
         List<BusinessPhoto> photos = businessPhotoRepository.findAllById(orderedPhotoIds);
         for (BusinessPhoto p : photos) {
             if (!p.getBusiness().getId().equals(business.getId())) {
-                throw new UnauthorizedException("Bu fotoğraflardan biri size ait değil");
+                throw UnauthorizedException.keyed("error.photo.notOwner");
             }
         }
         if (photos.size() != orderedPhotoIds.size()) {
@@ -234,7 +234,7 @@ public class BusinessService {
                 .orElseThrow(() -> new ResourceNotFoundException("Foto", photoId));
 
         if (!photo.getBusiness().getOwner().getId().equals(ownerId)) {
-            throw new UnauthorizedException("Bu foto size ait değil");
+            throw UnauthorizedException.keyed("error.photo.notOwner");
         }
 
         businessPhotoRepository.clearCoverForBusiness(photo.getBusiness().getId());

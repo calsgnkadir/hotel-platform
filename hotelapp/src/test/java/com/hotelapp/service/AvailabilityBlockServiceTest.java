@@ -103,7 +103,7 @@ class AvailabilityBlockServiceTest {
 
         assertThatThrownBy(() -> service.replaceMyBlocks(USER_ID, tooMany))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("20 müsaitlik");
+                .hasMessageContaining("error.availability.maxBlocks");
 
         verify(blockRepository, never()).deleteAllByUserId(anyLong());
     }
@@ -133,7 +133,7 @@ class AvailabilityBlockServiceTest {
 
         assertThatThrownBy(() -> service.replaceMyBlocks(USER_ID, List.of(bad)))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("Gün");
+                .hasMessageContaining("error.application.slotRequired");
     }
 
     @Test

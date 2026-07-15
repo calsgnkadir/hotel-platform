@@ -41,7 +41,7 @@ public class AvailabilityBlockService {
     @Transactional
     public List<AvailabilityBlockDto> replaceMyBlocks(Long userId, @Valid List<@Valid AvailabilityBlockDto> blocks) {
         if (blocks.size() > 20) {
-            throw new BusinessRuleException("En fazla 20 müsaitlik bloğu tanımlayabilirsin");
+            throw BusinessRuleException.keyed("error.availability.maxBlocks");
         }
         // Her blok için from < to kontrolü
         for (var b : blocks) {
@@ -52,7 +52,7 @@ public class AvailabilityBlockService {
                 throw new BusinessRuleException("Başlangıç saati bitiş saatinden önce olmalı");
             }
             if (b.getDayOfWeek() == null) {
-                throw new BusinessRuleException("Gün seçimi zorunlu");
+                throw BusinessRuleException.keyed("error.application.slotRequired");
             }
         }
 

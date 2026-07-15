@@ -92,7 +92,7 @@ class JobListingServiceTest {
 
             assertThatThrownBy(() -> service.createListing(OWNER_ID, validRequest()))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("İşletme profili bulunamadı");
+                    .hasMessageContaining("error.business.profileNotFound");
         }
 
         @Test
@@ -105,7 +105,7 @@ class JobListingServiceTest {
 
             assertThatThrownBy(() -> service.createListing(OWNER_ID, r))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("en az 1 vardiya slotu");
+                    .hasMessageContaining("error.listing.slotRequired");
         }
 
         @Test
@@ -179,7 +179,7 @@ class JobListingServiceTest {
 
             assertThatThrownBy(() -> service.updateStatus(42L, OTHER_ID, ListingStatus.PAUSED))
                     .isInstanceOf(UnauthorizedException.class)
-                    .hasMessageContaining("size ait değil");
+                    .hasMessageContaining("error.listing.notOwner");
         }
     }
 }

@@ -68,23 +68,23 @@ public class RefreshTokenService {
     @Transactional
     public RotationResult validateAndRotate(String rawToken) {
         if (rawToken == null || rawToken.isBlank()) {
-            throw new UnauthorizedException("Refresh token bulunamadı");
+            throw UnauthorizedException.keyed("error.auth.refreshNotFound");
         }
 
         String hash = sha256(rawToken);
         RefreshToken token = repo.findByTokenHash(hash)
-                .orElseThrow(() -> new UnauthorizedException("Refresh token geçersiz"));
+                .orElseThrow(() -> UnauthorizedException.keyed("error.auth.refreshInvalid"));
 
         // Reuse detection: revoked olduktan sonra tekrar geldi
         if (token.isRevoked()) {
             log.warn("Refresh token REUSE detected — user {} tüm token'lar revoke edilir",
                     token.getUser().getId());
             repo.revokeAllForUser(token.getUser().getId());
-            throw new UnauthorizedException("Token güvenlik ihlali tespit edildi. Tekrar giriş yapın.");
+            throw UnauthorizedException.keyed("error.auth.tokenBreach");
         }
 
         if (token.isExpired()) {
-            throw new UnauthorizedException("Refresh token süresi dolmuş. Tekrar giriş yapın.");
+            throw UnauthorizedException.keyed("error.auth.refreshExpired");
         }
 
         // Eski token revoke + yeni token üret (rotation)

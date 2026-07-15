@@ -139,7 +139,7 @@ public class WorkSessionService {
         Application app = applicationRepository.findById(appId)
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", appId));
         if (!app.getCandidate().getId().equals(candidateId)) {
-            throw new UnauthorizedException("Bu basvuru size ait degil");
+            throw UnauthorizedException.keyed("error.application.notOwner");
         }
         if (app.getStatus() != ApplicationStatus.ACCEPTED) {
             throw new BusinessRuleException(

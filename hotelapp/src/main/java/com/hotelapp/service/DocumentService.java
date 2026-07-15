@@ -75,7 +75,7 @@ public class DocumentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Belge", documentId));
 
         if (!document.getStudent().getId().equals(candidateId)) {
-            throw new UnauthorizedException("Bu belge size ait değil");
+            throw UnauthorizedException.keyed("error.document.notOwner");
         }
 
         fileStorageService.delete(document.getFilePath());
@@ -99,7 +99,7 @@ public class DocumentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
 
         if (!app.getJobListing().getBusiness().getOwner().getId().equals(ownerId)) {
-            throw new UnauthorizedException("Bu başvuru size ait değil");
+            throw UnauthorizedException.keyed("error.application.notOwner");
         }
 
         Set<DocumentType> grantedSensitiveTypes = app.getDocumentRequests().stream()
@@ -126,7 +126,7 @@ public class DocumentService {
         if (!isBusinessOwner) {
             // Aday kendi belgesini her zaman görebilir
             if (!document.getStudent().getId().equals(requesterId)) {
-                throw new UnauthorizedException("Bu belgeye erişim yetkiniz yok");
+                throw UnauthorizedException.keyed("error.document.noAccess");
             }
             return fileStorageService.publicUrl(document.getFilePath());
         }

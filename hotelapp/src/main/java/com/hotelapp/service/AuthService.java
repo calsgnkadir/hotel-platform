@@ -162,10 +162,10 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", userId));
 
         if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
-            throw new BusinessRuleException("Mevcut şifre yanlış");
+            throw BusinessRuleException.keyed("error.auth.currentPasswordWrong");
         }
         if (req.getCurrentPassword().equals(req.getNewPassword())) {
-            throw new BusinessRuleException("Yeni şifre eskisiyle aynı olamaz");
+            throw BusinessRuleException.keyed("error.auth.passwordSame");
         }
 
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));

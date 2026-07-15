@@ -143,7 +143,7 @@ public class JobListingService {
     @Transactional
     public ListingResponse createListing(Long ownerId, ListingRequest request) {
         Business business = businessRepository.findByOwnerId(ownerId)
-                .orElseThrow(() -> new BusinessRuleException("İşletme profili bulunamadı. Önce kaydolun."));
+                .orElseThrow(() -> BusinessRuleException.keyed("error.business.profileNotFound"));
 
         validateDates(request);
         validateSlots(request.getShiftSlots());
@@ -249,7 +249,7 @@ public class JobListingService {
     // ----------------------------------------------------------------
     private void validateSlots(List<ShiftSlotCreate> slots) {
         if (slots == null || slots.isEmpty()) {
-            throw new BusinessRuleException("İlan için en az 1 vardiya slotu eklemelisiniz");
+            throw BusinessRuleException.keyed("error.listing.slotRequired");
         }
         LocalDate today = LocalDate.now();
         java.time.LocalTime nowTime = java.time.LocalTime.now();
@@ -446,7 +446,7 @@ public class JobListingService {
         JobListing listing = jobListingRepository.findById(listingId)
                 .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
         if (!listing.getBusiness().getOwner().getId().equals(ownerId)) {
-            throw new UnauthorizedException("Bu ilan size ait değil");
+            throw UnauthorizedException.keyed("error.listing.notOwner");
         }
         return listing;
     }

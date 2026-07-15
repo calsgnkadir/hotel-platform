@@ -44,7 +44,7 @@ public class FavoriteService {
         User candidate = userRepository.findById(candidateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aday", candidateId));
         if (candidate.getRole() != Role.CANDIDATE) {
-            throw new BusinessRuleException("Sadece aday hesaplari favori yapilabilir");
+            throw BusinessRuleException.keyed("error.favorite.candidateOnly");
         }
         // Toggle: zaten varsa exception yerine return existing (idempotent)
         return favoriteRepository.findByBusinessIdAndCandidateId(business.getId(), candidateId)

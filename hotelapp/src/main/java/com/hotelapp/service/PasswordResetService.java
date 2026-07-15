@@ -99,13 +99,13 @@ public class PasswordResetService {
     @Transactional(readOnly = true)
     public String validateToken(String token) {
         PasswordResetToken prt = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new BusinessRuleException("Geçersiz veya kullanılmış bağlantı."));
+                .orElseThrow(() -> BusinessRuleException.keyed("error.auth.resetLinkInvalid"));
 
         if (prt.isUsed()) {
-            throw new BusinessRuleException("Bu bağlantı zaten kullanılmış. Yeni bir talep oluşturun.");
+            throw BusinessRuleException.keyed("error.auth.resetLinkUsed");
         }
         if (prt.isExpired()) {
-            throw new BusinessRuleException("Bu bağlantının süresi dolmuş. Yeni bir talep oluşturun.");
+            throw BusinessRuleException.keyed("error.auth.resetLinkExpired");
         }
         return prt.getUser().getEmail();
     }
@@ -114,17 +114,17 @@ public class PasswordResetService {
     @Transactional
     public void confirmReset(String token, String newPassword) {
         if (newPassword == null || newPassword.length() < 8) {
-            throw new BusinessRuleException("Şifre en az 8 karakter olmalıdır.");
+            throw BusinessRuleException.keyed("error.auth.passwordTooShort");
         }
 
         PasswordResetToken prt = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new BusinessRuleException("Geçersiz veya kullanılmış bağlantı."));
+                .orElseThrow(() -> BusinessRuleException.keyed("error.auth.resetLinkInvalid"));
 
         if (prt.isUsed()) {
-            throw new BusinessRuleException("Bu bağlantı zaten kullanılmış. Yeni bir talep oluşturun.");
+            throw BusinessRuleException.keyed("error.auth.resetLinkUsed");
         }
         if (prt.isExpired()) {
-            throw new BusinessRuleException("Bu bağlantının süresi dolmuş. Yeni bir talep oluşturun.");
+            throw BusinessRuleException.keyed("error.auth.resetLinkExpired");
         }
 
         // Şifreyi güncelle

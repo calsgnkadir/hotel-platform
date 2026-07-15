@@ -4,6 +4,12 @@ server:
 spring:
   profiles:
     active: dev
+  # FAZ 12 — i18n: messages_tr/en.properties, UTF-8, key fallback (system locale kapali)
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+    use-code-as-default-message: true
   datasource:
     # connectionTimeZone + forceConnectionTimeZoneToSession: MySQL Connector/J 8.x
     # JDBC katmanı LocalDate'i bu zaman dilimine göre işlemeli (1 gün kayma fix).

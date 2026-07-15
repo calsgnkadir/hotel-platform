@@ -30,36 +30,50 @@ import java.util.stream.Collectors;
  */
 @RestControllerAdvice
 @Slf4j
+@lombok.RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final com.hotelapp.config.Messages messages;
+
+    /**
+     * FAZ 12 — Exception mesajini coz: LocalizedException + key varsa
+     * MessageSource + Accept-Language ile; yoksa legacy getMessage() (Turkce).
+     */
+    private String resolve(Exception ex) {
+        if (ex instanceof LocalizedException le && le.getMessageKey() != null) {
+            return messages.get(le.getMessageKey(), le.getMessageArgs());
+        }
+        return ex.getMessage();
+    }
 
     // 404 — kayıt bulunamadı
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
-        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+        return build(HttpStatus.NOT_FOUND, resolve(ex));
     }
 
     // 422 — iş kuralı ihlali
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessRule(BusinessRuleException ex) {
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, resolve(ex));
     }
 
     // 403 — kaynak başka kullanıcıya ait
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
-        return build(HttpStatus.FORBIDDEN, ex.getMessage());
+        return build(HttpStatus.FORBIDDEN, resolve(ex));
     }
 
     // 403 — Spring Security rol kontrolü
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
-        return build(HttpStatus.FORBIDDEN, "Bu işlemi yapmaya yetkiniz yok");
+        return build(HttpStatus.FORBIDDEN, messages.get("error.access.denied"));
     }
 
     // 401 — hatalı şifre / geçersiz token
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, Object>> handleBadCredentials(BadCredentialsException ex) {
-        return build(HttpStatus.UNAUTHORIZED, "Email veya şifre hatalı");
+        return build(HttpStatus.UNAUTHORIZED, messages.get("error.badCredentials"));
     }
 
     // 400 — @Valid validation hatası, alan bazlı liste döner
@@ -96,13 +110,13 @@ public class GlobalExceptionHandler {
     // Yakalamayinca catch-all 500 doner ama bu CLIENT hatasi.
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleUnreadable(HttpMessageNotReadableException ex) {
-        return build(HttpStatus.BAD_REQUEST, "Istek govdesi okunamadi (bozuk JSON)");
+        return build(HttpStatus.BAD_REQUEST, messages.get("error.body.unreadable"));
     }
 
     // FAZ 9.5 — 400 — zorunlu @RequestParam eksik (uniform response format)
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<Map<String, Object>> handleMissingParam(MissingServletRequestParameterException ex) {
-        return build(HttpStatus.BAD_REQUEST, "Zorunlu parametre eksik: " + ex.getParameterName());
+        return build(HttpStatus.BAD_REQUEST, messages.get("error.param.missing", ex.getParameterName()));
     }
 
     // 404 — Spring "no handler found" (yanlış URL)

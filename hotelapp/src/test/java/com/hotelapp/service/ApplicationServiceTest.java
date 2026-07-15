@@ -94,7 +94,7 @@ class ApplicationServiceTest {
 
             assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("zaten kabul edildi");
+                    .hasMessageContaining("error.application.dupAccepted");
         }
 
         @Test
@@ -106,7 +106,7 @@ class ApplicationServiceTest {
 
             assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("inceleniyor");
+                    .hasMessageContaining("error.application.dupReviewing");
         }
 
         @Test
@@ -118,7 +118,7 @@ class ApplicationServiceTest {
 
             assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("aktif bir başvuru");
+                    .hasMessageContaining("error.application.dupActive");
         }
 
         @Test
@@ -185,7 +185,7 @@ class ApplicationServiceTest {
 
             assertThatThrownBy(() -> service.reviewApplication(APP_ID, OWNER_ID, req))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("Geçersiz karar");
+                    .hasMessageContaining("error.application.decisionInvalid");
         }
 
         @Test

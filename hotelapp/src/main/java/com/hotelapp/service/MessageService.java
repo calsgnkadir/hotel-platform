@@ -78,7 +78,7 @@ public class MessageService {
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", req.getOtherPartyId()));
 
         if (initiator.getId().equals(other.getId())) {
-            throw new BusinessRuleException("Kendinizle sohbet başlatamazsınız");
+            throw BusinessRuleException.keyed("error.message.selfConversation");
         }
 
         // (candidate, businessOwner) çiftini belirle — rollere göre
@@ -160,7 +160,7 @@ public class MessageService {
             parent = messageRepository.findById(req.getParentMessageId())
                     .orElseThrow(() -> new ResourceNotFoundException("Mesaj", req.getParentMessageId()));
             if (!parent.getConversation().getId().equals(conversationId)) {
-                throw new BusinessRuleException("Yanıtlanan mesaj bu sohbete ait değil");
+                throw BusinessRuleException.keyed("error.message.parentNotInConversation");
             }
         }
 
@@ -372,13 +372,13 @@ public class MessageService {
     public java.util.List<MessageDto.ReactionSummary> toggleReaction(
             Long conversationId, Long messageId, Long userId, String reaction) {
         if (!ALLOWED_REACTIONS.contains(reaction)) {
-            throw new BusinessRuleException("Geçersiz reaksiyon tipi");
+            throw BusinessRuleException.keyed("error.message.reactionInvalid");
         }
         Conversation conv = getConversationForUser(conversationId, userId);
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesaj", messageId));
         if (!msg.getConversation().getId().equals(conversationId)) {
-            throw new BusinessRuleException("Mesaj bu sohbete ait değil");
+            throw BusinessRuleException.keyed("error.message.notInConversation");
         }
 
         var existing = messageReactionRepository.findByMessageIdAndUserId(messageId, userId);
@@ -448,7 +448,7 @@ public class MessageService {
                 .orElseThrow(() -> new ResourceNotFoundException("Sohbet", conversationId));
         if (!conv.getCandidate().getId().equals(userId)
                 && !conv.getBusinessOwner().getId().equals(userId)) {
-            throw new UnauthorizedException("Bu sohbete erişiminiz yok");
+            throw UnauthorizedException.keyed("error.conversation.noAccess");
         }
         return conv;
     }
