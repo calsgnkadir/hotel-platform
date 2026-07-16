@@ -98,6 +98,12 @@ export async function getMyEarnings() {
   return data  // EarningsResponse
 }
 
+/** FAZ 16 — Benzer ilanlar (content-based, public). */
+export async function getSimilarListings(id, limit = 6) {
+  const { data } = await api.get(`/api/listings/${id}/similar`, { params: { limit } })
+  return data  // ListingResponse[]
+}
+
 export async function updateCandidateProfile(payload) {
   const { data } = await api.put('/api/candidate/profile', payload)
   return data

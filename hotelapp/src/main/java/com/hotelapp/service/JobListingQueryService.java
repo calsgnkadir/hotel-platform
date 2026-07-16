@@ -194,6 +194,89 @@ public class JobListingQueryService {
         return jobListingService.toResponse(listing);
     }
 
+    /**
+     * FAZ 16 — Content-based "Benzer İlanlar".
+     *
+     * Verilen ilana benzer AKTIF ilanlari doner (kendisi haric). Collaborative
+     * filtering icin yeterli etkilesim verisi olmadigindan icerik benzerligi:
+     *  - Ayni pozisyon            -> +50
+     *  - Ayni ilce                -> +30 / komsu ilce -> +15 (IstanbulDistricts)
+     *  - Ayni jobType             -> +20
+     *  - Maas yakinligi (%25 icinde) -> +15, (%50 icinde) -> +8
+     * Skor 0 olanlar elenir; en yuksek skorlu ilk {limit} doner.
+     */
+    @Transactional(readOnly = true)
+    public List<ListingResponse> getSimilarListings(Long listingId, int limit) {
+        JobListing base = jobListingRepository.findById(listingId)
+                .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
+
+        // Sadece aktif ilanlar arasindan aday cikart
+        Specification<JobListing> spec = (root, q, cb) ->
+                cb.equal(root.get("status"), ListingStatus.ACTIVE);
+        List<JobListing> candidates = jobListingRepository.findAll(spec);
+
+        List<JobListing> ranked = candidates.stream()
+                .filter(l -> !l.getId().equals(base.getId()))
+                .map(l -> java.util.Map.entry(l, similarityScore(base, l)))
+                .filter(e -> e.getValue() > 0)
+                .sorted((a, b) -> {
+                    int c = Integer.compare(b.getValue(), a.getValue());
+                    if (c != 0) return c;
+                    // tiebreak: yeni once
+                    return b.getKey().getCreatedAt().compareTo(a.getKey().getCreatedAt());
+                })
+                .limit(Math.max(1, limit))
+                .map(java.util.Map.Entry::getKey)
+                .toList();
+
+        return jobListingService.toResponses(ranked);
+    }
+
+    /** Package-private for testability (FAZ 16 similarity unit test). */
+    static int similarityScore(JobListing base, JobListing other) {
+        int score = 0;
+
+        // Pozisyon
+        if (base.getPosition() != null && base.getPosition() == other.getPosition()) {
+            score += 50;
+        }
+
+        // Ilce (tam / komsu)
+        String baseDist  = base.getBusiness()  != null ? base.getBusiness().getDistrict()  : null;
+        String otherDist = other.getBusiness() != null ? other.getBusiness().getDistrict() : null;
+        if (baseDist != null && otherDist != null) {
+            if (baseDist.equalsIgnoreCase(otherDist)) {
+                score += 30;
+            } else if (IstanbulDistricts.areNeighbors(baseDist, otherDist)) {
+                score += 15;
+            }
+        }
+
+        // Calisma turu
+        if (base.getJobType() != null && base.getJobType() == other.getJobType()) {
+            score += 20;
+        }
+
+        // Maas yakinligi — ortalama uzerinden
+        java.math.BigDecimal baseAvg  = avgSalary(base);
+        java.math.BigDecimal otherAvg = avgSalary(other);
+        if (baseAvg != null && otherAvg != null && baseAvg.signum() > 0) {
+            double ratio = otherAvg.doubleValue() / baseAvg.doubleValue();
+            double diff = Math.abs(1.0 - ratio);
+            if (diff <= 0.25)      score += 15;
+            else if (diff <= 0.50) score += 8;
+        }
+
+        return score;
+    }
+
+    private static java.math.BigDecimal avgSalary(JobListing l) {
+        java.math.BigDecimal min = l.getSalaryMin();
+        java.math.BigDecimal max = l.getSalaryMax();
+        if (min != null && max != null) return min.add(max).divide(java.math.BigDecimal.valueOf(2));
+        return min != null ? min : max;
+    }
+
     // Position enum -> TR + EN keyword'leri. Kullanici "garson" yazinca
     // WAITER pozisyonlu ilanlar da bulunur. Eslestirme: keyword icinde
     // en az bir kelime gecerse o position dahil edilir.

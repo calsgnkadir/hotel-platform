@@ -98,6 +98,16 @@ public class JobListingController {
         return ResponseEntity.ok(jobListingQueryService.getListingById(id));
     }
 
+    @Operation(
+            summary = "FAZ 16 — Benzer ilanlar (content-based)",
+            description = "Bu ilana benzer aktif ilanlar: pozisyon + ilçe/komşu + çalışma türü + maaş yakınlığı. Public.")
+    @GetMapping("/{id}/similar")
+    public ResponseEntity<List<ListingResponse>> similarListings(
+            @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "6") int limit) {
+        return ResponseEntity.ok(jobListingQueryService.getSimilarListings(id, Math.min(limit, 12)));
+    }
+
     @Operation(summary = "İlanı düzenle — sadece BUSINESS_OWNER (sahibi)")
     @PutMapping("/{id}")
     // FAZ 4.9 — Method-level: bu ilan gerçekten benim mi?

@@ -117,6 +117,8 @@ public class SecurityConfig {
                         // diger /api/listings/** endpoint'lerinden (detail, my, salary-benchmark)
                         // once tanimli olmasi lazim; Spring Security first-match uygular.
                         .requestMatchers(HttpMethod.POST, "/api/listings/*/view").permitAll()
+                        // FAZ 16 — Benzer ilanlar public (landing/SEO — auth gerektirmez)
+                        .requestMatchers(HttpMethod.GET, "/api/listings/*/similar").permitAll()
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/businesses/**",

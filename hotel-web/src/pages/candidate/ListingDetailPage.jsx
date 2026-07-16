@@ -414,6 +414,9 @@ export default function ListingDetailPage() {
           </div>
         </aside>
         </div>  {/* xl:grid kapanis */}
+
+        {/* FAZ 16 — Benzer İlanlar (content-based) */}
+        <SimilarListings listingId={id} onNavigate={(lid) => navigate(`/listings/${lid}`)} />
       </main>
 
       {/* ApplyModal - başvur butonuna basınca açılır */}
@@ -447,6 +450,61 @@ function memberSince(iso) {
   if (days < 30)    return `${days} gün`
   if (days < 365)   return `${Math.floor(days / 30)} ay`
   return `${Math.floor(days / 365)} yıl`
+}
+
+/* ── FAZ 16 — Benzer İlanlar bölümü ── */
+function SimilarListings({ listingId, onNavigate }) {
+  const { data: similar = [], isLoading } = useQuery({
+    queryKey: ['similar-listings', listingId],
+    queryFn: () => hotelApi.getSimilarListings(listingId, 6),
+    enabled: !!listingId,
+    staleTime: 5 * 60_000,
+  })
+
+  if (isLoading || similar.length === 0) return null
+
+  return (
+    <section className="mt-8 px-4 lg:px-0">
+      <div className="flex items-baseline gap-2 mb-4">
+        <h2 className="type-heading" style={{ fontSize: '18px' }}>Benzer İlanlar</h2>
+        <span className="type-caption">bu ilana yakın {similar.length} fırsat</span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {similar.map(l => {
+          const salary = formatSalary(l.salaryMin, l.salaryMax, l.salaryType, l.tipsIncluded)
+          return (
+            <button key={l.id} onClick={() => onNavigate(l.id)}
+              className="tier-raised tier-raised-hover p-4 text-left transition-all group">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="type-body font-semibold truncate" style={{ color: 'var(--text-headline)' }}>
+                    {l.title}
+                  </div>
+                  <div className="type-caption truncate mt-0.5">{l.businessName}</div>
+                </div>
+                {l.businessReviewCount > 0 && (
+                  <StarRating value={l.businessAverageRating} count={l.businessReviewCount} size="xs" />
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap type-caption">
+                <span>{l.businessDistrict || 'İstanbul'}</span>
+                <span style={{ color: 'var(--text-faint)' }}>·</span>
+                <span>{POSITION_LABELS[l.position] || l.position}</span>
+                <span style={{ color: 'var(--text-faint)' }}>·</span>
+                <span>{JOB_TYPE_LABELS[l.jobType] || l.jobType}</span>
+              </div>
+              {salary && (
+                <div className="mt-2 inline-flex items-center type-overline px-2 py-0.5 rounded-full tabular-nums"
+                     style={{ background: 'rgba(205, 183, 143, 0.08)', border: '1px solid rgba(205, 183, 143, 0.22)', color: 'var(--accent-action)' }}>
+                  {salary}
+                </div>
+              )}
+            </button>
+          )
+        })}
+      </div>
+    </section>
+  )
 }
 
 /* Sticky basvur kart icinde satir */
