@@ -88,7 +88,13 @@ function OverviewTab() {
 }
 
 /* ── User Detail Modal ── */
-function UserDetailModal({ user, onClose, onUpdated }) {
+/**
+ * FAZ 15.1 — Admin kullanici detayi.
+ *
+ * variant='modal' (default, mobile) — modal-overlay + focus trap.
+ * variant='panel' — split-view sag panel (yeni), flex-col + kendi scroll'u.
+ */
+function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
   const confirm = useConfirm()
   const [actionLoading, setActionLoading] = useState(false)
   const [banDays, setBanDays] = useState(30)
@@ -133,25 +139,36 @@ function UserDetailModal({ user, onClose, onUpdated }) {
   const isCandidate = user.role === 'CANDIDATE'
   const isAdmin = user.role === 'ADMIN'
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-cream-200 sticky top-0 bg-white z-10">
+  // FAZ 15.1 — Detay govdesi (variant-agnostik)
+  const body = (
+    <>
+        <div className="p-5 border-b border-hairline flex-shrink-0">
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-bold text-ink-900">{user.fullName}</h2>
-              <p className="text-sm text-ink-500">{user.email}</p>
+            <div className="min-w-0">
+              <h2 id="admin-user-detail-title" className="type-heading truncate" style={{ fontSize: '17px' }}>{user.fullName}</h2>
+              <p className="type-caption truncate">{user.email}</p>
             </div>
-            <span className={`text-xs font-semibold px-2 py-1 rounded-full
-              ${isAdmin ? 'bg-amber-100 text-amber-700'
-                : isCandidate ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700'
-                : 'bg-emerald-100 text-brand-700'}`}>
-              {ROLE_LABELS[user.role]}
-            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className={`text-xs font-semibold px-2 py-1 rounded-full
+                ${isAdmin ? 'bg-amber-100 text-amber-700'
+                  : isCandidate ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700'
+                  : 'bg-emerald-100 text-brand-700'}`}>
+                {ROLE_LABELS[user.role]}
+              </span>
+              {variant === 'panel' && (
+                <button onClick={onClose} title="Kapat"
+                  className="tier-raised tier-raised-hover w-8 h-8 flex items-center justify-center"
+                  style={{ borderRadius: '999px', color: 'var(--text-muted)' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className={`p-6 space-y-5 ${variant === 'panel' ? 'flex-1 overflow-y-auto' : ''}`}>
           {/* Key facts */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="bg-cream-50 rounded-lg p-3 text-center">
@@ -217,16 +234,44 @@ function UserDetailModal({ user, onClose, onUpdated }) {
           </div>
         </div>
 
-        <div className="px-6 pb-5">
-          <button onClick={onClose} className="btn-secondary text-sm">Kapat</button>
-        </div>
+        {variant === 'modal' && (
+          <div className="px-6 pb-5">
+            <button onClick={onClose} className="btn-secondary text-sm">Kapat</button>
+          </div>
+        )}
+    </>
+  )
+
+  if (variant === 'panel') {
+    // Split-view sag panel — scroll body
+    return (
+      <div className="tier-raised sticky top-4 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+        {/* body kendi header/body/footer'ini render eder; body/scroll icin wrap: */}
+        {body}
+      </div>
+    )
+  }
+
+  // Mobile / non-split: modal overlay
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content max-h-[90vh] overflow-y-auto"
+           role="dialog" aria-modal="true" aria-labelledby="admin-user-detail-title"
+           onClick={e => e.stopPropagation()}>
+        {body}
       </div>
     </div>
   )
 }
 
-/* ── Users Tab ── */
+/* ── Users Tab — FAZ 15.2 split master-detail ── */
 function UsersTab() {
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1024)
+  useEffect(() => {
+    function onResize() { setIsDesktop(window.innerWidth >= 1024) }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [roleFilter, setRoleFilter] = useState('')
@@ -288,74 +333,70 @@ function UsersTab() {
         </div>
       </div>
 
-      {/* User table */}
+      {/* FAZ 15.2 — Split master-detail: sol liste, sag panel (desktop). Mobile: modal fallback. */}
       {loading ? (
         <div className="flex justify-center py-12"><div className="spinner" /></div>
       ) : users.length === 0 ? (
-        <div className="card">
-          <div className="empty-state py-14">
-            <Icon d={ICONS.search} className="w-10 h-10 text-ink-300 mb-3" strokeWidth={1.5} />
-            <p className="text-ink-500 text-sm">Eşleşen kullanıcı yok</p>
-          </div>
+        <div className="tier-raised p-14 text-center">
+          <Icon d={ICONS.search} className="w-10 h-10 mx-auto mb-3" strokeWidth={1.5} style={{ color: 'var(--text-faint)' }} />
+          <p className="type-body" style={{ color: 'var(--text-muted)' }}>Eşleşen kullanıcı yok</p>
         </div>
       ) : (
-        <div className="table-container">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Kullanıcı</th>
-                <th>Rol</th>
-                <th className="hidden md:table-cell">Strike</th>
-                <th>Durum</th>
-                <th className="hidden sm:table-cell">Kayıt</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(u => (
-                <tr key={u.id}>
-                  <td>
-                    <div className="font-medium text-ink-800">{u.fullName}</div>
-                    <div className="text-xs text-ink-400">{u.email}</div>
-                  </td>
-                  <td>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
-                      ${u.role === 'ADMIN' ? 'bg-amber-100 text-amber-700'
-                        : u.role === 'CANDIDATE' ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700'
-                        : 'bg-emerald-100 text-brand-700'}`}>
-                      {ROLE_LABELS[u.role]}
-                    </span>
-                  </td>
-                  <td className="hidden md:table-cell text-sm">{u.strikesRemaining ?? '—'}</td>
-                  <td>
-                    {u.currentlyBanned ? (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 inline-flex items-center gap-1">
-                        <Icon d={ICONS.ban} className="w-3 h-3" /> Banlı
+        <div className={selected && isDesktop ? 'grid gap-4' : ''}
+             style={selected && isDesktop ? { gridTemplateColumns: '380px 1fr', alignItems: 'start' } : undefined}>
+          {/* SOL: master list */}
+          <div className="space-y-2 min-w-0">
+            {users.map(u => {
+              const isActive = selected?.id === u.id
+              const compact = !!selected && isDesktop
+              return (
+                <div key={u.id}
+                     onClick={() => openDetail(u)}
+                     className={`cursor-pointer transition-all ${isActive ? 'tier-featured' : 'tier-raised tier-raised-hover'} ${compact ? 'p-3' : 'p-4'}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="type-body font-medium truncate" style={{ color: 'var(--text-headline)' }}>{u.fullName}</div>
+                      <div className="type-caption truncate">{u.email}</div>
+                      {!compact && (
+                        <div className="type-caption mt-1">
+                          Strike: <span className="tabular-nums font-semibold" style={{ color: 'var(--text-secondary)' }}>{u.strikesRemaining ?? '—'}</span>
+                          {' · '}Kayıt: {u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '—'}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider
+                        ${u.role === 'ADMIN' ? 'bg-amber-100 text-amber-700'
+                          : u.role === 'CANDIDATE' ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700'
+                          : 'bg-emerald-100 text-brand-700'}`}>
+                        {ROLE_LABELS[u.role]}
                       </span>
-                    ) : (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-brand-700">
-                        Aktif
-                      </span>
-                    )}
-                  </td>
-                  <td className="hidden sm:table-cell text-xs text-ink-400">
-                    {u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '—'}
-                  </td>
-                  <td>
-                    <button onClick={() => openDetail(u)}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-md bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60 transition-colors">
-                      Yönet
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      {u.currentlyBanned ? (
+                        <span className="badge badge-rejected inline-flex items-center gap-1">
+                          <Icon d={ICONS.ban} className="w-3 h-3" /> Banlı
+                        </span>
+                      ) : (
+                        <span className="badge badge-accepted">Aktif</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* SAG: detail panel — desktop split */}
+          {selected && isDesktop && (
+            <UserDetailModal user={selected} onClose={() => setSelected(null)}
+                             onUpdated={handleUpdated} variant="panel" />
+          )}
         </div>
       )}
 
-      {selected && (
-        <UserDetailModal user={selected} onClose={() => setSelected(null)} onUpdated={handleUpdated} />
+      {/* Mobile / narrow: modal overlay */}
+      {selected && !isDesktop && (
+        <UserDetailModal user={selected} onClose={() => setSelected(null)}
+                         onUpdated={handleUpdated} variant="modal" />
       )}
     </div>
   )
@@ -438,7 +479,7 @@ function ReportsTab() {
           {reports.map(r => {
             const sm = REPORT_STATUS_META[r.status] || REPORT_STATUS_META.PENDING
             return (
-              <div key={r.id} className="card p-4">
+              <div key={r.id} className="tier-raised tier-raised-hover p-4">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -645,7 +686,7 @@ function ListingsTab() {
       ) : (
         <div className="space-y-2">
           {items.map(l => (
-            <div key={l.id} className="card p-4 flex items-start justify-between gap-3 flex-wrap">
+            <div key={l.id} className="tier-raised tier-raised-hover p-4 flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <a href={`/listings/${l.id}`} target="_blank" rel="noopener noreferrer"
