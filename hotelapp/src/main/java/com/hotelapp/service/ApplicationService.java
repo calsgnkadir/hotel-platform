@@ -34,7 +34,10 @@ public class ApplicationService {
     private final JobListingRepository jobListingRepository;
     private final DocumentRequestRepository documentRequestRepository;
     private final ShiftSlotRepository shiftSlotRepository;
-    private final AuditLogService auditLogService;
+    // FAZ 18 — Audit: AuditLogService DOGRUDAN cagrilmaz; outbox uzerinden
+    // (at-least-once + retry). Eskiden burada kullanilmayan bir AuditLogService
+    // injection'i duruyordu — basvuru kararlari hic audit'lenmiyordu.
+    private final OutboxService outboxService;
     private final NotificationService notificationService;
     private final MessageService messageService;  // chat refactor: auto-conversation
     private final EmailService emailService;
@@ -232,6 +235,17 @@ public class ApplicationService {
         application.setNote(request.getNote());
         applicationRepository.save(application);
 
+        // FAZ 18 — Audit: baglayici karar, kim/ne zaman izlenebilmeli
+        outboxService.appendAuditLog(com.hotelapp.event.AuditLoggedEvent.user(
+                ownerId,
+                request.getDecision() == ApplicationStatus.ACCEPTED ? "ACCEPT_APPLICATION" : "REJECT_APPLICATION",
+                "APPLICATION", applicationId,
+                "İlan: " + application.getJobListing().getTitle()
+                        + " · Aday: " + application.getCandidate().getEmail()
+                        + " · Önceki durum: " + current
+                        + (request.getNote() != null && !request.getNote().isBlank()
+                            ? " · Not: " + request.getNote() : "")));
+
         // Bildirim: adaya kabul/red
         Long candidateId = application.getCandidate().getId();
         String listingTitle = application.getJobListing().getTitle();
@@ -287,6 +301,13 @@ public class ApplicationService {
         app.setHoldDeadline(LocalDateTime.now().plusHours(24));
         applicationRepository.save(app);
 
+        // FAZ 18 — Audit
+        outboxService.appendAuditLog(com.hotelapp.event.AuditLoggedEvent.user(
+                ownerId, "HOLD_APPLICATION", "APPLICATION", applicationId,
+                "İlan: " + app.getJobListing().getTitle()
+                        + " · Aday: " + app.getCandidate().getEmail()
+                        + " · Son tarih: " + app.getHoldDeadline()));
+
         // Adaya bildirim: 24 saat icinde cevap vermesi gerek
         Long candidateId = app.getCandidate().getId();
         String listingTitle = app.getJobListing().getTitle();
@@ -336,6 +357,14 @@ public class ApplicationService {
         }
         applicationRepository.save(app);
 
+        // FAZ 18 — Audit: adayin HOLD yaniti (baglayici kabul / vazgecme)
+        outboxService.appendAuditLog(com.hotelapp.event.AuditLoggedEvent.user(
+                candidateId,
+                accept ? "HOLD_ACCEPTED_BY_CANDIDATE" : "HOLD_REJECTED_BY_CANDIDATE",
+                "APPLICATION", applicationId,
+                "İlan: " + app.getJobListing().getTitle()
+                        + " · İşletme: " + app.getJobListing().getBusiness().getName()));
+
         // FAZ D.4 — Prometheus counter (sadece accept için)
         if (accept) {
             var m = metricsProvider.getIfAvailable();
@@ -384,6 +413,12 @@ public class ApplicationService {
 
         application.setStatus(ApplicationStatus.WITHDRAWN);
         applicationRepository.save(application);
+
+        // FAZ 18 — Audit
+        outboxService.appendAuditLog(com.hotelapp.event.AuditLoggedEvent.user(
+                candidateId, "WITHDRAW_APPLICATION", "APPLICATION", applicationId,
+                "İlan: " + application.getJobListing().getTitle()
+                        + " · Önceki durum: " + current));
 
         // Bildirim: işletmeye aday iptali
         Long ownerId = application.getJobListing().getBusiness().getOwner().getId();

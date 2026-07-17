@@ -38,9 +38,12 @@ import static org.mockito.Mockito.when;
 /**
  * ApplicationService unit testleri — kritik branching senaryolari.
  *
- * Asil kapsam: validation + state-machine kurallari. Happy path side-effect'leri
- * (mail, notification, conversation acma) IT testleri tarafindan zaten kapsaniyor;
- * burada SADECE early-throw'lara odaklaniliyor — mock yuku az, kapsam yuksek.
+ * Asil kapsam: validation + state-machine kurallari. Mail/notification/conversation
+ * gibi happy path side-effect'leri IT testlerine birakiliyor — burada mock yuku az
+ * tutulup early-throw'lara odaklaniliyor.
+ *
+ * Istisna (FAZ 18): audit trail. Kabul/red/iptal baglayici kararlar ve "kim yapti"
+ * izi denetlenebilir olmali; bu yuzden Audit nested class'i happy path'i de kosuyor.
  */
 @ExtendWith(MockitoExtension.class)
 class ApplicationServiceTest {
@@ -50,7 +53,7 @@ class ApplicationServiceTest {
     @Mock private JobListingRepository jobListingRepository;
     @Mock private com.hotelapp.repository.DocumentRequestRepository documentRequestRepository;
     @Mock private com.hotelapp.repository.ShiftSlotRepository shiftSlotRepository;
-    @Mock private AuditLogService auditLogService;
+    @Mock private OutboxService outboxService;
     @Mock private NotificationService notificationService;
     @Mock private MessageService messageService;
     @Mock private EmailService emailService;
@@ -285,8 +288,90 @@ class ApplicationServiceTest {
     }
 
     // ================================================================
+    // FAZ 18 — Audit trail (outbox uzerinden)
+    //
+    // Baglayici kararlar (kabul/red/iptal) audit'lenmeli. Bu testler ayni
+    // zamanda reviewApplication/withdrawApplication'in ILK happy-path
+    // kapsami — onceden sadece early-throw'lar test ediliyordu.
+    // ================================================================
+    @Nested
+    @DisplayName("audit trail")
+    class Audit {
+
+        @Test
+        @DisplayName("Kabul: ACCEPT_APPLICATION audit'lenir, aktör işletme sahibi")
+        void accept_appendsAudit() {
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(appWithStatus(ApplicationStatus.PENDING)));
+
+            ReviewRequest req = new ReviewRequest();
+            req.setDecision(ApplicationStatus.ACCEPTED);
+
+            service.reviewApplication(APP_ID, OWNER_ID, req);
+
+            var ev = captureAudit();
+            assertThat(ev.action()).isEqualTo("ACCEPT_APPLICATION");
+            assertThat(ev.actorId()).isEqualTo(OWNER_ID);
+            assertThat(ev.targetType()).isEqualTo("APPLICATION");
+            assertThat(ev.targetId()).isEqualTo(APP_ID);
+            assertThat(ev.details()).contains("Test İlan", "aday@test.com", "PENDING");
+        }
+
+        @Test
+        @DisplayName("Red: REJECT_APPLICATION audit'lenir, gerekçe not'u detaya girer")
+        void reject_appendsAuditWithNote() {
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(appWithStatus(ApplicationStatus.REVIEWING)));
+
+            ReviewRequest req = new ReviewRequest();
+            req.setDecision(ApplicationStatus.REJECTED);
+            req.setNote("Deneyim yetersiz");
+
+            service.reviewApplication(APP_ID, OWNER_ID, req);
+
+            var ev = captureAudit();
+            assertThat(ev.action()).isEqualTo("REJECT_APPLICATION");
+            assertThat(ev.details()).contains("REVIEWING", "Deneyim yetersiz");
+        }
+
+        @Test
+        @DisplayName("İptal: WITHDRAW_APPLICATION audit'lenir, aktör ADAY (işletme değil)")
+        void withdraw_appendsAuditWithCandidateAsActor() {
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(appWithStatus(ApplicationStatus.PENDING)));
+
+            service.withdrawApplication(APP_ID, CANDIDATE_ID);
+
+            var ev = captureAudit();
+            assertThat(ev.action()).isEqualTo("WITHDRAW_APPLICATION");
+            assertThat(ev.actorId()).isEqualTo(CANDIDATE_ID);
+            assertThat(ev.targetId()).isEqualTo(APP_ID);
+        }
+
+        @Test
+        @DisplayName("Karar reddedilirse (yetkisiz) audit yazılmaz")
+        void unauthorized_noAudit() {
+            Application app = appWithStatus(ApplicationStatus.PENDING);
+            app.getJobListing().getBusiness().getOwner().setId(99L);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+
+            ReviewRequest req = new ReviewRequest();
+            req.setDecision(ApplicationStatus.ACCEPTED);
+
+            assertThatThrownBy(() -> service.reviewApplication(APP_ID, OWNER_ID, req))
+                    .isInstanceOf(UnauthorizedException.class);
+
+            verify(outboxService, never()).appendAuditLog(any());
+        }
+    }
+
+    // ================================================================
     // Helpers
     // ================================================================
+
+    private com.hotelapp.event.AuditLoggedEvent captureAudit() {
+        ArgumentCaptor<com.hotelapp.event.AuditLoggedEvent> cap =
+                ArgumentCaptor.forClass(com.hotelapp.event.AuditLoggedEvent.class);
+        verify(outboxService).appendAuditLog(cap.capture());
+        return cap.getValue();
+    }
 
     private User candidate() {
         return User.builder().id(CANDIDATE_ID).email("aday@test.com").fullName("Test Aday").strikesRemaining(3).build();
