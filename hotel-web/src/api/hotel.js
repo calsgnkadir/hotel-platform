@@ -104,6 +104,19 @@ export async function getSimilarListings(id, limit = 6) {
   return data  // ListingResponse[]
 }
 
+/**
+ * Pozisyon bazli maas benchmark (AVG/MIN/MAX) — Glassdoor pattern.
+ *
+ * BUGFIX (FAZ 17): ListingDetailPage bu fonksiyonu cagiriyordu ama hic
+ * tanimlanmamisti (commit 92e701c'de UI eklendi, API fonksiyonu unutuldu)
+ * — benchmark karti runtime'da "not a function" ile patliyordu. Backend
+ * endpoint'i (GET /api/listings/salary-benchmark) bastan beri mevcuttu.
+ */
+export async function getSalaryBenchmark(position) {
+  const { data } = await api.get('/api/listings/salary-benchmark', { params: { position } })
+  return data  // SalaryBenchmarkResponse
+}
+
 export async function updateCandidateProfile(payload) {
   const { data } = await api.put('/api/candidate/profile', payload)
   return data
