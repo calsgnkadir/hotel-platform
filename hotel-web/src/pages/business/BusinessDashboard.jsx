@@ -33,9 +33,15 @@ export default function BusinessDashboard() {
     if (t && VALID_TABS.includes(t) && t !== activeTab) _setActiveTab(t)
   }, [params])
 
-  function setActiveTab(t) {
+  /**
+   * FAZ 19 — extra: sekmeyle BIRLIKTE tasinacak query param'lar (orn. analitik
+   * grafiginden ?tab=applications&status=ACCEPTED drill-down'i).
+   * setParams tum param'lari ezdigi icin tek cagride verilmeli — once sekme
+   * degistirip sonra status yazmak ilkini silerdi.
+   */
+  function setActiveTab(t, extra) {
     _setActiveTab(t)
-    setParams({ tab: t }, { replace: true })
+    setParams({ tab: t, ...(extra || {}) }, { replace: true })
   }
 
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding(user?.id))
@@ -68,7 +74,7 @@ export default function BusinessDashboard() {
           {activeTab === 'mylistings'    && <MyListingsTab applications={applications} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'workers'       && <WorkersTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
-          {activeTab === 'analytics'     && <StatsTab />}
+          {activeTab === 'analytics'     && <StatsTab onDrillDown={status => setActiveTab('applications', { status })} />}
           {activeTab === 'favorites'     && <FavoritesTab onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}

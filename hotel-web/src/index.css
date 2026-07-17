@@ -568,6 +568,28 @@ code, pre, kbd, samp {
 }
 
 /* ────────────────────────────────────────────────────────────────
+   FUNNEL STAGE — FAZ 19: analitik hunisinde drill-down yapilabilen asama.
+   Buton ama gorsel olarak satirin kendisi; affordance sadece hover/focus'ta
+   beliriyor ki huni okunurlugu bozulmasin. Tiklanamayan asamalar duz <div>
+   kalir — hover yok, imlec degismez.
+   ──────────────────────────────────────────────────────────────── */
+.funnel-stage-btn {
+  @apply block w-full text-left rounded-md transition-all duration-200;
+  background: transparent;
+  border: none;
+  padding: 4px 6px;
+  margin: -4px -6px;                                    /* hizayi bozmadan tiklama alani */
+  cursor: pointer;
+}
+.funnel-stage-btn:hover {
+  background: rgba(205, 183, 143, 0.06);
+}
+.funnel-stage-btn:focus-visible {
+  outline: 2px solid rgba(212, 168, 83, 0.65);
+  outline-offset: 1px;
+}
+
+/* ────────────────────────────────────────────────────────────────
    MODAL — Krem fond + beyaz card
    ──────────────────────────────────────────────────────────────── */
 .modal-overlay {

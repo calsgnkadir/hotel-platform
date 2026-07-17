@@ -24,8 +24,10 @@ const STATUS_COLORS = {
  *   data: [{ key: "ACCEPTED", count: 12 }, ...]  (BucketDto[])
  *   title?: string
  *   height?: number (default 240)
+ *   onSegmentClick?: (statusKey) => void  — FAZ 19 drill-down. Verilmezse
+ *     dilimler tiklanamaz (imlec de degismez).
  */
-export default function StatusDonut({ data, title = 'Başvuru Durumu', height = 240 }) {
+export default function StatusDonut({ data, title = 'Başvuru Durumu', height = 240, onSegmentClick }) {
   const chartData = (data || [])
     .filter(b => b.count > 0)
     .map(b => ({
@@ -53,7 +55,13 @@ export default function StatusDonut({ data, title = 'Başvuru Durumu', height = 
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
           <Pie data={chartData} dataKey="value" nameKey="name"
-            innerRadius="55%" outerRadius="85%" paddingAngle={2}>
+            innerRadius="55%" outerRadius="85%" paddingAngle={2}
+            style={onSegmentClick ? { cursor: 'pointer', outline: 'none' } : undefined}
+            onClick={onSegmentClick
+              // Recharts surumune gore payload bazen dogrudan bazen .payload
+              // altinda geliyor — ikisini de dene, yoksa hicbir sey yapma.
+              ? (d) => { const k = d?.key ?? d?.payload?.key; if (k) onSegmentClick(k) }
+              : undefined}>
             {chartData.map(d => (
               <Cell key={d.key} fill={STATUS_COLORS[d.key] || '#94a3b8'} />
             ))}

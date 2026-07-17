@@ -11,6 +11,17 @@ import ReliabilityBadge from '../../../components/ReliabilityBadge'
 const VIEW_STORAGE_KEY = 'biz-applications-view'
 const APPS_PAGE_SIZE = 15
 
+// FAZ 19 — Her zaman gorunen filtre chip'leri.
+const BASE_FILTERS = ['ALL', 'PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED']
+// Nadir durumlar: sadece o durumda basvuru VARSA chip cikar. Analitik donut'u
+// bu dilimleri (count>0 ise) gosterdigi icin drill-down hedefi olabiliyorlar —
+// chip'siz birakilirsa liste filtreli ama aktif filtre gorunmez olurdu.
+const RARE_FILTERS = ['EXPIRED', 'WITHDRAWN']
+const FILTER_LABELS = {
+  ALL: 'Tümü', PENDING: 'Bekleyen', REVIEWING: 'İnceleniyor',
+  ACCEPTED: 'Kabul', REJECTED: 'Red', EXPIRED: 'Süresi Doldu', WITHDRAWN: 'İptal',
+}
+
 /**
  * FAZ 11.W2.1 — Split master-detail.
  *
@@ -20,9 +31,11 @@ const APPS_PAGE_SIZE = 15
  *
  * Mobile (<1024px): detail full-screen overlay olarak acilir (focus-trap korunur).
  * Kanban view degismedi; ekran >=1280px ise kanban default (W2.3).
+ *
+ * FAZ 19 — Status filtresi de URL'e tasindi (?status=ACCEPTED). Boylece analitik
+ * grafiginden drill-down yapilabiliyor ve filtre refresh'te kayboluyor degil.
  */
 export default function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
-  const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   useEffect(() => {
@@ -37,6 +50,25 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
   const selected = urlId
     ? applications.find(a => String(a.id) === String(urlId)) || null
     : null
+
+  // FAZ 19 — Filtre URL'den okunur. Taninmayan deger (elle yazilmis ?status=XYZ)
+  // sessizce ALL'a duser — bos liste gosterip kullaniciyi saskina cevirmez.
+  const urlStatus = searchParams.get('status')
+  const filter = (urlStatus && [...BASE_FILTERS, ...RARE_FILTERS].includes(urlStatus))
+    ? urlStatus
+    : 'ALL'
+
+  function setFilter(f) {
+    setPage(0)
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      if (f && f !== 'ALL') next.set('status', f)
+      else next.delete('status')
+      // Filtre degisince secili basvuru listeden dusebilir — detail'i kapat
+      next.delete('id')
+      return next
+    }, { replace: true })
+  }
 
   function selectApp(app) {
     setSearchParams(prev => {
@@ -86,6 +118,13 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
     return true
   })
 
+  // Nadir chip'ler: o durumda basvuru varsa VEYA su an o filtre aktifse goster
+  // (aktifken gizlemek "filtreliyim ama neye gore belli degil" durumu yaratirdi).
+  const visibleFilters = [
+    ...BASE_FILTERS,
+    ...RARE_FILTERS.filter(f => filter === f || applications.some(a => a.status === f)),
+  ]
+
   const pageCount = Math.max(1, Math.ceil(filtered.length / APPS_PAGE_SIZE))
   const safePage = Math.min(page, pageCount - 1)
   const pageItems = filtered.slice(safePage * APPS_PAGE_SIZE, safePage * APPS_PAGE_SIZE + APPS_PAGE_SIZE)
@@ -95,13 +134,12 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
       {/* Filtre + arama */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="flex gap-2 flex-wrap">
-          {['ALL', 'PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED'].map(f => {
-            const labels = { ALL: 'Tümü', PENDING: 'Bekleyen', REVIEWING: 'İnceleniyor', ACCEPTED: 'Kabul', REJECTED: 'Red' }
+          {visibleFilters.map(f => {
             const count = f === 'ALL' ? applications.length : applications.filter(a => a.status === f).length
             return (
-              <button key={f} onClick={() => { setFilter(f); setPage(0) }}
+              <button key={f} onClick={() => setFilter(f)}
                 className={`chip ${filter === f ? 'is-active' : ''}`}>
-                {labels[f]}
+                {FILTER_LABELS[f]}
                 <span className="text-[10px] tabular-nums opacity-80 ml-1">({count})</span>
               </button>
             )

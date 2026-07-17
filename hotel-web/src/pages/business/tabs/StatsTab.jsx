@@ -11,8 +11,18 @@ import { SkeletonList } from '../../../components/Skeleton'
  * FAZ C.3 — Analitik sekmesi.
  * Recruitment funnel + hire-time histogram + var olan donut/bar/line chart'lar.
  * Backend tek endpoint /api/business/stats — tum payload tek query.
+ *
+ * FAZ 19 — Drill-down: grafikten filtreli basvuru listesine gecis.
+ * onDrillDown(status) -> ?tab=applications&status=...
+ *
+ * KURAL: sadece grafikteki sayi ile listedeki sayi BIREBIR ayni olacaksa
+ * tiklanabilir yapiliyor. Aksi halde kullanici "12" gorup listede 3 kayit
+ * bulur ve veriye guveni biter. Bu yuzden funnel'in "Incelendi" (backend'de
+ * reviewed = total - pending, yani REJECTED/WITHDRAWN/EXPIRED de dahil) ve
+ * "Tamamlandi" (backend'de completed = accepted placeholder) asamalari
+ * tiklanamaz — bunlarin tek bir status karsiligi yok.
  */
-export default function StatsTab() {
+export default function StatsTab({ onDrillDown }) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['business-stats'],
     queryFn: hotelApi.getBusinessStats,
@@ -46,13 +56,13 @@ export default function StatsTab() {
 
       {/* Funnel + HireTime row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 12 }}>
-        <FunnelCard funnel={funnel} total={totalApplications} />
+        <FunnelCard funnel={funnel} total={totalApplications} onDrillDown={onDrillDown} />
         <HireTimeCard data={hireTime} />
       </div>
 
       {/* Mevcut chart'lar */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 12 }}>
-        <StatusDonut data={byStatus} />
+        <StatusDonut data={byStatus} onSegmentClick={onDrillDown} />
         <PositionBar data={byPosition} />
       </div>
 
@@ -97,13 +107,14 @@ function Kpi({ label, value, delta, color = '#cdb78f' }) {
   )
 }
 
-function FunnelCard({ funnel, total }) {
+function FunnelCard({ funnel, total, onDrillDown }) {
   if (!funnel) return null
+  // drill: bu asamanin listedeki TAM karsiligi olan filtre (yoksa tiklanamaz)
   const stages = [
-    { label: 'Alındı',  count: funnel.received,  color: '#d4a853' },
-    { label: 'İncelendi', count: funnel.reviewed, color: '#3b82f6' },
-    { label: 'Kabul',   count: funnel.accepted,  color: '#5e8460' },
-    { label: 'Tamamlandı', count: funnel.completed, color: '#047857' },
+    { label: 'Alındı',  count: funnel.received,  color: '#d4a853', drill: 'ALL' },
+    { label: 'İncelendi', count: funnel.reviewed, color: '#3b82f6', drill: null },
+    { label: 'Kabul',   count: funnel.accepted,  color: '#5e8460', drill: 'ACCEPTED' },
+    { label: 'Tamamlandı', count: funnel.completed, color: '#047857', drill: null },
   ]
   const max = funnel.received || 1
   const overallConversion = funnel.received > 0
@@ -125,8 +136,10 @@ function FunnelCard({ funnel, total }) {
           const pct = Math.round((s.count / max) * 100)
           const stageConv = i === 0 ? null :
             (stages[i - 1].count > 0 ? Math.round((s.count / stages[i - 1].count) * 100) : 0)
-          return (
-            <div key={s.label}>
+          const clickable = !!onDrillDown && !!s.drill && s.count > 0
+
+          const row = (
+            <>
               <div className="flex justify-between mb-1 type-caption">
                 <span style={{ color: 'var(--text-secondary)' }}>{s.label}</span>
                 <span style={{ color: 'var(--text-headline)', fontWeight: 600 }}>
@@ -145,7 +158,18 @@ function FunnelCard({ funnel, total }) {
                   transition: 'width 600ms ease-out',
                 }} />
               </div>
-            </div>
+            </>
+          )
+
+          if (!clickable) return <div key={s.label}>{row}</div>
+
+          return (
+            <button key={s.label} type="button"
+                    onClick={() => onDrillDown(s.drill)}
+                    title={`${s.label} başvurularını listele`}
+                    className="funnel-stage-btn">
+              {row}
+            </button>
           )
         })}
       </div>
