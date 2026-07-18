@@ -51,7 +51,7 @@ export default function EarningsWidget({ applications }) {
   return (
     <div className="relative overflow-hidden rounded-2xl"
          style={{
-           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(74, 63, 51, 0.50) 100%)',
+           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(15, 118, 110, 0.50) 100%)',
            border: '1px solid rgba(15, 118, 110, 0.10)',
            boxShadow: '0 10px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
          }}>

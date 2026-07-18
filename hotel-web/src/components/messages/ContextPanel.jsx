@@ -36,7 +36,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
       <div
         className="hidden lg:flex flex-col w-80 min-w-[20rem] border-l overflow-hidden relative"
         style={{
-          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(13, 11, 9, 0.94) 100%)',
+          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.94) 100%)',
           borderColor: 'rgba(15, 118, 110, 0.10)',
           zIndex: 5,  // FAZ 5.8 polish — ReportModal (z-50) ile catismayi onler
         }}

@@ -1011,6 +1011,15 @@ textarea:focus-visible {
   --hairline: var(--ah-line);
   --hairline-strong: var(--ah-line-2);
   --border-subtle: var(--ah-line);
+  /* Yuzey token'lari da aciga cek (var(--surface-raised) kullanan bilesenler) */
+  --surface-base: var(--ah-page);
+  --surface-raised: var(--ah-card);
+  --surface-floating: #f4f6f6;
+  --bg-app: var(--ah-page);
+  --bg-surface: var(--ah-card);
+  --bg-elevated: #f4f6f6;
+  --bg-subtle: var(--ah-card);
+  --bg-muted: #f4f6f6;
 }
 
 .ah-surface .card,

@@ -209,7 +209,7 @@ function HireTimeCard({ data }) {
           <Tooltip
             cursor={{ fill: 'rgba(15, 118, 110, 0.08)' }}
             contentStyle={{
-              background: 'rgba(13, 11, 9, 0.95)',
+              background: 'rgba(255, 255, 255, 0.95)',
               border: '1px solid rgba(15, 118, 110, 0.28)',
               borderRadius: 8,
               fontSize: 12,

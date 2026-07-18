@@ -27,7 +27,7 @@ function SearchInput({ value, onChange }) {
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       className="relative rounded-xl"
       style={{
-        background: 'rgba(13, 11, 9, 0.55)',
+        background: 'rgba(255, 255, 255, 0.55)',
         border: '1px solid',
       }}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -96,7 +96,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
           ) : (
             <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-[15px]"
                  style={{
-                   background: 'linear-gradient(135deg, rgba(74, 63, 51, 0.55), rgba(244, 246, 246, 0.85))',
+                   background: 'linear-gradient(135deg, rgba(15, 118, 110, 0.55), rgba(244, 246, 246, 0.85))',
                    border: '1px solid rgba(15, 118, 110, 0.18)',
                    color: '#0f766e',
                  }}>
@@ -108,7 +108,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
             <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full"
                   style={{
                     background: '#7a9f7a',
-                    border: '2px solid rgba(13, 11, 9, 0.95)',
+                    border: '2px solid rgba(255, 255, 255, 0.95)',
                     boxShadow: '0 0 0 2px rgba(122, 159, 122, 0.30)',
                     animation: 'conv-pulse 2.4s ease-in-out infinite',
                   }} title="Çevrimiçi" />
@@ -201,7 +201,7 @@ function EmptyRail({ userRole, onNavigate }) {
             </linearGradient>
           </defs>
           <path d="M14 12h32a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H24l-10 8V20a8 8 0 0 1 0-8z"
-                fill="rgba(13, 11, 9, 0.85)"
+                fill="rgba(255, 255, 255, 0.85)"
                 stroke="url(#empty-bubble-grad)" strokeWidth="1.5" />
           <circle cx="24" cy="29" r="1.8" fill="#0f766e" opacity="0.9" />
           <circle cx="32" cy="29" r="1.8" fill="#0f766e" opacity="0.9" />

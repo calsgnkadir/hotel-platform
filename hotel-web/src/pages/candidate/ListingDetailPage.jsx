@@ -296,7 +296,7 @@ export default function ListingDetailPage() {
                   <div key={s.id}
                     className="flex items-center justify-between rounded-xl px-3 py-2.5"
                     style={{
-                      background: full ? 'rgba(13, 11, 9, 0.55)' : 'rgba(205, 183, 143, 0.06)',
+                      background: full ? 'rgba(255, 255, 255, 0.55)' : 'rgba(205, 183, 143, 0.06)',
                       border: `1px solid ${full ? 'rgba(146, 134, 120, 0.10)' : 'rgba(205, 183, 143, 0.16)'}`,
                       opacity: full ? 0.55 : 1,
                     }}>

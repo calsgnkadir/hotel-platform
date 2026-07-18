@@ -4,22 +4,22 @@ const ThemeContext = createContext({ theme: 'light', toggle: () => {}, toggleThe
 
 const STORAGE_KEY = 'ajanshotel-theme'
 
-// FAZ 5.4 — Bir kerelik migration: eski "light" kayitlari dark'a cevir.
-// Surum bayragi sayesinde sonraki yenilemelerde kullanicinin secimi kalir.
-const MIGRATION_KEY = 'ajanshotel-theme-v54-migrated'
+// REDESIGN v3 — Acik+teal kimlige gecis: default LIGHT. Eski 'dark' kaydi olan
+// kullanicilar da bir kerelik light'a migrate edilir (yeni surum bayragi).
+const MIGRATION_KEY = 'ajanshotel-theme-v3light-migrated'
 
 function getInitialTheme() {
-  if (typeof window === 'undefined') return 'dark'
+  if (typeof window === 'undefined') return 'light'
   const migrated = localStorage.getItem(MIGRATION_KEY) === '1'
-  const saved = localStorage.getItem(STORAGE_KEY)
   if (!migrated) {
-    // ilk yukleme — eski tema bilgisi varsa atla, dark default
+    // ilk yukleme (bu surumde) — eski dark tercihini ez, light'a gec
     localStorage.setItem(MIGRATION_KEY, '1')
-    localStorage.setItem(STORAGE_KEY, 'dark')
-    return 'dark'
+    localStorage.setItem(STORAGE_KEY, 'light')
+    return 'light'
   }
+  const saved = localStorage.getItem(STORAGE_KEY)
   if (saved === 'light' || saved === 'dark') return saved
-  return 'dark'
+  return 'light'
 }
 
 export function ThemeProvider({ children }) {

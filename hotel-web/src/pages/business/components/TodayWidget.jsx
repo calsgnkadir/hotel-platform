@@ -83,7 +83,7 @@ export default function TodayWidget({ applications, onTabChange }) {
       className="rounded-2xl p-5 relative overflow-hidden"
       style={{
         background:
-          'linear-gradient(135deg, rgba(13, 11, 9, 0.85) 0%, rgba(13, 11, 9, 0.85) 100%)',
+          'linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.85) 100%)',
         border: '1px solid rgba(15, 118, 110, 0.14)',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.30)',
       }}

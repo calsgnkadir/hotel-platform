@@ -383,10 +383,10 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
           // Beyaz kart korundu (dark kolon uzerinde okunabilirlik icin). Selected
           // state artik champagne (marka accent), amber degil.
           background: selected ? '#f9f1e0' : '#fefefc',
-          border: `1px solid ${selected ? '#0f766e' : 'rgba(13, 11, 9, 0.10)'}`,
+          border: `1px solid ${selected ? '#0f766e' : 'rgba(255, 255, 255, 0.10)'}`,
           boxShadow: selected
             ? '0 6px 18px rgba(15, 118, 110, 0.35), 0 0 0 3px rgba(15, 118, 110, 0.18)'
-            : '0 2px 8px rgba(13, 11, 9, 0.08), 0 1px 2px rgba(13, 11, 9, 0.04)',
+            : '0 2px 8px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(255, 255, 255, 0.04)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -418,7 +418,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
                 className="absolute top-2 right-2 w-5 h-5 rounded-md flex items-center justify-center transition-all"
                 style={{
                   background: selected ? '#0f766e' : '#ffffff',
-                  border: `2px solid ${selected ? '#a08654' : 'rgba(13, 11, 9, 0.25)'}`,
+                  border: `2px solid ${selected ? '#a08654' : 'rgba(255, 255, 255, 0.25)'}`,
                   color: '#ffffff',
                 }}>
           {selected && (
@@ -488,7 +488,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
         </div>
 
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t"
-             style={{ borderColor: 'rgba(13, 11, 9, 0.10)' }}>
+             style={{ borderColor: 'rgba(255, 255, 255, 0.10)' }}>
           <span className="type-overline" title={dateTooltip}
                 style={{ color: 'rgba(255, 255, 255, 0.55)' }}>
             {date}
@@ -525,7 +525,7 @@ function CardSilhouette({ app }) {
     <div
       className="rounded-xl p-3 pointer-events-none"
       style={{
-        background: 'rgba(13, 11, 9, 0.95)',
+        background: 'rgba(255, 255, 255, 0.95)',
         border: '1.5px solid rgba(15, 118, 110, 0.45)',
         boxShadow: '0 16px 40px rgba(15, 118, 110, 0.22)',
         transform: 'rotate(-2deg)',

@@ -58,7 +58,7 @@ export default function EmptyThread() {
               </linearGradient>
             </defs>
             <path d="M14 12h32a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H24l-10 8V20a8 8 0 0 1 0-8z"
-                  fill="rgba(13, 11, 9, 0.85)"
+                  fill="rgba(255, 255, 255, 0.85)"
                   stroke="url(#bubble-grad)" strokeWidth="1.5" />
             <circle cx="24" cy="29" r="2" fill="#0f766e" opacity="0.9" />
             <circle cx="32" cy="29" r="2" fill="#0f766e" opacity="0.9" />

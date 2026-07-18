@@ -313,7 +313,7 @@ function DocTile({ t, doc, isUploaded, catColor, uploading, deleting, onUpload, 
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       className="relative rounded-xl overflow-hidden transition-colors"
       style={{
-        background: isUploaded ? `${catColor}0a` : 'rgba(13, 11, 9, 0.55)',
+        background: isUploaded ? `${catColor}0a` : 'rgba(255, 255, 255, 0.55)',
         border: `1px solid ${isUploaded ? catColor + '30' : 'rgba(15, 118, 110, 0.08)'}`,
       }}>
       <div className="relative p-3 flex items-center gap-2.5">
