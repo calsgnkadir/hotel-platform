@@ -250,7 +250,7 @@ export default function ProfileTab() {
 
           {/* Ic sekme cubugu */}
           <div className="flex gap-5 border-b overflow-x-auto" style={{ borderColor: 'var(--ah-line)' }}>
-            {[['bilgiler', 'Bilgilerim'], ['tercihler', 'Tercihler'], ['musaitlik', 'Müsaitlik'], ['belgeler', 'Belgeler'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
+            {[['bilgiler', 'Bilgilerim'], ['musaitlik', 'Müsaitlik'], ['belgeler', 'Belgeler'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
               <button key={k} type="button" onClick={() => setPtab(k)}
                 className="text-[13.5px] font-semibold pb-2.5 -mb-px whitespace-nowrap transition-colors"
                 style={ptab === k
@@ -348,72 +348,6 @@ export default function ProfileTab() {
                     </select>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex justify-end">
-                <button type="submit" disabled={saving}
-                  className="px-6 py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-                  style={{ background: '#0f766e', color: '#ffffff' }}>
-                  {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* ===== TERCİHLER ===== */}
-          {ptab === 'tercihler' && (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Ilgilendigin Ilceler */}
-              <div className="card p-5 space-y-3">
-                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin İlçeler</h3>
-                <p className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>Bu ilçelerde yeni ilan açıldığında otomatik bildirim alırsın.</p>
-                <DistrictAutocomplete selected={form.preferredDistricts} onToggle={(d) => toggleSetField('preferredDistricts', d)} />
-                <p className="text-xs text-ink-400">{form.preferredDistricts.length} ilçe seçili</p>
-              </div>
-
-              {/* Is Tercihleri */}
-              <div className="card p-5 space-y-4">
-                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İş Tercihleri</h3>
-                <div>
-                  <label className="label">Müsaitlik Türü <span className="text-ink-400 font-normal">(birden fazla seçebilirsin)</span></label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {Object.entries(AVAILABILITY_LABELS).map(([key, label]) => {
-                      const active = form.availabilityTypes.includes(key)
-                      return (
-                        <button key={key} type="button" onClick={() => toggleSetField('availabilityTypes', key)}
-                          className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all
-                            ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 shadow-sm' : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                          {label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <label className="label">Önceki Deneyim <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-                  <textarea name="previousExperience" value={form.previousExperience} onChange={handleChange}
-                    className="input resize-none h-24 text-sm" placeholder="Daha önce çalıştığın yerler, pozisyonlar, kazandığın deneyimler..." />
-                </div>
-              </div>
-
-              {/* Ilgilendigin Pozisyonlar */}
-              <div className="card p-5 space-y-3">
-                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin Pozisyonlar</h3>
-                <p className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>Bu pozisyonlarda yeni ilan açıldığında otomatik bildirim alırsın.</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {Object.entries(POSITION_LABELS).map(([value, label]) => {
-                    const active = form.preferredPositions.includes(value)
-                    return (
-                      <label key={value}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
-                          ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                        <input type="checkbox" checked={active} onChange={() => toggleSetField('preferredPositions', value)} className="w-4 h-4 accent-brand-700" />
-                        {label}
-                      </label>
-                    )
-                  })}
-                </div>
-                <p className="text-xs text-ink-400">{form.preferredPositions.length} pozisyon seçili</p>
               </div>
 
               <div className="flex justify-end">
