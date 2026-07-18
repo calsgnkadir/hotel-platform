@@ -50,8 +50,8 @@ export default function MyListingsTab({ applications = [] }) {
         <button onClick={() => setFormTarget('new')}
           className="type-overline px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5 cta-glow"
           style={{
-            background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-            color: '#1a1208',
+            background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+            color: '#ffffff',
           }}>
           + Yeni İlan
         </button>
@@ -143,13 +143,13 @@ export default function MyListingsTab({ applications = [] }) {
                     <span className="type-overline tabular-nums">
                       {last8wTotal}
                     </span>
-                    <Sparkline data={trendData} color="#cdb78f" width={56} height={20} />
+                    <Sparkline data={trendData} color="#0f766e" width={56} height={20} />
                   </div>
                   <div className="flex gap-2 flex-wrap justify-end">
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => setFormTarget(listing)}
                       className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(205, 183, 143, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
+                      style={{ background: 'rgba(15, 118, 110, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(15, 118, 110, 0.22)' }}>
                       Düzenle
                     </button>
                   )}

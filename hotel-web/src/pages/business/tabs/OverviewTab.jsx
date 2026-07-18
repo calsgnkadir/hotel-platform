@@ -21,7 +21,7 @@ export default function OverviewTab({ applications, onTabChange }) {
         {/* Stat strip — number → hairline → label hierarchy (UX4 spec) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
-            { label: 'Toplam',      value: applications.length, color: '#cdb78f',
+            { label: 'Toplam',      value: applications.length, color: '#0f766e',
               data: weeklyTrend(applications, null) },
             { label: 'Bekleyen',    value: pending,             color: '#c8923a',
               data: weeklyTrend(applications, a => a.status === 'PENDING') },
@@ -58,7 +58,7 @@ export default function OverviewTab({ applications, onTabChange }) {
 
         <div className="tier-raised relative overflow-hidden">
           <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-30"
-               style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22), transparent 70%)', filter: 'blur(24px)' }} />
+               style={{ background: 'radial-gradient(circle, rgba(15, 118, 110, 0.22), transparent 70%)', filter: 'blur(24px)' }} />
           <div className="relative px-5 py-3.5 flex items-center justify-between border-b border-hairline">
             <div>
               <h2 className="type-heading" style={{ fontSize: '15px' }}>
@@ -148,8 +148,8 @@ function TodayFeed({ applications, onTabChange }) {
                 className="w-full text-left flex items-start gap-2.5 group">
                 <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
                       style={{
-                        background:   STATUS_DOT[app.status] || '#928678',
-                        boxShadow: `0 0 8px ${STATUS_DOT[app.status] || '#928678'}`,
+                        background:   STATUS_DOT[app.status] || '#6b7574',
+                        boxShadow: `0 0 8px ${STATUS_DOT[app.status] || '#6b7574'}`,
                       }} />
                 <div className="flex-1 min-w-0">
                   <p className="type-body font-medium truncate">
@@ -174,7 +174,7 @@ function TodayFeed({ applications, onTabChange }) {
 
 /* Son başvurular satırı — accent rail + avatar gradient + hover lift (B teması) */
 function BizRecentRow({ app, last, onClick }) {
-  const accent = STATUS_DOT[app.status] || '#928678'
+  const accent = STATUS_DOT[app.status] || '#6b7574'
   const days = Math.floor((Date.now() - new Date(app.createdAt).getTime()) / 86400_000)
   const relative = days === 0 ? 'bugün' : days === 1 ? 'dün' : `${days} gün önce`
   return (
@@ -184,15 +184,15 @@ function BizRecentRow({ app, last, onClick }) {
       role="button" tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
       className="relative pl-6 pr-5 py-3 flex items-center gap-3 group cursor-pointer"
-      style={{ borderBottom: last ? 'none' : '1px solid rgba(205, 183, 143, 0.05)' }}>
+      style={{ borderBottom: last ? 'none' : '1px solid rgba(15, 118, 110, 0.05)' }}>
       {/* Sol accent bar — always visible per UX4 spec */}
       <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
             style={{ background: accent }} />
       <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-semibold flex-shrink-0"
            style={{
-             background: 'linear-gradient(135deg, rgba(205, 183, 143, 0.08), rgba(205, 183, 143, 0.06))',
-             border: '1px solid rgba(205, 183, 143, 0.22)',
-             color: '#cdb78f',
+             background: 'linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(15, 118, 110, 0.06))',
+             border: '1px solid rgba(15, 118, 110, 0.22)',
+             color: '#0f766e',
            }}>
         {(app.candidate?.fullName || '?').charAt(0).toUpperCase()}
       </div>

@@ -49,9 +49,9 @@ export default function StatsTab({ onDrillDown }) {
       {/* KPI row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
         <Kpi label="Bu Ay Başvuru" value={thisMonthApplications} delta={monthDelta} color="#60a5fa" />
-        <Kpi label="Geçen Ay"      value={lastMonthApplications}                          color="#928678" />
+        <Kpi label="Geçen Ay"      value={lastMonthApplications}                          color="#6b7574" />
         <Kpi label="Kabul Oranı"   value={`%${Math.round(acceptanceRate * 100)}`}        color="#7a9f7a" />
-        <Kpi label="Aktif İlan"    value={activeListings}                                 color="#d4a853" />
+        <Kpi label="Aktif İlan"    value={activeListings}                                 color="#0f766e" />
       </div>
 
       {/* Funnel + HireTime row */}
@@ -71,7 +71,7 @@ export default function StatsTab({ onDrillDown }) {
   )
 }
 
-function Kpi({ label, value, delta, color = '#cdb78f' }) {
+function Kpi({ label, value, delta, color = '#0f766e' }) {
   const deltaPos = typeof delta === 'number' && delta >= 0
   return (
     <motion.div
@@ -111,7 +111,7 @@ function FunnelCard({ funnel, total, onDrillDown }) {
   if (!funnel) return null
   // drill: bu asamanin listedeki TAM karsiligi olan filtre (yoksa tiklanamaz)
   const stages = [
-    { label: 'Alındı',  count: funnel.received,  color: '#d4a853', drill: 'ALL' },
+    { label: 'Alındı',  count: funnel.received,  color: '#0f766e', drill: 'ALL' },
     { label: 'İncelendi', count: funnel.reviewed, color: '#3b82f6', drill: null },
     { label: 'Kabul',   count: funnel.accepted,  color: '#5e8460', drill: 'ACCEPTED' },
     { label: 'Tamamlandı', count: funnel.completed, color: '#047857', drill: null },
@@ -149,7 +149,7 @@ function FunnelCard({ funnel, total, onDrillDown }) {
                   )}
                 </span>
               </div>
-              <div style={{ height: 8, borderRadius: 4, background: 'rgba(205, 183, 143, 0.08)', overflow: 'hidden' }}>
+              <div style={{ height: 8, borderRadius: 4, background: 'rgba(15, 118, 110, 0.08)', overflow: 'hidden' }}>
                 <div style={{
                   width: `${pct}%`,
                   height: '100%',
@@ -204,26 +204,26 @@ function HireTimeCard({ data }) {
       </div>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={data} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
-          <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#928678' }} axisLine={false} tickLine={false} />
-          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#928678' }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6b7574' }} axisLine={false} tickLine={false} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#6b7574' }} axisLine={false} tickLine={false} />
           <Tooltip
-            cursor={{ fill: 'rgba(205, 183, 143, 0.08)' }}
+            cursor={{ fill: 'rgba(15, 118, 110, 0.08)' }}
             contentStyle={{
               background: 'rgba(13, 11, 9, 0.95)',
-              border: '1px solid rgba(205, 183, 143, 0.28)',
+              border: '1px solid rgba(15, 118, 110, 0.28)',
               borderRadius: 8,
               fontSize: 12,
-              color: '#cdb78f',
+              color: '#0f766e',
               boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
             }}
-            labelStyle={{ color: '#cdb78f' }}
-            itemStyle={{ color: '#ede4d3' }}
+            labelStyle={{ color: '#0f766e' }}
+            itemStyle={{ color: '#3f4b4a' }}
           />
           <Bar dataKey="count" radius={[6, 6, 0, 0]}>
             {data.map((_, i) => (
               <Cell key={i} fill={['#5e8460', '#0ea5e9', '#f59e0b', '#b46a55'][i] || '#94a3b8'} />
             ))}
-            <LabelList dataKey="count" position="top" style={{ fontSize: 11, fill: '#cdb78f', fontWeight: 700 }} />
+            <LabelList dataKey="count" position="top" style={{ fontSize: 11, fill: '#0f766e', fontWeight: 700 }} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

@@ -115,9 +115,9 @@ export default function FavoritesTab({ onOpenMessages }) {
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg flex-shrink-0"
                  style={{
-                   background: 'rgba(205, 183, 143, 0.08)',
-                   border: '1px solid rgba(205, 183, 143, 0.22)',
-                   color: '#cdb78f',
+                   background: 'rgba(15, 118, 110, 0.08)',
+                   border: '1px solid rgba(15, 118, 110, 0.22)',
+                   color: '#0f766e',
                  }}>
               {f.candidateName?.charAt(0) || '?'}
             </div>
@@ -140,9 +140,9 @@ export default function FavoritesTab({ onOpenMessages }) {
               disabled={openingChatId === f.candidateId}
               className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5 disabled:opacity-50"
               style={{
-                background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-                color: '#1a1208',
-                boxShadow: '0 8px 20px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
+                background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                color: '#ffffff',
+                boxShadow: '0 8px 20px rgba(15, 118, 110, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
               }}>
               {openingChatId === f.candidateId ? '...' : 'Mesajla'}
             </button>

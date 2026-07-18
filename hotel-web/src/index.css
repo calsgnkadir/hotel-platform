@@ -1042,6 +1042,16 @@ textarea:focus-visible {
 .ah-surface .type-caption, .ah-surface .type-overline { color: var(--ah-ink-3); }
 .ah-surface .border-hairline { border-color: var(--ah-line); }
 
+/* stat-card ailesi — açık zeminde beyaz kart, koyu ink sayı */
+.ah-surface .stat-card { background: var(--ah-card); border: 1px solid var(--ah-line); }
+.ah-surface .stat-card:hover { border-color: var(--ah-line-2); box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+.ah-surface .stat-card::after { display: none; }
+.ah-surface .stat-card-number { color: var(--ah-ink); }
+.ah-surface .stat-card-divider { background: var(--ah-line); }
+.ah-surface .stat-card-label { color: var(--ah-ink-3); }
+.ah-surface .stat-card .text-white { color: var(--ah-ink) !important; text-shadow: none; }
+.ah-surface .stat-card .text-ink-500 { color: var(--ah-ink-3) !important; }
+
 /* filtre çipleri (.chip) — açık zeminde teal aktif */
 .ah-surface .chip { background: var(--ah-card); border: 1px solid var(--ah-line-2); color: var(--ah-ink-2); }
 .ah-surface .chip:hover { border-color: #bcc4c4; color: var(--ah-ink); background: #f7f9f9; }

@@ -68,7 +68,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
       {/* FAZ 5.14 — Ekip vitrin satırı: avatar cluster + sayım */}
       <div className="p-5 flex items-center justify-between gap-4 flex-wrap"
            style={{
-             background: '#1b1815',
+             background: '#ffffff',
              borderRadius: '28px 12px 28px 12px',
              border: 'none',
              boxShadow: '0 14px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
@@ -76,24 +76,24 @@ export default function WorkersTab({ applications, onOpenMessages }) {
         <div className="flex items-center gap-4">
           <AvatarCluster items={clusterItems} size={40} max={5} showOnlineDot />
           <div>
-            <div className="text-[16px] font-semibold" style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
+            <div className="text-[16px] font-semibold" style={{ color: '#12201f', letterSpacing: '-0.015em' }}>
               {workers.length} kişilik ekip
             </div>
-            <div className="text-[11px] mt-0.5" style={{ color: '#928678' }}>
+            <div className="text-[11px] mt-0.5" style={{ color: '#6b7574' }}>
               yeşil nokta = şu an çevrimiçi
             </div>
           </div>
         </div>
         <div className="tabular-nums"
              style={{
-               color: '#cdb78f',
+               color: '#0f766e',
                fontSize: '28px',
                fontWeight: 600,
                letterSpacing: '-0.03em',
                lineHeight: 1,
-               filter: 'drop-shadow(0 0 14px rgba(205, 183, 143, 0.30))',
+               filter: 'drop-shadow(0 0 14px rgba(15, 118, 110, 0.30))',
              }}>
-          {totalHours.toFixed(0)} <span className="text-[10px] font-medium uppercase tracking-[0.22em] ml-1" style={{ color: '#928678' }}>SAAT</span>
+          {totalHours.toFixed(0)} <span className="text-[10px] font-medium uppercase tracking-[0.22em] ml-1" style={{ color: '#6b7574' }}>SAAT</span>
         </div>
       </div>
 
@@ -132,7 +132,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
             </div>
             {/* FAZ D1 — son 8 hafta toplam başvuru trendi (yoğunluk göstergesi) */}
             <Sparkline data={weeklyTrend(applications, null)}
-                       color="#d4a853" width={56} height={24} />
+                       color="#0f766e" width={56} height={24} />
           </div>
         </div>
       </div>
@@ -150,9 +150,9 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
                        style={{
-                         background: 'rgba(205, 183, 143, 0.08)',
-                         border: '1px solid rgba(205, 183, 143, 0.22)',
-                         color: '#cdb78f',
+                         background: 'rgba(15, 118, 110, 0.08)',
+                         border: '1px solid rgba(15, 118, 110, 0.22)',
+                         color: '#0f766e',
                        }}>
                     {w.candidate?.fullName?.charAt(0) || '?'}
                   </div>

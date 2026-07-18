@@ -159,7 +159,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             <button key={v.id} onClick={() => setView(v.id)}
               className="type-overline px-3 py-1 rounded-full transition-all"
               style={view === v.id
-                ? { background: 'rgba(205, 183, 143, 0.18)', color: 'var(--text-headline)', border: '1px solid rgba(205, 183, 143, 0.42)' }
+                ? { background: 'rgba(15, 118, 110, 0.18)', color: 'var(--text-headline)', border: '1px solid rgba(15, 118, 110, 0.42)' }
                 : { color: 'var(--text-muted)', border: '1px solid transparent' }}>
               {v.label}
             </button>
@@ -224,13 +224,13 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                         <img src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })} alt={app.candidate.fullName}
                           loading="lazy" decoding="async"
                           className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                          style={{ border: '1px solid rgba(205, 183, 143, 0.22)' }} />
+                          style={{ border: '1px solid rgba(15, 118, 110, 0.22)' }} />
                       ) : (
                         <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
                              style={{
-                               background: 'rgba(205, 183, 143, 0.08)',
-                               border: '1px solid rgba(205, 183, 143, 0.22)',
-                               color: '#cdb78f',
+                               background: 'rgba(15, 118, 110, 0.08)',
+                               border: '1px solid rgba(15, 118, 110, 0.22)',
+                               color: '#0f766e',
                              }}>
                           {app.candidate?.fullName?.charAt(0) || '?'}
                         </div>
@@ -254,8 +254,8 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                         <button onClick={e => { e.stopPropagation(); onOpenMessages?.(app.conversationId) }}
                           className="type-overline px-3 py-1.5 rounded-full transition-all flex items-center gap-1"
                           style={{
-                            background: 'rgba(205, 183, 143, 0.06)',
-                            border: '1px solid rgba(205, 183, 143, 0.22)',
+                            background: 'rgba(15, 118, 110, 0.06)',
+                            border: '1px solid rgba(15, 118, 110, 0.22)',
                             color: 'var(--accent-action)',
                           }}>
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
