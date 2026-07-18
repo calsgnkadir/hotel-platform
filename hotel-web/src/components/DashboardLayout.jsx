@@ -53,7 +53,7 @@ const candidateNav = [
   { id: 'saved',         label: 'Kaydettiklerim',  icon: 'heart' },
   { id: 'applications',  tKey: 'nav.applications', icon: 'send' },
   { id: 'messages',      tKey: 'nav.messages',     icon: 'messages' },
-  { id: 'profile',       label: 'Profilim',        icon: 'user' },
+  // Profilim sidebar'dan cikarildi — sag ust ⚙️ ayarlar menusunden erisilir
 ]
 
 const businessNav = [

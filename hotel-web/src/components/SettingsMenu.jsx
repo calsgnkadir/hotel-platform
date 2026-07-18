@@ -71,8 +71,8 @@ export default function SettingsMenu({ onTabChange }) {
 
       {/* Dropdown — .tier-featured (dikkat cekicidir cunki modal-alternatif) */}
       {open && (
-        <div className="tier-featured absolute right-0 mt-2 w-72 z-50 overflow-hidden backdrop-blur-xl"
-             style={{ background: 'rgba(19, 17, 15, 0.96)' }}>
+        <div className="tier-featured absolute right-0 mt-2 w-72 z-50 overflow-hidden"
+             style={{ background: '#ffffff', border: '1px solid var(--ah-line, #e4e8e8)', boxShadow: '0 12px 32px rgba(18,32,31,.14)' }}>
           {/* Tema */}
           <div className="px-4 py-3 border-b border-hairline">
             <div className="type-overline mb-2">Görünüm</div>
@@ -130,8 +130,8 @@ export default function SettingsMenu({ onTabChange }) {
             type="button"
             onClick={handleLogout}
             className="w-full px-4 py-3 flex items-center gap-3 type-body transition-colors"
-            style={{ color: '#d39481' }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(180, 106, 85, 0.10)'}
+            style={{ color: '#992d22' }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(192, 57, 43, 0.08)'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
             <LogoutIcon />

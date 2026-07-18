@@ -250,7 +250,7 @@ export default function ProfileTab() {
 
           {/* Ic sekme cubugu */}
           <div className="flex gap-5 border-b overflow-x-auto" style={{ borderColor: 'var(--ah-line)' }}>
-            {[['bilgiler', 'Bilgilerim'], ['musaitlik', 'Müsaitlik'], ['belgeler', 'Belgeler'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
+            {[['bilgiler', 'Bilgilerim'], ['belgeler', 'Belgeler'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
               <button key={k} type="button" onClick={() => setPtab(k)}
                 className="text-[13.5px] font-semibold pb-2.5 -mb-px whitespace-nowrap transition-colors"
                 style={ptab === k
@@ -359,9 +359,6 @@ export default function ProfileTab() {
               </div>
             </form>
           )}
-
-          {/* ===== MÜSAİTLİK ===== */}
-          {ptab === 'musaitlik' && <AvailabilityBlocksEditor />}
 
           {/* ===== BELGELER ===== */}
           {ptab === 'belgeler' && <DocumentsTab />}
