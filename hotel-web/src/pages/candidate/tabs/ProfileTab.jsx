@@ -64,6 +64,7 @@ export default function ProfileTab() {
 
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [cropOpen, setCropOpen] = useState(false)
+  const [ptab, setPtab] = useState('bilgiler')  // FAZ 23.2 — profil ic sekmeleri
 
   async function handleCroppedAvatar(file) {
     setAvatarUploading(true)
@@ -243,193 +244,201 @@ export default function ProfileTab() {
 
         {/* ================= SAG KOLON ================= */}
         <div className="space-y-4 min-w-0">
-          {/* Profil gucu / tamamlanma en ustte */}
+          {/* Durum kartlari — her sekmede ustte */}
           <ProfileCompletenessCard data={completeness} />
+          {reliability && <ReliabilityCard data={reliability} />}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {reliability && <ReliabilityCard data={reliability} />}
+          {/* Ic sekme cubugu */}
+          <div className="flex gap-5 border-b overflow-x-auto" style={{ borderColor: 'var(--ah-line)' }}>
+            {[['bilgiler', 'Bilgilerim'], ['tercihler', 'Tercihler'], ['musaitlik', 'Müsaitlik'], ['belgeler', 'Belgeler'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
+              <button key={k} type="button" onClick={() => setPtab(k)}
+                className="text-[13.5px] font-semibold pb-2.5 -mb-px whitespace-nowrap transition-colors"
+                style={ptab === k
+                  ? { color: 'var(--ah-brand)', borderBottom: '2px solid var(--ah-brand)' }
+                  : { color: 'var(--ah-ink-3)', borderBottom: '2px solid transparent' }}>
+                {l}
+              </button>
+            ))}
+          </div>
 
-            {/* Fotograf */}
-            <div className="card p-5">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--ah-ink-2)' }}>Profil Fotoğrafı</h3>
-              <div className="flex items-center gap-4">
-                <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-                     style={{ background: 'rgba(15, 118, 110, 0.06)', border: '2px solid rgba(15, 118, 110, 0.20)' }}>
-                  {profile?.avatarUrl ? (
-                    <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
-                         loading="lazy" decoding="async" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-4xl tracking-wider" style={{ color: '#0f766e' }}>
-                      {(profile?.fullName || 'A').charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <button type="button" onClick={() => setCropOpen(true)} disabled={avatarUploading}
-                    className={`block w-full px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
-                      ${avatarUploading
-                        ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait'
-                        : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
-                    {avatarUploading ? 'Yükleniyor...' : (profile?.avatarUrl ? 'Fotoyu Değiştir' : 'Foto Yükle')}
-                  </button>
-                  <AvatarCropModal open={cropOpen} onClose={() => setCropOpen(false)} onConfirm={handleCroppedAvatar} />
-                  {profile?.avatarUrl && (
-                    <button type="button" onClick={handleAvatarDelete}
-                      className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">
-                      Fotoyu Kaldır
+          {/* ===== BİLGİLERİM ===== */}
+          {ptab === 'bilgiler' && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Fotograf */}
+              <div className="card p-5">
+                <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--ah-ink-2)' }}>Profil Fotoğrafı</h3>
+                <div className="flex items-center gap-4">
+                  <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                       style={{ background: 'rgba(15, 118, 110, 0.06)', border: '2px solid rgba(15, 118, 110, 0.20)' }}>
+                    {profile?.avatarUrl ? (
+                      <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-4xl tracking-wider" style={{ color: '#0f766e' }}>{(profile?.fullName || 'A').charAt(0).toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <button type="button" onClick={() => setCropOpen(true)} disabled={avatarUploading}
+                      className={`block w-full px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
+                        ${avatarUploading ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait' : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
+                      {avatarUploading ? 'Yükleniyor...' : (profile?.avatarUrl ? 'Fotoyu Değiştir' : 'Foto Yükle')}
                     </button>
-                  )}
-                  <p className="text-xs text-ink-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
+                    <AvatarCropModal open={cropOpen} onClose={() => setCropOpen(false)} onConfirm={handleCroppedAvatar} />
+                    {profile?.avatarUrl && (
+                      <button type="button" onClick={handleAvatarDelete}
+                        className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">Fotoyu Kaldır</button>
+                    )}
+                    <p className="text-xs text-ink-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Temel Bilgiler */}
-            <div className="card p-5 space-y-4">
-              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Temel Bilgiler</h3>
-              <div>
-                <label className="label">Ad Soyad *</label>
-                <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="input" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Temel Bilgiler */}
+              <div className="card p-5 space-y-4">
+                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Temel Bilgiler</h3>
                 <div>
-                  <label className="label">E-posta <span className="text-ink-400 font-normal">(değiştirilemez)</span></label>
-                  <input type="email" value={profile?.email || ''} disabled
-                    className="input bg-cream-50 text-ink-500 cursor-not-allowed" />
+                  <label className="label">Ad Soyad *</label>
+                  <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="input" />
                 </div>
-                <div>
-                  <label className="label">Telefon</label>
-                  <input type="tel" name="phone" value={form.phone} maxLength={14}
-                    onChange={e => setForm(prev => ({ ...prev, phone: formatTurkeyPhoneInput(e.target.value) }))}
-                    className="input" placeholder="0555 123 45 67" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">E-posta <span className="text-ink-400 font-normal">(değiştirilemez)</span></label>
+                    <input type="email" value={profile?.email || ''} disabled className="input bg-cream-50 text-ink-500 cursor-not-allowed" />
+                  </div>
+                  <div>
+                    <label className="label">Telefon</label>
+                    <input type="tel" name="phone" value={form.phone} maxLength={14}
+                      onChange={e => setForm(prev => ({ ...prev, phone: formatTurkeyPhoneInput(e.target.value) }))}
+                      className="input" placeholder="0555 123 45 67" />
+                  </div>
                 </div>
-              </div>
-              <DistrictNeighborhoodSelect
-                district={form.district}
-                neighborhood={form.neighborhood}
-                onChange={({ district, neighborhood }) => setForm(prev => ({ ...prev, district, neighborhood }))} />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="label">Doğum Tarihi <span className="text-ink-400 font-normal text-[10px]">(16-65 yaş)</span></label>
-                  <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange} {...birthDateBounds()} className="input" />
-                </div>
-                <div>
-                  <label className="label">Cinsiyet</label>
-                  <select name="gender" value={form.gender} onChange={handleChange} className="input">
-                    <option value="">Belirtmedim</option>
-                    {Object.entries(GENDER_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
+                <DistrictNeighborhoodSelect district={form.district} neighborhood={form.neighborhood}
+                  onChange={({ district, neighborhood }) => setForm(prev => ({ ...prev, district, neighborhood }))} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">Doğum Tarihi <span className="text-ink-400 font-normal text-[10px]">(16-65 yaş)</span></label>
+                    <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange} {...birthDateBounds()} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">Cinsiyet</label>
+                    <select name="gender" value={form.gender} onChange={handleChange} className="input">
+                      <option value="">Belirtmedim</option>
+                      {Object.entries(GENDER_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Ilgilendigin Ilceler */}
-            <div className="card p-5 space-y-3">
-              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin İlçeler</h3>
-              <p className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>
-                Bu ilçelerde yeni ilan açıldığında otomatik bildirim alırsın.
-              </p>
-              <DistrictAutocomplete selected={form.preferredDistricts} onToggle={(d) => toggleSetField('preferredDistricts', d)} />
-              <p className="text-xs text-ink-400">{form.preferredDistricts.length} ilçe seçili</p>
-            </div>
-
-            {/* Musaitlik */}
-            <AvailabilityBlocksEditor />
-
-            {/* Egitim & Ek */}
-            <div className="card p-5 space-y-4">
-              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Eğitim & Ek</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="label">Eğitim Durumu</label>
-                  <select name="education" value={form.education} onChange={handleChange} className="input">
-                    <option value="">Seçin</option>
-                    {Object.entries(EDUCATION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="label">Ehliyet</label>
-                  <select value={triValue(form.hasLicense)} onChange={e => setTriState('hasLicense', e.target.value)} className="input">
-                    <option value="unknown">Belirtmedim</option>
-                    <option value="yes">Var</option>
-                    <option value="no">Yok</option>
-                  </select>
+              {/* Egitim & Ek */}
+              <div className="card p-5 space-y-4">
+                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Eğitim & Ek</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">Eğitim Durumu</label>
+                    <select name="education" value={form.education} onChange={handleChange} className="input">
+                      <option value="">Seçin</option>
+                      {Object.entries(EDUCATION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">Ehliyet</label>
+                    <select value={triValue(form.hasLicense)} onChange={e => setTriState('hasLicense', e.target.value)} className="input">
+                      <option value="unknown">Belirtmedim</option>
+                      <option value="yes">Var</option>
+                      <option value="no">Yok</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Is Tercihleri */}
-            <div className="card p-5 space-y-4">
-              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İş Tercihleri</h3>
-              <div>
-                <label className="label">Müsaitlik Türü <span className="text-ink-400 font-normal">(birden fazla seçebilirsin)</span></label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {Object.entries(AVAILABILITY_LABELS).map(([key, label]) => {
-                    const active = form.availabilityTypes.includes(key)
+              <div className="flex justify-end">
+                <button type="submit" disabled={saving}
+                  className="px-6 py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
+                  style={{ background: '#0f766e', color: '#ffffff' }}>
+                  {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* ===== TERCİHLER ===== */}
+          {ptab === 'tercihler' && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Ilgilendigin Ilceler */}
+              <div className="card p-5 space-y-3">
+                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin İlçeler</h3>
+                <p className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>Bu ilçelerde yeni ilan açıldığında otomatik bildirim alırsın.</p>
+                <DistrictAutocomplete selected={form.preferredDistricts} onToggle={(d) => toggleSetField('preferredDistricts', d)} />
+                <p className="text-xs text-ink-400">{form.preferredDistricts.length} ilçe seçili</p>
+              </div>
+
+              {/* Is Tercihleri */}
+              <div className="card p-5 space-y-4">
+                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İş Tercihleri</h3>
+                <div>
+                  <label className="label">Müsaitlik Türü <span className="text-ink-400 font-normal">(birden fazla seçebilirsin)</span></label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {Object.entries(AVAILABILITY_LABELS).map(([key, label]) => {
+                      const active = form.availabilityTypes.includes(key)
+                      return (
+                        <button key={key} type="button" onClick={() => toggleSetField('availabilityTypes', key)}
+                          className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all
+                            ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 shadow-sm' : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <label className="label">Önceki Deneyim <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
+                  <textarea name="previousExperience" value={form.previousExperience} onChange={handleChange}
+                    className="input resize-none h-24 text-sm" placeholder="Daha önce çalıştığın yerler, pozisyonlar, kazandığın deneyimler..." />
+                </div>
+              </div>
+
+              {/* Ilgilendigin Pozisyonlar */}
+              <div className="card p-5 space-y-3">
+                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin Pozisyonlar</h3>
+                <p className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>Bu pozisyonlarda yeni ilan açıldığında otomatik bildirim alırsın.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {Object.entries(POSITION_LABELS).map(([value, label]) => {
+                    const active = form.preferredPositions.includes(value)
                     return (
-                      <button key={key} type="button" onClick={() => toggleSetField('availabilityTypes', key)}
-                        className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all
-                          ${active
-                            ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 shadow-sm'
-                            : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                      <label key={value}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
+                          ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                        <input type="checkbox" checked={active} onChange={() => toggleSetField('preferredPositions', value)} className="w-4 h-4 accent-brand-700" />
                         {label}
-                      </button>
+                      </label>
                     )
                   })}
                 </div>
+                <p className="text-xs text-ink-400">{form.preferredPositions.length} pozisyon seçili</p>
               </div>
-              <div>
-                <label className="label">Önceki Deneyim <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-                <textarea name="previousExperience" value={form.previousExperience} onChange={handleChange}
-                  className="input resize-none h-24 text-sm"
-                  placeholder="Daha önce çalıştığın yerler, pozisyonlar, kazandığın deneyimler..." />
+
+              <div className="flex justify-end">
+                <button type="submit" disabled={saving}
+                  className="px-6 py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
+                  style={{ background: '#0f766e', color: '#ffffff' }}>
+                  {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                </button>
               </div>
-            </div>
+            </form>
+          )}
 
-            {/* Ilgilendigin Pozisyonlar */}
-            <div className="card p-5 space-y-3">
-              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin Pozisyonlar</h3>
-              <p className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>
-                Bu pozisyonlarda yeni ilan açıldığında otomatik bildirim alırsın.
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {Object.entries(POSITION_LABELS).map(([value, label]) => {
-                  const active = form.preferredPositions.includes(value)
-                  return (
-                    <label key={value}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
-                        ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                      <input type="checkbox" checked={active} onChange={() => toggleSetField('preferredPositions', value)} className="w-4 h-4 accent-brand-700" />
-                      {label}
-                    </label>
-                  )
-                })}
-              </div>
-              <p className="text-xs text-ink-400">{form.preferredPositions.length} pozisyon seçili</p>
-            </div>
+          {/* ===== MÜSAİTLİK ===== */}
+          {ptab === 'musaitlik' && <AvailabilityBlocksEditor />}
 
-            <div className="flex justify-end">
-              <button type="submit" disabled={saving}
-                className="px-6 py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-                style={{ background: '#0f766e', color: '#ffffff' }}>
-                {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-              </button>
-            </div>
-          </form>
+          {/* ===== BELGELER ===== */}
+          {ptab === 'belgeler' && <DocumentsTab />}
 
-          {/* Belgeler + sifre/gdpr */}
-          <div className="grid lg:grid-cols-2 gap-4 items-start">
-            <DocumentsTab />
-            <div className="space-y-4">
+          {/* ===== GÜVENLİK ===== */}
+          {ptab === 'guvenlik' && (
+            <div className="grid lg:grid-cols-2 gap-4 items-start">
               <ChangePasswordCard />
               <GdprCard />
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
