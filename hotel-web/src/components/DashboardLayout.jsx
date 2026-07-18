@@ -97,9 +97,12 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   function handleLogout() { logout(); navigate('/login', { replace: true }) }
   function handleTabClick(id) { onTabChange?.(id); setMobileOpen(false) }
 
+  // Nav'da olmayan (ayarlar menusunden acilan) sekmeler icin baslik fallback'i
+  const EXTRA_TITLES = { profile: 'Profilim', relations: 'Takip Ettiklerim', history: 'Geçmiş İşlerim', workers: 'Bizde Çalışanlar' }
   const currentTitle = (() => {
     const item = navItems.find(n => n.id === activeTab)
-    return item ? (item.tKey ? t(item.tKey) : item.label) : 'Panel'
+    if (item) return item.tKey ? t(item.tKey) : item.label
+    return EXTRA_TITLES[activeTab] || 'Panel'
   })()
 
   return (

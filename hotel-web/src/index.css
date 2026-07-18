@@ -1031,9 +1031,17 @@ textarea:focus-visible {
 .ah-surface .card:hover { border-color: var(--ah-line-2); box-shadow: 0 4px 14px rgba(18,32,31,.07); }
 .ah-surface .card-header { color: var(--ah-ink); border-color: var(--ah-line); }
 
-.ah-surface .input { background: #fff; border: 1px solid var(--ah-line-2); color: var(--ah-ink); }
-.ah-surface .input::placeholder { color: var(--ah-ink-4); }
-.ah-surface .input:focus { border-color: var(--ah-brand); box-shadow: 0 0 0 3px var(--ah-brand-soft); background: #fff; }
+.ah-surface .input,
+.ah-surface input.input,
+.ah-surface select.input,
+.ah-surface textarea.input {
+  background: #fff !important;
+  border: 1px solid var(--ah-line-2) !important;
+  color: var(--ah-ink) !important;
+}
+.ah-surface .input::placeholder { color: var(--ah-ink-4) !important; }
+.ah-surface .input:focus { border-color: var(--ah-brand) !important; box-shadow: 0 0 0 3px var(--ah-brand-soft) !important; }
+.ah-surface .input:disabled { background: #f4f6f6 !important; color: var(--ah-ink-3) !important; }
 .ah-surface .label { color: var(--ah-ink-3); }
 
 .ah-surface .btn-secondary { background: var(--ah-card); border: 1px solid var(--ah-line-2); color: var(--ah-ink-2); }

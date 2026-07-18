@@ -240,14 +240,14 @@ export default function ProfileTab() {
             <span className="w-2.5 h-2.5 rounded-full"
                   style={{ background: profile?.emailVerifiedAt ? '#0a7c42' : '#b7791f' }} />
           </div>
+
+          {/* Profil doluluk + guvenlik skoru — sol alt (kullanici istegi) */}
+          <ProfileCompletenessCard data={completeness} />
+          {reliability && <ReliabilityCard data={reliability} />}
         </div>
 
         {/* ================= SAG KOLON ================= */}
         <div className="space-y-4 min-w-0">
-          {/* Durum kartlari — her sekmede ustte */}
-          <ProfileCompletenessCard data={completeness} />
-          {reliability && <ReliabilityCard data={reliability} />}
-
           {/* Ic sekme cubugu */}
           <div className="flex gap-5 border-b overflow-x-auto" style={{ borderColor: 'var(--ah-line)' }}>
             {[['bilgiler', 'Bilgilerim'], ['belgeler', 'Belgeler'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
@@ -278,16 +278,17 @@ export default function ProfileTab() {
                   </div>
                   <div className="flex-1 space-y-2">
                     <button type="button" onClick={() => setCropOpen(true)} disabled={avatarUploading}
-                      className={`block w-full px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
-                        ${avatarUploading ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait' : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
-                      {avatarUploading ? 'Yükleniyor...' : (profile?.avatarUrl ? 'Fotoyu Değiştir' : 'Foto Yükle')}
+                      className="block w-full px-4 py-2.5 text-sm font-semibold rounded-lg cursor-pointer text-center transition-colors disabled:opacity-60 disabled:cursor-wait"
+                      style={{ background: 'var(--ah-brand)', color: '#ffffff' }}>
+                      {avatarUploading ? 'Yükleniyor...' : (profile?.avatarUrl ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle')}
                     </button>
                     <AvatarCropModal open={cropOpen} onClose={() => setCropOpen(false)} onConfirm={handleCroppedAvatar} />
                     {profile?.avatarUrl && (
                       <button type="button" onClick={handleAvatarDelete}
-                        className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">Fotoyu Kaldır</button>
+                        className="block w-full px-4 py-2 text-sm font-semibold rounded-lg transition-colors"
+                        style={{ background: '#fff', color: '#992d22', border: '1px solid var(--ah-line-2)' }}>Fotoğrafı Kaldır</button>
                     )}
-                    <p className="text-xs text-ink-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
+                    <p className="text-xs" style={{ color: 'var(--ah-ink-4)' }}>Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400×400 olarak kaydedilir</p>
                   </div>
                 </div>
               </div>
