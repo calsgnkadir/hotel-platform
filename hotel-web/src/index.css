@@ -992,3 +992,49 @@ textarea:focus-visible {
   /* ── Toast bildirimler kapali */
   [role="status"], [aria-live] { display: none !important; }
 }
+
+
+/* REDESIGN v3 - acik teal scoped overrides (bkz project-ajanshotel-redesign) */
+.ah-surface { background: var(--ah-page); color: var(--ah-ink-2); }
+
+.ah-surface .card,
+.ah-surface .card-metric,
+.ah-surface .card-content {
+  background: var(--ah-card); color: var(--ah-ink-2);
+  border: 1px solid var(--ah-line); box-shadow: none;
+}
+.ah-surface .card:hover { border-color: var(--ah-line-2); box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+.ah-surface .card-header { color: var(--ah-ink); border-color: var(--ah-line); }
+
+.ah-surface .input { background: #fff; border: 1px solid var(--ah-line-2); color: var(--ah-ink); }
+.ah-surface .input::placeholder { color: var(--ah-ink-4); }
+.ah-surface .input:focus { border-color: var(--ah-brand); box-shadow: 0 0 0 3px var(--ah-brand-soft); background: #fff; }
+.ah-surface .label { color: var(--ah-ink-3); }
+
+.ah-surface .btn-secondary { background: var(--ah-card); border: 1px solid var(--ah-line-2); color: var(--ah-ink-2); }
+.ah-surface .btn-secondary:hover { background: #f2f5f5; border-color: #bcc4c4; color: var(--ah-ink); }
+.ah-surface .btn-ghost { color: var(--ah-ink-3); }
+.ah-surface .btn-ghost:hover { background: #f2f5f5; color: var(--ah-ink); }
+
+.ah-surface .tier-ground { background: transparent; }
+.ah-surface .tier-raised { background: var(--ah-card); border: 1px solid var(--ah-line); box-shadow: none; }
+.ah-surface .tier-raised-hover:hover { background: #fff; border-color: var(--ah-line-2); }
+.ah-surface .tier-featured { background: var(--ah-card); border: 1px solid var(--ah-brand-line); box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+
+.ah-surface .type-display, .ah-surface .type-heading { color: var(--ah-ink); }
+.ah-surface .type-subhead, .ah-surface .type-body { color: var(--ah-ink-2); }
+.ah-surface .type-caption, .ah-surface .type-overline { color: var(--ah-ink-3); }
+.ah-surface .border-hairline { border-color: var(--ah-line); }
+
+/* filtre çipleri (.chip) — açık zeminde teal aktif */
+.ah-surface .chip { background: var(--ah-card); border: 1px solid var(--ah-line-2); color: var(--ah-ink-2); }
+.ah-surface .chip:hover { border-color: #bcc4c4; color: var(--ah-ink); background: #f7f9f9; }
+.ah-surface .chip.is-active { background: var(--ah-brand); border-color: var(--ah-brand); color: #fff; }
+.ah-surface .chip.is-active:hover { background: var(--ah-brand-hover); color: #fff; }
+
+/* koyu tema metin yardimcilari acik zeminde ink veya teal */
+.ah-surface .accent-text, .ah-surface .text-champagne-300, .ah-surface .text-champagne-400 { color: var(--ah-brand); }
+.ah-surface .text-headline { color: var(--ah-ink); }
+.ah-surface .text-ivory-200, .ah-surface .text-ivory-300,
+.ah-surface .text-ivory-400, .ah-surface .text-ivory-600,
+.ah-surface .text-ivory-700, .ah-surface .text-token, .ah-surface .text-token-2 { color: var(--ah-ink-2); }

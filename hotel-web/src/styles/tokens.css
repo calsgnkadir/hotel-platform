@@ -281,3 +281,69 @@ body, .role-app-bg {
   text-transform: uppercase;
   color: var(--text-muted);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * REDESIGN v3 — Açık + Teal sistem (LinkedIn/Kariyer.net register)
+ *
+ * ADDITIVE: mevcut koyu tokenlar/sınıflar aynen duruyor. Yeni `.ah-*`
+ * bileşenleri kendi renklerini taşır (koyu ekranları etkilemez). Ekranlar
+ * tek tek bu sisteme migrate edilir; her migrate edilen ekranın kökü
+ * `.ah-surface` ile sarılır → o bölge açık zemine döner.
+ * Karar geçmişi: [[project-ajanshotel-redesign]]
+ * ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  --ah-brand:#0f766e; --ah-brand-hover:#0b5d57; --ah-brand-soft:#e4f2f0;
+  --ah-page:#eef1f2;  --ah-card:#ffffff;  --ah-line:#e4e8e8;  --ah-line-2:#d4dadb;
+  --ah-ink:#12201f;   --ah-ink-2:#3f4b4a; --ah-ink-3:#6b7574; --ah-ink-4:#98a1a0;
+  --ah-ok:#0a7c42;    --ah-ok-soft:#e9f5ee;
+  --ah-warn:#b7791f;  --ah-warn-soft:#fbf1e0;
+  --ah-danger:#c0392b;--ah-danger-soft:#fbeae7;
+  --ah-info:#1f57c3;  --ah-info-soft:#eaf1fd;
+  --ah-r:10px; --ah-rc:8px;
+}
+
+/* Açık yüzey — bir ekranı migrate ederken kökü buna sarılır */
+.ah-surface { background: var(--ah-page); color: var(--ah-ink-2); }
+
+.ah-card { background: var(--ah-card); border: 1px solid var(--ah-line); border-radius: var(--ah-r); }
+
+.ah-btn { font-size: 13px; font-weight: 600; border-radius: var(--ah-rc); padding: 8px 15px;
+  cursor: pointer; border: 1px solid transparent; font-family: inherit;
+  transition: background .15s, border-color .15s; }
+.ah-btn--p { background: var(--ah-brand); color: #fff; }
+.ah-btn--p:hover { background: var(--ah-brand-hover); }
+.ah-btn--o { background: var(--ah-card); color: var(--ah-ink-2); border-color: var(--ah-line-2); }
+.ah-btn--o:hover { border-color: #bcc4c4; }
+.ah-btn--block { width: 100%; }
+
+.ah-chip { font-size: 11.5px; font-weight: 600; color: var(--ah-ink-2); background: #f1f4f4;
+  border-radius: 6px; padding: 4px 9px; display: inline-flex; align-items: center; gap: 5px; }
+.ah-chip--sal { color: var(--ah-ok); background: var(--ah-ok-soft); font-variant-numeric: tabular-nums; }
+.ah-chip--ver { color: var(--ah-brand); background: var(--ah-brand-soft); }
+.ah-chip--warn { color: var(--ah-warn); background: var(--ah-warn-soft); }
+
+/* İlan kartı (sektör: logo + bilgi + çip + CTA; dekoratif kapak yok) */
+.ah-job { background: var(--ah-card); border: 1px solid var(--ah-line); border-radius: var(--ah-r);
+  padding: 16px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; height: 100%;
+  transition: border-color .15s, box-shadow .15s; }
+.ah-job:hover { border-color: #c3cccb; box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+.ah-job__top { display: flex; gap: 12px; }
+.ah-logo { width: 46px; height: 46px; border-radius: 9px; flex-shrink: 0; display: grid;
+  place-items: center; font-weight: 800; font-size: 17px; color: #fff; }
+.ah-job__hd { min-width: 0; flex: 1; }
+.ah-job__title { font-size: 15.5px; font-weight: 650; color: var(--ah-ink); letter-spacing: -.01em; }
+.ah-job:hover .ah-job__title { color: var(--ah-brand); }
+.ah-job__co { font-size: 13px; color: var(--ah-ink-2); margin-top: 1px; display: flex;
+  align-items: center; gap: 6px; flex-wrap: wrap; }
+.ah-job__loc { font-size: 12.5px; color: var(--ah-ink-3); margin-top: 3px; display: flex;
+  align-items: center; gap: 5px; }
+.ah-job__loc svg { width: 13px; height: 13px; color: var(--ah-ink-4); flex-shrink: 0; }
+.ah-save { margin-left: auto; width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--ah-line);
+  background: var(--ah-card); color: var(--ah-ink-4); display: grid; place-items: center;
+  cursor: pointer; flex-shrink: 0; transition: border-color .15s, color .15s; }
+.ah-save:hover { border-color: var(--ah-brand); color: var(--ah-brand); }
+.ah-save--on { border-color: var(--ah-brand); color: var(--ah-brand); }
+.ah-job__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ah-job__desc { font-size: 12.5px; color: var(--ah-ink-3); line-height: 1.5; margin: 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ah-job__cta { margin-top: auto; }

@@ -103,40 +103,29 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   })()
 
   return (
-    <div className="min-h-screen relative">
-      {/* Calm radial halo — warm graphite + champagne wash */}
-      <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
-           style={{
-             background:
-               'radial-gradient(ellipse 800px 600px at 10% 20%, rgba(74, 63, 51, 0.30) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 90% 80%, rgba(205, 183, 143, 0.10) 0%, transparent 60%),' +
-               'radial-gradient(circle at 50% 50%, transparent 0%, rgba(13, 11, 9, 0.60) 100%)',
-           }} />
-
-      {/* Neon üst hat */}
-      <div className="fixed top-0 left-0 right-0 z-50 neon-strip pointer-events-none no-print" />
-
+    <div className="min-h-screen relative ah-surface" style={{ background: 'var(--ah-page)' }}>
       {/* === Mobile backdrop === */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+        <div className="lg:hidden fixed inset-0 z-30 bg-black/30"
              onClick={() => setMobileOpen(false)} aria-hidden />
       )}
 
       {/* === SIDEBAR === */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-[240px] z-40 flex flex-col backdrop-blur-xl border-r border-hairline
+        className={`fixed top-0 left-0 bottom-0 w-[240px] z-40 flex flex-col border-r
                     transform transition-transform duration-300
                     ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-        style={{ background: 'rgba(19, 17, 15, 0.94)' }}
+        style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}
         aria-label="Ana navigasyon">
         {/* Logo */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-hairline">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b"
+             style={{ borderColor: 'var(--ah-line)' }}>
           <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2">
-            <span className="type-heading tracking-wider">AJANSHOTEL</span>
-            <span className="type-overline">istanbul</span>
+            <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: '0.02em', color: 'var(--ah-ink)' }}>AjansHotel</span>
+            <span style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ah-ink-4)' }}>istanbul</span>
           </Link>
           <button onClick={() => setMobileOpen(false)}
-                  className="lg:hidden p-1 rounded text-ivory-600 hover:text-ivory-200"
+                  className="lg:hidden p-1 rounded" style={{ color: 'var(--ah-ink-3)' }}
                   aria-label="Menüyü kapat">
             <Icon name="close" size={18} />
           </button>
@@ -153,8 +142,8 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           ))}
         </nav>
 
-        {/* Footer — quiet tier (never champagne bg — active nav zaten champagne) */}
-        <div className="border-t border-hairline flex-shrink-0 p-3 space-y-2">
+        {/* Footer */}
+        <div className="border-t flex-shrink-0 p-3 space-y-2" style={{ borderColor: 'var(--ah-line)' }}>
           <div className="flex items-center justify-between gap-2 px-1">
             <LanguageSwitcher />
             <WsConnectionBadge />
@@ -162,17 +151,16 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           {isBusiness && bizProfile?.id && (
             <a href={`/p/business/${bizProfile.id}`} target="_blank" rel="noopener noreferrer"
                title="Public profilini yeni sekmede ac"
-               className="tier-raised tier-raised-hover flex items-center justify-center gap-1.5 px-3 py-2 type-overline text-ivory-400 hover:text-ivory-200">
+               className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg"
+               style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
+                        color: 'var(--ah-ink-3)', border: '1px solid var(--ah-line-2)', background: 'var(--ah-card)' }}>
               <Icon name="external" size={11} /> Public Profilim
             </a>
           )}
           <button onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-2xl type-overline transition-all hover:-translate-y-0.5"
-                  style={{
-                    background: 'rgba(180, 106, 85, 0.08)',
-                    color: '#d39481',
-                    border: '1px solid rgba(180, 106, 85, 0.22)',
-                  }}>
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg transition-colors"
+                  style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
+                           background: 'var(--ah-card)', color: 'var(--ah-danger)', border: '1px solid var(--ah-line-2)' }}>
             <Icon name="logout" size={12} /> Çıkış
           </button>
         </div>
@@ -180,26 +168,26 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
       {/* === MAIN CONTENT === */}
       <div className="lg:pl-[240px] min-h-screen relative z-10">
-        {/* Top bar — hairline, no competing brightness */}
-        <header className="sticky top-[2px] z-20 backdrop-blur-xl border-b border-hairline"
-                style={{ background: 'rgba(19, 17, 15, 0.72)' }}>
+        {/* Top bar */}
+        <header className="sticky top-0 z-20 border-b"
+                style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
           <div className="px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
             {/* Mobile: hamburger + brand */}
             <div className="flex items-center gap-2 lg:hidden">
               <button onClick={() => setMobileOpen(true)}
-                      className="tier-raised p-2 text-champagne-300"
+                      className="p-2 rounded-lg"
+                      style={{ color: 'var(--ah-brand)', border: '1px solid var(--ah-line-2)', background: 'var(--ah-card)' }}
                       aria-label="Menü">
                 <Icon name="menu" size={18} />
               </button>
               <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-1.5">
-                <span className="type-heading tracking-wider">AJANSHOTEL</span>
+                <span style={{ fontWeight: 800, fontSize: 15, color: 'var(--ah-ink)' }}>AjansHotel</span>
               </Link>
             </div>
-            {/* Desktop: aktif sayfa basligi sol tarafta */}
-            <h2 className="hidden lg:block type-subhead">
+            {/* Desktop: aktif sayfa basligi */}
+            <h2 className="hidden lg:block" style={{ fontSize: 14, fontWeight: 600, color: 'var(--ah-ink-2)' }}>
               {currentTitle}
             </h2>
-
             {/* Sag: actions */}
             <div className="flex items-center gap-2">
               <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
@@ -208,16 +196,15 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           </div>
         </header>
 
-        <main className="fade-in text-ivory-200">
+        <main className="fade-in" style={{ color: 'var(--ah-ink-2)' }}>
           <EmailVerifyBanner />
 
-          {/* Page heading strip — type-display + hairline underline */}
-          <div className="px-4 lg:px-8 pt-8 lg:pt-12 pb-6">
-            <h1 className="type-display" style={{ fontSize: 'clamp(32px, 4.5vw, 44px)', lineHeight: 1.05 }}>
+          {/* Page heading — sade, koyu ink, gradyan/underline yok */}
+          <div className="px-4 lg:px-8 pt-6 lg:pt-8 pb-5">
+            <h1 style={{ fontSize: 'clamp(22px, 3vw, 28px)', lineHeight: 1.15, fontWeight: 700,
+                         letterSpacing: '-0.01em', color: 'var(--ah-ink)' }}>
               {currentTitle}
             </h1>
-            <div aria-hidden className="mt-3 h-px max-w-[80px]"
-                 style={{ background: 'linear-gradient(90deg, rgba(205, 183, 143, 0.55), transparent)' }} />
           </div>
 
           <div className="px-4 lg:px-8 pb-16">
@@ -229,30 +216,24 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   )
 }
 
-/* ───────── NavItem — active = FEATURED tier, passive = quiet type-caption ───────── */
+/* ───────── NavItem — açık/teal (aktif = teal soft bg, rail yok) ───────── */
 function NavItem({ item, active, onClick, label }) {
   return (
     <button
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-        active
-          ? 'tier-featured'
-          : 'hover:bg-graphite-700/40'
-      }`}
+      className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
       style={{
-        color: active ? 'var(--text-headline)' : 'var(--text-muted)',
-      }}>
-      {/* Active accent rail — champagne hairline on left edge */}
-      {active && (
-        <span aria-hidden className="absolute left-0 top-2 bottom-2 w-[2px] rounded-full"
-              style={{ background: 'linear-gradient(180deg, #cdb78f, #b89e6e)' }} />
-      )}
-      <span className={active ? 'text-champagne-300' : 'text-ivory-700'}>
+        background: active ? 'var(--ah-brand-soft)' : 'transparent',
+        color: active ? 'var(--ah-brand)' : 'var(--ah-ink-2)',
+        fontWeight: active ? 600 : 500,
+      }}
+      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#f2f5f5' }}
+      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent' }}>
+      <span style={{ color: active ? 'var(--ah-brand)' : 'var(--ah-ink-4)', display: 'inline-flex' }}>
         <Icon name={item.icon} size={16} active={active} />
       </span>
-      <span className={`flex-1 text-left ${active ? 'type-body' : 'type-caption'}`}
-            style={{ fontWeight: active ? 600 : 500 }}>
+      <span className="flex-1 text-left" style={{ fontSize: active ? 14 : 13.5 }}>
         {label}
       </span>
     </button>

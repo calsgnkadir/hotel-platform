@@ -694,168 +694,92 @@ function CoverArt({ position, businessName }) {
   )
 }
 
-/* ── Listing Card ── */
+/* ── İlan kartı logosu için tutarlı renk (isimden hash) ── */
+const LOGO_COLORS = ['#1f3a5f', '#7a1f3d', '#1f5f4a', '#5a3a1f', '#2f4858', '#3a4a2f', '#5f3a2f']
+function logoColor(name) {
+  let h = 0
+  const s = name || '?'
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
+  return LOGO_COLORS[h % LOGO_COLORS.length]
+}
+
+/* ── İlan kartı — REDESIGN v3 (açık + teal, sektör düzeni).
+   Eski dekoratif kapak (CoverArt "sarı kutu") + yüzen rozetler kaldırıldı;
+   yerine logo + bilgi-önce içerik + tek CTA. ── */
 function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
-  const shift = null  // legacy shift kategorisi kaldirildi
   const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const isSaved = savedIds?.has(listing.id)
+  const initial = (listing.businessName || '?').trim().charAt(0).toUpperCase()
+
+  let slotInfo = null
+  if (listing.shiftSlots?.length > 0) {
+    const slots = listing.shiftSlots
+    const openCount = slots.filter(s => !(s.full || s.slotsFilled >= s.slotsNeeded)).length
+    slotInfo = { total: slots.length, allFull: openCount === 0 }
+  }
 
   return (
-    <div
-      onClick={() => onDetail(listing)}
-      className="cursor-pointer transition-all duration-300 group overflow-hidden relative"
-      style={{
-        background: '#1b1815',
-        borderRadius: '28px 12px 12px 12px',                /* asymmetric tl */
-        border: 'none',
-        boxShadow: '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-4px)'
-        e.currentTarget.style.background = '#221f1b'
-        e.currentTarget.style.boxShadow = '0 22px 52px rgba(0,0,0,0.42), inset 0 1px 0 rgba(245,239,226,0.05)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)'
-        e.currentTarget.style.background = '#1b1815'
-        e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)'
-      }}
-    >
-      {/* HERO — foto varsa carousel; yoksa position-bazli dekoratif kapak (14.5.2) */}
-      <div className="relative h-40 w-full overflow-hidden"
-           style={{
-             background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 100%)',
-           }}>
-        {listing.businessPhotoUrls?.length > 0 ? (
-          <HoverPhotoCarousel photos={listing.businessPhotoUrls}
-                              alt={`${listing.businessName} galeri`} />
-        ) : (
-          <CoverArt position={listing.position} businessName={listing.businessName} />
-        )}
+    <div className="ah-job" onClick={() => onDetail(listing)}
+         role="button" tabIndex={0}
+         onKeyDown={(e) => { if (e.key === 'Enter') onDetail(listing) }}>
+      <div className="ah-job__top">
+        <span className="ah-logo" style={{ background: logoColor(listing.businessName) }}>{initial}</span>
+        <div className="ah-job__hd">
+          <div className="ah-job__title">{listing.title}</div>
+          <div className="ah-job__co">
+            <span>{listing.businessName}</span>
+            {listing.businessReviewCount > 0 && (
+              <StarRating value={listing.businessAverageRating}
+                          count={listing.businessReviewCount} size="xs" />
+            )}
+          </div>
+          <div className="ah-job__loc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                 strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" /><circle cx="12" cy="10" r="3" />
+            </svg>
+            {(listing.businessDistrict || 'İstanbul')} · {POSITION_LABELS[listing.position] || listing.position}
+          </div>
+        </div>
+        <button type="button"
+                className={`ah-save ${isSaved ? 'ah-save--on' : ''}`}
+                onClick={(e) => { e.stopPropagation(); onToggleSave?.(listing.id, isSaved) }}
+                aria-label={isSaved ? 'Kaydedilenlerden çıkar' : 'Kaydet'}
+                title={isSaved ? 'Kaydedilenlerden çıkar' : 'Kaydet'}>
+          <svg width="15" height="15" viewBox="0 0 24 24"
+               fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor"
+               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+          </svg>
+        </button>
+      </div>
 
-        {/* Verified badge — sol üst */}
+      <div className="ah-job__tags">
+        {salary && <span className="ah-chip ah-chip--sal">{salary}</span>}
+        <span className="ah-chip">{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
         {listing.businessVerified && (
-          <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.18em] px-2 py-1 rounded-full backdrop-blur-md"
-                style={{
-                  background: 'rgba(19, 17, 15, 0.78)',
-                  color: '#cdb78f',
-                  border: '1px solid rgba(205, 183, 143, 0.42)',
-                }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12" />
+          <span className="ah-chip ah-chip--ver">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor"
+                 strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 6 9 17l-5-5" />
             </svg>
             Doğrulandı
           </span>
         )}
-
-        {/* Job type chip — sağ üst */}
-        <span className="absolute top-3 right-12 text-[10px] font-semibold uppercase tracking-[0.18em] px-2.5 py-1 rounded-full backdrop-blur-md z-10"
-              style={{
-                background: 'rgba(19, 17, 15, 0.78)',
-                color: '#c9bdaa',
-                border: '1px solid rgba(205, 183, 143, 0.16)',
-              }}>
-          {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
-        </span>
-
-        {/* Dalga H1 — Kalp butonu (favori toggle) */}
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onToggleSave?.(listing.id, isSaved) }}
-          aria-label={isSaved ? 'Kaydedilenlerden cikar' : 'Kaydet'}
-          title={isSaved ? 'Kaydedilenlerden çıkar' : 'Kaydet'}
-          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110"
-          style={{
-            background: 'rgba(19, 17, 15, 0.78)',
-            border: `1px solid ${isSaved ? 'rgba(180, 106, 85, 0.55)' : 'rgba(205, 183, 143, 0.18)'}`,
-            color: isSaved ? '#d39481' : '#928678',
-          }}>
-          <svg width="14" height="14" viewBox="0 0 24 24"
-               fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor"
-               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-        </button>
-
-        {/* Salary chip — champagne hairline, no neon glow */}
-        {salary && (
-          <span className="absolute bottom-3 left-3 text-[12px] font-semibold tabular-nums px-3 py-1.5 rounded-full z-10 backdrop-blur-md"
-                style={{
-                  background: 'rgba(19, 17, 15, 0.78)',
-                  color: '#cdb78f',
-                  border: '1px solid rgba(205, 183, 143, 0.32)',
-                  letterSpacing: '-0.005em',
-                }}>
-            {salary}
+        {slotInfo && (
+          <span className={`ah-chip ${slotInfo.allFull ? '' : 'ah-chip--warn'}`}>
+            {slotInfo.total} vardiya{slotInfo.allFull ? ' · dolu' : ''}
           </span>
         )}
       </div>
 
-      {/* CONTENT */}
-      <div className="p-5 flex flex-col">
-        <h3 className="font-semibold text-base leading-snug line-clamp-2 transition-colors duration-200"
-            style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#cdb78f' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#f5efe2' }}>
-          {listing.title}
-        </h3>
-        <div className="flex items-center gap-2 flex-wrap mt-1.5">
-          <p className="text-[13px] inline-flex items-center" style={{ color: '#cdb78f' }}>
-            {listing.businessName}
-          </p>
-          {listing.businessReviewCount > 0 && (
-            <StarRating value={listing.businessAverageRating}
-              count={listing.businessReviewCount} size="xs" />
-          )}
-        </div>
+      {listing.description && <p className="ah-job__desc">{listing.description}</p>}
 
-        <div className="flex items-center gap-1.5 mt-2 text-[12px] flex-wrap" style={{ color: '#928678' }}>
-          <span>{listing.businessDistrict || 'İstanbul'}</span>
-          <span style={{ color: '#6b6358' }}>·</span>
-          <span>{POSITION_LABELS[listing.position] || listing.position}</span>
-          {shift && (
-            <>
-              <span style={{ color: '#6b6358' }}>·</span>
-              <span>{shift.icon} {shift.label}</span>
-            </>
-          )}
-        </div>
-
-        {/* Faz E3: slot özeti */}
-        {listing.shiftSlots?.length > 0 && (() => {
-          const slots = [...listing.shiftSlots].sort((a, b) => (a.date || '').localeCompare(b.date || ''))
-          const next = slots.find(s => !(s.full || s.slotsFilled >= s.slotsNeeded)) || slots[0]
-          const openCount = slots.filter(s => !(s.full || s.slotsFilled >= s.slotsNeeded)).length
-          const nextStr = next
-            ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}`
-            : null
-          return (
-            <div className="text-[11px] font-medium mt-2 tabular-nums"
-                 style={{ color: openCount === 0 ? '#d39481' : '#c8923a' }}>
-              {slots.length} vardiya
-              {openCount === 0 && ' · tümü dolu'}
-              {openCount > 0 && nextStr && ` · ${nextStr}`}
-            </div>
-          )
-        })()}
-
-        <p className="text-[12px] mt-3 line-clamp-2" style={{ color: '#928678' }}>{listing.description}</p>
-
-        {/* Tek CTA — sole bright-gold per card */}
-        <div className="mt-5">
-          <button
-            onClick={(e) => { e.stopPropagation(); onApply(listing) }}
-            className="w-full py-2.5 px-3 text-[13px] font-semibold uppercase tracking-[0.14em] rounded-2xl
-                       transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-            style={{
-              background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-              color: '#1a1208',
-              boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
-            }}>
-            Başvur
-          </button>
-        </div>
+      <div className="ah-job__cta">
+        <button className="ah-btn ah-btn--p ah-btn--block"
+                onClick={(e) => { e.stopPropagation(); onApply(listing) }}>
+          Başvur
+        </button>
       </div>
     </div>
   )
@@ -986,7 +910,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   useEffect(() => { setPage(1) }, [debouncedKeyword, position, jobType, district, minSalary, shifts, datePreset, customFrom, customTo])
 
   return (
-    <div className="xl:grid xl:grid-cols-[280px_1fr] xl:gap-5 space-y-4 xl:space-y-0">
+    <div className="ah-surface xl:grid xl:grid-cols-[280px_1fr] xl:gap-5 space-y-4 xl:space-y-0">
       {/* SOL PANEL — filtre paneli (sticky lg+) */}
       <aside className="xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
         <div className={`card p-4 space-y-4 ${showFilters ? '' : 'hidden xl:block'}`}>
@@ -1129,8 +1053,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-[22px] font-semibold"
-                style={{ color: '#f5efe2', letterSpacing: '-0.02em' }}>İş İlanları</h2>
-            <p className="text-[12px] mt-1 tabular-nums" style={{ color: '#928678' }}>
+                style={{ color: 'var(--ah-ink)', letterSpacing: '-0.02em' }}>İş İlanları</h2>
+            <p className="text-[12px] mt-1 tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>
               {loading ? '...' : `${listings.length} ilan`}
               {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
             </p>
@@ -1188,7 +1112,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
               aria-label="Aramayı temizle"
               className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
               style={{ color: '#928678' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#ede4d3' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ah-ink)' }}
               onMouseLeave={(e) => { e.currentTarget.style.color = '#928678' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -1424,9 +1348,9 @@ function ListingsPageBtn({ children, active, disabled, onClick, ariaLabel }) {
             aria-label={ariaLabel} aria-current={active ? 'page' : undefined}
             className="min-w-[36px] h-9 inline-flex items-center justify-center px-3 rounded-xl text-[12px] font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
             style={{
-              background: active ? 'rgba(205, 183, 143, 0.12)' : 'rgba(27, 24, 21, 0.75)',
-              color:      active ? '#f5efe2' : '#c9bdaa',
-              border:    `1px solid ${active ? 'rgba(205, 183, 143, 0.42)' : 'rgba(205, 183, 143, 0.10)'}`,
+              background: active ? 'var(--ah-brand-soft)' : 'var(--ah-card)',
+              color:      active ? 'var(--ah-brand)' : 'var(--ah-ink-2)',
+              border:    `1px solid ${active ? 'var(--ah-brand)' : 'var(--ah-line-2)'}`,
             }}>
       {children}
     </button>
@@ -1436,14 +1360,14 @@ function ListingsPageBtn({ children, active, disabled, onClick, ariaLabel }) {
 function FilterChip({ active, sub, onClick, children }) {
   const style = active
     ? {
-        background: 'rgba(205, 183, 143, 0.14)',
-        color: '#f5efe2',
-        border: '1px solid rgba(205, 183, 143, 0.45)',
+        background: 'var(--ah-brand-soft)',
+        color: 'var(--ah-brand)',
+        border: '1px solid var(--ah-brand)',
       }
     : {
-        background: 'rgba(27, 24, 21, 0.75)',
-        color: '#c9bdaa',
-        border: '1px solid rgba(205, 183, 143, 0.10)',
+        background: 'var(--ah-card)',
+        color: 'var(--ah-ink-2)',
+        border: '1px solid var(--ah-line-2)',
       }
   return (
     <button type="button" onClick={onClick}
