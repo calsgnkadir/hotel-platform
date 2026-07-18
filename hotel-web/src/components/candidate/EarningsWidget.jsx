@@ -51,25 +51,25 @@ export default function EarningsWidget({ applications }) {
   return (
     <div className="relative overflow-hidden rounded-2xl"
          style={{
-           background: 'linear-gradient(135deg, rgba(27, 24, 21, 0.78) 0%, rgba(74, 63, 51, 0.50) 100%)',
-           border: '1px solid rgba(205, 183, 143, 0.10)',
+           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(74, 63, 51, 0.50) 100%)',
+           border: '1px solid rgba(15, 118, 110, 0.10)',
            boxShadow: '0 10px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
          }}>
       {/* Köşede yüzen altın daire — saat ikonlu medallion */}
       <div aria-hidden className="absolute -top-10 -right-10 w-48 h-48 rounded-full pointer-events-none opacity-40"
-           style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22) 0%, transparent 60%)', filter: 'blur(24px)' }} />
+           style={{ background: 'radial-gradient(circle, rgba(15, 118, 110, 0.22) 0%, transparent 60%)', filter: 'blur(24px)' }} />
 
       {/* HEADER */}
       <div className="relative px-5 py-3.5 flex items-center justify-between"
-           style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.08)' }}>
+           style={{ borderBottom: '1px solid rgba(15, 118, 110, 0.08)' }}>
         <div>
           <h2 className="text-[15px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
             Çalışma <em className="not-italic font-semibold" style={{
-              background: 'linear-gradient(135deg, #cdb78f 0%, #d4a853 100%)',
+              background: 'linear-gradient(135deg, #0f766e 0%, #0f766e 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>& kazanç</em>
           </h2>
-          <p className="text-[11px] mt-0.5" style={{ color: '#928678' }}>
+          <p className="text-[11px] mt-0.5" style={{ color: '#6b7574' }}>
             Tamamlanmış vardiyalardan hesaplanır
           </p>
         </div>
@@ -77,7 +77,7 @@ export default function EarningsWidget({ applications }) {
           {/* FAZ 13 — Kazanç defteri (vardiya bazlı gerçek/planlı brüt) */}
           <button onClick={() => setLedgerOpen(true)}
             className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5 inline-flex items-center gap-1"
-            style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.30)', color: '#cdb78f' }}
+            style={{ background: 'rgba(15, 118, 110, 0.10)', border: '1px solid rgba(15, 118, 110, 0.30)', color: '#0f766e' }}
             title="Vardiya bazlı kazanç defteri">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -86,9 +86,9 @@ export default function EarningsWidget({ applications }) {
           </button>
           <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
                 style={{
-                  background: 'rgba(205, 183, 143, 0.08)',
-                  border: '1px solid rgba(205, 183, 143, 0.18)',
-                  color: '#cdb78f',
+                  background: 'rgba(15, 118, 110, 0.08)',
+                  border: '1px solid rgba(15, 118, 110, 0.18)',
+                  color: '#0f766e',
                 }}>
             {completed.length} iş
           </span>
@@ -107,9 +107,9 @@ export default function EarningsWidget({ applications }) {
       {totalE === 0 && totalH > 0 && (
         <div className="relative mx-5 mb-4 mt-1 px-3 py-2 rounded-lg flex items-start gap-2 text-[11.5px]"
              style={{
-               background: 'rgba(205, 183, 143, 0.05)',
-               border: '1px solid rgba(205, 183, 143, 0.10)',
-               color: '#c9bdaa',
+               background: 'rgba(15, 118, 110, 0.05)',
+               border: '1px solid rgba(15, 118, 110, 0.10)',
+               color: '#6b7574',
              }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" strokeWidth={1.7} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5">
@@ -131,12 +131,12 @@ function Metric({ label, hours, earned, accent }) {
   return (
     <div className="px-5 py-4">
       <div className="text-[10.5px] uppercase tracking-[0.2em] font-semibold mb-1.5"
-           style={{ color: accent ? '#cdb78f' : '#c9bdaa' }}>
+           style={{ color: accent ? '#0f766e' : '#6b7574' }}>
         {label}
       </div>
       <CountUpValue value={hours < 1 ? 0 : Math.round(hours)} suffix="sa" accent={accent} />
       <div className="text-[12px] font-medium mt-1.5 tabular-nums"
-           style={{ color: '#c9bdaa' }}>
+           style={{ color: '#6b7574' }}>
         {earned < 1 ? '0' : Math.round(earned).toLocaleString('tr-TR')} ₺
       </div>
     </div>
@@ -160,13 +160,13 @@ function CountUpValue({ value, suffix, accent }) {
     <div className="text-[28px] font-semibold leading-none tabular-nums"
          style={{
            background: accent
-             ? 'linear-gradient(135deg, #cdb78f 0%, #d4a853 100%)'
-             : 'linear-gradient(135deg, #ffffff, #cdb78f)',
+             ? 'linear-gradient(135deg, #0f766e 0%, #0f766e 100%)'
+             : 'linear-gradient(135deg, #ffffff, #0f766e)',
            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
            letterSpacing: '-0.03em',
          }}>
       {n} <span className="text-[15px] font-medium" style={{
-        background: 'none', WebkitBackgroundClip: 'unset', WebkitTextFillColor: accent ? '#d4a853' : '#cdb78f',
+        background: 'none', WebkitBackgroundClip: 'unset', WebkitTextFillColor: accent ? '#0f766e' : '#0f766e',
       }}>{suffix}</span>
     </div>
   )
@@ -177,7 +177,7 @@ function Divider() {
   return (
     <div aria-hidden className="absolute top-4 bottom-4 w-px hidden sm:block"
          style={{
-           background: 'linear-gradient(180deg, transparent, rgba(205, 183, 143, 0.22), transparent)',
+           background: 'linear-gradient(180deg, transparent, rgba(15, 118, 110, 0.22), transparent)',
          }} />
   )
 }

@@ -127,8 +127,8 @@ export default function MessageComposer({
       {/* FAZ 11.W3.3 — Quoted reply composer stub */}
       {replyTo && (
         <div className="px-4 py-2 border-t border-hairline flex items-center gap-2.5"
-             style={{ background: 'rgba(205, 183, 143, 0.04)' }}>
-          <div className="w-[3px] self-stretch rounded-full" style={{ background: '#cdb78f' }} />
+             style={{ background: 'rgba(15, 118, 110, 0.04)' }}>
+          <div className="w-[3px] self-stretch rounded-full" style={{ background: '#0f766e' }} />
           <div className="flex-1 min-w-0">
             <div className="type-caption font-semibold" style={{ color: 'var(--accent-action)' }}>
               {replyTo.mine ? 'Kendine yanıt' : replyTo.senderName || 'Yanıt'}
@@ -164,7 +164,7 @@ export default function MessageComposer({
           <>
             <button type="button" onClick={() => stopRecording(true)}
                     className="w-10 h-10 grid place-items-center rounded-full transition-colors shrink-0"
-                    style={{ background: 'rgba(205, 183, 143, 0.08)', color: 'var(--text-secondary)', border: '1px solid rgba(205, 183, 143, 0.18)' }}
+                    style={{ background: 'rgba(15, 118, 110, 0.08)', color: 'var(--text-secondary)', border: '1px solid rgba(15, 118, 110, 0.18)' }}
                     title="İptal">
               ×
             </button>
@@ -276,15 +276,15 @@ function SendButton({ sending, disabled }) {
         // uzun bir konusmada bu buton sohbet penceresi icindeki ana eylem.
         background: disabled
           ? 'rgba(146, 134, 120, 0.20)'
-          : 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-        color: disabled ? 'var(--text-faint)' : '#1a1208',
+          : 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+        color: disabled ? 'var(--text-faint)' : '#ffffff',
         fontSize: 13,
         fontWeight: 700,
         letterSpacing: '0.02em',
-        border: disabled ? '1px solid rgba(205, 183, 143, 0.10)' : '1px solid rgba(205, 183, 143, 0.45)',
+        border: disabled ? '1px solid rgba(15, 118, 110, 0.10)' : '1px solid rgba(15, 118, 110, 0.45)',
         flexShrink: 0,
         cursor: disabled ? 'not-allowed' : 'pointer',
-        boxShadow: disabled ? 'none' : '0 6px 18px rgba(205, 183, 143, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+        boxShadow: disabled ? 'none' : '0 6px 18px rgba(15, 118, 110, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
         transition: 'transform 150ms, box-shadow 200ms, background 200ms',
       }}
       onMouseDown={e => !disabled && (e.currentTarget.style.transform = 'translateY(1px) scale(0.98)')}
@@ -304,7 +304,7 @@ function SendButton({ sending, disabled }) {
         <span className="inline-flex items-center gap-1.5">
           Gönder
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M3 12 21 3 14 21l-3-8-8-1Z" stroke="#1a1208" strokeWidth="2" strokeLinejoin="round" />
+            <path d="M3 12 21 3 14 21l-3-8-8-1Z" stroke="#ffffff" strokeWidth="2" strokeLinejoin="round" />
           </svg>
         </span>
       )}
@@ -340,7 +340,7 @@ export function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
   return (
     <div className="px-3 pb-2 pt-1 border-t border-cream-200 dark:border-cream-300 flex-shrink-0">
       <div className="text-[9px] uppercase tracking-widest text-ink-400 mb-1.5 flex items-center gap-1.5">
-        <span style={{ color: '#d4a853' }}>·</span>
+        <span style={{ color: '#0f766e' }}>·</span>
         <span>Hızlı yanıt</span>
         {listingTitle && (
           <span className="truncate text-ink-500" style={{ maxWidth: 200 }}>
@@ -357,9 +357,9 @@ export function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
             onClick={() => onPick?.(text)}
             className="px-3 py-1.5 rounded-full text-[12px] whitespace-nowrap transition-all hover:-translate-y-0.5"
             style={{
-              background: 'rgba(205, 183, 143, 0.08)',
-              color: '#1b1815',
-              border: '1px solid rgba(205, 183, 143, 0.22)',
+              background: 'rgba(15, 118, 110, 0.08)',
+              color: '#ffffff',
+              border: '1px solid rgba(15, 118, 110, 0.22)',
               flexShrink: 0,
             }}>
             {text}

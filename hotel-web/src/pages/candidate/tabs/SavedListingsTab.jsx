@@ -53,7 +53,7 @@ export default function SavedListingsTab({ onTabChange }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-[12px]" style={{ color: '#928678' }}>
+        <p className="text-[12px]" style={{ color: '#6b7574' }}>
           {saved.length} kayıtlı ilan
         </p>
       </div>
@@ -77,7 +77,7 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
     <div onClick={onOpen}
          className="overflow-hidden cursor-pointer transition-all relative"
          style={{
-           background: '#1b1815',
+           background: '#ffffff',
            borderRadius: idx % 2 === 0 ? '28px 12px 12px 12px' : '12px 28px 12px 12px',
            border: 'none',
            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(245,239,226,0.03)',
@@ -85,17 +85,17 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)' }}
          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}>
       <div className="relative h-36"
-           style={{ background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 100%)' }}>
+           style={{ background: 'linear-gradient(135deg, #f4f6f6 0%, #eef1f2 100%)' }}>
         {/* Champagne blob accent */}
         <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-40 pointer-events-none"
-             style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.30), transparent 65%)', filter: 'blur(28px)' }} />
+             style={{ background: 'radial-gradient(circle, rgba(15, 118, 110, 0.30), transparent 65%)', filter: 'blur(28px)' }} />
         {/* Salary chip — champagne hairline */}
         {salary && (
           <span className="absolute bottom-3 left-3 text-[12px] font-semibold tabular-nums px-3 py-1.5 rounded-full z-10 backdrop-blur-md"
                 style={{
-                  background: 'rgba(19, 17, 15, 0.78)',
-                  color: '#cdb78f',
-                  border: '1px solid rgba(205, 183, 143, 0.32)',
+                  background: 'rgba(255, 255, 255, 0.78)',
+                  color: '#0f766e',
+                  border: '1px solid rgba(15, 118, 110, 0.32)',
                   letterSpacing: '-0.005em',
                 }}>
             {salary}
@@ -107,7 +107,7 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
                 title="Kaydedilenlerden cikar"
                 className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110"
                 style={{
-                  background: 'rgba(19, 17, 15, 0.78)',
+                  background: 'rgba(255, 255, 255, 0.78)',
                   border: '1px solid rgba(180, 106, 85, 0.45)',
                   color: '#d39481',
                 }}>
@@ -121,18 +121,18 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
 
       <div className="p-5">
         <h3 className="font-semibold text-[15px] leading-snug line-clamp-2"
-            style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>
+            style={{ color: '#12201f', letterSpacing: '-0.015em' }}>
           {listing.title}
         </h3>
-        <p className="text-[13px] mt-1.5" style={{ color: '#cdb78f' }}>
+        <p className="text-[13px] mt-1.5" style={{ color: '#0f766e' }}>
           {listing.businessName}
         </p>
         <div className="flex items-center gap-1.5 mt-2 text-[12px] flex-wrap"
-             style={{ color: '#928678' }}>
+             style={{ color: '#6b7574' }}>
           <span>{listing.businessDistrict || 'İstanbul'}</span>
-          <span style={{ color: '#6b6358' }}>·</span>
+          <span style={{ color: '#98a1a0' }}>·</span>
           <span>{POSITION_LABELS[listing.position] || listing.position}</span>
-          <span style={{ color: '#6b6358' }}>·</span>
+          <span style={{ color: '#98a1a0' }}>·</span>
           <span>{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
         </div>
       </div>

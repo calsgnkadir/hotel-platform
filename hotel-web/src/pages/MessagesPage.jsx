@@ -150,9 +150,9 @@ export default function MessagesPage() {
                     title={panelOpen ? 'Detay panelini gizle' : 'Detay panelini göster'}
                     className="hidden lg:grid absolute top-3 right-3 z-20 w-8 h-8 place-items-center rounded-full transition-all hover:-translate-y-0.5"
                     style={{
-                      background: 'rgba(27, 24, 21, 0.92)',
-                      border: `1px solid ${panelOpen ? 'rgba(205, 183, 143, 0.42)' : 'rgba(205, 183, 143, 0.18)'}`,
-                      color: panelOpen ? '#cdb78f' : '#928678',
+                      background: 'rgba(255, 255, 255, 0.92)',
+                      border: `1px solid ${panelOpen ? 'rgba(15, 118, 110, 0.42)' : 'rgba(15, 118, 110, 0.18)'}`,
+                      color: panelOpen ? '#0f766e' : '#6b7574',
                     }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

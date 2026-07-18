@@ -7,11 +7,11 @@ import EarningsWidget from '../../../components/candidate/EarningsWidget'
 
 /* FAZ 5.UX3 — Muted status: ochre / brick / sage / info-grey instead of neon */
 const STATUS_TINT = {
-  PENDING:   { color: '#c8923a', text: '#e0b766' },   // ochre
-  REVIEWING: { color: '#6b8aa3', text: '#a0b1c2' },   // info-blue muted
-  HELD:      { color: '#a17b3f', text: '#cda06e' },   // deep ochre
-  ACCEPTED:  { color: '#7a9f7a', text: '#a8c8a8' },   // sage
-  REJECTED:  { color: '#b46a55', text: '#d39481' },   // brick
+  PENDING:   { color: '#b7791f', text: '#8a5e17' },   // amber
+  REVIEWING: { color: '#1f57c3', text: '#1a49a6' },   // info blue
+  HELD:      { color: '#9a6a1f', text: '#7c5518' },   // deep amber
+  ACCEPTED:  { color: '#0a7c42', text: '#086335' },   // green
+  REJECTED:  { color: '#c0392b', text: '#992d22' },   // red
 }
 const STATUS_LABEL = {
   PENDING: 'Bekliyor', REVIEWING: 'İnceleniyor', HELD: 'Hold',
@@ -34,7 +34,7 @@ export default function OverviewTab({ user, applications, onTabChange }) {
 
   return (
     <motion.div
-      className="relative grid xl:grid-cols-[1fr_320px] gap-4 items-start"
+      className="ah-surface relative grid xl:grid-cols-[1fr_320px] gap-4 items-start"
       initial="hidden" animate="visible"
       variants={{ visible: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } }}
     >
@@ -79,10 +79,6 @@ export default function OverviewTab({ user, applications, onTabChange }) {
 
       {applications.length > 0 && (
         <motion.div variants={ITEM} className="tier-raised relative overflow-hidden">
-          {/* Köşe champagne blob */}
-          <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-30"
-               style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22), transparent 70%)', filter: 'blur(28px)' }} />
-
           <div className="relative px-6 py-4 flex items-center justify-between border-b border-hairline">
             <div>
               <h2 className="type-heading" style={{ fontSize: '16px' }}>
@@ -160,7 +156,6 @@ function ActivityStream({ applications, onTabChange }) {
                   <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
                         style={{
                           background: tint.color,
-                          boxShadow: `0 0 6px ${tint.color}66`,
                         }} />
                   <div className="flex-1 min-w-0">
                     <p className="type-body font-medium truncate transition-colors">
@@ -236,7 +231,6 @@ function HeroStat({ className = '', label, value, delta, data }) {
       onMouseMove={onMove} onMouseLeave={() => { mx.set(0); my.set(0) }}
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 230, damping: 22 }}
-      style={{ rotateX, rotateY, transformPerspective: 1000 }}
       className={`tier-raised relative overflow-hidden cursor-default group p-6 min-h-[180px] flex flex-col justify-end ${className}`}
     >
       {/* Katmanli zemin: champagne diagonal wash + genis sparkline */}
@@ -252,9 +246,9 @@ function HeroStat({ className = '', label, value, delta, data }) {
           transition={{ delay: 0.8, type: 'spring', stiffness: 380, damping: 20 }}
           className="absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
           style={{
-            background: delta > 0 ? 'rgba(122, 159, 122, 0.14)' : 'rgba(180, 106, 85, 0.14)',
-            color:      delta > 0 ? '#a8c8a8' : '#d39481',
-            border: `1px solid ${delta > 0 ? 'rgba(122, 159, 122, 0.32)' : 'rgba(180, 106, 85, 0.32)'}`,
+            background: delta > 0 ? '#e9f5ee' : '#fbeae7',
+            color:      delta > 0 ? '#086335' : '#992d22',
+            border: `1px solid ${delta > 0 ? '#0a7c42' : '#c0392b'}`,
           }}>
           {delta > 0 ? `+${delta}` : delta} bu hafta
         </motion.span>
@@ -268,7 +262,6 @@ function HeroStat({ className = '', label, value, delta, data }) {
                lineHeight: 0.95,
                letterSpacing: '-0.04em',
                color: 'var(--text-headline)',
-               filter: 'drop-shadow(0 0 18px rgba(205, 183, 143, 0.28))',
              }}>
           {displayed}
         </div>
@@ -289,7 +282,7 @@ function MiniStat({ className = '', label, value, color, data }) {
       className={`tier-raised relative overflow-hidden cursor-default p-4 ${className}`}
     >
       <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full"
-            style={{ background: color, boxShadow: `0 0 10px ${color}55` }} />
+            style={{ background: color }} />
       <div aria-hidden className="absolute inset-x-2 bottom-1.5 h-6 pointer-events-none opacity-25">
         <Sparkline data={data} color={color} width={220} height={24} />
       </div>
@@ -323,7 +316,7 @@ function RatioRing({ className = '', label, ratio }) {
                 initial={{ strokeDashoffset: CIRC }}
                 animate={{ strokeDashoffset: CIRC * (1 - ratio) }}
                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-                style={{ filter: 'drop-shadow(0 0 6px rgba(122, 159, 122, 0.45))' }} />
+                />
       </svg>
       <div className="min-w-0">
         <div className="tabular-nums" style={{ fontSize: '22px', fontWeight: 600, lineHeight: 1, color: '#a8c8a8', letterSpacing: '-0.02em' }}>
@@ -419,7 +412,6 @@ function ProfileViewsWidget({ bento = false }) {
                  lineHeight: 0.95,
                  letterSpacing: '-0.04em',
                  color: 'var(--accent-action)',
-                 filter: 'drop-shadow(0 0 14px rgba(205, 183, 143, 0.30))',
                }}>
             {total}
           </div>
@@ -458,7 +450,6 @@ function ProfileViewsWidget({ bento = false }) {
                   fontWeight: 600,
                   letterSpacing: '-0.03em',
                   lineHeight: 1,
-                  filter: 'drop-shadow(0 0 12px rgba(205, 183, 143, 0.25))',
                 }}>
             {total}
           </span>

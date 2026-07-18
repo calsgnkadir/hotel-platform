@@ -77,7 +77,7 @@ export default function EarningsLedgerModal({ onClose }) {
             <div className="relative">
               {/* Dikey ray */}
               <div aria-hidden className="absolute left-[26px] top-2 bottom-2 w-px hidden sm:block"
-                   style={{ background: 'linear-gradient(180deg, transparent, rgba(205, 183, 143, 0.20) 8%, rgba(205, 183, 143, 0.20) 92%, transparent)' }} />
+                   style={{ background: 'linear-gradient(180deg, transparent, rgba(15, 118, 110, 0.20) 8%, rgba(15, 118, 110, 0.20) 92%, transparent)' }} />
               <div className="space-y-2">
                 {entries.map((e, i) => (
                   <LedgerRow key={`${e.applicationId}-${e.date}-${i}`} entry={e} delay={i * 0.03} />
@@ -126,7 +126,7 @@ function LedgerRow({ entry, delay }) {
         <div className="tabular-nums leading-none" style={{ color: 'var(--text-headline)', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.03em' }}>{day}</div>
         <div className="type-caption" style={{ fontSize: '10px', textTransform: 'lowercase' }}>{month}</div>
         <span aria-hidden className="mt-1.5 w-2 h-2 rounded-full"
-              style={{ background: clocked ? '#7a9f7a' : '#cdb78f', boxShadow: `0 0 0 3px rgba(19,17,15,1), 0 0 8px ${clocked ? '#7a9f7a' : '#cdb78f'}88` }} />
+              style={{ background: clocked ? '#7a9f7a' : '#0f766e', boxShadow: `0 0 0 3px rgba(255, 255, 255,1), 0 0 8px ${clocked ? '#7a9f7a' : '#0f766e'}88` }} />
       </div>
 
       {/* Kart */}
@@ -143,8 +143,8 @@ function LedgerRow({ entry, delay }) {
             {/* Saat + kaynak badge */}
             <span className="type-overline inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full"
                   style={{
-                    background: clocked ? 'rgba(122,159,122,0.12)' : 'rgba(205,183,143,0.08)',
-                    border: `1px solid ${clocked ? 'rgba(122,159,122,0.30)' : 'rgba(205,183,143,0.20)'}`,
+                    background: clocked ? 'rgba(122,159,122,0.12)' : 'rgba(15, 118, 110,0.08)',
+                    border: `1px solid ${clocked ? 'rgba(122,159,122,0.30)' : 'rgba(15, 118, 110,0.20)'}`,
                     color: clocked ? '#a8c8a8' : 'var(--accent-action)',
                   }}
                   title={clocked ? 'Gerçek mesai kaydından' : 'Planlanan vardiya süresinden'}>

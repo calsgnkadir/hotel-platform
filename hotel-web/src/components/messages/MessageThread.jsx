@@ -215,9 +215,9 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
       {isDragging && (
         <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none rounded-lg"
              style={{
-               background: 'rgba(205, 183, 143, 0.10)',
+               background: 'rgba(15, 118, 110, 0.10)',
                backdropFilter: 'blur(4px)',
-               border: '4px dashed rgba(205, 183, 143, 0.45)',
+               border: '4px dashed rgba(15, 118, 110, 0.45)',
              }}>
           <div className="tier-featured px-8 py-6 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -248,12 +248,12 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
           <img src={cldImg(conversation.otherPartyAvatarUrl, { w: ImgSize.avatarSm })} alt={conversation.otherPartyName}
             loading="lazy" decoding="async"
             className="w-9 h-9 rounded-full object-cover"
-            style={{ border: '1px solid rgba(205, 183, 143, 0.22)' }} />
+            style={{ border: '1px solid rgba(15, 118, 110, 0.22)' }} />
         ) : (
           <div className="w-9 h-9 rounded-full flex items-center justify-center"
                style={{
-                 background: 'rgba(205, 183, 143, 0.08)',
-                 border: '1px solid rgba(205, 183, 143, 0.22)',
+                 background: 'rgba(15, 118, 110, 0.08)',
+                 border: '1px solid rgba(15, 118, 110, 0.22)',
                  color: 'var(--accent-action)',
                }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -325,9 +325,9 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
                   }}
                   className="absolute -top-12 left-1/2 -translate-x-1/2 z-20 px-3.5 py-1.5 rounded-full type-overline flex items-center gap-1.5 transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-                    color: '#1a1208',
-                    boxShadow: '0 6px 18px rgba(205, 183, 143, 0.40)',
+                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                    color: '#ffffff',
+                    boxShadow: '0 6px 18px rgba(15, 118, 110, 0.40)',
                   }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9" />
@@ -364,7 +364,7 @@ function TypingSineWave() {
       <svg width="56" height="14" viewBox="0 0 56 14"
            style={{ animation: 'tw-shift 1.4s linear infinite' }}>
         <path d="M0 7 Q 3.5 1 7 7 T 14 7 T 21 7 T 28 7 T 35 7 T 42 7 T 49 7 T 56 7"
-              fill="none" stroke="#d4a853" strokeWidth="1.5" strokeLinecap="round" />
+              fill="none" stroke="#0f766e" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
       <style>{`
         @keyframes tw-shift {

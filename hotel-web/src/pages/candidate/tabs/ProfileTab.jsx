@@ -162,7 +162,7 @@ export default function ProfileTab() {
   )
 
   return (
-    <div className="space-y-4 max-w-[1400px] mx-auto">
+    <div className="ah-surface space-y-4 max-w-[1400px] mx-auto">
       {/* Dalga G3 — shadcn Alert uyarlamasi: kaydet sonrasi inline geri bildirim */}
       {savedAt && (
         <Alert variant="success" title="Profil güncellendi">
@@ -178,11 +178,11 @@ export default function ProfileTab() {
                style={{
                  background: form.isAvailable
                    ? 'rgba(122, 159, 122, 0.12)'
-                   : 'rgba(205, 183, 143, 0.06)',
-                 border: `1px solid ${form.isAvailable ? 'rgba(122, 159, 122, 0.35)' : 'rgba(205, 183, 143, 0.10)'}`,
+                   : 'rgba(15, 118, 110, 0.06)',
+                 border: `1px solid ${form.isAvailable ? 'rgba(122, 159, 122, 0.35)' : 'rgba(15, 118, 110, 0.10)'}`,
                }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                 stroke={form.isAvailable ? '#a8c8a8' : '#6b6358'}
+                 stroke={form.isAvailable ? '#a8c8a8' : '#98a1a0'}
                  strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="2" y="7" width="20" height="14" rx="2" />
               <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
@@ -190,10 +190,10 @@ export default function ProfileTab() {
           </div>
           <div className="min-w-0">
             <p className="text-base tracking-[0.15em] uppercase"
-               style={{ color: form.isAvailable ? '#a8c8a8' : '#c9bdaa' }}>
+               style={{ color: form.isAvailable ? '#a8c8a8' : '#6b7574' }}>
               {form.isAvailable ? 'İş Arıyorum' : 'Şu anda iş aramıyorum'}
             </p>
-            <p className="text-[12px] mt-0.5" style={{ color: '#6b6358' }}>
+            <p className="text-[12px] mt-0.5" style={{ color: '#98a1a0' }}>
               {form.isAvailable
                 ? 'İşletmeler profilinde yeşil rozet görür — daha fazla teklif almak için açık tutun.'
                 : 'Aktif olduğunda işletmeler size daha fazla teklif gönderebilir.'}
@@ -207,8 +207,8 @@ export default function ProfileTab() {
           onClick={() => setForm(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
           className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors shrink-0"
           style={{
-            background: form.isAvailable ? '#7a9f7a' : 'rgba(205, 183, 143, 0.10)',
-            border: `1px solid ${form.isAvailable ? '#16a34a' : 'rgba(205, 183, 143, 0.18)'}`,
+            background: form.isAvailable ? '#7a9f7a' : 'rgba(15, 118, 110, 0.10)',
+            border: `1px solid ${form.isAvailable ? '#16a34a' : 'rgba(15, 118, 110, 0.18)'}`,
           }}>
           <span className="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
                 style={{ transform: form.isAvailable ? 'translateX(22px)' : 'translateX(3px)' }} />
@@ -219,14 +219,14 @@ export default function ProfileTab() {
         {/* Identity card */}
         <div className="card p-6 flex flex-col items-center text-center">
           <div className="w-28 h-28 rounded-full flex items-center justify-center overflow-hidden mb-4 relative"
-               style={{ background: 'rgba(205, 183, 143, 0.08)', border: '2px solid rgba(205, 183, 143, 0.22)' }}>
+               style={{ background: 'rgba(15, 118, 110, 0.08)', border: '2px solid rgba(15, 118, 110, 0.22)' }}>
             {profile?.avatarUrl ? (
               <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
                    loading="lazy" decoding="async"
                    className="w-full h-full object-cover" />
             ) : (
               <span className="text-5xl tracking-wider"
-                    style={{ color: '#cdb78f', textShadow: '0 0 16px rgba(205, 183, 143, 0.32)' }}>
+                    style={{ color: '#0f766e', textShadow: '0 0 16px rgba(15, 118, 110, 0.32)' }}>
                 {(profile?.fullName || 'A').charAt(0).toUpperCase()}
               </span>
             )}
@@ -234,13 +234,13 @@ export default function ProfileTab() {
           <h2 className="text-2xl tracking-wider uppercase text-white mb-1">
             {profile?.fullName || 'Aday'}
           </h2>
-          <p className="text-xs mb-3" style={{ color: '#928678' }}>
+          <p className="text-xs mb-3" style={{ color: '#6b7574' }}>
             {profile?.email || ''}
           </p>
-          <div className="w-full pt-3 mt-1 border-t" style={{ borderColor: 'rgba(205, 183, 143, 0.12)' }}>
+          <div className="w-full pt-3 mt-1 border-t" style={{ borderColor: 'rgba(15, 118, 110, 0.12)' }}>
             <div className="flex items-center justify-between text-[11px]">
-              <span style={{ color: '#928678' }}>ÜYE OLDU</span>
-              <span className="font-semibold" style={{ color: '#ede4d3' }}>
+              <span style={{ color: '#6b7574' }}>ÜYE OLDU</span>
+              <span className="font-semibold" style={{ color: '#3f4b4a' }}>
                 {profile?.createdAt
                   ? new Date(profile.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
                   : '—'}
@@ -255,18 +255,18 @@ export default function ProfileTab() {
         {/* Email durum kartı */}
         <div className="card p-5 flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#928678' }}>
+              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#6b7574' }}>
                 Email Doğrulama
               </p>
               <p className="text-xl tracking-wider mt-1 uppercase"
-                 style={{ color: profile?.emailVerifiedAt ? '#cdb78f' : '#c8923a' }}>
+                 style={{ color: profile?.emailVerifiedAt ? '#0f766e' : '#c8923a' }}>
                 {profile?.emailVerifiedAt ? 'Doğrulandı' : 'Beklemede'}
               </p>
             </div>
             <span className="w-3 h-3 rounded-full"
                   style={{
-                    background: profile?.emailVerifiedAt ? '#d4a853' : '#c8923a',
-                    boxShadow: `0 0 12px ${profile?.emailVerifiedAt ? 'rgba(205, 183, 143, 0.50)' : 'rgba(251,191,36,0.6)'}`,
+                    background: profile?.emailVerifiedAt ? '#0f766e' : '#c8923a',
+                    boxShadow: `0 0 12px ${profile?.emailVerifiedAt ? 'rgba(15, 118, 110, 0.50)' : 'rgba(251,191,36,0.6)'}`,
                   }} />
         </div>
       </div>
@@ -278,16 +278,16 @@ export default function ProfileTab() {
         <div className="space-y-4">
           {reliability && <ReliabilityCard data={reliability} />}
           <div className="card p-5">
-            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#ede4d3' }}>Profil Fotoğrafı</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#3f4b4a' }}>Profil Fotoğrafı</h3>
         <div className="flex items-center gap-4">
           <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-               style={{ background: 'rgba(205, 183, 143, 0.06)', border: '2px solid rgba(205, 183, 143, 0.20)' }}>
+               style={{ background: 'rgba(15, 118, 110, 0.06)', border: '2px solid rgba(15, 118, 110, 0.20)' }}>
             {profile?.avatarUrl ? (
               <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
                    loading="lazy" decoding="async"
                    className="w-full h-full object-cover" />
             ) : (
-              <span className="text-4xl tracking-wider" style={{ color: '#cdb78f' }}>
+              <span className="text-4xl tracking-wider" style={{ color: '#0f766e' }}>
                 {(profile?.fullName || 'A').charAt(0).toUpperCase()}
               </span>
             )}
@@ -315,7 +315,7 @@ export default function ProfileTab() {
           </div>
         <div className="card p-5 space-y-4">
           <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>Temel Bilgiler</h3>
+              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Temel Bilgiler</h3>
 
           <div>
             <label className="label">Ad Soyad *</label>
@@ -362,8 +362,8 @@ export default function ProfileTab() {
         {/* SOL: Ilgilendigin Ilceler (uzayan otomatik tamamlama) */}
         <div className="card p-5 space-y-3">
           <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>İlgilendiğin İlçeler</h3>
-          <p className="text-xs" style={{ color: '#928678' }}>
+              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin İlçeler</h3>
+          <p className="text-xs" style={{ color: '#6b7574' }}>
             Bu ilçelerde yeni ilan açıldığında otomatik bildirim alırsın.
           </p>
           <DistrictAutocomplete
@@ -381,7 +381,7 @@ export default function ProfileTab() {
           {/* Egitim + Ehliyet */}
         <div className="card p-5 space-y-4">
           <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>Eğitim & Ek</h3>
+              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Eğitim & Ek</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label">Eğitim Durumu</label>
@@ -403,7 +403,7 @@ export default function ProfileTab() {
 
         <div className="card p-5 space-y-4">
           <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>İş Tercihleri</h3>
+              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İş Tercihleri</h3>
 
           <div>
             <label className="label">Müsaitlik Türü <span className="text-ink-400 font-normal">(birden fazla seçebilirsin)</span></label>
@@ -434,8 +434,8 @@ export default function ProfileTab() {
         {/* SAG: Ilgilendigin Pozisyonlar */}
         <div className="card p-5 space-y-3">
           <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#cdb78f', borderColor: 'rgba(205, 183, 143, 0.10)' }}>İlgilendiğin Pozisyonlar</h3>
-          <p className="text-xs" style={{ color: '#928678' }}>
+              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin Pozisyonlar</h3>
+          <p className="text-xs" style={{ color: '#6b7574' }}>
             Bu pozisyonlarda yeni ilan acildiginda otomatik bildirim alirsin.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -461,7 +461,7 @@ export default function ProfileTab() {
         <div className="flex justify-end">
           <button type="submit" disabled={saving}
             className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208', boxShadow: '0 12px 28px rgba(205, 183, 143, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)' }}>
+            style={{ background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)', color: '#ffffff', boxShadow: '0 12px 28px rgba(15, 118, 110, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)' }}>
             {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
           </button>
         </div>
@@ -527,9 +527,9 @@ function DistrictAutocomplete({ selected, onToggle }) {
             <button key={d} type="button" onClick={() => onToggle(d)}
               className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
               style={{
-                background: 'rgba(205, 183, 143, 0.10)',
-                color: '#cdb78f',
-                border: '1px solid rgba(205, 183, 143, 0.35)',
+                background: 'rgba(15, 118, 110, 0.10)',
+                color: '#0f766e',
+                border: '1px solid rgba(15, 118, 110, 0.35)',
               }}>
               {d}
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -543,9 +543,9 @@ function DistrictAutocomplete({ selected, onToggle }) {
 
       {/* Eslesen ilce listesi */}
       <div className="max-h-44 overflow-y-auto border rounded-lg p-1.5"
-           style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
+           style={{ borderColor: 'rgba(15, 118, 110, 0.10)' }}>
         {matches.length === 0 ? (
-          <p className="text-xs text-center py-3" style={{ color: '#6b6358' }}>
+          <p className="text-xs text-center py-3" style={{ color: '#98a1a0' }}>
             "{query}" ile eşleşen ilçe yok
           </p>
         ) : (
@@ -556,9 +556,9 @@ function DistrictAutocomplete({ selected, onToggle }) {
                 <button key={d} type="button" onClick={() => onToggle(d)}
                   className="flex items-center justify-between gap-2 px-2 py-1.5 rounded text-xs transition-colors text-left"
                   style={{
-                    background: active ? 'rgba(205, 183, 143, 0.10)' : 'transparent',
-                    color: active ? '#cdb78f' : '#c9bdaa',
-                    border: active ? '1px solid rgba(205, 183, 143, 0.25)' : '1px solid transparent',
+                    background: active ? 'rgba(15, 118, 110, 0.10)' : 'transparent',
+                    color: active ? '#0f766e' : '#6b7574',
+                    border: active ? '1px solid rgba(15, 118, 110, 0.25)' : '1px solid transparent',
                     fontWeight: active ? 600 : 500,
                   }}>
                   <span className="truncate">{d}</span>
@@ -595,27 +595,27 @@ function ReliabilityCard({ data }) {
   return (
     <div className="card p-5"
          style={{
-           background: '#1b1815',
+           background: '#ffffff',
            border: 'none',
            boxShadow: '0 14px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
          }}>
       <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: '#928678' }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: '#6b7574' }}>
             Güvenilirlik Skoru
           </p>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-4xl tracking-wider" style={{ color: '#ffffff' }}>{score}</span>
-            <span className="text-xs" style={{ color: '#928678' }}>/ 100</span>
+            <span className="text-xs" style={{ color: '#6b7574' }}>/ 100</span>
             <span className="ml-2 text-[11px] font-bold uppercase tracking-wider" style={{ color }}>{band}</span>
           </div>
         </div>
-        <p className="text-[11px] max-w-xs text-right" style={{ color: '#928678' }}>
+        <p className="text-[11px] max-w-xs text-right" style={{ color: '#6b7574' }}>
           İşletmeler aday seçerken bu skoru görür. Yüksek tutmak seni öne çıkarır.
         </p>
       </div>
 
-      <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(205, 183, 143, 0.12)' }}>
+      <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(15, 118, 110, 0.12)' }}>
         <div className="h-full rounded-full transition-all"
              style={{ width: `${Math.max(2, score)}%`, background: bg }} />
       </div>
@@ -635,11 +635,11 @@ function BreakdownPill({ label, value, hint, bad }) {
   return (
     <div className="rounded-lg px-2.5 py-1.5"
          style={{
-           background: bad ? 'rgba(180, 106, 85, 0.10)' : 'rgba(205, 183, 143, 0.08)',
-           border: `1px solid ${bad ? 'rgba(180, 106, 85, 0.28)' : 'rgba(205, 183, 143, 0.14)'}`,
+           background: bad ? 'rgba(180, 106, 85, 0.10)' : 'rgba(15, 118, 110, 0.08)',
+           border: `1px solid ${bad ? 'rgba(180, 106, 85, 0.28)' : 'rgba(15, 118, 110, 0.14)'}`,
          }}>
-      <p className="text-[9px] uppercase tracking-wider font-bold" style={{ color: '#928678' }}>{label}</p>
-      <p className="text-xs font-semibold mt-0.5" style={{ color: bad ? '#d39481' : '#ede4d3' }}>
+      <p className="text-[9px] uppercase tracking-wider font-bold" style={{ color: '#6b7574' }}>{label}</p>
+      <p className="text-xs font-semibold mt-0.5" style={{ color: bad ? '#d39481' : '#3f4b4a' }}>
         {value}{hint && <span className="ml-1 font-normal opacity-70">· {hint}</span>}
       </p>
     </div>

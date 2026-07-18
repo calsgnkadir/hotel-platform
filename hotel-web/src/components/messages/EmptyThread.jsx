@@ -28,8 +28,8 @@ export default function EmptyThread() {
             style={{
               left: `${p.left}%`, top: `${p.top}%`,
               width: p.size, height: p.size,
-              background: '#d4a853',
-              boxShadow: '0 0 8px #d4a853',
+              background: '#0f766e',
+              boxShadow: '0 0 8px #0f766e',
             }} />
         ))}
       </div>
@@ -47,31 +47,31 @@ export default function EmptyThread() {
         >
           <div className="absolute inset-0 rounded-full"
                style={{
-                 background: 'radial-gradient(circle, rgba(205, 183, 143, 0.22) 0%, transparent 65%)',
+                 background: 'radial-gradient(circle, rgba(15, 118, 110, 0.22) 0%, transparent 65%)',
                  filter: 'blur(12px)',
                }} />
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className="relative w-full h-full">
             <defs>
               <linearGradient id="bubble-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%"  stopColor="#cdb78f" />
-                <stop offset="100%" stopColor="#b8902d" />
+                <stop offset="0%"  stopColor="#0f766e" />
+                <stop offset="100%" stopColor="#0b5d57" />
               </linearGradient>
             </defs>
             <path d="M14 12h32a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H24l-10 8V20a8 8 0 0 1 0-8z"
                   fill="rgba(13, 11, 9, 0.85)"
                   stroke="url(#bubble-grad)" strokeWidth="1.5" />
-            <circle cx="24" cy="29" r="2" fill="#cdb78f" opacity="0.9" />
-            <circle cx="32" cy="29" r="2" fill="#cdb78f" opacity="0.9" />
-            <circle cx="40" cy="29" r="2" fill="#cdb78f" opacity="0.9" />
+            <circle cx="24" cy="29" r="2" fill="#0f766e" opacity="0.9" />
+            <circle cx="32" cy="29" r="2" fill="#0f766e" opacity="0.9" />
+            <circle cx="40" cy="29" r="2" fill="#0f766e" opacity="0.9" />
           </svg>
         </motion.div>
         <h3 className="text-[18px] font-semibold mb-2" style={{ color: '#ffffff', letterSpacing: '-0.015em' }}>
           <em className="not-italic font-semibold" style={{
-            background: 'linear-gradient(135deg, #cdb78f 0%, #d4a853 100%)',
+            background: 'linear-gradient(135deg, #0f766e 0%, #0f766e 100%)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>Sohbet</em> seçin
         </h3>
-        <p className="text-[12.5px] leading-relaxed" style={{ color: '#c9bdaa' }}>
+        <p className="text-[12.5px] leading-relaxed" style={{ color: '#6b7574' }}>
           Soldan bir sohbet seç veya yeni bir ilana başvur — her başvuru otomatik bir sohbet açar.
         </p>
       </motion.div>

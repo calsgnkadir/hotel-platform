@@ -995,7 +995,23 @@ textarea:focus-visible {
 
 
 /* REDESIGN v3 - acik teal scoped overrides (bkz project-ajanshotel-redesign) */
-.ah-surface { background: var(--ah-page); color: var(--ah-ink-2); }
+.ah-surface {
+  background: var(--ah-page);
+  color: var(--ah-ink-2);
+  /* Token redefinisyonu: inline var(--text-...) ve var(--accent-action)
+     kullanan her sey de otomatik acilir (hardcoded hex haric). */
+  --text-primary: var(--ah-ink-2);
+  --text-secondary: var(--ah-ink-2);
+  --text-muted: var(--ah-ink-3);
+  --text-faint: var(--ah-ink-4);
+  --text-headline: var(--ah-ink);
+  --accent-action: var(--ah-brand);
+  --accent-action-hover: var(--ah-brand-hover);
+  --accent-action-soft: var(--ah-brand-soft);
+  --hairline: var(--ah-line);
+  --hairline-strong: var(--ah-line-2);
+  --border-subtle: var(--ah-line);
+}
 
 .ah-surface .card,
 .ah-surface .card-metric,

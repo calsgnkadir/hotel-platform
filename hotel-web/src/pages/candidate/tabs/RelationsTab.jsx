@@ -49,9 +49,9 @@ export default function RelationsTab({ onTabChange }) {
             <button key={t.id} type="button" onClick={() => setTab(t.id)}
               className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
               style={{
-                background: active ? 'rgba(205, 183, 143, 0.14)' : 'rgba(27, 24, 21, 0.75)',
-                color: active ? '#f5efe2' : '#928678',
-                border: `1px solid ${active ? 'rgba(205, 183, 143, 0.42)' : 'rgba(205, 183, 143, 0.10)'}`,
+                background: active ? 'rgba(15, 118, 110, 0.14)' : 'rgba(255, 255, 255, 0.75)',
+                color: active ? '#12201f' : '#6b7574',
+                border: `1px solid ${active ? 'rgba(15, 118, 110, 0.42)' : 'rgba(15, 118, 110, 0.10)'}`,
               }}>
               {t.label}
               {t.count > 0 && (
@@ -82,7 +82,7 @@ export default function RelationsTab({ onTabChange }) {
             <div key={b.id}
                  className="p-5 transition-all relative hover:-translate-y-0.5"
                  style={{
-                   background: '#1b1815',
+                   background: '#ffffff',
                    borderRadius: i % 2 === 0 ? '28px 12px 12px 12px' : '12px 28px 12px 12px',
                    border: 'none',
                    boxShadow: '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
@@ -91,8 +91,8 @@ export default function RelationsTab({ onTabChange }) {
                       onClick={() => navigate(`/p/business/${b.id}`)}
                       className="w-full text-left">
                 <h3 className="text-[16px] font-semibold truncate"
-                    style={{ color: '#f5efe2', letterSpacing: '-0.015em' }}>{b.name}</h3>
-                <div className="text-[12px] mt-1 truncate" style={{ color: '#928678' }}>
+                    style={{ color: '#12201f', letterSpacing: '-0.015em' }}>{b.name}</h3>
+                <div className="text-[12px] mt-1 truncate" style={{ color: '#6b7574' }}>
                   {TYPE_LABELS[b.type] || b.type}
                   {b.district && ` · ${b.district}`}
                 </div>
@@ -102,9 +102,9 @@ export default function RelationsTab({ onTabChange }) {
                 className="mt-4 w-full text-[10px] font-semibold uppercase tracking-[0.18em] px-3 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
                 style={tab === 'following'
                   ? {
-                      background: 'rgba(205, 183, 143, 0.06)',
-                      color: '#c9bdaa',
-                      border: '1px solid rgba(205, 183, 143, 0.18)',
+                      background: 'rgba(15, 118, 110, 0.06)',
+                      color: '#6b7574',
+                      border: '1px solid rgba(15, 118, 110, 0.18)',
                     }
                   : {
                       background: 'rgba(122, 159, 122, 0.10)',
