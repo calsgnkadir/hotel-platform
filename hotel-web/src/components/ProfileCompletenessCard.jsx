@@ -11,7 +11,7 @@ export default function ProfileCompletenessCard({ data }) {
   // Renk: kırmızı sarı mor (mor seviye 70+)
   const color =
     percentage >= 90 ? '#16a34a' :     // yeşil
-    percentage >= 70 ? '#1b1815' :     // mor (brand)
+    percentage >= 70 ? '#ffffff' :     // mor (brand)
     percentage >= 40 ? '#d97706' :     // amber
                        '#dc2626'        // kırmızı
 
@@ -45,7 +45,7 @@ export default function ProfileCompletenessCard({ data }) {
             width: `${percentage}%`,
             background: percentage >= 100
               ? 'linear-gradient(90deg, #7a9f7a, #16a34a)'
-              : 'linear-gradient(90deg, #cdb78f, #fff)',
+              : 'linear-gradient(90deg, #0f766e, #fff)',
           }}
         />
       </div>

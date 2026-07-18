@@ -149,8 +149,8 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
            className="card max-w-lg w-full p-0 overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="px-5 py-4 border-b border-cream-200 dark:border-cream-300">
-          <h3 id="avatar-crop-title" className="font-bold text-base" style={{ color: '#f5efe2' }}>Profil Fotoğrafı</h3>
-          <p className="text-xs mt-0.5" style={{ color: '#cdb78f' }}>
+          <h3 id="avatar-crop-title" className="font-bold text-base" style={{ color: '#12201f' }}>Profil Fotoğrafı</h3>
+          <p className="text-xs mt-0.5" style={{ color: '#0f766e' }}>
             Foto yükle kare bölgeyi sürükle kullan.
           </p>
         </div>
@@ -169,19 +169,19 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
               onClick={() => fileInputRef.current?.click()}
               className="cursor-pointer rounded-2xl text-center py-12 px-4 transition-all"
               style={{
-                background: dragOver ? 'rgba(205, 183, 143, 0.14)' : 'rgba(205, 183, 143, 0.06)',
-                border: `2px dashed ${dragOver ? '#d4a853' : 'rgba(205, 183, 143, 0.30)'}`,
+                background: dragOver ? 'rgba(15, 118, 110, 0.14)' : 'rgba(15, 118, 110, 0.06)',
+                border: `2px dashed ${dragOver ? '#0f766e' : 'rgba(15, 118, 110, 0.30)'}`,
               }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.6} stroke="currentColor"
-                   className="w-12 h-12 mx-auto mb-3" style={{ color: '#cdb78f' }}>
+                   className="w-12 h-12 mx-auto mb-3" style={{ color: '#0f766e' }}>
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
               </svg>
-              <p className="font-semibold text-sm" style={{ color: '#f5efe2' }}>
+              <p className="font-semibold text-sm" style={{ color: '#12201f' }}>
                 Foto buraya sürükle veya tıkla
               </p>
-              <p className="text-xs mt-1" style={{ color: '#cdb78f' }}>
+              <p className="text-xs mt-1" style={{ color: '#0f766e' }}>
                 JPG/PNG/WEBP/HEIC · Maks {MAX_SIZE_MB} MB · Kare olarak kaydedilir
               </p>
               <input ref={fileInputRef} type="file"
@@ -205,7 +205,7 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
               </ReactCrop>
               <button type="button" onClick={reset}
                 className="mt-3 text-xs font-medium hover:underline"
-                style={{ color: '#cdb78f' }}>
+                style={{ color: '#0f766e' }}>
                 Başka foto seç
               </button>
             </div>
@@ -216,13 +216,13 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
         <div className="px-5 py-4 border-t border-cream-200 dark:border-cream-300 flex gap-2 justify-end">
           <button type="button" onClick={() => { reset(); onClose() }}
             className="px-4 py-2 text-sm font-semibold rounded-lg"
-            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(205, 183, 143, 0.28)' }}>
+            style={{ background: 'rgba(255,255,255,0.10)', color: '#fff', border: '1px solid rgba(15, 118, 110, 0.28)' }}>
             İptal
           </button>
           <button type="button" onClick={handleConfirm}
             disabled={!src || saving}
             className="px-5 py-2 text-sm font-bold rounded-lg disabled:opacity-50 transition-all hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #d4a853, #d4a853)', color: '#fff', boxShadow: '0 4px 16px rgba(205, 183, 143, 0.30)' }}>
+            style={{ background: 'linear-gradient(135deg, #0f766e, #0f766e)', color: '#fff', boxShadow: '0 4px 16px rgba(15, 118, 110, 0.30)' }}>
             {saving ? 'Yükleniyor...' : 'Kullan'}
           </button>
         </div>

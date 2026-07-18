@@ -17,8 +17,8 @@ const VARIANTS = {
   default: {
     cls: 'bg-transparent',
     style: {
-      borderColor: 'rgba(205, 183, 143, 0.14)',
-      color: '#ede4d3',
+      borderColor: 'rgba(15, 118, 110, 0.14)',
+      color: '#3f4b4a',
     },
   },
   success: {
@@ -50,7 +50,7 @@ const VARIANTS = {
     style: {
       borderColor: 'rgba(34, 211, 238, 0.40)',
       background: 'rgba(34, 211, 238, 0.08)',
-      color: '#c9bdaa',
+      color: '#6b7574',
     },
   },
 }
@@ -113,7 +113,7 @@ export function AlertTitle({ children, className = '' }) {
 export function AlertDescription({ children, className = '' }) {
   return (
     <div className={`text-[12.5px] mt-0.5 flex flex-col gap-1 ${className}`}
-         style={{ color: '#c9bdaa' }}>
+         style={{ color: '#6b7574' }}>
       {children}
     </div>
   )
