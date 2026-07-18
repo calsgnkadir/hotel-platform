@@ -34,6 +34,22 @@ const DOC_TYPE_LABELS = {
   IDENTITY_DOCUMENT: 'Kimlik Fotokopisi',
 }
 
+/* Kariyer.net tarzi satir listesi (FAZ 22) — logo rengi + gorece tarih */
+const LOGO_COLORS = ['#1f3a5f', '#7a1f3d', '#1f5f4a', '#5a3a1f', '#2f4858', '#3a4a2f', '#5f3a2f']
+function appLogoColor(name) {
+  let h = 0; const t = name || '?'
+  for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0
+  return LOGO_COLORS[h % LOGO_COLORS.length]
+}
+function appRelative(iso) {
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
+  if (d <= 0) return 'bugün'
+  if (d === 1) return 'dün'
+  if (d < 7) return d + ' gün önce'
+  if (d < 30) return Math.floor(d / 7) + ' hafta önce'
+  return new Date(iso).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })
+}
+
 export default function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessages, onTabChange }) {
   const confirm = useConfirm()
   // Suresi gecen + tamamlanmis isler "Basvurularim"da gorunmez (Gecmis Islerim'e gider)
@@ -162,7 +178,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
       </motion.div>
 
       {filtered.length === 0 ? (
-        <div className="tier-raised p-6">
+        <div className="card p-6">
           <EmptyState
             type="applications"
             title="Bu filtrede başvuru yok"
@@ -173,294 +189,167 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           />
         </div>
       ) : (
-      /* FAZ 14.5.3 — Timeline ray: kartlar dikey raya dugumlerle bagli.
-         Tarih kapsulu karttan cikti, ray sutununa tasindi. */
-      <div className="relative">
-        {/* Dikey ray — ust/alt fade */}
-        <div aria-hidden className="absolute left-[27px] top-3 bottom-3 w-px pointer-events-none hidden sm:block"
-             style={{ background: 'linear-gradient(180deg, transparent, rgba(205, 183, 143, 0.20) 8%, rgba(205, 183, 143, 0.20) 92%, transparent)' }} />
-        <div className="space-y-3">
-        {filtered.map((app) => {
-        const sc = STATUS_CONFIG[app.status] || STATUS_CONFIG.PENDING
-        const date = new Date(app.createdAt)
-        const day = date.getDate()
-        const month = date.toLocaleDateString('tr-TR', { month: 'short' }).replace('.', '')
-        const dayName = date.toLocaleDateString('tr-TR', { weekday: 'short' }).replace('.', '')
+      /* FAZ 22 — Kariyer.net tarzi: tek beyaz kart, cizgiyle ayrilmis satirlar. */
+      <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+        {filtered.map((app, idx) => {
+          const sc = STATUS_CONFIG[app.status] || STATUS_CONFIG.PENDING
+          const isExpanded = expandedId === app.id
+          const requestedSlots = app.requestedSlots || []
+          const salaryStr = formatSalary(app.listing?.salaryMin, app.listing?.salaryMax, app.listing?.salaryType, app.listing?.tipsIncluded)
+          const slot0 = requestedSlots[0]
+          const initial = (app.listing?.businessName || '?').trim().charAt(0).toUpperCase()
+          const hasPendingDoc = (app.documentRequests || []).some(dr => dr.status === 'PENDING')
+          const hasAttention = !!app.note || hasPendingDoc
+          const metaBits = [
+            requestedSlots.length > 0 && `${requestedSlots.length} vardiya`,
+            slot0 && `${new Date(slot0.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${(slot0.startTime || '').slice(0, 5)}`,
+            salaryStr,
+          ].filter(Boolean)
 
-        // FAZ 11.W1.1 — Meta strip: slot ozeti + salary + district
-        const requestedSlots = app.requestedSlots || []
-        const salaryStr = formatSalary(
-          app.listing?.salaryMin, app.listing?.salaryMax,
-          app.listing?.salaryType, app.listing?.tipsIncluded
-        )
-        const isExpanded = expandedId === app.id
-        const hasPendingDoc = (app.documentRequests || []).some(dr => dr.status === 'PENDING')
-        const hasAttention = !!app.note || hasPendingDoc
-
-        return (
-          <div key={app.id} className="relative flex gap-3 sm:gap-4">
-            {/* RAY SUTUNU: tarih + status dugumu (desktop) */}
-            <div className="hidden sm:flex w-14 flex-shrink-0 flex-col items-center pt-3 relative z-[1]">
-              <div className="tabular-nums leading-none"
-                   style={{
-                     color: 'var(--text-headline)',
-                     fontSize: '20px',
-                     fontWeight: 600,
-                     letterSpacing: '-0.04em',
-                   }}>{day}</div>
-              <div className="type-caption" style={{ fontSize: '10px', textTransform: 'lowercase' }}>{month}</div>
-              <div className="type-overline" style={{ fontSize: '9px', letterSpacing: '0.15em' }}>{dayName}</div>
-              {/* Ray dugumu — status renkli, beyaz halka (açık zemin) */}
-              <span aria-hidden className="mt-2 w-2.5 h-2.5 rounded-full"
-                    style={{
-                      background: sc.color,
-                      boxShadow: '0 0 0 3px #fff, 0 0 0 4px var(--ah-line-2)',
-                    }} />
-            </div>
-
-          <motion.div variants={CARD}
-            whileHover={{ y: -2 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-            className="tier-raised tier-raised-hover relative overflow-hidden group cursor-pointer flex-1 min-w-0"
-            onClick={() => setExpandedId(isExpanded ? null : app.id)}>
-            {/* Sol accent rail — always visible, uniform 3px */}
-            <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
-                  style={{ background: sc.color }} />
-
-            <div className="relative p-4 pl-5 flex items-start gap-4">
-              {/* Mobil: tarih inline (ray gizli) */}
-              <div className="sm:hidden flex-shrink-0 text-center px-2 py-1.5 rounded-xl"
-                   style={{ background: 'rgba(205, 183, 143, 0.06)', border: '1px solid rgba(205, 183, 143, 0.16)', minWidth: 46 }}>
-                <div className="tabular-nums leading-none" style={{ color: 'var(--text-headline)', fontSize: '18px', fontWeight: 600 }}>{day}</div>
-                <div className="type-caption" style={{ fontSize: '9px', textTransform: 'lowercase' }}>{month}</div>
-              </div>
-
-              {/* ORTA: scannable primary line + meta chip strip */}
-              <div className="flex-1 min-w-0">
-                {/* Primary line: position · businessName (title-weight) */}
-                <div className="type-heading truncate" style={{ fontSize: '15px', lineHeight: 1.3 }}>
-                  {app.listing?.title || 'İlan'}
-                  {app.listing?.businessName && (
-                    <>
-                      <span className="mx-1.5" style={{ color: 'var(--text-faint)', fontWeight: 400 }}>·</span>
-                      <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{app.listing.businessName}</span>
-                    </>
-                  )}
-                </div>
-
-                {/* Meta chip strip: slot + salary + district */}
-                <div className="mt-1.5">
-                  <SlotChipGroup
-                    items={[
-                      requestedSlots.length > 0 && `${requestedSlots.length} vardiya`,
-                      requestedSlots[0] && `${new Date(requestedSlots[0].date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${(requestedSlots[0].startTime || '').slice(0, 5)}`,
-                      salaryStr,
-                      app.listing?.businessDistrict,
-                    ].filter(Boolean)}
-                    max={4}
-                  />
-                </div>
-              </div>
-
-              {/* SAĞ: status badge + primary action (secondary butonlar rail'e alindi) */}
-              <div className="flex flex-col items-end gap-2 flex-shrink-0"
-                   onClick={(e) => e.stopPropagation()}>
-                <StatusPill cfg={sc} />
-
-                {app.status === 'HELD' && (
-                  <div className="flex flex-col items-end gap-1.5">
-                    {app.holdDeadline && (
-                      <span className="text-[10px] font-semibold tabular-nums"
-                            style={{ color: sc.text }}>
-                        {new Date(app.holdDeadline).toLocaleString('tr-TR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
+          return (
+            <div key={app.id} style={idx > 0 ? { borderTop: '1px solid var(--ah-line)' } : undefined}>
+              {/* SATIR */}
+              <div className="flex gap-3.5 p-4 cursor-pointer transition-colors"
+                   onClick={() => setExpandedId(isExpanded ? null : app.id)}
+                   onMouseEnter={(e) => { e.currentTarget.style.background = '#f7f9f9' }}
+                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}>
+                <span className="w-12 h-12 rounded-lg flex-shrink-0 grid place-items-center font-extrabold text-[17px] text-white"
+                      style={{ background: appLogoColor(app.listing?.businessName) }}>{initial}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[15px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{app.listing?.title || 'İlan'}</div>
+                  <div className="text-[13px] truncate" style={{ color: 'var(--ah-ink-2)' }}>{app.listing?.businessName || ''}</div>
+                  <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 mt-1.5 text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
+                    {app.listing?.businessDistrict && (
+                      <span className="inline-flex items-center gap-1">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        {app.listing.businessDistrict}
                       </span>
                     )}
-                    <div className="flex gap-1.5">
-                      <SpringBtn onClick={() => handleHoldRespond(app.id, true)}
-                                 disabled={holdRespondingId === app.id}
-                                 variant="success">Onayla</SpringBtn>
-                      <SpringBtn onClick={() => handleHoldRespond(app.id, false)}
-                                 disabled={holdRespondingId === app.id}
-                                 variant="danger">Reddet</SpringBtn>
-                    </div>
+                    {metaBits.map((m, i) => <span key={i}>{m}</span>)}
                   </div>
-                )}
+                </div>
+                <div className="flex flex-col items-end gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <StatusPill cfg={sc} />
 
-                {(app.status === 'PENDING' || app.status === 'REVIEWING' || app.status === 'ACCEPTED') && (
-                  <SpringBtn onClick={() => onOpenMessages?.(app.conversationId)} variant="primary"
-                             icon={
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                   stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5">
-                                <path strokeLinecap="round" strokeLinejoin="round"
-                                      d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-                              </svg>
-                             }>Mesajlaşma</SpringBtn>
-                )}
+                  {app.status === 'HELD' && (
+                    <div className="flex flex-col items-end gap-1.5">
+                      {app.holdDeadline && (
+                        <span className="text-[10px] font-semibold tabular-nums" style={{ color: sc.text }}>
+                          {new Date(app.holdDeadline).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                      <div className="flex gap-1.5">
+                        <SpringBtn onClick={() => handleHoldRespond(app.id, true)} disabled={holdRespondingId === app.id} variant="success">Onayla</SpringBtn>
+                        <SpringBtn onClick={() => handleHoldRespond(app.id, false)} disabled={holdRespondingId === app.id} variant="danger">Reddet</SpringBtn>
+                      </div>
+                    </div>
+                  )}
 
-                {(app.status === 'PENDING' || app.status === 'REVIEWING') && (
-                  <SpringBtn onClick={() => handleWithdraw(app.id)}
-                             disabled={withdrawingId === app.id} variant="ghost-danger" small>
-                    {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal et'}
-                  </SpringBtn>
-                )}
+                  {(app.status === 'PENDING' || app.status === 'REVIEWING' || app.status === 'ACCEPTED') && (
+                    <SpringBtn onClick={() => onOpenMessages?.(app.conversationId)} variant="primary"
+                               icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>}>Mesajlaşma</SpringBtn>
+                  )}
 
-                {app.status === 'ACCEPTED' && (
-                  app.workCompleted ? (
-                    <SpringBtn onClick={() => setReviewTarget({
-                                  id: app.id,
-                                  title: app.listing?.businessName || 'İşletme',
-                                })}
-                               variant="gold" small>Puanla</SpringBtn>
-                  ) : (
-                    <span className="text-[10px] italic"
-                          title="Vardiya günü geçince puanlayabilirsiniz"
-                          style={{ color: '#928678' }}>
-                      Çalışma sonrası puanlanır
-                    </span>
-                  )
-                )}
-              </div>
-            </div>
+                  {(app.status === 'PENDING' || app.status === 'REVIEWING') && (
+                    <SpringBtn onClick={() => handleWithdraw(app.id)} disabled={withdrawingId === app.id} variant="ghost-danger" small>
+                      {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal et'}
+                    </SpringBtn>
+                  )}
 
-            {/* FAZ 11.W1.1 — Attention rail: collapsed state'de note/doc req varsa mini badge */}
-            {hasAttention && !isExpanded && (
-              <div className="relative px-5 pb-3 -mt-1 flex items-center gap-2 flex-wrap"
-                   onClick={(e) => e.stopPropagation()}>
-                {app.note && (
-                  <span className="inline-flex items-center gap-1.5 type-caption px-2 py-1 rounded-full"
-                        style={{
-                          background: 'rgba(200, 146, 58, 0.10)',
-                          border: '1px solid rgba(200, 146, 58, 0.28)',
-                          color: '#8a5e17',
-                        }}>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                    İşletme notu
-                  </span>
-                )}
-                {hasPendingDoc && (
-                  <span className="inline-flex items-center gap-1.5 type-caption px-2 py-1 rounded-full"
-                        style={{
-                          background: 'var(--ah-brand-soft)',
-                          border: '1px solid var(--ah-brand)',
-                          color: 'var(--ah-brand)',
-                        }}>
-                    {(app.documentRequests || []).filter(dr => dr.status === 'PENDING').length} belge talebi
-                  </span>
-                )}
-                <button type="button" onClick={() => setExpandedId(app.id)}
-                        className="type-caption ml-auto text-champagne-300 hover:text-ivory-100 transition-colors"
-                        style={{ fontWeight: 500 }}>
-                  Detay ▽
-                </button>
-              </div>
-            )}
+                  {app.status === 'ACCEPTED' && (
+                    app.workCompleted ? (
+                      <SpringBtn onClick={() => setReviewTarget({ id: app.id, title: app.listing?.businessName || 'İşletme' })} variant="gold" small>Puanla</SpringBtn>
+                    ) : (
+                      <span className="text-[10px] italic" title="Vardiya günü geçince puanlayabilirsiniz" style={{ color: 'var(--ah-ink-4)' }}>Çalışma sonrası puanlanır</span>
+                    )
+                  )}
 
-            {/* Collapse toggle when expanded — top-right of expanded region */}
-            {isExpanded && (
-              <div className="relative px-5 pb-1 flex justify-end"
-                   onClick={(e) => e.stopPropagation()}>
-                <button type="button" onClick={() => setExpandedId(null)}
-                        className="type-overline text-ivory-600 hover:text-champagne-300 transition-colors">
-                  Kapat ▲
-                </button>
-              </div>
-            )}
-
-            {isExpanded && app.note && (
-              <div className="relative px-5 pb-4" onClick={(e) => e.stopPropagation()}>
-                <div className="rounded-xl p-3 flex items-start gap-2"
-                     style={{
-                       background: 'rgba(200, 146, 58, 0.08)',
-                       border: '1px solid rgba(200, 146, 58, 0.22)',
-                       color: '#8a5e17',
-                     }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                       stroke="currentColor" strokeWidth={1.7} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5">
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                          d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-                  </svg>
-                  <span className="type-body"><b className="font-semibold">İşletme Notu:</b> {app.note}</span>
+                  <span className="text-[11.5px]" style={{ color: 'var(--ah-ink-4)' }}>{appRelative(app.createdAt)}</span>
                 </div>
               </div>
-            )}
 
-          {isExpanded && app.documentRequests?.length > 0 && (
-            <div className="px-4 pb-4">
-              <div className="type-overline mb-2">Belge Talepleri</div>
-              <div className="space-y-2">
-                {app.documentRequests.map(dr => {
-                  const label = DOC_TYPE_LABELS[dr.documentType] || dr.documentType
-                  const isPending = dr.status === 'PENDING'
-                  const hasUploaded = uploadedTypes.has(dr.documentType)
-                  return (
-                    <div key={dr.id}
-                      className="rounded-lg px-3 py-2.5"
-                      style={{
-                        background: isPending ? 'rgba(200, 146, 58, 0.08)' : 'rgba(205, 183, 143, 0.05)',
-                        border: `1px solid ${isPending ? 'rgba(200, 146, 58, 0.22)' : 'rgba(205, 183, 143, 0.10)'}`,
-                      }}>
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span className="type-body font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                        {!isPending && (
-                          <span className={`badge ${dr.status === 'GRANTED' ? 'badge-accepted' : 'badge-rejected'}`}>
-                            {dr.status === 'GRANTED' ? 'İzin Verdin' : 'Reddettin'}
-                          </span>
-                        )}
-                      </div>
-                      {isPending && (
-                        <>
-                          {!hasUploaded && (
-                            <div className="type-caption rounded-md px-2 py-1.5 mt-2"
-                                 style={{
-                                   background: 'rgba(200, 146, 58, 0.08)',
-                                   border: '1px solid rgba(200, 146, 58, 0.22)',
-                                   color: '#8a5e17',
-                                 }}>
-                              Bu belgeyi henüz yüklemedin. <b>Belgelerim</b> sekmesinden yükledikten sonra izin verebilirsin.
-                            </div>
-                          )}
-                          <div className="flex gap-2 mt-2">
-                            <button onClick={() => handleRespond(dr.id, true)}
-                              disabled={respondingId === dr.id || !hasUploaded}
-                              title={!hasUploaded ? 'Önce bu belgeyi yükle' : ''}
-                              className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                              style={{
-                                background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)',
-                                color: '#f5efe2',
-                                border: '1px solid rgba(122, 159, 122, 0.45)',
-                              }}>
-                              İzin Ver
-                            </button>
-                            <button onClick={() => handleRespond(dr.id, false)}
-                              disabled={respondingId === dr.id}
-                              className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-50"
-                              style={{
-                                background: 'rgba(180, 106, 85, 0.08)',
-                                color: '#d39481',
-                                border: '1px solid rgba(180, 106, 85, 0.22)',
-                              }}>
-                              Reddet
-                            </button>
+              {hasAttention && !isExpanded && (
+                <div className="px-4 pb-3 -mt-1 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                  {app.note && (
+                    <span className="inline-flex items-center gap-1.5 type-caption px-2 py-1 rounded-full"
+                          style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#8a5e17' }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                      İşletme notu
+                    </span>
+                  )}
+                  {hasPendingDoc && (
+                    <span className="inline-flex items-center gap-1.5 type-caption px-2 py-1 rounded-full"
+                          style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-brand)', color: 'var(--ah-brand)' }}>
+                      {(app.documentRequests || []).filter(dr => dr.status === 'PENDING').length} belge talebi
+                    </span>
+                  )}
+                  <button type="button" onClick={() => setExpandedId(app.id)} className="type-caption ml-auto" style={{ fontWeight: 600, color: 'var(--ah-brand)' }}>Detay ▽</button>
+                </div>
+              )}
+
+              {isExpanded && (
+                <div className="px-4 pb-1 flex justify-end" onClick={(e) => e.stopPropagation()}>
+                  <button type="button" onClick={() => setExpandedId(null)} className="type-overline" style={{ color: 'var(--ah-ink-3)' }}>Kapat ▲</button>
+                </div>
+              )}
+
+              {isExpanded && app.note && (
+                <div className="px-4 pb-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#8a5e17' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>
+                    <span className="type-body"><b className="font-semibold">İşletme Notu:</b> {app.note}</span>
+                  </div>
+                </div>
+              )}
+
+              {isExpanded && app.documentRequests?.length > 0 && (
+                <div className="px-4 pb-4">
+                  <div className="type-overline mb-2">Belge Talepleri</div>
+                  <div className="space-y-2">
+                    {app.documentRequests.map(dr => {
+                      const label = DOC_TYPE_LABELS[dr.documentType] || dr.documentType
+                      const isPending = dr.status === 'PENDING'
+                      const hasUploaded = uploadedTypes.has(dr.documentType)
+                      return (
+                        <div key={dr.id} className="rounded-lg px-3 py-2.5"
+                          style={{ background: isPending ? 'var(--ah-warn-soft)' : '#f4f6f6', border: `1px solid ${isPending ? 'var(--ah-warn)' : 'var(--ah-line)'}` }}>
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="type-body font-medium" style={{ color: 'var(--ah-ink-2)' }}>{label}</span>
+                            {!isPending && (
+                              <span className={`badge ${dr.status === 'GRANTED' ? 'badge-accepted' : 'badge-rejected'}`}>{dr.status === 'GRANTED' ? 'İzin Verdin' : 'Reddettin'}</span>
+                            )}
                           </div>
-                        </>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
+                          {isPending && (
+                            <>
+                              {!hasUploaded && (
+                                <div className="type-caption rounded-md px-2 py-1.5 mt-2" style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#8a5e17' }}>
+                                  Bu belgeyi henüz yüklemedin. <b>Belgelerim</b> sekmesinden yükledikten sonra izin verebilirsin.
+                                </div>
+                              )}
+                              <div className="flex gap-2 mt-2">
+                                <button onClick={() => handleRespond(dr.id, true)} disabled={respondingId === dr.id || !hasUploaded}
+                                  title={!hasUploaded ? 'Önce bu belgeyi yükle' : ''}
+                                  className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                  style={{ background: '#0a7c42', color: '#fff', border: '1px solid #0a7c42' }}>İzin Ver</button>
+                                <button onClick={() => handleRespond(dr.id, false)} disabled={respondingId === dr.id}
+                                  className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-50"
+                                  style={{ background: '#fff', color: '#992d22', border: '1px solid var(--ah-line-2)' }}>Reddet</button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </motion.div>
-          </div>
-        )
+          )
         })}
-        </div>
       </div>
       )}
 
-      {reviewTarget && (
+{reviewTarget && (
         <ReviewModal
           applicationId={reviewTarget.id}
           title={reviewTarget.title}
