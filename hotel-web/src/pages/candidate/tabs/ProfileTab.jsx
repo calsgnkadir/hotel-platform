@@ -162,322 +162,280 @@ export default function ProfileTab() {
   )
 
   return (
-    <div className="ah-surface space-y-4 max-w-[1400px] mx-auto">
-      {/* Dalga G3 — shadcn Alert uyarlamasi: kaydet sonrasi inline geri bildirim */}
+    <div className="ah-surface max-w-[1400px] mx-auto">
       {savedAt && (
         <Alert variant="success" title="Profil güncellendi">
           Değişiklikler kaydedildi — işverenler artık güncel bilgilerinizi görür.
         </Alert>
       )}
 
-      {/* Dalga H2 — Is ariyorum toggle (LinkedIn Open to Work).
-          Form disinda inline kaydeder — toggle->API->state */}
-      <div className="card p-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-               style={{
-                 background: form.isAvailable
-                   ? 'rgba(122, 159, 122, 0.12)'
-                   : 'rgba(15, 118, 110, 0.06)',
-                 border: `1px solid ${form.isAvailable ? 'rgba(122, 159, 122, 0.35)' : 'rgba(15, 118, 110, 0.10)'}`,
-               }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                 stroke={form.isAvailable ? '#a8c8a8' : '#98a1a0'}
-                 strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="2" y="7" width="20" height="14" rx="2" />
-              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-            </svg>
-          </div>
-          <div className="min-w-0">
-            <p className="text-base tracking-[0.15em] uppercase"
-               style={{ color: form.isAvailable ? '#a8c8a8' : '#6b7574' }}>
-              {form.isAvailable ? 'İş Arıyorum' : 'Şu anda iş aramıyorum'}
+      {/* FAZ 23 — Kariyer.net hesabim duzeni: sol profil rayi + sag icerik kartlari */}
+      <div className="grid lg:grid-cols-[320px_1fr] gap-4 items-start mt-4">
+
+        {/* ================= SOL RAIL ================= */}
+        <div className="space-y-4 lg:sticky lg:top-4">
+          {/* Profil ozeti */}
+          <div className="card p-6 flex flex-col items-center text-center">
+            <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden mb-4 relative"
+                 style={{ background: 'rgba(15, 118, 110, 0.08)', border: '2px solid rgba(15, 118, 110, 0.22)' }}>
+              {profile?.avatarUrl ? (
+                <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
+                     loading="lazy" decoding="async" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-4xl font-semibold" style={{ color: '#0f766e' }}>
+                  {(profile?.fullName || 'A').charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <h2 className="text-lg font-bold" style={{ color: 'var(--ah-ink)' }}>
+              {profile?.fullName || 'Aday'}
+            </h2>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
+              {profile?.email || ''}
             </p>
-            <p className="text-[12px] mt-0.5" style={{ color: '#98a1a0' }}>
-              {form.isAvailable
-                ? 'İşletmeler profilinde yeşil rozet görür — daha fazla teklif almak için açık tutun.'
-                : 'Aktif olduğunda işletmeler size daha fazla teklif gönderebilir.'}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={form.isAvailable}
-          onClick={() => setForm(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
-          className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors shrink-0"
-          style={{
-            background: form.isAvailable ? '#7a9f7a' : 'rgba(15, 118, 110, 0.10)',
-            border: `1px solid ${form.isAvailable ? '#16a34a' : 'rgba(15, 118, 110, 0.18)'}`,
-          }}>
-          <span className="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
-                style={{ transform: form.isAvailable ? 'translateX(22px)' : 'translateX(3px)' }} />
-        </button>
-      </div>
-      {/* UST: 3 esit sutun — Identity | Doluluk | Email durumu */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Identity card */}
-        <div className="card p-6 flex flex-col items-center text-center">
-          <div className="w-28 h-28 rounded-full flex items-center justify-center overflow-hidden mb-4 relative"
-               style={{ background: 'rgba(15, 118, 110, 0.08)', border: '2px solid rgba(15, 118, 110, 0.22)' }}>
-            {profile?.avatarUrl ? (
-              <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
-                   loading="lazy" decoding="async"
-                   className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-5xl tracking-wider"
-                    style={{ color: '#0f766e', textShadow: '0 0 16px rgba(15, 118, 110, 0.32)' }}>
-                {(profile?.fullName || 'A').charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
-          <h2 className="text-2xl tracking-wider uppercase text-white mb-1">
-            {profile?.fullName || 'Aday'}
-          </h2>
-          <p className="text-xs mb-3" style={{ color: '#6b7574' }}>
-            {profile?.email || ''}
-          </p>
-          <div className="w-full pt-3 mt-1 border-t" style={{ borderColor: 'rgba(15, 118, 110, 0.12)' }}>
-            <div className="flex items-center justify-between text-[11px]">
-              <span style={{ color: '#6b7574' }}>ÜYE OLDU</span>
-              <span className="font-semibold" style={{ color: '#3f4b4a' }}>
+            <div className="w-full pt-3 mt-3 border-t flex items-center justify-between text-[11px]"
+                 style={{ borderColor: 'var(--ah-line)' }}>
+              <span style={{ color: 'var(--ah-ink-3)' }}>ÜYE OLDU</span>
+              <span className="font-semibold" style={{ color: 'var(--ah-ink-2)' }}>
                 {profile?.createdAt
                   ? new Date(profile.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
                   : '—'}
               </span>
             </div>
           </div>
-        </div>
 
-        {/* Profil tamamlama */}
-        <ProfileCompletenessCard data={completeness} />
+          {/* Is ariyorum toggle */}
+          <div className="card p-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold" style={{ color: form.isAvailable ? '#0a7c42' : 'var(--ah-ink)' }}>
+                {form.isAvailable ? 'İş arıyorum' : 'Şu anda aramıyorum'}
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-4)' }}>
+                {form.isAvailable
+                  ? 'İşletmeler seni 3 kat daha hızlı bulsun.'
+                  : 'Aktif olduğunda daha çok teklif alırsın.'}
+              </p>
+            </div>
+            <button type="button" role="switch" aria-checked={form.isAvailable}
+              onClick={() => setForm(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
+              className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
+              style={{ background: form.isAvailable ? '#0a7c42' : 'var(--ah-line-2)' }}>
+              <span className="inline-block h-4.5 w-4.5 rounded-full bg-white transition-transform"
+                    style={{ width: 18, height: 18, transform: form.isAvailable ? 'translateX(21px)' : 'translateX(3px)' }} />
+            </button>
+          </div>
 
-        {/* Email durum kartı */}
-        <div className="card p-5 flex items-center justify-between gap-4 flex-wrap">
+          {/* Email durumu */}
+          <div className="card p-4 flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#6b7574' }}>
+              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: 'var(--ah-ink-3)' }}>
                 Email Doğrulama
               </p>
-              <p className="text-xl tracking-wider mt-1 uppercase"
-                 style={{ color: profile?.emailVerifiedAt ? '#0f766e' : '#c8923a' }}>
+              <p className="text-sm font-semibold mt-1"
+                 style={{ color: profile?.emailVerifiedAt ? '#0a7c42' : '#b7791f' }}>
                 {profile?.emailVerifiedAt ? 'Doğrulandı' : 'Beklemede'}
               </p>
             </div>
-            <span className="w-3 h-3 rounded-full"
-                  style={{
-                    background: profile?.emailVerifiedAt ? '#0f766e' : '#c8923a',
-                    boxShadow: `0 0 12px ${profile?.emailVerifiedAt ? 'rgba(15, 118, 110, 0.50)' : 'rgba(251,191,36,0.6)'}`,
-                  }} />
-        </div>
-      </div>
-
-      {/* ANA 2-SUTUN: tum form ve yan widget'lar yan yana */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid lg:grid-cols-2 gap-4 items-start">
-        {/* === SOL SUTUN === */}
-        <div className="space-y-4">
-          {reliability && <ReliabilityCard data={reliability} />}
-          <div className="card p-5">
-            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#3f4b4a' }}>Profil Fotoğrafı</h3>
-        <div className="flex items-center gap-4">
-          <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-               style={{ background: 'rgba(15, 118, 110, 0.06)', border: '2px solid rgba(15, 118, 110, 0.20)' }}>
-            {profile?.avatarUrl ? (
-              <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
-                   loading="lazy" decoding="async"
-                   className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-4xl tracking-wider" style={{ color: '#0f766e' }}>
-                {(profile?.fullName || 'A').charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
-          <div className="flex-1 space-y-2">
-            <button type="button" onClick={() => setCropOpen(true)} disabled={avatarUploading}
-              className={`block w-full px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
-                ${avatarUploading
-                  ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait'
-                  : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
-              {avatarUploading
-                ? 'Yükleniyor...'
-                : (profile?.avatarUrl ? 'Fotoyu Değiştir' : 'Foto Yükle')}
-            </button>
-            <AvatarCropModal open={cropOpen} onClose={() => setCropOpen(false)} onConfirm={handleCroppedAvatar} />
-            {profile?.avatarUrl && (
-              <button type="button" onClick={handleAvatarDelete}
-                className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">
-                Fotoyu Kaldır
-              </button>
-            )}
-            <p className="text-xs text-ink-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
-          </div>
-        </div>
-          </div>
-        <div className="card p-5 space-y-4">
-          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Temel Bilgiler</h3>
-
-          <div>
-            <label className="label">Ad Soyad *</label>
-            <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="input" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="label">E-posta <span className="text-ink-400 font-normal">(değiştirilemez)</span></label>
-              <input type="email" value={profile?.email || ''} disabled
-                className="input bg-cream-50 text-ink-500 cursor-not-allowed" />
-            </div>
-            <div>
-              <label className="label">Telefon</label>
-              <input type="tel" name="phone" value={form.phone} maxLength={14}
-                onChange={e => setForm(prev => ({ ...prev, phone: formatTurkeyPhoneInput(e.target.value) }))}
-                className="input" placeholder="0555 123 45 67" />
-            </div>
-          </div>
-
-          <DistrictNeighborhoodSelect
-            district={form.district}
-            neighborhood={form.neighborhood}
-            onChange={({ district, neighborhood }) =>
-              setForm(prev => ({ ...prev, district, neighborhood }))
-            } />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="label">Doğum Tarihi <span className="text-ink-400 font-normal text-[10px]">(16-65 yaş)</span></label>
-              <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange}
-                {...birthDateBounds()} className="input" />
-            </div>
-            <div>
-              <label className="label">Cinsiyet</label>
-              <select name="gender" value={form.gender} onChange={handleChange} className="input">
-                <option value="">Belirtmedim</option>
-                {Object.entries(GENDER_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
+            <span className="w-2.5 h-2.5 rounded-full"
+                  style={{ background: profile?.emailVerifiedAt ? '#0a7c42' : '#b7791f' }} />
           </div>
         </div>
 
-        {/* SOL: Ilgilendigin Ilceler (uzayan otomatik tamamlama) */}
-        <div className="card p-5 space-y-3">
-          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin İlçeler</h3>
-          <p className="text-xs" style={{ color: '#6b7574' }}>
-            Bu ilçelerde yeni ilan açıldığında otomatik bildirim alırsın.
-          </p>
-          <DistrictAutocomplete
-            selected={form.preferredDistricts}
-            onToggle={(d) => toggleSetField('preferredDistricts', d)}
-          />
-          <p className="text-xs text-ink-400">{form.preferredDistricts.length} ilçe seçili</p>
-        </div>
-        </div>  {/* SOL SUTUN kapanis */}
+        {/* ================= SAG KOLON ================= */}
+        <div className="space-y-4 min-w-0">
+          {/* Profil gucu / tamamlanma en ustte */}
+          <ProfileCompletenessCard data={completeness} />
 
-        {/* === SAG SUTUN === */}
-        <div className="space-y-4">
-          <AvailabilityBlocksEditor />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {reliability && <ReliabilityCard data={reliability} />}
 
-          {/* Egitim + Ehliyet */}
-        <div className="card p-5 space-y-4">
-          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Eğitim & Ek</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="label">Eğitim Durumu</label>
-              <select name="education" value={form.education} onChange={handleChange} className="input">
-                <option value="">Seçin</option>
-                {Object.entries(EDUCATION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">Ehliyet</label>
-              <select value={triValue(form.hasLicense)} onChange={e => setTriState('hasLicense', e.target.value)} className="input">
-                <option value="unknown">Belirtmedim</option>
-                <option value="yes">Var</option>
-                <option value="no">Yok</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-5 space-y-4">
-          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İş Tercihleri</h3>
-
-          <div>
-            <label className="label">Müsaitlik Türü <span className="text-ink-400 font-normal">(birden fazla seçebilirsin)</span></label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {Object.entries(AVAILABILITY_LABELS).map(([key, label]) => {
-                const active = form.availabilityTypes.includes(key)
-                return (
-                  <button key={key} type="button" onClick={() => toggleSetField('availabilityTypes', key)}
-                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all
-                      ${active
-                        ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 shadow-sm'
-                        : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                    {label}
+            {/* Fotograf */}
+            <div className="card p-5">
+              <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--ah-ink-2)' }}>Profil Fotoğrafı</h3>
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                     style={{ background: 'rgba(15, 118, 110, 0.06)', border: '2px solid rgba(15, 118, 110, 0.20)' }}>
+                  {profile?.avatarUrl ? (
+                    <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
+                         loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-4xl tracking-wider" style={{ color: '#0f766e' }}>
+                      {(profile?.fullName || 'A').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <button type="button" onClick={() => setCropOpen(true)} disabled={avatarUploading}
+                    className={`block w-full px-4 py-2 text-sm font-medium rounded-lg cursor-pointer text-center transition-colors
+                      ${avatarUploading
+                        ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-500 cursor-wait'
+                        : 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700 hover:bg-brand-200 dark:hover:bg-brand-900/60'}`}>
+                    {avatarUploading ? 'Yükleniyor...' : (profile?.avatarUrl ? 'Fotoyu Değiştir' : 'Foto Yükle')}
                   </button>
-                )
-              })}
+                  <AvatarCropModal open={cropOpen} onClose={() => setCropOpen(false)} onConfirm={handleCroppedAvatar} />
+                  {profile?.avatarUrl && (
+                    <button type="button" onClick={handleAvatarDelete}
+                      className="block w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors">
+                      Fotoyu Kaldır
+                    </button>
+                  )}
+                  <p className="text-xs text-ink-400">Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400x400 olarak kaydedilir</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Temel Bilgiler */}
+            <div className="card p-5 space-y-4">
+              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
+                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Temel Bilgiler</h3>
+              <div>
+                <label className="label">Ad Soyad *</label>
+                <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="input" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="label">E-posta <span className="text-ink-400 font-normal">(değiştirilemez)</span></label>
+                  <input type="email" value={profile?.email || ''} disabled
+                    className="input bg-cream-50 text-ink-500 cursor-not-allowed" />
+                </div>
+                <div>
+                  <label className="label">Telefon</label>
+                  <input type="tel" name="phone" value={form.phone} maxLength={14}
+                    onChange={e => setForm(prev => ({ ...prev, phone: formatTurkeyPhoneInput(e.target.value) }))}
+                    className="input" placeholder="0555 123 45 67" />
+                </div>
+              </div>
+              <DistrictNeighborhoodSelect
+                district={form.district}
+                neighborhood={form.neighborhood}
+                onChange={({ district, neighborhood }) => setForm(prev => ({ ...prev, district, neighborhood }))} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Doğum Tarihi <span className="text-ink-400 font-normal text-[10px]">(16-65 yaş)</span></label>
+                  <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange} {...birthDateBounds()} className="input" />
+                </div>
+                <div>
+                  <label className="label">Cinsiyet</label>
+                  <select name="gender" value={form.gender} onChange={handleChange} className="input">
+                    <option value="">Belirtmedim</option>
+                    {Object.entries(GENDER_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Ilgilendigin Ilceler */}
+            <div className="card p-5 space-y-3">
+              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
+                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin İlçeler</h3>
+              <p className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>
+                Bu ilçelerde yeni ilan açıldığında otomatik bildirim alırsın.
+              </p>
+              <DistrictAutocomplete selected={form.preferredDistricts} onToggle={(d) => toggleSetField('preferredDistricts', d)} />
+              <p className="text-xs text-ink-400">{form.preferredDistricts.length} ilçe seçili</p>
+            </div>
+
+            {/* Musaitlik */}
+            <AvailabilityBlocksEditor />
+
+            {/* Egitim & Ek */}
+            <div className="card p-5 space-y-4">
+              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
+                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Eğitim & Ek</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Eğitim Durumu</label>
+                  <select name="education" value={form.education} onChange={handleChange} className="input">
+                    <option value="">Seçin</option>
+                    {Object.entries(EDUCATION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Ehliyet</label>
+                  <select value={triValue(form.hasLicense)} onChange={e => setTriState('hasLicense', e.target.value)} className="input">
+                    <option value="unknown">Belirtmedim</option>
+                    <option value="yes">Var</option>
+                    <option value="no">Yok</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Is Tercihleri */}
+            <div className="card p-5 space-y-4">
+              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
+                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İş Tercihleri</h3>
+              <div>
+                <label className="label">Müsaitlik Türü <span className="text-ink-400 font-normal">(birden fazla seçebilirsin)</span></label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {Object.entries(AVAILABILITY_LABELS).map(([key, label]) => {
+                    const active = form.availabilityTypes.includes(key)
+                    return (
+                      <button key={key} type="button" onClick={() => toggleSetField('availabilityTypes', key)}
+                        className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all
+                          ${active
+                            ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 shadow-sm'
+                            : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className="label">Önceki Deneyim <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
+                <textarea name="previousExperience" value={form.previousExperience} onChange={handleChange}
+                  className="input resize-none h-24 text-sm"
+                  placeholder="Daha önce çalıştığın yerler, pozisyonlar, kazandığın deneyimler..." />
+              </div>
+            </div>
+
+            {/* Ilgilendigin Pozisyonlar */}
+            <div className="card p-5 space-y-3">
+              <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
+                  style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin Pozisyonlar</h3>
+              <p className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>
+                Bu pozisyonlarda yeni ilan açıldığında otomatik bildirim alırsın.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {Object.entries(POSITION_LABELS).map(([value, label]) => {
+                  const active = form.preferredPositions.includes(value)
+                  return (
+                    <label key={value}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
+                        ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
+                      <input type="checkbox" checked={active} onChange={() => toggleSetField('preferredPositions', value)} className="w-4 h-4 accent-brand-700" />
+                      {label}
+                    </label>
+                  )
+                })}
+              </div>
+              <p className="text-xs text-ink-400">{form.preferredPositions.length} pozisyon seçili</p>
+            </div>
+
+            <div className="flex justify-end">
+              <button type="submit" disabled={saving}
+                className="px-6 py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
+                style={{ background: '#0f766e', color: '#ffffff' }}>
+                {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+              </button>
+            </div>
+          </form>
+
+          {/* Belgeler + sifre/gdpr */}
+          <div className="grid lg:grid-cols-2 gap-4 items-start">
+            <DocumentsTab />
+            <div className="space-y-4">
+              <ChangePasswordCard />
+              <GdprCard />
             </div>
           </div>
-
-          <div>
-            <label className="label">Önceki Deneyim <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-            <textarea name="previousExperience" value={form.previousExperience} onChange={handleChange}
-              className="input resize-none h-24 text-sm"
-              placeholder="Daha önce çalıştığın yerler, pozisyonlar, kazandığın deneyimler..." />
-          </div>
-        </div>
-
-        {/* SAG: Ilgilendigin Pozisyonlar */}
-        <div className="card p-5 space-y-3">
-          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>İlgilendiğin Pozisyonlar</h3>
-          <p className="text-xs" style={{ color: '#6b7574' }}>
-            Bu pozisyonlarda yeni ilan acildiginda otomatik bildirim alirsin.
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {Object.entries(POSITION_LABELS).map(([value, label]) => {
-              const active = form.preferredPositions.includes(value)
-              return (
-                <label key={value}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
-                    ${active ? 'border-brand-500 dark:border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 font-medium' : 'border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                  <input type="checkbox" checked={active}
-                    onChange={() => toggleSetField('preferredPositions', value)}
-                    className="w-4 h-4 accent-brand-700" />
-                  {label}
-                </label>
-              )
-            })}
-          </div>
-          <p className="text-xs text-ink-400">{form.preferredPositions.length} pozisyon seçili</p>
-        </div>
-        </div>  {/* SAG SUTUN kapanis */}
-      </div>  {/* 2-SUTUN GRID kapanis */}
-
-        <div className="flex justify-end">
-          <button type="submit" disabled={saving}
-            className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)', color: '#ffffff', boxShadow: '0 12px 28px rgba(15, 118, 110, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)' }}>
-            {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-          </button>
-        </div>
-      </form>
-
-      {/* Belgelerim sol, Sifre+GDPR sag — yatay full dolu */}
-      <div className="grid lg:grid-cols-2 gap-4 items-start">
-        <DocumentsTab />
-        <div className="space-y-4">
-          <ChangePasswordCard />
-          <GdprCard />
         </div>
       </div>
     </div>
   )
 }
+
 
 /* Aranabilir ilce secimi — "ba" yazinca Bagcilar/Basaksehir filtrelenir
    diakritik-insensitive arama, checkbox-style multi-select chip listesi */
