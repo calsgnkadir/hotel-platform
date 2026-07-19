@@ -10,7 +10,6 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import cldImg, { ImgSize } from '../../lib/cldImg'
 import { SkeletonConversationList } from '../Skeleton'
-import { useOnline } from '../../lib/presence'
 import { formatRelative } from './utils'
 
 /* ── Arama kutusu (focus'ta champagne glow ring) ── */
@@ -57,7 +56,6 @@ function SearchInput({ value, onChange }) {
 
 /* ── Tek sohbet ogesi ── */
 function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) {
-  const online = useOnline(conv.otherPartyId)
   const hasUnread = conv.unreadCount > 0
   return (
     <motion.div onClick={onClick}
@@ -102,16 +100,6 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
                  }}>
               {(conv.otherPartyName || '?').charAt(0).toUpperCase()}
             </div>
-          )}
-          {/* Online pulse */}
-          {online && (
-            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full"
-                  style={{
-                    background: '#7a9f7a',
-                    border: '2px solid rgba(255, 255, 255, 0.95)',
-                    boxShadow: '0 0 0 2px rgba(122, 159, 122, 0.30)',
-                    animation: 'conv-pulse 2.4s ease-in-out infinite',
-                  }} title="Çevrimiçi" />
           )}
         </div>
 

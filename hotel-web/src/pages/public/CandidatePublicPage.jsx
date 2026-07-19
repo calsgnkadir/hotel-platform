@@ -39,7 +39,7 @@ export default function CandidatePublicPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white relative z-10">
+      <div className="min-h-screen flex items-center justify-center text-white relative z-10 legacy-dark">
         <div className="spinner" />
       </div>
     )
@@ -64,7 +64,7 @@ export default function CandidatePublicPage() {
       ? 'Backend uygulamasına bağlanılamadı. Spring Boot çalışıyor mu?'
       : `HTTP ${status} — ${error?.response?.data?.message || 'Beklenmedik hata'}`
     return (
-      <div className="min-h-screen flex items-center justify-center text-white relative z-10">
+      <div className="min-h-screen flex items-center justify-center text-white relative z-10 legacy-dark">
         <div className="card max-w-md text-center p-8">
           <h2 className="text-xl font-bold mb-2">{title}</h2>
           <p className="text-sm opacity-80 mb-4">{msg}</p>
@@ -92,7 +92,7 @@ export default function CandidatePublicPage() {
     : '—'
 
   return (
-    <div className="min-h-screen text-white relative z-10">
+    <div className="min-h-screen text-white relative z-10 legacy-dark">
       {/* Top bar */}
       <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 backdrop-blur-lg border-b border-hairline"
               style={{ background: 'rgba(19, 17, 15, 0.85)' }}>

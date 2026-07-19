@@ -3,6 +3,10 @@
  *
  * Eskiden modal: ListingsPage içinde DetailModal pop-up.
  * Yeni: /listings/:id route — SEO friendly, paylaşılabilir, geri tuşuyla kapanır.
+ *
+ * FAZ 26 — Acik + teal sisteme gecirildi (kullanici istegi). Eski koyu grafit
+ * + altin tema (glow blob'lar, sampanya renkler) birakildi. Kok .ah-surface
+ * ile sarildi (bu sayfa DashboardLayout disinda oldugu icin otomatik almiyordu).
  */
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -66,7 +70,7 @@ export default function ListingDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen text-white relative z-10">
+      <div className="min-h-screen ah-surface relative z-10" style={{ background: 'var(--ah-page)' }}>
         <SkeletonDetail />
       </div>
     )
@@ -74,17 +78,14 @@ export default function ListingDetailPage() {
 
   if (error || !listing) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white relative z-10">
+      <div className="min-h-screen ah-surface relative z-10 flex items-center justify-center"
+           style={{ background: 'var(--ah-page)', color: 'var(--ah-ink-2)' }}>
         <div className="card max-w-md text-center p-8">
-          <h2 className="text-xl font-bold mb-2">İlan bulunamadı</h2>
-          <p className="text-sm opacity-80 mb-4">Bu ilan kaldırılmış veya yayında değil olabilir.</p>
+          <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--ah-ink)' }}>İlan bulunamadı</h2>
+          <p className="text-sm mb-4" style={{ color: 'var(--ah-ink-3)' }}>Bu ilan kaldırılmış veya yayında değil olabilir.</p>
           <button onClick={() => navigate(-1)}
-            className="px-5 py-2.5 rounded-2xl font-semibold transition-all hover:-translate-y-0.5"
-            style={{
-              background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-              color: '#1a1208',
-              boxShadow: '0 10px 24px rgba(205, 183, 143, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)',
-            }}>
+            className="px-5 py-2.5 rounded-xl font-semibold transition-opacity hover:opacity-90"
+            style={{ background: '#0f766e', color: '#ffffff' }}>
             Geri Dön
           </button>
         </div>
@@ -122,30 +123,30 @@ export default function ListingDetailPage() {
     setApplyOpen(true)  // ApplyModal direkt aç
   }
 
+  const SEC_HEAD = { fontSize: '13px', fontWeight: 600, letterSpacing: '0.02em', color: 'var(--ah-ink)' }
+  const LABEL = { fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.16em', fontWeight: 600, color: 'var(--ah-ink-4)' }
+
   return (
-    <div className="min-h-screen text-white relative z-10">
+    <div className="min-h-screen ah-surface relative z-10" style={{ background: 'var(--ah-page)', color: 'var(--ah-ink-2)' }}>
       {/* Top bar — geri butonu + breadcrumb */}
-      <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 backdrop-blur-lg"
-              style={{
-                background: 'rgba(19, 17, 15, 0.72)',
-                borderBottom: '1px solid rgba(205, 183, 143, 0.08)',
-              }}>
+      <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 border-b"
+              style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
         <div className="flex items-center gap-3">
           <button onClick={handleBack}
-            className="p-2 rounded-2xl transition-colors"
-            style={{ color: '#c9bdaa' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(205, 183, 143, 0.06)'; e.currentTarget.style.color = '#ede4d3' }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#c9bdaa' }}
+            className="p-2 rounded-lg transition-colors"
+            style={{ color: 'var(--ah-ink-3)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--ah-page)'; e.currentTarget.style.color = 'var(--ah-ink)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ah-ink-3)' }}
             title="Geri">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                  strokeWidth={2} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
           </button>
-          <div className="text-xs truncate" style={{ color: '#928678' }}>
-            <Link to="/candidate" className="transition-colors hover:text-[color:#cdb78f]" style={{ color: '#c9bdaa' }}>İlanlar</Link>
-            <span className="mx-1.5" style={{ color: '#6b6358' }}>/</span>
-            <span className="font-medium" style={{ color: '#ede4d3' }}>{listing.title}</span>
+          <div className="text-xs truncate" style={{ color: 'var(--ah-ink-3)' }}>
+            <Link to="/candidate" className="transition-colors hover:underline" style={{ color: 'var(--ah-brand)' }}>İlanlar</Link>
+            <span className="mx-1.5" style={{ color: 'var(--ah-ink-4)' }}>/</span>
+            <span className="font-medium" style={{ color: 'var(--ah-ink)' }}>{listing.title}</span>
           </div>
         </div>
       </header>
@@ -153,52 +154,27 @@ export default function ListingDetailPage() {
       <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
         <div className="xl:grid xl:grid-cols-[1fr_340px] xl:gap-5 space-y-5 xl:space-y-0">
         <div className="space-y-5 min-w-0">
-        {/* HERO — graphite + champagne wash, editorial monogram */}
+        {/* HERO — sade acik band + teal monogram */}
         <div className="card !p-0 overflow-hidden">
-          <div className="relative h-56 w-full flex items-center justify-center overflow-hidden"
-               style={{
-                 background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 50%, #1b1815 100%)',
-               }}>
-            {/* Champagne blob — top right */}
-            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full opacity-50"
-                 style={{ background: 'radial-gradient(circle, rgba(205, 183, 143, 0.40) 0%, transparent 65%)', filter: 'blur(40px)' }} />
-            {/* Deep champagne blob — bottom left */}
-            <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full opacity-30"
-                 style={{ background: 'radial-gradient(circle, rgba(184, 144, 45, 0.50) 0%, transparent 65%)', filter: 'blur(36px)' }} />
-            {/* Subtle paper-grain wash */}
-            <div className="absolute inset-0 opacity-[0.08] pointer-events-none"
-                 style={{ background: 'repeating-linear-gradient(45deg, rgba(205,183,143,0.10) 0 1px, transparent 1px 8px)' }} />
-
-            {/* Editorial monogram — Syne, large, ivory + champagne drop-shadow */}
+          <div className="relative h-48 w-full flex items-center justify-center"
+               style={{ background: 'var(--ah-brand-soft)', borderBottom: '1px solid var(--ah-line)' }}>
             <div className="relative z-10"
-                 style={{
-                   fontSize: '7rem',
-                   fontWeight: 700,
-                   color: '#f5efe2',
-                   letterSpacing: '-0.04em',
-                   lineHeight: 1,
-                   filter: 'drop-shadow(0 8px 32px rgba(205, 183, 143, 0.30))',
-                 }}>
+                 style={{ fontSize: '6rem', fontWeight: 700, color: 'var(--ah-brand)', letterSpacing: '-0.04em', lineHeight: 1 }}>
               {businessLetter}
             </div>
-
-            <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-[0.22em] px-3 py-1.5 rounded-full backdrop-blur-md"
-                  style={{
-                    background: 'rgba(205, 183, 143, 0.12)',
-                    color: '#cdb78f',
-                    border: '1px solid rgba(205, 183, 143, 0.32)',
-                  }}>
+            <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-[0.16em] px-3 py-1.5 rounded-full"
+                  style={{ background: 'var(--ah-card)', color: 'var(--ah-brand)', border: '1px solid var(--ah-line)' }}>
               {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
             </span>
           </div>
 
           <div className="p-6">
             <h1 className="text-2xl sm:text-[28px] font-semibold leading-tight"
-                style={{ color: '#f5efe2', letterSpacing: '-0.025em' }}>
+                style={{ color: 'var(--ah-ink)', letterSpacing: '-0.025em' }}>
               {listing.title}
             </h1>
             <div className="flex items-center gap-2 flex-wrap mt-2">
-              <p className="text-base" style={{ color: '#cdb78f' }}>{listing.businessName}</p>
+              <p className="text-base" style={{ color: 'var(--ah-ink-3)' }}>{listing.businessName}</p>
               {listing.businessReviewCount > 0 && (
                 <StarRating value={listing.businessAverageRating}
                   count={listing.businessReviewCount} size="sm" />
@@ -223,9 +199,9 @@ export default function ListingDetailPage() {
             ...(salary ? [{ label: 'Ücret', value: salary }] : []),
           ].map(s => (
             <div key={s.label} className="card !p-3 text-center">
-              <div className="text-[10px] uppercase tracking-[0.22em] font-medium" style={{ color: '#928678' }}>{s.label}</div>
-              <div className="text-sm font-semibold mt-1" style={{ color: '#f5efe2', letterSpacing: '-0.005em' }}>{s.value}</div>
-              {s.sub && <div className="text-[10px] mt-0.5" style={{ color: '#6b6358' }}>{s.sub}</div>}
+              <div style={LABEL}>{s.label}</div>
+              <div className="text-sm font-semibold mt-1" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.005em' }}>{s.value}</div>
+              {s.sub && <div className="text-[10px] mt-0.5" style={{ color: 'var(--ah-ink-4)' }}>{s.sub}</div>}
             </div>
           ))}
         </div>
@@ -234,16 +210,16 @@ export default function ListingDetailPage() {
         {benchmark && benchmark.count > 0 && benchmark.avgMin && (
           <div className="card !p-4 flex items-center gap-3">
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.22em] font-medium mb-1" style={{ color: '#928678' }}>
+              <div className="mb-1" style={LABEL}>
                 İstanbul {POSITION_LABELS[listing.position] || listing.position} ortalaması
               </div>
               <div className="text-base font-semibold tabular-nums"
-                   style={{ color: '#cdb78f', letterSpacing: '-0.01em' }}>
+                   style={{ color: 'var(--ah-brand)', letterSpacing: '-0.01em' }}>
                 {Number(benchmark.avgMin).toLocaleString('tr-TR')}₺
                 {benchmark.avgMax && Number(benchmark.avgMax) !== Number(benchmark.avgMin) &&
                   ` – ${Number(benchmark.avgMax).toLocaleString('tr-TR')}₺`}
               </div>
-              <div className="text-[11px] mt-0.5" style={{ color: '#928678' }}>
+              <div className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
                 {benchmark.count} aktif ilan baz alındı
                 {listing.salaryMin && benchmark.avgMin &&
                   ` · Bu ilan ${Number(listing.salaryMin) >= Number(benchmark.avgMin) ? 'ortalamanın üzerinde' : 'ortalamanın altında'}`}
@@ -254,16 +230,16 @@ export default function ListingDetailPage() {
 
         {/* Açıklama */}
         <div className="card p-6">
-          <h3 className="text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Açıklama</h3>
-          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#ede4d3' }}>
+          <h3 className="mb-3" style={SEC_HEAD}>Açıklama</h3>
+          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
             {listing.description || 'Açıklama eklenmemiş.'}
           </p>
         </div>
 
         {listing.requirements && (
           <div className="card p-6">
-            <h3 className="text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Gereksinimler</h3>
-            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#ede4d3' }}>
+            <h3 className="mb-3" style={SEC_HEAD}>Gereksinimler</h3>
+            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
               {listing.requirements}
             </p>
           </div>
@@ -271,8 +247,8 @@ export default function ListingDetailPage() {
 
         {hasDates && (
           <div className="card p-6">
-            <h3 className="text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>Kontrat Dönemi</h3>
-            <p className="text-sm" style={{ color: '#ede4d3' }}>
+            <h3 className="mb-3" style={SEC_HEAD}>Kontrat Dönemi</h3>
+            <p className="text-sm" style={{ color: 'var(--ah-ink-2)' }}>
               {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
               {listing.startDate && listing.endDate && ' — '}
               {listing.endDate && new Date(listing.endDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -283,7 +259,7 @@ export default function ListingDetailPage() {
         {/* Vardiyalar */}
         {slots.length > 0 && (
           <div className="card p-6">
-            <h3 className="text-[13px] font-semibold uppercase tracking-[0.22em] mb-3" style={{ color: '#cdb78f' }}>
+            <h3 className="mb-3" style={SEC_HEAD}>
               Vardiyalar ({slots.length})
             </h3>
             <div className="space-y-1.5">
@@ -296,18 +272,18 @@ export default function ListingDetailPage() {
                   <div key={s.id}
                     className="flex items-center justify-between rounded-xl px-3 py-2.5"
                     style={{
-                      background: full ? 'rgba(255, 255, 255, 0.55)' : 'rgba(205, 183, 143, 0.06)',
-                      border: `1px solid ${full ? 'rgba(146, 134, 120, 0.10)' : 'rgba(205, 183, 143, 0.16)'}`,
-                      opacity: full ? 0.55 : 1,
+                      background: full ? 'var(--ah-page)' : 'var(--ah-brand-soft)',
+                      border: '1px solid var(--ah-line)',
+                      opacity: full ? 0.7 : 1,
                     }}>
                     <div className="text-sm">
-                      <span className="font-semibold" style={{ color: '#ede4d3' }}>{dateLabel}</span>
-                      <span className="ml-2 tabular-nums" style={{ color: '#cdb78f' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
+                      <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>{dateLabel}</span>
+                      <span className="ml-2 tabular-nums" style={{ color: 'var(--ah-brand)' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
                     </div>
                     <span className="text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full"
                           style={full
-                            ? { background: 'rgba(180, 106, 85, 0.14)', color: '#d39481', border: '1px solid rgba(180, 106, 85, 0.32)' }
-                            : { background: 'rgba(122, 159, 122, 0.14)', color: '#a8c8a8', border: '1px solid rgba(122, 159, 122, 0.32)' }}>
+                            ? { background: 'rgba(192, 57, 43, 0.10)', color: 'var(--ah-danger)', border: '1px solid rgba(192, 57, 43, 0.28)' }
+                            : { background: 'rgba(10, 124, 66, 0.10)', color: 'var(--ah-ok)', border: '1px solid rgba(10, 124, 66, 0.28)' }}>
                       {full ? 'DOLU' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
                     </span>
                   </div>
@@ -321,26 +297,15 @@ export default function ListingDetailPage() {
 
         {/* === SAG KOLON: Basvur Card + Konum + Isletme bilgileri === */}
         <aside className="space-y-4">
-          {/* Başvur Card — sole bright-gold CTA on this page */}
+          {/* Başvur Card */}
           <div className="card p-6">
-            <div className="text-[10px] uppercase tracking-[0.22em] font-medium mb-2"
-                 style={{ color: '#928678' }}>
-              ÜCRET
-            </div>
+            <div className="mb-2" style={LABEL}>ÜCRET</div>
             <div className="mb-4 tabular-nums"
-                 style={{
-                   color: '#f5efe2',
-                   fontSize: '32px',
-                   fontWeight: 600,
-                   letterSpacing: '-0.03em',
-                   lineHeight: 1,
-                   filter: 'drop-shadow(0 0 16px rgba(205, 183, 143, 0.30))',
-                 }}>
+                 style={{ color: 'var(--ah-ink)', fontSize: '30px', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
               {salary || '—'}
             </div>
 
-            <div className="space-y-2 mb-5 pb-5"
-                 style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.10)' }}>
+            <div className="space-y-2 mb-5 pb-5" style={{ borderBottom: '1px solid var(--ah-line)' }}>
               <DetailRow label="Pozisyon" value={POSITION_LABELS[listing.position] || listing.position} />
               <DetailRow label="İlçe"     value={listing.businessDistrict || '—'} />
               {shift && <DetailRow label="Vardiya" value={shift.label} sub={shift.time} />}
@@ -350,24 +315,15 @@ export default function ListingDetailPage() {
             <button
               onClick={handleApply}
               disabled={!hasFuture || applying}
-              className="w-full py-3.5 text-[14px] font-semibold uppercase tracking-[0.14em] rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
+              className="w-full py-3.5 text-[14px] font-semibold rounded-xl transition-all disabled:cursor-not-allowed hover:opacity-90"
               style={hasFuture
-                ? {
-                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-                    color: '#1a1208',
-                    boxShadow: '0 14px 36px rgba(205, 183, 143, 0.30), inset 0 1px 0 rgba(255,255,255,0.28)',
-                  }
-                : {
-                    background: 'rgba(146, 134, 120, 0.12)',
-                    color: '#928678',
-                    border: '1px solid rgba(146, 134, 120, 0.22)',
-                  }}>
+                ? { background: '#0f766e', color: '#ffffff' }
+                : { background: 'var(--ah-page)', color: 'var(--ah-ink-4)', border: '1px solid var(--ah-line)' }}>
               {hasFuture ? 'Bu İlana Başvur' : 'Süresi Doldu'}
             </button>
 
             {hasFuture && (
-              <p className="text-[11px] text-center mt-3"
-                 style={{ color: '#6b6358' }}>
+              <p className="text-[11px] text-center mt-3" style={{ color: 'var(--ah-ink-4)' }}>
                 Başvurmak 30 saniye sürer
               </p>
             )}
@@ -376,7 +332,7 @@ export default function ListingDetailPage() {
           {/* Konum + Harita */}
           {listing.businessDistrict && (
             <div className="card p-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">Konum</h3>
+              <h3 className="mb-3" style={SEC_HEAD}>Konum</h3>
               <MapView
                 position={listing.businessLatitude != null && listing.businessLongitude != null
                   ? [Number(listing.businessLatitude), Number(listing.businessLongitude)]
@@ -387,10 +343,10 @@ export default function ListingDetailPage() {
                 height="240px"
               />
               {listing.businessAddress && (
-                <p className="text-[12px] mt-3 opacity-90">{listing.businessAddress}</p>
+                <p className="text-[12px] mt-3" style={{ color: 'var(--ah-ink-3)' }}>{listing.businessAddress}</p>
               )}
               {listing.businessLatitude == null && (
-                <p className="text-[11px] mt-1 italic" style={{ color: '#c8923a' }}>
+                <p className="text-[11px] mt-1 italic" style={{ color: 'var(--ah-warn)' }}>
                   Yaklaşık konum — işletme tam adresi haritada işaretlememiş.
                 </p>
               )}
@@ -399,7 +355,7 @@ export default function ListingDetailPage() {
 
           {/* Bu isletme hakkinda (trust signals) */}
           <div className="card p-4">
-            <div className="text-[10px] uppercase tracking-wider opacity-70 mb-3">Bu işletme hakkında</div>
+            <div className="mb-3" style={LABEL}>Bu işletme hakkında</div>
             <div className="grid grid-cols-1 gap-3">
               {listing.businessCreatedAt && (
                 <TrustSignal label="Üyelik" value={memberSince(listing.businessCreatedAt)} />
@@ -436,9 +392,9 @@ export default function ListingDetailPage() {
 function TrustSignal({ label, value, sub }) {
   return (
     <div className="text-left">
-      <div className="text-[10px] uppercase tracking-[0.22em] font-medium" style={{ color: '#928678' }}>{label}</div>
-      <div className="text-base font-semibold mt-1 tabular-nums" style={{ color: '#cdb78f', letterSpacing: '-0.01em' }}>{value}</div>
-      {sub && <div className="text-[10px] mt-0.5" style={{ color: '#6b6358' }}>{sub}</div>}
+      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.16em', fontWeight: 600, color: 'var(--ah-ink-4)' }}>{label}</div>
+      <div className="text-base font-semibold mt-1 tabular-nums" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>{value}</div>
+      {sub && <div className="text-[10px] mt-0.5" style={{ color: 'var(--ah-ink-4)' }}>{sub}</div>}
     </div>
   )
 }
@@ -464,38 +420,40 @@ function SimilarListings({ listingId, onNavigate }) {
   if (isLoading || similar.length === 0) return null
 
   return (
-    <section className="mt-8 px-4 lg:px-0">
+    <section className="mt-8">
       <div className="flex items-baseline gap-2 mb-4">
-        <h2 className="type-heading" style={{ fontSize: '18px' }}>Benzer İlanlar</h2>
-        <span className="type-caption">bu ilana yakın {similar.length} fırsat</span>
+        <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ah-ink)' }}>Benzer İlanlar</h2>
+        <span className="text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>bu ilana yakın {similar.length} fırsat</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {similar.map(l => {
           const salary = formatSalary(l.salaryMin, l.salaryMax, l.salaryType, l.tipsIncluded)
           return (
             <button key={l.id} onClick={() => onNavigate(l.id)}
-              className="tier-raised tier-raised-hover p-4 text-left transition-all group">
+              className="card p-4 text-left transition-colors"
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#f7f9f9' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--ah-card)' }}>
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="type-body font-semibold truncate" style={{ color: 'var(--text-headline)' }}>
+                  <div className="font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
                     {l.title}
                   </div>
-                  <div className="type-caption truncate mt-0.5">{l.businessName}</div>
+                  <div className="text-[12px] truncate mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{l.businessName}</div>
                 </div>
                 {l.businessReviewCount > 0 && (
                   <StarRating value={l.businessAverageRating} count={l.businessReviewCount} size="xs" />
                 )}
               </div>
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap type-caption">
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
                 <span>{l.businessDistrict || 'İstanbul'}</span>
-                <span style={{ color: 'var(--text-faint)' }}>·</span>
+                <span style={{ color: 'var(--ah-ink-4)' }}>·</span>
                 <span>{POSITION_LABELS[l.position] || l.position}</span>
-                <span style={{ color: 'var(--text-faint)' }}>·</span>
+                <span style={{ color: 'var(--ah-ink-4)' }}>·</span>
                 <span>{JOB_TYPE_LABELS[l.jobType] || l.jobType}</span>
               </div>
               {salary && (
-                <div className="mt-2 inline-flex items-center type-overline px-2 py-0.5 rounded-full tabular-nums"
-                     style={{ background: 'rgba(205, 183, 143, 0.08)', border: '1px solid rgba(205, 183, 143, 0.22)', color: 'var(--accent-action)' }}>
+                <div className="mt-2 inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full tabular-nums"
+                     style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-line)', color: 'var(--ah-brand)' }}>
                   {salary}
                 </div>
               )}
@@ -511,11 +469,10 @@ function SimilarListings({ listingId, onNavigate }) {
 function DetailRow({ label, value, sub }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-[10px] uppercase tracking-[0.22em] flex-shrink-0 font-medium"
-            style={{ color: '#928678' }}>{label}</span>
+      <span className="flex-shrink-0" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.16em', fontWeight: 600, color: 'var(--ah-ink-4)' }}>{label}</span>
       <div className="text-right min-w-0">
-        <div className="text-[13px] font-semibold truncate" style={{ color: '#ede4d3' }}>{value}</div>
-        {sub && <div className="text-[10px]" style={{ color: '#6b6358' }}>{sub}</div>}
+        <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{value}</div>
+        {sub && <div className="text-[10px]" style={{ color: 'var(--ah-ink-4)' }}>{sub}</div>}
       </div>
     </div>
   )

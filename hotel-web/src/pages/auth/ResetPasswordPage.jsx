@@ -54,7 +54,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <div className="min-h-screen flex flex-col relative overflow-hidden legacy-dark">
       {/* FAZ 5.4 — DarkVeil */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <DarkVeil hueShift={35} noiseIntensity={0.02} speed={0.4} warpAmount={0.3} />

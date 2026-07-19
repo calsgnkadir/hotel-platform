@@ -9,14 +9,12 @@
 import { useState } from 'react'
 import cldImg, { ImgSize } from '../../lib/cldImg'
 import ReportModal from '../ReportModal'
-import { useOnline } from '../../lib/presence'
 import { formatRelative } from './utils'
 
 /* FAZ 5.8 — Slack tarzi 3. sutun: sohbet detay paneli (lg+ ekranlarda, dark glass)
    FAZ 11.W3.1 — Basvuru linki: business ise Wave 2 split-view'a derin link */
 export default function ContextPanel({ conversation, userRole, navigate }) {
   const c = conversation
-  const online = useOnline(c?.otherPartyId)
   const [reportOpen, setReportOpen] = useState(false)
 
   const startedDays = c?.createdAt
@@ -36,87 +34,52 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
       <div
         className="hidden lg:flex flex-col w-80 min-w-[20rem] border-l overflow-hidden relative"
         style={{
-          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.94) 100%)',
-          borderColor: 'rgba(15, 118, 110, 0.10)',
+          background: 'var(--ah-card)',
+          borderColor: 'var(--ah-line)',
           zIndex: 5,  // FAZ 5.8 polish — ReportModal (z-50) ile catismayi onler
         }}
       >
-        {/* Avatar + isim header — Bebas + radial glow */}
-        <div className="relative px-5 py-6 text-center border-b" style={{ borderColor: 'rgba(15, 118, 110, 0.10)' }}>
-          {/* Dekoratif glow */}
-          <div
-            aria-hidden
-            className="absolute pointer-events-none inset-0"
-            style={{
-              background:
-                'radial-gradient(circle 200px at 50% 0%, rgba(15, 118, 110, 0.18) 0%, transparent 65%)',
-            }}
-          />
-          <div className="relative">
-            {/* Dalga G3 — avatar tiklayinca public profil yeni sekmede acilir */}
-            <a
-              href={c?.otherPartyId
-                ? (c.otherPartyRole === 'BUSINESS_OWNER'
-                    ? `/p/business/${c.otherPartyId}`
-                    : `/p/candidate/${c.otherPartyId}`)
-                : undefined}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Profili gor"
-              className="relative inline-block mb-3 cursor-pointer hover:scale-105 transition-transform"
-            >
-              {c.otherPartyAvatarUrl ? (
-                <img
-                  src={cldImg(c.otherPartyAvatarUrl, { w: ImgSize.avatarMd })}
-                  alt={c.otherPartyName}
-                  loading="lazy" decoding="async"
-                  className="w-20 h-20 rounded-full object-cover"
-                  style={{ border: '2px solid rgba(15, 118, 110, 0.30)', boxShadow: '0 0 24px rgba(15, 118, 110, 0.22)' }}
-                />
-              ) : (
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-3xl text-white"
-                  style={{
-                    background: 'linear-gradient(135deg, #ffffff 0%, #0b5d57 100%)',
-                    boxShadow: '0 0 24px rgba(15, 118, 110, 0.30)',
-                    border: '2px solid rgba(15, 118, 110, 0.22)',
-                  }}
-                >
-                  {initial}
-                </div>
-              )}
-              {online && (
-                <span
-                  className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full"
-                  style={{ background: '#7a9f7a', border: '2.5px solid #f4f6f6', boxShadow: '0 0 10px rgba(122, 159, 122, 0.45)' }}
-                  title="Çevrimiçi"
-                />
-              )}
-            </a>
-            <h3
-              className="text-xl tracking-wider uppercase text-white truncate"
-              style={{ textShadow: '0 0 12px rgba(15, 118, 110, 0.30)' }}
-            >
-              {c.otherPartyName}
-            </h3>
-            <div className="flex items-center justify-center gap-2 mt-1.5">
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: online ? '#7a9f7a' : '#52525b', boxShadow: online ? '0 0 6px #7a9f7a' : 'none' }}
+        {/* Avatar + isim header (FAZ 25 — glow/gradyan sokuldu, duz teal) */}
+        <div className="px-5 py-6 text-center border-b" style={{ borderColor: 'var(--ah-line)' }}>
+          {/* Dalga G3 — avatar tiklayinca public profil yeni sekmede acilir */}
+          <a
+            href={c?.otherPartyId
+              ? (c.otherPartyRole === 'BUSINESS_OWNER'
+                  ? `/p/business/${c.otherPartyId}`
+                  : `/p/candidate/${c.otherPartyId}`)
+              : undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Profili gor"
+            className="inline-block mb-3 cursor-pointer hover:opacity-90 transition-opacity"
+          >
+            {c.otherPartyAvatarUrl ? (
+              <img
+                src={cldImg(c.otherPartyAvatarUrl, { w: ImgSize.avatarMd })}
+                alt={c.otherPartyName}
+                loading="lazy" decoding="async"
+                className="w-20 h-20 rounded-full object-cover"
+                style={{ border: '1px solid var(--ah-line)' }}
               />
-              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: online ? '#a8c8a8' : '#6b7574' }}>
-                {online ? 'Çevrimiçi' : 'Çevrimdışı'}
+            ) : (
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-semibold text-white"
+                style={{ background: '#0f766e' }}
+              >
+                {initial}
+              </div>
+            )}
+          </a>
+          <h3 className="text-lg font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
+            {c.otherPartyName}
+          </h3>
+          {c.otherPartyRole && (
+            <div className="flex items-center justify-center mt-1">
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#0f766e' }}>
+                {isBiz ? 'İşletme' : 'Aday'}
               </span>
-              {c.otherPartyRole && (
-                <>
-                  <span style={{ color: '#8a7349' }}>·</span>
-                  <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#0f766e' }}>
-                    {isBiz ? 'İşletme' : 'Aday'}
-                  </span>
-                </>
-              )}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Ilan kart */}
@@ -127,23 +90,16 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
             </div>
             <div
               className="rounded-xl p-3"
-              style={{
-                background: 'rgba(255, 255, 255, 0.75)',
-                border: '1px solid rgba(15, 118, 110, 0.10)',
-              }}
+              style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)' }}
             >
-              <div className="text-sm font-semibold text-white line-clamp-2 mb-2">{c.listingTitle}</div>
+              <div className="text-sm font-semibold line-clamp-2 mb-2" style={{ color: 'var(--ah-ink)' }}>{c.listingTitle}</div>
               {c.listingId && (
                 <a
                   href={`/listings/${c.listingId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
-                  style={{
-                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)', color: '#ffffff',
-                    color: '#ffffff',
-                    boxShadow: '0 0 12px rgba(15, 118, 110, 0.30)',
-                  }}
+                  className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full transition-opacity hover:opacity-90"
+                  style={{ background: '#0f766e', color: '#ffffff' }}
                 >
                   İlana Git
                 </a>
@@ -173,10 +129,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
                 <span style={{ color: '#6b7574' }}>Okunmamış</span>
                 <span
                   className="font-bold text-[10px] px-2 py-0.5 rounded-full"
-                  style={{
-                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)', color: '#ffffff',
-                    color: '#ffffff',
-                  }}
+                  style={{ background: '#0f766e', color: '#ffffff' }}
                 >
                   {c.unreadCount}
                 </span>
@@ -202,9 +155,9 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
             disabled={!c?.otherPartyId}
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: 'rgba(255, 255, 255, 0.75)',
+              background: 'var(--ah-page)',
               color: '#0f766e',
-              border: '1px solid rgba(15, 118, 110, 0.10)',
+              border: '1px solid var(--ah-line)',
             }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
@@ -219,9 +172,9 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
             disabled={!c.listingId}
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: 'rgba(255, 255, 255, 0.75)',
+              background: 'var(--ah-page)',
               color: '#0f766e',
-              border: '1px solid rgba(15, 118, 110, 0.10)',
+              border: '1px solid var(--ah-line)',
             }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5 19.5 4.5m0 0v15m0-15h-15" /></svg>
@@ -233,7 +186,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
               onClick={() => navigate?.(`/business?tab=applications&id=${c.applicationId}`)}
               className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5"
               style={{
-                background: 'linear-gradient(135deg, rgba(15, 118, 110, 0.16) 0%, rgba(184, 144, 45, 0.10) 100%)',
+                background: 'var(--ah-brand-soft)',
                 color: '#0f766e',
                 border: '1px solid rgba(15, 118, 110, 0.35)',
               }}
@@ -260,7 +213,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
 
         {/* Alt imza */}
         <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'rgba(15, 118, 110, 0.08)' }}>
-          <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: '#8a7349' }}>
+          <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: 'var(--ah-ink-4)' }}>
             AjansHotel · Sohbet
           </span>
         </div>

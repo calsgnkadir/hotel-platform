@@ -9,7 +9,7 @@
  *   EmptyThread.jsx      — "sohbet secin" ekrani
  *
  * Burada kalan: sohbetin OKUNMASI — mesaj sorgusu, WS abonelikleri
- * (mesaj/typing/reaction), reaksiyon toggle, okundu isaretleme, scroll
+ * (mesaj/reaction), reaksiyon toggle, okundu isaretleme, scroll
  * yonetimi, turn-grouping render, surukle-birak alani.
  */
 import { useState, useEffect, useRef } from 'react'
@@ -32,6 +32,35 @@ import useMessageSend from './useMessageSend'
 const SCROLL_BOTTOM_THRESHOLD = 200
 /** Farkli gonderen VEYA bu kadar bosluk = yeni turn (grouping). */
 const TURN_GAP_MS = 5 * 60_000
+
+/* FAZ 25 — Gun ayraci (WhatsApp gibi): farkli gunlerde atilan mesajlar
+   arasina "Bugün / Dün / 14 Temmuz" ortali etiket girer. */
+function dayKey(iso) {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+}
+function dayLabel(iso) {
+  const d = new Date(iso); d.setHours(0, 0, 0, 0)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const diff = Math.round((today - d) / 86400000)
+  if (diff === 0) return 'Bugün'
+  if (diff === 1) return 'Dün'
+  const sameYear = d.getFullYear() === today.getFullYear()
+  return d.toLocaleDateString('tr-TR', sameYear
+    ? { day: 'numeric', month: 'long' }
+    : { day: 'numeric', month: 'long', year: 'numeric' })
+}
+function DayDivider({ label }) {
+  return (
+    <div className="flex justify-center py-2">
+      <span style={{
+        fontSize: '11.5px', fontWeight: 600, color: 'var(--ah-ink-3)',
+        padding: '4px 12px', borderRadius: '999px',
+        background: 'var(--ah-card)', border: '1px solid var(--ah-line)',
+      }}>{label}</span>
+    </div>
+  )
+}
 
 export default function MessageThread({ conversation, onBack, onMessageSent }) {
   const { user } = useAuth()
@@ -71,10 +100,8 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
   })
 
   // FAZ 1/#12 — WS: yeni mesaj gelince anlık cache invalidate
-  // FAZ 1/#60 — Karşı taraf 'yazıyor' sinyali
-  const [otherTyping, setOtherTyping] = useState(false)
-  const typingTimeoutRef = useRef(null)
-
+  // FAZ 24 — "yazıyor" / presence kaldirildi (kullanici istegi: WhatsApp gibi
+  // sadece mesaj saati). Typing aboneligi + gostergesi cikarildi.
   useEffect(() => {
     if (!conversation) return
     const subMsg = wsSubscribe('/user/queue/messages', (payload) => {
@@ -89,17 +116,6 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
       // Her durumda sohbet listesi de yenilensin (preview/lastMessageAt)
       queryClient.invalidateQueries({ queryKey: keys.conversations.list() })
       queryClient.invalidateQueries({ queryKey: keys.conversations.unreadCount() })
-    })
-    // FIX: User-destination yerine topic broadcast (Spring SimpUserRegistry sorununu bypass).
-    const subTyping = wsSubscribe(`/topic/typing.${conversation.id}`, (payload) => {
-      // FIX: Number() normalize — kendi yazdigimizi gozardi et (id tip uyumsuzlugu)
-      const myId = Number(user?.id)
-      const fromId = Number(payload?.userId)
-      if (myId && fromId && myId === fromId) return
-      if (payload?.conversationId !== conversation.id) return
-      setOtherTyping(true)
-      clearTimeout(typingTimeoutRef.current)
-      typingTimeoutRef.current = setTimeout(() => setOtherTyping(false), 3000)
     })
     // FAZ 11.W3.3 — Reaksiyon guncellemeleri: cache'deki mesajin reactions alanini yaz
     const subReactions = wsSubscribe('/user/queue/reactions', (payload) => {
@@ -116,9 +132,7 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
     })
     return () => {
       subMsg.unsubscribe()
-      subTyping.unsubscribe()
       subReactions.unsubscribe()
-      clearTimeout(typingTimeoutRef.current)
     }
   }, [conversation?.id, queryClient])
 
@@ -221,7 +235,7 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
              }}>
           <div className="tier-featured px-8 py-6 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto mb-2 text-champagne-300">
+                 strokeWidth={1.5} stroke="#0f766e" className="w-12 h-12 mx-auto mb-2">
               <path strokeLinecap="round" strokeLinejoin="round"
                     d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
             </svg>
@@ -298,20 +312,18 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
           const isNewTurn = !prev
             || prev.senderId !== m.senderId
             || (new Date(m.sentAt) - new Date(prev.sentAt)) > TURN_GAP_MS
+          // FAZ 25 — Gun degistiyse once ayrac
+          const showDay = !prev || dayKey(prev.sentAt) !== dayKey(m.sentAt)
           return (
-            <div key={m.id} className={isNewTurn ? 'pt-2.5' : ''}>
-              <MessageBubble m={m} showMeta={isNewTurn}
-                             onReply={setReplyTo} onReact={handleReact} />
+            <div key={m.id}>
+              {showDay && <DayDivider label={dayLabel(m.sentAt)} />}
+              <div className={isNewTurn && !showDay ? 'pt-2.5' : ''}>
+                <MessageBubble m={m} showMeta={isNewTurn}
+                               onReply={setReplyTo} onReact={handleReact} />
+              </div>
             </div>
           )
         })}
-        {/* FAZ 1/#60 + G.7 — Karşı taraf yazıyor göstergesi (altın sine wave) */}
-        {otherTyping && (
-          <div className="flex items-center gap-2 px-3 py-2 text-xs text-ink-500 fade-in">
-            <TypingSineWave />
-            <span>{conversation?.otherPartyName || 'Karşı taraf'} yazıyor…</span>
-          </div>
-        )}
         <div ref={scrollAnchorRef} />
       </div>
 
@@ -353,25 +365,3 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
   )
 }
 
-/* ─────────── FAZ G.7 — Altın sine wave typing indicator ─────────── */
-function TypingSineWave() {
-  return (
-    <span style={{
-      display: 'inline-block',
-      width: 28, height: 14,
-      overflow: 'hidden',
-    }} aria-hidden="true">
-      <svg width="56" height="14" viewBox="0 0 56 14"
-           style={{ animation: 'tw-shift 1.4s linear infinite' }}>
-        <path d="M0 7 Q 3.5 1 7 7 T 14 7 T 21 7 T 28 7 T 35 7 T 42 7 T 49 7 T 56 7"
-              fill="none" stroke="#0f766e" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-      <style>{`
-        @keyframes tw-shift {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-      `}</style>
-    </span>
-  )
-}

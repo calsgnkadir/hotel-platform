@@ -22,7 +22,7 @@ export default function LandingPage() {
   const openAuth = (role = null) => { setAuthRole(role); setAuthOpen(true) }
   const closeAuth = () => setAuthOpen(false)
   return (
-    <div className="min-h-screen" style={{ background: '#13110f', color: '#ede4d3' }}>
+    <div className="min-h-screen legacy-dark" style={{ background: '#13110f', color: '#ede4d3' }}>
       {/* Champagne hairline strip */}
       <div className="neon-strip" />
 

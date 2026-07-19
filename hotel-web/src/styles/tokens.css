@@ -17,58 +17,62 @@
 /* FAZ 5.UX4 — Single family: Inter. Bebas/Syne import'lari kaldirildi. */
 
 :root {
-  /* ================== SURFACES — 3-tier warm graphite ================== */
-  --surface-base:     #13110f;
-  --surface-raised:   #1b1815;
-  --surface-floating: #221f1b;
+  /* ═══════════════════════════════════════════════════════════════════
+   * FAZ 26 — ITEM 1: Legacy token'lar acik+teal (--ah-*) sistemine REPOINT.
+   * Isimler korundu, degerler acik. Eski koyu degerler .legacy-dark /
+   * .auth-bg / html.dark altinda saklanir (bkz dosya sonu). Boylece
+   * var(--surface/--text/--accent) tuketen HER bilesen varsayilan ACIK.
+   * ═══════════════════════════════════════════════════════════════════ */
+  /* ================== SURFACES ================== */
+  --surface-base:     var(--ah-page);
+  --surface-raised:   var(--ah-card);
+  --surface-floating: #f7f9f9;
 
-  /* Legacy aliases — eski kodun kırılmaması için */
-  --bg-app:           #13110f;
-  --bg-surface:       #1b1815;
-  --bg-elevated:      #221f1b;
-  --bg-subtle:        #1b1815;
-  --bg-muted:         #1b1815;
+  --bg-app:           var(--ah-page);
+  --bg-surface:       var(--ah-card);
+  --bg-elevated:      #f7f9f9;
+  --bg-subtle:        var(--ah-page);
+  --bg-muted:         #f1f4f4;
 
-  /* ================== BORDERS — hairlines, not boxes ================== */
-  --hairline:        rgba(205, 183, 143, 0.08);   /* default ayraç */
-  --hairline-strong: rgba(205, 183, 143, 0.22);   /* hover / vurgu */
-  --hairline-cta:    rgba(212, 168, 83, 0.45);    /* yalnız CTA */
-  --border-subtle:   rgba(205, 183, 143, 0.08);
-  --border-strong:   rgba(205, 183, 143, 0.35);
+  /* ================== BORDERS ================== */
+  --hairline:        var(--ah-line);
+  --hairline-strong: var(--ah-line-2);
+  --hairline-cta:    var(--ah-brand);
+  --border-subtle:   var(--ah-line);
+  --border-strong:   var(--ah-line-2);
 
-  /* ================== TEXT — ivory, no cool whites ================== */
-  --text-primary:    #ede4d3;   /* ivory — page body */
-  --text-secondary:  #c9bdaa;   /* muted ivory — secondary */
-  --text-muted:      #928678;   /* faint warm — tertiary / hint */
-  --text-faint:      #6b6358;
-  --text-inverse:    #13110f;
-  --text-headline:   #f5efe2;   /* slightly brighter for h1/h2 */
+  /* ================== TEXT — ink on light ================== */
+  --text-primary:    var(--ah-ink-2);
+  --text-secondary:  var(--ah-ink-3);
+  --text-muted:      var(--ah-ink-3);
+  --text-faint:      var(--ah-ink-4);
+  --text-inverse:    #ffffff;
+  --text-headline:   var(--ah-ink);
 
-  /* ================== ACCENT — champagne default, gold CTA-only ================== */
-  --accent-action:        #cdb78f;             /* champagne — default */
-  --accent-action-hover:  #d4a853;             /* warm gold — hover/highlight only */
-  --accent-action-cta:    #d4a853;             /* CTA gradient anchor */
-  --accent-action-cta-2:  #b8902d;             /* CTA gradient end */
-  --accent-action-soft:   rgba(205, 183, 143, 0.12);
-  --accent-action-glow:   0 0 24px rgba(205, 183, 143, 0.30);
+  /* ================== ACCENT — teal ================== */
+  --accent-action:        var(--ah-brand);
+  --accent-action-hover:  var(--ah-brand-hover);
+  --accent-action-cta:    var(--ah-brand);
+  --accent-action-cta-2:  var(--ah-brand-hover);
+  --accent-action-soft:   var(--ah-brand-soft);
+  --accent-action-glow:   none;
 
-  /* Link / info — muted blue-grey, not bright navy */
-  --accent-positive:       #8a9bb0;
-  --accent-positive-hover: #a8b7c9;
-  --accent-positive-soft:  rgba(138, 155, 176, 0.12);
-  --accent-positive-text:  #b8c4d2;
+  /* Link / info — teal-nötr yerine info mavi */
+  --accent-positive:       var(--ah-info);
+  --accent-positive-hover: var(--ah-info);
+  --accent-positive-soft:  var(--ah-info-soft);
+  --accent-positive-text:  var(--ah-info);
 
-  /* ================== STATUS — muted, never neon ================== */
-  --signal-green:       #7a9f7a;                   /* sage — accept / active */
-  --signal-green-soft:  rgba(122, 159, 122, 0.12);
-  --signal-coral:       #b46a55;                   /* brick — reject / ban */
-  --signal-coral-soft:  rgba(180, 106, 85, 0.12);
-  --signal-amber:       #c8923a;                   /* ochre — pending / hold */
-  --signal-amber-soft:  rgba(200, 146, 58, 0.12);
-  --signal-info:        #6b8aa3;
-  --signal-info-soft:   rgba(107, 138, 163, 0.12);
+  /* ================== STATUS ================== */
+  --signal-green:       var(--ah-ok);
+  --signal-green-soft:  var(--ah-ok-soft);
+  --signal-coral:       var(--ah-danger);
+  --signal-coral-soft:  var(--ah-danger-soft);
+  --signal-amber:       var(--ah-warn);
+  --signal-amber-soft:  var(--ah-warn-soft);
+  --signal-info:        var(--ah-info);
+  --signal-info-soft:   var(--ah-info-soft);
 
-  /* Legacy status alias'ları (eski koddan) — yeni muted'a yönlendir */
   --accent-warning:    var(--signal-amber);
   --accent-warning-bg: var(--signal-amber-soft);
   --accent-danger:     var(--signal-coral);
@@ -81,13 +85,13 @@
   --font-body:    'Inter', system-ui, -apple-system, sans-serif;
   --font-mono:    ui-monospace, 'SF Mono', 'Menlo', monospace;
 
-  /* ================== RHYTHM — sectional spacing ================== */
+  /* ================== RHYTHM ================== */
   --rhythm-tight:   16px;
   --rhythm-base:    24px;
   --rhythm-section: 40px;
   --rhythm-page:    64px;
 
-  /* ================== RADIUS — asymmetric defaults ================== */
+  /* ================== RADIUS ================== */
   --radius-quiet:  10px;
   --radius-base:   16px;
   --radius-hero:   28px;
@@ -347,3 +351,26 @@ body, .role-app-bg {
 .ah-job__desc { font-size: 12.5px; color: var(--ah-ink-3); line-height: 1.5; margin: 0;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ah-job__cta { margin-top: auto; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * FAZ 26 — ITEM 1: KOYU token seti (opt-in).
+ *   html.dark   — tema koyu modu (ITEM 7'de kaderi belli olacak)
+ *   .auth-bg    — giris/kayit sayfalari (kendi koyu tasarimi)
+ *   .legacy-dark— henuz migrate edilmemis koyu sayfalar (landing, public profiller)
+ * Eski grafit + champagne degerleri burada; varsayilan (:root) artik ACIK.
+ * ═══════════════════════════════════════════════════════════════════════ */
+html.dark, .auth-bg, .legacy-dark {
+  --surface-base:#13110f; --surface-raised:#1b1815; --surface-floating:#221f1b;
+  --bg-app:#13110f; --bg-surface:#1b1815; --bg-elevated:#221f1b; --bg-subtle:#1b1815; --bg-muted:#1b1815;
+  --hairline:rgba(205,183,143,0.08); --hairline-strong:rgba(205,183,143,0.22); --hairline-cta:rgba(212,168,83,0.45);
+  --border-subtle:rgba(205,183,143,0.08); --border-strong:rgba(205,183,143,0.35);
+  --text-primary:#ede4d3; --text-secondary:#c9bdaa; --text-muted:#928678; --text-faint:#6b6358;
+  --text-inverse:#13110f; --text-headline:#f5efe2;
+  --accent-action:#cdb78f; --accent-action-hover:#d4a853; --accent-action-cta:#d4a853; --accent-action-cta-2:#b8902d;
+  --accent-action-soft:rgba(205,183,143,0.12); --accent-action-glow:0 0 24px rgba(205,183,143,0.30);
+  --accent-positive:#8a9bb0; --accent-positive-hover:#a8b7c9; --accent-positive-soft:rgba(138,155,176,0.12); --accent-positive-text:#b8c4d2;
+  --signal-green:#7a9f7a; --signal-green-soft:rgba(122,159,122,0.12);
+  --signal-coral:#b46a55; --signal-coral-soft:rgba(180,106,85,0.12);
+  --signal-amber:#c8923a; --signal-amber-soft:rgba(200,146,58,0.12);
+  --signal-info:#6b8aa3;  --signal-info-soft:rgba(107,138,163,0.12);
+}

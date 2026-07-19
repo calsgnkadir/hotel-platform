@@ -910,16 +910,16 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   useEffect(() => { setPage(1) }, [debouncedKeyword, position, jobType, district, minSalary, shifts, datePreset, customFrom, customTo])
 
   return (
-    <div className="ah-surface xl:grid xl:grid-cols-[280px_1fr] xl:gap-5 space-y-4 xl:space-y-0">
+    <div className="ah-surface lg:grid lg:grid-cols-[280px_1fr] lg:gap-5 space-y-4 lg:space-y-0">
       {/* SOL PANEL — filtre paneli (sticky lg+) */}
-      <aside className="xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
-        <div className={`card p-4 space-y-4 ${showFilters ? '' : 'hidden xl:block'}`}>
+      <aside className="lg:sticky lg:top-[70px] lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto no-scrollbar">
+        <div className={`card p-4 space-y-4 ${showFilters ? '' : 'hidden lg:block'}`}>
         {/* Dalga 1 — Eski "FİLTRE AKTİF" banner üst ActiveFilterBar'a tasindi */}
 
         {/* İlçe — dropdown (39 ilçe pill chip mantıksız) */}
         <div>
           <label className="block mb-2 text-[11px] font-semibold tracking-[0.22em] uppercase"
-                 style={{ color: '#928678' }}>İlçe</label>
+                 style={{ color: 'var(--ah-ink-3)' }}>İlçe</label>
           <select value={district} onChange={e => setDistrict(e.target.value)} className="input text-sm">
             <option value="">Tüm İstanbul</option>
             {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
@@ -946,9 +946,9 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-[11px] font-semibold tracking-[0.22em] uppercase"
-                   style={{ color: '#928678' }}>Min Ücret</label>
+                   style={{ color: 'var(--ah-ink-3)' }}>Min Ücret</label>
             <span className="text-[13px] font-semibold tabular-nums"
-                  style={{ color: '#cdb78f', letterSpacing: '-0.005em' }}>
+                  style={{ color: 'var(--ah-brand)', letterSpacing: '-0.005em' }}>
               {minSalary ? `${Number(minSalary).toLocaleString('tr-TR')} ₺+` : 'Tümü'}
             </span>
           </div>
@@ -956,7 +956,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             value={minSalary || 0}
             onChange={e => setMinSalary(e.target.value === '0' ? '' : e.target.value)}
             className="w-full cursor-pointer"
-            style={{ accentColor: '#cdb78f' }} />
+            style={{ accentColor: '#0f766e' }} />
           <div className="mt-3">
             <FilterChipGroup
               label=""
@@ -987,13 +987,13 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           {datePreset === 'CUSTOM' && (
             <div className="grid grid-cols-2 gap-3 mt-3">
               <div>
-                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: '#928678' }}>Başlangıç</label>
+                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: 'var(--ah-ink-3)' }}>Başlangıç</label>
                 <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                   className="input text-sm mt-1.5" />
               </div>
               <div>
-                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: '#928678' }}>Bitiş</label>
+                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: 'var(--ah-ink-3)' }}>Bitiş</label>
                 <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
                   min={customFrom || new Date().toISOString().split('T')[0]}
                   className="input text-sm mt-1.5" />
@@ -1008,9 +1008,9 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           <div className="flex justify-end pt-1">
             <button onClick={clearFilters}
               className="text-[11px] font-medium inline-flex items-center gap-1 transition-colors"
-              style={{ color: '#928678' }}
+              style={{ color: 'var(--ah-ink-3)' }}
               onMouseEnter={(e) => { e.currentTarget.style.color = '#d39481' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#928678' }}>
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ah-ink-3)' }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
@@ -1021,7 +1021,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         )}
 
         {/* FAZ 5 — Kayıtlı aramalar + "Aramayı Kaydet" */}
-        <div className="pt-3" style={{ borderTop: '1px solid rgba(205, 183, 143, 0.10)' }}>
+        <div className="pt-3" style={{ borderTop: '1px solid var(--ah-line)' }}>
           <SavedSearchManager
             filters={{
               position, jobType, district, keyword: debouncedKeyword, minSalary,
@@ -1060,7 +1060,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             </p>
           </div>
           <button onClick={() => setShowFilters(s => !s)}
-            className="xl:hidden btn-secondary text-sm flex items-center gap-1.5">
+            className="lg:hidden btn-secondary text-sm flex items-center gap-1.5">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <line x1="21" y1="4" x2="14" y2="4" /><line x1="10" y1="4" x2="3" y2="4" />
@@ -1072,10 +1072,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             Filtreler
             {activeFilterCount > 0 && (
               <span className="text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center"
-                    style={{
-                      background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-                      color: '#1a1208',
-                    }}>
+                    style={{ background: '#0f766e', color: '#ffffff' }}>
                 {activeFilterCount}
               </span>
             )}
@@ -1099,7 +1096,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
 
         <div className="relative">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-               width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#928678"
+               width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#98a1a0"
                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
@@ -1111,9 +1108,9 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             <button onClick={() => setKeyword('')}
               aria-label="Aramayı temizle"
               className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-              style={{ color: '#928678' }}
+              style={{ color: 'var(--ah-ink-3)' }}
               onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ah-ink)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#928678' }}>
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ah-ink-3)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
@@ -1277,7 +1274,7 @@ function FilterChipGroup({
     <div>
       {label && (
         <label className="block mb-2 text-[11px] font-semibold tracking-[0.22em] uppercase"
-               style={{ color: '#928678' }}>
+               style={{ color: 'var(--ah-ink-3)' }}>
           {label}
         </label>
       )}

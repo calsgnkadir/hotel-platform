@@ -1,13 +1,10 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import * as hotelApi from '../api/hotel'
-import WsConnectionBadge from './WsConnectionBadge'
 import LanguageSwitcher from './LanguageSwitcher'
 import EmailVerifyBanner from './EmailVerifyBanner'
 import NotificationBell from './NotificationBell'
+import MessagesButton from './MessagesButton'
 import SettingsMenu from './SettingsMenu'
 
 /* ───────── Lucide-style inline SVG ikonlar (active state: fill + stroke) ───────── */
@@ -25,9 +22,7 @@ const Icons = {
   alert:        <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>,
   lifebuoy:     <><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></>,
   activity:     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>,
-  logout:       <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>,
   menu:         <><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></>,
-  close:        <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
   external:     <><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>,
   heart:        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>,
   eye:          <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>,
@@ -46,14 +41,13 @@ function Icon({ name, size = 16, active = false }) {
   )
 }
 
-/* Nav definitions — id, label, icon name */
+/* Nav definitions — id, label, icon name
+   FAZ 26 — sol sidebar kaldirildi, ust yatay nav'a gecildi.
+   Aday: Genel Bakis kaldirildi, Mesajlar sag ust ikona tasindi. */
 const candidateNav = [
-  { id: 'overview',      tKey: 'nav.overview',     icon: 'overview' },
   { id: 'listings',      tKey: 'nav.listings',     icon: 'briefcase' },
-  { id: 'saved',         label: 'Kaydettiklerim',  icon: 'heart' },
   { id: 'applications',  tKey: 'nav.applications', icon: 'send' },
-  { id: 'messages',      tKey: 'nav.messages',     icon: 'messages' },
-  // Profilim sidebar'dan cikarildi — sag ust ⚙️ ayarlar menusunden erisilir
+  { id: 'saved',         label: 'Kaydettiklerim',  icon: 'heart' },
 ]
 
 const businessNav = [
@@ -61,7 +55,6 @@ const businessNav = [
   { id: 'mylistings',    tKey: 'nav.myListings',           icon: 'briefcase' },
   { id: 'applications',  tKey: 'nav.incomingApplications', icon: 'inbox' },
   { id: 'analytics',     label: 'Analitik',                icon: 'trending' },
-  { id: 'messages',      tKey: 'nav.messages',             icon: 'messages' },
   { id: 'profile',       label: 'Profilim',                icon: 'building' },
 ]
 
@@ -77,168 +70,114 @@ const adminNav = [
 ]
 
 export default function DashboardLayout({ children, activeTab, onTabChange }) {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
-  const [mobileOpen, setMobileOpen] = useState(false)
   const { t } = useTranslation()
 
   const isCandidate = user?.role === 'CANDIDATE'
   const isAdmin     = user?.role === 'ADMIN'
   const isBusiness  = user?.role === 'BUSINESS_OWNER'
   const navItems    = isAdmin ? adminNav : (isCandidate ? candidateNav : businessNav)
+  const hasMessages = isCandidate || isBusiness
 
-  const { data: bizProfile } = useQuery({
-    queryKey: ['business-profile-for-public-link'],
-    queryFn: hotelApi.getBusinessProfile,
-    enabled: isBusiness,
-    staleTime: 5 * 60 * 1000,
-  })
+  function handleTabClick(id) { onTabChange?.(id) }
 
-  function handleLogout() { logout(); navigate('/login', { replace: true }) }
-  function handleTabClick(id) { onTabChange?.(id); setMobileOpen(false) }
-
-  // Nav'da olmayan (ayarlar menusunden acilan) sekmeler icin baslik fallback'i
-  const EXTRA_TITLES = { profile: 'Profilim', relations: 'Takip Ettiklerim', history: 'Geçmiş İşlerim', workers: 'Bizde Çalışanlar' }
+  // Nav'da olmayan (ayarlar menusu / mesaj ikonu) sekmeler icin baslik fallback'i
+  const EXTRA_TITLES = {
+    messages: 'Mesajlar', profile: 'Profilim', relations: 'Takip Ettiklerim',
+    history: 'Geçmiş İşlerim', workers: 'Bizde Çalışanlar', documents: 'Belgelerim',
+  }
   const currentTitle = (() => {
     const item = navItems.find(n => n.id === activeTab)
     if (item) return item.tKey ? t(item.tKey) : item.label
     return EXTRA_TITLES[activeTab] || 'Panel'
   })()
 
+  const navButtons = navItems.map(item => (
+    <TopNavItem key={item.id}
+                item={item}
+                active={activeTab === item.id}
+                onClick={() => handleTabClick(item.id)}
+                label={item.tKey ? t(item.tKey) : item.label} />
+  ))
+
   return (
     <div className="min-h-screen relative ah-surface" style={{ background: 'var(--ah-page)' }}>
-      {/* === Mobile backdrop === */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-30 bg-black/30"
-             onClick={() => setMobileOpen(false)} aria-hidden />
-      )}
+      {/* === TOP NAV === */}
+      <header className="sticky top-0 z-30 border-b"
+              style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
+        <div className="px-4 lg:px-8">
+          {/* Ust satir: marka + (desktop) nav + sag aksiyonlar */}
+          <div className="h-14 flex items-center gap-4">
+            <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2 flex-shrink-0">
+              <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '0.02em', color: 'var(--ah-ink)' }}>AjansHotel</span>
+              <span className="hidden sm:inline" style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ah-ink-4)' }}>istanbul</span>
+            </Link>
 
-      {/* === SIDEBAR === */}
-      <aside
-        className={`fixed top-0 left-0 bottom-0 w-[240px] z-40 flex flex-col border-r
-                    transform transition-transform duration-300
-                    ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-        style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}
-        aria-label="Ana navigasyon">
-        {/* Logo */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b"
-             style={{ borderColor: 'var(--ah-line)' }}>
-          <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2">
-            <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: '0.02em', color: 'var(--ah-ink)' }}>AjansHotel</span>
-            <span style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ah-ink-4)' }}>istanbul</span>
-          </Link>
-          <button onClick={() => setMobileOpen(false)}
-                  className="lg:hidden p-1 rounded" style={{ color: 'var(--ah-ink-3)' }}
-                  aria-label="Menüyü kapat">
-            <Icon name="close" size={18} />
-          </button>
-        </div>
+            {/* Desktop nav — marka ile sag aksiyonlar arasi */}
+            <nav className="hidden md:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar" aria-label="Ana navigasyon">
+              {navButtons}
+            </nav>
+            <div className="flex-1 md:hidden" />
 
-        {/* Nav items */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {navItems.map(item => (
-            <NavItem key={item.id}
-                     item={item}
-                     active={activeTab === item.id}
-                     onClick={() => handleTabClick(item.id)}
-                     label={item.tKey ? t(item.tKey) : item.label} />
-          ))}
-        </nav>
-
-        {/* Footer */}
-        <div className="border-t flex-shrink-0 p-3 space-y-2" style={{ borderColor: 'var(--ah-line)' }}>
-          <div className="flex items-center justify-between gap-2 px-1">
-            <LanguageSwitcher />
-            <WsConnectionBadge />
-          </div>
-          {isBusiness && bizProfile?.id && (
-            <a href={`/p/business/${bizProfile.id}`} target="_blank" rel="noopener noreferrer"
-               title="Public profilini yeni sekmede ac"
-               className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg"
-               style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
-                        color: 'var(--ah-ink-3)', border: '1px solid var(--ah-line-2)', background: 'var(--ah-card)' }}>
-              <Icon name="external" size={11} /> Public Profilim
-            </a>
-          )}
-          <button onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg transition-colors"
-                  style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
-                           background: 'var(--ah-card)', color: 'var(--ah-danger)', border: '1px solid var(--ah-line-2)' }}>
-            <Icon name="logout" size={12} /> Çıkış
-          </button>
-        </div>
-      </aside>
-
-      {/* === MAIN CONTENT === */}
-      <div className="lg:pl-[240px] min-h-screen relative z-10">
-        {/* Top bar */}
-        <header className="sticky top-0 z-20 border-b"
-                style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
-          <div className="px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
-            {/* Mobile: hamburger + brand */}
-            <div className="flex items-center gap-2 lg:hidden">
-              <button onClick={() => setMobileOpen(true)}
-                      className="p-2 rounded-lg"
-                      style={{ color: 'var(--ah-brand)', border: '1px solid var(--ah-line-2)', background: 'var(--ah-card)' }}
-                      aria-label="Menü">
-                <Icon name="menu" size={18} />
-              </button>
-              <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-1.5">
-                <span style={{ fontWeight: 800, fontSize: 15, color: 'var(--ah-ink)' }}>AjansHotel</span>
-              </Link>
-            </div>
-            {/* Desktop: aktif sayfa basligi */}
-            <h2 className="hidden lg:block" style={{ fontSize: 14, fontWeight: 600, color: 'var(--ah-ink-2)' }}>
-              {currentTitle}
-            </h2>
-            {/* Sag: actions */}
-            <div className="flex items-center gap-2">
+            {/* Sag aksiyonlar */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="hidden lg:block"><LanguageSwitcher /></div>
+              {hasMessages && (
+                <MessagesButton active={activeTab === 'messages'}
+                                onClick={() => handleTabClick('messages')} />
+              )}
               <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
               <SettingsMenu onTabChange={onTabChange} />
             </div>
           </div>
-        </header>
 
-        <main className="fade-in" style={{ color: 'var(--ah-ink-2)' }}>
-          <EmailVerifyBanner />
+          {/* Mobil nav — ikinci satir, yatay kaydirilir */}
+          <nav className="md:hidden flex items-center gap-1 pb-2 overflow-x-auto no-scrollbar" aria-label="Ana navigasyon">
+            {navButtons}
+          </nav>
+        </div>
+      </header>
 
-          {/* Page heading — sade, koyu ink, gradyan/underline yok */}
-          <div className="px-4 lg:px-8 pt-6 lg:pt-8 pb-5">
-            <h1 style={{ fontSize: 'clamp(22px, 3vw, 28px)', lineHeight: 1.15, fontWeight: 700,
-                         letterSpacing: '-0.01em', color: 'var(--ah-ink)' }}>
-              {currentTitle}
-            </h1>
-          </div>
+      {/* === MAIN CONTENT === */}
+      <main className="fade-in relative z-10" style={{ color: 'var(--ah-ink-2)' }}>
+        <EmailVerifyBanner />
 
-          <div className="px-4 lg:px-8 pb-16">
-            {children}
-          </div>
-        </main>
-      </div>
+        {/* Page heading — sade, koyu ink */}
+        <div className="px-4 lg:px-8 pt-6 lg:pt-8 pb-5">
+          <h1 style={{ fontSize: 'clamp(22px, 3vw, 28px)', lineHeight: 1.15, fontWeight: 700,
+                       letterSpacing: '-0.01em', color: 'var(--ah-ink)' }}>
+            {currentTitle}
+          </h1>
+        </div>
+
+        <div className="px-4 lg:px-8 pb-16">
+          {children}
+        </div>
+      </main>
     </div>
   )
 }
 
-/* ───────── NavItem — açık/teal (aktif = teal soft bg, rail yok) ───────── */
-function NavItem({ item, active, onClick, label }) {
+/* ───────── TopNavItem — yatay pill (aktif = teal soft bg) ───────── */
+function TopNavItem({ item, active, onClick, label }) {
   return (
     <button
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+      className="relative flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors"
       style={{
         background: active ? 'var(--ah-brand-soft)' : 'transparent',
         color: active ? 'var(--ah-brand)' : 'var(--ah-ink-2)',
         fontWeight: active ? 600 : 500,
+        fontSize: 14,
       }}
       onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#f2f5f5' }}
       onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent' }}>
       <span style={{ color: active ? 'var(--ah-brand)' : 'var(--ah-ink-4)', display: 'inline-flex' }}>
         <Icon name={item.icon} size={16} active={active} />
       </span>
-      <span className="flex-1 text-left" style={{ fontSize: active ? 14 : 13.5 }}>
-        {label}
-      </span>
+      {label}
     </button>
   )
 }

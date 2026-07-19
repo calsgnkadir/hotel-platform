@@ -43,8 +43,6 @@ import ScrollProgressBar from './components/ScrollProgressBar'
 import { MotionConfig } from 'framer-motion'
 // FAZ I.1 — KVKK cookie consent banner
 import CookieConsent from './components/CookieConsent'
-// Global arka plan (tüm sayfalarda)
-import BeamsBackground from './components/BeamsBackground'
 // FAZ 8 — Global imperative confirm dialog (Promise-based useConfirm hook)
 import { ConfirmProvider } from './lib/useConfirm'
 
@@ -59,7 +57,8 @@ export default function App() {
       <AuthProvider>
       <ConfirmProvider>
         <SkipLink />              {/* FAZ 3 / A11y — klavye Tab ilk durak */}
-        <BeamsBackground />       {/* Global koyu zemin + altın huzme ışınlar */}
+        {/* FAZ 26 — Global BeamsBackground (koyu zemin + altın huzme animasyon)
+            kaldirildi: acik+teal temayla celisiyordu, animasyon istenmiyor. */}
         <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
         <PushPermissionPrompt />  {/* FAZ 1/#23 — Web Push */}
         <InstallPrompt />          {/* FAZ 2/#8 — PWA install */}
