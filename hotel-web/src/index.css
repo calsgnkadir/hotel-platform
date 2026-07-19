@@ -17,8 +17,8 @@ html, body, #root {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #13110f;           /* warm graphite — editorial dark luxe base */
-  color: #ede4d3;                /* ivory — pages read like printed paper */
+  background: var(--ah-page);    /* FAZ 26 ITEM 2 — acik taban; koyu .dark body altinda */
+  color: var(--ah-ink-2);
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s, color 0.2s;
 }

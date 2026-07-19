@@ -374,3 +374,10 @@ html.dark, .auth-bg, .legacy-dark {
   --signal-amber:#c8923a; --signal-amber-soft:rgba(200,146,58,0.12);
   --signal-info:#6b8aa3;  --signal-info-soft:rgba(107,138,163,0.12);
 }
+/* FAZ 26 ITEM 2 — body artik acik; body'ye guvenen koyu sayfa kokleri (auth/
+   landing/public: .auth-bg / .legacy-dark) kendi koyu zeminini bassin ki
+   acik body sizmasin. Inline bg olanlarda (landing/login) inline zaten kazanir. */
+.auth-bg, .legacy-dark {
+  background: var(--surface-base);
+  color: var(--text-primary);
+}
