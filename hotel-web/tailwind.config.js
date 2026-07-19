@@ -18,42 +18,25 @@ export default {
         geist:   ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // ── PRIMARY palette ───────────────────────────────────────────────
+        // ═══ FAZ 26 ITEM 3 — Palet acik+teal'e cevrildi ═══
+        //   ink   = GERCEK koyu metin (yuksek numara = koyu) — acik zeminde okunur
+        //   cream = acik notr yuzey/cizgi
+        //   brand/terra/neon/champagne = teal
+        //   ivory = notr gri metin (eskiden acik-metin; artik acik zeminde okunur)
+        //   graphite/signal = korundu (koyu yuzey + durum renkleri)
         graphite: {
-          50:  '#e8e4dc',
-          100: '#c8c0b3',
-          200: '#a89c89',
-          300: '#7a6e5f',
-          400: '#4a3f33',
-          500: '#332a20',
-          600: '#221f1b',   // surface-floating
-          700: '#1b1815',   // surface-raised
-          800: '#13110f',   // surface-base (body bg)
-          900: '#0c0a08',
+          50:  '#e8e4dc', 100: '#c8c0b3', 200: '#a89c89', 300: '#7a6e5f', 400: '#4a3f33',
+          500: '#332a20', 600: '#221f1b', 700: '#1b1815', 800: '#13110f', 900: '#0c0a08',
         },
+        // Teal ramp (brand + tum legacy accent alias'lari)
         champagne: {
-          50:  '#f5efde',
-          100: '#ebe1c8',
-          200: '#dccaa5',
-          300: '#cdb78f',   // default accent
-          400: '#b89e6e',
-          500: '#a08654',
-          600: '#8a7349',
-          700: '#6e5b39',
-          800: '#52442b',
-          900: '#352c1c',
+          50: '#e4f2f0', 100: '#c7e5e1', 200: '#9fd2cc', 300: '#6bbbb1', 400: '#2d968b',
+          500: '#0f766e', 600: '#0b5d57', 700: '#094a45', 800: '#073a36', 900: '#052a27',
         },
+        // Notr gri metin ramp (ink ile ayni): yuksek numara = koyu
         ivory: {
-          50:  '#faf6ec',
-          100: '#f5efe2',   // headline
-          200: '#ede4d3',   // body
-          300: '#dfd2bb',
-          400: '#c9bdaa',   // secondary
-          500: '#a89c89',
-          600: '#928678',   // tertiary
-          700: '#6b6358',
-          800: '#4d4740',
-          900: '#2c2823',
+          50: '#f4f6f6', 100: '#e4e8e8', 200: '#c7cfce', 300: '#a7b0af', 400: '#98a1a0',
+          500: '#6b7574', 600: '#54605f', 700: '#3f4b4a', 800: '#26302f', 900: '#12201f',
         },
         signal: {
           green: { DEFAULT: '#7a9f7a', 50: '#eaf2ea', 500: '#7a9f7a', 600: '#5e8460', 700: '#456649' },
@@ -61,33 +44,24 @@ export default {
           amber: { DEFAULT: '#c8923a', 500: '#c8923a', 600: '#a3762d' },
         },
 
-        // ── LEGACY aliases — remapped to primary palette (breakage yok) ─────
-        // brand.* -> graphite.*, terra.* -> champagne.*, neon.* -> champagne.*
-        // cream.* -> ivory.* (dark theme uyumu icin), ink.* -> ivory.* invert
+        // ── LEGACY alias'lar — acik+teal'e remap (ITEM 3) ──
         brand: {
-          50:  '#f5efde', 100: '#ebe1c8', 200: '#dccaa5', 300: '#cdb78f',
-          400: '#b89e6e', 500: '#a08654', 600: '#8a7349', 700: '#6e5b39',
-          800: '#52442b', 900: '#352c1c',
+          50: '#e4f2f0', 100: '#c7e5e1', 200: '#9fd2cc', 300: '#6bbbb1', 400: '#2d968b',
+          500: '#0f766e', 600: '#0b5d57', 700: '#094a45', 800: '#073a36', 900: '#052a27',
         },
         terra: {
-          50:  '#f5efde', 100: '#ebe1c8', 200: '#dccaa5', 300: '#cdb78f',
-          400: '#b89e6e', 500: '#d4a853', 600: '#b8902d', 700: '#8a7349',
-          800: '#52442b', 900: '#352c1c',
+          50: '#e4f2f0', 100: '#c7e5e1', 200: '#9fd2cc', 300: '#6bbbb1', 400: '#2d968b',
+          500: '#0f766e', 600: '#0b5d57', 700: '#094a45', 800: '#073a36', 900: '#052a27',
         },
-        neon:  { 400: '#d4a853', 500: '#cdb78f', 600: '#b8902d' },
-        // cream.* was "light bg / light border" legacy. Remapped so bg-cream-*
-        // reads as subtle raised surface and border-cream-* reads as visible
-        // (but low-contrast) hairline separator on dark bg.
+        neon:  { 400: '#0f766e', 500: '#0f766e', 600: '#0b5d57' },
+        // cream = acik notr yuzey/cizgi (eskiden koyu idi)
         cream: {
-          50: '#221f1b', 100: '#1b1815', 200: '#332e26', 300: '#3a352d',
-          400: '#4a3f33', 500: '#5a4d3e',
+          50: '#ffffff', 100: '#f7f9f9', 200: '#f1f4f4', 300: '#e4e8e8', 400: '#d4dadb', 500: '#bcc4c4',
         },
-        // ink.* was "dark-text-on-light" in legacy light theme. Ramp INVERTED so
-        // old text-ink-800/900 (headline) renders BRIGHT on dark bg, not dark.
+        // ink = gercek koyu metin ramp (yuksek numara koyu). --ah-ink ailesine hizali.
         ink: {
-          50:  '#2c2823', 100: '#4d4740', 200: '#6b6358', 300: '#928678',
-          400: '#a89c89', 500: '#c9bdaa', 600: '#dfd2bb', 700: '#ede4d3',
-          800: '#f5efe2', 900: '#faf6ec',
+          50:  '#f4f6f6', 100: '#e4e8e8', 200: '#c7cfce', 300: '#a7b0af', 400: '#98a1a0',
+          500: '#6b7574', 600: '#54605f', 700: '#3f4b4a', 800: '#26302f', 900: '#12201f',
         },
       },
       scale: { '98': '0.98' },
