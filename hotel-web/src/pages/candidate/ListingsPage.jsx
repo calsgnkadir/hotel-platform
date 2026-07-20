@@ -918,7 +918,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
 
         {/* İlçe — dropdown (39 ilçe pill chip mantıksız) */}
         <div>
-          <label className="block mb-2 text-[11px] font-semibold tracking-[0.22em] uppercase"
+          <label className="block mb-2 text-[11px] font-semibold tracking-[0.06em] uppercase"
                  style={{ color: 'var(--ah-ink-3)' }}>İlçe</label>
           <select value={district} onChange={e => setDistrict(e.target.value)} className="input text-sm">
             <option value="">Tüm İstanbul</option>
@@ -945,7 +945,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         {/* Min Ücret — range slider + preset chips */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-[11px] font-semibold tracking-[0.22em] uppercase"
+            <label className="text-[11px] font-semibold tracking-[0.06em] uppercase"
                    style={{ color: 'var(--ah-ink-3)' }}>Min Ücret</label>
             <span className="text-[13px] font-semibold tabular-nums"
                   style={{ color: 'var(--ah-brand)', letterSpacing: '-0.005em' }}>
@@ -987,13 +987,13 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           {datePreset === 'CUSTOM' && (
             <div className="grid grid-cols-2 gap-3 mt-3">
               <div>
-                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: 'var(--ah-ink-3)' }}>Başlangıç</label>
+                <label className="text-[10px] font-medium uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-3)' }}>Başlangıç</label>
                 <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                   className="input text-sm mt-1.5" />
               </div>
               <div>
-                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: 'var(--ah-ink-3)' }}>Bitiş</label>
+                <label className="text-[10px] font-medium uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-3)' }}>Bitiş</label>
                 <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
                   min={customFrom || new Date().toISOString().split('T')[0]}
                   className="input text-sm mt-1.5" />
@@ -1231,7 +1231,7 @@ function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
       </div>
       <button onClick={onClearAll}
         type="button"
-        className="text-[10px] font-semibold uppercase tracking-[0.18em] px-2.5 py-1.5 rounded-full flex-shrink-0 transition-all hover:-translate-y-0.5"
+        className="text-[10px] font-semibold uppercase tracking-[0.06em] px-2.5 py-1.5 rounded-full flex-shrink-0 transition-all hover:-translate-y-0.5"
         style={{
           background: 'rgba(180, 106, 85, 0.10)',
           color: '#d39481',
@@ -1273,7 +1273,7 @@ function FilterChipGroup({
   return (
     <div>
       {label && (
-        <label className="block mb-2 text-[11px] font-semibold tracking-[0.22em] uppercase"
+        <label className="block mb-2 text-[11px] font-semibold tracking-[0.06em] uppercase"
                style={{ color: 'var(--ah-ink-3)' }}>
           {label}
         </label>

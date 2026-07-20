@@ -35,7 +35,7 @@ export default function TermsPage() {
               style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kullanım Şartları
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.28em] font-medium mt-3"
+          <p className="text-[10px] uppercase tracking-[0.08em] font-medium mt-3"
              style={{ color: '#928678' }}>
             Hizmet Sözleşmesi · Son güncelleme: 19 Haziran 2026
           </p>
@@ -130,7 +130,7 @@ function Section({ title, children }) {
     <section style={{ marginBottom: 22 }}>
       <h2 className="" style={{
         fontSize: 15, fontWeight: 600, color: '#cdb78f',
-        marginBottom: 12, letterSpacing: '0.22em', textTransform: 'uppercase',
+        marginBottom: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
       }}>
         {title}
       </h2>

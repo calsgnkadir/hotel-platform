@@ -236,44 +236,48 @@ body, .role-app-bg {
  *   .type-overline  10/14  600   0.22em   uppercase eyebrow / label
  * ═══════════════════════════════════════════════════════════════════════ */
 
+/* FAZ 26 ITEM 6 — Olcek referans ritmine (Kariyer.net/LinkedIn) cekildi.
+   Onceki olcek "editorial luxe" idi: 32px display, 20px heading ve en onemlisi
+   0.22em overline aralig. Genis harf araligi + buyuk basliklar "AI/luxe" tell'i.
+   Yeni ritim: 24 / 16 / 14 / 13.5 / 12 / 11, overline araligi 0.06em. */
 .type-display {
-  font-size: clamp(28px, 4.5vw, 32px);
-  line-height: 1.25;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: clamp(20px, 2.4vw, 24px);
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--text-headline);
 }
 .type-heading {
-  font-size: 20px;
+  font-size: 16px;
   line-height: 1.4;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text-headline);
 }
 .type-subhead {
-  font-size: 15px;
-  line-height: 1.47;
-  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 .type-body {
-  font-size: 14px;
-  line-height: 1.43;
+  font-size: 13.5px;
+  line-height: 1.5;
   font-weight: 400;
   color: var(--text-primary);
 }
 .type-caption {
   font-size: 12px;
-  line-height: 1.33;
+  line-height: 1.4;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   color: var(--text-muted);
 }
 .type-overline {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.06em;   /* eski 0.22em — "luxe" yayilma kaldirildi */
   text-transform: uppercase;
   color: var(--text-muted);
 }

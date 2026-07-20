@@ -85,7 +85,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
         {/* Ilan kart */}
         {c.listingTitle && (
           <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(15, 118, 110, 0.08)' }}>
-            <div className="text-[10px] tracking-[0.25em] uppercase mb-2" style={{ color: '#0f766e' }}>
+            <div className="text-[10px] tracking-[0.08em] uppercase mb-2" style={{ color: '#0f766e' }}>
               İlan
             </div>
             <div
@@ -110,7 +110,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
 
         {/* Sohbet istatistik — kompakt */}
         <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(15, 118, 110, 0.08)' }}>
-          <div className="text-[10px] tracking-[0.25em] uppercase mb-2.5" style={{ color: '#0f766e' }}>
+          <div className="text-[10px] tracking-[0.08em] uppercase mb-2.5" style={{ color: '#0f766e' }}>
             Sohbet
           </div>
           <div className="space-y-2 text-xs">
@@ -140,7 +140,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
 
         {/* Hizli islemler */}
         <div className="px-5 py-4 space-y-2 flex-1">
-          <div className="text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: '#0f766e' }}>
+          <div className="text-[10px] tracking-[0.08em] uppercase mb-1" style={{ color: '#0f766e' }}>
             Hızlı İşlemler
           </div>
           {/* Dalga G — Kullanici profilini gor (role'a gore /p/business/:id veya /p/candidate/:id) */}

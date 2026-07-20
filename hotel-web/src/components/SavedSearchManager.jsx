@@ -88,7 +88,7 @@ export default function SavedSearchManager({ filters, onApply }) {
             type="button"
             disabled={!hasActiveFilters}
             onClick={() => setShowSaveInput(true)}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.06em] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
             style={
               hasActiveFilters
                 ? {
@@ -126,7 +126,7 @@ export default function SavedSearchManager({ filters, onApply }) {
             <div className="flex gap-2">
               <button type="button" onClick={handleSubmitName}
                 disabled={createMut.isPending}
-                className="flex-1 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] disabled:opacity-50 transition-all"
+                className="flex-1 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.06em] disabled:opacity-50 transition-all"
                 style={{
                   background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                   color: '#1a1208',
@@ -137,7 +137,7 @@ export default function SavedSearchManager({ filters, onApply }) {
               </button>
               <button type="button"
                 onClick={() => { setShowSaveInput(false); setName('') }}
-                className="px-3 py-2 rounded-full text-[11px] font-medium uppercase tracking-[0.14em] transition-all"
+                className="px-3 py-2 rounded-full text-[11px] font-medium uppercase tracking-[0.06em] transition-all"
                 style={{
                   background: 'transparent',
                   color: '#c9bdaa',
@@ -154,7 +154,7 @@ export default function SavedSearchManager({ filters, onApply }) {
       {!isLoading && saved.length > 0 && (
         <div className="space-y-1.5 pt-2"
              style={{ borderTop: '1px solid rgba(205, 183, 143, 0.08)' }}>
-          <div className="text-[10px] font-medium uppercase tracking-[0.22em] pt-2"
+          <div className="text-[10px] font-medium uppercase tracking-[0.06em] pt-2"
                style={{ color: '#928678' }}>
             Kayıtlı Aramalar · <span className="tabular-nums">{saved.length}</span>
           </div>

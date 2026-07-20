@@ -124,7 +124,7 @@ export default function ListingDetailPage() {
   }
 
   const SEC_HEAD = { fontSize: '13px', fontWeight: 600, letterSpacing: '0.02em', color: 'var(--ah-ink)' }
-  const LABEL = { fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.16em', fontWeight: 600, color: 'var(--ah-ink-4)' }
+  const LABEL = { fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, color: 'var(--ah-ink-4)' }
 
   return (
     <div className="min-h-screen ah-surface relative z-10" style={{ background: 'var(--ah-page)', color: 'var(--ah-ink-2)' }}>
@@ -162,7 +162,7 @@ export default function ListingDetailPage() {
                  style={{ fontSize: '6rem', fontWeight: 700, color: 'var(--ah-brand)', letterSpacing: '-0.04em', lineHeight: 1 }}>
               {businessLetter}
             </div>
-            <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-[0.16em] px-3 py-1.5 rounded-full"
+            <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-[0.06em] px-3 py-1.5 rounded-full"
                   style={{ background: 'var(--ah-card)', color: 'var(--ah-brand)', border: '1px solid var(--ah-line)' }}>
               {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
             </span>
@@ -280,7 +280,7 @@ export default function ListingDetailPage() {
                       <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>{dateLabel}</span>
                       <span className="ml-2 tabular-nums" style={{ color: 'var(--ah-brand)' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
                     </div>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full"
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.06em] px-2 py-0.5 rounded-full"
                           style={full
                             ? { background: 'rgba(192, 57, 43, 0.10)', color: 'var(--ah-danger)', border: '1px solid rgba(192, 57, 43, 0.28)' }
                             : { background: 'rgba(10, 124, 66, 0.10)', color: 'var(--ah-ok)', border: '1px solid rgba(10, 124, 66, 0.28)' }}>
@@ -392,7 +392,7 @@ export default function ListingDetailPage() {
 function TrustSignal({ label, value, sub }) {
   return (
     <div className="text-left">
-      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.16em', fontWeight: 600, color: 'var(--ah-ink-4)' }}>{label}</div>
+      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, color: 'var(--ah-ink-4)' }}>{label}</div>
       <div className="text-base font-semibold mt-1 tabular-nums" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>{value}</div>
       {sub && <div className="text-[10px] mt-0.5" style={{ color: 'var(--ah-ink-4)' }}>{sub}</div>}
     </div>
@@ -469,7 +469,7 @@ function SimilarListings({ listingId, onNavigate }) {
 function DetailRow({ label, value, sub }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="flex-shrink-0" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.16em', fontWeight: 600, color: 'var(--ah-ink-4)' }}>{label}</span>
+      <span className="flex-shrink-0" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, color: 'var(--ah-ink-4)' }}>{label}</span>
       <div className="text-right min-w-0">
         <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{value}</div>
         {sub && <div className="text-[10px]" style={{ color: 'var(--ah-ink-4)' }}>{sub}</div>}

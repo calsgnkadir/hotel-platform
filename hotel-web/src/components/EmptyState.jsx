@@ -296,7 +296,7 @@ export default function EmptyState({
         <div className="flex flex-wrap gap-2 justify-center">
           {ctaLabel && (
             <button onClick={onCta}
-              className="px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5"
+              className="px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5"
               style={{
                 background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                 color: '#1a1208',
@@ -307,7 +307,7 @@ export default function EmptyState({
           )}
           {ctaSecondaryLabel && (
             <button onClick={onCtaSecondary}
-              className="px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5"
+              className="px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5"
               style={{
                 background: 'rgba(205, 183, 143, 0.06)',
                 color: '#ede4d3',

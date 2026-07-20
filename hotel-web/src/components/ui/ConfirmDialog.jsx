@@ -112,7 +112,7 @@ export function ConfirmDialog({
             type="button"
             disabled={loading}
             onClick={() => onClose?.()}
-            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] rounded-full transition-all disabled:opacity-50 hover:-translate-y-0.5"
+            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] rounded-full transition-all disabled:opacity-50 hover:-translate-y-0.5"
             style={{
               background: 'transparent',
               color: '#c9bdaa',
@@ -125,7 +125,7 @@ export function ConfirmDialog({
             type="button"
             disabled={loading}
             onClick={() => onConfirm?.()}
-            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
+            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
             style={
               destructive
                 ? {

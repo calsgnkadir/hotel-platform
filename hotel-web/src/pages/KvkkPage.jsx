@@ -33,7 +33,7 @@ export default function KvkkPage() {
               style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kişisel Verilerin Korunması
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.28em] font-medium mt-3"
+          <p className="text-[10px] uppercase tracking-[0.08em] font-medium mt-3"
              style={{ color: '#928678' }}>
             Aydınlatma Metni · Son güncelleme: 22 Mayıs 2026
           </p>
@@ -124,7 +124,7 @@ export default function KvkkPage() {
         <div className="mt-8 pt-6 border-t text-center"
              style={{ borderColor: 'rgba(205, 183, 143, 0.10)' }}>
           <Link to="/register"
-                className="inline-block text-[12px] font-semibold uppercase tracking-[0.14em] px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5"
+                className="inline-block text-[12px] font-semibold uppercase tracking-[0.06em] px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5"
                 style={{
                   background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                   color: '#1a1208',
@@ -141,7 +141,7 @@ export default function KvkkPage() {
 function Section({ title, children }) {
   return (
     <section>
-      <h2 className="text-[15px] font-semibold uppercase tracking-[0.22em] mb-3"
+      <h2 className="text-[15px] font-semibold uppercase tracking-[0.06em] mb-3"
           style={{ color: '#cdb78f' }}>
         {title}
       </h2>

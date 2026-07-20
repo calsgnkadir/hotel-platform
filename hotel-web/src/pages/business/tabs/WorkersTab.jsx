@@ -93,7 +93,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                lineHeight: 1,
                filter: 'drop-shadow(0 0 14px rgba(15, 118, 110, 0.30))',
              }}>
-          {totalHours.toFixed(0)} <span className="text-[10px] font-medium uppercase tracking-[0.22em] ml-1" style={{ color: '#6b7574' }}>SAAT</span>
+          {totalHours.toFixed(0)} <span className="text-[10px] font-medium uppercase tracking-[0.06em] ml-1" style={{ color: '#6b7574' }}>SAAT</span>
         </div>
       </div>
 

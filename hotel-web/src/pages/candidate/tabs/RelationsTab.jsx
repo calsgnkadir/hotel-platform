@@ -47,7 +47,7 @@ export default function RelationsTab({ onTabChange }) {
           const active = tab === t.id
           return (
             <button key={t.id} type="button" onClick={() => setTab(t.id)}
-              className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
               style={{
                 background: active ? 'rgba(15, 118, 110, 0.14)' : 'rgba(255, 255, 255, 0.75)',
                 color: active ? '#12201f' : '#6b7574',
@@ -99,7 +99,7 @@ export default function RelationsTab({ onTabChange }) {
               </button>
               <button type="button"
                 onClick={() => tab === 'following' ? handleUnfollow(b.id) : handleUnblock(b.id)}
-                className="mt-4 w-full text-[10px] font-semibold uppercase tracking-[0.18em] px-3 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
+                className="mt-4 w-full text-[10px] font-semibold uppercase tracking-[0.06em] px-3 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
                 style={tab === 'following'
                   ? {
                       background: 'rgba(15, 118, 110, 0.06)',

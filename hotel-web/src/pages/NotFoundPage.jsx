@@ -24,7 +24,7 @@ export default function NotFoundPage() {
           Aradığın sayfa silinmiş, taşınmış olabilir veya hiç var olmadı.
         </p>
         <Link to="/"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5"
           style={{
             background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
             color: '#1a1208',
