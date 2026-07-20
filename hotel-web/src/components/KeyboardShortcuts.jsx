@@ -125,7 +125,7 @@ export default function KeyboardShortcuts() {
             style={{
               background: 'rgba(19, 17, 15, 0.94)',
               border: '1px solid rgba(205, 183, 143, 0.30)',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.40), 0 0 16px rgba(205, 183, 143, 0.22)',
+              boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
             }}
           >
             <kbd
@@ -164,7 +164,7 @@ export default function KeyboardShortcuts() {
         style={{
           background: 'linear-gradient(135deg, rgba(19, 17, 15, 0.94), rgba(13, 11, 9, 0.94))',
           border: '1px solid rgba(205, 183, 143, 0.18)',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(205, 183, 143, 0.14)',
+          boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
         }}
       >
         <div className="flex items-baseline justify-between mb-5">

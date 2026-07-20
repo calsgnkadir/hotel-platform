@@ -107,7 +107,7 @@ export default function BottomTabBar({ navItems, activeTab, onTabChange, role, u
               background: 'linear-gradient(135deg, #d4a853, #cdb78f)',
               color: '#13110f',
               border: 'none',
-              boxShadow: '0 6px 20px rgba(205, 183, 143, 0.35), 0 0 0 4px rgba(12, 23, 38, 0.85)',
+              boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',

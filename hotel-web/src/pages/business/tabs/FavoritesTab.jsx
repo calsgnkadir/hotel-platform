@@ -142,7 +142,7 @@ export default function FavoritesTab({ onOpenMessages }) {
               style={{
                 background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                 color: '#ffffff',
-                boxShadow: '0 8px 20px rgba(15, 118, 110, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
+                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               {openingChatId === f.candidateId ? '...' : 'Mesajla'}
             </button>

@@ -93,13 +93,16 @@ export default {
         'float-y':    'floatY 3s ease-in-out infinite',
         'gradient-xy': 'gradientXY 15s ease infinite',
       },
+      // FAZ 26 ITEM 5 — Duz elevation olcegi. Glow (renkli 0 0 Npx) emekli;
+      // eski isimler back-compat icin duz degerlere baglandi.
       boxShadow: {
-        // 3-tier tokens (see DESIGN_TOKENS.md)
-        'tier-raised':   'inset 0 1px 0 rgba(255, 255, 255, 0.03)',
-        'tier-featured': '0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(205, 183, 143, 0.12)',
-        // Champagne CTA / active nav glow
-        'accent-glow':   '0 0 24px rgba(205, 183, 143, 0.30)',
-        'cta-glow':      '0 0 0 1px rgba(212, 168, 83, 0.45), 0 8px 24px rgba(212, 168, 83, 0.30)',
+        e1: 'var(--elev-1)',
+        e2: 'var(--elev-2)',
+        e3: 'var(--elev-3)',
+        'tier-raised':   'var(--elev-1)',
+        'tier-featured': 'var(--elev-2)',
+        'accent-glow':   'var(--elev-1)',
+        'cta-glow':      'var(--elev-1)',
       },
     },
   },

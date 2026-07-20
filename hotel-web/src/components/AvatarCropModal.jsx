@@ -222,7 +222,7 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
           <button type="button" onClick={handleConfirm}
             disabled={!src || saving}
             className="px-5 py-2 text-sm font-bold rounded-lg disabled:opacity-50 transition-all hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #0f766e, #0f766e)', color: '#fff', boxShadow: '0 4px 16px rgba(15, 118, 110, 0.30)' }}>
+            style={{ background: 'linear-gradient(135deg, #0f766e, #0f766e)', color: '#fff', boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)' }}>
             {saving ? 'Yükleniyor...' : 'Kullan'}
           </button>
         </div>

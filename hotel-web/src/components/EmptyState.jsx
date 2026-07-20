@@ -300,7 +300,7 @@ export default function EmptyState({
               style={{
                 background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                 color: '#1a1208',
-                boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
+                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               {ctaLabel}
             </button>

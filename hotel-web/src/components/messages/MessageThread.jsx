@@ -339,7 +339,7 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
                   style={{
                     background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                     color: '#ffffff',
-                    boxShadow: '0 6px 18px rgba(15, 118, 110, 0.40)',
+                    boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9" />

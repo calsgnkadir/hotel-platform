@@ -78,7 +78,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
         <motion.span layoutId="conv-active-rail"
           className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
           style={{ background: 'linear-gradient(180deg, #0f766e, #0f766e, #0b5d57)',
-                   boxShadow: '0 0 12px rgba(15, 118, 110, 0.45)' }} />
+                   boxShadow: 'none' }} />
       )}
       {/* Hover sweep */}
       <span aria-hidden className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
@@ -133,7 +133,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
                 style={{
                   background: 'linear-gradient(135deg, #0f766e, #0f766e)',
                   color: '#ffffff',
-                  boxShadow: '0 0 12px rgba(15, 118, 110, 0.35)',
+                  boxShadow: 'none',
                 }}>
                 {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
               </motion.span>
@@ -212,7 +212,7 @@ function EmptyRail({ userRole, onNavigate }) {
           background: 'linear-gradient(135deg, #0f766e 0%, #0f766e 50%, #0b5d57 100%)',
           color: '#ffffff',
           border: '1px solid rgba(15, 118, 110, 0.45)',
-          boxShadow: '0 4px 14px rgba(15, 118, 110, 0.28), inset 0 1px 0 rgba(255,255,255,0.25)',
+          boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
         }}>
         {ctaLabel}
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"

@@ -189,7 +189,7 @@ export default function AvailabilityBlocksEditor() {
               background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
               color: '#ffffff',
               border: '1px solid rgba(15, 118, 110, 0.55)',
-              boxShadow: '0 8px 20px rgba(15, 118, 110, 0.28), inset 0 1px 0 rgba(255,255,255,0.22)',
+              boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
             }}>
             {saving ? 'Kaydediliyor...' : 'Müsaitliği Kaydet'}
           </button>

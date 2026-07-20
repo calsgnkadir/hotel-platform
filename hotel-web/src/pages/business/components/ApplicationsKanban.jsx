@@ -527,7 +527,7 @@ function CardSilhouette({ app }) {
       style={{
         background: 'rgba(255, 255, 255, 0.95)',
         border: '1.5px solid rgba(15, 118, 110, 0.45)',
-        boxShadow: '0 16px 40px rgba(15, 118, 110, 0.22)',
+        boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
         transform: 'rotate(-2deg)',
         width: '260px',
       }}

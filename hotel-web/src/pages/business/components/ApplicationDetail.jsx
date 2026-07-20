@@ -392,7 +392,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
                 style={{
                   background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)',
-                  boxShadow: '0 8px 22px rgba(122, 159, 122, 0.30)',
+                  boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                 }}>
                 Kabul
               </button>
@@ -401,7 +401,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                   className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
                   style={{
                     background: 'linear-gradient(135deg, #c8923a 0%, #a3762d 100%)',
-                    boxShadow: '0 8px 22px rgba(200, 146, 58, 0.28)',
+                    boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>
                   HOLD 24sa
                 </button>
@@ -410,7 +410,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 className={`py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 ${app.status === 'HELD' ? 'col-span-2' : ''}`}
                 style={{
                   background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)',
-                  boxShadow: '0 8px 22px rgba(180, 106, 85, 0.30)',
+                  boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                 }}>
                 Reddet
               </button>
@@ -428,7 +428,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               style={{
                 background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                 color: '#ffffff',
-                boxShadow: '0 12px 28px rgba(15, 118, 110, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)',
+                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -444,7 +444,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               style={{
                 background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                 color: '#ffffff',
-                boxShadow: '0 12px 28px rgba(15, 118, 110, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)',
+                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               Mesaj Gönder
             </button>

@@ -167,7 +167,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
         style={{
           background: 'linear-gradient(135deg, rgba(19, 17, 15, 0.94), rgba(13, 11, 9, 0.95))',
           border: '1px solid rgba(205, 183, 143, 0.18)',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.60), 0 0 40px rgba(205, 183, 143, 0.14)',
+          boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
         }}
       >
         {/* Hero alan — radial glow + ikon */}
@@ -243,7 +243,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                 className="w-full py-3 text-base tracking-wider uppercase text-white rounded-full transition-all hover:-translate-y-0.5"
                 style={{
                   background: 'linear-gradient(135deg, #d4a853, #d4a853)',
-                  boxShadow: '0 0 20px rgba(205, 183, 143, 0.35)',
+                  boxShadow: 'none',
                 }}
               >
                 {step.cta}
@@ -262,7 +262,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                   : {
                       background: 'linear-gradient(135deg, #d4a853, #d4a853)',
                       color: '#fff',
-                      boxShadow: '0 0 20px rgba(205, 183, 143, 0.35)',
+                      boxShadow: 'none',
                     }
               }
             >

@@ -93,7 +93,7 @@ export default function CookieConsent() {
         border: '1px solid rgba(205, 183, 143, 0.25)',
         borderRadius: 14,
         padding: '18px 20px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(205, 183, 143, 0.08) inset',
+        boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
         color: '#ede4d3',
       }}>
       <div style={{

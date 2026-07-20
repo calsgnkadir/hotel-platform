@@ -581,7 +581,7 @@ code, pre, kbd, samp {
   background: linear-gradient(135deg, #d4a853 0%, #b8902d 100%);   /* filled amber CTA */
   border-color: rgba(212, 168, 83, 0.55);
   color: #1a1208;
-  box-shadow: 0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22);
+  box-shadow: var(--elev-1);   /* ITEM 5 — glow yerine duz */
 }
 .chip.is-active:hover {
   background: linear-gradient(135deg, #e0b766 0%, #c89e3a 100%);
@@ -606,7 +606,7 @@ code, pre, kbd, samp {
   background: rgba(205, 183, 143, 0.06);
 }
 .funnel-stage-btn:focus-visible {
-  outline: 2px solid rgba(212, 168, 83, 0.65);
+  outline: 2px solid var(--ah-brand);   /* ITEM 5 — altin odak halkasi -> teal */
   outline-offset: 1px;
 }
 
@@ -744,7 +744,7 @@ code, pre, kbd, samp {
     height: 0.25rem;
     margin: 0.5rem auto;
     border-radius: 999px;
-    background: rgba(212, 168, 83, 0.30);
+    background: var(--ah-line-2);   /* ITEM 5 — altin tutamak -> notr cizgi */
     z-index: 10;
   }
 }

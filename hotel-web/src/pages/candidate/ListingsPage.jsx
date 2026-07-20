@@ -193,7 +193,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                  style={{
                    background: 'rgba(122, 159, 122, 0.14)',
                    border: '1px solid rgba(122, 159, 122, 0.42)',
-                   boxShadow: '0 0 24px rgba(122, 159, 122, 0.25)',
+                   boxShadow: 'none',
                  }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7a9f7a"
                    strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
@@ -245,7 +245,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                       style={{
                         background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                         color: '#1a1208',
-                        boxShadow: '0 6px 18px rgba(205, 183, 143, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+                        boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                       }}>
                 Mesajlaşmayı Aç
               </button>
@@ -426,7 +426,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                 background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
                 color: '#1a1208',
                 border: '1px solid rgba(205, 183, 143, 0.45)',
-                boxShadow: '0 6px 18px rgba(205, 183, 143, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               {loading && (
                 <span aria-hidden className="absolute bottom-0 left-0 h-[2px]"
