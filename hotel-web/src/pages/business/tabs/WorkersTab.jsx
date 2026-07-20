@@ -69,7 +69,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
       <div className="p-5 flex items-center justify-between gap-4 flex-wrap"
            style={{
              background: '#ffffff',
-             borderRadius: '28px 12px 28px 12px',
+             borderRadius: '12px',
              border: 'none',
              boxShadow: '0 14px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
            }}>

@@ -208,7 +208,7 @@ export default function LandingPage() {
 
               <div className="relative animate-float-y">
                 <div className="glass-panel p-7"
-                     style={{ borderRadius: '28px 12px 28px 12px' }}>
+                     style={{ borderRadius: '12px' }}>
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-semibold"
                          style={{

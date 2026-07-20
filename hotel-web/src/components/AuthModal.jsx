@@ -82,7 +82,7 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="relative w-full max-w-sm focus:outline-none"
             style={{
-              borderRadius: '28px 12px 28px 12px',
+              borderRadius: '12px',
               background: '#1b1815',
               border: 'none',
               boxShadow: '0 32px 72px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(245,239,226,0.04)',

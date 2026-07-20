@@ -63,7 +63,7 @@ code, pre, kbd, samp {
 .auth-card {
   background: #1b1815;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;                                /* rounded-2xl uniform */
+  border-radius: 12px;                                /* FAZ 26 ITEM 4 — tek olcek */
   padding: 2rem;
   width: 100%;
   max-width: 440px;
@@ -629,7 +629,7 @@ code, pre, kbd, samp {
   background: #221f1b;
   color: #ede4d3;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;                                /* rounded-2xl uniform */
+  border-radius: 12px;                                /* FAZ 26 ITEM 4 — tek olcek */
   width: 100%;
   max-width: 540px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.50);

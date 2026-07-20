@@ -83,7 +83,7 @@ export default function RelationsTab({ onTabChange }) {
                  className="p-5 transition-all relative hover:-translate-y-0.5"
                  style={{
                    background: '#ffffff',
-                   borderRadius: i % 2 === 0 ? '28px 12px 12px 12px' : '12px 28px 12px 12px',
+                   borderRadius: '12px',
                    border: 'none',
                    boxShadow: '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
                  }}>

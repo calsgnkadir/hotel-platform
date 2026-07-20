@@ -92,9 +92,10 @@
   --rhythm-page:    64px;
 
   /* ================== RADIUS ================== */
-  --radius-quiet:  10px;
-  --radius-base:   16px;
-  --radius-hero:   28px;
+  /* FAZ 26 ITEM 4 — tek radius olcegi {6,8,10,12,14}. 16/28 emekli. */
+  --radius-quiet:  8px;
+  --radius-base:   10px;
+  --radius-hero:   12px;
 }
 
 /* ================== BODY / GLOBAL ================== */
@@ -213,7 +214,7 @@ body, .role-app-bg {
 .tier-raised {
   background: var(--surface-raised);
   border: 1px solid rgba(205, 183, 143, 0.08);
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 .tier-raised-hover {
@@ -227,7 +228,7 @@ body, .role-app-bg {
 .tier-featured {
   background: var(--surface-floating);
   border: 1px solid rgba(205, 183, 143, 0.35);
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(205, 183, 143, 0.12);

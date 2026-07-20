@@ -65,6 +65,14 @@ export default {
         },
       },
       scale: { '98': '0.98' },
+      // FAZ 26 ITEM 4 — Radius tekleştirildi. Referans (Kariyer.net/LinkedIn)
+      // 6-12px araliginda kalir; 16/24px "luxe" koseler emekli.
+      // md=6, lg=8 Tailwind varsayilani korunur; full (pill/avatar) dokunulmaz.
+      borderRadius: {
+        xl:   '10px',   // vardi: 12px
+        '2xl': '12px',  // vardi: 16px — .card/.input/.btn buradan besleniyor
+        '3xl': '14px',  // vardi: 24px
+      },
       keyframes: {
         shimmer:   { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
         fadeUp:    { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },

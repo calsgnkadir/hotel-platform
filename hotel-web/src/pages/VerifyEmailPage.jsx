@@ -36,7 +36,7 @@ export default function VerifyEmailPage() {
       <div className="w-full max-w-md p-8 text-center"
            style={{
              background: '#1b1815',
-             borderRadius: '28px 12px 28px 12px',
+             borderRadius: '12px',
              border: 'none',
              boxShadow: '0 32px 72px rgba(0, 0, 0, 0.45)',
            }}>
