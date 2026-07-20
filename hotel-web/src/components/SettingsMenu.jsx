@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
 import toast from 'react-hot-toast'
 
 /**
@@ -11,7 +10,6 @@ import toast from 'react-hot-toast'
 export default function SettingsMenu({ onTabChange }) {
   const [open, setOpen]   = useState(false)
   const { user, logout } = useAuth()
-  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const ref = useRef(null)
 
@@ -73,16 +71,7 @@ export default function SettingsMenu({ onTabChange }) {
       {open && (
         <div className="tier-featured absolute right-0 mt-2 w-72 z-50 overflow-hidden"
              style={{ background: '#ffffff', border: '1px solid var(--ah-line, #e4e8e8)', boxShadow: '0 12px 32px rgba(18,32,31,.14)' }}>
-          {/* Tema */}
-          <div className="px-4 py-3 border-b border-hairline">
-            <div className="type-overline mb-2">Görünüm</div>
-            <div className="flex items-center gap-1.5">
-              <ThemePill active={theme === 'light'} label="Açık"
-                onClick={() => { if (theme !== 'light') toggleTheme() }} />
-              <ThemePill active={theme === 'dark'}  label="Koyu"
-                onClick={() => { if (theme !== 'dark')  toggleTheme() }} />
-            </div>
-          </div>
+          {/* FAZ 26 ITEM 7 — "Görünüm" (Açık/Koyu) bloğu kaldırıldı: koyu mod emekli. */}
 
           {/* Bildirim */}
           <div className="px-4 py-3 border-b border-hairline flex items-center justify-between gap-3">
@@ -161,22 +150,6 @@ function MenuItem({ icon, label, onClick, href, onNavigate }) {
   return (
     <button type="button" onClick={onClick} className={cls} style={style} {...hover}>
       <span className="text-ivory-700">{icon}</span><span>{label}</span>
-    </button>
-  )
-}
-
-/* Active theme pill = tier-featured champagne; passive = tier-raised */
-function ThemePill({ active, label, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex-1 px-3 py-1.5 rounded-full type-overline transition-colors ${active ? 'tier-featured' : 'tier-raised tier-raised-hover'}`}
-      style={{
-        color: active ? 'var(--text-headline)' : 'var(--text-muted)',
-      }}
-    >
-      {label}
     </button>
   )
 }

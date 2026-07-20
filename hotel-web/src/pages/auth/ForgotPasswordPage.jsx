@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../api/hotel'
 import { extractErrorMessage } from '../../api/client'
-import ThemeToggle from '../../components/ThemeToggle'
 import BackButton from '../../components/BackButton'
 import DarkVeil from '../../components/DarkVeil'
 
@@ -53,7 +52,6 @@ export default function ForgotPasswordPage() {
             <span className="text-[9px] uppercase tracking-[0.18em] text-ink-400">istanbul</span>
           </Link>
         </div>
-        <ThemeToggle />
       </header>
 
       {/* İçerik */}

@@ -7,7 +7,6 @@ import { extractErrorMessage } from '../../api/client'
 import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../utils/validation'
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 import BackButton from '../../components/BackButton'
-import ThemeToggle from '../../components/ThemeToggle'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
 import DarkVeil from '../../components/DarkVeil'
 
@@ -85,7 +84,6 @@ export default function RegisterPage() {
         <BackButton to="/login" label="Girişe Dön" />
       </div>
       <div className="fixed top-3 right-4 z-40">
-        <ThemeToggle />
       </div>
 
       <div className="auth-card relative z-10" style={{ maxWidth: '520px' }}>
