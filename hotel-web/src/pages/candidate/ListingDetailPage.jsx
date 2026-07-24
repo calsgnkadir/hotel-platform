@@ -169,12 +169,16 @@ export default function ListingDetailPage() {
           </div>
 
           <div className="p-6">
+            {/* FAZ B.1 — pozisyon birincil baslik; serbest metin ilan basligi ikincil */}
             <h1 className="text-2xl sm:text-[28px] font-semibold leading-tight"
                 style={{ color: 'var(--ah-ink)', letterSpacing: '-0.025em' }}>
-              {listing.title}
+              {POSITION_LABELS[listing.position] || listing.position || 'Personel'}
             </h1>
+            {listing.title && (
+              <p className="text-[14px] mt-1" style={{ color: 'var(--ah-ink-3)' }}>{listing.title}</p>
+            )}
             <div className="flex items-center gap-2 flex-wrap mt-2">
-              <p className="text-base" style={{ color: 'var(--ah-ink-3)' }}>{listing.businessName}</p>
+              <p className="text-base font-medium" style={{ color: 'var(--ah-ink-2)' }}>{listing.businessName}</p>
               {listing.businessReviewCount > 0 && (
                 <StarRating value={listing.businessAverageRating}
                   count={listing.businessReviewCount} size="sm" />

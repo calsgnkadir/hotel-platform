@@ -703,29 +703,62 @@ function logoColor(name) {
   return LOGO_COLORS[h % LOGO_COLORS.length]
 }
 
+/* FAZ B.1 — En yakin (gelecekteki) vardiyanin insan-okunur etiketi.
+   Sektorde karar "ne zaman + ne kadar" ile verilir; kartin ana capasi budur. */
+const TR_MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+const TR_DAYS   = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
+function nextShiftLabel(slots) {
+  if (!slots?.length) return null
+  const today = new Date().toLocaleDateString('en-CA')  // YYYY-MM-DD (local)
+  const future = slots
+    .filter(s => s.date && s.date >= today && !(s.full || s.slotsFilled >= s.slotsNeeded))
+    .sort((a, b) => (a.date === b.date
+      ? (a.startTime || '').localeCompare(b.startTime || '')
+      : a.date.localeCompare(b.date)))
+  const s = future[0]
+  if (!s) return null
+  const d = new Date(`${s.date}T00:00:00`)
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0)
+  const diff = Math.round((d - t0) / 86400000)
+  const day = diff === 0 ? 'Bugün'
+    : diff === 1 ? 'Yarın'
+    : `${TR_DAYS[d.getDay()]} ${d.getDate()} ${TR_MONTHS[d.getMonth()]}`
+  const time = s.startTime
+    ? `${s.startTime.slice(0, 5)}${s.endTime ? '–' + s.endTime.slice(0, 5) : ''}`
+    : ''
+  return { day, time, more: future.length - 1 }
+}
+
 /* ── İlan kartı — REDESIGN v3 (açık + teal, sektör düzeni).
    Eski dekoratif kapak (CoverArt "sarı kutu") + yüzen rozetler kaldırıldı;
    yerine logo + bilgi-önce içerik + tek CTA. ── */
 function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
-  const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
+  const salaryStr = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const isSaved = savedIds?.has(listing.id)
   const initial = (listing.businessName || '?').trim().charAt(0).toUpperCase()
+  const position = POSITION_LABELS[listing.position] || listing.position || 'Personel'
 
-  let slotInfo = null
-  if (listing.shiftSlots?.length > 0) {
-    const slots = listing.shiftSlots
-    const openCount = slots.filter(s => !(s.full || s.slotsFilled >= s.slotsNeeded)).length
-    slotInfo = { total: slots.length, allFull: openCount === 0 }
+  // FAZ B.1 — ucret degeri + birim ayri (buyuk deger + kucuk birim)
+  let wageVal = '', wageUnit = ''
+  if (salaryStr) {
+    const parts = salaryStr.split(' / ')
+    wageVal = parts[0]
+    wageUnit = parts[1] ? '/ ' + parts[1] : ''
   }
+
+  const shift = nextShiftLabel(listing.shiftSlots)
+  const totalSlots = listing.shiftSlots?.length || 0
+  const allFull = totalSlots > 0 && !shift
 
   return (
     <div className="ah-job" onClick={() => onDetail(listing)}
          role="button" tabIndex={0}
          onKeyDown={(e) => { if (e.key === 'Enter') onDetail(listing) }}>
+      {/* Ust: logo + pozisyon (birincil) + isletme/ilce (baglam) + kaydet */}
       <div className="ah-job__top">
         <span className="ah-logo" style={{ background: logoColor(listing.businessName) }}>{initial}</span>
         <div className="ah-job__hd">
-          <div className="ah-job__title">{listing.title}</div>
+          <div className="ah-job__title">{position}</div>
           <div className="ah-job__co">
             <span>{listing.businessName}</span>
             {listing.businessReviewCount > 0 && (
@@ -738,7 +771,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
                  strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" /><circle cx="12" cy="10" r="3" />
             </svg>
-            {(listing.businessDistrict || 'İstanbul')} · {POSITION_LABELS[listing.position] || listing.position}
+            {listing.businessDistrict || 'İstanbul'}
           </div>
         </div>
         <button type="button"
@@ -754,9 +787,41 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         </button>
       </div>
 
+      {/* ANA CAPA — en yakin vardiya + ucret (buyuk) */}
+      <div className="ah-job__band">
+        <div className="ah-job__when">
+          <span className="ah-job__band-lbl">
+            {shift ? 'En yakın vardiya' : allFull ? 'Vardiyalar' : 'Vardiya'}
+          </span>
+          {shift ? (
+            <>
+              <span className="ah-job__when-day">{shift.day}</span>
+              {shift.time && <span className="ah-job__when-time">{shift.time}</span>}
+            </>
+          ) : (
+            <span className="ah-job__when-day" style={{ color: 'var(--ah-ink-3)' }}>
+              {allFull ? 'Dolu' : 'Belirtilmemiş'}
+            </span>
+          )}
+        </div>
+        <div className="ah-job__wage">
+          {wageVal ? (
+            <>
+              <span className="ah-job__wage-val">{wageVal}</span>
+              {wageUnit && <span className="ah-job__wage-unit">{wageUnit}</span>}
+            </>
+          ) : (
+            <span className="ah-job__wage-unit">Ücret görüşülür</span>
+          )}
+        </div>
+      </div>
+
+      {/* Ikincil cipler */}
       <div className="ah-job__tags">
-        {salary && <span className="ah-chip ah-chip--sal">{salary}</span>}
         <span className="ah-chip">{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
+        {shift && shift.more > 0 && (
+          <span className="ah-chip">+{shift.more} vardiya daha</span>
+        )}
         {listing.businessVerified && (
           <span className="ah-chip ah-chip--ver">
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor"
@@ -766,14 +831,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
             Doğrulandı
           </span>
         )}
-        {slotInfo && (
-          <span className={`ah-chip ${slotInfo.allFull ? '' : 'ah-chip--warn'}`}>
-            {slotInfo.total} vardiya{slotInfo.allFull ? ' · dolu' : ''}
-          </span>
-        )}
       </div>
-
-      {listing.description && <p className="ah-job__desc">{listing.description}</p>}
 
       <div className="ah-job__cta">
         <button className="ah-btn ah-btn--p ah-btn--block"

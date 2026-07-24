@@ -348,6 +348,24 @@ body, .role-app-bg {
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ah-job__cta { margin-top: auto; }
 
+/* FAZ B.1 — Ilan kartinin ana capasi: en yakin vardiya (sol) + ucret (sag).
+   Sektorde karar tarih/saat + ucret ile verilir; kart bunlari one cikarir. */
+.ah-job__band {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  background: var(--ah-brand-soft); border: 1px solid var(--ah-line);
+}
+.ah-job__when { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ah-job__band-lbl {
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ah-ink-4);
+}
+.ah-job__when-day { font-size: 15px; font-weight: 700; color: var(--ah-ink); letter-spacing: -0.01em; }
+.ah-job__when-time { font-size: 12.5px; color: var(--ah-ink-3); font-variant-numeric: tabular-nums; }
+.ah-job__wage { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
+.ah-job__wage-val { font-size: 19px; font-weight: 800; color: var(--ah-brand); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.ah-job__wage-unit { font-size: 11px; font-weight: 600; color: var(--ah-ink-3); }
+
 /* ═══════════════════════════════════════════════════════════════════════
  * FAZ 26 — ITEM 1: KOYU token seti (opt-in).
  *   html.dark   — tema koyu modu (ITEM 7'de kaderi belli olacak)
