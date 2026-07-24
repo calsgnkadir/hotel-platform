@@ -485,38 +485,34 @@ function ReliabilityCard({ data }) {
   const { score = 0, noShowCount = 0, completedJobsLast90d = 0, completedJobsAllTime = 0,
           averageRating, reviewCount } = data
 
-  let band, color, bg
-  if (score >= 80)      { band = 'Yüksek';   color = '#a8c8a8'; bg = 'linear-gradient(90deg, #16a34a, #4ade80)' }
-  else if (score >= 60) { band = 'Ortalama'; color = '#fcd34d'; bg = 'linear-gradient(90deg, #d97706, #c8923a)' }
-  else if (score >= 40) { band = 'Dikkat';   color = '#fdba74'; bg = 'linear-gradient(90deg, #ea580c, #fb923c)' }
-  else                  { band = 'Düşük';    color = '#d39481'; bg = 'linear-gradient(90deg, #b91c1c, #b46a55)' }
+  // FAZ B.2 — acik+teal palete cevrildi
+  let band, textColor, barBg
+  if (score >= 80)      { band = 'Yüksek';   textColor = 'var(--ah-ok)';     barBg = 'var(--ah-ok)' }
+  else if (score >= 60) { band = 'Ortalama'; textColor = 'var(--ah-warn)';   barBg = 'var(--ah-warn)' }
+  else if (score >= 40) { band = 'Dikkat';   textColor = '#a35b0f';          barBg = '#c8923a' }
+  else                  { band = 'Düşük';    textColor = 'var(--ah-danger)'; barBg = 'var(--ah-danger)' }
 
   return (
-    <div className="card p-5"
-         style={{
-           background: '#ffffff',
-           border: 'none',
-           boxShadow: '0 14px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
-         }}>
+    <div className="card p-5">
       <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: '#6b7574' }}>
+          <p className="text-[10px] uppercase tracking-[0.06em] font-bold" style={{ color: 'var(--ah-ink-4)' }}>
             Güvenilirlik Skoru
           </p>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-4xl tracking-wider" style={{ color: '#ffffff' }}>{score}</span>
-            <span className="text-xs" style={{ color: '#6b7574' }}>/ 100</span>
-            <span className="ml-2 text-[11px] font-bold uppercase tracking-wider" style={{ color }}>{band}</span>
+            <span className="text-4xl font-extrabold tabular-nums" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.02em' }}>{score}</span>
+            <span className="text-xs" style={{ color: 'var(--ah-ink-4)' }}>/ 100</span>
+            <span className="ml-2 text-[11px] font-bold uppercase tracking-[0.06em]" style={{ color: textColor }}>{band}</span>
           </div>
         </div>
-        <p className="text-[11px] max-w-xs text-right" style={{ color: '#6b7574' }}>
+        <p className="text-[11.5px] max-w-xs text-right" style={{ color: 'var(--ah-ink-3)' }}>
           İşletmeler aday seçerken bu skoru görür. Yüksek tutmak seni öne çıkarır.
         </p>
       </div>
 
-      <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(15, 118, 110, 0.12)' }}>
+      <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'var(--ah-line)' }}>
         <div className="h-full rounded-full transition-all"
-             style={{ width: `${Math.max(2, score)}%`, background: bg }} />
+             style={{ width: `${Math.max(2, score)}%`, background: barBg }} />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -534,12 +530,12 @@ function BreakdownPill({ label, value, hint, bad }) {
   return (
     <div className="rounded-lg px-2.5 py-1.5"
          style={{
-           background: bad ? 'rgba(180, 106, 85, 0.10)' : 'rgba(15, 118, 110, 0.08)',
-           border: `1px solid ${bad ? 'rgba(180, 106, 85, 0.28)' : 'rgba(15, 118, 110, 0.14)'}`,
+           background: bad ? 'var(--ah-danger-soft)' : 'var(--ah-brand-soft)',
+           border: `1px solid ${bad ? 'rgba(192, 57, 43, 0.28)' : 'var(--ah-line)'}`,
          }}>
-      <p className="text-[9px] uppercase tracking-wider font-bold" style={{ color: '#6b7574' }}>{label}</p>
-      <p className="text-xs font-semibold mt-0.5" style={{ color: bad ? '#d39481' : '#3f4b4a' }}>
-        {value}{hint && <span className="ml-1 font-normal opacity-70">· {hint}</span>}
+      <p className="text-[9.5px] uppercase tracking-[0.06em] font-bold" style={{ color: 'var(--ah-ink-4)' }}>{label}</p>
+      <p className="text-xs font-semibold mt-0.5" style={{ color: bad ? 'var(--ah-danger)' : 'var(--ah-ink)' }}>
+        {value}{hint && <span className="ml-1 font-normal" style={{ color: 'var(--ah-ink-3)' }}>· {hint}</span>}
       </p>
     </div>
   )

@@ -1,31 +1,32 @@
 /**
- * Aday güvenilirlik skoru (0-100) için renkli pill.
+ * Guvenilirlik skoru (0-100) icin renkli pill.
+ * FAZ B.2: acik+teal palete cevrildi.
  *
- * Renk eşikleri:
- *   >= 80: yeşil       (güvenilir)
- *   60-79: amber       (ortalama)
- *   40-59: turuncu     (dikkat)
- *   <  40: kırmızı     (riskli)
+ * Renk esikleri:
+ *   >= 80: ok (yesil)
+ *   60-79: warn (amber)
+ *   40-59: warn (turuncu)
+ *   <  40: danger (kirmizi)
  *
- * Kullanım: <ReliabilityBadge score={app.candidate.reliabilityScore} />
+ * Kullanim: <ReliabilityBadge score={app.candidate.reliabilityScore} />
  */
 export default function ReliabilityBadge({ score, size = 'sm', showLabel = false }) {
   if (score == null) return null
 
-  let color, bg, border
+  let bg, color, border
   if (score >= 80) {
-    color = '#a8c8a8'; bg = 'rgba(122, 159, 122, 0.14)';  border = 'rgba(122, 159, 122, 0.35)'
+    bg = 'var(--ah-ok-soft)';     color = 'var(--ah-ok)';      border = 'rgba(10, 124, 66, 0.32)'
   } else if (score >= 60) {
-    color = '#fcd34d'; bg = 'rgba(245, 158, 11, 0.18)'; border = 'rgba(245, 158, 11, 0.40)'
+    bg = 'var(--ah-warn-soft)';   color = 'var(--ah-warn)';    border = 'rgba(183, 121, 31, 0.32)'
   } else if (score >= 40) {
-    color = '#fdba74'; bg = 'rgba(251, 146, 60, 0.18)'; border = 'rgba(251, 146, 60, 0.40)'
+    bg = 'var(--ah-warn-soft)';   color = '#a35b0f';           border = 'rgba(183, 121, 31, 0.32)'
   } else {
-    color = '#d39481'; bg = 'rgba(180, 106, 85, 0.18)';  border = 'rgba(180, 106, 85, 0.40)'
+    bg = 'var(--ah-danger-soft)'; color = 'var(--ah-danger)';  border = 'rgba(192, 57, 43, 0.32)'
   }
 
   const isSm = size === 'sm'
   const padding = isSm ? 'px-1.5 py-0.5' : 'px-2.5 py-1'
-  const text    = isSm ? 'text-[10px]'   : 'text-xs'
+  const text    = isSm ? 'text-[10.5px]' : 'text-xs'
   const icon    = isSm ? 'w-2.5 h-2.5'   : 'w-3.5 h-3.5'
 
   return (

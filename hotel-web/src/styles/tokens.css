@@ -366,6 +366,20 @@ body, .role-app-bg {
 .ah-job__wage-val { font-size: 19px; font-weight: 800; color: var(--ah-brand); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .ah-job__wage-unit { font-size: 11px; font-weight: 600; color: var(--ah-ink-3); }
 
+/* FAZ B.2 — Guven satiri: isletmenin sicilinin urun icinde gorunmesi.
+   Rozet degil, sayisal kanit: puan, tamamlanan is, dogrulama. */
+.ah-job__trust {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  padding: 2px 0;
+}
+.ah-trust-item {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; font-weight: 600; color: var(--ah-ink-3);
+}
+.ah-trust-item svg { flex-shrink: 0; }
+.ah-trust-item:first-child { color: var(--ah-ok); }         /* Dogrulandi = ok */
+.ah-trust-sub { font-weight: 500; color: var(--ah-ink-4); font-size: 11px; }
+
 /* ═══════════════════════════════════════════════════════════════════════
  * FAZ 26 — ITEM 1: KOYU token seti (opt-in).
  *   html.dark   — tema koyu modu (ITEM 7'de kaderi belli olacak)

@@ -761,10 +761,8 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
           <div className="ah-job__title">{position}</div>
           <div className="ah-job__co">
             <span>{listing.businessName}</span>
-            {listing.businessReviewCount > 0 && (
-              <StarRating value={listing.businessAverageRating}
-                          count={listing.businessReviewCount} size="xs" />
-            )}
+            {/* FAZ B.2 — puan bilgisi alt "guven satiri"nda; ust satirdaki
+                StarRating duplikasyon oldugu icin kaldirildi. */}
           </div>
           <div className="ah-job__loc">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -816,20 +814,45 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         </div>
       </div>
 
+      {/* FAZ B.2 — Isletme guven satiri: dogrulama + puan + tamamlanan is sayisi.
+          Aday karar verirken sadece kelime degil, kanit istiyor. */}
+      {(listing.businessVerified || listing.businessWorkerCount > 0 || listing.businessReviewCount > 0) && (
+        <div className="ah-job__trust">
+          {listing.businessVerified && (
+            <span className="ah-trust-item" title="İşletme doğrulandı">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+                   strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Doğrulandı
+            </span>
+          )}
+          {listing.businessReviewCount > 0 && (
+            <span className="ah-trust-item" title={`${listing.businessReviewCount} değerlendirme`}>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+                <path d="M11.48 3.5a.56.56 0 0 1 1.04 0l2.13 5.11 5.52.44a.56.56 0 0 1 .32.99l-4.2 3.6 1.28 5.38a.56.56 0 0 1-.84.61L12 16.73l-4.73 2.9a.56.56 0 0 1-.84-.61l1.28-5.39-4.2-3.6a.56.56 0 0 1 .32-.98l5.52-.44 2.13-5.12Z"/>
+              </svg>
+              {Number(listing.businessAverageRating || 0).toFixed(1)}
+              <span className="ah-trust-sub">({listing.businessReviewCount})</span>
+            </span>
+          )}
+          {listing.businessWorkerCount > 0 && (
+            <span className="ah-trust-item" title="Bu işletmede tamamlanan iş sayısı">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+                   strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" /><circle cx="18" cy="18" r="4" />
+              </svg>
+              {listing.businessWorkerCount}+ tamamlanan iş
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Ikincil cipler */}
       <div className="ah-job__tags">
         <span className="ah-chip">{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
         {shift && shift.more > 0 && (
           <span className="ah-chip">+{shift.more} vardiya daha</span>
-        )}
-        {listing.businessVerified && (
-          <span className="ah-chip ah-chip--ver">
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor"
-                 strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
-            Doğrulandı
-          </span>
         )}
       </div>
 
