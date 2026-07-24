@@ -6,6 +6,230 @@ En son rapor en üstte.
 
 ---
 
+## 2026-07-24 11:39 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.30s |
+| Backend OpenAPI | ❌ 404 | 0.24s |
+| Backend listings (public) | ❌ 404 | 0.21s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ❌ 404 | 0.26s |
+| Authenticated checks | ⏭️ skipped | login başarısız |
+
+
+**Endpoint Sentinel** — ✅ Tüm 5 endpoint sağlıklı
+
+| Check | Status | Time |
+|---|---|---|
+| GET /listings (no filter) | ⚠️ 404 | 0.21s |
+| GET /listings (position) | ⚠️ 404 | 0.22s |
+| GET /listings (date filter) | ⚠️ 404 | 0.21s |
+| GET /v3/api-docs | ⚠️ 404 | 0.18s |
+| GET /swagger-ui.html | ⚠️ 404 | 0.19s |
+
+
+---
+
+## 2026-07-23 11:42 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.30s |
+| Backend OpenAPI | ❌ 404 | 0.29s |
+| Backend listings (public) | ❌ 404 | 0.22s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ❌ 404 | 0.22s |
+| Authenticated checks | ⏭️ skipped | login başarısız |
+
+
+**Endpoint Sentinel** — ✅ Tüm 5 endpoint sağlıklı
+
+| Check | Status | Time |
+|---|---|---|
+| GET /listings (no filter) | ⚠️ 404 | 0.22s |
+| GET /listings (position) | ⚠️ 404 | 0.23s |
+| GET /listings (date filter) | ⚠️ 404 | 0.20s |
+| GET /v3/api-docs | ⚠️ 404 | 0.23s |
+| GET /swagger-ui.html | ⚠️ 404 | 0.21s |
+
+
+---
+
+## 2026-07-22 11:41 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.38s |
+| Backend OpenAPI | ❌ 404 | 0.09s |
+| Backend listings (public) | ❌ 404 | 0.09s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ❌ 404 | 0.10s |
+| Authenticated checks | ⏭️ skipped | login başarısız |
+
+
+**Endpoint Sentinel** — ✅ Tüm 5 endpoint sağlıklı
+
+| Check | Status | Time |
+|---|---|---|
+| GET /listings (no filter) | ⚠️ 404 | 0.10s |
+| GET /listings (position) | ⚠️ 404 | 0.09s |
+| GET /listings (date filter) | ⚠️ 404 | 0.09s |
+| GET /v3/api-docs | ⚠️ 404 | 0.07s |
+| GET /swagger-ui.html | ⚠️ 404 | 0.06s |
+
+
+---
+
+## 2026-07-21 11:41 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.34s |
+| Backend OpenAPI | ❌ 404 | 0.24s |
+| Backend listings (public) | ❌ 404 | 0.26s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ❌ 404 | 0.23s |
+| Authenticated checks | ⏭️ skipped | login başarısız |
+
+
+**Endpoint Sentinel** — ✅ Tüm 5 endpoint sağlıklı
+
+| Check | Status | Time |
+|---|---|---|
+| GET /listings (no filter) | ⚠️ 404 | 0.20s |
+| GET /listings (position) | ⚠️ 404 | 0.23s |
+| GET /listings (date filter) | ⚠️ 404 | 0.18s |
+| GET /v3/api-docs | ⚠️ 404 | 0.21s |
+| GET /swagger-ui.html | ⚠️ 404 | 0.18s |
+
+
+---
+
+## 2026-07-20 12:31 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.36s |
+| Backend OpenAPI | ❌ 404 | 0.11s |
+| Backend listings (public) | ❌ 404 | 0.09s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ❌ 404 | 0.08s |
+| Authenticated checks | ⏭️ skipped | login başarısız |
+
+
+**Endpoint Sentinel** — ✅ Tüm 5 endpoint sağlıklı
+
+| Check | Status | Time |
+|---|---|---|
+| GET /listings (no filter) | ⚠️ 404 | 0.08s |
+| GET /listings (position) | ⚠️ 404 | 0.08s |
+| GET /listings (date filter) | ⚠️ 404 | 0.09s |
+| GET /v3/api-docs | ⚠️ 404 | 0.09s |
+| GET /swagger-ui.html | ⚠️ 404 | 0.06s |
+
+
+---
+
+## 2026-07-19 11:31 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.16s |
+| Backend OpenAPI | ❌ 404 | 0.12s |
+| Backend listings (public) | ❌ 404 | 0.12s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ❌ 404 | 0.14s |
+| Authenticated checks | ⏭️ skipped | login başarısız |
+
+
+**Endpoint Sentinel** — ✅ Tüm 5 endpoint sağlıklı
+
+| Check | Status | Time |
+|---|---|---|
+| GET /listings (no filter) | ⚠️ 404 | 0.10s |
+| GET /listings (position) | ⚠️ 404 | 0.11s |
+| GET /listings (date filter) | ⚠️ 404 | 0.15s |
+| GET /v3/api-docs | ⚠️ 404 | 0.11s |
+| GET /swagger-ui.html | ⚠️ 404 | 0.13s |
+
+
+---
+
+## 2026-07-18 11:05 +03
+
+**Uptime**
+
+| Check | Status | Time |
+|---|---|---|
+| Frontend (Vercel) | ✅ 200 | 0.19s |
+| Backend OpenAPI | ❌ 404 | 0.14s |
+| Backend listings (public) | ❌ 404 | 0.13s |
+
+
+**Smoke Test** (auth flow)
+
+| Check | Status | Time |
+|---|---|---|
+| Login (POST /auth/login) | ❌ 404 | 0.14s |
+| Authenticated checks | ⏭️ skipped | login başarısız |
+
+
+**Endpoint Sentinel** — ✅ Tüm 5 endpoint sağlıklı
+
+| Check | Status | Time |
+|---|---|---|
+| GET /listings (no filter) | ⚠️ 404 | 0.11s |
+| GET /listings (position) | ⚠️ 404 | 0.13s |
+| GET /listings (date filter) | ⚠️ 404 | 0.12s |
+| GET /v3/api-docs | ⚠️ 404 | 0.13s |
+| GET /swagger-ui.html | ⚠️ 404 | 0.14s |
+
+
+---
+
 ## 2026-07-17 11:25 +03
 
 **Uptime**
