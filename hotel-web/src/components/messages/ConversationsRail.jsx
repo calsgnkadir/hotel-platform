@@ -10,7 +10,6 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import cldImg, { ImgSize } from '../../lib/cldImg'
 import { SkeletonConversationList } from '../Skeleton'
-import { useOnline } from '../../lib/presence'
 import { formatRelative } from './utils'
 
 /* ── Arama kutusu (focus'ta champagne glow ring) ── */
@@ -57,7 +56,6 @@ function SearchInput({ value, onChange }) {
 
 /* ── Tek sohbet ogesi ── */
 function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) {
-  const online = useOnline(conv.otherPartyId)
   const hasUnread = conv.unreadCount > 0
   return (
     <motion.div onClick={onClick}
@@ -80,7 +78,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
         <motion.span layoutId="conv-active-rail"
           className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
           style={{ background: 'linear-gradient(180deg, #0f766e, #0f766e, #0b5d57)',
-                   boxShadow: '0 0 12px rgba(15, 118, 110, 0.45)' }} />
+                   boxShadow: 'none' }} />
       )}
       {/* Hover sweep */}
       <span aria-hidden className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
@@ -102,16 +100,6 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
                  }}>
               {(conv.otherPartyName || '?').charAt(0).toUpperCase()}
             </div>
-          )}
-          {/* Online pulse */}
-          {online && (
-            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full"
-                  style={{
-                    background: '#7a9f7a',
-                    border: '2px solid rgba(255, 255, 255, 0.95)',
-                    boxShadow: '0 0 0 2px rgba(122, 159, 122, 0.30)',
-                    animation: 'conv-pulse 2.4s ease-in-out infinite',
-                  }} title="Çevrimiçi" />
           )}
         </div>
 
@@ -145,7 +133,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
                 style={{
                   background: 'linear-gradient(135deg, #0f766e, #0f766e)',
                   color: '#ffffff',
-                  boxShadow: '0 0 12px rgba(15, 118, 110, 0.35)',
+                  boxShadow: 'none',
                 }}>
                 {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
               </motion.span>
@@ -224,7 +212,7 @@ function EmptyRail({ userRole, onNavigate }) {
           background: 'linear-gradient(135deg, #0f766e 0%, #0f766e 50%, #0b5d57 100%)',
           color: '#ffffff',
           border: '1px solid rgba(15, 118, 110, 0.45)',
-          boxShadow: '0 4px 14px rgba(15, 118, 110, 0.28), inset 0 1px 0 rgba(255,255,255,0.25)',
+          boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
         }}>
         {ctaLabel}
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"

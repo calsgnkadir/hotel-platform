@@ -69,7 +69,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
       <div className="p-5 flex items-center justify-between gap-4 flex-wrap"
            style={{
              background: '#ffffff',
-             borderRadius: '28px 12px 28px 12px',
+             borderRadius: '12px',
              border: 'none',
              boxShadow: '0 14px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
            }}>
@@ -93,7 +93,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                lineHeight: 1,
                filter: 'drop-shadow(0 0 14px rgba(15, 118, 110, 0.30))',
              }}>
-          {totalHours.toFixed(0)} <span className="text-[10px] font-medium uppercase tracking-[0.22em] ml-1" style={{ color: '#6b7574' }}>SAAT</span>
+          {totalHours.toFixed(0)} <span className="text-[10px] font-medium uppercase tracking-[0.06em] ml-1" style={{ color: '#6b7574' }}>SAAT</span>
         </div>
       </div>
 

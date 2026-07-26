@@ -29,7 +29,6 @@ export default function EmptyThread() {
               left: `${p.left}%`, top: `${p.top}%`,
               width: p.size, height: p.size,
               background: '#0f766e',
-              boxShadow: '0 0 8px #0f766e',
             }} />
         ))}
       </div>

@@ -17,58 +17,62 @@
 /* FAZ 5.UX4 — Single family: Inter. Bebas/Syne import'lari kaldirildi. */
 
 :root {
-  /* ================== SURFACES — 3-tier warm graphite ================== */
-  --surface-base:     #13110f;
-  --surface-raised:   #1b1815;
-  --surface-floating: #221f1b;
+  /* ═══════════════════════════════════════════════════════════════════
+   * FAZ 26 — ITEM 1: Legacy token'lar acik+teal (--ah-*) sistemine REPOINT.
+   * Isimler korundu, degerler acik. Eski koyu degerler .legacy-dark /
+   * .auth-bg / html.dark altinda saklanir (bkz dosya sonu). Boylece
+   * var(--surface/--text/--accent) tuketen HER bilesen varsayilan ACIK.
+   * ═══════════════════════════════════════════════════════════════════ */
+  /* ================== SURFACES ================== */
+  --surface-base:     var(--ah-page);
+  --surface-raised:   var(--ah-card);
+  --surface-floating: #f7f9f9;
 
-  /* Legacy aliases — eski kodun kırılmaması için */
-  --bg-app:           #13110f;
-  --bg-surface:       #1b1815;
-  --bg-elevated:      #221f1b;
-  --bg-subtle:        #1b1815;
-  --bg-muted:         #1b1815;
+  --bg-app:           var(--ah-page);
+  --bg-surface:       var(--ah-card);
+  --bg-elevated:      #f7f9f9;
+  --bg-subtle:        var(--ah-page);
+  --bg-muted:         #f1f4f4;
 
-  /* ================== BORDERS — hairlines, not boxes ================== */
-  --hairline:        rgba(205, 183, 143, 0.08);   /* default ayraç */
-  --hairline-strong: rgba(205, 183, 143, 0.22);   /* hover / vurgu */
-  --hairline-cta:    rgba(212, 168, 83, 0.45);    /* yalnız CTA */
-  --border-subtle:   rgba(205, 183, 143, 0.08);
-  --border-strong:   rgba(205, 183, 143, 0.35);
+  /* ================== BORDERS ================== */
+  --hairline:        var(--ah-line);
+  --hairline-strong: var(--ah-line-2);
+  --hairline-cta:    var(--ah-brand);
+  --border-subtle:   var(--ah-line);
+  --border-strong:   var(--ah-line-2);
 
-  /* ================== TEXT — ivory, no cool whites ================== */
-  --text-primary:    #ede4d3;   /* ivory — page body */
-  --text-secondary:  #c9bdaa;   /* muted ivory — secondary */
-  --text-muted:      #928678;   /* faint warm — tertiary / hint */
-  --text-faint:      #6b6358;
-  --text-inverse:    #13110f;
-  --text-headline:   #f5efe2;   /* slightly brighter for h1/h2 */
+  /* ================== TEXT — ink on light ================== */
+  --text-primary:    var(--ah-ink-2);
+  --text-secondary:  var(--ah-ink-3);
+  --text-muted:      var(--ah-ink-3);
+  --text-faint:      var(--ah-ink-4);
+  --text-inverse:    #ffffff;
+  --text-headline:   var(--ah-ink);
 
-  /* ================== ACCENT — champagne default, gold CTA-only ================== */
-  --accent-action:        #cdb78f;             /* champagne — default */
-  --accent-action-hover:  #d4a853;             /* warm gold — hover/highlight only */
-  --accent-action-cta:    #d4a853;             /* CTA gradient anchor */
-  --accent-action-cta-2:  #b8902d;             /* CTA gradient end */
-  --accent-action-soft:   rgba(205, 183, 143, 0.12);
-  --accent-action-glow:   0 0 24px rgba(205, 183, 143, 0.30);
+  /* ================== ACCENT — teal ================== */
+  --accent-action:        var(--ah-brand);
+  --accent-action-hover:  var(--ah-brand-hover);
+  --accent-action-cta:    var(--ah-brand);
+  --accent-action-cta-2:  var(--ah-brand-hover);
+  --accent-action-soft:   var(--ah-brand-soft);
+  --accent-action-glow:   none;
 
-  /* Link / info — muted blue-grey, not bright navy */
-  --accent-positive:       #8a9bb0;
-  --accent-positive-hover: #a8b7c9;
-  --accent-positive-soft:  rgba(138, 155, 176, 0.12);
-  --accent-positive-text:  #b8c4d2;
+  /* Link / info — teal-nötr yerine info mavi */
+  --accent-positive:       var(--ah-info);
+  --accent-positive-hover: var(--ah-info);
+  --accent-positive-soft:  var(--ah-info-soft);
+  --accent-positive-text:  var(--ah-info);
 
-  /* ================== STATUS — muted, never neon ================== */
-  --signal-green:       #7a9f7a;                   /* sage — accept / active */
-  --signal-green-soft:  rgba(122, 159, 122, 0.12);
-  --signal-coral:       #b46a55;                   /* brick — reject / ban */
-  --signal-coral-soft:  rgba(180, 106, 85, 0.12);
-  --signal-amber:       #c8923a;                   /* ochre — pending / hold */
-  --signal-amber-soft:  rgba(200, 146, 58, 0.12);
-  --signal-info:        #6b8aa3;
-  --signal-info-soft:   rgba(107, 138, 163, 0.12);
+  /* ================== STATUS ================== */
+  --signal-green:       var(--ah-ok);
+  --signal-green-soft:  var(--ah-ok-soft);
+  --signal-coral:       var(--ah-danger);
+  --signal-coral-soft:  var(--ah-danger-soft);
+  --signal-amber:       var(--ah-warn);
+  --signal-amber-soft:  var(--ah-warn-soft);
+  --signal-info:        var(--ah-info);
+  --signal-info-soft:   var(--ah-info-soft);
 
-  /* Legacy status alias'ları (eski koddan) — yeni muted'a yönlendir */
   --accent-warning:    var(--signal-amber);
   --accent-warning-bg: var(--signal-amber-soft);
   --accent-danger:     var(--signal-coral);
@@ -81,16 +85,25 @@
   --font-body:    'Inter', system-ui, -apple-system, sans-serif;
   --font-mono:    ui-monospace, 'SF Mono', 'Menlo', monospace;
 
-  /* ================== RHYTHM — sectional spacing ================== */
+  /* ================== RHYTHM ================== */
   --rhythm-tight:   16px;
   --rhythm-base:    24px;
   --rhythm-section: 40px;
   --rhythm-page:    64px;
 
-  /* ================== RADIUS — asymmetric defaults ================== */
-  --radius-quiet:  10px;
-  --radius-base:   16px;
-  --radius-hero:   28px;
+  /* ================== RADIUS ================== */
+  /* FAZ 26 ITEM 4 — tek radius olcegi {6,8,10,12,14}. 16/28 emekli. */
+  --radius-quiet:  8px;
+  --radius-base:   10px;
+  --radius-hero:   12px;
+
+  /* ================== ELEVATION — FAZ 26 ITEM 5 ==================
+   * Duz olcek. Glow (0 0 Npx renkli) YOK. Referans: 1px hairline +
+   * cok hafif notr golge. Derinlik golgeyle degil cizgiyle anlatilir. */
+  --elev-0: none;
+  --elev-1: 0 1px 2px rgba(18, 32, 31, 0.06);
+  --elev-2: 0 4px 14px rgba(18, 32, 31, 0.08);
+  --elev-3: 0 12px 32px rgba(18, 32, 31, 0.12);
 }
 
 /* ================== BODY / GLOBAL ================== */
@@ -170,26 +183,11 @@ body, .role-app-bg {
   border: 1px solid var(--hairline);
 }
 
-/* CTA double-glow — bright gold ONLY here */
-.cta-glow {
-  box-shadow:
-    0 0 0 1px rgba(212, 168, 83, 0.45),
-    0 8px 24px rgba(212, 168, 83, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}
-.cta-glow:hover {
-  box-shadow:
-    0 0 0 1px rgba(212, 168, 83, 0.65),
-    0 12px 32px rgba(212, 168, 83, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.24);
-}
-
-/* Hero glow legacy — re-tinted to champagne, kept for back-compat */
-.hero-glow {
-  text-shadow:
-    0 0 12px rgba(205, 183, 143, 0.32),
-    0 0 28px rgba(184, 144, 45, 0.22);
-}
+/* FAZ 26 ITEM 5 — Glow BIRAKILDI. Referans (Kariyer.net/LinkedIn) duz elevation
+   kullanir: 1px hairline + cok hafif golge. Isimler back-compat icin duruyor. */
+.cta-glow      { box-shadow: var(--elev-1); }
+.cta-glow:hover{ box-shadow: var(--elev-2); }
+.hero-glow     { text-shadow: none; }
 
 /* ═══════════════════════════════════════════════════════════════════════
  * FAZ 5.UX6 — 3-tier card hierarchy (bkz DESIGN_TOKENS.md)
@@ -209,8 +207,8 @@ body, .role-app-bg {
 .tier-raised {
   background: var(--surface-raised);
   border: 1px solid rgba(205, 183, 143, 0.08);
-  border-radius: 16px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  box-shadow: var(--elev-1);   /* ITEM 5 — inset "luxe" highlight yerine duz */
 }
 .tier-raised-hover {
   transition: background-color 200ms ease, border-color 200ms ease, transform 200ms ease;
@@ -223,10 +221,8 @@ body, .role-app-bg {
 .tier-featured {
   background: var(--surface-floating);
   border: 1px solid rgba(205, 183, 143, 0.35);
-  border-radius: 16px;
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(205, 183, 143, 0.12);
+  border-radius: 12px;
+  box-shadow: var(--elev-2);   /* ITEM 5 — koyu glow/derin golge yerine duz */
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -240,44 +236,48 @@ body, .role-app-bg {
  *   .type-overline  10/14  600   0.22em   uppercase eyebrow / label
  * ═══════════════════════════════════════════════════════════════════════ */
 
+/* FAZ 26 ITEM 6 — Olcek referans ritmine (Kariyer.net/LinkedIn) cekildi.
+   Onceki olcek "editorial luxe" idi: 32px display, 20px heading ve en onemlisi
+   0.22em overline aralig. Genis harf araligi + buyuk basliklar "AI/luxe" tell'i.
+   Yeni ritim: 24 / 16 / 14 / 13.5 / 12 / 11, overline araligi 0.06em. */
 .type-display {
-  font-size: clamp(28px, 4.5vw, 32px);
-  line-height: 1.25;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: clamp(20px, 2.4vw, 24px);
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--text-headline);
 }
 .type-heading {
-  font-size: 20px;
+  font-size: 16px;
   line-height: 1.4;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text-headline);
 }
 .type-subhead {
-  font-size: 15px;
-  line-height: 1.47;
-  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 .type-body {
-  font-size: 14px;
-  line-height: 1.43;
+  font-size: 13.5px;
+  line-height: 1.5;
   font-weight: 400;
   color: var(--text-primary);
 }
 .type-caption {
   font-size: 12px;
-  line-height: 1.33;
+  line-height: 1.4;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   color: var(--text-muted);
 }
 .type-overline {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.06em;   /* eski 0.22em — "luxe" yayilma kaldirildi */
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -338,6 +338,8 @@ body, .role-app-bg {
 .ah-job__loc { font-size: 12.5px; color: var(--ah-ink-3); margin-top: 3px; display: flex;
   align-items: center; gap: 5px; }
 .ah-job__loc svg { width: 13px; height: 13px; color: var(--ah-ink-4); flex-shrink: 0; }
+/* FAZ B.3 — kart uzerinde "sana X km" */
+.ah-job__dist { color: var(--ah-brand); font-weight: 600; margin-left: 4px; }
 .ah-save { margin-left: auto; width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--ah-line);
   background: var(--ah-card); color: var(--ah-ink-4); display: grid; place-items: center;
   cursor: pointer; flex-shrink: 0; transition: border-color .15s, color .15s; }
@@ -347,3 +349,71 @@ body, .role-app-bg {
 .ah-job__desc { font-size: 12.5px; color: var(--ah-ink-3); line-height: 1.5; margin: 0;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ah-job__cta { margin-top: auto; }
+
+/* FAZ B.1 — Ilan kartinin ana capasi: en yakin vardiya (sol) + ucret (sag).
+   Sektorde karar tarih/saat + ucret ile verilir; kart bunlari one cikarir. */
+/* FAZ B.5 — sade beyaz bant (yesil zemin kaldirildi), olculu rakamlar */
+.ah-job__band {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--ah-line); border-bottom: 1px solid var(--ah-line);
+  background: transparent;
+}
+.ah-job__when { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ah-job__band-lbl {
+  font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--ah-ink-4);
+}
+.ah-job__when-day { font-size: 13.5px; font-weight: 600; color: var(--ah-ink); letter-spacing: -0.005em; }
+.ah-job__when-time { font-size: 12px; color: var(--ah-ink-3); font-variant-numeric: tabular-nums; }
+.ah-job__wage { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
+.ah-job__wage-val { font-size: 15px; font-weight: 700; color: var(--ah-ink); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.ah-job__wage-unit { font-size: 11px; font-weight: 500; color: var(--ah-ink-3); }
+
+/* FAZ B.2 — Guven satiri: isletmenin sicilinin urun icinde gorunmesi.
+   Rozet degil, sayisal kanit: puan, tamamlanan is, dogrulama. */
+.ah-job__trust {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  padding: 2px 0;
+}
+.ah-trust-item {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; font-weight: 600; color: var(--ah-ink-3);
+}
+.ah-trust-item svg { flex-shrink: 0; }
+.ah-trust-item:first-child { color: var(--ah-ok); }         /* Dogrulandi = ok */
+.ah-trust-sub { font-weight: 500; color: var(--ah-ink-4); font-size: 11px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * FAZ 26 — ITEM 1: KOYU token seti (opt-in).
+ *   html.dark   — tema koyu modu (ITEM 7'de kaderi belli olacak)
+ *   .auth-bg    — giris/kayit sayfalari (kendi koyu tasarimi)
+ *   .legacy-dark— henuz migrate edilmemis koyu sayfalar (landing, public profiller)
+ * Eski grafit + champagne degerleri burada; varsayilan (:root) artik ACIK.
+ * ═══════════════════════════════════════════════════════════════════════ */
+html.dark, .auth-bg, .legacy-dark {
+  --surface-base:#13110f; --surface-raised:#1b1815; --surface-floating:#221f1b;
+  --bg-app:#13110f; --bg-surface:#1b1815; --bg-elevated:#221f1b; --bg-subtle:#1b1815; --bg-muted:#1b1815;
+  --hairline:rgba(205,183,143,0.08); --hairline-strong:rgba(205,183,143,0.22); --hairline-cta:rgba(212,168,83,0.45);
+  --border-subtle:rgba(205,183,143,0.08); --border-strong:rgba(205,183,143,0.35);
+  --text-primary:#ede4d3; --text-secondary:#c9bdaa; --text-muted:#928678; --text-faint:#6b6358;
+  --text-inverse:#13110f; --text-headline:#f5efe2;
+  --accent-action:#cdb78f; --accent-action-hover:#d4a853; --accent-action-cta:#d4a853; --accent-action-cta-2:#b8902d;
+  --accent-action-soft:rgba(205,183,143,0.12); --accent-action-glow:0 0 24px rgba(205,183,143,0.30);
+  --accent-positive:#8a9bb0; --accent-positive-hover:#a8b7c9; --accent-positive-soft:rgba(138,155,176,0.12); --accent-positive-text:#b8c4d2;
+  --signal-green:#7a9f7a; --signal-green-soft:rgba(122,159,122,0.12);
+  --signal-coral:#b46a55; --signal-coral-soft:rgba(180,106,85,0.12);
+  --signal-amber:#c8923a; --signal-amber-soft:rgba(200,146,58,0.12);
+  --signal-info:#6b8aa3;  --signal-info-soft:rgba(107,138,163,0.12);
+  /* ITEM 5 — koyu zeminde elevation (yine glow degil, notr derinlik) */
+  --elev-1: 0 1px 2px rgba(0,0,0,0.35);
+  --elev-2: 0 6px 18px rgba(0,0,0,0.45);
+  --elev-3: 0 16px 40px rgba(0,0,0,0.55);
+}
+/* FAZ 26 ITEM 2 — body artik acik; body'ye guvenen koyu sayfa kokleri (auth/
+   landing/public: .auth-bg / .legacy-dark) kendi koyu zeminini bassin ki
+   acik body sizmasin. Inline bg olanlarda (landing/login) inline zaten kazanir. */
+.auth-bg, .legacy-dark {
+  background: var(--surface-base);
+  color: var(--text-primary);
+}

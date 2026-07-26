@@ -28,6 +28,8 @@ import SavedSearchManager from '../../components/SavedSearchManager'
 // ListingsMapView kaldirildi (kullanici istegi)
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
+import { useMyLocation } from '../../lib/useMyLocation'                    // FAZ B.3
+import { distanceKm, formatDistance } from '../../lib/distance'            // FAZ B.3
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -193,7 +195,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                  style={{
                    background: 'rgba(122, 159, 122, 0.14)',
                    border: '1px solid rgba(122, 159, 122, 0.42)',
-                   boxShadow: '0 0 24px rgba(122, 159, 122, 0.25)',
+                   boxShadow: 'none',
                  }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7a9f7a"
                    strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
@@ -222,9 +224,9 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                 <div key={label} className="flex flex-col items-center flex-1">
                   <span className="w-3 h-3 rounded-full"
                         style={{
-                          background: i === 0 ? '#cdb78f' : 'rgba(205, 183, 143, 0.20)',
-                          border: '1px solid rgba(205, 183, 143, 0.42)',
-                          boxShadow: i === 0 ? '0 0 12px rgba(205, 183, 143, 0.55)' : 'none',
+                          background: i === 0 ? '#2d968b' : 'rgba(15, 118, 110, 0.20)',
+                          border: '1px solid rgba(15, 118, 110, 0.42)',
+                          boxShadow: i === 0 ? '0 0 12px rgba(15, 118, 110, 0.55)' : 'none',
                         }} />
                   <span className="type-overline mt-2"
                         style={{ color: i === 0 ? 'var(--accent-action)' : 'var(--text-faint)' }}>
@@ -243,9 +245,9 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
               <button type="button" onClick={handleOpenMessages}
                       className="flex-1 py-2.5 type-overline rounded-2xl transition-all hover:-translate-y-0.5"
                       style={{
-                        background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                        background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                         color: '#1a1208',
-                        boxShadow: '0 6px 18px rgba(205, 183, 143, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+                        boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                       }}>
                 Mesajlaşmayı Aç
               </button>
@@ -267,7 +269,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
         <div className="p-6 border-b border-hairline sticky top-0 z-10" style={{ background: 'var(--surface-raised)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                 style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.32)', color: 'var(--accent-action)' }}>
+                 style={{ background: 'rgba(15, 118, 110, 0.10)', border: '1px solid rgba(15, 118, 110, 0.32)', color: 'var(--accent-action)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div>
@@ -423,10 +425,10 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             <button type="submit" disabled={loading || !hasFutureSlots}
               className="relative overflow-hidden flex-1 py-2.5 type-overline rounded-2xl transition-all disabled:opacity-60 hover:-translate-y-0.5"
               style={{
-                background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                 color: '#1a1208',
-                border: '1px solid rgba(205, 183, 143, 0.45)',
-                boxShadow: '0 6px 18px rgba(205, 183, 143, 0.32), inset 0 1px 0 rgba(255,255,255,0.22)',
+                border: '1px solid rgba(15, 118, 110, 0.45)',
+                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               {loading && (
                 <span aria-hidden className="absolute bottom-0 left-0 h-[2px]"
@@ -473,7 +475,7 @@ function DetailModal({ listing, onClose, onApply }) {
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
-                 style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.32)', color: '#cdb78f' }}>
+                 style={{ background: 'rgba(15, 118, 110, 0.10)', border: '1px solid rgba(15, 118, 110, 0.32)', color: '#2d968b' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div className="flex-1 min-w-0">
@@ -649,14 +651,14 @@ function DetailModal({ listing, onClose, onApply }) {
    position-bazli kompozisyon (renk wash + dev outline ikon + cizgi dokusu).
    Her pozisyonun kendi tonu + ikonu var — kartlar ayirt edilebilir. ── */
 const COVER_ART = {
-  WAITER:        { tint: '205, 183, 143', icon: <path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8v2M10 8h4" /> },                                         // servis kubbesi
+  WAITER:        { tint: '15, 118, 110', icon: <path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8v2M10 8h4" /> },                                         // servis kubbesi
   DISHWASHER:    { tint: '107, 138, 163', icon: <><path d="M7 21c0-4 2-5 2-8a4 4 0 0 0-8 0" /><path d="M12 3c3 3 8 4 8 9a8 8 0 0 1-8 9" /><circle cx="16" cy="7" r="1.5" /></> },  // su
   HOUSEKEEPING:  { tint: '122, 159, 122', icon: <><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6" /><path d="M3 18h18M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" /></> },        // yatak
   RECEPTION:     { tint: '200, 146, 58',  icon: <><path d="M12 4v3" /><path d="M5 15a7 7 0 0 1 14 0" /><path d="M3 15h18v3H3z" /></> },            // resepsiyon cani
   KITCHEN_STAFF: { tint: '180, 106, 85',  icon: <><path d="M7 8a4 4 0 0 1 3-6 4 4 0 0 1 4 0 4 4 0 0 1 3 6v3H7z" /><path d="M8 11v8M12 11v8M16 11v8M7 21h10" /></> },              // sef sapkasi
-  BELLBOY:       { tint: '205, 183, 143', icon: <><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M9 8V6a3 3 0 0 1 6 0v2M4 13h16" /></> },  // valiz
+  BELLBOY:       { tint: '15, 118, 110', icon: <><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M9 8V6a3 3 0 0 1 6 0v2M4 13h16" /></> },  // valiz
   SECURITY:      { tint: '107, 138, 163', icon: <path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z" /> },                              // kalkan
-  DEFAULT:       { tint: '205, 183, 143', icon: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01" /></> },  // bina
+  DEFAULT:       { tint: '15, 118, 110', icon: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01" /></> },  // bina
 }
 
 function CoverArt({ position, businessName }) {
@@ -703,42 +705,79 @@ function logoColor(name) {
   return LOGO_COLORS[h % LOGO_COLORS.length]
 }
 
+/* FAZ B.1 — En yakin (gelecekteki) vardiyanin insan-okunur etiketi.
+   Sektorde karar "ne zaman + ne kadar" ile verilir; kartin ana capasi budur. */
+const TR_MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+const TR_DAYS   = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
+function nextShiftLabel(slots) {
+  if (!slots?.length) return null
+  const today = new Date().toLocaleDateString('en-CA')  // YYYY-MM-DD (local)
+  const future = slots
+    .filter(s => s.date && s.date >= today && !(s.full || s.slotsFilled >= s.slotsNeeded))
+    .sort((a, b) => (a.date === b.date
+      ? (a.startTime || '').localeCompare(b.startTime || '')
+      : a.date.localeCompare(b.date)))
+  const s = future[0]
+  if (!s) return null
+  const d = new Date(`${s.date}T00:00:00`)
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0)
+  const diff = Math.round((d - t0) / 86400000)
+  const day = diff === 0 ? 'Bugün'
+    : diff === 1 ? 'Yarın'
+    : `${TR_DAYS[d.getDay()]} ${d.getDate()} ${TR_MONTHS[d.getMonth()]}`
+  const time = s.startTime
+    ? `${s.startTime.slice(0, 5)}${s.endTime ? '–' + s.endTime.slice(0, 5) : ''}`
+    : ''
+  return { day, time, more: future.length - 1 }
+}
+
 /* ── İlan kartı — REDESIGN v3 (açık + teal, sektör düzeni).
    Eski dekoratif kapak (CoverArt "sarı kutu") + yüzen rozetler kaldırıldı;
    yerine logo + bilgi-önce içerik + tek CTA. ── */
 function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
-  const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
+  const salaryStr = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const isSaved = savedIds?.has(listing.id)
   const initial = (listing.businessName || '?').trim().charAt(0).toUpperCase()
+  const position = POSITION_LABELS[listing.position] || listing.position || 'Personel'
 
-  let slotInfo = null
-  if (listing.shiftSlots?.length > 0) {
-    const slots = listing.shiftSlots
-    const openCount = slots.filter(s => !(s.full || s.slotsFilled >= s.slotsNeeded)).length
-    slotInfo = { total: slots.length, allFull: openCount === 0 }
+  // FAZ B.1 — ucret degeri + birim ayri (buyuk deger + kucuk birim)
+  let wageVal = '', wageUnit = ''
+  if (salaryStr) {
+    const parts = salaryStr.split(' / ')
+    wageVal = parts[0]
+    wageUnit = parts[1] ? '/ ' + parts[1] : ''
   }
+
+  const shift = nextShiftLabel(listing.shiftSlots)
+  const totalSlots = listing.shiftSlots?.length || 0
+  const allFull = totalSlots > 0 && !shift
 
   return (
     <div className="ah-job" onClick={() => onDetail(listing)}
          role="button" tabIndex={0}
          onKeyDown={(e) => { if (e.key === 'Enter') onDetail(listing) }}>
+      {/* Ust: logo + pozisyon (birincil) + isletme/ilce (baglam) + kaydet */}
       <div className="ah-job__top">
         <span className="ah-logo" style={{ background: logoColor(listing.businessName) }}>{initial}</span>
         <div className="ah-job__hd">
-          <div className="ah-job__title">{listing.title}</div>
+          <div className="ah-job__title">{position}</div>
           <div className="ah-job__co">
             <span>{listing.businessName}</span>
-            {listing.businessReviewCount > 0 && (
-              <StarRating value={listing.businessAverageRating}
-                          count={listing.businessReviewCount} size="xs" />
-            )}
+            {/* FAZ B.2 — puan bilgisi alt "guven satiri"nda; ust satirdaki
+                StarRating duplikasyon oldugu icin kaldirildi. */}
           </div>
           <div className="ah-job__loc">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                  strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" /><circle cx="12" cy="10" r="3" />
             </svg>
-            {(listing.businessDistrict || 'İstanbul')} · {POSITION_LABELS[listing.position] || listing.position}
+            {listing.businessDistrict || 'İstanbul'}
+            {/* FAZ B.3 — mesafe (konum verildiyse) */}
+            {listing._distanceKm != null && (
+              <span className="ah-job__dist" title="Sana kuş uçuşu mesafe">
+                · {formatDistance(listing._distanceKm)}
+              </span>
+            )}
           </div>
         </div>
         <button type="button"
@@ -754,26 +793,76 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         </button>
       </div>
 
-      <div className="ah-job__tags">
-        {salary && <span className="ah-chip ah-chip--sal">{salary}</span>}
-        <span className="ah-chip">{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
-        {listing.businessVerified && (
-          <span className="ah-chip ah-chip--ver">
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor"
-                 strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
-            Doğrulandı
+      {/* ANA CAPA — en yakin vardiya + ucret (buyuk) */}
+      <div className="ah-job__band">
+        <div className="ah-job__when">
+          <span className="ah-job__band-lbl">
+            {shift ? 'En yakın vardiya' : allFull ? 'Vardiyalar' : 'Vardiya'}
           </span>
-        )}
-        {slotInfo && (
-          <span className={`ah-chip ${slotInfo.allFull ? '' : 'ah-chip--warn'}`}>
-            {slotInfo.total} vardiya{slotInfo.allFull ? ' · dolu' : ''}
-          </span>
-        )}
+          {shift ? (
+            <>
+              <span className="ah-job__when-day">{shift.day}</span>
+              {shift.time && <span className="ah-job__when-time">{shift.time}</span>}
+            </>
+          ) : (
+            <span className="ah-job__when-day" style={{ color: 'var(--ah-ink-3)' }}>
+              {allFull ? 'Dolu' : 'Belirtilmemiş'}
+            </span>
+          )}
+        </div>
+        <div className="ah-job__wage">
+          {wageVal ? (
+            <>
+              <span className="ah-job__wage-val">{wageVal}</span>
+              {wageUnit && <span className="ah-job__wage-unit">{wageUnit}</span>}
+            </>
+          ) : (
+            <span className="ah-job__wage-unit">Ücret görüşülür</span>
+          )}
+        </div>
       </div>
 
-      {listing.description && <p className="ah-job__desc">{listing.description}</p>}
+      {/* FAZ B.2 — Isletme guven satiri: dogrulama + puan + tamamlanan is sayisi.
+          Aday karar verirken sadece kelime degil, kanit istiyor. */}
+      {(listing.businessVerified || listing.businessWorkerCount > 0 || listing.businessReviewCount > 0) && (
+        <div className="ah-job__trust">
+          {listing.businessVerified && (
+            <span className="ah-trust-item" title="İşletme doğrulandı">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+                   strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Doğrulandı
+            </span>
+          )}
+          {listing.businessReviewCount > 0 && (
+            <span className="ah-trust-item" title={`${listing.businessReviewCount} değerlendirme`}>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+                <path d="M11.48 3.5a.56.56 0 0 1 1.04 0l2.13 5.11 5.52.44a.56.56 0 0 1 .32.99l-4.2 3.6 1.28 5.38a.56.56 0 0 1-.84.61L12 16.73l-4.73 2.9a.56.56 0 0 1-.84-.61l1.28-5.39-4.2-3.6a.56.56 0 0 1 .32-.98l5.52-.44 2.13-5.12Z"/>
+              </svg>
+              {Number(listing.businessAverageRating || 0).toFixed(1)}
+              <span className="ah-trust-sub">({listing.businessReviewCount})</span>
+            </span>
+          )}
+          {listing.businessWorkerCount > 0 && (
+            <span className="ah-trust-item" title="Bu işletmede tamamlanan iş sayısı">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+                   strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" /><circle cx="18" cy="18" r="4" />
+              </svg>
+              {listing.businessWorkerCount}+ tamamlanan iş
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Ikincil cipler */}
+      <div className="ah-job__tags">
+        <span className="ah-chip">{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
+        {shift && shift.more > 0 && (
+          <span className="ah-chip">+{shift.more} vardiya daha</span>
+        )}
+      </div>
 
       <div className="ah-job__cta">
         <button className="ah-btn ah-btn--p ah-btn--block"
@@ -886,18 +975,64 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     setDatePreset(''); setCustomFrom(''); setCustomTo('')
   }
 
+  // FAZ B.4 — Bos durumdan tek tikla "bu aramaya ilan cikinca haber ver".
+  async function saveCurrentSearchQuick() {
+    const parts = [POSITION_LABELS[position], district, debouncedKeyword].filter(Boolean)
+    const name = parts.length ? parts.join(' · ') : 'Kayıtlı arama'
+    try {
+      await hotelApi.createSavedSearch({
+        name,
+        position: position || null,
+        jobType: jobType || null,
+        district: district || null,
+        keyword: debouncedKeyword || null,
+        minSalary: minSalary ? Number(minSalary) : null,
+        dateFrom: dateRange.dateFrom || null,
+        dateTo: dateRange.dateTo || null,
+        shifts: shifts.length ? shifts : null,
+      })
+      toast.success('Arama kaydedildi · yeni eşleşmelerde bildirim alacaksın')
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    }
+  }
+
   const activeFilterCount =
     (keyword ? 1 : 0) + (position ? 1 : 0) + (jobType ? 1 : 0) +
     (district ? 1 : 0) + (minSalary ? 1 : 0) + shifts.length +
     (datePreset ? 1 : 0)
 
+  // FAZ B.3 — Konum + mesafe. Kullanici acikca "Yakinlar once" derse istekle.
+  const myLoc = useMyLocation()
+  const [nearbyFirst, setNearbyFirst] = useState(false)
+
   // Dalga I1 — Engelli isletmeleri client-side filtrele (backend rebuild gerekene kadar)
-  const visibleListings = useMemo(
-    () => blockedBusinessIds.size === 0
+  // + FAZ B.3 — mesafe hesabi (varsa) + istege gore mesafeye gore sirala
+  const visibleListings = useMemo(() => {
+    let list = blockedBusinessIds.size === 0
       ? listings
-      : listings.filter(l => !blockedBusinessIds.has(l.businessId)),
-    [listings, blockedBusinessIds]
-  )
+      : listings.filter(l => !blockedBusinessIds.has(l.businessId))
+
+    if (myLoc.location) {
+      list = list.map(l => ({
+        ...l,
+        _distanceKm: distanceKm(
+          myLoc.location.lat, myLoc.location.lng,
+          l.businessLatitude, l.businessLongitude
+        ),
+      }))
+      if (nearbyFirst) {
+        list = [...list].sort((a, b) => {
+          const da = a._distanceKm; const db = b._distanceKm
+          if (da == null && db == null) return 0
+          if (da == null) return 1
+          if (db == null) return -1
+          return da - db
+        })
+      }
+    }
+    return list
+  }, [listings, blockedBusinessIds, myLoc.location, nearbyFirst])
 
   // 6'lik pagination
   const totalPages = Math.max(1, Math.ceil(visibleListings.length / PAGE_SIZE))
@@ -910,177 +1045,120 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   useEffect(() => { setPage(1) }, [debouncedKeyword, position, jobType, district, minSalary, shifts, datePreset, customFrom, customTo])
 
   return (
-    <div className="ah-surface xl:grid xl:grid-cols-[280px_1fr] xl:gap-5 space-y-4 xl:space-y-0">
-      {/* SOL PANEL — filtre paneli (sticky lg+) */}
-      <aside className="xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
-        <div className={`card p-4 space-y-4 ${showFilters ? '' : 'hidden xl:block'}`}>
-        {/* Dalga 1 — Eski "FİLTRE AKTİF" banner üst ActiveFilterBar'a tasindi */}
-
-        {/* İlçe — dropdown (39 ilçe pill chip mantıksız) */}
+    <div className="ah-surface space-y-4">
+      {/* Baslik + Yakinlar toggle */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <label className="block mb-2 text-[11px] font-semibold tracking-[0.22em] uppercase"
-                 style={{ color: '#928678' }}>İlçe</label>
-          <select value={district} onChange={e => setDistrict(e.target.value)} className="input text-sm">
-            <option value="">Tüm İstanbul</option>
-            {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
+          <h2 className="text-[22px] font-semibold" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.02em' }}>İş İlanları</h2>
+          <p className="text-[12px] mt-1 tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>
+            {loading ? '...' : `${listings.length} ilan`}
+            {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
+          </p>
+        </div>
+        <NearbyToggle
+          nearbyFirst={nearbyFirst}
+          onToggle={async () => {
+            if (nearbyFirst) { setNearbyFirst(false); return }
+            let pos = myLoc.location
+            if (!pos) pos = await myLoc.request()
+            if (pos) setNearbyFirst(true)
+          }}
+          loading={myLoc.loading}
+          hasLocation={!!myLoc.location}
+          error={myLoc.error}
+        />
+      </div>
+
+      {/* FAZ B.5 — Filtreler USTTE yatay bar (sol panel kaldirildi, kullanici istegi) */}
+      <div className="card" style={{ padding: '14px 16px' }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <FilterField label="İlçe">
+            <select value={district} onChange={e => setDistrict(e.target.value)} className="input text-sm">
+              <option value="">Tüm İstanbul</option>
+              {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </FilterField>
+          <FilterField label="Pozisyon">
+            <select value={position} onChange={e => setPosition(e.target.value)} className="input text-sm">
+              <option value="">Tüm pozisyonlar</option>
+              {Object.entries(POSITION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+          </FilterField>
+          <FilterField label="Çalışma Türü">
+            <select value={jobType} onChange={e => setJobType(e.target.value)} className="input text-sm">
+              <option value="">Tümü</option>
+              {Object.entries(JOB_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+          </FilterField>
+          <FilterField label="Tarih">
+            <select value={datePreset} onChange={e => setDatePreset(e.target.value)} className="input text-sm">
+              <option value="">Tümü</option>
+              <option value="TODAY">Bugün</option>
+              <option value="TOMORROW">Yarın</option>
+              <option value="WEEK">Bu Hafta</option>
+              <option value="WEEKEND">Haftasonu</option>
+              <option value="CUSTOM">Özel...</option>
+            </select>
+          </FilterField>
+          <FilterField label="Min Ücret">
+            <select value={minSalary} onChange={e => setMinSalary(e.target.value)} className="input text-sm">
+              <option value="">Tümü</option>
+              {[5000, 10000, 15000, 20000, 30000].map(v => (
+                <option key={v} value={v}>{v.toLocaleString('tr-TR')} ₺+</option>
+              ))}
+            </select>
+          </FilterField>
         </div>
 
-        {/* Pozisyon — FilterChipGroup */}
-        <FilterChipGroup
-          label="Pozisyon"
-          value={position}
-          onChange={setPosition}
-          items={Object.entries(POSITION_LABELS).map(([v, l]) => ({ value: v, label: l }))}
-        />
-
-        {/* Çalışma Türü — FilterChipGroup */}
-        <FilterChipGroup
-          label="Çalışma Türü"
-          value={jobType}
-          onChange={setJobType}
-          items={Object.entries(JOB_TYPE_LABELS).map(([v, l]) => ({ value: v, label: l }))}
-        />
-
-        {/* Min Ücret — range slider + preset chips */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-[11px] font-semibold tracking-[0.22em] uppercase"
-                   style={{ color: '#928678' }}>Min Ücret</label>
-            <span className="text-[13px] font-semibold tabular-nums"
-                  style={{ color: '#cdb78f', letterSpacing: '-0.005em' }}>
-              {minSalary ? `${Number(minSalary).toLocaleString('tr-TR')} ₺+` : 'Tümü'}
-            </span>
+        {datePreset === 'CUSTOM' && (
+          <div className="grid grid-cols-2 gap-3 mt-3 max-w-md">
+            <FilterField label="Başlangıç">
+              <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                min={new Date().toISOString().split('T')[0]} className="input text-sm" />
+            </FilterField>
+            <FilterField label="Bitiş">
+              <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                min={customFrom || new Date().toISOString().split('T')[0]} className="input text-sm" />
+            </FilterField>
           </div>
-          <input type="range" min="0" max="50000" step="1000"
-            value={minSalary || 0}
-            onChange={e => setMinSalary(e.target.value === '0' ? '' : e.target.value)}
-            className="w-full cursor-pointer"
-            style={{ accentColor: '#cdb78f' }} />
-          <div className="mt-3">
-            <FilterChipGroup
-              label=""
-              value={minSalary}
-              onChange={(v) => setMinSalary(v)}
-              items={[5000, 10000, 15000, 20000, 30000].map(v => ({
-                value: String(v),
-                label: `${v / 1000}K+`,
-              }))}
+        )}
+
+        <div className="flex items-center gap-3 mt-3 pt-3" style={{ borderTop: '1px solid var(--ah-line)' }}>
+          <div className="min-w-0 flex-1">
+            <SavedSearchManager
+              filters={{
+                position, jobType, district, keyword: debouncedKeyword, minSalary,
+                dateFrom: dateRange.dateFrom, dateTo: dateRange.dateTo, shifts,
+              }}
+              onApply={(ss) => {
+                setPosition(ss.position || '')
+                setJobType(ss.jobType || '')
+                setDistrict(ss.district || '')
+                setKeyword(ss.keyword || '')
+                setMinSalary(ss.minSalary != null ? String(ss.minSalary) : '')
+                setShifts(ss.shifts ? Array.from(ss.shifts) : [])
+                if (ss.dateFrom && ss.dateTo) {
+                  setDatePreset('CUSTOM'); setCustomFrom(ss.dateFrom); setCustomTo(ss.dateTo)
+                } else {
+                  setDatePreset(''); setCustomFrom(''); setCustomTo('')
+                }
+                toast.success(`"${ss.name}" uygulandı`)
+              }}
             />
           </div>
-        </div>
-
-        {/* Faz E4: Tarih filtresi */}
-        <div>
-          <FilterChipGroup
-            label="Tarih"
-            value={datePreset}
-            onChange={setDatePreset}
-            items={[
-              { value: 'TODAY',    label: 'Bugün' },
-              { value: 'TOMORROW', label: 'Yarın' },
-              { value: 'WEEK',     label: 'Bu Hafta' },
-              { value: 'WEEKEND',  label: 'Haftasonu' },
-              { value: 'CUSTOM',   label: 'Özel...' },
-            ]}
-          />
-          {datePreset === 'CUSTOM' && (
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              <div>
-                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: '#928678' }}>Başlangıç</label>
-                <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="input text-sm mt-1.5" />
-              </div>
-              <div>
-                <label className="text-[10px] font-medium uppercase tracking-[0.22em]" style={{ color: '#928678' }}>Bitiş</label>
-                <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
-                  min={customFrom || new Date().toISOString().split('T')[0]}
-                  className="input text-sm mt-1.5" />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Legacy vardiya kategorisi filtresi kaldirildi — slot tarih/saat filtreleri yeterli */}
-
-        {activeFilterCount > 0 && (
-          <div className="flex justify-end pt-1">
+          {activeFilterCount > 0 && (
             <button onClick={clearFilters}
-              className="text-[11px] font-medium inline-flex items-center gap-1 transition-colors"
-              style={{ color: '#928678' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#d39481' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#928678' }}>
+              className="text-[12.5px] font-medium flex-shrink-0 self-start inline-flex items-center gap-1"
+              style={{ color: 'var(--ah-ink-3)' }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
               </svg>
-              Filtreleri temizle
+              Temizle
             </button>
-          </div>
-        )}
-
-        {/* FAZ 5 — Kayıtlı aramalar + "Aramayı Kaydet" */}
-        <div className="pt-3" style={{ borderTop: '1px solid rgba(205, 183, 143, 0.10)' }}>
-          <SavedSearchManager
-            filters={{
-              position, jobType, district, keyword: debouncedKeyword, minSalary,
-              dateFrom: dateRange.dateFrom, dateTo: dateRange.dateTo, shifts,
-            }}
-            onApply={(s) => {
-              setPosition(s.position || '')
-              setJobType(s.jobType || '')
-              setDistrict(s.district || '')
-              setKeyword(s.keyword || '')
-              setMinSalary(s.minSalary != null ? String(s.minSalary) : '')
-              setShifts(s.shifts ? Array.from(s.shifts) : [])
-              if (s.dateFrom && s.dateTo) {
-                setDatePreset('CUSTOM')
-                setCustomFrom(s.dateFrom)
-                setCustomTo(s.dateTo)
-              } else {
-                setDatePreset(''); setCustomFrom(''); setCustomTo('')
-              }
-              toast.success(`"${s.name}" uygulandı`)
-            }}
-          />
+          )}
         </div>
-        </div>  {/* card filtre paneli kapanis */}
-      </aside>
-
-      {/* SAG PANEL — header + search + chip bar + ilan grid + pagination */}
-      <section className="space-y-4 min-w-0">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-[22px] font-semibold"
-                style={{ color: 'var(--ah-ink)', letterSpacing: '-0.02em' }}>İş İlanları</h2>
-            <p className="text-[12px] mt-1 tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>
-              {loading ? '...' : `${listings.length} ilan`}
-              {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
-            </p>
-          </div>
-          <button onClick={() => setShowFilters(s => !s)}
-            className="xl:hidden btn-secondary text-sm flex items-center gap-1.5">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="21" y1="4" x2="14" y2="4" /><line x1="10" y1="4" x2="3" y2="4" />
-              <line x1="21" y1="12" x2="12" y2="12" /><line x1="8" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="20" x2="16" y2="20" /><line x1="12" y1="20" x2="3" y2="20" />
-              <line x1="14" y1="2" x2="14" y2="6" /><line x1="8" y1="10" x2="8" y2="14" />
-              <line x1="16" y1="18" x2="16" y2="22" />
-            </svg>
-            Filtreler
-            {activeFilterCount > 0 && (
-              <span className="text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center"
-                    style={{
-                      background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
-                      color: '#1a1208',
-                    }}>
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-        </div>
+      </div>
 
         <ActiveFilterBar
           filters={{ keyword: debouncedKeyword, position, jobType, district, minSalary, shifts, datePreset, customFrom, customTo }}
@@ -1099,21 +1177,22 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
 
         <div className="relative">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-               width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#928678"
+               width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#98a1a0"
                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
           <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
             placeholder="İlan başlığında ara..."
-            className="input pl-10 text-sm" />
+            className="input text-sm"
+            style={{ paddingLeft: '2.5rem', paddingRight: keyword ? '2.5rem' : undefined }} />
           {keyword && (
             <button onClick={() => setKeyword('')}
               aria-label="Aramayı temizle"
               className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-              style={{ color: '#928678' }}
+              style={{ color: 'var(--ah-ink-3)' }}
               onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ah-ink)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#928678' }}>
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ah-ink-3)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
@@ -1128,12 +1207,20 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           <div className="card">
             <EmptyState
               type={activeFilterCount > 0 ? 'search' : 'listings'}
-              title={activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
+              title={activeFilterCount > 0 ? 'Bu aramaya uyan ilan yok' : 'Henüz aktif ilan yok'}
               description={activeFilterCount > 0
-                ? 'Filtreleri değiştir veya temizleyerek daha fazla ilan görebilirsin.'
+                ? (district
+                    ? `${district} için şu an ilan yok. Tüm İstanbul'a bakabilir ya da bu aramaya ilan çıkınca haber alabilirsin.`
+                    : 'Filtreleri gevşetebilir ya da bu aramaya ilan çıkınca haber alabilirsin.')
                 : 'Daha sonra tekrar kontrol et — yeni ilanlar her gün eklenir.'}
-              ctaLabel={activeFilterCount > 0 ? 'Filtreleri Temizle' : null}
-              onCta={clearFilters}
+              ctaLabel={activeFilterCount > 0
+                ? (district ? "Tüm İstanbul'da ara" : 'Filtreleri Temizle')
+                : null}
+              onCta={activeFilterCount > 0
+                ? (district ? () => setDistrict('') : clearFilters)
+                : undefined}
+              ctaSecondaryLabel={activeFilterCount > 0 ? 'Bu aramaya ilan çıkınca haber ver' : null}
+              onCtaSecondary={activeFilterCount > 0 ? saveCurrentSearchQuick : undefined}
             />
           </div>
         ) : (
@@ -1165,8 +1252,6 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             )}
           </>
         )}
-      </section>
-
 
       {/* #47 — Detail kendi route */}
 
@@ -1219,9 +1304,9 @@ function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
             onClick={() => onRemove(c.key)}
             className="group flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all hover:-translate-y-0.5"
             style={{
-              background: 'rgba(205, 183, 143, 0.10)',
-              color: '#cdb78f',
-              border: '1px solid rgba(205, 183, 143, 0.22)',
+              background: 'rgba(15, 118, 110, 0.10)',
+              color: '#2d968b',
+              border: '1px solid rgba(15, 118, 110, 0.22)',
             }}>
             <span className="truncate max-w-[180px]">{c.text}</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1234,7 +1319,7 @@ function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
       </div>
       <button onClick={onClearAll}
         type="button"
-        className="text-[10px] font-semibold uppercase tracking-[0.18em] px-2.5 py-1.5 rounded-full flex-shrink-0 transition-all hover:-translate-y-0.5"
+        className="text-[10px] font-semibold uppercase tracking-[0.06em] px-2.5 py-1.5 rounded-full flex-shrink-0 transition-all hover:-translate-y-0.5"
         style={{
           background: 'rgba(180, 106, 85, 0.10)',
           color: '#d39481',
@@ -1276,8 +1361,8 @@ function FilterChipGroup({
   return (
     <div>
       {label && (
-        <label className="block mb-2 text-[11px] font-semibold tracking-[0.22em] uppercase"
-               style={{ color: '#928678' }}>
+        <label className="block mb-2 text-[11px] font-semibold tracking-[0.06em] uppercase"
+               style={{ color: 'var(--ah-ink-3)' }}>
           {label}
         </label>
       )}
@@ -1380,6 +1465,44 @@ function FilterChip({ active, sub, onClick, children }) {
           {sub}
         </div>
       )}
+    </button>
+  )
+}
+
+/* FAZ B.5 — Ust filtre bari alan sarmalayici (kucuk etiket + kontrol) */
+function FilterField({ label, children }) {
+  return (
+    <div className="flex flex-col gap-1 min-w-0">
+      <label className="text-[10px] font-semibold uppercase tracking-[0.04em]" style={{ color: 'var(--ah-ink-4)' }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+/* FAZ B.3 — "Yakinlar once" toggle. Konum yoksa istekle, varsa siralaya al. */
+function NearbyToggle({ nearbyFirst, onToggle, loading, hasLocation, error }) {
+  const active = nearbyFirst && hasLocation
+  const title = error ? error
+    : loading ? 'Konum alınıyor...'
+    : active ? 'Yakınlar önce (kapatmak için tıkla)'
+    : 'Yakın ilanları önce göster (konum izni gerekir)'
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={loading}
+      title={title}
+      className="text-[13px] font-semibold px-3 py-2 rounded-lg inline-flex items-center gap-1.5 transition-colors disabled:opacity-60"
+      style={active
+        ? { background: 'var(--ah-brand)', color: '#ffffff' }
+        : { background: 'var(--ah-card)', border: '1px solid var(--ah-line-2)', color: 'var(--ah-ink-2)' }}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" /><path d="M12 2v20M2 12h20" />
+      </svg>
+      {loading ? 'Alınıyor...' : (active ? 'Yakınlar önce' : 'Yakınlar')}
     </button>
   )
 }

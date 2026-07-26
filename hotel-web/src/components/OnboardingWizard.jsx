@@ -166,14 +166,14 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
         className="max-w-md w-full rounded-2xl overflow-hidden relative"
         style={{
           background: 'linear-gradient(135deg, rgba(19, 17, 15, 0.94), rgba(13, 11, 9, 0.95))',
-          border: '1px solid rgba(205, 183, 143, 0.18)',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.60), 0 0 40px rgba(205, 183, 143, 0.14)',
+          border: '1px solid rgba(15, 118, 110, 0.18)',
+          boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
         }}
       >
         {/* Hero alan — radial glow + ikon */}
         <div className="relative h-44 flex items-center justify-center overflow-hidden"
              style={{
-               background: 'linear-gradient(135deg, #221f1b 0%, #8a7349 50%, #d4a853 100%)',
+               background: 'linear-gradient(135deg, #221f1b 0%, #0b5d57 50%, #0f766e 100%)',
              }}>
           {/* Dekoratif daireler */}
           <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-25"
@@ -212,11 +212,11 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
           <h2
             id="onboarding-title"
             className="text-3xl tracking-wider uppercase text-white mb-2.5"
-            style={{ textShadow: '0 0 16px rgba(205, 183, 143, 0.30)' }}
+            style={{ textShadow: '0 0 16px rgba(15, 118, 110, 0.30)' }}
           >
             {step.title}
           </h2>
-          <p className="text-sm leading-relaxed mb-6" style={{ color: '#cdb78f' }}>
+          <p className="text-sm leading-relaxed mb-6" style={{ color: '#2d968b' }}>
             {step.description}
           </p>
 
@@ -228,8 +228,8 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                 className="h-1.5 rounded-full transition-all duration-300"
                 style={{
                   width: i === stepIdx ? '28px' : '6px',
-                  background: i <= stepIdx ? '#d4a853' : 'rgba(205, 183, 143, 0.28)',
-                  boxShadow: i === stepIdx ? '0 0 10px rgba(205, 183, 143, 0.45)' : 'none',
+                  background: i <= stepIdx ? '#0f766e' : 'rgba(15, 118, 110, 0.28)',
+                  boxShadow: i === stepIdx ? '0 0 10px rgba(15, 118, 110, 0.45)' : 'none',
                 }}
               />
             ))}
@@ -242,8 +242,8 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                 onClick={handleCta}
                 className="w-full py-3 text-base tracking-wider uppercase text-white rounded-full transition-all hover:-translate-y-0.5"
                 style={{
-                  background: 'linear-gradient(135deg, #d4a853, #d4a853)',
-                  boxShadow: '0 0 20px rgba(205, 183, 143, 0.35)',
+                  background: 'linear-gradient(135deg, #0f766e, #0f766e)',
+                  boxShadow: 'none',
                 }}
               >
                 {step.cta}
@@ -255,14 +255,14 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
               style={
                 step.cta
                   ? {
-                      background: 'rgba(205, 183, 143, 0.10)',
-                      color: '#cdb78f',
-                      border: '1px solid rgba(205, 183, 143, 0.22)',
+                      background: 'rgba(15, 118, 110, 0.10)',
+                      color: '#2d968b',
+                      border: '1px solid rgba(15, 118, 110, 0.22)',
                     }
                   : {
-                      background: 'linear-gradient(135deg, #d4a853, #d4a853)',
+                      background: 'linear-gradient(135deg, #0f766e, #0f766e)',
                       color: '#fff',
-                      boxShadow: '0 0 20px rgba(205, 183, 143, 0.35)',
+                      boxShadow: 'none',
                     }
               }
             >

@@ -46,24 +46,24 @@ export default function HistoryTab({ applications, onOpenMessages }) {
       <div className="grid grid-cols-3 gap-2.5">
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
-            <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">Toplam Çalışma</span>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} />
+            <span className="text-[10px] uppercase tracking-[0.04em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>Toplam Çalışma</span>
           </div>
-          <div className="text-xl font-black text-white leading-none">{totalHours.toFixed(0)}<span className="text-sm font-bold text-ink-400">sa</span></div>
+          <div className="text-xl font-black leading-none" style={{ color: 'var(--ah-ink)' }}>{totalHours.toFixed(0)}<span className="text-sm font-bold" style={{ color: 'var(--ah-ink-4)' }}>sa</span></div>
         </div>
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
-            <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">Farklı İşletme</span>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} />
+            <span className="text-[10px] uppercase tracking-[0.04em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>Farklı İşletme</span>
           </div>
-          <div className="text-xl font-black text-white leading-none">{uniqueBusinesses}</div>
+          <div className="text-xl font-black leading-none" style={{ color: 'var(--ah-ink)' }}>{uniqueBusinesses}</div>
         </div>
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">Verilen Puan</span>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} />
+            <span className="text-[10px] uppercase tracking-[0.04em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>Verilen Puan</span>
           </div>
-          <div className="text-xl font-black text-white leading-none">{reviewedCount}<span className="text-sm font-bold text-ink-400">/{completed.length}</span></div>
+          <div className="text-xl font-black leading-none" style={{ color: 'var(--ah-ink)' }}>{reviewedCount}<span className="text-sm font-bold" style={{ color: 'var(--ah-ink-4)' }}>/{completed.length}</span></div>
         </div>
       </div>
 
@@ -84,21 +84,21 @@ export default function HistoryTab({ applications, onOpenMessages }) {
             <div key={app.id} className="card">
               <div className="p-4 flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-cream-100 dark:bg-ink-700 border border-cream-300 dark:border-ink-700">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                       style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-line)' }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                         strokeWidth={1.5} stroke="currentColor"
-                         className="w-6 h-6 text-ink-400 dark:text-ink-500">
+                         strokeWidth={1.6} stroke="var(--ah-brand)" className="w-5 h-5">
                       <path strokeLinecap="round" strokeLinejoin="round"
                         d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                     </svg>
                   </div>
                   <div className="min-w-0">
-                    <div className="font-semibold text-ink-800 dark:text-ink-900 truncate">{app.listing?.title}</div>
-                    <div className="text-xs text-ink-500 mt-0.5">{app.listing?.businessName}</div>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
-                      <span className="text-ink-600">{dateLabel}</span>
-                      <span className="text-ink-600">{hours.toFixed(1)} saat</span>
-                      <span className="text-ink-600">{POSITION_LABELS[app.listing?.position] || app.listing?.position}</span>
+                    <div className="font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{app.listing?.title}</div>
+                    <div className="text-[13px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{app.listing?.businessName}</div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[12.5px]" style={{ color: 'var(--ah-ink-3)' }}>
+                      <span>{dateLabel}</span>
+                      <span>{hours.toFixed(1)} saat</span>
+                      <span>{POSITION_LABELS[app.listing?.position] || app.listing?.position}</span>
                     </div>
                   </div>
                 </div>
@@ -112,7 +112,7 @@ export default function HistoryTab({ applications, onOpenMessages }) {
                         id: app.id,
                         title: app.listing?.businessName || 'İşletme',
                       })}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
+                      className="text-xs px-2.5 py-1.5 rounded-lg transition-opacity hover:opacity-90 font-semibold" style={{ background: 'var(--ah-brand)', color: '#fff' }}>
                       Puanla
                     </button>
                   )}

@@ -23,6 +23,15 @@ public class ApplicationResponse {
     private boolean noShow;
     /** FAZ 2/#28: HOLD durumundaysa aday cevap deadline'i (24h) */
     private LocalDateTime holdDeadline;
+
+    /** FAZ C.1: Yedek sırası (1 = ilk yedek). STANDBY dışında null. */
+    private Integer standbyRank;
+    /** FAZ C.1: Acil yedek teklifi gönderildiği an (null = henüz aktive olmadı). */
+    private LocalDateTime standbyOfferedAt;
+    /** FAZ C.1: Yedek teklifine cevap için son an. */
+    private LocalDateTime standbyDeadline;
+    /** FAZ C.1: Aktif bir acil teklif var mı (aday ekranında geri sayım gösterilir). */
+    private boolean standbyOfferActive;
     /** R5: tüm vardiyalar geçmişte mi (puanlanabilir mi) */
     private boolean workCompleted;
     /** #78: Aday bu başvuru için işletmeye puan verdi mi? */

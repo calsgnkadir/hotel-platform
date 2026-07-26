@@ -11,11 +11,11 @@ export default function NotFoundPage() {
       <div className="text-center max-w-md">
         <div className="tabular-nums inline-flex items-center justify-center w-28 h-28 rounded-full mb-7 text-5xl font-semibold"
              style={{
-               background: 'rgba(205, 183, 143, 0.08)',
-               border: '1px solid rgba(205, 183, 143, 0.22)',
-               color: '#cdb78f',
+               background: 'rgba(15, 118, 110, 0.08)',
+               border: '1px solid rgba(15, 118, 110, 0.22)',
+               color: '#2d968b',
                letterSpacing: '-0.03em',
-               filter: 'drop-shadow(0 0 18px rgba(205, 183, 143, 0.25))',
+               filter: 'drop-shadow(0 0 18px rgba(15, 118, 110, 0.25))',
              }}>
           404
         </div>
@@ -24,11 +24,11 @@ export default function NotFoundPage() {
           Aradığın sayfa silinmiş, taşınmış olabilir veya hiç var olmadı.
         </p>
         <Link to="/"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5"
           style={{
-            background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+            background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
             color: '#1a1208',
-            boxShadow: '0 12px 28px rgba(205, 183, 143, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)',
+            boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
           }}>
           Ana Sayfaya Dön
         </Link>

@@ -36,7 +36,7 @@ export default function VerifyEmailPage() {
       <div className="w-full max-w-md p-8 text-center"
            style={{
              background: '#1b1815',
-             borderRadius: '28px 12px 28px 12px',
+             borderRadius: '12px',
              border: 'none',
              boxShadow: '0 32px 72px rgba(0, 0, 0, 0.45)',
            }}>
@@ -57,9 +57,9 @@ export default function VerifyEmailPage() {
             <p className="text-sm mb-6" style={{ color: '#f5efe2' }}>{message}</p>
             <Link to="/login" className="inline-block px-5 py-2.5 rounded-full text-white font-semibold text-sm"
                   style={{
-                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                     color: '#1a1208',
-                    boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
+                    boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>
               Giriş Yap
             </Link>
@@ -72,9 +72,9 @@ export default function VerifyEmailPage() {
             <p className="text-sm mb-6" style={{ color: '#f5efe2' }}>{message}</p>
             <Link to="/login" className="inline-block px-5 py-2.5 rounded-full text-white font-semibold text-sm"
                   style={{
-                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                     color: '#1a1208',
-                    boxShadow: '0 10px 24px rgba(205, 183, 143, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
+                    boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>
               Giriş Yap
             </Link>

@@ -21,9 +21,9 @@ import { formatSalary } from '../lib/salary'  // FAZ 2/#25
 
 function makeIcon(size = 32, hot = false) {
   const grad = hot
-    ? 'linear-gradient(135deg, #d4a853, #d4a853)'
-    : 'linear-gradient(135deg, #1b1815, #8a7349)'
-  const shadow = hot ? '0 4px 16px rgba(205, 183, 143, 0.55)' : '0 4px 12px rgba(74, 63, 51, 0.45)'
+    ? 'linear-gradient(135deg, #0f766e, #0f766e)'
+    : 'linear-gradient(135deg, #1b1815, #0b5d57)'
+  const shadow = hot ? '0 4px 16px rgba(15, 118, 110, 0.55)' : '0 4px 12px rgba(74, 63, 51, 0.45)'
   return L.divIcon({
     className: 'custom-map-marker',
     html: `
@@ -123,14 +123,14 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
   if (listings.length === 0) {
     return (
       <div className="rounded-2xl border flex items-center justify-center h-full"
-           style={{ background: 'rgba(205, 183, 143, 0.06)', borderColor: 'rgba(205, 183, 143, 0.22)' }}>
+           style={{ background: 'rgba(15, 118, 110, 0.06)', borderColor: 'rgba(15, 118, 110, 0.22)' }}>
         <p className="text-sm" style={{ color: '#1b1815' }}>İlan yok — haritada gösterilecek yer yok</p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden relative h-full" style={{ border: '1px solid rgba(205, 183, 143, 0.22)' }}>
+    <div className="rounded-2xl overflow-hidden relative h-full" style={{ border: '1px solid rgba(15, 118, 110, 0.22)' }}>
       <MapContainer
         center={ISTANBUL_CENTER}
         zoom={11}
@@ -162,14 +162,14 @@ export default function ListingsMapView({ listings = [], highlightedId, onMarker
                     {p.approx && <span className="italic"> (yaklaşık)</span>}
                   </div>
                   {formatSalary(p.listing.salaryMin, p.listing.salaryMax, p.listing.salaryType, p.listing.tipsIncluded) && (
-                    <div className="font-semibold" style={{ color: '#8a7349' }}>
+                    <div className="font-semibold" style={{ color: '#0b5d57' }}>
                       {formatSalary(p.listing.salaryMin, p.listing.salaryMax, p.listing.salaryType, p.listing.tipsIncluded)}
                     </div>
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); onMarkerClick?.(p.listing) }}
                     className="mt-1.5 text-[11px] font-semibold underline"
-                    style={{ color: '#d4a853' }}>
+                    style={{ color: '#0f766e' }}>
                     Detayları gör
                   </button>
                 </div>

@@ -46,7 +46,7 @@ export default function LanguageSwitcher() {
       </button>
       {open && (
         <div className="absolute right-0 mt-1 min-w-[140px] rounded-xl overflow-hidden shadow-lg z-50"
-             style={{ background: '#fff', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
+             style={{ background: '#fff', border: '1px solid rgba(15, 118, 110, 0.22)' }}>
           {SUPPORTED_LANGS.map(l => (
             <button key={l.code} onClick={() => selectLang(l.code)}
               className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors hover:bg-purple-50

@@ -53,13 +53,13 @@ export default function BottomSheet({ open, onClose, title, children, maxHeight 
         }}>
         {/* Drag handle */}
         <div className="sm:hidden flex justify-center pt-2 pb-1">
-          <span className="block w-10 h-1 rounded-full" style={{ background: 'rgba(205, 183, 143, 0.22)' }} />
+          <span className="block w-10 h-1 rounded-full" style={{ background: 'rgba(15, 118, 110, 0.22)' }} />
         </div>
 
         {/* Header */}
         {title && (
           <div className="px-5 py-3 flex items-center justify-between"
-               style={{ borderBottom: '1px solid rgba(205, 183, 143, 0.14)' }}>
+               style={{ borderBottom: '1px solid rgba(15, 118, 110, 0.14)' }}>
             <h3 className="font-bold text-base" style={{ color: '#13110f' }}>{title}</h3>
             <button onClick={onClose}
               className="w-8 h-8 grid place-items-center rounded-full hover:bg-purple-100 transition-colors"

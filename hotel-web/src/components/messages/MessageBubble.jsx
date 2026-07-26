@@ -4,10 +4,18 @@
  * MessagesPage.jsx monolitinden cikarildi. Icerik: bubble (attachment +
  * quoted reply + reactions + turn grouping), read receipt, call invite
  * balonu, dosya eki karti, reaction ikon seti.
+ *
+ * FAZ 25 — Renk uyumu (kullanici istegi): eski teal->altin / gri->krem
+ * gradyanlari birakildi. Artik WhatsApp gibi net iki ton:
+ *   benim mesajim  = duz teal (#0f766e) + beyaz yazi
+ *   karsi taraf    = beyaz kart + koyu ink yazi + ince cizgi
  */
 import { useState } from 'react'
 import cldImg, { ImgSize } from '../../lib/cldImg'
 import { formatTime, parseCallInvite, pdfThumbnailUrl, fileTypeMeta } from './utils'
+
+const BRAND = '#0f766e'
+const BRAND_DARK = '#0b5d57'
 
 /* ── FAZ 11.W3.3 — Reaction SVG preset (emoji yasak — proje kurali) ── */
 const REACTION_ICONS = {
@@ -29,10 +37,9 @@ export function ReactionIcon({ type, size = 12, color = 'currentColor' }) {
   )
 }
 
-/* Dalga 4 / UX 4 — WhatsApp-style cift tik (gonderildi/okundu)
-   FAZ 11.W3.2 — okundu rengi champagne (palet uyumu; eski info-blue idi) */
+/* WhatsApp-style cift tik — sadece benim mesajimda (teal zemin), beyaz tik. */
 function ReadReceipt({ isRead }) {
-  const color = isRead ? '#8a7349' : 'rgba(12, 23, 38, 0.45)'  // champagne-koyu / gri
+  const color = isRead ? '#ffffff' : 'rgba(255, 255, 255, 0.55)'
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color}
          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
@@ -45,6 +52,7 @@ function ReadReceipt({ isRead }) {
 
 /* ── Dosya eki: PDF/DOC/diğer için ayrı ikon + renk chip (FAZ D5) ── */
 function FileAttachment({ m }) {
+  const mine = m.mine
   const name = m.attachmentName || 'Dosya'
   const ext = (name.split('.').pop() || '').toLowerCase()
   const meta = fileTypeMeta(ext)
@@ -56,7 +64,7 @@ function FileAttachment({ m }) {
   return (
     <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer"
        className="flex items-center gap-2.5 px-3 py-2.5 border-b"
-       style={{ borderColor: m.mine ? 'rgba(255, 255, 255, 0.14)' : 'rgba(255, 255, 255, 0.10)' }}>
+       style={{ borderColor: mine ? 'rgba(255, 255, 255, 0.16)' : 'var(--ah-line)' }}>
       {showThumb ? (
         <img src={pdfThumb}
              alt="PDF önizleme" onError={() => setThumbFailed(true)}
@@ -77,7 +85,7 @@ function FileAttachment({ m }) {
       )}
       <div className="flex-1 min-w-0">
         <div className="font-semibold truncate text-[13px]">{name}</div>
-        <div className="text-[10px]" style={{ color: 'rgba(255, 255, 255, 0.55)' }}>
+        <div className="text-[10px]" style={{ color: mine ? 'rgba(255, 255, 255, 0.6)' : 'var(--ah-ink-4)' }}>
           {m.attachmentSize ? `${(m.attachmentSize / 1024).toFixed(0)} KB · ` : ''}indirmek için tıkla
         </div>
       </div>
@@ -87,22 +95,25 @@ function FileAttachment({ m }) {
 
 /* ── Jitsi arama daveti — özel mesaj balonu ── */
 function CallInviteBubble({ m, type, url }) {
+  const mine = m.mine
   const isVideo = type === 'video'
   return (
-    <div className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[75%] rounded-2xl text-sm shadow-sm overflow-hidden
-        ${m.mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
+    <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+      <div className={`max-w-[75%] rounded-2xl text-sm overflow-hidden
+        ${mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
         style={{
-          background: m.mine
-            ? 'linear-gradient(135deg, #0f766e 0%, #b89e6e 100%)'
-            : 'linear-gradient(135deg, #3f4b4a 0%, #dfd2bb 100%)',
-          color: '#ffffff',
-          border: `1px solid ${m.mine ? 'rgba(184, 158, 110, 0.45)' : 'rgba(15, 118, 110, 0.28)'}`,
+          background: mine ? BRAND : '#ffffff',
+          color: mine ? '#ffffff' : 'var(--ah-ink)',
+          border: `1px solid ${mine ? BRAND : 'var(--ah-line)'}`,
+          boxShadow: mine ? '0 1px 2px rgba(15, 118, 110, 0.20)' : '0 1px 2px rgba(18, 32, 31, 0.06)',
         }}>
         <div className="flex items-center gap-3 px-4 py-3"
-             style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
+             style={{ background: mine ? 'rgba(255, 255, 255, 0.08)' : 'var(--ah-page)' }}>
           <div className="w-10 h-10 rounded-full grid place-items-center shrink-0"
-               style={{ background: 'rgba(255, 255, 255, 0.10)' }}>
+               style={{
+                 background: mine ? 'rgba(255, 255, 255, 0.14)' : 'var(--ah-brand-soft)',
+                 color: mine ? '#ffffff' : BRAND,
+               }}>
             {isVideo ? (
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
@@ -121,17 +132,17 @@ function CallInviteBubble({ m, type, url }) {
             <div className="font-semibold text-sm">
               {isVideo ? 'Görüntülü Arama' : 'Sesli Arama'}
             </div>
-            <div className="text-[11px]" style={{ color: 'rgba(255, 255, 255, 0.60)' }}>
-              {m.mine ? 'Sen davet ettin' : 'Sana davet'} · {formatTime(m.sentAt)}
+            <div className="text-[11px]" style={{ color: mine ? 'rgba(255, 255, 255, 0.65)' : 'var(--ah-ink-4)' }}>
+              {mine ? 'Sen davet ettin' : 'Sana davet'} · {formatTime(m.sentAt)}
             </div>
           </div>
         </div>
         <a href={url} target="_blank" rel="noopener noreferrer"
            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold border-t transition-opacity hover:opacity-90"
            style={{
-             background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+             background: BRAND_DARK,
              color: '#ffffff',
-             borderColor: 'rgba(255, 255, 255, 0.12)',
+             borderColor: mine ? 'rgba(255, 255, 255, 0.14)' : 'var(--ah-line)',
            }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -150,6 +161,7 @@ function CallInviteBubble({ m, type, url }) {
  * showMeta: turn boundary'de gonderen adi + saat header'i gosterilir.
  */
 export default function MessageBubble({ m, showMeta = true, onReply, onReact }) {
+  const mine = m.mine
   const isImage = m.attachmentType === 'image'
   const isAudio = m.attachmentType === 'audio'
   const isFile  = m.attachmentType === 'file'
@@ -161,27 +173,29 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
   if (call) return <CallInviteBubble m={m} type={call.type} url={call.url} />
 
   const reactions = m.reactions || []
+  const innerBg = mine ? 'rgba(255, 255, 255, 0.10)' : 'var(--ah-page)'
 
   return (
-    <div className={`flex flex-col ${m.mine ? 'items-end' : 'items-start'}`}>
+    <div className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
       {/* FAZ 11.W3.2 — Turn header: gonderen + saat, sadece turn boundary'de */}
-      {showMeta && !m.mine && (
-        <div className="type-caption mb-1 px-1" style={{ color: 'var(--text-muted)' }}>
+      {showMeta && !mine && (
+        <div className="type-caption mb-1 px-1" style={{ color: 'var(--ah-ink-4)' }}>
           {m.senderName} · {formatTime(m.sentAt)}
         </div>
       )}
 
       <div className="relative group/msg max-w-[75%]">
         {/* Hover action bar — yanitla + reaksiyon */}
-        <div className={`absolute top-1 ${m.mine ? '-left-16' : '-right-16'} flex items-center gap-1
+        <div className={`absolute top-1 ${mine ? '-left-16' : '-right-16'} flex items-center gap-1
                          opacity-0 group-hover/msg:opacity-100 transition-opacity z-10`}>
           <button type="button" onClick={() => onReply?.(m)}
                   title="Yanıtla"
                   className="w-7 h-7 grid place-items-center rounded-full"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.92)',
-                    border: '1px solid rgba(15, 118, 110, 0.22)',
-                    color: '#0f766e',
+                    background: '#ffffff',
+                    border: '1px solid var(--ah-line)',
+                    color: BRAND,
+                    boxShadow: '0 1px 3px rgba(18, 32, 31, 0.10)',
                   }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" />
@@ -192,9 +206,10 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
                     title="Reaksiyon ekle"
                     className="w-7 h-7 grid place-items-center rounded-full"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.92)',
-                      border: '1px solid rgba(15, 118, 110, 0.22)',
-                      color: '#0f766e',
+                      background: '#ffffff',
+                      border: '1px solid var(--ah-line)',
+                      color: BRAND,
+                      boxShadow: '0 1px 3px rgba(18, 32, 31, 0.10)',
                     }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -204,16 +219,16 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
             {pickerOpen && (
               <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1.5 rounded-full z-20"
                    style={{
-                     background: 'rgba(255, 255, 255, 0.97)',
-                     border: '1px solid rgba(15, 118, 110, 0.28)',
-                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
+                     background: '#ffffff',
+                     border: '1px solid var(--ah-line)',
+                     boxShadow: '0 8px 24px rgba(18, 32, 31, 0.14)',
                    }}>
                 {REACTION_ORDER.map(r => (
                   <button key={r} type="button"
                           onClick={() => { setPickerOpen(false); onReact?.(m, r) }}
                           title={r}
                           className="w-7 h-7 grid place-items-center rounded-full transition-all hover:scale-125"
-                          style={{ color: '#0f766e' }}>
+                          style={{ color: BRAND }}>
                     <ReactionIcon type={r} size={14} />
                   </button>
                 ))}
@@ -223,27 +238,26 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
         </div>
 
         {/* Bubble */}
-        <div className={`rounded-2xl text-sm shadow-sm overflow-hidden
-          ${m.mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
+        <div className={`rounded-2xl text-sm overflow-hidden
+          ${mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
           style={{
-            background: m.mine
-              ? 'linear-gradient(135deg, #0f766e 0%, #b89e6e 100%)'
-              : 'linear-gradient(135deg, #3f4b4a 0%, #dfd2bb 100%)',
-            color: '#ffffff',
-            border: `1px solid ${m.mine ? 'rgba(184, 158, 110, 0.45)' : 'rgba(15, 118, 110, 0.28)'}`,
+            background: mine ? BRAND : '#ffffff',
+            color: mine ? '#ffffff' : 'var(--ah-ink)',
+            border: `1px solid ${mine ? BRAND : 'var(--ah-line)'}`,
+            boxShadow: mine ? '0 1px 2px rgba(15, 118, 110, 0.20)' : '0 1px 2px rgba(18, 32, 31, 0.06)',
           }}>
 
           {/* FAZ 11.W3.3 — Quoted reply stub */}
           {m.parentMessageId && (
             <div className="mx-2 mt-2 px-2.5 py-1.5 rounded-lg border-l-2"
                  style={{
-                   background: 'rgba(255, 255, 255, 0.08)',
-                   borderLeftColor: '#8a7349',
+                   background: innerBg,
+                   borderLeftColor: mine ? 'rgba(255, 255, 255, 0.55)' : BRAND,
                  }}>
-              <div className="text-[10px] font-semibold" style={{ color: '#6e5b39' }}>
+              <div className="text-[10px] font-semibold" style={{ color: mine ? 'rgba(255, 255, 255, 0.9)' : BRAND }}>
                 {m.parentSenderName || 'Mesaj'}
               </div>
-              <div className="text-[11px] truncate" style={{ color: 'rgba(255, 255, 255, 0.65)' }}>
+              <div className="text-[11px] truncate" style={{ color: mine ? 'rgba(255, 255, 255, 0.7)' : 'var(--ah-ink-3)' }}>
                 {m.parentPreview || 'Silinmiş mesaj'}
               </div>
             </div>
@@ -255,15 +269,15 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
               <img src={cldImg(m.attachmentUrl, { w: ImgSize.card })} alt={m.attachmentName || 'foto'}
                    loading="lazy" decoding="async"
                    className="max-h-72 w-auto object-contain"
-                   style={{ background: 'rgba(255, 255, 255, 0.06)' }} />
+                   style={{ background: innerBg }} />
             </a>
           )}
           {hasAttach && isAudio && (
             <div className="flex items-center gap-2 px-3 py-2.5"
-                 style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
+                 style={{ background: innerBg }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={1.8} stroke="currentColor"
-                   className="w-5 h-5 shrink-0" style={{ color: 'rgba(255, 255, 255, 0.55)' }}>
+                   className="w-5 h-5 shrink-0" style={{ color: mine ? 'rgba(255, 255, 255, 0.7)' : 'var(--ah-ink-4)' }}>
                 <path strokeLinecap="round" strokeLinejoin="round"
                       d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
               </svg>
@@ -279,24 +293,24 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
 
           {/* Zaman + read receipt */}
           <div className="text-[10px] px-3 pb-1 text-right inline-flex items-center justify-end gap-1 w-full"
-               style={{ color: 'rgba(12, 23, 38, 0.60)' }}>
+               style={{ color: mine ? 'rgba(255, 255, 255, 0.72)' : 'var(--ah-ink-4)' }}>
             <span>{formatTime(m.sentAt)}</span>
-            {m.mine && <ReadReceipt isRead={m.isRead} />}
+            {mine && <ReadReceipt isRead={m.isRead} />}
           </div>
         </div>
 
         {/* FAZ 11.W3.3 — Reaksiyon chip'leri (bubble altina overlap) */}
         {reactions.length > 0 && (
-          <div className={`flex items-center gap-1 -mt-1.5 relative z-[1] ${m.mine ? 'justify-end pr-2' : 'pl-2'}`}>
+          <div className={`flex items-center gap-1 -mt-1.5 relative z-[1] ${mine ? 'justify-end pr-2' : 'pl-2'}`}>
             {reactions.map(r => (
               <button key={r.reaction} type="button"
                       onClick={() => onReact?.(m, r.reaction)}
                       title={r.reaction}
                       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] tabular-nums transition-all hover:scale-110"
                       style={{
-                        background: r.mine ? 'rgba(15, 118, 110, 0.30)' : 'rgba(255, 255, 255, 0.85)',
-                        border: `1px solid ${r.mine ? 'rgba(15, 118, 110, 0.55)' : 'rgba(15, 118, 110, 0.22)'}`,
-                        color: r.mine ? '#ffffff' : '#0f766e',
+                        background: r.mine ? 'var(--ah-brand-soft)' : '#ffffff',
+                        border: `1px solid ${r.mine ? BRAND : 'var(--ah-line)'}`,
+                        color: BRAND,
                       }}>
                 <ReactionIcon type={r.reaction} size={10} />
                 {r.count > 1 && <span className="font-semibold">{r.count}</span>}

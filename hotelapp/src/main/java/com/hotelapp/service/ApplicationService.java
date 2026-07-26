@@ -233,6 +233,14 @@ public class ApplicationService {
 
         application.setStatus(request.getDecision());
         application.setNote(request.getNote());
+        // FAZ C.1 — Yedekteki aday dogrudan sonuclandirildiysa yedek alanlari temizlenir;
+        // aksi halde acik kalan teklif scheduler'i yaniltir.
+        if (current == ApplicationStatus.STANDBY) {
+            application.setStandbyRank(null);
+            application.setStandbyOfferedAt(null);
+            application.setStandbyDeadline(null);
+            application.setStandbyReplacesApplicationId(null);
+        }
         applicationRepository.save(application);
 
         // FAZ 18 — Audit: baglayici karar, kim/ne zaman izlenebilmeli
@@ -400,7 +408,11 @@ public class ApplicationService {
         }
 
         ApplicationStatus current = application.getStatus();
-        if (current != ApplicationStatus.PENDING && current != ApplicationStatus.REVIEWING) {
+        // FAZ C.1 — Yedek aday da yedeklikten cekilebilir (aktif teklif varsa
+        // "respond-standby" akisi kullanilir, orada isletmeye ayrica bildirim gider).
+        if (current != ApplicationStatus.PENDING
+                && current != ApplicationStatus.REVIEWING
+                && current != ApplicationStatus.STANDBY) {
             String msg = switch (current) {
                 case ACCEPTED  -> "Kabul edilmiş başvuru iptal edilemez. İşletme ile iletişime geçin.";
                 case REJECTED  -> "Bu başvuru zaten reddedilmiş.";
@@ -453,6 +465,17 @@ public class ApplicationService {
 
         // Başvuruyu işaretle
         application.setNoShow(true);
+
+        // FAZ C.1 — Aday gelmedi: tuttugu slot(lar) yeniden bosalir ki yedek doldurabilsin.
+        if (application.getRequestedSlots() != null) {
+            for (ShiftSlot slot : application.getRequestedSlots()) {
+                int filled = slot.getSlotsFilled() == null ? 0 : slot.getSlotsFilled();
+                if (filled > 0) {
+                    slot.setSlotsFilled(filled - 1);
+                    shiftSlotRepository.save(slot);
+                }
+            }
+        }
 
         // Adayın strike'ını düş
         User candidate = application.getCandidate();

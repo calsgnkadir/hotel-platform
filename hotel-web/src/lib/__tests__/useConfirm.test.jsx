@@ -102,16 +102,19 @@ describe('useConfirm', () => {
     expect(btn.getAttribute('style')).toContain('180, 106, 85')  // rgba(180, 106, 85, ...) shadow
   })
 
-  it('destructive false -> filled amber confirm button', async () => {
+  it('destructive false -> filled brand (teal) confirm button', async () => {
     renderWithProvider(
       <TestConsumer opts={{ title: 'Onay', confirmLabel: 'Evet' }} onResult={() => {}} />
     )
     fireEvent.click(screen.getByText('trigger'))
     const btn = screen.getByText('Evet')
-    // Amber gradient (#d4a853 -> #b8902d) — browser hex'i rgb'ye normalize eder
+    // Redesign (acik+teal): marka gradienti #0f766e -> #0b5d57.
+    // Browser hex'i rgb'ye normalize eder.
     const style = btn.getAttribute('style')
-    expect(style).toContain('rgb(212, 168, 83)')   // #d4a853
-    expect(style).toContain('rgb(184, 144, 45)')   // #b8902d
+    expect(style).toContain('rgb(15, 118, 110)')   // #0f766e
+    expect(style).toContain('rgb(11, 93, 87)')     // #0b5d57
+    // Yikici olmayan onay, tehlike rengini tasimamali
+    expect(style).not.toContain('180, 106, 85')
   })
 
   it('default label\'lar destructive-aware secilir (Evet, sil vs Onayla)', async () => {

@@ -8,12 +8,17 @@ public enum NotificationType {
     DOCUMENT_REQUEST,       // işletme belge talep etti
     NO_SHOW_MARKED,         // no-show işaretlendin
     AUTO_BANNED,            // otomatik banlandın
+    STANDBY_ASSIGNED,       // FAZ C.1 — yedek aday olarak işaretlendin
+    STANDBY_ACTIVATED,      // FAZ C.1 — asıl aday gelmedi, sıra sende (acil teklif)
+    STANDBY_OFFER_EXPIRED,  // FAZ C.1 — yedek teklifine süresinde cevap vermedin
 
     // İşletme'ye
     NEW_APPLICATION,        // yeni başvuru geldi
     APPLICATION_WITHDRAWN,  // aday başvurusunu iptal etti
     DOCUMENT_GRANTED,       // aday belge iznini verdi
     DOCUMENT_DENIED,        // aday belge iznini reddetti
+    STANDBY_FILLED,         // FAZ C.1 — yedek aday açığı kapattı
+    STANDBY_DECLINED,       // FAZ C.1 — yedek aday teklifi reddetti / süresi doldu
 
     // ADIM J: Tercihlerine uygun yeni ilan
     MATCHING_LISTING,

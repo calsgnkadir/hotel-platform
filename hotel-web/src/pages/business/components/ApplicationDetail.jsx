@@ -116,6 +116,35 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
     finally { setActionLoading(false) }
   }
 
+  // FAZ C.1 — Yedek aday: no-show olursa otomatik cagrilir
+  async function handleStandby() {
+    const ok = await confirm({
+      title: 'Yedek listesine al',
+      description: 'Asıl aday gelmezse bu adaya otomatik acil teklif gider. Aday şimdi yedek olduğuna dair bildirim alır.',
+      confirmLabel: 'Evet, yedeğe al',
+    })
+    if (!ok) return
+    setActionLoading(true)
+    try {
+      const updated = await hotelApi.markStandby(app.id)
+      toast.success('Aday yedek listesine alındı')
+      onChanged?.(updated)
+      onRefresh?.()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
+  async function handleRemoveStandby() {
+    setActionLoading(true)
+    try {
+      const updated = await hotelApi.removeStandby(app.id)
+      toast.success('Aday yedeklikten çıkarıldı')
+      onChanged?.(updated)
+      onRefresh?.()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
   async function handleNoShow() {
     const ok = await confirm({
       title: 'NO-SHOW olarak işaretle',
@@ -179,7 +208,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             ) : (
               <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0"
                    style={{
-                     background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)',
+                     background: 'linear-gradient(135deg, #b89e6e 0%, #0b5d57 100%)',
                      color: '#ffffff',
                    }}>
                 {app.candidate?.fullName?.charAt(0) || '?'}
@@ -364,7 +393,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
                   className="type-overline px-4 py-2 rounded-lg disabled:opacity-50 transition-all"
                   style={{
-                    background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)',
+                    background: 'linear-gradient(135deg, #b89e6e 0%, #0b5d57 100%)',
                     color: '#ffffff',
                   }}>
                   Talep Et
@@ -373,6 +402,37 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             )
           })()}
         </div>
+
+        {/* FAZ C.1 — Yedek durumu paneli */}
+        {app.status === 'STANDBY' && (
+          <div className="border-t border-hairline pt-4 space-y-3">
+            <h3 className="type-overline">Yedek Aday</h3>
+            <div className="rounded-xl p-3" style={{ background: '#f2ecfd', border: '1px solid #6d28d9' }}>
+              <div className="text-[13px] font-semibold" style={{ color: '#5b21b6' }}>
+                {app.standbyRank ? `${app.standbyRank}. yedek` : 'Yedek listesinde'}
+              </div>
+              <div className="text-[12px] mt-1" style={{ color: '#5b21b6' }}>
+                {app.standbyOfferActive
+                  ? `Acil teklif gönderildi — aday ${app.standbyDeadline
+                      ? new Date(app.standbyDeadline).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+                      : ''} saatine kadar cevap verecek.`
+                  : 'Asıl aday no-show işaretlenirse bu adaya otomatik acil teklif gider.'}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
+                className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                style={{ background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)' }}>
+                Direkt Kabul
+              </button>
+              <button onClick={handleRemoveStandby} disabled={actionLoading}
+                className="py-2.5 rounded-2xl type-overline transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                style={{ background: 'var(--ah-card)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}>
+                Yedeklikten Çıkar
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* KARAR */}
         {['PENDING', 'REVIEWING', 'HELD'].includes(app.status) && (
@@ -392,7 +452,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
                 style={{
                   background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)',
-                  boxShadow: '0 8px 22px rgba(122, 159, 122, 0.30)',
+                  boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                 }}>
                 Kabul
               </button>
@@ -401,7 +461,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                   className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
                   style={{
                     background: 'linear-gradient(135deg, #c8923a 0%, #a3762d 100%)',
-                    boxShadow: '0 8px 22px rgba(200, 146, 58, 0.28)',
+                    boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>
                   HOLD 24sa
                 </button>
@@ -410,11 +470,24 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 className={`py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 ${app.status === 'HELD' ? 'col-span-2' : ''}`}
                 style={{
                   background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)',
-                  boxShadow: '0 8px 22px rgba(180, 106, 85, 0.30)',
+                  boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                 }}>
                 Reddet
               </button>
             </div>
+            {/* FAZ C.1 — Yedeğe alma: kararı ertelemeden güvence oluştur */}
+            <button onClick={handleStandby} disabled={actionLoading}
+              className="w-full py-2.5 rounded-2xl type-overline transition-all hover:-translate-y-0.5 disabled:opacity-60 inline-flex items-center justify-center gap-2"
+              style={{ background: '#f2ecfd', color: '#5b21b6', border: '1px solid #6d28d9' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+              Yedeğe Al
+            </button>
+            <p className="type-caption">
+              Yedekteki aday, asıl aday gelmezse otomatik çağrılır — vardiyan boş kalmaz.
+            </p>
           </div>
         )}
 
@@ -428,7 +501,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               style={{
                 background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                 color: '#ffffff',
-                boxShadow: '0 12px 28px rgba(15, 118, 110, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)',
+                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -444,7 +517,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               style={{
                 background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                 color: '#ffffff',
-                boxShadow: '0 12px 28px rgba(15, 118, 110, 0.25), inset 0 1px 0 rgba(255,255,255,0.22)',
+                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               Mesaj Gönder
             </button>

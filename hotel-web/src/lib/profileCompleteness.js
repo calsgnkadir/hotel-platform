@@ -22,9 +22,9 @@ const CANDIDATE_FIELDS = [
   { key: 'about',              label: 'Hakkımda',             weight: 8  },
   // Array/list alanları — boş array eksik sayılır
   { key: 'languages',          label: 'Diller (en az 1)',     weight: 6, isArray: true },
-  { key: 'preferredPositions', label: 'Tercih pozisyonlar',   weight: 8, isArray: true },
-  { key: 'preferredDistricts', label: 'Tercih ilçeler',       weight: 8, isArray: true },
-  { key: 'availabilityTypes',  label: 'Çalışma türü tercihi', weight: 5, isArray: true },
+  // NOT: Tercih pozisyon/ilçe + calisma turu tercihi cikarildi — profil
+  // duzenlemede o bolumlerin UI'si kaldirildi (tercihler sadece ilan
+  // filtrelemede kullaniliyor), dolayisiyla doluluga sayilmamali.
   { key: 'experienceYears',    label: 'Deneyim yılı',         weight: 6, isNumber: true },
   // Yüklü en az 1 belge (CV vb.) — özel kontrol
   { key: '__hasDocument',      label: 'En az 1 belge (CV)',   weight: 6 },

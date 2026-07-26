@@ -141,6 +141,32 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findByStatusAndHoldDeadlineBefore(ApplicationStatus status, LocalDateTime deadline);
 
     // ----------------------------------------------------------------
+    // FAZ C.1 — Yedek (standby) aday sistemi
+    // ----------------------------------------------------------------
+
+    /**
+     * Bir ilanin teklif bekleyen yedekleri — rank sirasinda.
+     * standbyOfferedAt IS NULL: henuz teklif gonderilmemis olanlar
+     * (ayni yedege iki kez teklif gitmesin).
+     */
+    @EntityGraph(attributePaths = { "candidate", "jobListing", "jobListing.business" })
+    @Query("""
+        SELECT a FROM Application a
+        WHERE a.jobListing.id = :listingId
+          AND a.status = com.hotelapp.enums.ApplicationStatus.STANDBY
+          AND a.standbyOfferedAt IS NULL
+        ORDER BY COALESCE(a.standbyRank, 9999) ASC, a.createdAt ASC
+    """)
+    List<Application> findAvailableStandbys(@Param("listingId") Long listingId);
+
+    /** Ilandaki mevcut yedek sayisi — yeni yedege rank atamak icin. */
+    long countByJobListingIdAndStatus(Long jobListingId, ApplicationStatus status);
+
+    /** Suresi gecmis yedek teklifleri (scheduler her 5 dakika temizler). */
+    List<Application> findByStatusAndStandbyDeadlineBefore(
+            ApplicationStatus status, LocalDateTime deadline);
+
+    // ----------------------------------------------------------------
     // #84: Sayfalanmış + filtrelenebilir sorgular
     // Tüm filtre parametreleri opsiyonel (:param IS NULL OR ...) deseniyle.
     // ----------------------------------------------------------------

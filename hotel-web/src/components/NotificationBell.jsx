@@ -19,6 +19,12 @@ const TYPE_COLOR = {
   DOCUMENT_DENIED:       'bg-red-500',
   MATCHING_LISTING:      'bg-brand-600',
   NEW_MESSAGE:           'bg-blue-500',
+  // FAZ C.1 — Yedek aday sistemi (mor aile; ACTIVATED acil olduğu için canlı ton)
+  STANDBY_ASSIGNED:      'bg-violet-500',
+  STANDBY_ACTIVATED:     'bg-violet-600',
+  STANDBY_OFFER_EXPIRED: 'bg-slate-400',
+  STANDBY_FILLED:        'bg-brand-500',
+  STANDBY_DECLINED:      'bg-orange-500',
   GENERIC:               'bg-cream-500',
 }
 
@@ -203,9 +209,9 @@ export default function NotificationBell({ onNavigate }) {
                       {n.aggregateCount > 1 && (
                         <span className="flex-shrink-0 text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded-full"
                               style={{
-                                background: 'rgba(205, 183, 143, 0.16)',
-                                border: '1px solid rgba(205, 183, 143, 0.40)',
-                                color: '#cdb78f',
+                                background: 'rgba(15, 118, 110, 0.16)',
+                                border: '1px solid rgba(15, 118, 110, 0.40)',
+                                color: '#2d968b',
                               }}>
                           ×{n.aggregateCount}
                         </span>

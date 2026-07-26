@@ -16,7 +16,7 @@ export default function TermsPage() {
            style={{
              background:
                'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(74, 63, 51, 0.30) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(205, 183, 143, 0.10) 0%, transparent 60%)',
+               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(15, 118, 110, 0.10) 0%, transparent 60%)',
            }} />
 
       <div className="fixed top-3 left-4 z-40">
@@ -26,7 +26,7 @@ export default function TermsPage() {
       <div className="relative z-10 max-w-3xl mx-auto p-6 sm:p-10"
            style={{
              background: '#1b1815',
-             borderRadius: '28px 12px 28px 12px',
+             borderRadius: '12px',
              border: 'none',
              boxShadow: '0 18px 48px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(245,239,226,0.03)',
            }}>
@@ -35,7 +35,7 @@ export default function TermsPage() {
               style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kullanım Şartları
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.28em] font-medium mt-3"
+          <p className="text-[10px] uppercase tracking-[0.08em] font-medium mt-3"
              style={{ color: '#928678' }}>
             Hizmet Sözleşmesi · Son güncelleme: 19 Haziran 2026
           </p>
@@ -111,9 +111,9 @@ export default function TermsPage() {
 
           <Section title="10. İletişim">
             Sözleşmeyle ilgili sorularınız için: <a href="/iletisim"
-            style={{ color: '#cdb78f', textDecoration: 'underline' }}>iletişim sayfası</a>. KVKK
+            style={{ color: '#2d968b', textDecoration: 'underline' }}>iletişim sayfası</a>. KVKK
             veri sorumlusu başvuruları için: <a href="/kvkk"
-            style={{ color: '#cdb78f', textDecoration: 'underline' }}>KVKK metni</a>.
+            style={{ color: '#2d968b', textDecoration: 'underline' }}>KVKK metni</a>.
           </Section>
 
           <p style={{ marginTop: 24, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
@@ -129,8 +129,8 @@ function Section({ title, children }) {
   return (
     <section style={{ marginBottom: 22 }}>
       <h2 className="" style={{
-        fontSize: 15, fontWeight: 600, color: '#cdb78f',
-        marginBottom: 12, letterSpacing: '0.22em', textTransform: 'uppercase',
+        fontSize: 15, fontWeight: 600, color: '#2d968b',
+        marginBottom: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
       }}>
         {title}
       </h2>

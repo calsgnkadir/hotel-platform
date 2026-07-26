@@ -138,17 +138,17 @@ export default function FavoritesTab({ onOpenMessages }) {
           <div className="flex gap-2 flex-shrink-0">
             <button onClick={() => handleStartChat(f.candidateId)}
               disabled={openingChatId === f.candidateId}
-              className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5 disabled:opacity-50"
+              className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5 disabled:opacity-50"
               style={{
                 background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                 color: '#ffffff',
-                boxShadow: '0 8px 20px rgba(15, 118, 110, 0.22), inset 0 1px 0 rgba(255,255,255,0.22)',
+                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               {openingChatId === f.candidateId ? '...' : 'Mesajla'}
             </button>
             <button onClick={() => handleRemove(f.candidateId, f.candidateName)}
               disabled={removingId === f.candidateId}
-              className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.14em] transition-colors disabled:opacity-50"
+              className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.06em] transition-colors disabled:opacity-50"
               style={{
                 background: 'rgba(180, 106, 85, 0.10)',
                 color: '#d39481',

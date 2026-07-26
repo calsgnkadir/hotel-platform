@@ -41,9 +41,9 @@ export default function SlotChipGroup({ slots, items, max = 4, size = 'sm' }) {
             fontWeight: 500,
             background: chip.conflict
               ? 'rgba(180, 106, 85, 0.10)'
-              : 'rgba(205, 183, 143, 0.06)',
+              : 'rgba(15, 118, 110, 0.06)',
             border: `1px solid ${
-              chip.conflict ? 'rgba(180, 106, 85, 0.35)' : 'rgba(205, 183, 143, 0.16)'
+              chip.conflict ? 'rgba(180, 106, 85, 0.35)' : 'rgba(15, 118, 110, 0.16)'
             }`,
             color: chip.conflict ? '#d39481' : 'var(--text-secondary)',
           }}
@@ -58,8 +58,8 @@ export default function SlotChipGroup({ slots, items, max = 4, size = 'sm' }) {
           style={{
             fontSize: textSize,
             fontWeight: 600,
-            background: 'rgba(205, 183, 143, 0.10)',
-            border: '1px solid rgba(205, 183, 143, 0.22)',
+            background: 'rgba(15, 118, 110, 0.10)',
+            border: '1px solid rgba(15, 118, 110, 0.22)',
             color: 'var(--accent-action)',
           }}
           title={`+${overflow} daha`}

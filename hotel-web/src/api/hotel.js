@@ -350,6 +350,26 @@ export async function respondToHold(applicationId, accept) {
   return data
 }
 
+// FAZ C.1 — Yedek (standby) aday sistemi
+/** İşletme: başvuruyu yedek listesine al. No-show olursa otomatik teklif gider. */
+export async function markStandby(applicationId) {
+  const { data } = await api.put(`/api/business/applications/${applicationId}/standby`)
+  return data
+}
+
+/** İşletme: yedeklikten çıkar (REVIEWING'e döner). */
+export async function removeStandby(applicationId) {
+  const { data } = await api.delete(`/api/business/applications/${applicationId}/standby`)
+  return data
+}
+
+/** Aday: acil yedek teklifine cevap ver (true = kabul, false = gelemem). */
+export async function respondToStandbyOffer(applicationId, accept) {
+  const { data } = await api.put(
+    `/api/candidate/applications/${applicationId}/respond-standby?accept=${accept}`)
+  return data
+}
+
 // FAZ 2/#32 — Talent pool / favoriler
 export async function addFavorite(candidateId, note) {
   const { data } = await api.post(`/api/business/favorites/${candidateId}`, { note: note || null })

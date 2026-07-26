@@ -12,7 +12,6 @@
  */
 import { useState, useRef, useEffect } from 'react'
 import toast from 'react-hot-toast'
-import { wsPublish } from '../../lib/websocket'
 
 export default function MessageComposer({
   conversation,
@@ -210,12 +209,7 @@ export default function MessageComposer({
 
             <div className="relative flex-1 min-w-0">
               <input type="text" value={draft}
-                onChange={e => {
-                  setDraft(e.target.value)
-                  if (conversation?.id) {
-                    wsPublish(`/app/chat.typing/${conversation.id}`, {})
-                  }
-                }}
+                onChange={e => setDraft(e.target.value)}
                 onPaste={handlePaste}
                 placeholder="Mesaj yaz veya foto yapıştır..." maxLength={2000}
                 className="input text-sm w-full" disabled={sending} />

@@ -1,6 +1,5 @@
 // FAZ 5.2 — God class refactor.
 // Eski: 1334 satir tek dosya. Yeni: layout-only + tab componentleri ayri.
-//   tabs/OverviewTab.jsx
 //   tabs/ApplicationsTab.jsx
 //   tabs/HistoryTab.jsx
 //   tabs/DocumentsTab.jsx
@@ -20,7 +19,6 @@ import OnboardingWizard, { shouldShowOnboarding } from '../../components/Onboard
 
 import ListingsPage from './ListingsPage'
 import MessagesPage from '../MessagesPage'
-import OverviewTab from './tabs/OverviewTab'
 import ApplicationsTab from './tabs/ApplicationsTab'
 import HistoryTab from './tabs/HistoryTab'
 import DocumentsTab from './tabs/DocumentsTab'
@@ -28,13 +26,14 @@ import ProfileTab from './tabs/ProfileTab'
 import SavedListingsTab from './tabs/SavedListingsTab'  // Dalga H1
 import RelationsTab from './tabs/RelationsTab'              // Dalga I1
 
-const VALID_TABS = ['overview','listings','saved','relations','applications','history','documents','messages','profile']
+// FAZ 26 — 'overview' (Genel Bakis) tamamen kaldirildi; varsayilan sekme 'listings'.
+const VALID_TABS = ['listings','saved','relations','applications','history','documents','messages','profile']
 
 export default function CandidateDashboard() {
   const { user } = useAuth()
   const [params, setParams] = useSearchParams()
   // FAZ 5.3 — Command Palette ?tab=… ile yonlendirme yapabilir; URL acanin tab'ini al.
-  const initialTab = VALID_TABS.includes(params.get('tab')) ? params.get('tab') : 'overview'
+  const initialTab = VALID_TABS.includes(params.get('tab')) ? params.get('tab') : 'listings'
   const [activeTab, _setActiveTab] = useState(initialTab)
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding(user?.id))
   const queryClient = useQueryClient()
@@ -72,7 +71,6 @@ export default function CandidateDashboard() {
       ) : (
         /* FAZ 5.4 — CSS-based tab transition (Framer key remount tetiklenmiyordu) */
         <div key={activeTab} className="page-enter">
-          {activeTab === 'overview'      && <OverviewTab user={user} applications={applications} onTabChange={handleTabChange} />}
           {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={refetchApplications} onMessagesOpen={() => handleTabChange('messages')} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => handleTabChange('messages')} onTabChange={handleTabChange} />}
           {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={() => handleTabChange('messages')} />}

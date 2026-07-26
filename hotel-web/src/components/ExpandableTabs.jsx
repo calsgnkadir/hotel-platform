@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
  * - lucide-react bagimliligi YOK (inline SVG ikonlar)
  * - usehooks-ts bagimliligi YOK (custom useOnClickOutside)
  * - shadcn cn() yerine native template literal
- * - Tema: altin (#d4a853) active, lacivert glass background
+ * - Tema: altin (#0f766e) active, lacivert glass background
  * - aria-pressed + dis tiklamada deselect
  *
  * Kullanim:
@@ -57,7 +57,7 @@ function useOnClickOutside(ref, handler) {
 export default function ExpandableTabs({
   tabs,
   className = '',
-  activeColor = '#d4a853',  // altın
+  activeColor = '#0f766e',  // altın
   onChange,
   initialIndex = null,
 }) {
@@ -83,7 +83,7 @@ export default function ExpandableTabs({
         background: 'rgba(12, 23, 38, 0.55)',
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
-        border: '1px solid rgba(205, 183, 143, 0.18)',
+        border: '1px solid rgba(15, 118, 110, 0.18)',
         boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)',
       }}>
       {tabs.map((tab, index) => {
@@ -93,7 +93,7 @@ export default function ExpandableTabs({
                  aria-hidden="true"
                  style={{
                    width: 1, height: 22, margin: '0 4px',
-                   background: 'rgba(205, 183, 143, 0.22)',
+                   background: 'rgba(15, 118, 110, 0.22)',
                  }} />
           )
         }
@@ -124,10 +124,10 @@ export default function ExpandableTabs({
               border: 'none',
               cursor: 'pointer',
               color: isActive ? activeColor : '#928678',
-              background: isActive ? 'rgba(205, 183, 143, 0.10)' : 'transparent',
+              background: isActive ? 'rgba(15, 118, 110, 0.10)' : 'transparent',
               transition: 'color 220ms, background 220ms',
             }}
-            onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#cdb78f' }}
+            onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#2d968b' }}
             onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = '#928678' }}>
             <Icon size={20} active={isActive} />
             {tab.badge > 0 && !isActive && (

@@ -78,7 +78,7 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
          className="overflow-hidden cursor-pointer transition-all relative"
          style={{
            background: '#ffffff',
-           borderRadius: idx % 2 === 0 ? '28px 12px 12px 12px' : '12px 28px 12px 12px',
+           borderRadius: '12px',
            border: 'none',
            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(245,239,226,0.03)',
          }}

@@ -65,7 +65,7 @@ export default class ErrorBoundary extends Component {
             </button>
             <button onClick={this.handleReload}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg"
-              style={{ background: 'linear-gradient(135deg, #1b1815, #8a7349)' }}>
+              style={{ background: 'linear-gradient(135deg, #1b1815, #0b5d57)' }}>
               Sayfayı Yenile
             </button>
           </div>

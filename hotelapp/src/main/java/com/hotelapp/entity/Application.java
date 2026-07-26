@@ -61,6 +61,24 @@ public class Application {
     // Cevap yoksa scheduler EXPIRED'a cevirir.
     private LocalDateTime holdDeadline;
 
+    // ------------------------------------------------------------------
+    // FAZ C.1 — Yedek (standby) aday sistemi
+    // Isletme bir basvuruyu STANDBY'a alir; asil aday no-show olursa
+    // sistem otomatik olarak yedege "acil teklif" gonderir.
+    // ------------------------------------------------------------------
+
+    /** Yedek sirasi (1 = ilk yedek). STANDBY disi statulerde null. */
+    private Integer standbyRank;
+
+    /** No-show sonrasi yedege teklif gonderildigi an. Null = henuz aktive olmadi. */
+    private LocalDateTime standbyOfferedAt;
+
+    /** Yedegin teklife cevap vermesi gereken son an (acil: kisa pencere). */
+    private LocalDateTime standbyDeadline;
+
+    /** Teklifin hangi no-show basvurusunun yerine acildigi — iz surme icin. */
+    private Long standbyReplacesApplicationId;
+
     // Faz E1 öncesi: keyfi haftalık müsaitlik. Yeni akış slot kullanır;
     // bu liste eski başvurularda kalır ama yeni başvurularda boş kalır.
     // FAZ 9.2 — N+1 fix: BatchSize ile 50 app'in availability'sini tek IN(...) sorgusuyla topla.

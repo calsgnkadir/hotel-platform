@@ -1,44 +1,33 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect } from 'react'
 
+/**
+ * FAZ 26 — ITEM 7: KOYU MOD KALDIRILDI (kullanici karari).
+ *
+ * Gerekce: uygulama acik+teal kimlige gecti; `--ah-*` token'larinin koyu
+ * karsiligi yoktu, dolayisiyla "Koyu" secildiginde ekranlar yari-migrate
+ * karisik gorunuyordu. Referans (Kariyer.net/LinkedIn) da tek tema sunar.
+ *
+ * Provider ve useTheme() imza uyumu icin duruyor (tuketiciler kirilmasin):
+ * theme hep 'light', toggle no-op. `.dark` sinifi varsa temizlenir — eskiden
+ * koyu secmis kullanicilar otomatik acik'a doner.
+ *
+ * NOT: tailwind.config'de darkMode:'class' BILEREK duruyor. Kaldirilirsa
+ * koddaki 108 `dark:` variant OS tercihine gore aktiflesirdi.
+ */
 const ThemeContext = createContext({ theme: 'light', toggle: () => {}, toggleTheme: () => {} })
 
 const STORAGE_KEY = 'ajanshotel-theme'
 
-// REDESIGN v3 — Acik+teal kimlige gecis: default LIGHT. Eski 'dark' kaydi olan
-// kullanicilar da bir kerelik light'a migrate edilir (yeni surum bayragi).
-const MIGRATION_KEY = 'ajanshotel-theme-v3light-migrated'
-
-function getInitialTheme() {
-  if (typeof window === 'undefined') return 'light'
-  const migrated = localStorage.getItem(MIGRATION_KEY) === '1'
-  if (!migrated) {
-    // ilk yukleme (bu surumde) — eski dark tercihini ez, light'a gec
-    localStorage.setItem(MIGRATION_KEY, '1')
-    localStorage.setItem(STORAGE_KEY, 'light')
-    return 'light'
-  }
-  const saved = localStorage.getItem(STORAGE_KEY)
-  if (saved === 'light' || saved === 'dark') return saved
-  return 'light'
-}
-
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(getInitialTheme)
-
-  // <html class="dark"> uygula + persist
   useEffect(() => {
-    const root = document.documentElement
-    if (theme === 'dark') root.classList.add('dark')
-    else root.classList.remove('dark')
-    localStorage.setItem(STORAGE_KEY, theme)
-  }, [theme])
+    // Eski koyu tercihi olan kullanicilari temizle
+    document.documentElement.classList.remove('dark')
+    try { localStorage.removeItem(STORAGE_KEY) } catch {}
+  }, [])
 
-  function toggle() {
-    setTheme(t => t === 'dark' ? 'light' : 'dark')
-  }
-
+  const noop = () => {}
   return (
-    <ThemeContext.Provider value={{ theme, toggle, toggleTheme: toggle, setTheme }}>
+    <ThemeContext.Provider value={{ theme: 'light', toggle: noop, toggleTheme: noop, setTheme: noop }}>
       {children}
     </ThemeContext.Provider>
   )

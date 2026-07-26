@@ -17,7 +17,7 @@ function ShimmerBlock({ className = '', style = {} }) {
     <div
       className={`rounded animate-pulse ${className}`}
       style={{
-        background: 'linear-gradient(90deg, rgba(205, 183, 143, 0.08) 0%, rgba(205, 183, 143, 0.18) 50%, rgba(205, 183, 143, 0.08) 100%)',
+        background: 'linear-gradient(90deg, rgba(15, 118, 110, 0.08) 0%, rgba(15, 118, 110, 0.18) 50%, rgba(15, 118, 110, 0.08) 100%)',
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.5s ease-in-out infinite',
         ...style,

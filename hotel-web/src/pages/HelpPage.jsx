@@ -107,9 +107,9 @@ export default function HelpPage() {
                 <button key={c.id} onClick={() => setCat(c.id)}
                   className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-colors"
                   style={{
-                    background: active ? 'rgba(205, 183, 143, 0.14)' : 'rgba(27, 24, 21, 0.75)',
+                    background: active ? 'rgba(15, 118, 110, 0.14)' : 'rgba(27, 24, 21, 0.75)',
                     color: active ? '#f5efe2' : '#928678',
-                    border: `1px solid ${active ? 'rgba(205, 183, 143, 0.42)' : 'rgba(205, 183, 143, 0.10)'}`,
+                    border: `1px solid ${active ? 'rgba(15, 118, 110, 0.42)' : 'rgba(15, 118, 110, 0.10)'}`,
                   }}>
                   {c.label}
                 </button>
@@ -122,7 +122,7 @@ export default function HelpPage() {
             onChange={e => setQuery(e.target.value)}
             placeholder="Soru içinde ara…"
             className="w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2"
-            style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(205, 183, 143, 0.14)', color: '#ede4d3' }}
+            style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(15, 118, 110, 0.14)', color: '#ede4d3' }}
           />
         </div>
 
@@ -162,7 +162,7 @@ function FaqItem({ cat, q, a }) {
       >
         <span className="flex items-center gap-2 min-w-0">
           <span className="text-[9px] uppercase tracking-widest font-bold flex-shrink-0 px-1.5 py-0.5 rounded"
-                style={{ background: 'rgba(205, 183, 143, 0.12)', color: '#cdb78f', border: '1px solid rgba(205, 183, 143, 0.22)' }}>
+                style={{ background: 'rgba(15, 118, 110, 0.12)', color: '#2d968b', border: '1px solid rgba(15, 118, 110, 0.22)' }}>
             {cat}
           </span>
           <span className="font-semibold text-[14px] truncate" style={{ color: '#f5efe2' }}>{q}</span>

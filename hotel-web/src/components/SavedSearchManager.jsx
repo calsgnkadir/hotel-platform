@@ -88,19 +88,19 @@ export default function SavedSearchManager({ filters, onApply }) {
             type="button"
             disabled={!hasActiveFilters}
             onClick={() => setShowSaveInput(true)}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
+            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.06em] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
             style={
               hasActiveFilters
                 ? {
-                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                     color: '#1a1208',
-                    border: '1px solid rgba(212, 168, 83, 0.55)',
-                    boxShadow: '0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22)',
+                    border: '1px solid rgba(15, 118, 110, 0.55)',
+                    boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }
                 : {
                     background: 'transparent',
                     color: '#6b6358',
-                    border: '1px solid rgba(205, 183, 143, 0.14)',
+                    border: '1px solid rgba(15, 118, 110, 0.14)',
                   }
             }
             title={hasActiveFilters ? 'Bu filtreleri kaydet' : 'Önce bir filtre seç'}>
@@ -126,22 +126,22 @@ export default function SavedSearchManager({ filters, onApply }) {
             <div className="flex gap-2">
               <button type="button" onClick={handleSubmitName}
                 disabled={createMut.isPending}
-                className="flex-1 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] disabled:opacity-50 transition-all"
+                className="flex-1 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.06em] disabled:opacity-50 transition-all"
                 style={{
-                  background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                  background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                   color: '#1a1208',
-                  border: '1px solid rgba(212, 168, 83, 0.55)',
-                  boxShadow: '0 8px 20px rgba(212, 168, 83, 0.28), inset 0 1px 0 rgba(255,255,255,0.22)',
+                  border: '1px solid rgba(15, 118, 110, 0.55)',
+                  boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                 }}>
                 {createMut.isPending ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
               <button type="button"
                 onClick={() => { setShowSaveInput(false); setName('') }}
-                className="px-3 py-2 rounded-full text-[11px] font-medium uppercase tracking-[0.14em] transition-all"
+                className="px-3 py-2 rounded-full text-[11px] font-medium uppercase tracking-[0.06em] transition-all"
                 style={{
                   background: 'transparent',
                   color: '#c9bdaa',
-                  border: '1px solid rgba(205, 183, 143, 0.14)',
+                  border: '1px solid rgba(15, 118, 110, 0.14)',
                 }}>
                 İptal
               </button>
@@ -153,8 +153,8 @@ export default function SavedSearchManager({ filters, onApply }) {
       {/* Saved list */}
       {!isLoading && saved.length > 0 && (
         <div className="space-y-1.5 pt-2"
-             style={{ borderTop: '1px solid rgba(205, 183, 143, 0.08)' }}>
-          <div className="text-[10px] font-medium uppercase tracking-[0.22em] pt-2"
+             style={{ borderTop: '1px solid rgba(15, 118, 110, 0.08)' }}>
+          <div className="text-[10px] font-medium uppercase tracking-[0.06em] pt-2"
                style={{ color: '#928678' }}>
             Kayıtlı Aramalar · <span className="tabular-nums">{saved.length}</span>
           </div>
@@ -166,10 +166,10 @@ export default function SavedSearchManager({ filters, onApply }) {
                 className="group relative rounded-xl px-3 py-2.5 transition-all"
                 style={{
                   background: 'transparent',
-                  border: '1px solid rgba(205, 183, 143, 0.10)',
+                  border: '1px solid rgba(15, 118, 110, 0.10)',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(205, 183, 143, 0.04)'; e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.22)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(205, 183, 143, 0.10)' }}>
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(15, 118, 110, 0.04)'; e.currentTarget.style.borderColor = 'rgba(15, 118, 110, 0.22)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(15, 118, 110, 0.10)' }}>
                 <div className="flex items-center gap-2">
                   <button onClick={() => onApply?.(s)}
                     title="Bu aramayı uygula"
@@ -185,8 +185,8 @@ export default function SavedSearchManager({ filters, onApply }) {
                     title={s.notificationsEnabled ? 'Bildirimleri kapat' : 'Bildirimleri aç'}
                     className="w-6 h-6 grid place-items-center rounded-full transition-colors flex-shrink-0"
                     style={{
-                      color: s.notificationsEnabled ? '#cdb78f' : '#928678',
-                      background: s.notificationsEnabled ? 'rgba(205, 183, 143, 0.10)' : 'transparent',
+                      color: s.notificationsEnabled ? '#2d968b' : '#928678',
+                      background: s.notificationsEnabled ? 'rgba(15, 118, 110, 0.10)' : 'transparent',
                     }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={s.notificationsEnabled ? 'currentColor' : 'none'}
                          stroke="currentColor" strokeWidth={1.8} className="w-3 h-3">

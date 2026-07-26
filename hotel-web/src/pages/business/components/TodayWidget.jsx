@@ -152,7 +152,7 @@ export default function TodayWidget({ applications, onTabChange }) {
                   style={{
                     background: 'linear-gradient(135deg, #ffffff, #0b5d57)',
                     color: '#ffffff',
-                    boxShadow: '0 0 14px rgba(15, 118, 110, 0.30)',
+                    boxShadow: 'none',
                   }}
                 >
                   Yeni İlan
