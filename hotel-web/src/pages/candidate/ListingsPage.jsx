@@ -761,21 +761,29 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         <span className="ah-logo" style={{ background: logoColor(listing.businessName) }}>{initial}</span>
         <div className="ah-job__hd">
           <div className="ah-job__title">{position}</div>
-          <div className="ah-job__co">
-            <span>{listing.businessName}</span>
-            {/* FAZ B.2 — puan bilgisi alt "guven satiri"nda; ust satirdaki
-                StarRating duplikasyon oldugu icin kaldirildi. */}
-          </div>
-          <div className="ah-job__loc">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                 strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" /><circle cx="12" cy="10" r="3" />
-            </svg>
-            {listing.businessDistrict || 'İstanbul'}
+          {/* FAZ B.5.4 — Tek meta satiri: isletme · puan · ilce · mesafe.
+              Eskiden 3 yere dagilmisti (__co / __loc / guven satirindaki puan);
+              aday tek bakista "kim, ne kadar guvenilir, ne kadar uzak" okuyor.
+              Ayiraclar CSS'ten (.ah-job__meta > * + *::before) gelir. */}
+          <div className="ah-job__meta">
+            <span className="ah-job__co-name">{listing.businessName}</span>
+
+            {listing.businessReviewCount > 0 && (
+              <span className="ah-job__rating"
+                    title={`${Number(listing.businessAverageRating || 0).toFixed(1)} puan · ${listing.businessReviewCount} değerlendirme`}>
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true">
+                  <path d="M11.48 3.5a.56.56 0 0 1 1.04 0l2.13 5.11 5.52.44a.56.56 0 0 1 .32.99l-4.2 3.6 1.28 5.38a.56.56 0 0 1-.84.61L12 16.73l-4.73 2.9a.56.56 0 0 1-.84-.61l1.28-5.39-4.2-3.6a.56.56 0 0 1 .32-.98l5.52-.44 2.13-5.12Z"/>
+                </svg>
+                {Number(listing.businessAverageRating || 0).toFixed(1)}
+              </span>
+            )}
+
+            <span>{listing.businessDistrict || 'İstanbul'}</span>
+
             {/* FAZ B.3 — mesafe (konum verildiyse) */}
             {listing._distanceKm != null && (
               <span className="ah-job__dist" title="Sana kuş uçuşu mesafe">
-                · {formatDistance(listing._distanceKm)}
+                {formatDistance(listing._distanceKm)}
               </span>
             )}
           </div>
@@ -822,9 +830,10 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         </div>
       </div>
 
-      {/* FAZ B.2 — Isletme guven satiri: dogrulama + puan + tamamlanan is sayisi.
-          Aday karar verirken sadece kelime degil, kanit istiyor. */}
-      {(listing.businessVerified || listing.businessWorkerCount > 0 || listing.businessReviewCount > 0) && (
+      {/* FAZ B.2 — Isletme guven satiri: dogrulama + tamamlanan is sayisi.
+          FAZ B.5.4 — Puan buradan CIKARILDI, meta satirina tasindi; iki yerde
+          birden gorunmesin. Burada kalanlar puanin anlatmadigi kanitlar. */}
+      {(listing.businessVerified || listing.businessWorkerCount > 0) && (
         <div className="ah-job__trust">
           {listing.businessVerified && (
             <span className="ah-trust-item" title="İşletme doğrulandı">
@@ -833,15 +842,6 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
                 <path d="M20 6 9 17l-5-5" />
               </svg>
               Doğrulandı
-            </span>
-          )}
-          {listing.businessReviewCount > 0 && (
-            <span className="ah-trust-item" title={`${listing.businessReviewCount} değerlendirme`}>
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
-                <path d="M11.48 3.5a.56.56 0 0 1 1.04 0l2.13 5.11 5.52.44a.56.56 0 0 1 .32.99l-4.2 3.6 1.28 5.38a.56.56 0 0 1-.84.61L12 16.73l-4.73 2.9a.56.56 0 0 1-.84-.61l1.28-5.39-4.2-3.6a.56.56 0 0 1 .32-.98l5.52-.44 2.13-5.12Z"/>
-              </svg>
-              {Number(listing.businessAverageRating || 0).toFixed(1)}
-              <span className="ah-trust-sub">({listing.businessReviewCount})</span>
             </span>
           )}
           {listing.businessWorkerCount > 0 && (

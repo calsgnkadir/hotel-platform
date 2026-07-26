@@ -343,13 +343,26 @@ body, .role-app-bg {
 .ah-job__hd { min-width: 0; flex: 1; }
 .ah-job__title { font-size: 15.5px; font-weight: 650; color: var(--ah-ink); letter-spacing: -.01em; }
 .ah-job:hover .ah-job__title { color: var(--ah-brand); }
-.ah-job__co { font-size: 13px; color: var(--ah-ink-2); margin-top: 1px; display: flex;
-  align-items: center; gap: 6px; flex-wrap: wrap; }
-.ah-job__loc { font-size: 12.5px; color: var(--ah-ink-3); margin-top: 3px; display: flex;
-  align-items: center; gap: 5px; }
-.ah-job__loc svg { width: 13px; height: 13px; color: var(--ah-ink-4); flex-shrink: 0; }
+/* FAZ B.5.4 — Tek meta satiri: isletme · puan · ilce · mesafe.
+   Eskiden __co (isletme) + __loc (ilce/mesafe) iki ayri satirdi, puan da
+   guven satirindaydi. Ayiraci CSS uretir: JSX'te kosullu "·" kalabaligi
+   olmaz ve bir oge gizlendiginde ayiraci da kendiliginden kaybolur.
+   Dar kartta tasma yerine alt satira kirilir. */
+/* nowrap: sarilirsa alt satir oksuz bir "·" ile basliyor (cirkin). Bunun
+   yerine satir tek kalir; yeri daralinca sadece ISLETME ADI kirpilir —
+   puan/ilce/mesafe kisa ve sabit, hepsi hep gorunur. */
+.ah-job__meta { font-size: 12.5px; color: var(--ah-ink-3); margin-top: 2px;
+  display: flex; align-items: center; flex-wrap: nowrap; }
+.ah-job__meta > * + *::before { content: '·'; margin: 0 5px; color: var(--ah-ink-4); }
+.ah-job__meta > * { flex-shrink: 0; white-space: nowrap; }
+.ah-job__co-name { color: var(--ah-ink-2); font-weight: 500;
+  flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* Puan: gap yerine svg margin — ::before ayiraci ile araya fazladan bosluk girmesin */
+.ah-job__rating { display: inline-flex; align-items: center; color: var(--ah-ink-2);
+  font-weight: 600; font-variant-numeric: tabular-nums; }
+.ah-job__rating svg { color: #d9a406; flex-shrink: 0; margin-right: 3px; }
 /* FAZ B.3 — kart uzerinde "sana X km" */
-.ah-job__dist { color: var(--ah-brand); font-weight: 600; margin-left: 4px; }
+.ah-job__dist { color: var(--ah-brand); font-weight: 600; }
 .ah-save { margin-left: auto; width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--ah-line);
   background: var(--ah-card); color: var(--ah-ink-4); display: grid; place-items: center;
   cursor: pointer; flex-shrink: 0; transition: border-color .15s, color .15s; }
