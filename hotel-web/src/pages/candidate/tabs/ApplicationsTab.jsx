@@ -208,63 +208,78 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
           return (
             <div key={app.id} style={idx > 0 ? { borderTop: '1px solid var(--ah-line)' } : undefined}>
-              {/* SATIR */}
-              <div className="flex gap-3.5 p-4 cursor-pointer transition-colors"
+              {/* SATIR — sol durum seridi + temiz duzen */}
+              <div className="flex cursor-pointer transition-colors"
                    onClick={() => setExpandedId(isExpanded ? null : app.id)}
                    onMouseEnter={(e) => { e.currentTarget.style.background = '#f7f9f9' }}
                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}>
-                <span className="w-12 h-12 rounded-lg flex-shrink-0 grid place-items-center font-extrabold text-[17px] text-white"
-                      style={{ background: appLogoColor(app.listing?.businessName) }}>{initial}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[15px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{app.listing?.title || 'İlan'}</div>
-                  <div className="text-[13px] truncate" style={{ color: 'var(--ah-ink-2)' }}>{app.listing?.businessName || ''}</div>
-                  <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 mt-1.5 text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
-                    {app.listing?.businessDistrict && (
-                      <span className="inline-flex items-center gap-1">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        {app.listing.businessDistrict}
-                      </span>
-                    )}
-                    {metaBits.map((m, i) => <span key={i}>{m}</span>)}
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                  <StatusPill cfg={sc} />
+                {/* durum seridi */}
+                <span className="w-1 self-stretch flex-shrink-0" style={{ background: sc.color }} aria-hidden="true" />
 
-                  {app.status === 'HELD' && (
-                    <div className="flex flex-col items-end gap-1.5">
-                      {app.holdDeadline && (
-                        <span className="text-[10px] font-semibold tabular-nums" style={{ color: sc.text }}>
-                          {new Date(app.holdDeadline).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      )}
-                      <div className="flex gap-1.5">
-                        <SpringBtn onClick={() => handleHoldRespond(app.id, true)} disabled={holdRespondingId === app.id} variant="success">Onayla</SpringBtn>
-                        <SpringBtn onClick={() => handleHoldRespond(app.id, false)} disabled={holdRespondingId === app.id} variant="danger">Reddet</SpringBtn>
+                <div className="flex gap-3.5 p-4 flex-1 min-w-0">
+                  <span className="w-11 h-11 rounded-lg flex-shrink-0 grid place-items-center font-extrabold text-[16px] text-white"
+                        style={{ background: appLogoColor(app.listing?.businessName) }}>{initial}</span>
+
+                  <div className="flex-1 min-w-0">
+                    {/* baslik satiri + durum rozeti */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-[15px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{app.listing?.title || 'İlan'}</div>
+                        <div className="text-[13px] truncate mt-0.5" style={{ color: 'var(--ah-ink-2)' }}>{app.listing?.businessName || ''}</div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <StatusPill cfg={sc} />
+                        <span className="text-[11px] tabular-nums" style={{ color: 'var(--ah-ink-4)' }}>{appRelative(app.createdAt)}</span>
                       </div>
                     </div>
-                  )}
 
-                  {(app.status === 'PENDING' || app.status === 'REVIEWING' || app.status === 'ACCEPTED') && (
-                    <SpringBtn onClick={() => onOpenMessages?.(app.conversationId)} variant="primary"
-                               icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>}>Mesajlaşma</SpringBtn>
-                  )}
+                    {/* meta */}
+                    <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 mt-2 text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
+                      {app.listing?.businessDistrict && (
+                        <span className="inline-flex items-center gap-1">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                          {app.listing.businessDistrict}
+                        </span>
+                      )}
+                      {metaBits.map((m, i) => <span key={i}>{m}</span>)}
+                    </div>
 
-                  {(app.status === 'PENDING' || app.status === 'REVIEWING') && (
-                    <SpringBtn onClick={() => handleWithdraw(app.id)} disabled={withdrawingId === app.id} variant="ghost-danger" small>
-                      {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal et'}
-                    </SpringBtn>
-                  )}
+                    {/* aksiyon barI */}
+                    <div className="flex flex-wrap items-center gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                      {app.status === 'HELD' && (
+                        <>
+                          {app.holdDeadline && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md"
+                                  style={{ background: sc.soft, color: sc.text }}>
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                              Son: {new Date(app.holdDeadline).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                          <SpringBtn onClick={() => handleHoldRespond(app.id, true)} disabled={holdRespondingId === app.id} variant="success">Onayla</SpringBtn>
+                          <SpringBtn onClick={() => handleHoldRespond(app.id, false)} disabled={holdRespondingId === app.id} variant="danger">Reddet</SpringBtn>
+                        </>
+                      )}
 
-                  {app.status === 'ACCEPTED' && (
-                    app.workCompleted ? (
-                      <SpringBtn onClick={() => setReviewTarget({ id: app.id, title: app.listing?.businessName || 'İşletme' })} variant="gold" small>Puanla</SpringBtn>
-                    ) : (
-                      <span className="text-[10px] italic" title="Vardiya günü geçince puanlayabilirsiniz" style={{ color: 'var(--ah-ink-4)' }}>Çalışma sonrası puanlanır</span>
-                    )
-                  )}
+                      {(app.status === 'PENDING' || app.status === 'REVIEWING' || app.status === 'ACCEPTED') && (
+                        <SpringBtn onClick={() => onOpenMessages?.(app.conversationId)} variant="primary"
+                                   icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>}>Mesajlaşma</SpringBtn>
+                      )}
 
-                  <span className="text-[11.5px]" style={{ color: 'var(--ah-ink-4)' }}>{appRelative(app.createdAt)}</span>
+                      {(app.status === 'PENDING' || app.status === 'REVIEWING') && (
+                        <SpringBtn onClick={() => handleWithdraw(app.id)} disabled={withdrawingId === app.id} variant="ghost-danger" small>
+                          {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal et'}
+                        </SpringBtn>
+                      )}
+
+                      {app.status === 'ACCEPTED' && (
+                        app.workCompleted ? (
+                          <SpringBtn onClick={() => setReviewTarget({ id: app.id, title: app.listing?.businessName || 'İşletme' })} variant="gold" small>Puanla</SpringBtn>
+                        ) : (
+                          <span className="text-[11px] italic" title="Vardiya günü geçince puanlayabilirsiniz" style={{ color: 'var(--ah-ink-4)' }}>Çalışma sonrası puanlanır</span>
+                        )
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
