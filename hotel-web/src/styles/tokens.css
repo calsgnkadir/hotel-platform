@@ -294,6 +294,8 @@ body, .role-app-bg {
 :root {
   --ah-brand:#0f766e; --ah-brand-hover:#0b5d57; --ah-brand-soft:#e4f2f0;
   --ah-page:#eef1f2;  --ah-card:#ffffff;  --ah-line:#e4e8e8;  --ah-line-2:#d4dadb;
+  /* FAZ B.5.1 — beyaz kart icinde ayrisan ic yuzey ("karar kutusu") */
+  --ah-band:#f5f7f7;
   --ah-ink:#12201f;   --ah-ink-2:#3f4b4a; --ah-ink-3:#6b7574; --ah-ink-4:#98a1a0;
   --ah-ok:#0a7c42;    --ah-ok-soft:#e9f5ee;
   --ah-warn:#b7791f;  --ah-warn-soft:#fbf1e0;
@@ -315,6 +317,14 @@ body, .role-app-bg {
 .ah-btn--o { background: var(--ah-card); color: var(--ah-ink-2); border-color: var(--ah-line-2); }
 .ah-btn--o:hover { border-color: #bcc4c4; }
 .ah-btn--block { width: 100%; }
+/* FAZ B.5.1 — CTA oku: hover'da hafif ilerler (yon duygusu, dekorasyon degil) */
+.ah-btn--arrow { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.ah-btn--arrow svg { transition: transform .15s; }
+.ah-job:hover .ah-btn--arrow svg { transform: translateX(2px); }
+@media (prefers-reduced-motion: reduce) {
+  .ah-btn--arrow svg { transition: none; }
+  .ah-job:hover .ah-btn--arrow svg { transform: none; }
+}
 
 .ah-chip { font-size: 11.5px; font-weight: 600; color: var(--ah-ink-2); background: #f1f4f4;
   border-radius: 6px; padding: 4px 9px; display: inline-flex; align-items: center; gap: 5px; }
@@ -352,13 +362,17 @@ body, .role-app-bg {
 
 /* FAZ B.1 — Ilan kartinin ana capasi: en yakin vardiya (sol) + ucret (sag).
    Sektorde karar tarih/saat + ucret ile verilir; kart bunlari one cikarir. */
-/* FAZ B.5 — sade beyaz bant (yesil zemin kaldirildi), olculu rakamlar */
+/* FAZ B.5.1 — Bant artik kendi yuzeyi: kart zemininden ayrisan bir kutu.
+   Cizgi-arasi bir serit degil, "karar kutusu" — ne zaman + ne kadar birlikte
+   okunsun diye gorsel agirligi var. */
 .ah-job__band {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 10px 0;
-  border-top: 1px solid var(--ah-line); border-bottom: 1px solid var(--ah-line);
-  background: transparent;
+  padding: 11px 13px;
+  border: 1px solid var(--ah-line);
+  border-radius: 10px;
+  background: var(--ah-band);
 }
+.ah-job:hover .ah-job__band { border-color: #c3cccb; }
 .ah-job__when { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .ah-job__band-lbl {
   font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
@@ -367,7 +381,9 @@ body, .role-app-bg {
 .ah-job__when-day { font-size: 13.5px; font-weight: 600; color: var(--ah-ink); letter-spacing: -0.005em; }
 .ah-job__when-time { font-size: 12px; color: var(--ah-ink-3); font-variant-numeric: tabular-nums; }
 .ah-job__wage { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
-.ah-job__wage-val { font-size: 15px; font-weight: 700; color: var(--ah-ink); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; line-height: 1.2; }
+/* Ucret kutunun icindeki tek buyuk deger — kart genelinde en guclu rakam,
+   ama basliktan buyuk degil (B.1'deki "kocaman rakam" geri gelmesin). */
+.ah-job__wage-val { font-size: 17px; font-weight: 750; color: var(--ah-ink); letter-spacing: -0.015em; font-variant-numeric: tabular-nums; line-height: 1.15; }
 .ah-job__wage-unit { font-size: 11px; font-weight: 500; color: var(--ah-ink-3); }
 
 /* FAZ B.2 — Guven satiri: isletmenin sicilinin urun icinde gorunmesi.
