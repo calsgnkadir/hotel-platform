@@ -85,7 +85,7 @@ export default function InstallPrompt() {
           <div className="p-4">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-                   style={{ background: 'linear-gradient(135deg, #d4a853, #8a7349)' }}>
+                   style={{ background: 'linear-gradient(135deg, #0f766e, #0b5d57)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
@@ -102,7 +102,7 @@ export default function InstallPrompt() {
                 </p>
                 <button onClick={handleLater}
                   className="mt-3 text-xs font-semibold"
-                  style={{ color: '#8a7349' }}>
+                  style={{ color: '#0b5d57' }}>
                   Şimdi değil
                 </button>
               </div>
@@ -121,7 +121,7 @@ export default function InstallPrompt() {
         <div className="p-4">
           <div className="flex items-start gap-3">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-                 style={{ background: 'linear-gradient(135deg, #d4a853, #8a7349)' }}>
+                 style={{ background: 'linear-gradient(135deg, #0f766e, #0b5d57)' }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -139,7 +139,7 @@ export default function InstallPrompt() {
               <div className="flex gap-2">
                 <button onClick={handleInstall}
                   className="flex-1 px-3 py-2 rounded-lg text-xs font-bold text-white shadow-sm"
-                  style={{ background: 'linear-gradient(135deg, #d4a853, #8a7349)' }}>
+                  style={{ background: 'linear-gradient(135deg, #0f766e, #0b5d57)' }}>
                   Yükle
                 </button>
                 <button onClick={handleLater}

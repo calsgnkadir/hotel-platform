@@ -70,7 +70,7 @@ export function ConfirmDialog({
         className="w-full max-w-md rounded-2xl border p-6 space-y-4"
         style={{
           background: 'linear-gradient(145deg, rgba(19, 17, 15, 0.94) 0%, rgba(13, 11, 9, 1) 100%)',
-          borderColor: destructive ? 'rgba(180, 106, 85, 0.30)' : 'rgba(205, 183, 143, 0.22)',
+          borderColor: destructive ? 'rgba(180, 106, 85, 0.30)' : 'rgba(15, 118, 110, 0.22)',
           boxShadow: '0 24px 64px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
         }}
       >
@@ -93,7 +93,7 @@ export function ConfirmDialog({
           <div className="flex-1 min-w-0">
             <h2 id="confirm-dialog-title"
                 className="text-xl tracking-wider uppercase"
-                style={{ color: destructive ? '#d39481' : '#cdb78f' }}>
+                style={{ color: destructive ? '#d39481' : '#2d968b' }}>
               {title}
             </h2>
             {description && (
@@ -116,7 +116,7 @@ export function ConfirmDialog({
             style={{
               background: 'transparent',
               color: '#c9bdaa',
-              border: '1px solid rgba(205, 183, 143, 0.14)',
+              border: '1px solid rgba(15, 118, 110, 0.14)',
             }}
           >
             {cancelLabel}
@@ -135,9 +135,9 @@ export function ConfirmDialog({
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }
                 : {
-                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                     color: '#1a1208',
-                    border: '1px solid rgba(212, 168, 83, 0.55)',
+                    border: '1px solid rgba(15, 118, 110, 0.55)',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }
             }

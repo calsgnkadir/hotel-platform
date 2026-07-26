@@ -137,7 +137,7 @@ function MenuItem({ icon, label, onClick, href, onNavigate }) {
   const cls = "w-full px-4 py-3 flex items-center gap-3 type-body transition-colors border-b border-hairline"
   const style = { color: 'var(--text-primary)' }
   const hover = {
-    onMouseEnter: (e) => e.currentTarget.style.background = 'rgba(205, 183, 143, 0.06)',
+    onMouseEnter: (e) => e.currentTarget.style.background = 'rgba(15, 118, 110, 0.06)',
     onMouseLeave: (e) => e.currentTarget.style.background = 'transparent',
   }
   if (href) {
@@ -163,8 +163,8 @@ function ToggleSwitch({ checked, onChange }) {
       onClick={() => onChange(!checked)}
       className="relative inline-flex h-6 w-11 items-center rounded-full border transition-colors shrink-0"
       style={{
-        background: checked ? 'rgba(205, 183, 143, 0.35)' : 'rgba(146, 134, 120, 0.18)',
-        borderColor: checked ? 'rgba(205, 183, 143, 0.55)' : 'rgba(146, 134, 120, 0.32)',
+        background: checked ? 'rgba(15, 118, 110, 0.35)' : 'rgba(146, 134, 120, 0.18)',
+        borderColor: checked ? 'rgba(15, 118, 110, 0.55)' : 'rgba(146, 134, 120, 0.32)',
       }}
     >
       <span

@@ -179,7 +179,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             ) : (
               <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0"
                    style={{
-                     background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)',
+                     background: 'linear-gradient(135deg, #b89e6e 0%, #0b5d57 100%)',
                      color: '#ffffff',
                    }}>
                 {app.candidate?.fullName?.charAt(0) || '?'}
@@ -364,7 +364,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
                   className="type-overline px-4 py-2 rounded-lg disabled:opacity-50 transition-all"
                   style={{
-                    background: 'linear-gradient(135deg, #b89e6e 0%, #8a7349 100%)',
+                    background: 'linear-gradient(135deg, #b89e6e 0%, #0b5d57 100%)',
                     color: '#ffffff',
                   }}>
                   Talep Et

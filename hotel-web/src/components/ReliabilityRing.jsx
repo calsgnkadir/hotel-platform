@@ -35,7 +35,7 @@ export default function ReliabilityRing({ score, size = 64, stroke = 4, children
   let color
   if (clamped >= 80)      color = 'var(--signal-green, #3ddc97)'
   else if (clamped >= 60) color = 'var(--signal-amber, #f59e0b)'
-  else if (clamped >= 40) color = 'var(--accent-action, #d4a853)'
+  else if (clamped >= 40) color = 'var(--accent-action, #0f766e)'
   else                    color = 'var(--signal-coral, #ef6461)'
 
   const center = size / 2

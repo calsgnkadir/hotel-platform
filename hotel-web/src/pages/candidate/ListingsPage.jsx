@@ -224,9 +224,9 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                 <div key={label} className="flex flex-col items-center flex-1">
                   <span className="w-3 h-3 rounded-full"
                         style={{
-                          background: i === 0 ? '#cdb78f' : 'rgba(205, 183, 143, 0.20)',
-                          border: '1px solid rgba(205, 183, 143, 0.42)',
-                          boxShadow: i === 0 ? '0 0 12px rgba(205, 183, 143, 0.55)' : 'none',
+                          background: i === 0 ? '#2d968b' : 'rgba(15, 118, 110, 0.20)',
+                          border: '1px solid rgba(15, 118, 110, 0.42)',
+                          boxShadow: i === 0 ? '0 0 12px rgba(15, 118, 110, 0.55)' : 'none',
                         }} />
                   <span className="type-overline mt-2"
                         style={{ color: i === 0 ? 'var(--accent-action)' : 'var(--text-faint)' }}>
@@ -245,7 +245,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
               <button type="button" onClick={handleOpenMessages}
                       className="flex-1 py-2.5 type-overline rounded-2xl transition-all hover:-translate-y-0.5"
                       style={{
-                        background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                        background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                         color: '#1a1208',
                         boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                       }}>
@@ -269,7 +269,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
         <div className="p-6 border-b border-hairline sticky top-0 z-10" style={{ background: 'var(--surface-raised)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                 style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.32)', color: 'var(--accent-action)' }}>
+                 style={{ background: 'rgba(15, 118, 110, 0.10)', border: '1px solid rgba(15, 118, 110, 0.32)', color: 'var(--accent-action)' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div>
@@ -425,9 +425,9 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             <button type="submit" disabled={loading || !hasFutureSlots}
               className="relative overflow-hidden flex-1 py-2.5 type-overline rounded-2xl transition-all disabled:opacity-60 hover:-translate-y-0.5"
               style={{
-                background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                 color: '#1a1208',
-                border: '1px solid rgba(205, 183, 143, 0.45)',
+                border: '1px solid rgba(15, 118, 110, 0.45)',
                 boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               {loading && (
@@ -475,7 +475,7 @@ function DetailModal({ listing, onClose, onApply }) {
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
-                 style={{ background: 'rgba(205, 183, 143, 0.10)', border: '1px solid rgba(205, 183, 143, 0.32)', color: '#cdb78f' }}>
+                 style={{ background: 'rgba(15, 118, 110, 0.10)', border: '1px solid rgba(15, 118, 110, 0.32)', color: '#2d968b' }}>
               {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
             </div>
             <div className="flex-1 min-w-0">
@@ -651,14 +651,14 @@ function DetailModal({ listing, onClose, onApply }) {
    position-bazli kompozisyon (renk wash + dev outline ikon + cizgi dokusu).
    Her pozisyonun kendi tonu + ikonu var — kartlar ayirt edilebilir. ── */
 const COVER_ART = {
-  WAITER:        { tint: '205, 183, 143', icon: <path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8v2M10 8h4" /> },                                         // servis kubbesi
+  WAITER:        { tint: '15, 118, 110', icon: <path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8v2M10 8h4" /> },                                         // servis kubbesi
   DISHWASHER:    { tint: '107, 138, 163', icon: <><path d="M7 21c0-4 2-5 2-8a4 4 0 0 0-8 0" /><path d="M12 3c3 3 8 4 8 9a8 8 0 0 1-8 9" /><circle cx="16" cy="7" r="1.5" /></> },  // su
   HOUSEKEEPING:  { tint: '122, 159, 122', icon: <><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6" /><path d="M3 18h18M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" /></> },        // yatak
   RECEPTION:     { tint: '200, 146, 58',  icon: <><path d="M12 4v3" /><path d="M5 15a7 7 0 0 1 14 0" /><path d="M3 15h18v3H3z" /></> },            // resepsiyon cani
   KITCHEN_STAFF: { tint: '180, 106, 85',  icon: <><path d="M7 8a4 4 0 0 1 3-6 4 4 0 0 1 4 0 4 4 0 0 1 3 6v3H7z" /><path d="M8 11v8M12 11v8M16 11v8M7 21h10" /></> },              // sef sapkasi
-  BELLBOY:       { tint: '205, 183, 143', icon: <><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M9 8V6a3 3 0 0 1 6 0v2M4 13h16" /></> },  // valiz
+  BELLBOY:       { tint: '15, 118, 110', icon: <><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M9 8V6a3 3 0 0 1 6 0v2M4 13h16" /></> },  // valiz
   SECURITY:      { tint: '107, 138, 163', icon: <path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z" /> },                              // kalkan
-  DEFAULT:       { tint: '205, 183, 143', icon: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01" /></> },  // bina
+  DEFAULT:       { tint: '15, 118, 110', icon: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01" /></> },  // bina
 }
 
 function CoverArt({ position, businessName }) {
@@ -975,6 +975,28 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     setDatePreset(''); setCustomFrom(''); setCustomTo('')
   }
 
+  // FAZ B.4 — Bos durumdan tek tikla "bu aramaya ilan cikinca haber ver".
+  async function saveCurrentSearchQuick() {
+    const parts = [POSITION_LABELS[position], district, debouncedKeyword].filter(Boolean)
+    const name = parts.length ? parts.join(' · ') : 'Kayıtlı arama'
+    try {
+      await hotelApi.createSavedSearch({
+        name,
+        position: position || null,
+        jobType: jobType || null,
+        district: district || null,
+        keyword: debouncedKeyword || null,
+        minSalary: minSalary ? Number(minSalary) : null,
+        dateFrom: dateRange.dateFrom || null,
+        dateTo: dateRange.dateTo || null,
+        shifts: shifts.length ? shifts : null,
+      })
+      toast.success('Arama kaydedildi · yeni eşleşmelerde bildirim alacaksın')
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    }
+  }
+
   const activeFilterCount =
     (keyword ? 1 : 0) + (position ? 1 : 0) + (jobType ? 1 : 0) +
     (district ? 1 : 0) + (minSalary ? 1 : 0) + shifts.length +
@@ -1254,12 +1276,20 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           <div className="card">
             <EmptyState
               type={activeFilterCount > 0 ? 'search' : 'listings'}
-              title={activeFilterCount > 0 ? 'Filtrelere uyan ilan yok' : 'Henüz aktif ilan yok'}
+              title={activeFilterCount > 0 ? 'Bu aramaya uyan ilan yok' : 'Henüz aktif ilan yok'}
               description={activeFilterCount > 0
-                ? 'Filtreleri değiştir veya temizleyerek daha fazla ilan görebilirsin.'
+                ? (district
+                    ? `${district} için şu an ilan yok. Tüm İstanbul'a bakabilir ya da bu aramaya ilan çıkınca haber alabilirsin.`
+                    : 'Filtreleri gevşetebilir ya da bu aramaya ilan çıkınca haber alabilirsin.')
                 : 'Daha sonra tekrar kontrol et — yeni ilanlar her gün eklenir.'}
-              ctaLabel={activeFilterCount > 0 ? 'Filtreleri Temizle' : null}
-              onCta={clearFilters}
+              ctaLabel={activeFilterCount > 0
+                ? (district ? "Tüm İstanbul'da ara" : 'Filtreleri Temizle')
+                : null}
+              onCta={activeFilterCount > 0
+                ? (district ? () => setDistrict('') : clearFilters)
+                : undefined}
+              ctaSecondaryLabel={activeFilterCount > 0 ? 'Bu aramaya ilan çıkınca haber ver' : null}
+              onCtaSecondary={activeFilterCount > 0 ? saveCurrentSearchQuick : undefined}
             />
           </div>
         ) : (
@@ -1345,9 +1375,9 @@ function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
             onClick={() => onRemove(c.key)}
             className="group flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all hover:-translate-y-0.5"
             style={{
-              background: 'rgba(205, 183, 143, 0.10)',
-              color: '#cdb78f',
-              border: '1px solid rgba(205, 183, 143, 0.22)',
+              background: 'rgba(15, 118, 110, 0.10)',
+              color: '#2d968b',
+              border: '1px solid rgba(15, 118, 110, 0.22)',
             }}>
             <span className="truncate max-w-[180px]">{c.text}</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"

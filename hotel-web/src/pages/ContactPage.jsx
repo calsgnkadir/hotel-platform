@@ -130,7 +130,7 @@ export default function ContactPage() {
               </label>
               <select value={subject} onChange={e => setSubject(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2"
-                style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(205, 183, 143, 0.14)', color: '#ede4d3' }}>
+                style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(15, 118, 110, 0.14)', color: '#ede4d3' }}>
                 {SUBJECTS.map(s => <option key={s.v} value={s.v}>{s.label}</option>)}
               </select>
             </div>
@@ -145,7 +145,7 @@ export default function ContactPage() {
                   ? 'KVKK madde 11 kapsamında hangi hakkını kullanmak istediğini açıkla. Kimlik doğrulaması için e-postanın kayıtlı adresinden gönderildiğini teyit edeceğiz.'
                   : 'Sorunu mümkün olduğunca detaylı yaz — hesap email\'in, kullandığın tarayıcı, hata mesajı vb. cevap süresi 24 saat.'}
                 className="w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 resize-y"
-                style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(205, 183, 143, 0.14)', color: '#ede4d3', minHeight: 140 }}
+                style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(15, 118, 110, 0.14)', color: '#ede4d3', minHeight: 140 }}
               />
             </div>
             {sent ? (
@@ -165,7 +165,7 @@ export default function ContactPage() {
                   className="block w-full text-center px-5 py-3 rounded-xl font-semibold text-sm transition-all"
                   style={{
                     background: body.trim() && !sending
-                      ? 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)'
+                      ? 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)'
                       : 'rgba(146, 134, 120, 0.18)',
                     color: body.trim() && !sending ? '#1a1208' : '#928678',
                     border: 'none',
@@ -185,7 +185,7 @@ export default function ContactPage() {
                 <a href={mailtoHref}
                    className="block w-full text-center px-5 py-3 rounded-xl font-semibold text-sm transition-all"
                    style={{
-                     background: body.trim() ? 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)' : 'rgba(146, 134, 120, 0.18)',
+                     background: body.trim() ? 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)' : 'rgba(146, 134, 120, 0.18)',
                      color: body.trim() ? '#1a1208' : '#928678',
                      pointerEvents: body.trim() ? 'auto' : 'none',
                      opacity: body.trim() ? 1 : 0.7,

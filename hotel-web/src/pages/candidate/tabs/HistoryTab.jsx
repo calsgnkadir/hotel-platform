@@ -49,21 +49,21 @@ export default function HistoryTab({ applications, onOpenMessages }) {
             <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
             <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">Toplam Çalışma</span>
           </div>
-          <div className="text-xl font-black text-white leading-none">{totalHours.toFixed(0)}<span className="text-sm font-bold text-ink-400">sa</span></div>
+          <div className="text-xl font-black text-ink-900 leading-none">{totalHours.toFixed(0)}<span className="text-sm font-bold text-ink-400">sa</span></div>
         </div>
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
             <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">Farklı İşletme</span>
           </div>
-          <div className="text-xl font-black text-white leading-none">{uniqueBusinesses}</div>
+          <div className="text-xl font-black text-ink-900 leading-none">{uniqueBusinesses}</div>
         </div>
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
             <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold">Verilen Puan</span>
           </div>
-          <div className="text-xl font-black text-white leading-none">{reviewedCount}<span className="text-sm font-bold text-ink-400">/{completed.length}</span></div>
+          <div className="text-xl font-black text-ink-900 leading-none">{reviewedCount}<span className="text-sm font-bold text-ink-400">/{completed.length}</span></div>
         </div>
       </div>
 
@@ -112,7 +112,7 @@ export default function HistoryTab({ applications, onOpenMessages }) {
                         id: app.id,
                         title: app.listing?.businessName || 'İşletme',
                       })}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium">
+                      className="text-xs px-2.5 py-1.5 rounded-lg transition-opacity hover:opacity-90 font-semibold" style={{ background: 'var(--ah-brand)', color: '#fff' }}>
                       Puanla
                     </button>
                   )}

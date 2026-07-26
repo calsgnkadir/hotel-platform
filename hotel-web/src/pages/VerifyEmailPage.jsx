@@ -57,7 +57,7 @@ export default function VerifyEmailPage() {
             <p className="text-sm mb-6" style={{ color: '#f5efe2' }}>{message}</p>
             <Link to="/login" className="inline-block px-5 py-2.5 rounded-full text-white font-semibold text-sm"
                   style={{
-                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                     color: '#1a1208',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>
@@ -72,7 +72,7 @@ export default function VerifyEmailPage() {
             <p className="text-sm mb-6" style={{ color: '#f5efe2' }}>{message}</p>
             <Link to="/login" className="inline-block px-5 py-2.5 rounded-full text-white font-semibold text-sm"
                   style={{
-                    background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)',
+                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
                     color: '#1a1208',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>
