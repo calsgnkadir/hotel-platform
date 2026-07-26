@@ -19,6 +19,12 @@ const TYPE_COLOR = {
   DOCUMENT_DENIED:       'bg-red-500',
   MATCHING_LISTING:      'bg-brand-600',
   NEW_MESSAGE:           'bg-blue-500',
+  // FAZ C.1 — Yedek aday sistemi (mor aile; ACTIVATED acil olduğu için canlı ton)
+  STANDBY_ASSIGNED:      'bg-violet-500',
+  STANDBY_ACTIVATED:     'bg-violet-600',
+  STANDBY_OFFER_EXPIRED: 'bg-slate-400',
+  STANDBY_FILLED:        'bg-brand-500',
+  STANDBY_DECLINED:      'bg-orange-500',
   GENERIC:               'bg-cream-500',
 }
 

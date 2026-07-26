@@ -18,6 +18,7 @@ import java.util.List;
 public class ExpiredApplicationScheduler {
 
     private final ApplicationRepository applicationRepository;
+    private final StandbyService standbyService;   // FAZ C.1
 
     // Her gece 02:00'de çalışır
     @Scheduled(cron = "0 0 2 * * *")
@@ -47,5 +48,19 @@ public class ExpiredApplicationScheduler {
             log.info("HOLD süresi doldu, EXPIRED. ID: {}", app.getId());
         });
         applicationRepository.saveAll(overdue);
+    }
+
+    /**
+     * FAZ C.1 — Suresi gecmis yedek tekliflerini kapat, siradaki yedege gec.
+     * Acil akis oldugu icin HOLD ile ayni sikligi (5 dk) kullanir.
+     */
+    @Scheduled(fixedDelay = 5 * 60 * 1000)
+    public void expireOverdueStandbyOffers() {
+        try {
+            int n = standbyService.expireOverdueOffers();
+            if (n > 0) log.info("[STANDBY] {} yedek teklifinin suresi doldu, siradakine gecildi", n);
+        } catch (Exception e) {
+            log.warn("[STANDBY] teklif suresi temizligi basarisiz: {}", e.getMessage());
+        }
     }
 }

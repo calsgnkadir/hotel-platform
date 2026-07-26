@@ -3,6 +3,7 @@ package com.hotelapp.event;
 import com.hotelapp.enums.NotificationType;
 import com.hotelapp.service.NotificationService;
 import com.hotelapp.service.OutboxService;
+import com.hotelapp.service.StandbyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -26,6 +27,7 @@ public class NoShowEventListener {
 
     private final NotificationService notificationService;
     private final OutboxService outboxService; // FAZ C.2 — audit log outbox uzerinden
+    private final StandbyService standbyService; // FAZ C.1 — yedek adaya otomatik teklif
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -63,6 +65,17 @@ public class NoShowEventListener {
             }
         } catch (Exception ex) {
             log.warn("[NO-SHOW-ASYNC] notification fail: {}", ex.getMessage());
+        }
+
+        // FAZ C.1 — "Gelmezse yerine adam": siradaki yedege otomatik acil teklif.
+        // Ana no-show islemi commit oldugu icin burada patlarsa strike/ban etkilenmez.
+        try {
+            Long offeredTo = standbyService.offerAfterNoShow(e.applicationId());
+            if (offeredTo != null) {
+                log.info("[NO-SHOW-ASYNC] yedek teklifi gonderildi: app={}", offeredTo);
+            }
+        } catch (Exception ex) {
+            log.warn("[NO-SHOW-ASYNC] standby teklifi basarisiz: {}", ex.getMessage());
         }
     }
 }

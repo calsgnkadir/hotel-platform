@@ -36,6 +36,7 @@ public class ApplicationController {
     private final ApplicationService applicationService;
     private final ApplicationQueryService applicationQueryService;  // FAZ C
     private final DocumentService documentService;
+    private final com.hotelapp.service.StandbyService standbyService;  // FAZ C.1
 
     // ============================================================
     // CANDIDATE
@@ -148,6 +149,50 @@ public class ApplicationController {
             @RequestParam boolean accept) {
         return ResponseEntity.ok(
                 applicationService.respondToHold(applicationId, currentUser.getId(), accept));
+    }
+
+    // ============================================================
+    // FAZ C.1 — Yedek (standby) aday sistemi
+    // ============================================================
+
+    @Operation(
+            summary = "FAZ C.1: Başvuruyu YEDEK olarak işaretle — sadece BUSINESS_OWNER",
+            description = "Asıl aday no-show işaretlenirse sıradaki yedeğe otomatik acil teklif gider."
+    )
+    @PutMapping("/api/business/applications/{applicationId}/standby")
+    @PreAuthorize("hasRole('BUSINESS_OWNER') and @securityChecks.isApplicationBusinessOwner(#p1)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApplicationResponse> markStandby(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long applicationId) {
+        return ResponseEntity.ok(
+                standbyService.markAsStandby(applicationId, currentUser.getId()));
+    }
+
+    @Operation(summary = "FAZ C.1: Yedeklikten çıkar (REVIEWING'e döner) — sadece BUSINESS_OWNER")
+    @DeleteMapping("/api/business/applications/{applicationId}/standby")
+    @PreAuthorize("hasRole('BUSINESS_OWNER') and @securityChecks.isApplicationBusinessOwner(#p1)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApplicationResponse> removeStandby(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long applicationId) {
+        return ResponseEntity.ok(
+                standbyService.removeStandby(applicationId, currentUser.getId()));
+    }
+
+    @Operation(
+            summary = "FAZ C.1: Acil yedek teklifine cevap ver (true=Kabul, false=Gelemem)",
+            description = "Kabul edilirse başvuru ACCEPTED olur ve vardiya slotu yeniden dolar."
+    )
+    @PutMapping("/api/candidate/applications/{applicationId}/respond-standby")
+    @PreAuthorize("hasRole('CANDIDATE') and @securityChecks.isApplicationCandidate(#p1)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<ApplicationResponse> respondToStandbyOffer(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long applicationId,
+            @RequestParam boolean accept) {
+        return ResponseEntity.ok(
+                standbyService.respondToOffer(applicationId, currentUser.getId(), accept));
     }
 
     @Operation(summary = "Başvuruyu sonuçlandır (ACCEPTED/REJECTED) — sadece BUSINESS_OWNER")

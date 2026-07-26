@@ -71,6 +71,15 @@ public class ApplicationMapper {
                 .note(app.getNote())
                 .noShow(app.isNoShow())
                 .holdDeadline(app.getHoldDeadline())  // FAZ 2/#28
+                // FAZ C.1 — yedek aday alanlari
+                .standbyRank(app.getStandbyRank())
+                .standbyOfferedAt(app.getStandbyOfferedAt())
+                .standbyDeadline(app.getStandbyDeadline())
+                .standbyOfferActive(
+                        app.getStatus() == com.hotelapp.enums.ApplicationStatus.STANDBY
+                        && app.getStandbyOfferedAt() != null
+                        && app.getStandbyDeadline() != null
+                        && app.getStandbyDeadline().isAfter(java.time.LocalDateTime.now()))
                 .workCompleted(reviewService.isWorkCompleted(app))
                 .candidateReviewedBusiness(reviewService.hasCandidateReviewedBusiness(app.getId()))
                 .candidate(buildCandidateSummary(app.getCandidate()))

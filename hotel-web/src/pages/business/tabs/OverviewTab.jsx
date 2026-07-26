@@ -218,10 +218,11 @@ const STATUS_DOT = {
   PENDING:   '#c8923a',
   REVIEWING: '#6b8aa3',
   HELD:      '#a17b3f',
+  STANDBY:   '#6d28d9',
   ACCEPTED:  '#7a9f7a',
   REJECTED:  '#b46a55',
 }
 const STATUS_LABEL = {
   PENDING: 'yeni başvuru', REVIEWING: 'inceleniyor', HELD: 'beklemede',
-  ACCEPTED: 'kabul', REJECTED: 'red',
+  STANDBY: 'yedek', ACCEPTED: 'kabul', REJECTED: 'red',
 }

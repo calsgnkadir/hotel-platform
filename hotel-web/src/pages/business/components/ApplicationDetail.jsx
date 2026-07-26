@@ -116,6 +116,35 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
     finally { setActionLoading(false) }
   }
 
+  // FAZ C.1 — Yedek aday: no-show olursa otomatik cagrilir
+  async function handleStandby() {
+    const ok = await confirm({
+      title: 'Yedek listesine al',
+      description: 'Asıl aday gelmezse bu adaya otomatik acil teklif gider. Aday şimdi yedek olduğuna dair bildirim alır.',
+      confirmLabel: 'Evet, yedeğe al',
+    })
+    if (!ok) return
+    setActionLoading(true)
+    try {
+      const updated = await hotelApi.markStandby(app.id)
+      toast.success('Aday yedek listesine alındı')
+      onChanged?.(updated)
+      onRefresh?.()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
+  async function handleRemoveStandby() {
+    setActionLoading(true)
+    try {
+      const updated = await hotelApi.removeStandby(app.id)
+      toast.success('Aday yedeklikten çıkarıldı')
+      onChanged?.(updated)
+      onRefresh?.()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setActionLoading(false) }
+  }
+
   async function handleNoShow() {
     const ok = await confirm({
       title: 'NO-SHOW olarak işaretle',
@@ -374,6 +403,37 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
           })()}
         </div>
 
+        {/* FAZ C.1 — Yedek durumu paneli */}
+        {app.status === 'STANDBY' && (
+          <div className="border-t border-hairline pt-4 space-y-3">
+            <h3 className="type-overline">Yedek Aday</h3>
+            <div className="rounded-xl p-3" style={{ background: '#f2ecfd', border: '1px solid #6d28d9' }}>
+              <div className="text-[13px] font-semibold" style={{ color: '#5b21b6' }}>
+                {app.standbyRank ? `${app.standbyRank}. yedek` : 'Yedek listesinde'}
+              </div>
+              <div className="text-[12px] mt-1" style={{ color: '#5b21b6' }}>
+                {app.standbyOfferActive
+                  ? `Acil teklif gönderildi — aday ${app.standbyDeadline
+                      ? new Date(app.standbyDeadline).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+                      : ''} saatine kadar cevap verecek.`
+                  : 'Asıl aday no-show işaretlenirse bu adaya otomatik acil teklif gider.'}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
+                className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                style={{ background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)' }}>
+                Direkt Kabul
+              </button>
+              <button onClick={handleRemoveStandby} disabled={actionLoading}
+                className="py-2.5 rounded-2xl type-overline transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                style={{ background: 'var(--ah-card)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}>
+                Yedeklikten Çıkar
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* KARAR */}
         {['PENDING', 'REVIEWING', 'HELD'].includes(app.status) && (
           <div className="border-t border-hairline pt-4 space-y-3">
@@ -415,6 +475,19 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 Reddet
               </button>
             </div>
+            {/* FAZ C.1 — Yedeğe alma: kararı ertelemeden güvence oluştur */}
+            <button onClick={handleStandby} disabled={actionLoading}
+              className="w-full py-2.5 rounded-2xl type-overline transition-all hover:-translate-y-0.5 disabled:opacity-60 inline-flex items-center justify-center gap-2"
+              style={{ background: '#f2ecfd', color: '#5b21b6', border: '1px solid #6d28d9' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+              Yedeğe Al
+            </button>
+            <p className="type-caption">
+              Yedekteki aday, asıl aday gelmezse otomatik çağrılır — vardiyan boş kalmaz.
+            </p>
           </div>
         )}
 

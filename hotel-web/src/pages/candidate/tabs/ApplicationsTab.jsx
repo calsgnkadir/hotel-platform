@@ -19,6 +19,7 @@ const STATUS_CONFIG = {
   PENDING:   { label: 'Bekliyor',     color: '#b7791f', soft: '#fbf1e0', text: '#8a5e17' },   // amber
   REVIEWING: { label: 'İnceleniyor',  color: '#1f57c3', soft: '#eaf1fd', text: '#1a49a6' },   // info blue
   HELD:      { label: 'Hold · 24sa',  color: '#9a6a1f', soft: '#f6ecd9', text: '#7c5518' },   // deep amber
+  STANDBY:   { label: 'Yedek',        color: '#6d28d9', soft: '#f2ecfd', text: '#5b21b6' },   // FAZ C.1 mor
   ACCEPTED:  { label: 'Kabul',        color: '#0a7c42', soft: '#e9f5ee', text: '#086335' },  // green
   REJECTED:  { label: 'Red',          color: '#c0392b', soft: '#fbeae7', text: '#992d22' },   // red
   WITHDRAWN: { label: 'İptal',        color: '#6b7574', soft: '#eef1f2', text: '#545c5b' },   // gri
@@ -41,6 +42,17 @@ function appLogoColor(name) {
   for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0
   return LOGO_COLORS[h % LOGO_COLORS.length]
 }
+/* FAZ C.1 — Yedek teklifi icin kalan sure ("2sa 14dk" / "38dk") */
+function standbyLeft(iso) {
+  if (!iso) return null
+  const ms = new Date(iso).getTime() - Date.now()
+  if (ms <= 0) return null
+  const mins = Math.floor(ms / 60000)
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return h > 0 ? `${h}sa ${m}dk` : `${m}dk`
+}
+
 function appRelative(iso) {
   const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
   if (d <= 0) return 'bugün'
@@ -102,6 +114,31 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
       onRefresh?.()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setWithdrawingId(null) }
+  }
+
+  // FAZ C.1 — Acil yedek teklifine cevap
+  const [standbyRespondingId, setStandbyRespondingId] = useState(null)
+  async function handleStandbyRespond(appId, accept) {
+    const ok = await confirm(accept
+      ? {
+          title: 'Vardiyayı kabul et',
+          description: 'Asıl aday gelmedi, iş senin. Bağlayıcı bir kabul oluşturur — gelmezsen strike alırsın.',
+          confirmLabel: 'Evet, kabul ediyorum',
+        }
+      : {
+          title: 'Gelemeyeceğini bildir',
+          description: 'Teklif sıradaki yedeğe geçer. Bu başvurun kapanır.',
+          confirmLabel: 'Evet, gelemem',
+          destructive: true,
+        })
+    if (!ok) return
+    setStandbyRespondingId(appId)
+    try {
+      await hotelApi.respondToStandbyOffer(appId, accept)
+      toast.success(accept ? 'Vardiyayı kabul ettin — işletme bilgilendirildi.' : 'Bildirildi, sıradaki yedeğe geçildi.')
+      onRefresh?.()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setStandbyRespondingId(null) }
   }
 
   const [holdRespondingId, setHoldRespondingId] = useState(null)
@@ -244,8 +281,54 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                       {metaBits.map((m, i) => <span key={i}>{m}</span>)}
                     </div>
 
+                    {/* FAZ C.1 — Acil yedek teklifi: asil aday gelmedi, sira sende */}
+                    {app.standbyOfferActive && (
+                      <div className="mt-3 rounded-lg p-3" onClick={(e) => e.stopPropagation()}
+                           style={{ background: '#f2ecfd', border: '1px solid #6d28d9' }}>
+                        <div className="flex items-start gap-2">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b21b6"
+                               strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                               className="flex-shrink-0 mt-0.5" aria-hidden="true">
+                            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+                          </svg>
+                          <div className="min-w-0">
+                            <div className="text-[13px] font-semibold" style={{ color: '#5b21b6' }}>
+                              Sıra sende — asıl aday gelmedi
+                            </div>
+                            <div className="text-[12px] mt-0.5" style={{ color: '#5b21b6' }}>
+                              Kabul edersen vardiya senin.
+                              {standbyLeft(app.standbyDeadline) && (
+                                <> Cevap için <b className="tabular-nums">{standbyLeft(app.standbyDeadline)}</b> kaldı.</>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-2.5">
+                          <SpringBtn onClick={() => handleStandbyRespond(app.id, true)}
+                                     disabled={standbyRespondingId === app.id} variant="success">
+                            Kabul et
+                          </SpringBtn>
+                          <SpringBtn onClick={() => handleStandbyRespond(app.id, false)}
+                                     disabled={standbyRespondingId === app.id} variant="ghost-danger">
+                            Gelemem
+                          </SpringBtn>
+                        </div>
+                      </div>
+                    )}
+
                     {/* aksiyon barI */}
                     <div className="flex flex-wrap items-center gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                      {app.status === 'STANDBY' && !app.standbyOfferActive && (
+                        <span className="inline-flex items-center gap-1.5 text-[11.5px] px-2 py-1 rounded-md"
+                              style={{ background: sc.soft, color: sc.text }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                               strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+                          </svg>
+                          {app.standbyRank ? `${app.standbyRank}. yedeksin` : 'Yedektesin'} — asıl aday gelmezse haber vereceğiz
+                        </span>
+                      )}
+
                       {app.status === 'HELD' && (
                         <>
                           {app.holdDeadline && (
@@ -260,12 +343,14 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                         </>
                       )}
 
-                      {(app.status === 'PENDING' || app.status === 'REVIEWING' || app.status === 'ACCEPTED') && (
+                      {(app.status === 'PENDING' || app.status === 'REVIEWING'
+                        || app.status === 'STANDBY' || app.status === 'ACCEPTED') && (
                         <SpringBtn onClick={() => onOpenMessages?.(app.conversationId)} variant="primary"
                                    icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>}>Mesajlaşma</SpringBtn>
                       )}
 
-                      {(app.status === 'PENDING' || app.status === 'REVIEWING') && (
+                      {(app.status === 'PENDING' || app.status === 'REVIEWING'
+                        || (app.status === 'STANDBY' && !app.standbyOfferActive)) && (
                         <SpringBtn onClick={() => handleWithdraw(app.id)} disabled={withdrawingId === app.id} variant="ghost-danger" small>
                           {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal et'}
                         </SpringBtn>

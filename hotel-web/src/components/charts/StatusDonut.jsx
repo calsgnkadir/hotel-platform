@@ -3,6 +3,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 const STATUS_LABELS = {
   PENDING:   'Bekleyen',
   REVIEWING: 'İnceleniyor',
+  HELD:      'Hold',
+  STANDBY:   'Yedek',
   ACCEPTED:  'Kabul',
   REJECTED:  'Red',
   EXPIRED:   'Süresi Doldu',
@@ -12,6 +14,8 @@ const STATUS_LABELS = {
 const STATUS_COLORS = {
   PENDING:   '#f59e0b',  // amber
   REVIEWING: '#3b82f6',  // blue
+  HELD:      '#9a6a1f',  // deep amber
+  STANDBY:   '#6d28d9',  // FAZ C.1 mor
   ACCEPTED:  '#10b981',  // emerald
   REJECTED:  '#b46a55',  // red
   EXPIRED:   '#94a3b8',  // slate

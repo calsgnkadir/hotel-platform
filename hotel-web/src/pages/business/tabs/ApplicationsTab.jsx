@@ -16,9 +16,9 @@ const BASE_FILTERS = ['ALL', 'PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED']
 // Nadir durumlar: sadece o durumda basvuru VARSA chip cikar. Analitik donut'u
 // bu dilimleri (count>0 ise) gosterdigi icin drill-down hedefi olabiliyorlar —
 // chip'siz birakilirsa liste filtreli ama aktif filtre gorunmez olurdu.
-const RARE_FILTERS = ['EXPIRED', 'WITHDRAWN']
+const RARE_FILTERS = ['STANDBY', 'EXPIRED', 'WITHDRAWN']   // FAZ C.1 — STANDBY eklendi
 const FILTER_LABELS = {
-  ALL: 'Tümü', PENDING: 'Bekleyen', REVIEWING: 'İnceleniyor',
+  ALL: 'Tümü', PENDING: 'Bekleyen', REVIEWING: 'İnceleniyor', STANDBY: 'Yedek',
   ACCEPTED: 'Kabul', REJECTED: 'Red', EXPIRED: 'Süresi Doldu', WITHDRAWN: 'İptal',
 }
 

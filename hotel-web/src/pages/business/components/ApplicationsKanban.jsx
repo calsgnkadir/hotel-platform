@@ -52,6 +52,15 @@ const COLUMNS = [
     border: 'rgba(122, 159, 122, 0.22)',
   },
   {
+    // FAZ C.1 — Yedek havuzu: asil aday gelmezse otomatik cagrilir
+    id: 'STANDBY',
+    label: 'Yedek',
+    sub: 'Gelmezse otomatik çağrılır',
+    color: '#6d28d9',
+    bg: 'rgba(109, 40, 217, 0.07)',
+    border: 'rgba(109, 40, 217, 0.20)',
+  },
+  {
     id: 'REJECTED',
     label: 'Red',
     sub: 'Süreç kapandı',
@@ -88,6 +97,7 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
   // ALL: tum kolonlar, digerleri: sadece eslesen kolon
   const FILTER_TO_COLUMN_ID = {
     PENDING: 'PENDING', REVIEWING: 'REVIEWING', ACCEPTED: 'ACCEPTED', REJECTED: 'REJECTED',
+    STANDBY: 'STANDBY',   // FAZ C.1
   }
   const visibleColumns = statusFilter === 'ALL'
     ? COLUMNS
@@ -183,6 +193,26 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
         confirmLabel: 'Evet, HOLD\'a al',
       }
       action = () => hotelApi.holdApplication(app.id)
+    } else if (targetCol === 'STANDBY') {
+      // FAZ C.1 — Yedek havuzuna al
+      if (from !== 'PENDING' && from !== 'HELD') {
+        toast.error('Sadece bekleyen veya hold\'daki başvurular yedeğe alınabilir.')
+        return
+      }
+      confirmOpts = {
+        title: `${candidateName} yedek listesine alınsın`,
+        description: 'Asıl aday gelmezse bu adaya otomatik acil teklif gider. Aday bilgilendirilir.',
+        confirmLabel: 'Evet, yedeğe al',
+      }
+      action = () => hotelApi.markStandby(app.id)
+    } else if (targetCol === 'PENDING' && from === 'STANDBY') {
+      // FAZ C.1 — Yedeklikten geri al
+      confirmOpts = {
+        title: `${candidateName} yedeklikten çıkarılsın`,
+        description: 'Başvuru yeniden değerlendirmeye döner.',
+        confirmLabel: 'Evet, çıkar',
+      }
+      action = () => hotelApi.removeStandby(app.id)
     } else {
       toast.error('Bu yönde geçiş desteklenmiyor.')
       return
