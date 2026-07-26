@@ -28,6 +28,8 @@ import SavedSearchManager from '../../components/SavedSearchManager'
 // ListingsMapView kaldirildi (kullanici istegi)
 import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
+import { useMyLocation } from '../../lib/useMyLocation'                    // FAZ B.3
+import { distanceKm, formatDistance } from '../../lib/distance'            // FAZ B.3
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -770,6 +772,12 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
               <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" /><circle cx="12" cy="10" r="3" />
             </svg>
             {listing.businessDistrict || 'İstanbul'}
+            {/* FAZ B.3 — mesafe (konum verildiyse) */}
+            {listing._distanceKm != null && (
+              <span className="ah-job__dist" title="Sana kuş uçuşu mesafe">
+                · {formatDistance(listing._distanceKm)}
+              </span>
+            )}
           </div>
         </div>
         <button type="button"
@@ -972,13 +980,37 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     (district ? 1 : 0) + (minSalary ? 1 : 0) + shifts.length +
     (datePreset ? 1 : 0)
 
+  // FAZ B.3 — Konum + mesafe. Kullanici acikca "Yakinlar once" derse istekle.
+  const myLoc = useMyLocation()
+  const [nearbyFirst, setNearbyFirst] = useState(false)
+
   // Dalga I1 — Engelli isletmeleri client-side filtrele (backend rebuild gerekene kadar)
-  const visibleListings = useMemo(
-    () => blockedBusinessIds.size === 0
+  // + FAZ B.3 — mesafe hesabi (varsa) + istege gore mesafeye gore sirala
+  const visibleListings = useMemo(() => {
+    let list = blockedBusinessIds.size === 0
       ? listings
-      : listings.filter(l => !blockedBusinessIds.has(l.businessId)),
-    [listings, blockedBusinessIds]
-  )
+      : listings.filter(l => !blockedBusinessIds.has(l.businessId))
+
+    if (myLoc.location) {
+      list = list.map(l => ({
+        ...l,
+        _distanceKm: distanceKm(
+          myLoc.location.lat, myLoc.location.lng,
+          l.businessLatitude, l.businessLongitude
+        ),
+      }))
+      if (nearbyFirst) {
+        list = [...list].sort((a, b) => {
+          const da = a._distanceKm; const db = b._distanceKm
+          if (da == null && db == null) return 0
+          if (da == null) return 1
+          if (db == null) return -1
+          return da - db
+        })
+      }
+    }
+    return list
+  }, [listings, blockedBusinessIds, myLoc.location, nearbyFirst])
 
   // 6'lik pagination
   const totalPages = Math.max(1, Math.ceil(visibleListings.length / PAGE_SIZE))
@@ -1140,24 +1172,40 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
               {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
             </p>
           </div>
-          <button onClick={() => setShowFilters(s => !s)}
-            className="lg:hidden btn-secondary text-sm flex items-center gap-1.5">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="21" y1="4" x2="14" y2="4" /><line x1="10" y1="4" x2="3" y2="4" />
-              <line x1="21" y1="12" x2="12" y2="12" /><line x1="8" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="20" x2="16" y2="20" /><line x1="12" y1="20" x2="3" y2="20" />
-              <line x1="14" y1="2" x2="14" y2="6" /><line x1="8" y1="10" x2="8" y2="14" />
-              <line x1="16" y1="18" x2="16" y2="22" />
-            </svg>
-            Filtreler
-            {activeFilterCount > 0 && (
-              <span className="text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center"
-                    style={{ background: '#0f766e', color: '#ffffff' }}>
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            {/* FAZ B.3 — Yakinlar once toggle */}
+            <NearbyToggle
+              nearbyFirst={nearbyFirst}
+              onToggle={async () => {
+                if (nearbyFirst) { setNearbyFirst(false); return }
+                let pos = myLoc.location
+                if (!pos) pos = await myLoc.request()
+                if (pos) setNearbyFirst(true)
+              }}
+              loading={myLoc.loading}
+              hasLocation={!!myLoc.location}
+              error={myLoc.error}
+            />
+
+            <button onClick={() => setShowFilters(s => !s)}
+              className="lg:hidden btn-secondary text-sm flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="21" y1="4" x2="14" y2="4" /><line x1="10" y1="4" x2="3" y2="4" />
+                <line x1="21" y1="12" x2="12" y2="12" /><line x1="8" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="20" x2="16" y2="20" /><line x1="12" y1="20" x2="3" y2="20" />
+                <line x1="14" y1="2" x2="14" y2="6" /><line x1="8" y1="10" x2="8" y2="14" />
+                <line x1="16" y1="18" x2="16" y2="22" />
+              </svg>
+              Filtreler
+              {activeFilterCount > 0 && (
+                <span className="text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center"
+                      style={{ background: '#0f766e', color: '#ffffff' }}>
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         <ActiveFilterBar
@@ -1458,6 +1506,32 @@ function FilterChip({ active, sub, onClick, children }) {
           {sub}
         </div>
       )}
+    </button>
+  )
+}
+
+/* FAZ B.3 — "Yakinlar once" toggle. Konum yoksa istekle, varsa siralaya al. */
+function NearbyToggle({ nearbyFirst, onToggle, loading, hasLocation, error }) {
+  const active = nearbyFirst && hasLocation
+  const title = error ? error
+    : loading ? 'Konum alınıyor...'
+    : active ? 'Yakınlar önce (kapatmak için tıkla)'
+    : 'Yakın ilanları önce göster (konum izni gerekir)'
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={loading}
+      title={title}
+      className="text-[13px] font-semibold px-3 py-2 rounded-lg inline-flex items-center gap-1.5 transition-colors disabled:opacity-60"
+      style={active
+        ? { background: 'var(--ah-brand)', color: '#ffffff' }
+        : { background: 'var(--ah-card)', border: '1px solid var(--ah-line-2)', color: 'var(--ah-ink-2)' }}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" /><path d="M12 2v20M2 12h20" />
+      </svg>
+      {loading ? 'Alınıyor...' : (active ? 'Yakınlar önce' : 'Yakınlar')}
     </button>
   )
 }
