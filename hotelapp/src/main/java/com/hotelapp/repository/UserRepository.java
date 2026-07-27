@@ -51,6 +51,42 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("position") Position position);
 
     /**
+     * FAZ C.2 — "Hemen müsait" havuzu: acil ilan push'u için hedef adaylar.
+     *
+     * Filtreler:
+     *  - availableUntil > now  → zaman kutulu müsaitlik hâlâ geçerli
+     *  - banlı değil           → cezalı adaya acil iş gönderilmez
+     *  - pozisyon tercihi ya ilanla eşleşiyor YA DA aday hiç tercih girmemiş
+     *    (tercih girmemiş aday her şeye açık sayılır — "hemen müsaitim"
+     *     demiş olması zaten güçlü bir sinyal, onu havuzdan düşürmek yanlış olur)
+     *
+     * NOT: Mesafeye göre daraltma YOK — adayın sunucu tarafında konum verisi
+     * yok (FAZ B.5.2'de ilçe kaldırıldı, lat/lng hiç olmadı). Mesafe yalnızca
+     * tarayıcıda, adayın kendi konumuyla hesaplanıyor.
+     */
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        WHERE u.role = com.hotelapp.enums.Role.CANDIDATE
+          AND u.availableUntil IS NOT NULL
+          AND u.availableUntil > :now
+          AND (u.bannedUntil IS NULL OR u.bannedUntil <= :now)
+          AND (u.preferredPositions IS EMPTY OR :position MEMBER OF u.preferredPositions)
+    """)
+    List<User> findAvailableNowCandidates(
+            @Param("now") LocalDateTime now,
+            @Param("position") Position position);
+
+    /** FAZ C.2 — Havuz büyüklüğü (işletmeye "N aday hemen müsait" göstergesi). */
+    @Query("""
+        SELECT COUNT(DISTINCT u) FROM User u
+        WHERE u.role = com.hotelapp.enums.Role.CANDIDATE
+          AND u.availableUntil IS NOT NULL
+          AND u.availableUntil > :now
+          AND (u.bannedUntil IS NULL OR u.bannedUntil <= :now)
+    """)
+    long countAvailableNowCandidates(@Param("now") LocalDateTime now);
+
+    /**
      * FAZ J2 ext: Müsaitlik bloğu tanımlamış tüm CANDIDATE'lar.
      * district/position tercihi olmayanlar da listelenir — eşleşme JobListingService
      * tarafında candidateFitsListingSlots ile filtrelenir.

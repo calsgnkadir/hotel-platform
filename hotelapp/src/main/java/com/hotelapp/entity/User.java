@@ -171,6 +171,25 @@ public class User {
     @Builder.Default
     private Boolean isAvailable = true;
 
+    /**
+     * FAZ C.2 — "Hemen müsait" modu.
+     *
+     * isAvailable kalıcı bir niyet beyanı ("iş arıyorum"); acil vardiya
+     * doldurmak için İŞE YARAMAZ — 3 hafta önce işaretlenmiş bir bayrak,
+     * otele bugün kimin gelebileceğini söylemez. Bu yüzden müsaitlik ZAMAN
+     * KUTULU tutulur: aday "bugün müsaitim" der, kayıt gün sonunda kendiliğinden
+     * düşer. Ayrı bir scheduler gerekmez — sorgular availableUntil > now filtreler.
+     *
+     * null veya geçmiş = şu an müsait değil.
+     */
+    @Column(name = "available_until")
+    private LocalDateTime availableUntil;
+
+    /** FAZ C.2 — Şu an "hemen müsait" havuzunda mı? */
+    public boolean isAvailableNow() {
+        return availableUntil != null && availableUntil.isAfter(LocalDateTime.now());
+    }
+
     // Profil fotoğrafı — Cloudinary storage ref (D7)
     // Format: "upload:image:ajanshotel/avatars/{userId}/{uuid}.jpg"
     private String avatarPath;

@@ -93,6 +93,28 @@ public class JobListing {
     @Builder.Default
     private Long viewCount = 0L;
 
+    // ================================================================
+    // FAZ C.2 — Acil ilan
+    // Otelin ajansi arama sebebi #1: "bugun/yarin adam lazim".
+    // Acil isaretlenen ilan "hemen musait" havuzuna push'lanir.
+    // ================================================================
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean urgent = false;
+
+    /**
+     * Aciliginin bittigi an. Gecince ilan normal ilana doner (kartta acil
+     * rozeti gorunmez) — isletme unutsa bile "acil" etiketi sonsuza kadar
+     * asili kalmaz, yoksa rozet enflasyona ugrar ve anlamsizlasir.
+     */
+    private LocalDateTime urgentUntil;
+
+    /** Aciliyet su an gecerli mi? */
+    public boolean isUrgentNow() {
+        return urgent && (urgentUntil == null || urgentUntil.isAfter(LocalDateTime.now()));
+    }
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

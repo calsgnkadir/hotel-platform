@@ -12,6 +12,7 @@ import com.hotelapp.service.ReliabilityService.ReliabilityScore;
 import com.hotelapp.service.ProfileViewService;
 import com.hotelapp.service.ProfileViewService.ProfileViewStats;
 import com.hotelapp.service.EarningsService;
+import com.hotelapp.service.UrgentService;              // FAZ C.2
 import com.hotelapp.dto.EarningsResponse;
 
 import java.util.List;
@@ -36,6 +37,39 @@ public class CandidateController {
     private final AvailabilityBlockService availabilityBlockService;
     private final ProfileViewService profileViewService;
     private final EarningsService earningsService;  // FAZ 13
+    private final UrgentService urgentService;      // FAZ C.2
+
+    // ============================================================
+    // FAZ C.2 — "Hemen müsait" modu
+    // ============================================================
+
+    @Operation(
+            summary = "FAZ C.2: Hemen müsait durumum — sadece CANDIDATE",
+            description = "availableNow + müsaitliğin bittiği an. Müsaitlik gün sonunda kendiliğinden düşer."
+    )
+    @GetMapping("/api/candidate/availability-now")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<UrgentService.AvailabilityStatus> getAvailabilityNow(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
+        return ResponseEntity.ok(urgentService.getAvailability(currentUser.getId()));
+    }
+
+    @Operation(
+            summary = "FAZ C.2: 'Bugün müsaitim' aç/kapat — sadece CANDIDATE",
+            description = "Açıldığında bugün 23:59'a kadar geçerli; acil ilan açılırsa ilk sana haber gelir. "
+                    + "Her gün yeniden işaretlenir — havuzun değeri tazeliğinden gelir."
+    )
+    @PutMapping("/api/candidate/availability-now")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<UrgentService.AvailabilityStatus> setAvailabilityNow(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @RequestParam boolean available) {
+        return ResponseEntity.ok(available
+                ? urgentService.goAvailableToday(currentUser.getId())
+                : urgentService.goUnavailable(currentUser.getId()));
+    }
 
     @Operation(summary = "Kendi profilim — sadece CANDIDATE")
     @GetMapping("/api/candidate/profile")

@@ -25,6 +25,8 @@ const TYPE_COLOR = {
   STANDBY_OFFER_EXPIRED: 'bg-slate-400',
   STANDBY_FILLED:        'bg-brand-500',
   STANDBY_DECLINED:      'bg-orange-500',
+  // FAZ C.2 — acil ilan: listedeki en yuksek aciliyet, kirmizi
+  URGENT_LISTING:        'bg-red-600',
   GENERIC:               'bg-cream-500',
 }
 

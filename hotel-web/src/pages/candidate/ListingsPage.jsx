@@ -1057,18 +1057,22 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
           </p>
         </div>
-        <NearbyToggle
-          nearbyFirst={nearbyFirst}
-          onToggle={async () => {
-            if (nearbyFirst) { setNearbyFirst(false); return }
-            let pos = myLoc.location
-            if (!pos) pos = await myLoc.request()
-            if (pos) setNearbyFirst(true)
-          }}
-          loading={myLoc.loading}
-          hasLocation={!!myLoc.location}
-          error={myLoc.error}
-        />
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* FAZ C.2 — "Bugun musaitim": acil ilan acilirsa ilk bu adaylara gider */}
+          <AvailableNowToggle />
+          <NearbyToggle
+            nearbyFirst={nearbyFirst}
+            onToggle={async () => {
+              if (nearbyFirst) { setNearbyFirst(false); return }
+              let pos = myLoc.location
+              if (!pos) pos = await myLoc.request()
+              if (pos) setNearbyFirst(true)
+            }}
+            loading={myLoc.loading}
+            hasLocation={!!myLoc.location}
+            error={myLoc.error}
+          />
+        </div>
       </div>
 
       {/* FAZ B.5.2 — Filtreler: ilce KALDIRILDI (konum = mesafe).
@@ -1431,6 +1435,62 @@ function FilterChip({ active, onClick, children }) {
         border: `1px solid ${active ? 'var(--ah-brand)' : 'var(--ah-line-2)'}`,
       }}>
       {children}
+    </button>
+  )
+}
+
+/* FAZ C.2 — "Bugun musaitim" toggle.
+   Acildiginda aday "hemen musait" havuzuna girer; bir isletme ilanini acil
+   isaretlerse bildirim ilk bu havuza gider. Musaitlik gun sonunda kendiliginden
+   duser — aday her gun yeniden isaretler. Bu kasitli bir surtunme: bayat
+   bayraklarla dolu bir havuzun otele hicbir faydasi yok. */
+function AvailableNowToggle() {
+  const qc = useQueryClient()
+  const { data, isLoading } = useQuery({
+    queryKey: ['availability-now'],
+    queryFn: () => hotelApi.getAvailabilityNow(),
+    staleTime: 60_000,
+  })
+  const [busy, setBusy] = useState(false)
+  const active = !!data?.availableNow
+
+  async function toggle() {
+    setBusy(true)
+    try {
+      const res = await hotelApi.setAvailabilityNow(!active)
+      qc.setQueryData(['availability-now'], res)
+      toast.success(res.availableNow
+        ? 'Bugün müsaitsin — acil ilanlarda ilk sana haber gelecek'
+        : 'Müsaitlik kapatıldı')
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally { setBusy(false) }
+  }
+
+  const untilLabel = active && data?.availableUntil
+    ? new Date(data.availableUntil).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+    : null
+
+  return (
+    <button type="button" onClick={toggle} disabled={busy || isLoading}
+      aria-pressed={active}
+      title={active
+        ? `Bugün ${untilLabel}'a kadar müsait görünüyorsun. Kapatmak için tıkla.`
+        : 'Bugün çalışabilecek durumdaysan işaretle — acil ilanlarda önceliklisin'}
+      className="inline-flex items-center gap-1.5 rounded-full text-[12.5px] transition-colors disabled:opacity-60"
+      style={{
+        padding: '6px 13px',
+        fontWeight: active ? 600 : 500,
+        background: active ? '#b45309' : 'var(--ah-card)',
+        color:      active ? '#fff' : 'var(--ah-ink-2)',
+        border: `1px solid ${active ? '#b45309' : 'var(--ah-line-2)'}`,
+      }}>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg>
+      {busy ? 'Kaydediliyor...'
+        : active ? `Bugün müsaitsin · ${untilLabel}` : 'Bugün müsaitim'}
     </button>
   )
 }

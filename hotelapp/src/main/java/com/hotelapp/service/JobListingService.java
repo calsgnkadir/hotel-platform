@@ -558,6 +558,10 @@ public class JobListingService {
                 // businessWorkerCount sadece tekli detail icin doldurulur (N+1 onlemek icin)
                 .viewCount(l.getViewCount() != null ? l.getViewCount() : 0L)
                 .businessCreatedAt(l.getBusiness().getCreatedAt())
+                // FAZ C.2 — acil ilan. urgentNow, suresi gecmis acilligi hesaba katar:
+                // isletme kapatmayi unutsa bile rozet kendiliginden soner.
+                .urgent(l.isUrgentNow())
+                .urgentUntil(l.isUrgentNow() ? l.getUrgentUntil() : null)
                 .build();
     }
 
@@ -693,6 +697,11 @@ public class JobListingService {
 
         // Dalga 4 / Ozellik 4 — Guven sinyalleri (Glassdoor pattern)
         private LocalDateTime businessCreatedAt;
+
+        // FAZ C.2 — Acil ilan. urgent, SURESI GECMEMIS acilligi ifade eder
+        // (entity'deki ham bayrak degil) — kart rozeti bunu kullanir.
+        private boolean urgent;
+        private LocalDateTime urgentUntil;
         private Integer businessWorkerCount;   // tamamlanmis aday sayisi (ACCEPTED + reviewedAt set)
     }
 }

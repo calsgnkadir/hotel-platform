@@ -9,6 +9,7 @@ import com.hotelapp.service.JobListingQueryService;
 import com.hotelapp.service.JobListingService;
 import com.hotelapp.service.JobListingService.ListingRequest;
 import com.hotelapp.service.JobListingService.ListingResponse;
+import com.hotelapp.service.UrgentService;              // FAZ C.2
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +34,7 @@ public class JobListingController {
 
     private final JobListingService jobListingService;
     private final JobListingQueryService jobListingQueryService;
+    private final UrgentService urgentService;   // FAZ C.2
 
     @Operation(
             summary = "Aktif ilanları listele",
@@ -89,6 +91,34 @@ public class JobListingController {
             @PathVariable Long id,
             @RequestParam ListingStatus status) {
         return ResponseEntity.ok(jobListingService.updateStatus(id, currentUser.getId(), status));
+    }
+
+    // ============================================================
+    // FAZ C.2 — Acil ilan
+    // ============================================================
+
+    @Operation(
+            summary = "FAZ C.2: İlanı ACİL işaretle / acilliğini kaldır — sadece BUSINESS_OWNER",
+            description = "Acile alındığında o an 'hemen müsait' olan ve pozisyonu tutan adaylara "
+                    + "anında bildirim + web push gider. Acillik, en yakın vardiyanın bitişinde "
+                    + "(vardiya yoksa 24 saat sonra) kendiliğinden söner."
+    )
+    @PutMapping("/{id}/urgent")
+    @PreAuthorize("hasRole('BUSINESS_OWNER') and @securityChecks.isListingOwner(#p1)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<UrgentService.UrgentResult> setUrgent(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "true") boolean urgent) {
+        return ResponseEntity.ok(urgentService.setUrgent(id, currentUser.getId(), urgent));
+    }
+
+    @Operation(summary = "FAZ C.2: Şu an 'hemen müsait' aday sayısı — BUSINESS_OWNER")
+    @GetMapping("/available-now-count")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<java.util.Map<String, Long>> availableNowCount() {
+        return ResponseEntity.ok(java.util.Map.of("count", urgentService.availableNowCount()));
     }
 
     @Operation(summary = "Tek ilan detayı — herhangi bir authenticated kullanıcı")
