@@ -331,12 +331,19 @@ body, .role-app-bg {
 .ah-chip--sal { color: var(--ah-ok); background: var(--ah-ok-soft); font-variant-numeric: tabular-nums; }
 .ah-chip--ver { color: var(--ah-brand); background: var(--ah-brand-soft); }
 .ah-chip--warn { color: var(--ah-warn); background: var(--ah-warn-soft); }
+/* FAZ C.2.2 — acil rozeti (kirmizi, en yuksek aciliyet sinyali) */
+.ah-chip--urgent { color: #992d22; background: var(--ah-danger-soft); border: 1px solid var(--ah-danger);
+  gap: 4px; text-transform: uppercase; letter-spacing: .02em; }
 
 /* İlan kartı (sektör: logo + bilgi + çip + CTA; dekoratif kapak yok) */
 .ah-job { background: var(--ah-card); border: 1px solid var(--ah-line); border-radius: var(--ah-r);
   padding: 16px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; height: 100%;
   transition: border-color .15s, box-shadow .15s; }
 .ah-job:hover { border-color: #c3cccb; box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+/* FAZ C.2.2 — Acil ilan karti: sol kenarda kirmizi serit + hafif zemin tonu,
+   listede goz ilk buraya gitsin. */
+.ah-job--urgent { border-color: var(--ah-danger); box-shadow: inset 3px 0 0 var(--ah-danger); }
+.ah-job--urgent:hover { border-color: var(--ah-danger); }
 .ah-job__top { display: flex; gap: 12px; }
 .ah-logo { width: 46px; height: 46px; border-radius: 9px; flex-shrink: 0; display: grid;
   place-items: center; font-weight: 800; font-size: 17px; color: #fff; }

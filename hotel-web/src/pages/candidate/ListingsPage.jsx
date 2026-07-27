@@ -746,7 +746,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
   const allFull = totalSlots > 0 && !shift
 
   return (
-    <div className="ah-job" onClick={() => onDetail(listing)}
+    <div className={`ah-job ${listing.urgent ? 'ah-job--urgent' : ''}`} onClick={() => onDetail(listing)}
          role="button" tabIndex={0}
          onKeyDown={(e) => { if (e.key === 'Enter') onDetail(listing) }}>
       {/* Ust: logo + pozisyon (birincil) + isletme/ilce (baglam) + kaydet */}
@@ -857,6 +857,15 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
 
       {/* Ikincil cipler */}
       <div className="ah-job__tags">
+        {/* FAZ C.2.2 — Acil rozeti (backend urgentUntil gecince urgent=false doner) */}
+        {listing.urgent && (
+          <span className="ah-chip ah-chip--urgent" title="Acil ilan — işletme hemen personel arıyor">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+            </svg>
+            Acil
+          </span>
+        )}
         <span className="ah-chip">{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
         {shift && shift.more > 0 && (
           <span className="ah-chip">+{shift.more} vardiya daha</span>
@@ -1036,6 +1045,23 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     return list
   }, [listings, blockedBusinessIds, myLoc.location, nearbyFirst])
 
+  // FAZ C.2.3 — Genel bakis seridi ozeti. Yeni API cagrisi yok; gorunen
+  // listeden turetilir, filtre degisince kendiliginden guncellenir.
+  const overview = useMemo(() => {
+    const urgentCount = visibleListings.filter(l => l.urgent).length
+    const dists = visibleListings.map(l => l._distanceKm).filter(d => d != null)
+    const nearestKm = dists.length ? Math.min(...dists) : null
+    // Ortalama gunluk ucret: yalnizca DAILY tipli ilanlar (aylik/saatlik
+    // karistirmak yaniltir); guvenceli taban olarak salaryMin.
+    const daily = visibleListings
+      .filter(l => l.salaryType === 'DAILY' && l.salaryMin != null)
+      .map(l => Number(l.salaryMin))
+    const avgDaily = daily.length
+      ? Math.round(daily.reduce((s, v) => s + v, 0) / daily.length)
+      : null
+    return { total: visibleListings.length, urgentCount, nearestKm, avgDaily }
+  }, [visibleListings])
+
   // 6'lik pagination
   const totalPages = Math.max(1, Math.ceil(visibleListings.length / PAGE_SIZE))
   const safePage   = Math.min(page, totalPages)
@@ -1074,6 +1100,12 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           />
         </div>
       </div>
+
+      {/* FAZ C.2.3 — Mini genel bakis seridi: bos/sikici liste hissini kirar,
+          acil ilanlari one cikarir (C.2'nin vitrini). */}
+      {!loading && overview.total > 0 && (
+        <OverviewStrip overview={overview} hasLocation={!!myLoc.location} />
+      )}
 
       {/* FAZ B.5.2 — Filtreler: ilce KALDIRILDI (konum = mesafe).
           Tarih / calisma turu / min ucret tek tikla secilen chip'ler;
@@ -1436,6 +1468,69 @@ function FilterChip({ active, onClick, children }) {
       }}>
       {children}
     </button>
+  )
+}
+
+/* FAZ C.2.3 — Ilanlar sekmesi genel bakis seridi.
+   Gorunen listeden turetilen 3-4 kucuk stat; discovery hook + acil vitrini. */
+function OverviewStrip({ overview, hasLocation }) {
+  const { total, urgentCount, nearestKm, avgDaily } = overview
+  const tiles = []
+
+  tiles.push({
+    key: 'urgent',
+    accent: urgentCount > 0 ? '#c0392b' : 'var(--ah-ink-4)',
+    value: urgentCount > 0 ? `${urgentCount} acil ilan` : 'Acil ilan yok',
+    label: urgentCount > 0 ? 'hemen personel aranıyor' : 'şu an acil arayan yok',
+    icon: <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />,
+  })
+
+  if (hasLocation && nearestKm != null) {
+    tiles.push({
+      key: 'near',
+      accent: 'var(--ah-brand)',
+      value: `En yakın ${formatDistance(nearestKm)}`,
+      label: 'sana en yakın ilan',
+      icon: <><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" /><circle cx="12" cy="10" r="3" /></>,
+    })
+  } else {
+    tiles.push({
+      key: 'total',
+      accent: 'var(--ah-brand)',
+      value: `${total} ilan`,
+      label: 'aramanda listelendi',
+      icon: <><rect x="3" y="4" width="18" height="4" rx="1" /><rect x="3" y="10" width="18" height="4" rx="1" /><rect x="3" y="16" width="18" height="4" rx="1" /></>,
+    })
+  }
+
+  if (avgDaily != null) {
+    tiles.push({
+      key: 'wage',
+      accent: 'var(--ah-ok)',
+      value: `${avgDaily.toLocaleString('tr-TR')} ₺`,
+      label: 'ortalama günlük ücret',
+      icon: <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>,
+    })
+  }
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+      {tiles.map(t => (
+        <div key={t.key} className="card flex items-center gap-2.5" style={{ padding: '11px 13px' }}>
+          <span className="grid place-items-center flex-shrink-0 rounded-lg"
+                style={{ width: 32, height: 32, background: 'var(--ah-band)' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24"
+                 fill={t.key === 'urgent' && urgentCount > 0 ? t.accent : 'none'}
+                 stroke={t.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                 aria-hidden="true">{t.icon}</svg>
+          </span>
+          <div className="min-w-0">
+            <div className="text-[14px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{t.value}</div>
+            <div className="text-[11px] truncate" style={{ color: 'var(--ah-ink-3)' }}>{t.label}</div>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 
