@@ -30,6 +30,7 @@ import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
 import { useMyLocation } from '../../lib/useMyLocation'                    // FAZ B.3
 import { distanceKm, formatDistance } from '../../lib/distance'            // FAZ B.3
 import { shiftDuration } from '../../lib/shiftTime'                        // FAZ B.5.5
+import { logoColor } from '../../lib/logoColor'                            // FAZ B.5.3
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -694,15 +695,6 @@ function CoverArt({ position, businessName }) {
       </div>
     </div>
   )
-}
-
-/* ── İlan kartı logosu için tutarlı renk (isimden hash) ── */
-const LOGO_COLORS = ['#1f3a5f', '#7a1f3d', '#1f5f4a', '#5a3a1f', '#2f4858', '#3a4a2f', '#5f3a2f']
-function logoColor(name) {
-  let h = 0
-  const s = name || '?'
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
-  return LOGO_COLORS[h % LOGO_COLORS.length]
 }
 
 /* FAZ B.1 — En yakin (gelecekteki) vardiyanin insan-okunur etiketi.

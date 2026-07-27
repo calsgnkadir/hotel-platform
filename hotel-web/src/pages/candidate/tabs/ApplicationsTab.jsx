@@ -13,6 +13,7 @@ import { CAND_STATUS_FILTERS } from '../../../components/candidate/StatusBadge'
 import { useConfirm } from '../../../lib/useConfirm'
 import SlotChipGroup from '../../../components/SlotChipGroup'
 import { formatSalary } from '../../../lib/salary'
+import { logoColor } from '../../../lib/logoColor'   // FAZ B.5.3 — tek kaynak
 
 /* REDESIGN v3 — açık zemin için durum renkleri (soft bg + koyu okunur metin) */
 const STATUS_CONFIG = {
@@ -35,13 +36,9 @@ const DOC_TYPE_LABELS = {
   IDENTITY_DOCUMENT: 'Kimlik Fotokopisi',
 }
 
-/* Kariyer.net tarzi satir listesi (FAZ 22) — logo rengi + gorece tarih */
-const LOGO_COLORS = ['#1f3a5f', '#7a1f3d', '#1f5f4a', '#5a3a1f', '#2f4858', '#3a4a2f', '#5f3a2f']
-function appLogoColor(name) {
-  let h = 0; const t = name || '?'
-  for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0
-  return LOGO_COLORS[h % LOGO_COLORS.length]
-}
+/* Kariyer.net tarzi satir listesi (FAZ 22) — gorece tarih.
+   FAZ B.5.3 — logo rengi lib/logoColor'a tasindi (ListingsPage ile ayni
+   kaynak; ayni isletme her ekranda ayni rengi alsin). */
 /* FAZ C.1 — Yedek teklifi icin kalan sure ("2sa 14dk" / "38dk") */
 function standbyLeft(iso) {
   if (!iso) return null
@@ -255,7 +252,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
                 <div className="flex gap-3.5 p-4 flex-1 min-w-0">
                   <span className="w-11 h-11 rounded-lg flex-shrink-0 grid place-items-center font-extrabold text-[16px] text-white"
-                        style={{ background: appLogoColor(app.listing?.businessName) }}>{initial}</span>
+                        style={{ background: logoColor(app.listing?.businessName) }}>{initial}</span>
 
                   <div className="flex-1 min-w-0">
                     {/* baslik satiri + durum rozeti */}
