@@ -14,8 +14,6 @@ import { SkeletonForm } from '../../../components/Skeleton'
 import { Alert } from '../../../components/ui/Alert'
 import AvailabilityBlocksEditor from '../../../components/AvailabilityBlocksEditor'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../../utils/validation'
-import DistrictNeighborhoodSelect from '../../../components/DistrictNeighborhoodSelect'
-import { ISTANBUL_DISTRICTS } from '../../../data/istanbul'
 import DocumentsTab from './DocumentsTab'   // Belgelerim Profilim'e tasindi
 import {
   GENDER_LABELS, EDUCATION_LABELS, AVAILABILITY_LABELS, POSITION_LABELS
@@ -43,8 +41,6 @@ export default function ProfileTab() {
         setForm({
           fullName:           data.fullName           || '',
           phone:              data.phone              || '',
-          district:           data.district           || '',
-          neighborhood:       data.neighborhood       || '',
           birthDate:          data.birthDate          || '',
           gender:             data.gender             || '',
           education:          data.education          || '',
@@ -53,7 +49,6 @@ export default function ProfileTab() {
           previousExperience: data.previousExperience || '',
           smokes:             data.smokes ?? null,
           hasLicense:         data.hasLicense ?? null,
-          preferredDistricts: data.preferredDistricts || [],
           preferredPositions: data.preferredPositions || [],
           isAvailable:        data.isAvailable ?? true,  // Dalga H2
         })
@@ -128,8 +123,6 @@ export default function ProfileTab() {
       const payload = {
         fullName:           form.fullName.trim(),
         phone:              form.phone.trim() || null,
-        district:           form.district || null,
-        neighborhood:       form.neighborhood?.trim() || null,
         birthDate:          form.birthDate || null,
         gender:             form.gender || null,
         education:          form.education || null,
@@ -138,7 +131,6 @@ export default function ProfileTab() {
         previousExperience: form.previousExperience.trim() || null,
         smokes:             form.smokes,
         hasLicense:         form.hasLicense,
-        preferredDistricts: form.preferredDistricts,
         preferredPositions: form.preferredPositions,
         isAvailable:        form.isAvailable,  // Dalga H2
       }
@@ -312,8 +304,9 @@ export default function ProfileTab() {
                       className="input" placeholder="0555 123 45 67" />
                   </div>
                 </div>
-                <DistrictNeighborhoodSelect district={form.district} neighborhood={form.neighborhood}
-                  onChange={({ district, neighborhood }) => setForm(prev => ({ ...prev, district, neighborhood }))} />
+                {/* FAZ B.5.2 — Aday ilce/mahalle girisi KALDIRILDI (kullanici karari).
+                    Konum artik ilanla aday arasindaki mesafe (km) uzerinden kuruluyor;
+                    ilce yalnizca ISLETME kendi adresini girerken yaziliyor. */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="label">Doğum Tarihi <span className="text-ink-400 font-normal text-[10px]">(16-65 yaş)</span></label>
@@ -377,105 +370,6 @@ export default function ProfileTab() {
   )
 }
 
-
-/* Aranabilir ilce secimi — "ba" yazinca Bagcilar/Basaksehir filtrelenir
-   diakritik-insensitive arama, checkbox-style multi-select chip listesi */
-function DistrictAutocomplete({ selected, onToggle }) {
-  const [query, setQuery] = useState('')
-  // Turkce karakterleri normalize et (ı→i, ö→o, ü→u, ç→c, ş→s, ğ→g)
-  function norm(s) {
-    return (s || '').toLowerCase()
-      .replaceAll('ı', 'i').replaceAll('ö', 'o').replaceAll('ü', 'u')
-      .replaceAll('ç', 'c').replaceAll('ş', 's').replaceAll('ğ', 'g')
-  }
-  const nq = norm(query.trim())
-  const matches = nq
-    ? ISTANBUL_DISTRICTS.filter(d => norm(d).includes(nq))
-    : ISTANBUL_DISTRICTS
-
-  return (
-    <div className="space-y-2">
-      {/* Search input */}
-      <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none"
-             width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
-        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder="İlçe ara (örn. ba → Bağcılar, Başakşehir)"
-          className="input text-sm"
-          style={{ paddingLeft: 36 }} />
-        {query && (
-          <button type="button" onClick={() => setQuery('')}
-            aria-label="Aramayı temizle"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
-
-      {/* Secili ilceler — chip seti (var ise) */}
-      {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {selected.map(d => (
-            <button key={d} type="button" onClick={() => onToggle(d)}
-              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-              style={{
-                background: 'rgba(15, 118, 110, 0.10)',
-                color: '#0f766e',
-                border: '1px solid rgba(15, 118, 110, 0.35)',
-              }}>
-              {d}
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-              </svg>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Eslesen ilce listesi */}
-      <div className="max-h-44 overflow-y-auto border rounded-lg p-1.5"
-           style={{ borderColor: 'rgba(15, 118, 110, 0.10)' }}>
-        {matches.length === 0 ? (
-          <p className="text-xs text-center py-3" style={{ color: '#98a1a0' }}>
-            "{query}" ile eşleşen ilçe yok
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
-            {matches.map(d => {
-              const active = selected.includes(d)
-              return (
-                <button key={d} type="button" onClick={() => onToggle(d)}
-                  className="flex items-center justify-between gap-2 px-2 py-1.5 rounded text-xs transition-colors text-left"
-                  style={{
-                    background: active ? 'rgba(15, 118, 110, 0.10)' : 'transparent',
-                    color: active ? '#0f766e' : '#6b7574',
-                    border: active ? '1px solid rgba(15, 118, 110, 0.25)' : '1px solid transparent',
-                    fontWeight: active ? 600 : 500,
-                  }}>
-                  <span className="truncate">{d}</span>
-                  {active && (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M20 6 9 17l-5-5" />
-                    </svg>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
 /**
  * Faz B/#11 — Adayın kendi güvenilirlik skoru kartı.

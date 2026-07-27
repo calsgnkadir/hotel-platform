@@ -56,7 +56,7 @@ export default function SavedSearchManager({ filters, onApply }) {
       name: label,
       position:  f.position  || null,
       jobType:   f.jobType   || null,
-      district:  f.district  || null,
+      /* FAZ B.5.2 — ilce artik bir arama kriteri degil (konum = mesafe) */
       keyword:   f.keyword   || null,
       minSalary: f.minSalary ? Number(f.minSalary) : null,
       dateFrom:  f.dateFrom  || null,
@@ -75,7 +75,7 @@ export default function SavedSearchManager({ filters, onApply }) {
   }
 
   const hasActiveFilters =
-    !!(filters?.position || filters?.jobType || filters?.district ||
+    !!(filters?.position || filters?.jobType ||
        filters?.keyword || filters?.minSalary || filters?.dateFrom ||
        (filters?.shifts && filters.shifts.length > 0))
 
@@ -217,7 +217,8 @@ function buildPreview(s) {
   const parts = []
   if (s.keyword) parts.push(`"${s.keyword}"`)
   if (s.position) parts.push(s.position)
-  if (s.district) parts.push(s.district)
+  /* FAZ B.5.2 — eski kayitli aramalarda district hala olabilir ama
+     yeni kriter degil; ozetten cikarildi */
   if (s.shifts && s.shifts.length) parts.push(`${s.shifts.length} vardiya`)
   if (s.minSalary) parts.push(`≥${s.minSalary}₺`)
   return parts.length ? parts.join(' · ') : 'Tüm ilanlar'

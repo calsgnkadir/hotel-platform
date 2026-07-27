@@ -14,8 +14,8 @@
 const CANDIDATE_FIELDS = [
   { key: 'avatarUrl',          label: 'Profil fotoğrafı',     weight: 10 },
   { key: 'phone',              label: 'Telefon',              weight: 10 },
-  { key: 'district',           label: 'İlçe',                 weight: 8  },
-  { key: 'neighborhood',       label: 'Mahalle',              weight: 5  },
+  // FAZ B.5.2 — Ilce/mahalle CIKARILDI: aday artik bu alanlari giremiyor
+  // (konum = mesafe). Listede kalsaydi aday profilini asla %100 yapamazdi.
   { key: 'birthDate',          label: 'Doğum tarihi',         weight: 8  },
   { key: 'gender',             label: 'Cinsiyet',             weight: 4  },
   { key: 'education',          label: 'Eğitim durumu',        weight: 8  },
