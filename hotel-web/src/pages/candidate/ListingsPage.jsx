@@ -30,6 +30,7 @@ import { ISTANBUL_DISTRICTS } from '../../data/istanbul'
 import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
 import { useMyLocation } from '../../lib/useMyLocation'                    // FAZ B.3
 import { distanceKm, formatDistance } from '../../lib/distance'            // FAZ B.3
+import { shiftDuration } from '../../lib/shiftTime'                        // FAZ B.5.5
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -709,6 +710,7 @@ function logoColor(name) {
    Sektorde karar "ne zaman + ne kadar" ile verilir; kartin ana capasi budur. */
 const TR_MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
 const TR_DAYS   = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
+
 function nextShiftLabel(slots) {
   if (!slots?.length) return null
   const today = new Date().toLocaleDateString('en-CA')  // YYYY-MM-DD (local)
@@ -728,7 +730,7 @@ function nextShiftLabel(slots) {
   const time = s.startTime
     ? `${s.startTime.slice(0, 5)}${s.endTime ? '–' + s.endTime.slice(0, 5) : ''}`
     : ''
-  return { day, time, more: future.length - 1 }
+  return { day, time, dur: shiftDuration(s.startTime, s.endTime), more: future.length - 1 }
 }
 
 /* ── İlan kartı — REDESIGN v3 (açık + teal, sektör düzeni).
@@ -810,7 +812,13 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
           {shift ? (
             <>
               <span className="ah-job__when-day">{shift.day}</span>
-              {shift.time && <span className="ah-job__when-time">{shift.time}</span>}
+              {shift.time && (
+                <span className="ah-job__when-time">
+                  {shift.time}
+                  {/* FAZ B.5.5 — sure: ucretin saatlik karsiligini kurar */}
+                  {shift.dur && <span className="ah-job__when-dur">{shift.dur}</span>}
+                </span>
+              )}
             </>
           ) : (
             <span className="ah-job__when-day" style={{ color: 'var(--ah-ink-3)' }}>

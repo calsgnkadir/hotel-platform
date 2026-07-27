@@ -393,6 +393,9 @@ body, .role-app-bg {
 }
 .ah-job__when-day { font-size: 13.5px; font-weight: 600; color: var(--ah-ink); letter-spacing: -0.005em; }
 .ah-job__when-time { font-size: 12px; color: var(--ah-ink-3); font-variant-numeric: tabular-nums; }
+/* FAZ B.5.5 — sure, saat araliginin yaninda ikincil ton (ayirac CSS'ten) */
+.ah-job__when-dur::before { content: '·'; margin: 0 4px; color: var(--ah-ink-4); }
+.ah-job__when-dur { color: var(--ah-ink-3); font-weight: 600; }
 .ah-job__wage { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
 /* Ucret kutunun icindeki tek buyuk deger — kart genelinde en guclu rakam,
    ama basliktan buyuk degil (B.1'deki "kocaman rakam" geri gelmesin). */
