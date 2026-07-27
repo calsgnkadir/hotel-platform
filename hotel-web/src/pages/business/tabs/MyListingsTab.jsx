@@ -40,6 +40,25 @@ export default function MyListingsTab({ applications = [] }) {
     }
   }
 
+  // FAZ C.2 — Acil isaretle: o an "hemen musait" olan adaylara aninda bildirim
+  const [urgentBusyId, setUrgentBusyId] = useState(null)
+  async function handleUrgent(listingId, urgent) {
+    setUrgentBusyId(listingId)
+    try {
+      const res = await hotelApi.setListingUrgent(listingId, urgent)
+      if (!urgent) {
+        toast.success('Acil işareti kaldırıldı')
+      } else if (res.notifiedCount > 0) {
+        toast.success(`Acil ilan yayında — ${res.notifiedCount} müsait adaya bildirim gitti`)
+      } else {
+        toast.success('Acil ilan yayında. Şu an müsait aday yok; yeni müsait olanlar görecek.')
+      }
+      fetchListings()
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally { setUrgentBusyId(null) }
+  }
+
   if (isLoading) return <SkeletonList count={4} />
 
   return (
@@ -100,6 +119,19 @@ export default function MyListingsTab({ applications = [] }) {
                       'badge-expired'}`}>
                       {STATUS_LABELS[listing.status]}
                     </span>
+                    {/* FAZ C.2 — acil rozeti (suresi gecince backend urgent=false doner) */}
+                    {listing.urgent && (
+                      <span className="inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                            title={listing.urgentUntil
+                              ? `Acil · ${new Date(listing.urgentUntil).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}'a kadar`
+                              : 'Acil ilan'}
+                            style={{ background: '#fbeae7', color: '#992d22', border: '1px solid #c0392b' }}>
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                        Acil
+                      </span>
+                    )}
                   </div>
                   <p className="type-caption mt-1">
                     {POSITION_LABELS[listing.position]} · {JOB_TYPE_LABELS[listing.jobType]}
@@ -151,6 +183,23 @@ export default function MyListingsTab({ applications = [] }) {
                       className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
                       style={{ background: 'rgba(15, 118, 110, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(15, 118, 110, 0.22)' }}>
                       Düzenle
+                    </button>
+                  )}
+                  {/* FAZ C.2 — Acil: "bugun/yarin adam lazim" akisinin tetigi */}
+                  {listing.status === 'ACTIVE' && (
+                    <button onClick={() => handleUrgent(listing.id, !listing.urgent)}
+                      disabled={urgentBusyId === listing.id}
+                      title={listing.urgent
+                        ? 'Acil işaretini kaldır'
+                        : 'Şu an müsait olan adaylara anında bildirim gönder'}
+                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5 disabled:opacity-60 inline-flex items-center gap-1"
+                      style={listing.urgent
+                        ? { background: '#c0392b', color: '#fff', border: '1px solid #c0392b' }
+                        : { background: '#fbeae7', color: '#992d22', border: '1px solid rgba(192, 57, 43, 0.35)' }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+                      </svg>
+                      {urgentBusyId === listing.id ? '...' : listing.urgent ? 'Acili Kaldır' : 'Acil'}
                     </button>
                   )}
                   {listing.status === 'ACTIVE' && (

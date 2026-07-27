@@ -11,6 +11,7 @@ public enum NotificationType {
     STANDBY_ASSIGNED,       // FAZ C.1 — yedek aday olarak işaretlendin
     STANDBY_ACTIVATED,      // FAZ C.1 — asıl aday gelmedi, sıra sende (acil teklif)
     STANDBY_OFFER_EXPIRED,  // FAZ C.1 — yedek teklifine süresinde cevap vermedin
+    URGENT_LISTING,         // FAZ C.2 — "hemen müsait"sin ve acil ilan açıldı
 
     // İşletme'ye
     NEW_APPLICATION,        // yeni başvuru geldi

@@ -370,6 +370,31 @@ export async function respondToStandbyOffer(applicationId, accept) {
   return data
 }
 
+// FAZ C.2 — "Hemen müsait" modu + acil ilan
+/** Aday: hemen müsait durumum. → { availableNow, availableUntil } */
+export async function getAvailabilityNow() {
+  const { data } = await api.get('/api/candidate/availability-now')
+  return data
+}
+
+/** Aday: "bugün müsaitim" aç/kapat. Açıkken bugün 23:59'a kadar geçerli. */
+export async function setAvailabilityNow(available) {
+  const { data } = await api.put(`/api/candidate/availability-now?available=${available}`)
+  return data
+}
+
+/** İşletme: ilanı acil işaretle/kaldır. → { urgent, urgentUntil, notifiedCount } */
+export async function setListingUrgent(listingId, urgent = true) {
+  const { data } = await api.put(`/api/listings/${listingId}/urgent?urgent=${urgent}`)
+  return data
+}
+
+/** İşletme: şu an "hemen müsait" aday sayısı. → { count } */
+export async function getAvailableNowCount() {
+  const { data } = await api.get('/api/listings/available-now-count')
+  return data
+}
+
 // FAZ 2/#32 — Talent pool / favoriler
 export async function addFavorite(candidateId, note) {
   const { data } = await api.post(`/api/business/favorites/${candidateId}`, { note: note || null })
