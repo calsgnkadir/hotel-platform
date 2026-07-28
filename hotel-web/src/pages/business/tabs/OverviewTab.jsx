@@ -35,18 +35,15 @@ export default function OverviewTab({ applications, onTabChange }) {
               transition={{ type: 'spring', stiffness: 240, damping: 22 }}
               className="stat-card group cursor-default"
             >
-              {/* Blob accent — quiet */}
-              <div aria-hidden className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none transition-opacity duration-500 opacity-30 group-hover:opacity-55"
-                   style={{ background: `radial-gradient(circle, ${s.color}55 0%, transparent 65%)`, filter: 'blur(18px)' }} />
-
-              {/* Sparkline arka plan */}
+              {/* FAZ E.1 — ITEM 5 "glow biraktik" ile tutarli: radial-blur blob
+                  ve drop-shadow halo kaldirildi. Sparkline (veri) korunur. */}
               <div aria-hidden className="absolute inset-x-3 bottom-3 h-8 pointer-events-none opacity-30">
                 <Sparkline data={s.data} color={s.color} width={200} height={32} />
               </div>
 
               {/* Number → hairline → label */}
               <div className="relative">
-                <div className="stat-card-number" style={{ filter: `drop-shadow(0 0 10px ${s.color}44)` }}>
+                <div className="stat-card-number">
                   {s.value}
                 </div>
                 <div className="stat-card-divider" />
@@ -57,8 +54,6 @@ export default function OverviewTab({ applications, onTabChange }) {
         </div>
 
         <div className="tier-raised relative overflow-hidden">
-          <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-30"
-               style={{ background: 'radial-gradient(circle, rgba(15, 118, 110, 0.22), transparent 70%)', filter: 'blur(24px)' }} />
           <div className="relative px-5 py-3.5 flex items-center justify-between border-b border-hairline">
             <div>
               <h2 className="type-heading" style={{ fontSize: '15px' }}>
@@ -147,10 +142,7 @@ function TodayFeed({ applications, onTabChange }) {
               <button onClick={() => onTabChange('applications')}
                 className="w-full text-left flex items-start gap-2.5 group">
                 <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
-                      style={{
-                        background:   STATUS_DOT[app.status] || '#6b7574',
-                        boxShadow: `0 0 8px ${STATUS_DOT[app.status] || '#6b7574'}`,
-                      }} />
+                      style={{ background: STATUS_DOT[app.status] || '#6b7574' }} />
                 <div className="flex-1 min-w-0">
                   <p className="type-body font-medium truncate">
                     {app.candidate?.fullName || 'Aday'}

@@ -1077,7 +1077,10 @@ textarea:focus-visible {
 .ah-surface .tier-ground { background: transparent; }
 .ah-surface .tier-raised { background: var(--ah-card); border: 1px solid var(--ah-line); box-shadow: none; }
 .ah-surface .tier-raised-hover:hover { background: #fff; border-color: var(--ah-line-2); }
-.ah-surface .tier-featured { background: var(--ah-card); border: 1px solid var(--ah-brand-line); box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+/* FAZ E.1 — --ah-brand-line hic tanimli degildi: gecersiz var yuzunden border
+   currentColor'a (ink-2 gri) dusuyordu, featured teal vurgusunu alamiyordu.
+   var(--ah-brand) = gercek teal accent. */
+.ah-surface .tier-featured { background: var(--ah-card); border: 1px solid var(--ah-brand); box-shadow: 0 4px 14px rgba(18,32,31,.07); }
 
 .ah-surface .type-display, .ah-surface .type-heading { color: var(--ah-ink); }
 .ah-surface .type-subhead, .ah-surface .type-body { color: var(--ah-ink-2); }

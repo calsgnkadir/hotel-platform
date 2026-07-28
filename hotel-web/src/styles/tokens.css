@@ -194,7 +194,7 @@ body, .role-app-bg {
  *
  *   .tier-ground    — page bg ile aynidir, border yok. Passive wrapper.
  *   .tier-raised    — surface shift + hairline border. StatCard, list row.
- *   .tier-featured  — champagne border + shadow. Yalnizca 1 element/page.
+ *   .tier-featured  — teal aksan border + shadow. Yalnizca 1 element/page.
  *
  * Kural: bir sayfada 2+ FEATURED olmasin. Goz sadece bir yere yerlesmeli.
  * ═══════════════════════════════════════════════════════════════════════ */
@@ -206,7 +206,7 @@ body, .role-app-bg {
 
 .tier-raised {
   background: var(--surface-raised);
-  border: 1px solid rgba(205, 183, 143, 0.08);
+  border: 1px solid var(--ah-line);          /* FAZ E — sampanya-altin hairline birakildi, acik teal cizgi */
   border-radius: 12px;
   box-shadow: var(--elev-1);   /* ITEM 5 — inset "luxe" highlight yerine duz */
 }
@@ -215,12 +215,12 @@ body, .role-app-bg {
 }
 .tier-raised-hover:hover {
   background: var(--surface-floating);
-  border-color: rgba(205, 183, 143, 0.18);
+  border-color: var(--ah-line-2);            /* FAZ E — teal cizgi koyulasir */
 }
 
 .tier-featured {
-  background: var(--surface-floating);
-  border: 1px solid rgba(205, 183, 143, 0.35);
+  background: var(--surface-raised);
+  border: 1px solid var(--ah-brand);         /* FAZ E — featured = teal aksan (altin degil), ≤1/sayfa */
   border-radius: 12px;
   box-shadow: var(--elev-2);   /* ITEM 5 — koyu glow/derin golge yerine duz */
 }
