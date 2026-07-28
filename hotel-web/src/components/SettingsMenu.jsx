@@ -163,14 +163,15 @@ function ToggleSwitch({ checked, onChange }) {
       onClick={() => onChange(!checked)}
       className="relative inline-flex h-6 w-11 items-center rounded-full border transition-colors shrink-0"
       style={{
-        background: checked ? 'rgba(15, 118, 110, 0.35)' : 'rgba(146, 134, 120, 0.18)',
-        borderColor: checked ? 'rgba(15, 118, 110, 0.55)' : 'rgba(146, 134, 120, 0.32)',
+        background: checked ? 'var(--ah-brand)' : 'var(--ah-line)',
+        borderColor: checked ? 'var(--ah-brand)' : 'var(--ah-line-2)',
       }}
     >
       <span
         className="inline-block h-4 w-4 transform rounded-full transition-transform"
         style={{
-          background: checked ? '#1a1208' : '#c9bdaa',
+          background: '#fff',
+          boxShadow: '0 1px 2px rgba(18,32,31,0.2)',
           transform: `translateX(${checked ? '24px' : '4px'})`,
         }}
       />

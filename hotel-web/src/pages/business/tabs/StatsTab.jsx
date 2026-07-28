@@ -79,17 +79,15 @@ function Kpi({ label, value, delta, color = '#0f766e' }) {
       transition={{ type: 'spring', stiffness: 240, damping: 22 }}
       className="stat-card group cursor-default"
     >
-      {/* Blob accent — quiet */}
-      <div aria-hidden className="absolute -top-12 -right-12 w-36 h-36 rounded-full pointer-events-none transition-opacity duration-500 opacity-30 group-hover:opacity-55"
-           style={{ background: `radial-gradient(circle, ${color}55 0%, transparent 65%)`, filter: 'blur(20px)' }} />
+      {/* FAZ E.5 — ITEM 5 tutarlilik: blob glow + sayi drop-shadow kaldirildi */}
 
-      {/* Delta pill — top-right anchor */}
+      {/* Delta pill — top-right anchor. Acik zeminde okunur koyu semantik metin. */}
       {typeof delta === 'number' && (
         <span className="absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={{
-                background: deltaPos ? 'rgba(122, 159, 122, 0.12)' : 'rgba(180, 106, 85, 0.12)',
-                color:      deltaPos ? '#a8c8a8' : '#d39481',
-                border: `1px solid ${deltaPos ? 'rgba(122, 159, 122, 0.30)' : 'rgba(180, 106, 85, 0.30)'}`,
+                background: deltaPos ? 'var(--ah-ok-soft)' : 'var(--ah-danger-soft)',
+                color:      deltaPos ? 'var(--ah-ok)' : '#992d22',
+                border: `1px solid ${deltaPos ? 'var(--ah-ok)' : 'var(--ah-danger)'}`,
               }}>
           {deltaPos ? '+' : ''}{delta}%
         </span>
@@ -97,7 +95,7 @@ function Kpi({ label, value, delta, color = '#0f766e' }) {
 
       {/* Number → hairline → label */}
       <div className="relative">
-        <div className="stat-card-number" style={{ filter: `drop-shadow(0 0 12px ${color}44)` }}>
+        <div className="stat-card-number">
           {value}
         </div>
         <div className="stat-card-divider" />

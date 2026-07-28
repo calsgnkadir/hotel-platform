@@ -252,7 +252,7 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
       {/* Üst başlık */}
       <div className="px-4 py-3 border-b border-hairline flex items-center gap-3 flex-shrink-0">
         <button onClick={onBack}
-          className="sm:hidden p-1 -ml-1 text-ivory-600 hover:text-ivory-200">
+          className="sm:hidden p-1 -ml-1 text-ivory-600 hover:text-ink-800">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />

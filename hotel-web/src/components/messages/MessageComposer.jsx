@@ -137,7 +137,7 @@ export default function MessageComposer({
             </div>
           </div>
           <button type="button" onClick={onClearReply}
-                  className="w-6 h-6 grid place-items-center rounded-full text-ivory-600 hover:text-ivory-200"
+                  className="w-6 h-6 grid place-items-center rounded-full text-ivory-600 hover:text-ink-800"
                   title="Yanıtı iptal et">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
