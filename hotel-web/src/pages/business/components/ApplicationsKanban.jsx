@@ -260,10 +260,10 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
       {selectedIds.size > 0 && (
         <div className="tier-featured mb-4 sticky top-0 z-10 px-4 py-3 flex items-center justify-between gap-3 backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <span className="numeral-hero text-champagne-300" style={{ fontSize: '22px' }}>
+            <span className="numeral-hero" style={{ fontSize: '22px', color: 'var(--ah-brand)' }}>
               {selectedIds.size}
             </span>
-            <span className="type-overline text-ivory-200">
+            <span className="type-overline" style={{ color: 'var(--ah-ink-2)' }}>
               başvuru seçildi
             </span>
           </div>
@@ -562,10 +562,10 @@ function CardSilhouette({ app }) {
         width: '260px',
       }}
     >
-      <div className="type-body font-semibold text-white truncate">
+      <div className="type-body font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
         {app.candidate?.fullName || 'Anonim'}
       </div>
-      <div className="type-caption truncate" style={{ color: 'var(--text-faint)' }}>
+      <div className="type-caption truncate" style={{ color: 'var(--ah-ink-3)' }}>
         {app.listing?.title || '—'}
       </div>
     </div>
