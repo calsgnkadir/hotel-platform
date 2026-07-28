@@ -31,6 +31,7 @@ import { useMyLocation } from '../../lib/useMyLocation'                    // FA
 import { distanceKm, formatDistance } from '../../lib/distance'            // FAZ B.3
 import { shiftDuration } from '../../lib/shiftTime'                        // FAZ B.5.5
 import { logoColor } from '../../lib/logoColor'                            // FAZ B.5.3
+import cldImg, { ImgSize } from '../../lib/cldImg'                         // FAZ E.6
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -751,7 +752,13 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
          onKeyDown={(e) => { if (e.key === 'Enter') onDetail(listing) }}>
       {/* Ust: logo + pozisyon (birincil) + isletme/ilce (baglam) + kaydet */}
       <div className="ah-job__top">
-        <span className="ah-logo" style={{ background: logoColor(listing.businessName) }}>{initial}</span>
+        {listing.businessLogoUrl ? (
+          <img src={cldImg(listing.businessLogoUrl, { w: ImgSize.avatarMd })}
+               alt={listing.businessName || 'İşletme'} loading="lazy"
+               className="ah-logo" style={{ objectFit: 'cover' }} />
+        ) : (
+          <span className="ah-logo" style={{ background: logoColor(listing.businessName) }}>{initial}</span>
+        )}
         <div className="ah-job__hd">
           <div className="ah-job__title">{position}</div>
           {/* FAZ B.5.4 — Tek meta satiri: isletme · puan · ilce · mesafe.

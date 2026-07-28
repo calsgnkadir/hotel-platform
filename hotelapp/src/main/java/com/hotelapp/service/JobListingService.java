@@ -554,6 +554,9 @@ public class JobListingService {
                 .createdAt(l.getCreatedAt())
                 .shiftSlots(slotDtos)
                 .businessPhotoUrls(photoUrls)  // D3
+                .businessLogoUrl(l.getBusiness().getLogoPath() != null   // FAZ E.6
+                        ? fileStorageService.publicUrl(l.getBusiness().getLogoPath())
+                        : null)
                 // Dalga 4 — view counter (her response'ta) + business creation date
                 // businessWorkerCount sadece tekli detail icin doldurulur (N+1 onlemek icin)
                 .viewCount(l.getViewCount() != null ? l.getViewCount() : 0L)
@@ -691,6 +694,10 @@ public class JobListingService {
 
         // FAZ D3 — işletme galeri fotoğrafları (ilk 5), hover carousel için
         private List<String> businessPhotoUrls;
+
+        // FAZ E.6 — işletme logosu (varsa). Aday ilan kartı logoUrl varsa gösterir,
+        // yoksa isimden üretilen renkli monogram fallback'ine düşer.
+        private String businessLogoUrl;
 
         // Dalga 4 / Teknik 5 — Conversion metric icin
         private Long viewCount;

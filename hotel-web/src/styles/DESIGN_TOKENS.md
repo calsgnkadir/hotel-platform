@@ -1,53 +1,75 @@
-# Design Tokens — Editorial Dark Luxe
+# Design Tokens — Açık + Teal (light-teal)
 
-FAZ 5.UX6 consolidation. Single source of truth for tokens, tiers, typography.
+Tek doğruluk kaynağı: `tokens.css` `:root` (`--ah-*`) + `index.css` `.ah-surface`
+scoped override'ları. Bu dosya onları AÇIKLAR, tanımlamaz — çelişki olursa CSS kazanır.
 
-## 1. Palette
+> FAZ 26 pivotu: eski "Editorial Dark Luxe" (grafit + şampanya + ivory) BIRAKILDI.
+> Artık tek tema açık zemin + teal aksan. Eski isimler (`champagne/ink/cream/
+> brand/terra/neon`, `--text-*`, `graphite/ivory`) silinmedi — hepsi alias olarak
+> teal/açık değerlere remap edildi (geriye uyumluluk). Yeni kod `--ah-*` yazsın.
 
-Primary names (use these):
+## 1. Palet (`--ah-*`, tokens.css)
 
-| Family | Role | Notes |
+| Token | Değer | Rol |
 |---|---|---|
-| `graphite.{50→900}` | surfaces + containers | `800` = body bg, `700` = raised, `600` = floating |
-| `champagne.{50→900}` | accent | `300` = default (`#cdb78f`), `500`/`600` = CTA gradient (`#d4a853`→`#b8902d`) |
-| `ivory.{50→900}` | text ramp | `100` = headline, `200` = body, `400` = secondary, `600` = tertiary |
-| `signal.{green,coral,amber}` | status | sage/brick/ochre — badges only, never card bg |
+| `--ah-brand` | `#0f766e` | birincil aksan — CTA, aktif nav, seçili |
+| `--ah-brand-hover` | `#0b5d57` | brand hover |
+| `--ah-brand-soft` | `#e4f2f0` | teal-soft zemin (aktif pill, rozet dolgusu) |
+| `--ah-page` | `#eef1f2` | sayfa zemini |
+| `--ah-card` | `#ffffff` | kart/panel yüzeyi |
+| `--ah-band` | `#f5f7f7` | beyaz kart içinde ayrışan iç yüzey ("karar kutusu") |
+| `--ah-line` | `#e4e8e8` | hairline kenarlık |
+| `--ah-line-2` | `#d4dadb` | daha güçlü kenarlık / hover |
+| `--ah-ink` | `#12201f` | başlık metni |
+| `--ah-ink-2` | `#3f4b4a` | gövde metni |
+| `--ah-ink-3` | `#6b7574` | ikincil metin |
+| `--ah-ink-4` | `#98a1a0` | soluk / placeholder |
+| `--ah-ok` / `-soft` | `#0a7c42` / `#e9f5ee` | başarı — sadece durum |
+| `--ah-warn` / `-soft` | `#b7791f` / `#fbf1e0` | uyarı — sadece durum |
+| `--ah-danger` / `-soft` | `#c0392b` / `#fbeae7` | hata/acil — sadece durum |
+| `--ah-info` / `-soft` | `#1f57c3` / `#eaf1fd` | bilgi — sadece durum |
+| `--ah-r` / `--ah-rc` | `10px` / `8px` | kart / kontrol radius |
 
-Legacy aliases (`brand.*`, `terra.*`, `neon.*`, `cream.*`, `ink.*`) remap to primary values. Do NOT introduce new usages — write `bg-graphite-700` instead of `bg-brand-700`. Existing usages render correct tones automatically.
+## 2. Renk rolleri
 
-## 2. Color roles
+- **teal (`--ah-brand`)** = birincil CTA + aktif nav/seçili. Sayfa başına ideal ≤1 dolu-teal vurgu.
+- **beyaz/gri (`--ah-card`/`--ah-page`)** = pasif kartlar, konteynerler, ikincil butonlar.
+- **`--ah-ok/warn/danger/info`** = yalnızca DURUM (rozet/şerit). Kart zemini veya ana vurgu olarak KULLANMA.
+- Logo monogramları: `lib/logoColor.js` (8 canlı ton, marka teal'i hariç, beyaz metinle ≥4.5:1).
 
-- **champagne** = primary CTA + active nav ONLY. **Max 1 accent-filled element per page.**
-- **graphite** = passive cards, containers, secondary buttons.
-- **signal.\*** = badges ONLY (never card bg, never text alone).
+## 3. Kart hiyerarşisi (3 kademe)
 
-## 3. Card hierarchy (3-tier)
+CSS helper'ları `.ah-surface` altında (index.css 1077-1080). Inline `background/border/boxShadow` yerine bunları kullan.
 
-CSS helpers in `tokens.css`. Use these in JSX instead of inline styles.
+| Kademe | Class | BG | Border | Gölge | Ne zaman |
+|---|---|---|---|---|---|
+| GROUND | `.tier-ground` | şeffaf (page) | yok | yok | pasif sarmalayıcı |
+| RAISED | `.tier-raised` | `--ah-card` | `1px --ah-line` | yok/çok hafif | StatCard, liste satırı, mesaj balonu |
+| FEATURED | `.tier-featured` | `--ah-card` | `1px --ah-brand` (teal) | `0 4px 14px` hafif | seçili / aktif — **≤1/sayfa** |
 
-| Tier | Class | Radius | BG | Border | Shadow | When |
-|---|---|---|---|---|---|---|
-| GROUND | `.tier-ground` | 12px | `graphite.800` (page) | none | none | passive wrapper |
-| RAISED | `.tier-raised` | 16px | `graphite.700` | `1px ivory.900/40` hairline | inset 1px `white/3` | StatCard, list row, msg bubble |
-| FEATURED | `.tier-featured` | 16px | `graphite.600` | `1px champagne.300/35` | 8px 24px shadow + inset champagne/12 | selected / new-match / active nav — **≤1/page** |
+`.tier-raised-hover:hover` → border `--ah-line-2` (FEATURED'a dönüşmeden vurgular).
+Not: FEATURED border FAZ E'de düzeltildi — eskiden tanımsız `--ah-brand-line` yüzünden gri düşüyordu.
 
-Hover on RAISED: `.tier-raised-hover` upgrades surface + border on hover without becoming FEATURED.
+## 4. Tipografi (Inter) — ITEM 6 sonrası gerçek ölçek
 
-## 4. Typography (Inter only)
+| Class | Boyut/LH | Ağırlık | Tracking |
+|---|---|---|---|
+| `.type-display` | `clamp(20,2.4vw,24)`/1.3 | 700 | -0.015em |
+| `.type-heading` | 16/1.4 | 600 | -0.01em |
+| `.type-subhead` | 14/1.45 | 600 | 0 |
+| `.type-body` | 13.5/1.5 | 400 | 0 |
+| `.type-caption` | 12/1.4 | 500 | 0 |
+| `.type-overline` | 11/1.4 | 600 | 0.06em (eski 0.22em "luxe yayılma" kaldırıldı) |
 
-| Class | Size/LH | Weight | Tracking | Color |
-|---|---|---|---|---|
-| `.type-display` | clamp(28,4.5vw,32)/1.25 | 600 | -0.02em | `ivory.100` |
-| `.type-heading` | 20/28 | 600 | -0.01em | `ivory.100` |
-| `.type-subhead` | 15/22 | 500 | 0 | `ivory.400` |
-| `.type-body` | 14/20 | 400 | 0 | `ivory.200` |
-| `.type-caption` | 12/16 | 500 | 0.02em | `ivory.600` |
-| `.type-overline` | 10/14 | 600 | 0.22em uppercase | `ivory.600` |
+## 5. Glow YOK (ITEM 5)
 
-## 5. Acceptance rules
+Düz elevation ölçeği `--elev-1/2/3` (açık `rgba(18,32,31,.06/.08/.12)`). Renkli
+`0 0 Npx` glow, `drop-shadow` halo, radial-blur blob KULLANMA — "AI/luxe" tell'i.
 
-- No page has 2+ equally-bright elements — eye lands once.
-- Never use `signal.*` as card background.
-- Never use `champagne.300` on more than one CTA/active element per page.
-- Cards use tier classes, not ad-hoc inline `background`/`border`/`boxShadow`.
-- Text uses `.type-*` classes, not ad-hoc font size + weight.
+## 6. Kabul kuralları
+
+- Metin `--ah-ink*` / `.type-*` kullanır; beyaz/ivory metni yalnızca RENKLİ zemin üstünde (buton/monogram/avatar).
+- `--ah-ok/warn/danger/info` kart zemini olamaz.
+- Kartlar tier class'ları kullanır, ad-hoc inline `background/border/boxShadow` değil.
+- Kullanılan her `var(--ah-*)` tokens.css'te TANIMLI olmalı (tanımsız var → border currentColor'a düşer, FAZ E bug'ı).
+- UI'da emoji yok — SVG ikon veya metin.
