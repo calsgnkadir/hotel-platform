@@ -14,6 +14,7 @@ import { useConfirm } from '../../../lib/useConfirm'
 import SlotChipGroup from '../../../components/SlotChipGroup'
 import { formatSalary } from '../../../lib/salary'
 import { logoColor } from '../../../lib/logoColor'   // FAZ B.5.3 — tek kaynak
+import { PlatformRoleNotice } from '../../../components/LegalNotice'   // FAZ C.3
 
 /* REDESIGN v3 — açık zemin için durum renkleri (soft bg + koyu okunur metin) */
 const STATUS_CONFIG = {
@@ -454,6 +455,11 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           onSuccess={onRefresh}
         />
       )}
+
+      {/* FAZ C.3 — Platform konumlandirmasi (seffaflik): aracilik, isveren degil */}
+      <div className="pt-1">
+        <PlatformRoleNotice audience="candidate" />
+      </div>
     </motion.div>
   )
 }

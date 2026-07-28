@@ -8,6 +8,7 @@ import cldImg, { ImgSize } from '../../../lib/cldImg'
 import ReliabilityBadge from '../../../components/ReliabilityBadge'
 import { celebrate } from '../../../lib/confetti'
 import { useConfirm } from '../../../lib/useConfirm'
+import { SgkNotice } from '../../../components/LegalNotice'   // FAZ C.3
 
 /**
  * FAZ 11.W2.2 — Basvuru detayi, standalone panel.
@@ -523,6 +524,13 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             </button>
           ) : null}
         </div>
+
+        {/* FAZ C.3 — Kabul edilen aday: SGK ise giris bildirgesi hatirlatmasi */}
+        {app.status === 'ACCEPTED' && !app.noShow && (
+          <div className="border-t border-hairline pt-4">
+            <SgkNotice />
+          </div>
+        )}
 
         {/* No-show işaretleme */}
         {app.status === 'ACCEPTED' && !app.noShow && (

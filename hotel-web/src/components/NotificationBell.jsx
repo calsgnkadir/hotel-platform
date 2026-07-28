@@ -27,6 +27,8 @@ const TYPE_COLOR = {
   STANDBY_DECLINED:      'bg-orange-500',
   // FAZ C.2 — acil ilan: listedeki en yuksek aciliyet, kirmizi
   URGENT_LISTING:        'bg-red-600',
+  // FAZ C.3 — SGK ise giris bildirgesi hatirlaticisi (yasal, amber)
+  SGK_REMINDER:          'bg-amber-500',
   GENERIC:               'bg-cream-500',
 }
 

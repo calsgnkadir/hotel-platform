@@ -19,6 +19,7 @@ public class ExpiredApplicationScheduler {
 
     private final ApplicationRepository applicationRepository;
     private final StandbyService standbyService;   // FAZ C.1
+    private final SgkReminderService sgkReminderService;   // FAZ C.3
 
     // Her gece 02:00'de çalışır
     @Scheduled(cron = "0 0 2 * * *")
@@ -61,6 +62,22 @@ public class ExpiredApplicationScheduler {
             if (n > 0) log.info("[STANDBY] {} yedek teklifinin suresi doldu, siradakine gecildi", n);
         } catch (Exception e) {
             log.warn("[STANDBY] teklif suresi temizligi basarisiz: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * FAZ C.3 — SGK ise giris bildirgesi hatirlaticisi.
+     * Her sabah 09:00: vardiyasi bugun/yarin olan kabul edilmis basvurular icin
+     * isletmeye tek sefer hatirlatma. Sabah calisir cunku isveren gun icinde
+     * bildirgeyi verecek zamana sahip olsun.
+     */
+    @Scheduled(cron = "0 0 9 * * *")
+    public void sendSgkReminders() {
+        try {
+            int n = sgkReminderService.sendDueReminders();
+            if (n > 0) log.info("[SGK] {} isletmeye ise giris bildirgesi hatirlatmasi gonderildi", n);
+        } catch (Exception e) {
+            log.warn("[SGK] hatirlatma gonderimi basarisiz: {}", e.getMessage());
         }
     }
 }
