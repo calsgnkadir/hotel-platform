@@ -79,6 +79,14 @@ public class Application {
     /** Teklifin hangi no-show basvurusunun yerine acildigi — iz surme icin. */
     private Long standbyReplacesApplicationId;
 
+    // ------------------------------------------------------------------
+    // FAZ C.3 — SGK ise giris bildirgesi hatirlaticisi
+    // Kabul edilen aday vardiyaya baslamadan once, isletme yasal olarak
+    // ise giris bildirgesini vermek zorunda. Vardiya yaklasinca isletmeye
+    // tek sefer hatirlatma gonderilir; bu alan idempotency saglar.
+    // ------------------------------------------------------------------
+    private LocalDateTime sgkReminderSentAt;
+
     // Faz E1 öncesi: keyfi haftalık müsaitlik. Yeni akış slot kullanır;
     // bu liste eski başvurularda kalır ama yeni başvurularda boş kalır.
     // FAZ 9.2 — N+1 fix: BatchSize ile 50 app'in availability'sini tek IN(...) sorgusuyla topla.

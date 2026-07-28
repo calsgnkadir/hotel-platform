@@ -20,6 +20,7 @@ public enum NotificationType {
     DOCUMENT_DENIED,        // aday belge iznini reddetti
     STANDBY_FILLED,         // FAZ C.1 — yedek aday açığı kapattı
     STANDBY_DECLINED,       // FAZ C.1 — yedek aday teklifi reddetti / süresi doldu
+    SGK_REMINDER,           // FAZ C.3 — işe giriş bildirgesi (SGK) hatırlatıcı
 
     // ADIM J: Tercihlerine uygun yeni ilan
     MATCHING_LISTING,

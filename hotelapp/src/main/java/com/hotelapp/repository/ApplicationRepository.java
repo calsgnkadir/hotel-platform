@@ -167,6 +167,28 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             ApplicationStatus status, LocalDateTime deadline);
 
     // ----------------------------------------------------------------
+    // FAZ C.3 — SGK ise giris bildirgesi hatirlaticisi
+    // ----------------------------------------------------------------
+
+    /**
+     * Vardiyasi yaklasan, henuz SGK hatirlatmasi gonderilmemis kabul edilmis
+     * basvurular. En az bir slotu [from, to] araliginda olanlar.
+     * DISTINCT: bir basvurunun birden cok slotu araliga duserse tekrar etmesin.
+     */
+    @EntityGraph(attributePaths = { "candidate", "jobListing", "jobListing.business" })
+    @Query("""
+        SELECT DISTINCT a FROM Application a
+        JOIN a.requestedSlots s
+        WHERE a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
+          AND a.noShow = false
+          AND a.sgkReminderSentAt IS NULL
+          AND s.date BETWEEN :from AND :to
+    """)
+    List<Application> findAcceptedNeedingSgkReminder(
+            @Param("from") java.time.LocalDate from,
+            @Param("to") java.time.LocalDate to);
+
+    // ----------------------------------------------------------------
     // #84: Sayfalanmış + filtrelenebilir sorgular
     // Tüm filtre parametreleri opsiyonel (:param IS NULL OR ...) deseniyle.
     // ----------------------------------------------------------------
