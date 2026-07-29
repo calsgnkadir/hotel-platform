@@ -1,0 +1,61 @@
+name: CI
+
+# Push ve PR'da build + test. Canliligi izleyen daily-health-check.yml'den
+# AYRI: bu, her degisiklikte kodu dogrular ("tests passing" rozeti).
+on:
+  push:
+    branches: [main, 'redesign/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Spring Boot · mvn verify)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hotelapp
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # Testler H2 in-memory (application-test.yml, @ActiveProfiles("test"))
+      # kullaniyor — CI'da MySQL servisi GEREKMIYOR. 259 unit + 4 entegrasyon testi.
+      - name: Build & test
+        run: mvn -B -ntp verify
+
+  frontend:
+    name: Frontend (React · vitest + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hotel-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: hotel-web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
