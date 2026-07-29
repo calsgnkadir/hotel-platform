@@ -1,0 +1,9 @@
+target/
+*.log
+backend.log
+preview/
+.git/
+.idea/
+.mvn/
+mvnw
+mvnw.cmd

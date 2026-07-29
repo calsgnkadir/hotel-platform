@@ -1,0 +1,63 @@
+# AjansHotel — tam yerel stack: MySQL + Spring Boot + React (nginx).
+# Kullanim:  cp .env.example .env  &&  docker compose up --build
+# Sonra: frontend http://localhost:5173 · API/Swagger http://localhost:8080/swagger-ui
+#
+# Not: Bu YEREL/portfoy stack'i — canli demo hala Vercel+Railway. Docker onlarin
+# yerine gecmez, "clone'la calistir" + DevOps sinyali icin yanlarinda durur.
+
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: hotel_platform
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-changeme_root_pw}
+    ports:
+      # Host 3307 → lokaldeki mevcut MySQL (3306) ile cakismasin
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  backend:
+    build: ./hotelapp
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: hotel_platform
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-changeme_root_pw}
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-key-at-least-32-characters-long-!!!}
+      JPA_DDL_AUTO: update
+      # CORS default'u zaten http://localhost:5173,3000 iceriyor — ek gerekmiyor.
+      APP_BASE_URL: http://localhost:5173
+    ports:
+      - "8080:8080"
+    # Healthcheck paketsiz: temurin imajinda bash var, /dev/tcp ile port 8080
+    # acik mi diye bakar (wget/curl imajda olmayabilir).
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080' 2>/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./hotel-web
+      args:
+        VITE_API_URL: http://localhost:8080
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  mysql_data:
