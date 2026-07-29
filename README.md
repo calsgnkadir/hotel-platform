@@ -6,6 +6,8 @@
 
 Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya planı → başvuru → mesajlaşma → puanlama.
 
+[![CI](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml)
+
 [![Canlı Demo](https://img.shields.io/badge/Canl%C4%B1%20Demo-Vercel-047857?style=for-the-badge)](https://hotel-platform-seven.vercel.app/)
 [![Backend](https://img.shields.io/badge/Backend-Railway-10b981?style=for-the-badge)](https://hotel-platform-seven.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-34d399?style=for-the-badge)](#lisans)
