@@ -8,7 +8,8 @@ import ApplicationsKanban from '../components/ApplicationsKanban'
 import ApplicationDetail from '../components/ApplicationDetail'
 
 const VIEW_STORAGE_KEY = 'biz-applications-view'
-const APPS_PAGE_SIZE = 15
+// Liste gorunumu 3x3 A4-dikey kart izgarasi — sayfa basi 9 kart (kullanici istegi).
+const APPS_PAGE_SIZE = 9
 
 // FAZ 19 — Her zaman gorunen filtre chip'leri.
 const BASE_FILTERS = ['ALL', 'PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED']
@@ -210,65 +211,26 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                   onCta={() => { setFilter('ALL'); setSearch('') }}
                 />
               </div>
-            ) : pageItems.map(app => {
-              const isActive = selected?.id === app.id
-              const compact = !!selected && isDesktop
-              return (
-                <div key={app.id}
-                     onClick={() => selectApp(isActive ? null : app)}
-                     className={`cursor-pointer transition-all ${isActive ? 'tier-featured' : 'tier-raised tier-raised-hover'} ${compact ? 'p-3' : 'p-4'}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 min-w-0">
-                      {app.candidate?.avatarUrl ? (
-                        <img src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })} alt={app.candidate.fullName}
-                          loading="lazy" decoding="async"
-                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                          style={{ border: '1px solid rgba(15, 118, 110, 0.22)' }} />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
-                             style={{
-                               background: 'rgba(15, 118, 110, 0.08)',
-                               border: '1px solid rgba(15, 118, 110, 0.22)',
-                               color: '#0f766e',
-                             }}>
-                          {app.candidate?.fullName?.charAt(0) || '?'}
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="type-body font-semibold truncate" style={{ color: 'var(--text-headline)' }}>{app.candidate?.fullName}</span>
-                        </div>
-                        {!compact && <div className="type-caption truncate">{app.candidate?.email}</div>}
-                        <div className="type-caption truncate mt-0.5">{app.listing?.title}</div>
-                        <div className="type-caption">
-                          {new Date(app.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: compact ? 'short' : 'long', year: compact ? undefined : 'numeric' })}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="ml-auto flex flex-col items-end gap-2 flex-shrink-0">
-                      <StatusBadge status={app.status} />
-                      {app.noShow && <NoShowBadge />}
-                      {!compact && (
-                        <button onClick={e => { e.stopPropagation(); onOpenMessages?.(app.conversationId) }}
-                          className="type-overline px-3 py-1.5 rounded-full transition-all flex items-center gap-1"
-                          style={{
-                            background: 'rgba(15, 118, 110, 0.06)',
-                            border: '1px solid rgba(15, 118, 110, 0.22)',
-                            color: 'var(--accent-action)',
-                          }}>
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                               strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                            <path strokeLinecap="round" strokeLinejoin="round"
-                                  d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-                          </svg>
-                          Mesajlaşma
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+            ) : (!!selected && isDesktop) ? (
+              /* Detay paneli acikken sol sutun 360px — A4 kart sigmaz, kompakt satir. */
+              <div className="space-y-2">
+                {pageItems.map(app => (
+                  <ApplicantRow key={app.id} app={app}
+                                active={selected?.id === app.id}
+                                onClick={() => selectApp(selected?.id === app.id ? null : app)} />
+                ))}
+              </div>
+            ) : (
+              /* A4 dikey kart izgarasi — 3 sutun x 3 satir = sayfa basi 9 */
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
+                {pageItems.map(app => (
+                  <ApplicantCardA4 key={app.id} app={app}
+                                   active={selected?.id === app.id}
+                                   onClick={() => selectApp(selected?.id === app.id ? null : app)}
+                                   onOpenMessages={() => onOpenMessages?.(app.conversationId)} />
+                ))}
+              </div>
+            )}
 
             {/* Pagination footer */}
             {filtered.length > APPS_PAGE_SIZE && (
@@ -333,6 +295,155 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+/* ─────────── Aday karti — A4 dikey (1 : 1.414) ───────────
+ * Liste gorunumunun varsayilan karti. Ust: durum rozeti. Orta: avatar +
+ * kimlik. Alt: e-posta, tarih ve aksiyonlar. Tum renkler --ah-* tokenlari
+ * (beyaz zeminde beyaz metin hatasi bir daha olmasin diye sabit hex yok).
+ */
+function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
+  const name = app.candidate?.fullName || 'Anonim'
+  const initial = name.charAt(0).toUpperCase()
+  const date = app.createdAt
+    ? new Date(app.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—'
+
+  return (
+    /* Kart role="button" DEGIL: tum icerik erisilebilir ad olarak okunurdu
+       ("Kabul Edildi Burak Sahin ...") ve filtre chip'leriyle cakisiyordu.
+       Klavye/ekran okuyucu yolu icttaki "Detay" butonu. */
+    <div
+      onClick={onClick}
+      className="w-full cursor-pointer rounded-xl flex flex-col transition-all hover:-translate-y-0.5"
+      style={{
+        maxWidth: 320,
+        aspectRatio: '1 / 1.414',
+        padding: 18,
+        background: 'var(--ah-card)',
+        border: `1px solid ${active ? 'var(--ah-brand)' : 'var(--ah-line)'}`,
+        boxShadow: active ? '0 2px 12px rgba(15, 118, 110, .16)' : 'var(--elev-1)',
+      }}
+    >
+      {/* ── Ust serit: durum ── */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <StatusBadge status={app.status} />
+        {app.noShow && <NoShowBadge />}
+      </div>
+
+      {/* ── Orta: avatar + kimlik ── */}
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center gap-2.5 py-3">
+        {app.candidate?.avatarUrl ? (
+          <img
+            src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarMd })}
+            alt={name}
+            loading="lazy" decoding="async"
+            className="rounded-full object-cover"
+            style={{ width: 76, height: 76, border: '1px solid var(--ah-line)' }}
+          />
+        ) : (
+          <div className="rounded-full grid place-items-center text-2xl font-bold"
+               style={{
+                 width: 76, height: 76,
+                 background: 'var(--ah-brand-soft)',
+                 color: 'var(--ah-brand)',
+                 border: '1px solid var(--ah-line)',
+               }}>
+            {initial}
+          </div>
+        )}
+
+        <div className="min-w-0 w-full">
+          <div className="text-[15px] font-semibold truncate"
+               style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>
+            {name}
+          </div>
+          <div className="text-[12.5px] mt-1 leading-snug line-clamp-2"
+               style={{ color: 'var(--ah-ink-2)' }}>
+            {app.listing?.title || 'İlan bilgisi yok'}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Alt: meta + aksiyonlar ── */}
+      <div className="pt-3 space-y-2.5" style={{ borderTop: '1px solid var(--ah-line)' }}>
+        <div className="space-y-1">
+          <div className="text-[11.5px] truncate" style={{ color: 'var(--ah-ink-3)' }}>
+            {app.candidate?.email || '—'}
+          </div>
+          <div className="text-[11.5px]" style={{ color: 'var(--ah-ink-3)' }}>
+            {date}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={e => { e.stopPropagation(); onClick?.() }}
+            aria-label={`${name} başvurusunun detayı`}
+            className="flex-1 text-[12px] font-semibold py-1.5 rounded-md transition-colors"
+            style={{ background: 'var(--ah-brand)', color: '#fff', border: '1px solid var(--ah-brand)' }}
+          >
+            Detay
+          </button>
+          {app.conversationId && (
+            <button
+              onClick={e => { e.stopPropagation(); onOpenMessages?.() }}
+              title="Mesajlaşma"
+              aria-label="Mesajlaşma"
+              className="grid place-items-center rounded-md transition-colors"
+              style={{
+                width: 32, height: 30,
+                background: 'var(--ah-card)',
+                color: 'var(--ah-ink-2)',
+                border: '1px solid var(--ah-line-2)',
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   strokeWidth={1.8} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* Detay paneli acikken sol 360px sutunda kullanilan kompakt satir. */
+function ApplicantRow({ app, active, onClick }) {
+  const name = app.candidate?.fullName || 'Anonim'
+  return (
+    <div
+      onClick={onClick}
+      role="button" tabIndex={0}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
+      className="cursor-pointer rounded-xl p-3 flex items-center gap-3 transition-all"
+      style={{
+        background: active ? 'var(--ah-brand-soft)' : 'var(--ah-card)',
+        border: `1px solid ${active ? 'var(--ah-brand)' : 'var(--ah-line)'}`,
+        boxShadow: 'var(--elev-1)',
+      }}
+    >
+      {app.candidate?.avatarUrl ? (
+        <img src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })} alt={name}
+             loading="lazy" decoding="async"
+             className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+             style={{ border: '1px solid var(--ah-line)' }} />
+      ) : (
+        <div className="w-9 h-9 rounded-full grid place-items-center text-[13px] font-bold flex-shrink-0"
+             style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)', border: '1px solid var(--ah-line)' }}>
+          {name.charAt(0).toUpperCase()}
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="text-[13.5px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{name}</div>
+        <div className="text-[12px] truncate" style={{ color: 'var(--ah-ink-3)' }}>{app.listing?.title}</div>
+      </div>
+      <StatusBadge status={app.status} />
     </div>
   )
 }
