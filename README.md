@@ -8,8 +8,8 @@ Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya 
 
 [![CI](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml)
 
-[![Canlı Demo](https://img.shields.io/badge/Canl%C4%B1%20Demo-Vercel-047857?style=for-the-badge)](https://hotel-platform-seven.vercel.app/)
-[![Backend](https://img.shields.io/badge/Backend-Railway-10b981?style=for-the-badge)](https://hotel-platform-seven.vercel.app/)
+[![Docker](https://img.shields.io/badge/docker%20compose%20up-tam%20stack-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#hızlı-başlangıç-docker)
+[![Arayüz Önizleme](https://img.shields.io/badge/Aray%C3%BCz%20%C3%96nizleme-Vercel-047857?style=for-the-badge)](https://hotel-platform-seven.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-34d399?style=for-the-badge)](#lisans)
 
 ![Java](https://img.shields.io/badge/Java%2017-ED8B00?logo=openjdk&logoColor=white)
@@ -23,9 +23,38 @@ Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya 
 
 ---
 
-## Canlı Demo
+## Hızlı Başlangıç (Docker)
 
-🌐 **<https://hotel-platform-seven.vercel.app/>**
+Tüm stack tek komutla ayağa kalkar — MySQL + Spring Boot + React, kurulum derdi yok:
+
+```bash
+git clone https://github.com/calsgnkadir/hotel-platform.git
+cd hotel-platform
+cp .env.example .env
+docker compose up --build
+```
+
+| Servis | Adres |
+| :----- | :---- |
+| Arayüz | <http://localhost:5173> |
+| API + Swagger | <http://localhost:8080/swagger-ui/index.html> |
+| MySQL | `localhost:3307` (yereldeki 3306 ile çakışmaz) |
+
+İlk açılışta demo verisi otomatik yüklenir; aşağıdaki hesaplarla giriş yapabilirsin.
+
+> **Yerel geliştirme (Docker'sız):** backend `hotelapp/` → `mvn spring-boot:run`,
+> frontend `hotel-web/` → `npm install && npm run dev`. MySQL 8 ve `.env` gerekir.
+
+---
+
+## Arayüz Önizleme
+
+🌐 **<https://hotel-platform-seven.vercel.app/>** — arayüzü gezmek için.
+
+> **Not:** Bu önizlemede yalnızca frontend yayında. Barındırma denemesi (Railway)
+> sona erdiği için backend şu an kapalı; giriş/veri gerektiren akışlar
+> çalışmaz. Uygulamanın **tamamını** çalışır görmek için yukarıdaki
+> [Docker adımlarını](#hızlı-başlangıç-docker) kullan — 3 servis de ayağa kalkar.
 
 ### Demo Hesaplar
 
@@ -38,12 +67,14 @@ Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya 
 
 ### 60 Saniyede Tur
 
-1. **`/`** — Landing'de "Demoyu Aç" butonuna tıkla
-2. **Aday olarak giriş yap** → vardiya bazlı bir ilana başvur
-3. **Çıkış → İşletme olarak giriş yap** → gelen başvuruyu **Kabul Et** / **İncele** / **Reddet**
-4. **Mesajlar** sekmesinde aday ile chat aç → 5 sn polling ile canlı mesajlaşma
-5. **Genel Bakış**'ta donut + bar grafiklerle istatistikleri gör
-6. **Tema değiştir** (sağ üst kontrast butonu): dark ↔ light
+> Docker ile ayağa kaldırdıktan sonra <http://localhost:5173> üzerinde:
+
+1. **Aday olarak giriş yap** → İlanlar'da vardiya bazlı bir ilana başvur
+2. **"Bugün müsaitim"** anahtarını aç — acil ilanlarda önceliklisin
+3. **Çıkış → İşletme olarak giriş yap** → gelen başvuruyu **Kabul Et** / **Yedeğe Al** / **Reddet**
+4. Bir ilanı **Acil** işaretle → o an müsait adaylara anında bildirim gider
+5. **Mesajlar**'da aday ile WebSocket üzerinden canlı yazış
+6. **Analitik**'te dönüşüm, işe alım süresi ve durum dağılımını gör
 
 ---
 
@@ -123,20 +154,21 @@ Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya 
 ## Mimari
 
 ```
-┌──────────────┐      HTTPS       ┌──────────────────┐
-│   Vercel     │ ◄──────────────► │     Railway      │
-│              │   /api/*  CORS   │                  │
-│  React 18    │                  │  Spring Boot 3.2 │
+┌──────────────┐   HTTPS / WSS    ┌──────────────────┐
+│  Frontend    │ ◄──────────────► │     Backend      │
+│  (nginx)     │  /api/*  · /ws   │                  │
+│  React 18    │      CORS        │  Spring Boot 3.2 │
 │  Vite 5      │                  │  Java 17         │
 │  Tailwind 3  │                  │  Hibernate 6.4   │
-│  Recharts    │                  │                  │
+│  Recharts    │                  │  STOMP/WebSocket │
 └──────────────┘                  └────────┬─────────┘
-                                           │ JDBC
+      :5173                          :8080 │ JDBC
                                            ▼
                                   ┌──────────────────┐
                                   │   MySQL 8        │
-                                  │  (Railway)       │
+                                  │   (volume)       │
                                   └──────────────────┘
+        └──────── docker compose: 3 servis, tek ağ ────────┘
 
                 ┌──────────────────┐
                 │   Cloudinary     │  ◄── Belge + foto yükleme
@@ -185,8 +217,8 @@ hotel-platform/
 | **Auth**        | JJWT (HS256) + Spring Security                   |
 | **Rate Limit**  | Bucket4j                                         |
 | **Validation**  | Hibernate Validator + react-hook-form            |
-| **Deploy**      | Vercel (frontend) + Railway (backend + MySQL)    |
-| **CI**          | GitHub Actions (uptime + smoke test, günlük)     |
+| **Container**   | Docker + Compose (MySQL + backend + nginx)       |
+| **CI**          | GitHub Actions — push/PR'da build + test (259 backend, 86 frontend) |
 
 ---
 
@@ -233,28 +265,39 @@ Tarayıcı: <http://localhost:5173>
 
 ---
 
-## Production Deploy
+## Deploy
 
-### Railway (Backend + MySQL)
+### Docker (önerilen — her ortamda aynı)
 
-1. Repo'yu Railway'e bağla, kök dizin `hotelapp/`
-2. **Environment Variables**: `DB_*`, `JWT_SECRET`, `CLOUDINARY_*`, `FRONTEND_ORIGIN`
-3. JVM heap'i sıkı tut (Hobby plan için):
-   ```
-   JAVA_TOOL_OPTIONS=-Xmx280m -Xms128m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m
-   ```
+Backend ve frontend container'lanmıştır; `docker-compose.yml` tam stack'i tanımlar.
+Herhangi bir container platformuna (Render, Fly.io, Koyeb, kendi VPS'in) aynı
+imajlarla taşınabilir:
 
-### Vercel (Frontend)
+```bash
+docker compose up --build -d      # tüm stack
+docker compose logs -f backend    # log takibi
+docker compose down               # durdur (veri volume'de kalır)
+```
 
-1. Repo'yu Vercel'e bağla, kök dizin `hotel-web/`
-2. **Environment Variables**: `VITE_API_URL=https://your-railway.up.railway.app`
-3. Build: `npm run build` · Output: `dist`
+Ortam değişkenleri `.env` üzerinden geçilir (`.env.example`'a bak): `DB_PASSWORD`,
+`JWT_SECRET`, opsiyonel `CLOUDINARY_URL`, `GOOGLE_CLIENT_ID/SECRET`, `RESEND_API_KEY`.
+
+> **Şema notu:** Docker stack'i şemayı Hibernate'ten kurar (`FLYWAY_ENABLED=false`).
+> Flyway migration'ları mevcut veritabanları için tutulur; `V4` sıfırdan bir DB'de
+> `applications.version` kolonunu varsaydığı için temiz kurulumda çalışmaz
+> (baseline'ı tamamlamak açık bir teknik borç).
+
+### Yönetilen platformlar
+
+- **Frontend (Vercel):** kök dizin `hotel-web/`, build `npm run build`, output `dist`,
+  `VITE_API_URL` = backend adresi.
+- **Backend:** Dockerfile'dan deploy edilebilir (Railway/Render/Fly). Küçük planlarda
+  JVM heap'i sıkı tut: `JAVA_TOOL_OPTIONS=-Xmx280m -Xms128m -XX:+UseSerialGC`.
 
 ### GitHub Actions
 
-- `uptime.yml` — günlük 09:07 IST, Railway'in `/actuator/health` ping'i
-- `smoke-test.yml` — günlük kritik endpoint'leri test eder
-- `sentinel.yml` — demo seed sentinel kontrolü
+- `ci.yml` — **her push/PR'da** backend `mvn verify` + frontend test/build
+- `daily-health-check.yml` — günlük 09:07 IST canlılık/smoke kontrolü ve `status.md` güncellemesi
 
 ---
 
