@@ -16,15 +16,13 @@ const FAQS = [
   { cat: 'Aday', q: 'Bir ilana başvurduktan sonra ne olur?',
     a: 'İşletme başvurunu inceler. Onaylarsa "Kabul" durumuna geçer, mesajlaşma sekmesinden iletişime geçebilirsin. Reddedilirse "Red" olarak görürsün.' },
   { cat: 'Aday', q: 'Belgelerimi yüklemek zorunda mıyım?',
-    a: 'Hayır, başvurmak için zorunlu değil. Ancak CV, transkript ve hassas belgeleri yüklersen başvuruların daha hızlı değerlendirilir ve "Güvenilirlik" skorun artar.' },
+    a: 'Hayır, başvurmak için zorunlu değil. Ancak CV, transkript ve hassas belgeleri yüklersen başvuruların daha hızlı değerlendirilir.' },
   { cat: 'Aday', q: 'Başvurumu iptal edebilir miyim?',
     a: 'Evet, sadece "Beklemede" veya "İncelemede" durumdaki başvurular iptal edilebilir. Kabul edilmiş bir başvuruyu iptal edemezsin (no-show olarak işaretlenir).' },
   { cat: 'Aday', q: 'İşletme beni "HOLD"a aldı, ne demek?',
     a: 'İşletme seninle ilgileniyor ve 24 saat içinde cevap vermeni bekliyor. Onaylarsan başvurun ACCEPTED olur, reddedersen diğer başvurulara devam edersin.' },
   { cat: 'Aday', q: 'No-show ne demek? Cezalandırılır mıyım?',
     a: 'Kabul ettiğin vardiyaya gitmediğin durumdur. İşletme no-show işaretlediğinde 1 "strike" alırsın. 3 strike sonrası hesabın 30 gün askıya alınır.' },
-  { cat: 'Aday', q: 'Güvenilirlik skorum nasıl hesaplanıyor?',
-    a: 'Aldığın yıldız ortalaması + tamamladığın işler + no-show oranı + son 90 gündeki aktivite. 0-100 arası bir skordur; profil fotoğrafının etrafındaki halka renk kodlu gösterir.' },
 
   // ── İSLETME ──
   { cat: 'İşletme', q: '"Doğrulanmış işletme" rozetini nasıl alırım?',

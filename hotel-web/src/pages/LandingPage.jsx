@@ -164,7 +164,7 @@ export default function LandingPage() {
             title="İşletme"
             steps={[
               ['Vardiya ilanı ver', 'Pozisyon, gün, saat ve ücreti belirt — dakikalar içinde yayında.'],
-              ['Adayı seç', 'Başvuranların geçmiş vardiya sayısını, puanını ve güvenilirlik skorunu gör.'],
+              ['Adayı seç', 'Başvuranların geçmiş vardiya sayısını ve aldıkları puanı gör.'],
               ['Takip et', 'Giriş-çıkış GPS kaydıyla doğrulanır; vardiya sonunda çalışanı değerlendir.'],
             ]}
           />
