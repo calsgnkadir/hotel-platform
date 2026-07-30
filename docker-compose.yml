@@ -35,7 +35,24 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: ${DB_PASSWORD:-changeme_root_pw}
       JWT_SECRET: ${JWT_SECRET:-dev-only-secret-key-at-least-32-characters-long-!!!}
+      # Sema Hibernate entity'lerinden kurulur (test profilinin yaptiginin ayni).
+      # FLYWAY KAPALI cunku migration zinciri SIFIRDAN bir DB'de calismiyor:
+      # V4 `applications.version` kolonunu MODIFY ediyor ama V1 baseline o kolonu
+      # hic olusturmuyor (mevcut DB'lerde onu Hibernate ddl-auto eklemisti).
+      # V4'u duzeltmek checksum'i degistirip CANLI Railway DB'sini kirardi —
+      # o yuzden migration'lara dokunulmadi, Docker temiz kurulum yapiyor.
       JPA_DDL_AUTO: update
+      FLYWAY_ENABLED: "false"
+      # Cloudinary bean'i zorunlu (CloudinaryConfig env yoksa fail-fast ediyor).
+      # Dummy deger — yerel stack'te gorsel yukleme kullanilmaz, sadece bean
+      # wiring icin. Gercek yukleme icin .env'e kendi CLOUDINARY_URL'ini koy.
+      CLOUDINARY_URL: ${CLOUDINARY_URL:-cloudinary://test:test@test}
+      # Google OAuth bean'i bos client-id ile ayaga kalkmiyor — dummy.
+      # Google ile giris denemek istersen .env'e gercek degerleri koy.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-dummy-client-id}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-dummy-client-secret}
+      # E-posta gonderimi kapali (Resend) — yerel stack'te mail atilmaz.
+      RESEND_API_KEY: ${RESEND_API_KEY:-test-key}
       # CORS default'u zaten http://localhost:5173,3000 iceriyor — ek gerekmiyor.
       APP_BASE_URL: http://localhost:5173
     ports:
