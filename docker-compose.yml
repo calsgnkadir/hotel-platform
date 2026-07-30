@@ -1,6 +1,6 @@
 # AjansHotel — tam yerel stack: MySQL + Spring Boot + React (nginx).
 # Kullanim:  cp .env.example .env  &&  docker compose up --build
-# Sonra: frontend http://localhost:5173 · API/Swagger http://localhost:8080/swagger-ui
+# Sonra: frontend http://localhost:5174 · API/Swagger http://localhost:8081/swagger-ui
 #
 # Not: Bu YEREL/portfoy stack'i — canli demo hala Vercel+Railway. Docker onlarin
 # yerine gecmez, "clone'la calistir" + DevOps sinyali icin yanlarinda durur.
@@ -35,6 +35,15 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: ${DB_PASSWORD:-changeme_root_pw}
       JWT_SECRET: ${JWT_SECRET:-dev-only-secret-key-at-least-32-characters-long-!!!}
+      # demo profili: DemoSeeder (@Profile("demo")) demo hesaplarini + ornek
+      # veriyi kurar. Olmazsa giris denemeleri 401 doner.
+      # dev + demo BIRLIKTE: yalniz "demo" yazilirsa varsayilan "dev" profili
+      # ezilir (konsol log'u ve dev ayarlari kaybolur). dev, DB'yi zaten
+      # env'den okuyor; cakisma yok.
+      SPRING_PROFILES_ACTIVE: dev,demo
+      # Frontend 5174'te (5173'u yerel Vite dev server kullanabiliyor) —
+      # CORS'a eklenmezse tarayici istekleri bloklar.
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:5174,http://localhost:5173,http://localhost:3000
       # Sema Hibernate entity'lerinden kurulur (test profilinin yaptiginin ayni).
       # FLYWAY KAPALI cunku migration zinciri SIFIRDAN bir DB'de calismiyor:
       # V4 `applications.version` kolonunu MODIFY ediyor ama V1 baseline o kolonu
@@ -53,10 +62,10 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-dummy-client-secret}
       # E-posta gonderimi kapali (Resend) — yerel stack'te mail atilmaz.
       RESEND_API_KEY: ${RESEND_API_KEY:-test-key}
-      # CORS default'u zaten http://localhost:5173,3000 iceriyor — ek gerekmiyor.
-      APP_BASE_URL: http://localhost:5173
+      APP_BASE_URL: http://localhost:5174
     ports:
-      - "8080:8080"
+      # Host 8081: IntelliJ'deki yerel backend 8080'i tutabiliyor, cakismasin
+      - "8081:8080"
     # Healthcheck paketsiz: temurin imajinda bash var, /dev/tcp ile port 8080
     # acik mi diye bakar (wget/curl imajda olmayabilir).
     healthcheck:
@@ -70,11 +79,11 @@ services:
     build:
       context: ./hotel-web
       args:
-        VITE_API_URL: http://localhost:8080
+        VITE_API_URL: http://localhost:8081
     depends_on:
       - backend
     ports:
-      - "5173:80"
+      - "5174:80"
 
 volumes:
   mysql_data:

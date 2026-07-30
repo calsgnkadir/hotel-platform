@@ -276,12 +276,19 @@ public class DemoSeeder implements CommandLineRunner {
             User cand = app.getCandidate();
             User owner = app.getJobListing().getBusiness().getOwner();
 
-            Conversation conv = Conversation.builder()
-                    .candidate(cand)
-                    .businessOwner(owner)
-                    .application(app)
-                    .build();
-            conv = conversationRepository.save(conv);
+            // conversations tablosunda (candidate, business_owner) UNIQUE
+            // (uk_conv_candidate_business). Ilk 4 basvuru ayni aday-isletme
+            // ciftini icerebiliyor; kor insert temiz kurulumda seeder'i
+            // "Duplicate entry" ile patlatiyor ve uygulama hic acilmiyordu.
+            // Varsa mevcut sohbeti kullan, yoksa olustur.
+            Conversation conv = conversationRepository
+                    .findByCandidateIdAndBusinessOwnerId(cand.getId(), owner.getId())
+                    .orElseGet(() -> conversationRepository.save(
+                            Conversation.builder()
+                                    .candidate(cand)
+                                    .businessOwner(owner)
+                                    .application(app)
+                                    .build()));
 
             // 2-4 mesaj
             String[] msgs = {
