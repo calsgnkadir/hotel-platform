@@ -6,9 +6,8 @@ import ApplicationsTab from '../ApplicationsTab'
 /**
  * FAZ 19 — Status filtresinin URL'e tasinmasi (?status=ACCEPTED).
  *
- * Bu, analitik grafigindeki drill-down'in varis noktasi: StatsTab
- * ?tab=applications&status=X'e gonderiyor, burasi da onu okuyup filtreyi
- * uyguluyor. Testler iki ucu birden kilitliyor.
+ * Derin link (?tab=applications&status=X) ile gelindiginde filtre URL'den
+ * okunuyor; refresh'te de kayboluyor degil. Testler bunu kilitliyor.
  */
 function app(id, status, fullName) {
   return {

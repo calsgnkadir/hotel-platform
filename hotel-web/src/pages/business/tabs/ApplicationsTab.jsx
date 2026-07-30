@@ -6,16 +6,15 @@ import cldImg, { ImgSize } from '../../../lib/cldImg'
 import useFocusTrap from '../../../lib/useFocusTrap'
 import ApplicationsKanban from '../components/ApplicationsKanban'
 import ApplicationDetail from '../components/ApplicationDetail'
-import ReliabilityBadge from '../../../components/ReliabilityBadge'
 
 const VIEW_STORAGE_KEY = 'biz-applications-view'
 const APPS_PAGE_SIZE = 15
 
 // FAZ 19 — Her zaman gorunen filtre chip'leri.
 const BASE_FILTERS = ['ALL', 'PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED']
-// Nadir durumlar: sadece o durumda basvuru VARSA chip cikar. Analitik donut'u
-// bu dilimleri (count>0 ise) gosterdigi icin drill-down hedefi olabiliyorlar —
-// chip'siz birakilirsa liste filtreli ama aktif filtre gorunmez olurdu.
+// Nadir durumlar: sadece o durumda basvuru VARSA chip cikar. Derin link
+// (?status=EXPIRED) ile gelinebildigi icin chip'siz birakilirsa liste
+// filtreli ama aktif filtre gorunmez olurdu.
 const RARE_FILTERS = ['STANDBY', 'EXPIRED', 'WITHDRAWN']   // FAZ C.1 — STANDBY eklendi
 const FILTER_LABELS = {
   ALL: 'Tümü', PENDING: 'Bekleyen', REVIEWING: 'İnceleniyor', STANDBY: 'Yedek',
@@ -32,8 +31,8 @@ const FILTER_LABELS = {
  * Mobile (<1024px): detail full-screen overlay olarak acilir (focus-trap korunur).
  * Kanban view degismedi; ekran >=1280px ise kanban default (W2.3).
  *
- * FAZ 19 — Status filtresi de URL'e tasindi (?status=ACCEPTED). Boylece analitik
- * grafiginden drill-down yapilabiliyor ve filtre refresh'te kayboluyor degil.
+ * FAZ 19 — Status filtresi de URL'e tasindi (?status=ACCEPTED). Derin link
+ * calisiyor ve filtre refresh'te kayboluyor degil.
  */
 export default function ApplicationsTab({ applications, onRefresh, onOpenMessages }) {
   const [search, setSearch] = useState('')
@@ -238,7 +237,6 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="type-body font-semibold truncate" style={{ color: 'var(--text-headline)' }}>{app.candidate?.fullName}</span>
-                          {!compact && <ReliabilityBadge score={app.candidate?.reliabilityScore} />}
                         </div>
                         {!compact && <div className="type-caption truncate">{app.candidate?.email}</div>}
                         <div className="type-caption truncate mt-0.5">{app.listing?.title}</div>

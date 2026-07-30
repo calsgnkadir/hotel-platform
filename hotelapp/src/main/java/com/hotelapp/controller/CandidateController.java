@@ -7,8 +7,6 @@ import com.hotelapp.service.CandidateProfileService;
 import com.hotelapp.service.CandidateProfileService.CandidateProfileDto;
 import com.hotelapp.service.CandidateProfileService.ProfileUpdateRequest;
 import com.hotelapp.service.CandidateProfileService.PublicCandidateProfileDto;
-import com.hotelapp.service.ReliabilityService;
-import com.hotelapp.service.ReliabilityService.ReliabilityScore;
 import com.hotelapp.service.ProfileViewService;
 import com.hotelapp.service.ProfileViewService.ProfileViewStats;
 import com.hotelapp.service.EarningsService;
@@ -33,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class CandidateController {
 
     private final CandidateProfileService candidateProfileService;
-    private final ReliabilityService reliabilityService;
     private final AvailabilityBlockService availabilityBlockService;
     private final ProfileViewService profileViewService;
     private final EarningsService earningsService;  // FAZ 13
@@ -115,15 +112,6 @@ public class CandidateController {
     public ResponseEntity<Void> deleteAvatar(@AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
         candidateProfileService.deleteAvatar(currentUser.getId());
         return ResponseEntity.noContent().build();
-    }
-
-    @Operation(summary = "Güvenilirlik skorum + breakdown — sadece CANDIDATE")
-    @GetMapping("/api/candidate/reliability")
-    @PreAuthorize("hasRole('CANDIDATE')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<ReliabilityScore> getMyReliability(
-            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
-        return ResponseEntity.ok(reliabilityService.computeForCandidate(currentUser.getId()));
     }
 
     @Operation(summary = "Haftalık müsaitlik bloklarım — sadece CANDIDATE")

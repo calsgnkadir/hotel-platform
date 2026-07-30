@@ -16,8 +16,6 @@ import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
-import ReliabilityBadge from '../../../components/ReliabilityBadge'
-import ReliabilityRing from '../../../components/ReliabilityRing'
 import { useConfirm } from '../../../lib/useConfirm'
 
 /*
@@ -300,7 +298,6 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
                   <Card
                     key={app.id}
                     app={app}
-                    accent={col.color}
                     selected={selectedIds.has(app.id)}
                     onToggleSelect={() => toggleSelect(app.id)}
                     onClick={() => onCardClick?.(app)}
@@ -369,7 +366,7 @@ function Column({ col, count, children }) {
 
 /* ─────────── Card (draggable) ─────────── */
 
-function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
+function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: app.id })
 
   const style = {
@@ -408,15 +405,13 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
       {...listeners}
     >
       <div
-        className="rounded-xl p-3"
+        className="rounded-xl p-2.5"
         style={{
-          // Beyaz kart korundu (dark kolon uzerinde okunabilirlik icin). Selected
-          // state artik champagne (marka accent), amber degil.
-          background: selected ? '#f9f1e0' : '#fefefc',
-          border: `1px solid ${selected ? '#0f766e' : 'rgba(255, 255, 255, 0.10)'}`,
-          boxShadow: selected
-            ? '0 6px 18px rgba(15, 118, 110, 0.35), 0 0 0 3px rgba(15, 118, 110, 0.18)'
-            : '0 2px 8px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(255, 255, 255, 0.04)',
+          // FAZ E — kart acik zeminde; kenarlik/golge de acik tokenlardan.
+          // (Eskiden rgba(255,255,255,...) idi: beyaz kartta gorunmuyordu.)
+          background: selected ? 'var(--ah-brand-soft)' : 'var(--ah-card)',
+          border: `1px solid ${selected ? 'var(--ah-brand)' : 'var(--ah-line)'}`,
+          boxShadow: selected ? '0 2px 10px rgba(15,118,110,.18)' : 'var(--elev-1)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -424,7 +419,7 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
         {heatColor && (
           <div
             aria-label={`Yanit bekleyen sure: ${heatColor.label}`}
-            title={`Yanitlanmadi (${heatColor.label})`}
+            title={`Yanıtlanmadı (${heatColor.label})`}
             style={{
               position: 'absolute',
               top: 8,
@@ -433,7 +428,6 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
               width: 3,
               borderRadius: 2,
               background: heatColor.color,
-              boxShadow: `0 0 8px ${heatColor.color}66`,
             }}
           />
         )}
@@ -447,8 +441,8 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
                 title={selected ? 'Seç kaldır' : 'Toplu işlem için seç'}
                 className="absolute top-2 right-2 w-5 h-5 rounded-md flex items-center justify-center transition-all"
                 style={{
-                  background: selected ? '#0f766e' : '#ffffff',
-                  border: `2px solid ${selected ? '#a08654' : 'rgba(255, 255, 255, 0.25)'}`,
+                  background: selected ? 'var(--ah-brand)' : 'var(--ah-card)',
+                  border: `2px solid ${selected ? 'var(--ah-brand)' : 'var(--ah-line-2)'}`,
                   color: '#ffffff',
                 }}>
           {selected && (
@@ -459,9 +453,9 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
           )}
         </button>
 
-        <div className="flex items-start gap-2.5 pr-7">
-          {/* FAZ G.4: avatar etrafında reliability ring (Apple Watch tarzı)
-              Dalga G3: avatar tiklayinca public profil sayfasini ac */}
+        {/* FAZ E — Kompakt kart: avatar + isim + ilan, altta tarih + aksiyonlar.
+            Guvenilirlik halkasi/rozeti KALDIRILDI (kullanici istegi). */}
+        <div className="flex items-start gap-2.5 pr-6">
           <a
             href={app.candidate?.id ? `/p/candidate/${app.candidate.id}` : undefined}
             target="_blank"
@@ -469,58 +463,46 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            title="Aday profilini gor"
-            className="cursor-pointer hover:scale-105 transition-transform"
+            title="Aday profilini gör"
+            className="flex-shrink-0 rounded-full overflow-hidden"
+            style={{ width: 34, height: 34 }}
           >
-            <ReliabilityRing score={app.candidate?.reliabilityScore} size={42} stroke={3}>
-              {app.candidate?.avatarUrl ? (
-                <img
-                  src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })}
-                  alt={app.candidate.fullName}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div
-                  className="w-full h-full flex items-center justify-center text-base text-white"
-                  style={{ background: `linear-gradient(135deg, ${accent}, ${accent}80)` }}
-                >
-                  {initial}
-                </div>
-              )}
-            </ReliabilityRing>
-          </a>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              {/* Aday adi — koyu graphite text (beyaz kart uzerinde) */}
-              <div className="type-body font-semibold truncate flex-1 min-w-0"
-                   style={{ color: '#ffffff', letterSpacing: '-0.005em' }}>
-                {app.candidate?.fullName || 'Anonim'}
-              </div>
-              <ReliabilityBadge score={app.candidate?.reliabilityScore} />
-            </div>
-            {/* Ilan basligi — daha belirgin */}
-            <div className="type-caption font-medium truncate mt-0.5"
-                 style={{ color: 'rgba(255, 255, 255, 0.78)' }}>
-              {app.listing?.title || 'İlan bilgisi yok'}
-            </div>
-            {/* Pozisyon + ilçe chip seti */}
-            {(app.listing?.position || app.candidate?.district) && (
-              <div className="flex items-center gap-1.5 mt-1 type-caption"
-                   style={{ color: 'rgba(255, 255, 255, 0.55)', fontSize: '10.5px' }}>
-                {app.listing?.position && <span>{app.listing.position}</span>}
-                {app.listing?.position && app.candidate?.district && <span style={{ opacity: 0.4 }}>·</span>}
-                {app.candidate?.district && <span>{app.candidate.district}</span>}
+            {app.candidate?.avatarUrl ? (
+              <img
+                src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })}
+                alt={app.candidate.fullName}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              // Fotograf yoksa: yumusak teal disk + koyu harf.
+              // (Eskiden dolgun yesil gradient idi — kullanici "a yesil gibi" diye
+              //  sikayet etti; artik sessiz bir yer tutucu.)
+              <div className="w-full h-full grid place-items-center text-[13px] font-bold"
+                   style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)',
+                            border: '1px solid var(--ah-line)' }}>
+                {initial}
               </div>
             )}
+          </a>
+
+          <div className="min-w-0 flex-1">
+            <div className="text-[13.5px] font-semibold truncate"
+                 style={{ color: 'var(--ah-ink)', letterSpacing: '-0.005em' }}>
+              {app.candidate?.fullName || 'Anonim'}
+            </div>
+            <div className="text-[12px] truncate mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
+              {app.listing?.title || 'İlan bilgisi yok'}
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-3 pt-2.5 border-t"
-             style={{ borderColor: 'rgba(255, 255, 255, 0.10)' }}>
-          <span className="type-overline" title={dateTooltip}
-                style={{ color: 'rgba(255, 255, 255, 0.55)' }}>
+        <div className="flex items-center justify-between gap-2 mt-2 pt-2"
+             style={{ borderTop: '1px solid var(--ah-line)' }}>
+          {/* ink-4 (#98a1a0) beyaz zeminde 2.5:1 — AA alti. ink-3 = 4.7:1. */}
+          <span className="text-[11px] flex-shrink-0" title={dateTooltip}
+                style={{ color: 'var(--ah-ink-3)' }}>
             {date}
           </span>
           <div className="flex items-center gap-1.5">
@@ -528,8 +510,8 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
               <button
                 onClick={(e) => { e.stopPropagation(); onMessage?.() }}
                 onPointerDown={(e) => e.stopPropagation()}
-                className="type-overline px-2.5 py-1 rounded-md transition-all hover:scale-105"
-                style={{ background: 'rgba(15, 118, 110, 0.10)', color: '#ffffff', border: '1px solid rgba(15, 118, 110, 0.22)' }}
+                className="text-[11px] font-semibold px-2 py-1 rounded-md transition-colors"
+                style={{ background: 'var(--ah-card)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}
               >
                 Mesaj
               </button>
@@ -537,8 +519,8 @@ function Card({ app, accent, selected, onToggleSelect, onClick, onMessage }) {
             <button
               onClick={(e) => { e.stopPropagation(); onClick?.() }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="type-overline px-2.5 py-1 rounded-md transition-all hover:scale-105"
-              style={{ background: 'rgba(15, 118, 110, 0.18)', color: '#7c5618', border: '1px solid rgba(15, 118, 110, 0.45)' }}
+              className="text-[11px] font-semibold px-2 py-1 rounded-md transition-colors"
+              style={{ background: 'var(--ah-brand)', color: '#fff', border: '1px solid var(--ah-brand)' }}
             >
               Aç
             </button>

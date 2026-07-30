@@ -17,11 +17,6 @@ const LANG_LABELS = {
   RUSSIAN: 'Rusça', ARABIC: 'Arapça', FRENCH: 'Fransızca',
   SPANISH: 'İspanyolca', ITALIAN: 'İtalyanca',
 }
-const TIER_COLORS = {
-  HIGH:   { color: '#7a9f7a', label: 'Yüksek' },
-  MEDIUM: { color: '#c8923a', label: 'Orta' },
-  LOW:    { color: '#b46a55', label: 'Düşük' },
-}
 
 export default function CandidatePublicPage() {
   const { id } = useParams()
@@ -86,7 +81,6 @@ export default function CandidatePublicPage() {
   }
 
   const initial = (profile.fullName || 'A').trim().charAt(0).toUpperCase()
-  const tier = TIER_COLORS[profile.reliabilityTier] || TIER_COLORS.MEDIUM
   const memberSinceStr = profile.memberSince
     ? new Date(profile.memberSince).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—'
@@ -171,14 +165,8 @@ export default function CandidatePublicPage() {
           </div>
         </div>
 
-        {/* Güvenilirlik metrik grid'i */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <MetricCard
-            label="Güvenilirlik"
-            value={profile.reliabilityScore != null ? `${profile.reliabilityScore}/100` : '—'}
-            sub={tier.label}
-            color={tier.color}
-          />
+        {/* Deneyim metrikleri — guvenilirlik skoru kaldirildi (kullanici istegi) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <MetricCard
             label="Tamamlanan İş"
             value={profile.completedJobs ?? 0}

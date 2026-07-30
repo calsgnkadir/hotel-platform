@@ -17,9 +17,8 @@ import ApplicationsTab from './tabs/ApplicationsTab'
 import WorkersTab from './tabs/WorkersTab'
 import FavoritesTab from './tabs/FavoritesTab'  // FAZ 2/#32
 import ProfileTab from './tabs/ProfileTab'
-import StatsTab from './tabs/StatsTab'  // FAZ C.3
 
-const VALID_TABS = ['overview','mylistings','applications','workers','analytics','favorites','profile','messages']
+const VALID_TABS = ['overview','mylistings','applications','workers','favorites','profile','messages']
 
 export default function BusinessDashboard() {
   const [params, setParams] = useSearchParams()
@@ -34,8 +33,8 @@ export default function BusinessDashboard() {
   }, [params])
 
   /**
-   * FAZ 19 — extra: sekmeyle BIRLIKTE tasinacak query param'lar (orn. analitik
-   * grafiginden ?tab=applications&status=ACCEPTED drill-down'i).
+   * FAZ 19 — extra: sekmeyle BIRLIKTE tasinacak query param'lar
+   * (orn. ?tab=applications&status=ACCEPTED derin linki).
    * setParams tum param'lari ezdigi icin tek cagride verilmeli — once sekme
    * degistirip sonra status yazmak ilkini silerdi.
    */
@@ -74,7 +73,6 @@ export default function BusinessDashboard() {
           {activeTab === 'mylistings'    && <MyListingsTab applications={applications} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'workers'       && <WorkersTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
-          {activeTab === 'analytics'     && <StatsTab onDrillDown={status => setActiveTab('applications', { status })} />}
           {activeTab === 'favorites'     && <FavoritesTab onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}

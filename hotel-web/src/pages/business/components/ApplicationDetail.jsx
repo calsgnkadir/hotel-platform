@@ -5,7 +5,6 @@ import { extractErrorMessage } from '../../../api/client'
 import { SENSITIVE_DOC_TYPES_BIZ, DOC_REQ_STATUS_LABELS } from '../lib/constants'
 import { StatusBadge } from './Badges'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
-import ReliabilityBadge from '../../../components/ReliabilityBadge'
 import { celebrate } from '../../../lib/confetti'
 import { useConfirm } from '../../../lib/useConfirm'
 import { SgkNotice } from '../../../components/LegalNotice'   // FAZ C.3
@@ -220,7 +219,6 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 <h2 id="application-detail-title" className="type-heading truncate" style={{ fontSize: '16px' }}>
                   {app.candidate?.fullName}
                 </h2>
-                <ReliabilityBadge score={app.candidate?.reliabilityScore} size="md" showLabel />
               </div>
               <p className="type-caption truncate">{app.candidate?.email}</p>
             </div>

@@ -3,7 +3,6 @@ import { StatusBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
 import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ 5.6
 import TodayWidget from '../components/TodayWidget'  // FAZ 5.12
-import ReliabilityBadge from '../../../components/ReliabilityBadge'
 
 /* ── Overview Tab — Dalga C: 2-sutun (sol stat+tablo, sag canli akis) ── */
 export default function OverviewTab({ applications, onTabChange }) {
@@ -193,7 +192,6 @@ function BizRecentRow({ app, last, onClick }) {
           <span className="type-body font-medium truncate" style={{ color: 'var(--text-headline)' }}>
             {app.candidate?.fullName || 'Anonim'}
           </span>
-          <ReliabilityBadge score={app.candidate?.reliabilityScore} />
         </div>
         <div className="type-caption flex items-center gap-2 mt-0.5" style={{ color: 'var(--text-secondary)' }}>
           <span className="truncate">{app.listing?.title || '—'}</span>

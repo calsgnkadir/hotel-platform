@@ -5,7 +5,6 @@ import { shiftHoursBiz } from '../lib/helpers'
 import EmptyState from '../../../components/EmptyState'
 import AvatarCluster from '../../../components/AvatarCluster'  // FAZ 5.14
 import cldImg, { ImgSize } from '../../../lib/cldImg'
-import ReliabilityBadge from '../../../components/ReliabilityBadge'
 import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ D1
 
 /* ── Workers Tab (#78) — Bizde çalışan adaylar ── */
@@ -160,7 +159,6 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-ink-800 dark:text-ink-900 truncate">{w.candidate?.fullName}</span>
-                    <ReliabilityBadge score={w.candidate?.reliabilityScore} />
                   </div>
                   <div className="text-xs text-ink-500 mt-0.5">{w.candidate?.email}</div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">

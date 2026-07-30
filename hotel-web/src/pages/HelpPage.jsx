@@ -35,8 +35,6 @@ const FAQS = [
     a: 'Başvurular sekmesinden ilgili adayın kartını aç → "No-Show İşaretle" butonu. Aday otomatik bildirim alır; üçüncü strike sonrası 30 gün ban.' },
   { cat: 'İşletme', q: 'Başvurulara ne kadar hızlı yanıt vermeliyim?',
     a: 'En geç 24 saat. Kanban kartının sol kenarında yanıt süresi şeridi vardır: yeşil (< 6sa), amber (6-24sa), mercan (> 24sa). Hızlı yanıt, kabul oranını yükseltir.' },
-  { cat: 'İşletme', q: 'Analitik panelinde neleri görebilirim?',
-    a: 'Recruitment funnel (alındı → incelendi → kabul → tamamlandı), pozisyon başına başvuru dağılımı, günlük trend, ortalama hire-time histogramı (< 1g, 1-3g, 3-7g, > 7g).' },
 
   // ── GENEL ──
   { cat: 'Genel', q: 'Şifremi unuttum, ne yapmalıyım?',

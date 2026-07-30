@@ -54,7 +54,6 @@ const businessNav = [
   { id: 'overview',      tKey: 'nav.overview',             icon: 'overview' },
   { id: 'mylistings',    tKey: 'nav.myListings',           icon: 'briefcase' },
   { id: 'applications',  tKey: 'nav.incomingApplications', icon: 'inbox' },
-  { id: 'analytics',     label: 'Analitik',                icon: 'trending' },
   { id: 'profile',       label: 'Profilim',                icon: 'building' },
 ]
 

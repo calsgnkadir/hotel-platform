@@ -136,12 +136,6 @@ export async function deleteCandidateAvatar() {
   await api.delete('/api/candidate/avatar')
 }
 
-// Faz B/#11: Adayın kendi güvenilirlik skoru + breakdown
-export async function getMyReliability() {
-  const { data } = await api.get('/api/candidate/reliability')
-  return data  // { score, noShowCount, completedJobsLast90d, averageRating, reviewCount }
-}
-
 // Faz B/#10: Aday haftalık müsaitlik blokları (profil bazlı)
 export async function getMyAvailabilityBlocks() {
   const { data } = await api.get('/api/candidate/availability-blocks')
@@ -693,18 +687,6 @@ export async function markConversationRead(conversationId) {
 export async function getMessagesUnreadCount() {
   const { data } = await api.get('/api/messages/unread-count')
   return data?.unread ?? 0
-}
-
-/* ── Dashboard stats (#88) ── */
-
-export async function getBusinessStats() {
-  const { data } = await api.get('/api/business/stats')
-  return data
-}
-
-export async function getCandidateStats() {
-  const { data } = await api.get('/api/candidate/stats')
-  return data
 }
 
 // ── #80: Şifre sıfırlama ──

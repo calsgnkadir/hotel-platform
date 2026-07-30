@@ -26,13 +26,6 @@ export default function ProfileTab() {
   const [savedAt, setSavedAt] = useState(null)  // Dalga G3 — Alert success goster
   const [form, setForm] = useState(null)
   const [profile, setProfile] = useState(null)
-  const [reliability, setReliability] = useState(null)
-
-  useEffect(() => {
-    hotelApi.getMyReliability()
-      .then(setReliability)
-      .catch(() => {})  // sessiz hata: panel skoru kritik degil
-  }, [])
 
   useEffect(() => {
     hotelApi.getCandidateProfile()
@@ -233,9 +226,8 @@ export default function ProfileTab() {
                   style={{ background: profile?.emailVerifiedAt ? '#0a7c42' : '#b7791f' }} />
           </div>
 
-          {/* Profil doluluk + guvenlik skoru — sol alt (kullanici istegi) */}
+          {/* Profil doluluk — sol alt (guvenilirlik skoru kaldirildi) */}
           <ProfileCompletenessCard data={completeness} />
-          {reliability && <ReliabilityCard data={reliability} />}
         </div>
 
         {/* ================= SAG KOLON ================= */}
@@ -371,66 +363,3 @@ export default function ProfileTab() {
 }
 
 
-/**
- * Faz B/#11 — Adayın kendi güvenilirlik skoru kartı.
- * 0-100 arası, breakdown pill'leri (rating + tamamlanmış iş + no-show) + ilerleme çubuğu.
- */
-function ReliabilityCard({ data }) {
-  const { score = 0, noShowCount = 0, completedJobsLast90d = 0, completedJobsAllTime = 0,
-          averageRating, reviewCount } = data
-
-  // FAZ B.2 — acik+teal palete cevrildi
-  let band, textColor, barBg
-  if (score >= 80)      { band = 'Yüksek';   textColor = 'var(--ah-ok)';     barBg = 'var(--ah-ok)' }
-  else if (score >= 60) { band = 'Ortalama'; textColor = 'var(--ah-warn)';   barBg = 'var(--ah-warn)' }
-  else if (score >= 40) { band = 'Dikkat';   textColor = '#a35b0f';          barBg = '#c8923a' }
-  else                  { band = 'Düşük';    textColor = 'var(--ah-danger)'; barBg = 'var(--ah-danger)' }
-
-  return (
-    <div className="card p-5">
-      <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.06em] font-bold" style={{ color: 'var(--ah-ink-4)' }}>
-            Güvenilirlik Skoru
-          </p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-4xl font-extrabold tabular-nums" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.02em' }}>{score}</span>
-            <span className="text-xs" style={{ color: 'var(--ah-ink-4)' }}>/ 100</span>
-            <span className="ml-2 text-[11px] font-bold uppercase tracking-[0.06em]" style={{ color: textColor }}>{band}</span>
-          </div>
-        </div>
-        <p className="text-[11.5px] max-w-xs text-right" style={{ color: 'var(--ah-ink-3)' }}>
-          İşletmeler aday seçerken bu skoru görür. Yüksek tutmak seni öne çıkarır.
-        </p>
-      </div>
-
-      <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'var(--ah-line)' }}>
-        <div className="h-full rounded-full transition-all"
-             style={{ width: `${Math.max(2, score)}%`, background: barBg }} />
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <BreakdownPill label="Ortalama puan" value={averageRating != null ? `${averageRating.toFixed(1)} / 5` : 'Henüz yok'}
-                       hint={reviewCount ? `${reviewCount} yorum` : null} />
-        <BreakdownPill label="Tüm zaman tamamlanan" value={`${completedJobsAllTime} iş`}
-                       hint={completedJobsLast90d > 0 ? `${completedJobsLast90d} son 90 gün` : null} />
-        <BreakdownPill label="No-show" value={`${noShowCount}`} bad={noShowCount > 0} />
-      </div>
-    </div>
-  )
-}
-
-function BreakdownPill({ label, value, hint, bad }) {
-  return (
-    <div className="rounded-lg px-2.5 py-1.5"
-         style={{
-           background: bad ? 'var(--ah-danger-soft)' : 'var(--ah-brand-soft)',
-           border: `1px solid ${bad ? 'rgba(192, 57, 43, 0.28)' : 'var(--ah-line)'}`,
-         }}>
-      <p className="text-[9.5px] uppercase tracking-[0.06em] font-bold" style={{ color: 'var(--ah-ink-4)' }}>{label}</p>
-      <p className="text-xs font-semibold mt-0.5" style={{ color: bad ? 'var(--ah-danger)' : 'var(--ah-ink)' }}>
-        {value}{hint && <span className="ml-1 font-normal" style={{ color: 'var(--ah-ink-3)' }}>· {hint}</span>}
-      </p>
-    </div>
-  )
-}
