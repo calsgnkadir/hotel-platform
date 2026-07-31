@@ -232,7 +232,7 @@ olmamasından kötüdür.
 |---|---|
 | `Communications link failure` | MySQL makinesi durmuş. `fly status --app ajanshotel-mysql`, gerekirse `fly machine start`. |
 | `Unknown column 'version'` | Eski V4 migration'ı. Bu repoda düzeltildi — güncel `main`'de olduğundan emin ol. |
-| `Validate failed: migration checksum mismatch` | V4 idempotent hale getirilirken checksum'ı değişti. Bir kez `fly ssh console` → repair, ya da yeni bir DB ile başla. Detay: [README → Veritabanı migration'ları](../README.md#veritabanı-migrationları) |
+| `Validate failed: migration checksum mismatch` | V4 idempotent hâle getirilirken checksum'ı değişti. Fly'da sıfırdan bir DB kurulduğu için bu hatayı **görmemen gerekir**; yerel eski bir şemada görürsen tek seferlik SQL onarımı: [README → Veritabanı migration'ları](../README.md#veritabanı-migrationları) |
 | CORS hatası | `APP_CORS_ALLOWED_ORIGINS` Vercel adresiyle birebir eşleşmeli (sonda `/` olmayacak). |
 | Login 401 ama şifre doğru | `COOKIE_SAMESITE=None` + `COOKIE_SECURE=true` gerekli (cross-origin). `backend.fly.toml`'da ayarlı. |
 | OOM / makine restart döngüsü | `fly logs`'ta `Killed`. JVM heap'i kıs: `fly secrets set JAVA_TOOL_OPTIONS='-XX:MaxRAMPercentage=60 -XX:+UseSerialGC'` |

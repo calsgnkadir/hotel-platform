@@ -314,16 +314,33 @@ oluşturmadığı için **sıfırdan kurulan her veritabanında** zincir
 eskisi gibi uygulanır.
 
 Bu, dosyanın checksum'ını değiştirdi. **V4'ü daha önce uygulamış** bir
-veritabanın varsa Flyway `validate` başarısız olur. İki seçenek:
+veritabanın varsa uygulama şu hatayla açılmaz:
 
-```bash
-# A) Şemayı sıfırdan kur (demo verisi zaten seeder'dan geliyor)
-docker compose down -v && docker compose up -d
+```
+Migration checksum mismatch for migration version 4
+-> Applied to database : -1231884147
+-> Resolved locally    : -638485747
 ```
 
+İki seçenek:
+
+**A) Mevcut veriyi koru — geçmiş tablosundaki checksum'ı güncelle** (tek seferlik):
+
 ```bash
-# B) Mevcut veriyi koru — sadece checksum'ı onar
-mvn flyway:repair -Dflyway.url=jdbc:mysql://localhost:3306/hotel_platform -Dflyway.user=root -Dflyway.password=***
+mysql -uroot -p hotel_platform -e "UPDATE flyway_schema_history SET checksum = -638485747 WHERE version = '4';"
+```
+
+> `-p`'den sonra parola yazma; komut sorar. Windows'ta `mysql` PATH'te değilse:
+> `"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"`
+>
+> Bu, `flyway repair`'in checksum uyuşmazlığı için yaptığı işin aynısı.
+> `flyway-maven-plugin` bu projenin `pom.xml`'inde tanımlı değil, o yüzden
+> `mvn flyway:repair` çalışmaz — doğrudan SQL kullan.
+
+**B) Şemayı sıfırdan kur** (demo verisi zaten seeder'dan gelir):
+
+```bash
+docker compose down -v && docker compose up -d
 ```
 </details>
 
