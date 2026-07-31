@@ -330,8 +330,17 @@ Migration checksum mismatch for migration version 4
 mysql -uroot -p hotel_platform -e "UPDATE flyway_schema_history SET checksum = -638485747 WHERE version = '4';"
 ```
 
-> `-p`'den sonra parola yazma; komut sorar. Windows'ta `mysql` PATH'te değilse:
-> `"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"`
+Windows'ta `mysql` genelde PATH'te olmaz. **PowerShell** kullanıyorsan tırnaklı
+yolu çalıştırmak için başına `&` (call operator) koyman gerekir, yoksa
+`Unexpected token '-uroot'` hatası alırsın:
+
+```powershell
+& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -uroot -p hotel_platform -e "UPDATE flyway_schema_history SET checksum = -638485747 WHERE version = '4';"
+```
+
+**cmd.exe**'de `&` gerekmez, yolu doğrudan tırnak içinde yaz.
+
+> `-p`'den sonra parola yazma — komut sana sorar.
 >
 > Bu, `flyway repair`'in checksum uyuşmazlığı için yaptığı işin aynısı.
 > `flyway-maven-plugin` bu projenin `pom.xml`'inde tanımlı değil, o yüzden
