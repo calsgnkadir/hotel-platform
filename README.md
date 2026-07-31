@@ -9,7 +9,7 @@ Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya 
 [![CI](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml)
 
 [![Docker](https://img.shields.io/badge/docker%20compose%20up-tam%20stack-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#hızlı-başlangıç-docker)
-[![Arayüz Önizleme](https://img.shields.io/badge/Aray%C3%BCz%20%C3%96nizleme-Vercel-047857?style=for-the-badge)](https://hotel-platform-seven.vercel.app/)
+[![Arayüz Önizleme](https://img.shields.io/badge/Aray%C3%BCz%20%C3%96nizleme-sadece%20UI%20%C2%B7%20backend%20yok-6b7574?style=for-the-badge)](#arayüz-önizleme)
 [![License](https://img.shields.io/badge/License-MIT-34d399?style=for-the-badge)](#lisans)
 
 ![Java](https://img.shields.io/badge/Java%2017-ED8B00?logo=openjdk&logoColor=white)
@@ -49,12 +49,21 @@ docker compose up --build
 
 ## Arayüz Önizleme
 
-🌐 **<https://hotel-platform-seven.vercel.app/>** — arayüzü gezmek için.
+🌐 **<https://hotel-platform-seven.vercel.app/>** — yalnızca **arayüz** önizlemesi.
 
-> **Not:** Bu önizlemede yalnızca frontend yayında. Barındırma denemesi (Railway)
-> sona erdiği için backend şu an kapalı; giriş/veri gerektiren akışlar
-> çalışmaz. Uygulamanın **tamamını** çalışır görmek için yukarıdaki
-> [Docker adımlarını](#hızlı-başlangıç-docker) kullan — 3 servis de ayağa kalkar.
+> [!IMPORTANT]
+> **Bu çalışan bir demo değil, sadece arayüz.** Backend yayında değil; giriş,
+> ilan listeleme, mesajlaşma gibi veri gerektiren hiçbir akış bu adreste
+> çalışmaz. Uygulamanın tamamını çalışır görmek için tek yol
+> [Docker adımları](#hızlı-başlangıç-docker) — 3 servis de ayağa kalkar, demo
+> verisi otomatik yüklenir.
+
+**Neden canlı bir backend yok?** Barındırma denemesi (Railway) sona erdi ve
+yerine ücretsiz katman aramak yerine bilinçli bir tercih yapıldı: çalışmayan bir
+"Canlı Demo" linki, hiç link olmamasından kötüdür. Backend'i ayağa kaldırmak
+isteyen için deploy tarifi hazır ve test edilmiş —
+[`docs/DEPLOY_FLY.md`](docs/DEPLOY_FLY.md) + [`deploy/fly/`](deploy/fly).
+Aynı imajlar herhangi bir VPS'te `docker compose up` ile de çalışır.
 
 ### Demo Hesaplar
 
@@ -80,13 +89,18 @@ docker compose up --build
 
 ## Ekran Görüntüleri
 
-> Görseller `docs/screenshots/` klasöründedir — headless Chrome ile prod'dan çekilmiştir.
+> [!WARNING]
+> **Aşağıdaki görseller güncel değil.** 8 Haziran 2026'da, arayüz açık-teal
+> tasarıma geçirilmeden önce çekildiler; koyu/neon temayı gösteriyorlar.
+> Güncel arayüz için [Vercel önizlemesine](https://hotel-platform-seven.vercel.app/)
+> bak veya [Docker ile](#hızlı-başlangıç-docker) kendin çalıştır.
+> Yeniden çekim rehberi: [`docs/screenshots/README.md`](docs/screenshots/README.md)
 
-### Landing — Hibrit dark tema + Wordplay tarzı dev başlık + canlı leaderboard
+### Landing — hero + canlı vardiya nabzı
 
 <p align="center"><img src="docs/screenshots/landing.png" alt="AjansHotel Landing" width="100%" /></p>
 
-### Auth — Giriş + Kayıt (pill butonlar, dark + neon yeşil)
+### Auth — Giriş + Kayıt
 
 <table>
 <tr>
@@ -95,7 +109,7 @@ docker compose up --build
 </tr>
 </table>
 
-### Aday Paneli — Hibrit dark dashboard + kompakt stat strip
+### Aday Paneli — genel bakış + kompakt stat şeridi
 
 <p align="center"><img src="docs/screenshots/candidate-overview.png" alt="Aday Genel Bakış" width="100%" /></p>
 
@@ -111,8 +125,9 @@ docker compose up --build
 
 <p align="center"><img src="docs/screenshots/kvkk.png" alt="KVKK" width="80%" /></p>
 
-> **İşletme paneli (`stats.png`, `business-applications.png`)** ileride eklenecek — demo işletme hesabıyla
-> Genel Bakış grafikleri ve Gelen Başvurular tablosu çekildiğinde bu listeye eklenir.
+> **İşletme paneli (`business-applications.png`)** eklenecek — demo işletme hesabıyla
+> Gelen Başvurular ekranı (Kanban + A4 kart listesi) çekildiğinde buraya girer.
+> (Eski listede geçen `stats.png` düştü: Analitik sekmesi projeden kaldırıldı.)
 
 ---
 

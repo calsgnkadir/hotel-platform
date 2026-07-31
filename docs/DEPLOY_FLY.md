@@ -17,19 +17,29 @@ Backend (Spring Boot) + MySQL Fly.io'da, frontend Vercel'de kalır.
 
 ---
 
-## Önce oku: maliyet
+## Durum: bu deploy şu an YAPILMADI
 
-**Fly.io'nun ücretsiz kullanımı zamanla değişti.** Kayıt sırasında kredi kartı
-isteniyor ve "free allowance" politikası dönem dönem güncelleniyor. Bu rehber
-iki adet `shared-cpu-1x / 512MB` makine + 1GB volume varsayıyor; bu, Fly'ın
-küçük kullanım aralığına denk gelir ama **ücretsiz kalacağının garantisi yoktur.**
+Bu rehber **hazır ama uygulanmamış** bir tariftir. Projenin sahibi canlı
+barındırma için ödeme yapmama kararı aldı; Fly.io kayıt akışının ilk adımı
+kimlik doğrulama için **kredi kartı** istiyor.
 
-Deploy'a başlamadan <https://fly.io/docs/about/pricing/> adresinden güncel
-durumu kontrol et. Aylık ücret çıkacaksa alternatifler:
+Dolayısıyla:
 
-- Backend'i uyutmayı kabul et: `auto_stop_machines = true`, `min_machines_running = 0`
-  (ilk istek ~20-30 sn bekler — demo için kötü görünür)
-- Canlı linki bırak, README'ye Docker + ekran görüntüsü/video koy
+- Public bir AjansHotel örneği **yok** — README'de "Canlı Demo" iddiası da yok
+- Projeyi çalışır görmenin yolu `docker compose up` (README → Hızlı Başlangıç)
+- Aşağıdaki config'ler test edilmiş durumda duruyor; kartını bağlamak isteyen
+  ya da başka bir Docker platformuna taşımak isteyen doğrudan kullanabilir
+
+**Maliyet notu:** Fly'ın "free allowance" politikası dönem dönem değişiyor. Bu
+rehber 2 × `shared-cpu-1x / 512MB` makine + 1GB volume varsayar; ücretsiz
+kalacağının garantisi yoktur, <https://fly.io/docs/about/pricing/> adresinden
+güncel durumu kontrol et.
+
+Ücret istemiyorsan ama yine de canlı bir şey olsun diyorsan iki alternatif:
+
+- Makineyi uyut: `auto_stop_machines = true`, `min_machines_running = 0`
+  (ilk istek ~20-30 sn bekler — demoda kötü görünür)
+- Kendi VPS'inde `docker compose up` (Hetzner ~€4/ay) — compose dosyası zaten hazır
 
 ---
 
