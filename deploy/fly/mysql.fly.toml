@@ -1,0 +1,41 @@
+####################################################################
+# AjansHotel — MySQL (Fly.io)
+#
+# Fly'in yonetilen MySQL'i yok; MySQL 8'i kalici disk (volume) ile
+# kendi uygulamasi olarak calistiriyoruz.
+#
+# ONEMLI: Bu app'in PUBLIC IP'si YOK. Sadece Fly'in ozel agi (6PN)
+# uzerinden erisilir: backend'den host adi `ajanshotel-mysql.internal`.
+# Bu yuzden asagida [http_service] / [[services]] bloklari bilerek yok —
+# olsaydi veritabani internete acilirdi.
+#
+# Kurulum: docs/DEPLOY_FLY.md
+####################################################################
+
+app = 'ajanshotel-mysql'
+primary_region = 'ams'          # Amsterdam — Istanbul'a en yakin dusuk gecikmeli bolge
+
+[build]
+  image = 'mysql:8'
+
+[env]
+  MYSQL_DATABASE = 'hotel_platform'
+  # Kok parola secret olarak verilir:  fly secrets set MYSQL_ROOT_PASSWORD=...
+
+[mounts]
+  source = 'mysql_data'
+  destination = '/var/lib/mysql'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  # MySQL 8 256MB'ta ayaga kalkmaz. 512MB + asagidaki tuning ile calisir.
+  memory = '512mb'
+
+# InnoDB'yi kucuk makineye sigdir. Bu argumanlar mysqld'ye gecer.
+# performance_schema kapali → ~100MB tasarruf.
+[processes]
+  app = '--innodb-buffer-pool-size=64M --performance-schema=OFF --max-connections=25 --innodb-log-buffer-size=8M'
+
+# Makine bosta durdurulmasin: durdurulursa backend'in DB baglantisi kopar.
+[[restart]]
+  policy = 'always'

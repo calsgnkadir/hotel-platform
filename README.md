@@ -282,22 +282,51 @@ docker compose down               # durdur (veri volume'de kalır)
 Ortam değişkenleri `.env` üzerinden geçilir (`.env.example`'a bak): `DB_PASSWORD`,
 `JWT_SECRET`, opsiyonel `CLOUDINARY_URL`, `GOOGLE_CLIENT_ID/SECRET`, `RESEND_API_KEY`.
 
-> **Şema notu:** Docker stack'i şemayı Hibernate'ten kurar (`FLYWAY_ENABLED=false`).
-> Flyway migration'ları mevcut veritabanları için tutulur; `V4` sıfırdan bir DB'de
-> `applications.version` kolonunu varsaydığı için temiz kurulumda çalışmaz
-> (baseline'ı tamamlamak açık bir teknik borç).
+### Veritabanı migration'ları
+
+Şema **Flyway** ile kurulur (`FLYWAY_ENABLED=true`); Hibernate `ddl-auto=validate`
+ile yalnızca doğrular — şema entity'lerle uyuşmazsa uygulama hiç açılmaz. Docker
+stack'i de bu yolu kullanır, yani yerelde çalıştırdığın şey production yolunun aynısı.
+
+<details>
+<summary><b>V4 checksum notu</b> — bu repoyu daha önce çalıştırdıysan oku</summary>
+
+`V4__version_columns_default.sql` idempotent hâle getirildi. Eski hâli
+`applications.version` kolonunu koşulsuz `MODIFY` ediyordu; o kolonu V1 baseline
+oluşturmadığı için **sıfırdan kurulan her veritabanında** zincir
+`Unknown column 'version'` ile patlıyor ve uygulama ayağa kalkmıyordu. Artık
+`information_schema` kontrolüyle korumalı: temiz şemada atlanır, eski şemada
+eskisi gibi uygulanır.
+
+Bu, dosyanın checksum'ını değiştirdi. **V4'ü daha önce uygulamış** bir
+veritabanın varsa Flyway `validate` başarısız olur. İki seçenek:
+
+```bash
+# A) Şemayı sıfırdan kur (demo verisi zaten seeder'dan geliyor)
+docker compose down -v && docker compose up -d
+```
+
+```bash
+# B) Mevcut veriyi koru — sadece checksum'ı onar
+mvn flyway:repair -Dflyway.url=jdbc:mysql://localhost:3306/hotel_platform -Dflyway.user=root -Dflyway.password=***
+```
+</details>
 
 ### Yönetilen platformlar
 
 - **Frontend (Vercel):** kök dizin `hotel-web/`, build `npm run build`, output `dist`,
   `VITE_API_URL` = backend adresi.
-- **Backend:** Dockerfile'dan deploy edilebilir (Railway/Render/Fly). Küçük planlarda
-  JVM heap'i sıkı tut: `JAVA_TOOL_OPTIONS=-Xmx280m -Xms128m -XX:+UseSerialGC`.
+- **Backend (Fly.io):** hazır `fly.toml`'lar + adım adım rehber →
+  [`docs/DEPLOY_FLY.md`](docs/DEPLOY_FLY.md). Küçük makinelerde JVM heap'i sıkı tut:
+  `JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70 -XX:+UseSerialGC`.
 
 ### GitHub Actions
 
 - `ci.yml` — **her push/PR'da** backend `mvn verify` + frontend test/build
-- `daily-health-check.yml` — günlük 09:07 IST canlılık/smoke kontrolü ve `status.md` güncellemesi
+- `daily-health-check.yml` — uptime + auth smoke testi, `status.md`'ye rapor yazar.
+  **Cron şu an kapalı, yalnızca elle tetikleniyor:** hedeflediği backend adresi ölü
+  olduğu için her sabah 404 raporu commit'liyordu. Canlı bir backend ayağa kalkınca
+  geri açılacak (bkz. `docs/DEPLOY_FLY.md` → adım 6).
 
 ---
 

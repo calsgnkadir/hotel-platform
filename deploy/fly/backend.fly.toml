@@ -1,0 +1,76 @@
+####################################################################
+# AjansHotel — Spring Boot backend (Fly.io)
+#
+# Frontend Vercel'de kalir; burasi yalnizca API + WebSocket.
+# Veritabani: ajanshotel-mysql.internal (ayni Fly organizasyonu, 6PN ozel agi)
+#
+# Deploy (repo kokunden):
+#   fly deploy -c deploy/fly/backend.fly.toml --dockerfile hotelapp/Dockerfile
+#
+# Ayrintili kurulum + secret listesi: docs/DEPLOY_FLY.md
+####################################################################
+
+app = 'ajanshotel-api'
+primary_region = 'ams'
+
+[build]
+  dockerfile = '../../hotelapp/Dockerfile'
+
+[env]
+  # prod  → application-prod.yml (graceful shutdown, kucuk Hikari havuzu, CORS env'den)
+  # demo  → DemoSeeder calisir; bos bir demo yerine gezilebilir veri gelir
+  SPRING_PROFILES_ACTIVE = 'prod,demo'
+
+  SERVER_PORT = '8080'
+
+  # Veritabani — 6PN ic ag adi. Parola secret olarak verilir.
+  DB_HOST = 'ajanshotel-mysql.internal'
+  DB_PORT = '3306'
+  DB_NAME = 'hotel_platform'
+  DB_USERNAME = 'root'
+
+  # Flyway ACIK. V4 idempotent hale getirildikten sonra temiz bir semada
+  # 10 migration da uygulaniyor ve sema JPA entity'leriyle birebir tutuyor —
+  # bu yuzden ddl-auto guvenle 'validate'. (application-prod.yml'deki
+  # "Flyway sonrasi MUTLAKA validate yap" uyarisi boylece kapaniyor.)
+  FLYWAY_ENABLED = 'true'
+  JPA_DDL_AUTO = 'validate'
+
+  # HTTPS arkasinda cross-origin cerez (Vercel frontend + Fly API)
+  COOKIE_SECURE = 'true'
+  COOKIE_SAMESITE = 'None'
+
+  # Fly proxy X-Forwarded-* gonderir; OAuth redirect URI https kalsin
+  # (application-prod.yml zaten forward-headers-strategy: framework)
+  APP_BASE_URL = 'https://hotel-platform-seven.vercel.app'
+  APP_CORS_ALLOWED_ORIGINS = 'https://hotel-platform-seven.vercel.app'
+
+  # 512MB makinede JVM'i sinirla (Dockerfile MaxRAMPercentage=75 zaten var,
+  # burasi ek emniyet: Tomcat thread sayisi prod profilinde 50'ye cekili)
+  JAVA_TOOL_OPTIONS = '-XX:MaxRAMPercentage=70 -XX:+UseSerialGC'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Demo trafigi yok denecek kadar az; bos makineyi durdurup para/kota yakma.
+  # min_machines_running = 1 → ilk istek 20-30 sn beklemesin (cold start).
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = 'requests'
+    soft_limit = 40
+    hard_limit = 60
+
+# /actuator/health prod profilinde public (application-prod.yml)
+[[http_service.checks]]
+  interval = '30s'
+  timeout = '5s'
+  grace_period = '90s'      # Spring Boot + Flyway ilk acilis suresi
+  method = 'GET'
+  path = '/actuator/health'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'

@@ -1,16 +1,24 @@
-name: Daily Health Check
+name: Health Check
 
-# Her gün İstanbul saatiyle 09:07'de çalışır (UTC+3 → 06:07 UTC).
-# 3 fazlı kontrol:
+# ELLE TETIKLENIR — otomatik cron KAPALI.
+#
+# Sebep: barindirma denemesi (Railway) sona erdi, backend adresi olu.
+# Gunluk cron her sabah 404 dolu bir rapor uretip status.md'ye commit
+# atiyordu; repo, calismayan bir sistemin tarihli kanit dosyasini
+# tasiyordu. Yeni bir canli backend adresi (Fly.io) ayaga kalkinca
+# BACKEND_URL secret'i guncellenip asagidaki cron geri acilabilir:
+#
+#   schedule:
+#     - cron: '7 6 * * *'   # 09:07 Istanbul (UTC+3)
+#
+# 3 fazli kontrol:
 #   1) Uptime  — frontend + backend public endpoint'leri
 #   2) Smoke   — login, authenticated profile, applications listesi
 #   3) Rapor   — status.md'ye reverse-chrono yazar + auto-commit
 #
-# Manuel tetikleme: Actions → Daily Health Check → Run workflow
+# Calistirmak icin: Actions -> Health Check -> Run workflow
 
 on:
-  schedule:
-    - cron: '7 6 * * *'   # 09:07 Istanbul (UTC+3)
   workflow_dispatch: {}
 
 permissions:
