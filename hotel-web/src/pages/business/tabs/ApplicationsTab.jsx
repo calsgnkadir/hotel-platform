@@ -137,8 +137,9 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
           {visibleFilters.map(f => {
             const count = f === 'ALL' ? applications.length : applications.filter(a => a.status === f).length
             return (
+              /* Aktif chip yazdirmada da gorunsun (bkz. index.css @media print) */
               <button key={f} onClick={() => setFilter(f)}
-                className={`chip ${filter === f ? 'is-active' : ''}`}>
+                className={`chip ${filter === f ? 'is-active print-keep' : ''}`}>
                 {FILTER_LABELS[f]}
                 <span className="text-[10px] tabular-nums opacity-80 ml-1">({count})</span>
               </button>

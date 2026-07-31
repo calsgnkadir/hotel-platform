@@ -950,7 +950,12 @@ textarea:focus-visible {
     print-color-adjust: exact !important;
   }
 
-  /* ── Gizlenecek elemanlar */
+  /* ── Gizlenecek elemanlar
+     Butonlar varsayilan olarak gizli: kagitta "Kaydet"/"Reddet" ise yaramaz.
+     ISTISNA .print-keep — bilgi TASIYAN butonlar (aktif filtre chip'leri gibi).
+     Bu kacis kapisi uzun sure hicbir yerde kullanilmiyordu; sonucta yazdirma
+     ciktisinda filtre satirlari "TARIH / CALISMA TURU / MIN UCRET" basliklari
+     altinda bombos cikiyordu. */
   .no-print,
   nav,
   aside,
@@ -959,6 +964,24 @@ textarea:focus-visible {
   .leaflet-container,            /* harita yazdirma uygun degil */
   button:not(.print-keep) {
     display: none !important;
+  }
+
+  /* Aktif filtre/durum chip'i kagitta da okunur olsun.
+     `* { background: transparent }` dolgusunu sildigi icin aktiflik yalnizca
+     renkle anlasilmiyordu — kalin cerceve + bold ile ayirt ediliyor. */
+  .print-keep {
+    display: inline-flex !important;
+    border: 1.5px solid #000 !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    padding: 2px 10px !important;
+  }
+
+  /* Durum rozetleri: dolgu silinince KABUL/RED ayirt edilemiyordu. */
+  .badge {
+    border: 1px solid #000 !important;
+    border-radius: 999px !important;
+    padding: 1px 8px !important;
   }
 
   /* ── Print-only ogeleri ac */

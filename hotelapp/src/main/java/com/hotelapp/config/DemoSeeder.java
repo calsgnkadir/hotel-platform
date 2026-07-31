@@ -170,6 +170,11 @@ public class DemoSeeder implements CommandLineRunner {
                     .business(biz)
                     .position(ls.pos)
                     .jobType(JobType.DAILY)
+                    // salaryType SET EDILMEZSE null kaliyordu; frontend'de
+                    // salaryTypeShort(null) sessizce "ay"a dusup gunluk
+                    // vardiyalari "800 – 1.200 ₺ / ay" diye gosteriyordu.
+                    // Tutarlari da (700–1300) gunluk vardiya ucreti.
+                    .salaryType(SalaryType.DAILY)
                     .shift(ls.shift)
                     .title(ls.title)
                     .description("Demo ilan: " + ls.title + " · " + biz.getName())

@@ -9,14 +9,23 @@ export const SALARY_TYPE_OPTIONS = [
   { value: 'NEGOTIABLE', label: 'Görüşülecek', short: ''   },
 ]
 
+/*
+ * Bilinmeyen/eksik salaryType'ta ARTIK "Aylık"/"ay" VARSAYILMIYOR.
+ *
+ * Eskiden ikisi de aylığa düşüyordu. DemoSeeder salaryType yazmayı atlayınca
+ * alan null kaldı ve günlük vardiya ilanları kartlarda "800 – 1.200 ₺ / ay"
+ * diye göründü — birim uydurulmuş, üstelik ilanın kendi etiketi "Günlük"
+ * diyordu. Bilmediğimiz birimi yazmaktansa hiç yazmamak doğru: tutar yine
+ * görünür, yanlış bir iddia eklenmez.
+ */
 export function salaryTypeLabel(code) {
   const opt = SALARY_TYPE_OPTIONS.find(o => o.value === code)
-  return opt ? opt.label : 'Aylık'  // default eski ilanlar
+  return opt ? opt.label : null
 }
 
 export function salaryTypeShort(code) {
   const opt = SALARY_TYPE_OPTIONS.find(o => o.value === code)
-  return opt ? opt.short : 'ay'
+  return opt ? opt.short : ''
 }
 
 /**

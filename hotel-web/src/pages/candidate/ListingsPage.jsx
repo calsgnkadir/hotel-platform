@@ -1464,8 +1464,11 @@ function FilterRow({ label, children }) {
 /* FAZ B.5.2 — Tek tikla secilen filtre chip'i (dropdown yerine). */
 function FilterChip({ active, onClick, children }) {
   return (
+    /* print-keep yalnizca AKTIF chip'te: yazdirmada butonlar gizleniyor,
+       ama hangi filtrenin uygulandigi bilgi degeri tasiyor. Pasif chip'ler
+       kagitta gurultu, onlar gizli kalsin. */
     <button type="button" onClick={onClick} aria-pressed={active}
-      className="flex-shrink-0 rounded-full text-[12.5px] transition-colors"
+      className={`flex-shrink-0 rounded-full text-[12.5px] transition-colors${active ? ' print-keep' : ''}`}
       style={{
         padding: '5px 12px',
         fontWeight: active ? 600 : 500,
