@@ -69,7 +69,7 @@ export default function MyListingsTab({ applications = [] }) {
         <button onClick={() => setFormTarget('new')}
           className="type-overline px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5 cta-glow"
           style={{
-            background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+            background: 'var(--ah-brand-gradient)',
             color: '#ffffff',
           }}>
           + Yeni İlan

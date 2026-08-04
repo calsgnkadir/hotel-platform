@@ -242,7 +242,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                 onClick={handleCta}
                 className="w-full py-3 text-base tracking-wider uppercase text-white rounded-full transition-all hover:-translate-y-0.5"
                 style={{
-                  background: 'linear-gradient(135deg, #0f766e, #0f766e)',
+                  background: 'var(--ah-brand)',
                   boxShadow: 'none',
                 }}
               >
@@ -260,7 +260,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                       border: '1px solid rgba(15, 118, 110, 0.22)',
                     }
                   : {
-                      background: 'linear-gradient(135deg, #0f766e, #0f766e)',
+                      background: 'var(--ah-brand)',
                       color: '#fff',
                       boxShadow: 'none',
                     }

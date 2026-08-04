@@ -131,7 +131,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
                 transition={{ type: 'spring', stiffness: 380, damping: 18 }}
                 className="flex-shrink-0 text-[10px] font-bold rounded-full px-1.5 min-w-[20px] text-center"
                 style={{
-                  background: 'linear-gradient(135deg, #0f766e, #0f766e)',
+                  background: 'var(--ah-brand)',
                   color: '#ffffff',
                   boxShadow: 'none',
                 }}>

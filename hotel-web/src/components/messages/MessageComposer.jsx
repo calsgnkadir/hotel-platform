@@ -270,7 +270,7 @@ function SendButton({ sending, disabled }) {
         // uzun bir konusmada bu buton sohbet penceresi icindeki ana eylem.
         background: disabled
           ? 'rgba(146, 134, 120, 0.20)'
-          : 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+          : 'var(--ah-brand-gradient)',
         color: disabled ? 'var(--text-faint)' : '#ffffff',
         fontSize: 13,
         fontWeight: 700,

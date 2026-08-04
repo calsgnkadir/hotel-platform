@@ -247,7 +247,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
               <button type="button" onClick={handleOpenMessages}
                       className="flex-1 py-2.5 type-overline rounded-2xl transition-all hover:-translate-y-0.5"
                       style={{
-                        background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                        background: 'var(--ah-brand-gradient)',
                         color: '#1a1208',
                         boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                       }}>
@@ -427,7 +427,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             <button type="submit" disabled={loading || !hasFutureSlots}
               className="relative overflow-hidden flex-1 py-2.5 type-overline rounded-2xl transition-all disabled:opacity-60 hover:-translate-y-0.5"
               style={{
-                background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                background: 'var(--ah-brand-gradient)',
                 color: '#1a1208',
                 border: '1px solid rgba(15, 118, 110, 0.45)',
                 boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',

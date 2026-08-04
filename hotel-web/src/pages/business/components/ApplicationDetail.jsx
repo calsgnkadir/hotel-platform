@@ -239,7 +239,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 isFavorited ? 'shadow-md' : 'tier-raised tier-raised-hover'
               }`}
               style={isFavorited
-                ? { background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)', color: '#ffffff' }
+                ? { background: 'var(--ah-brand-gradient)', color: '#ffffff' }
                 : { color: 'var(--text-muted)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                    fill={isFavorited ? 'currentColor' : 'none'} stroke="currentColor"
@@ -393,7 +393,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
                   className="type-overline px-4 py-2 rounded-lg disabled:opacity-50 transition-all"
                   style={{
-                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                    background: 'var(--ah-brand-gradient)',
                     color: '#ffffff',
                   }}>
                   Talep Et
@@ -499,7 +499,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               onClick={() => onOpenMessages?.(app.conversationId)}
               className="w-full py-3 rounded-2xl type-overline flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
               style={{
-                background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                background: 'var(--ah-brand-gradient)',
                 color: '#ffffff',
                 boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
@@ -515,7 +515,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               onClick={handleStartConversation}
               className="w-full py-3 rounded-2xl type-overline flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
               style={{
-                background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                background: 'var(--ah-brand-gradient)',
                 color: '#ffffff',
                 boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>

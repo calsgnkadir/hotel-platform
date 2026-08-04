@@ -26,7 +26,7 @@ export default function NotFoundPage() {
         <Link to="/"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5"
           style={{
-            background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+            background: 'var(--ah-brand-gradient)',
             color: '#1a1208',
             boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
           }}>

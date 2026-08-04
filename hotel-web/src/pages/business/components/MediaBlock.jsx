@@ -77,7 +77,7 @@ export default function MediaBlock({
             <label className="block px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full cursor-pointer text-center transition-all hover:-translate-y-0.5"
                    style={logoUploading
                      ? { background: 'rgba(15, 118, 110, 0.14)', color: '#0f766e', cursor: 'wait' }
-                     : { background: 'linear-gradient(135deg, #0f766e, #0b5d57)', color: '#fff', boxShadow: 'none' }}>
+                     : { background: 'var(--ah-brand-gradient)', color: '#fff', boxShadow: 'none' }}>
               <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
                 onChange={handleLogoChange} disabled={logoUploading} />
               {logoUploading

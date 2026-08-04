@@ -53,7 +53,7 @@ export default function PushPermissionPrompt() {
       <div className="card !p-4 shadow-2xl" style={{ background: 'linear-gradient(135deg, #ede4d3 0%, #ddd6fe 100%)' }}>
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-               style={{ background: 'linear-gradient(135deg, #0f766e, #0b5d57)' }}>
+               style={{ background: 'var(--ah-brand-gradient)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" strokeWidth={1.8} className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round"
@@ -70,7 +70,7 @@ export default function PushPermissionPrompt() {
             <div className="flex gap-2">
               <button onClick={enable}
                 className="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
-                style={{ background: 'linear-gradient(135deg, #0f766e, #0b5d57)' }}>
+                style={{ background: 'var(--ah-brand-gradient)' }}>
                 {t('push.enable')}
               </button>
               <button onClick={later}

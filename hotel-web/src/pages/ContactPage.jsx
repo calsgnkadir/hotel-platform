@@ -165,7 +165,7 @@ export default function ContactPage() {
                   className="block w-full text-center px-5 py-3 rounded-xl font-semibold text-sm transition-all"
                   style={{
                     background: body.trim() && !sending
-                      ? 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)'
+                      ? 'var(--ah-brand-gradient)'
                       : 'rgba(146, 134, 120, 0.18)',
                     color: body.trim() && !sending ? '#1a1208' : '#928678',
                     border: 'none',
@@ -185,7 +185,7 @@ export default function ContactPage() {
                 <a href={mailtoHref}
                    className="block w-full text-center px-5 py-3 rounded-xl font-semibold text-sm transition-all"
                    style={{
-                     background: body.trim() ? 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)' : 'rgba(146, 134, 120, 0.18)',
+                     background: body.trim() ? 'var(--ah-brand-gradient)' : 'rgba(146, 134, 120, 0.18)',
                      color: body.trim() ? '#1a1208' : '#928678',
                      pointerEvents: body.trim() ? 'auto' : 'none',
                      opacity: body.trim() ? 1 : 0.7,

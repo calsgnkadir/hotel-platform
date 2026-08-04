@@ -92,7 +92,7 @@ export default function SavedSearchManager({ filters, onApply }) {
             style={
               hasActiveFilters
                 ? {
-                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                    background: 'var(--ah-brand-gradient)',
                     color: '#1a1208',
                     border: '1px solid rgba(15, 118, 110, 0.55)',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
@@ -128,7 +128,7 @@ export default function SavedSearchManager({ filters, onApply }) {
                 disabled={createMut.isPending}
                 className="flex-1 px-3 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.06em] disabled:opacity-50 transition-all"
                 style={{
-                  background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                  background: 'var(--ah-brand-gradient)',
                   color: '#1a1208',
                   border: '1px solid rgba(15, 118, 110, 0.55)',
                   boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',

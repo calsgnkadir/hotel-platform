@@ -93,7 +93,7 @@ export default function ChangePasswordCard() {
         <div className="pt-2">
           <button type="submit" disabled={loading}
             className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #0f766e, #0b5d57)', boxShadow: '0 4px 16px rgba(15, 118, 110, 0.25)' }}>
+            style={{ background: 'var(--ah-brand-gradient)', boxShadow: '0 4px 16px rgba(15, 118, 110, 0.25)' }}>
             {loading ? 'Değiştiriliyor...' : 'Şifreyi Güncelle'}
           </button>
         </div>

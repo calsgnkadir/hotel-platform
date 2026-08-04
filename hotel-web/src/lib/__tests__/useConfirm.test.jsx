@@ -108,11 +108,11 @@ describe('useConfirm', () => {
     )
     fireEvent.click(screen.getByText('trigger'))
     const btn = screen.getByText('Evet')
-    // Redesign (acik+teal): marka gradienti #0f766e -> #0b5d57.
-    // Browser hex'i rgb'ye normalize eder.
+    // Marka gradienti artik --ah-brand-gradient token'i (tokens.css).
+    // Inline style'da ham hex yok; token adini dogruluyoruz. Token'in
+    // gercek degeri tokens.css'te tek yerde tanimli.
     const style = btn.getAttribute('style')
-    expect(style).toContain('rgb(15, 118, 110)')   // #0f766e
-    expect(style).toContain('rgb(11, 93, 87)')     // #0b5d57
+    expect(style).toContain('var(--ah-brand-gradient)')
     // Yikici olmayan onay, tehlike rengini tasimamali
     expect(style).not.toContain('180, 106, 85')
   })

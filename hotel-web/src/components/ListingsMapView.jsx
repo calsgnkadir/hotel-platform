@@ -21,7 +21,7 @@ import { formatSalary } from '../lib/salary'  // FAZ 2/#25
 
 function makeIcon(size = 32, hot = false) {
   const grad = hot
-    ? 'linear-gradient(135deg, #0f766e, #0f766e)'
+    ? 'var(--ah-brand)'
     : 'linear-gradient(135deg, #1b1815, #0b5d57)'
   const shadow = hot ? '0 4px 16px rgba(15, 118, 110, 0.55)' : '0 4px 12px rgba(74, 63, 51, 0.45)'
   return L.divIcon({

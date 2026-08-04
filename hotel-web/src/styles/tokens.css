@@ -293,6 +293,10 @@ body, .role-app-bg {
  * ═══════════════════════════════════════════════════════════════════════ */
 :root {
   --ah-brand:#0f766e; --ah-brand-hover:#0b5d57; --ah-brand-soft:#e4f2f0;
+  /* Marka CTA gradienti. 31 yerde elle yazilmis iki farkli yazimi vardi
+     ("...0%, ...100%" ve kisa hali); tek kaynaga alindi. Brand rengi
+     degisirse gradient de kendiliginden takip etsin diye var'a bagli. */
+  --ah-brand-gradient: linear-gradient(135deg, var(--ah-brand) 0%, var(--ah-brand-hover) 100%);
   --ah-page:#eef1f2;  --ah-card:#ffffff;  --ah-line:#e4e8e8;  --ah-line-2:#d4dadb;
   /* FAZ B.5.1 — beyaz kart icinde ayrisan ic yuzey ("karar kutusu") */
   --ah-band:#f5f7f7;

@@ -337,7 +337,7 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
                   }}
                   className="absolute -top-12 left-1/2 -translate-x-1/2 z-20 px-3.5 py-1.5 rounded-full type-overline flex items-center gap-1.5 transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                    background: 'var(--ah-brand-gradient)',
                     color: '#ffffff',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>

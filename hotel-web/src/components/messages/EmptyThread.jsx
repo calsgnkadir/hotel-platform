@@ -66,7 +66,7 @@ export default function EmptyThread() {
         </motion.div>
         <h3 className="text-[18px] font-semibold mb-2" style={{ color: '#ffffff', letterSpacing: '-0.015em' }}>
           <em className="not-italic font-semibold" style={{
-            background: 'linear-gradient(135deg, #0f766e 0%, #0f766e 100%)',
+            background: 'var(--ah-brand)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>Sohbet</em> seçin
         </h3>

@@ -63,9 +63,9 @@ export default function EarningsWidget({ applications }) {
       <div className="relative px-5 py-3.5 flex items-center justify-between"
            style={{ borderBottom: '1px solid rgba(15, 118, 110, 0.08)' }}>
         <div>
-          <h2 className="text-[15px] font-semibold" style={{ color: '#ffffff', letterSpacing: '-0.01em' }}>
+          <h2 className="text-[15px] font-semibold" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>
             Çalışma <em className="not-italic font-semibold" style={{
-              background: 'linear-gradient(135deg, #0f766e 0%, #0f766e 100%)',
+              background: 'var(--ah-brand)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>& kazanç</em>
           </h2>
@@ -159,10 +159,10 @@ function CountUpValue({ value, suffix, accent }) {
   return (
     <div className="text-[28px] font-semibold leading-none tabular-nums"
          style={{
-           background: accent
-             ? 'linear-gradient(135deg, #0f766e 0%, #0f766e 100%)'
-             : 'linear-gradient(135deg, #ffffff, #0f766e)',
-           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+           // Eskiden accent degilken 'linear-gradient(135deg, #ffffff, #0f766e)'
+           // idi ve background-clip:text ile RAKAMA uygulaniyordu — sol yarisi
+           // acik zeminde gorunmuyordu. Artik duz, okunur renk.
+           color: accent ? 'var(--ah-brand)' : 'var(--ah-ink)',
            letterSpacing: '-0.03em',
          }}>
       {n} <span className="text-[15px] font-medium" style={{

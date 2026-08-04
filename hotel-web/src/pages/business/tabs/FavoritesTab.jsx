@@ -140,7 +140,7 @@ export default function FavoritesTab({ onOpenMessages }) {
               disabled={openingChatId === f.candidateId}
               className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5 disabled:opacity-50"
               style={{
-                background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                background: 'var(--ah-brand-gradient)',
                 color: '#ffffff',
                 boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>

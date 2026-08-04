@@ -126,7 +126,7 @@ export default function KvkkPage() {
           <Link to="/register"
                 className="inline-block text-[12px] font-semibold uppercase tracking-[0.06em] px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5"
                 style={{
-                  background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                  background: 'var(--ah-brand-gradient)',
                   color: '#1a1208',
                   boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                 }}>

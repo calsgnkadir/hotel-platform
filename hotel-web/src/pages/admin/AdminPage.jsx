@@ -1037,7 +1037,7 @@ function BusinessesTab() {
               <button onClick={() => toggleVerified(b)}
                 style={{
                   padding: '6px 14px', borderRadius: 6,
-                  background: b.verifiedAt ? 'rgba(180, 106, 85, 0.12)' : 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+                  background: b.verifiedAt ? 'rgba(180, 106, 85, 0.12)' : 'var(--ah-brand-gradient)',
                   border: b.verifiedAt ? '1px solid rgba(239, 100, 97, 0.3)' : 'none',
                   color: b.verifiedAt ? '#d39481' : '#ffffff',
                   fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',

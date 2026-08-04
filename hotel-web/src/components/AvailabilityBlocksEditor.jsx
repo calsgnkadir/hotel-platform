@@ -186,7 +186,7 @@ export default function AvailabilityBlocksEditor() {
           <button type="button" onClick={save} disabled={!dirty || saving}
             className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] rounded-full transition-all hover:-translate-y-0.5 disabled:opacity-40"
             style={{
-              background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
+              background: 'var(--ah-brand-gradient)',
               color: '#ffffff',
               border: '1px solid rgba(15, 118, 110, 0.55)',
               boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',

@@ -135,8 +135,10 @@ export function ConfirmDialog({
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }
                 : {
-                    background: 'linear-gradient(135deg, #0f766e 0%, #0b5d57 100%)',
-                    color: '#1a1208',
+                    background: 'var(--ah-brand-gradient)',
+                    // Eskiden '#1a1208' (koyu kahve) idi — altin butondan kalma.
+                    // Teal gradient uzerinde ~2.6:1 kontrast veriyordu.
+                    color: '#ffffff',
                     border: '1px solid rgba(15, 118, 110, 0.55)',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }
