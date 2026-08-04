@@ -150,7 +150,7 @@ export default function TodayWidget({ applications, onTabChange }) {
                   onClick={() => onTabChange?.('mylistings')}
                   className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
                   style={{
-                    background: 'linear-gradient(135deg, #ffffff, #0b5d57)',
+                    background: 'linear-gradient(135deg, #0f766e, #0b5d57)',
                     color: '#ffffff',
                     boxShadow: 'none',
                   }}

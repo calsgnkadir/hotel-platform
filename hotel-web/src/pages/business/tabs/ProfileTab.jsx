@@ -355,8 +355,9 @@ function BusinessPreviewCard({ form, logoUrl }) {
             )}
           </div>
           <div className="flex-1 min-w-0">
+            {/* Duz beyaz kart icinde beyaz metin gorunmuyordu. */}
             <div className="text-xl tracking-wider uppercase truncate"
-                 style={{ color: '#ffffff' }}>
+                 style={{ color: 'var(--ah-ink)' }}>
               {form.name || 'İşletme adınız'}
             </div>
             <div className="text-[11px] uppercase tracking-wider mt-0.5"

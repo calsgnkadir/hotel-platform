@@ -364,7 +364,7 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
             <button type="button" onClick={onClose} className="btn-secondary flex-1">İptal</button>
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #ffffff, #0b5d57)' }}>
+              style={{ background: 'linear-gradient(135deg, #0f766e, #0b5d57)' }}>
               {loading
                 ? (isEdit ? 'Güncelleniyor...' : 'Oluşturuluyor...')
                 : (isEdit ? 'Güncelle' : 'İlan Oluştur')}
