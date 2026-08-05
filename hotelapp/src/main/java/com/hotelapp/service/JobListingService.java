@@ -146,6 +146,7 @@ public class JobListingService {
                 .orElseThrow(() -> BusinessRuleException.keyed("error.business.profileNotFound"));
 
         validateDates(request);
+        validateSalary(request);
         validateSlots(request.getShiftSlots());
 
         JobListing listing = JobListing.builder()
@@ -297,6 +298,27 @@ public class JobListingService {
         }
     }
 
+    /**
+     * Ucret alanlari — DTO'da hicbir validation annotation'i yoktu. Frontend
+     * form dogru gonderse de API'ye dogrudan (frontend bypass) negatif maas
+     * ya da salaryMin > salaryMax gonderilebiliyordu. Para/booking state'ini
+     * mutasyona ugratan tek yer burasi; bu yuzden sunucu tarafinda kapatildi.
+     */
+    private void validateSalary(ListingRequest req) {
+        BigDecimal min = req.getSalaryMin();
+        BigDecimal max = req.getSalaryMax();
+
+        if (min != null && min.signum() < 0) {
+            throw new BusinessRuleException("Ücret negatif olamaz");
+        }
+        if (max != null && max.signum() < 0) {
+            throw new BusinessRuleException("Ücret negatif olamaz");
+        }
+        if (min != null && max != null && max.compareTo(min) < 0) {
+            throw new BusinessRuleException("Üst ücret, alt ücretten küçük olamaz");
+        }
+    }
+
     // ----------------------------------------------------------------
     // Business owner: update listing status
     // ----------------------------------------------------------------
@@ -316,6 +338,7 @@ public class JobListingService {
         JobListing listing = getListingForOwner(listingId, ownerId);
 
         validateDates(request);
+        validateSalary(request);
         validateSlots(request.getShiftSlots());
 
         listing.setPosition(request.getPosition());

@@ -2,16 +2,31 @@ package com.hotelapp.repository;
 
 import com.hotelapp.entity.JobListing;
 import com.hotelapp.enums.Position;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 public interface JobListingRepository
         extends JpaRepository<JobListing, Long>, JpaSpecificationExecutor<JobListing> {
+
+    /**
+     * N+1 FIX: JobListing.business LAZY. Ilan listeleme/siralama akislari her
+     * ilanda l.getBusiness().getDistrict()/getName()/... okuyor (ranking'de
+     * scoreListing, response mapping'de toResponse). Duz findAll(spec) her
+     * DISTINCT isletme icin ayri SELECT atiyordu — aday ana ilan akisi, olcek
+     * buyudukce kotulesir. Bu override findAll(Specification)'i business ile
+     * tek sorguda getirir; JpaSpecificationExecutor'in tum findAll(spec)
+     * cagrilari (getActiveListings, ranking, benzer ilanlar) bundan yararlanir.
+     */
+    @Override
+    @EntityGraph(attributePaths = {"business"})
+    List<JobListing> findAll(Specification<JobListing> spec);
 
     List<JobListing> findAllByBusiness_OwnerId(Long ownerId);
 

@@ -147,6 +147,36 @@ class JobListingServiceTest {
                     .hasMessageContaining("ihtiyaç sayısı en az 1");
         }
 
+        // Maas alanlarinda backend validation yoktu: frontend bypass edilerek
+        // negatif maas / salaryMin > salaryMax gonderilebiliyordu. Para state'ini
+        // mutasyona ugratan tek yer burasi oldugu icin sunucuda kapatildi.
+        @Test
+        @DisplayName("Negatif salaryMin -> BusinessRuleException")
+        void negativeSalary_throws() {
+            when(businessRepository.findByOwnerId(OWNER_ID))
+                    .thenReturn(Optional.of(businessOwnedBy(OWNER_ID)));
+            ListingRequest r = validRequest();
+            r.setSalaryMin(new java.math.BigDecimal("-100"));
+
+            assertThatThrownBy(() -> service.createListing(OWNER_ID, r))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("negatif olamaz");
+        }
+
+        @Test
+        @DisplayName("salaryMax < salaryMin -> BusinessRuleException")
+        void maxBelowMin_throws() {
+            when(businessRepository.findByOwnerId(OWNER_ID))
+                    .thenReturn(Optional.of(businessOwnedBy(OWNER_ID)));
+            ListingRequest r = validRequest();
+            r.setSalaryMin(new java.math.BigDecimal("2000"));
+            r.setSalaryMax(new java.math.BigDecimal("1000"));
+
+            assertThatThrownBy(() -> service.createListing(OWNER_ID, r))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("küçük olamaz");
+        }
+
         @Test
         @DisplayName("endDate < startDate -> BusinessRuleException")
         void endBeforeStart_throws() {
