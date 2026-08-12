@@ -353,13 +353,17 @@ docker compose down -v && docker compose up -d
 ```
 </details>
 
-### Yönetilen platformlar
+### Canlıya alma
 
-- **Frontend (Vercel):** kök dizin `hotel-web/`, build `npm run build`, output `dist`,
-  `VITE_API_URL` = backend adresi.
-- **Backend (Fly.io):** hazır `fly.toml`'lar + adım adım rehber →
-  [`docs/DEPLOY_FLY.md`](docs/DEPLOY_FLY.md). Küçük makinelerde JVM heap'i sıkı tut:
-  `JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70 -XX:+UseSerialGC`.
+- **Tek sunucu (önerilen):** tüm stack tek Linux sunucuda `docker compose` +
+  Caddy (otomatik HTTPS, tek origin). Öğrenci kredisiyle bedava (GitHub Student
+  Pack → DigitalOcean, ya da Azure for Students). Hazır config + adım adım
+  rehber → [`docs/DEPLOY_VPS.md`](docs/DEPLOY_VPS.md) ve [`deploy/prod/`](deploy/prod).
+- **Frontend (Vercel):** kök dizin `hotel-web/`, build `npm run build`, output
+  `dist`, `VITE_API_URL` = backend adresi.
+- **Backend (Fly.io):** alternatif — hazır `fly.toml`'lar →
+  [`docs/DEPLOY_FLY.md`](docs/DEPLOY_FLY.md). Küçük makinelerde JVM heap'i sıkı
+  tut: `JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70 -XX:+UseSerialGC`.
 
 ### GitHub Actions
 

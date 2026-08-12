@@ -1,0 +1,26 @@
+# AjansHotel — Caddy edge (tek giris noktasi).
+#
+# {$DOMAIN} ortam degiskeninden gelir (docker-compose.prod.yml). Caddy bu alan
+# adi icin Let's Encrypt sertifikasini OTOMATIK alir/yeniler (port 80+443 acik
+# ve DNS bu sunucuya isaret ediyorsa).
+#
+# Yonlendirme: /api, /ws, /actuator, OAuth ve Swagger yollari backend'e; geri
+# kalan her sey frontend nginx'e (SPA). Boylece tarayici her seyi TEK origin
+# olarak gorur — CORS yok, mixed-content yok.
+#
+# ── HTTP-only hizli test (henuz alan adin yoksa) ──
+# .env.prod'da DOMAIN yerine  DOMAIN=:80  yaz, PUBLIC_URL=http://SUNUCU_IP ve
+# COOKIE_SECURE=false yap. Caddy sertifika denemez, dogrudan HTTP servis eder.
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Backend'e giden yollar (SockJS /ws/* alt yollari dahil).
+	@backend path /api/* /ws/* /actuator/* /oauth2/* /login/oauth2/* /v3/api-docs* /swagger-ui/*
+	reverse_proxy @backend backend:8080
+
+	# Geri kalan her sey: frontend SPA.
+	reverse_proxy frontend:80
+
+	# WebSocket upgrade Caddy tarafindan otomatik yonetilir (ek ayar gerekmez).
+}

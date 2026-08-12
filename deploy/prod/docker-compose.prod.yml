@@ -1,0 +1,112 @@
+# ══════════════════════════════════════════════════════════════════
+# AjansHotel — PRODUCTION stack (tek sunucu, docker compose)
+#
+# Yerel docker-compose.yml'den FARKLARI:
+#   - Tek giris noktasi Caddy (80/443, otomatik HTTPS/Let's Encrypt).
+#   - MySQL ve backend host'a PORT ACMAZ — sadece ic agda. DB internete kapali.
+#   - Frontend + backend AYNI ORIGIN'den servis edilir (Caddy /api,/ws → backend,
+#     gerisi → frontend). CORS tetiklenmez, mixed-content olmaz.
+#   - Secret'lar zorunlu (${VAR:?...}); dev fallback yok.
+#   - Profil: prod,demo → prod ayarlari + DemoSeeder (recruiter demo hesabiyla girsin).
+#
+# Repo KOKUNDEN calistir:
+#   cp deploy/prod/.env.prod.example deploy/prod/.env.prod   # doldur
+#   docker compose --env-file deploy/prod/.env.prod -f deploy/prod/docker-compose.prod.yml up -d --build
+#
+# Detay: docs/DEPLOY_VPS.md
+# ══════════════════════════════════════════════════════════════════
+
+services:
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: hotel_platform
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?deploy/prod/.env.prod icinde DB_PASSWORD zorunlu}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # ports YOK — DB yalnizca ic agdan (backend) erisilir, internete kapali.
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  backend:
+    build: ../../hotelapp
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: hotel_platform
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:?zorunlu}
+      JWT_SECRET: ${JWT_SECRET:?en az 32 karakter, tercihen base64 (openssl rand -base64 48)}
+      # prod → application-prod.yml (graceful shutdown, kucuk havuz, CORS env'den).
+      # demo → DemoSeeder: 10 aday/6 isletme/15 ilan + demo hesaplar (idempotent).
+      SPRING_PROFILES_ACTIVE: prod,demo
+      SERVER_PORT: 8080
+      # Sema Flyway ile; ddl-auto=validate (sema entity'lerle uyusmazsa acilmaz).
+      FLYWAY_ENABLED: "true"
+      JPA_DDL_AUTO: validate
+      # Ayni origin + HTTPS: Secure cerez, SameSite=Lax yeterli (cross-site degil).
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-Lax}
+      # Frontend ile ayni public adres. CORS ayni-origin'de tetiklenmez ama
+      # application-prod.yml bu degiskeni ZORUNLU okur (default yok).
+      APP_BASE_URL: ${PUBLIC_URL:?orn. https://ajanshotel.example.com}
+      APP_CORS_ALLOWED_ORIGINS: ${PUBLIC_URL:?zorunlu}
+      # Opsiyonel entegrasyonlar — verilmezse o ozellik devre disi, uygulama yine acilir.
+      CLOUDINARY_URL: ${CLOUDINARY_URL:-cloudinary://test:test@test}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-dummy-client-id}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-dummy-client-secret}
+      RESEND_API_KEY: ${RESEND_API_KEY:-test-key}
+      # KVKK alan sifreleme anahtari — verilmezse alan sifreleme kapali (log uyarir).
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-}
+      # 512MB-1GB makinede JVM sinirla.
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=70 -XX:+UseSerialGC}
+    # ports YOK — Caddy ic agdan backend:8080'e ulasir.
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080' 2>/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+
+  frontend:
+    build:
+      context: ../../hotel-web
+      args:
+        # KRITIK: tam public origin. Bos birakilirsa websocket.js localhost:8080'e
+        # duser (bkz. lib/websocket.js BASE_URL fallback). REST + WS ikisi de bu
+        # adrese gider; Caddy ayni origin'de /api ve /ws'i backend'e yonlendirir.
+        VITE_API_URL: ${PUBLIC_URL:?zorunlu}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    # ports YOK — Caddy ic agdan frontend:80'e ulasir.
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?Caddy icin alan adi, orn. ajanshotel.example.com (HTTP-only test icin :80)}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  mysql_data:
+  caddy_data:
+  caddy_config:
