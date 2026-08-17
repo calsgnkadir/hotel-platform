@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { StatusBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
-import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ 5.6
 import TodayWidget from '../components/TodayWidget'  // FAZ 5.12
 
 /* ── Overview Tab — Dalga C: 2-sutun (sol stat+tablo, sag canli akis) ── */
@@ -20,25 +19,20 @@ export default function OverviewTab({ applications, onTabChange }) {
         {/* Stat strip — number → hairline → label hierarchy (UX4 spec) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
-            { label: 'Toplam',      value: applications.length, color: '#0f766e',
-              data: weeklyTrend(applications, null) },
-            { label: 'Bekleyen',    value: pending,             color: '#c8923a',
-              data: weeklyTrend(applications, a => a.status === 'PENDING') },
-            { label: 'İnceleniyor', value: reviewing,           color: '#6b8aa3',
-              data: weeklyTrend(applications, a => a.status === 'REVIEWING') },
-            { label: 'Kabul',       value: accepted,            color: '#7a9f7a',
-              data: weeklyTrend(applications, a => a.status === 'ACCEPTED') },
+            { label: 'Toplam',      value: applications.length, color: '#0f766e' },
+            { label: 'Bekleyen',    value: pending,             color: '#c8923a' },
+            { label: 'İnceleniyor', value: reviewing,           color: '#6b8aa3' },
+            { label: 'Kabul',       value: accepted,            color: '#7a9f7a' },
           ].map(s => (
             <motion.div key={s.label}
               whileHover={{ y: -3 }}
               transition={{ type: 'spring', stiffness: 240, damping: 22 }}
               className="stat-card group cursor-default"
             >
-              {/* FAZ E.1 — ITEM 5 "glow biraktik" ile tutarli: radial-blur blob
-                  ve drop-shadow halo kaldirildi. Sparkline (veri) korunur. */}
-              <div aria-hidden className="absolute inset-x-3 bottom-3 h-8 pointer-events-none opacity-30">
-                <Sparkline data={s.data} color={s.color} width={200} height={32} />
-              </div>
+              {/* Sparkline'lar kaldirildi (kotu duruyordu, analitik de yok).
+                  Yerine sade bir ust aksan seridi: durum rengini tasir. */}
+              <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
+                    style={{ background: s.color }} />
 
               {/* Number → hairline → label */}
               <div className="relative">
@@ -55,7 +49,7 @@ export default function OverviewTab({ applications, onTabChange }) {
         <div className="tier-raised relative overflow-hidden">
           <div className="relative px-5 py-3.5 flex items-center justify-between border-b border-hairline">
             <div>
-              <h2 className="type-heading" style={{ fontSize: '15px' }}>
+              <h2 className="type-heading font-display" style={{ fontSize: '17px' }}>
                 Son Başvurular
               </h2>
               <p className="type-caption mt-0.5">
@@ -126,7 +120,7 @@ function TodayFeed({ applications, onTabChange }) {
   return (
     <div className="tier-raised p-4">
       <div className="flex items-center justify-between mb-3 pb-2 border-b border-hairline">
-        <h3 className="type-overline text-champagne-300" style={{ fontSize: '11px' }}>Bugünkü Akış</h3>
+        <h3 className="type-overline text-champagne-300 font-display" style={{ fontSize: '12px', letterSpacing: 0 }}>Bugünkü Akış</h3>
         <span className="type-overline">{recent.length} olay</span>
       </div>
 

@@ -191,7 +191,7 @@ export default function ProfileTab() {
 
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
+        <h3 className="font-display text-[16px] font-semibold pb-2 border-b"
             style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>
           Temel Bilgiler
         </h3>
@@ -241,7 +241,7 @@ export default function ProfileTab() {
 
       {/* İletişim */}
       <div className="card p-5 space-y-4">
-        <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
+        <h3 className="font-display text-[16px] font-semibold pb-2 border-b"
             style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>
           İletişim
         </h3>
@@ -293,7 +293,7 @@ export default function ProfileTab() {
       )}
 
       <div className="card p-5 space-y-3">
-        <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
+        <h3 className="font-display text-[16px] font-semibold pb-2 border-b"
             style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>
           Çalışma Saatleri
         </h3>

@@ -300,10 +300,12 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
   )
 }
 
-/* ─────────── Aday karti — A4 dikey (1 : 1.414) ───────────
- * Liste gorunumunun varsayilan karti. Ust: durum rozeti. Orta: avatar +
- * kimlik. Alt: e-posta, tarih ve aksiyonlar. Tum renkler --ah-* tokenlari
- * (beyaz zeminde beyaz metin hatasi bir daha olmasin diye sabit hex yok).
+/* ─────────── Aday karti — is-ilani stili (sol hizali) ───────────
+ * Eski hali 1:1.414 A4 oraniyla zorla uzatiliyor + icerik dikey ortalaniyordu;
+ * kart cok uzun oldugu icin ORTASI BOMBOS kaliyordu (kullanici sikayeti).
+ * Yeni hali: avatar + kimlik YAN YANA, altinda karar bilgisi (puan · vardiya ·
+ * ilan), en altta meta + aksiyon. Sabit oran YOK — icerik kadar yukselir,
+ * grid'de min-height ile hizalanir. Tum renkler --ah-* token.
  */
 function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
   const name = app.candidate?.fullName || 'Anonim'
@@ -311,43 +313,42 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
   const date = app.createdAt
     ? new Date(app.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—'
+  const rating = app.candidate?.averageRating
+  const reviewCount = app.candidate?.reviewCount || 0
+  const slotCount = app.requestedSlots?.length || 0
 
   return (
-    /* Kart role="button" DEGIL: tum icerik erisilebilir ad olarak okunurdu
-       ("Kabul Edildi Burak Sahin ...") ve filtre chip'leriyle cakisiyordu.
-       Klavye/ekran okuyucu yolu icttaki "Detay" butonu. */
     <div
       onClick={onClick}
       className="w-full cursor-pointer rounded-xl flex flex-col transition-all hover:-translate-y-0.5"
       style={{
-        maxWidth: 320,
-        aspectRatio: '1 / 1.414',
-        padding: 18,
+        minHeight: 232,
+        padding: 16,
         background: 'var(--ah-card)',
         border: `1px solid ${active ? 'var(--ah-brand)' : 'var(--ah-line)'}`,
         boxShadow: active ? '0 2px 12px rgba(15, 118, 110, .16)' : 'var(--elev-1)',
       }}
     >
-      {/* ── Ust serit: durum ── */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
+      {/* ── Ust: durum rozeti ── */}
+      <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
         <StatusBadge status={app.status} />
         {app.noShow && <NoShowBadge />}
       </div>
 
-      {/* ── Orta: avatar + kimlik ── */}
-      <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center gap-2.5 py-3">
+      {/* ── Kimlik: avatar + ad YAN YANA ── */}
+      <div className="flex items-center gap-3">
         {app.candidate?.avatarUrl ? (
           <img
             src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarMd })}
             alt={name}
             loading="lazy" decoding="async"
-            className="rounded-full object-cover"
-            style={{ width: 76, height: 76, border: '1px solid var(--ah-line)' }}
+            className="rounded-full object-cover flex-shrink-0"
+            style={{ width: 48, height: 48, border: '1px solid var(--ah-line)' }}
           />
         ) : (
-          <div className="rounded-full grid place-items-center text-2xl font-bold"
+          <div className="rounded-full grid place-items-center text-lg font-bold flex-shrink-0"
                style={{
-                 width: 76, height: 76,
+                 width: 48, height: 48,
                  background: 'var(--ah-brand-soft)',
                  color: 'var(--ah-brand)',
                  border: '1px solid var(--ah-line)',
@@ -355,28 +356,48 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
             {initial}
           </div>
         )}
-
-        <div className="min-w-0 w-full">
+        <div className="min-w-0 flex-1">
           <div className="text-[15px] font-semibold truncate"
                style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>
             {name}
           </div>
-          <div className="text-[12.5px] mt-1 leading-snug line-clamp-2"
-               style={{ color: 'var(--ah-ink-2)' }}>
-            {app.listing?.title || 'İlan bilgisi yok'}
+          <div className="text-[12.5px] truncate" style={{ color: 'var(--ah-ink-3)' }}>
+            {app.listing?.position || app.listing?.title || '—'}
           </div>
         </div>
       </div>
 
-      {/* ── Alt: meta + aksiyonlar ── */}
-      <div className="pt-3 space-y-2.5" style={{ borderTop: '1px solid var(--ah-line)' }}>
-        <div className="space-y-1">
-          <div className="text-[11.5px] truncate" style={{ color: 'var(--ah-ink-3)' }}>
-            {app.candidate?.email || '—'}
-          </div>
-          <div className="text-[11.5px]" style={{ color: 'var(--ah-ink-3)' }}>
-            {date}
-          </div>
+      {/* ── Karar bilgisi: puan · vardiya (orta bosluğu doldurur) ── */}
+      <div className="flex items-center gap-2 flex-wrap mt-3">
+        {rating != null && (
+          <span className="inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-full"
+                style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' }}>
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3" aria-hidden="true">
+              <path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 9.4l6.9-.6z"/>
+            </svg>
+            {rating.toFixed(1)}
+            <span className="font-normal" style={{ color: 'var(--ah-ink-3)' }}>({reviewCount})</span>
+          </span>
+        )}
+        {slotCount > 0 && (
+          <span className="text-[12px] px-2 py-0.5 rounded-full"
+                style={{ background: 'var(--ah-band)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line)' }}>
+            {slotCount} vardiya
+          </span>
+        )}
+      </div>
+
+      {/* ── Ilan basligi ── */}
+      <div className="text-[12.5px] leading-snug line-clamp-2 mt-2"
+           style={{ color: 'var(--ah-ink-2)' }}>
+        {app.listing?.title || 'İlan bilgisi yok'}
+      </div>
+
+      {/* ── Alt: meta + aksiyonlar (flex-1 mt-auto ile en dibe) ── */}
+      <div className="mt-auto pt-3 space-y-2.5" style={{ borderTop: '1px solid var(--ah-line)' }}>
+        <div className="flex items-center justify-between gap-2 text-[11.5px]" style={{ color: 'var(--ah-ink-3)' }}>
+          <span className="truncate">{app.candidate?.email || '—'}</span>
+          <span className="flex-shrink-0">{date}</span>
         </div>
 
         <div className="flex items-center gap-2">
