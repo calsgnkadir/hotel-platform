@@ -83,50 +83,63 @@ Aynı imajlar herhangi bir VPS'te `docker compose up` ile de çalışır.
 3. **Çıkış → İşletme olarak giriş yap** → gelen başvuruyu **Kabul Et** / **Yedeğe Al** / **Reddet**
 4. Bir ilanı **Acil** işaretle → o an müsait adaylara anında bildirim gider
 5. **Mesajlar**'da aday ile WebSocket üzerinden canlı yazış
-6. **Analitik**'te dönüşüm, işe alım süresi ve durum dağılımını gör
+6. **Gelen Başvurular**'da Kanban (sürükle-bırak) ve A4 kart listesi arasında geçiş yap
 
 ---
 
 ## Ekran Görüntüleri
 
-> [!WARNING]
-> **Aşağıdaki görseller güncel değil.** 8 Haziran 2026'da, arayüz açık-teal
-> tasarıma geçirilmeden önce çekildiler; koyu/neon temayı gösteriyorlar.
-> Güncel arayüz için [Vercel önizlemesine](https://hotel-platform-seven.vercel.app/)
-> bak veya [Docker ile](#hızlı-başlangıç-docker) kendin çalıştır.
-> Yeniden çekim rehberi: [`docs/screenshots/README.md`](docs/screenshots/README.md)
+### İşletme Paneli — güncel arayüz (açık + teal)
+
+Gelen başvuruları **Kanban** (sürükle-bırak durum yönetimi) veya **A4 kart
+listesi** olarak yönet:
+
+<table>
+<tr>
+<td width="50%"><b>Gelen Başvurular — Kanban</b><br/><img src="docs/screenshots/business-applications.png" alt="Kanban" /></td>
+<td width="50%"><b>Gelen Başvurular — A4 kart listesi</b><br/><img src="docs/screenshots/business-applications-list.png" alt="A4 kart listesi" /></td>
+</tr>
+</table>
+
+### İşletme — Genel Bakış + İlanlarım
+
+<table>
+<tr>
+<td width="50%"><b>Genel Bakış (bugün + stat şeridi + akış)</b><br/><img src="docs/screenshots/business-overview.png" alt="Genel Bakış" /></td>
+<td width="50%"><b>İlanlarım (günlük ücret + vardiya + aciliyet)</b><br/><img src="docs/screenshots/business-listings.png" alt="İlanlarım" /></td>
+</tr>
+</table>
+
+### İşletme — Profil + canlı önizleme + KVKK
+
+<p align="center"><img src="docs/screenshots/business-profile.png" alt="İşletme Profili" width="100%" /></p>
+
+---
+
+> [!NOTE]
+> **Aşağıdaki aday/genel sayfa görselleri eski.** 8 Haziran 2026'da, arayüz
+> açık-teal tasarıma geçirilmeden önce çekildiler; koyu temayı gösteriyorlar
+> (yukarıdaki işletme paneli görselleri günceldir). Aday tarafı da yeniden
+> çekilecek — rehber: [`docs/screenshots/README.md`](docs/screenshots/README.md).
+> Bu sırada güncel aday arayüzü için [Docker ile](#hızlı-başlangıç-docker) çalıştırıp
+> `demo-aday1@test.com` / `Demo1234!` ile gir.
 
 ### Landing — hero + canlı vardiya nabzı
 
 <p align="center"><img src="docs/screenshots/landing.png" alt="AjansHotel Landing" width="100%" /></p>
 
-### Auth — Giriş + Kayıt
+### Aday Paneli · İlan Detayı · Mesajlaşma · KVKK
 
 <table>
 <tr>
-<td width="50%"><b>Giriş</b><br/><img src="docs/screenshots/login.png" alt="Login" /></td>
-<td width="50%"><b>Kayıt — Rol Seçimi</b><br/><img src="docs/screenshots/register.png" alt="Register" /></td>
+<td width="50%"><b>Aday Genel Bakış</b><br/><img src="docs/screenshots/candidate-overview.png" alt="Aday Genel Bakış" /></td>
+<td width="50%"><b>İlan Detayı + canlı harita</b><br/><img src="docs/screenshots/listing-detail.png" alt="İlan Detayı" /></td>
+</tr>
+<tr>
+<td width="50%"><b>Mesajlaşma</b><br/><img src="docs/screenshots/messages.png" alt="Sohbet" /></td>
+<td width="50%"><b>KVKK aydınlatma</b><br/><img src="docs/screenshots/kvkk.png" alt="KVKK" /></td>
 </tr>
 </table>
-
-### Aday Paneli — genel bakış + kompakt stat şeridi
-
-<p align="center"><img src="docs/screenshots/candidate-overview.png" alt="Aday Genel Bakış" width="100%" /></p>
-
-### İlan Detayı — Vardiya + ücret + **canlı harita** (#81)
-
-<p align="center"><img src="docs/screenshots/listing-detail.png" alt="İlan Detayı + Konum" width="100%" /></p>
-
-### Mesajlaşma — 5 saniye polling + listing context
-
-<p align="center"><img src="docs/screenshots/messages.png" alt="Sohbet" width="100%" /></p>
-
-### KVKK — Aydınlatma metni
-
-<p align="center"><img src="docs/screenshots/kvkk.png" alt="KVKK" width="80%" /></p>
-
-> **İşletme paneli (`business-applications.png`)** eklenecek — demo işletme hesabıyla
-> Gelen Başvurular ekranı (Kanban + A4 kart listesi) çekildiğinde buraya girer.
 > (Eski listede geçen `stats.png` düştü: Analitik sekmesi projeden kaldırıldı.)
 
 ---
