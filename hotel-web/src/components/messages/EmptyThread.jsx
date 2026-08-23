@@ -64,7 +64,7 @@ export default function EmptyThread() {
             <circle cx="40" cy="29" r="2" fill="#0f766e" opacity="0.9" />
           </svg>
         </motion.div>
-        <h3 className="text-[18px] font-semibold mb-2" style={{ color: '#ffffff', letterSpacing: '-0.015em' }}>
+        <h3 className="text-[18px] font-semibold mb-2" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.015em' }}>
           <em className="not-italic font-semibold" style={{
             background: 'var(--ah-brand)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',

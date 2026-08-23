@@ -352,7 +352,7 @@ export function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
             className="px-3 py-1.5 rounded-full text-[12px] whitespace-nowrap transition-all hover:-translate-y-0.5"
             style={{
               background: 'rgba(15, 118, 110, 0.08)',
-              color: '#ffffff',
+              color: 'var(--ah-brand)',
               border: '1px solid rgba(15, 118, 110, 0.22)',
               flexShrink: 0,
             }}>

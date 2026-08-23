@@ -132,7 +132,7 @@ export default function KeyboardShortcuts() {
               className="font-mono text-[11px] font-bold px-2 py-0.5 rounded"
               style={{
                 background: 'rgba(15, 118, 110, 0.18)',
-                color: '#ffffff',
+                color: 'var(--ah-brand)',
                 border: '1px solid rgba(15, 118, 110, 0.40)',
               }}
             >
@@ -218,7 +218,7 @@ export default function KeyboardShortcuts() {
                       className="font-mono text-[11px] font-bold px-2 py-1 rounded-md"
                       style={{
                         background: 'rgba(15, 118, 110, 0.10)',
-                        color: '#ffffff',
+                        color: 'var(--ah-brand)',
                         border: '1px solid rgba(15, 118, 110, 0.28)',
                         minWidth: '24px',
                         textAlign: 'center',

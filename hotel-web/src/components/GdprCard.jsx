@@ -74,7 +74,7 @@ export default function GdprCard() {
             padding: '10px 16px',
             borderRadius: 8,
             background: 'rgba(15, 118, 110, 0.10)',
-            color: '#ffffff',
+            color: 'var(--ah-brand)',
             fontSize: 13,
             fontWeight: 600,
             border: '1px solid rgba(15, 118, 110, 0.22)',
