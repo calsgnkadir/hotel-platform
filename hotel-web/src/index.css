@@ -278,7 +278,7 @@ code, pre, kbd, samp {
   background: var(--ah-card);
   color: var(--ah-ink);
   border: 1px solid var(--ah-line);
-  box-shadow: none;
+  box-shadow: var(--elev-1);   /* duz degil, yumusak derinlik */
 }
 .card:hover {
   border-color: var(--ah-line-2);
@@ -1074,9 +1074,9 @@ textarea:focus-visible {
 .ah-surface .card-metric,
 .ah-surface .card-content {
   background: var(--ah-card); color: var(--ah-ink-2);
-  border: 1px solid var(--ah-line); box-shadow: none;
+  border: 1px solid var(--ah-line); box-shadow: var(--elev-1);  /* yumusak derinlik */
 }
-.ah-surface .card:hover { border-color: var(--ah-line-2); box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+.ah-surface .card:hover { border-color: var(--ah-line-2); box-shadow: var(--elev-2); }
 .ah-surface .card-header { color: var(--ah-ink); border-color: var(--ah-line); }
 
 .ah-surface .input,
@@ -1098,7 +1098,7 @@ textarea:focus-visible {
 .ah-surface .btn-ghost:hover { background: #f2f5f5; color: var(--ah-ink); }
 
 .ah-surface .tier-ground { background: transparent; }
-.ah-surface .tier-raised { background: var(--ah-card); border: 1px solid var(--ah-line); box-shadow: none; }
+.ah-surface .tier-raised { background: var(--ah-card); border: 1px solid var(--ah-line); box-shadow: var(--elev-1); }
 .ah-surface .tier-raised-hover:hover { background: #fff; border-color: var(--ah-line-2); }
 /* FAZ E.1 — --ah-brand-line hic tanimli degildi: gecersiz var yuzunden border
    currentColor'a (ink-2 gri) dusuyordu, featured teal vurgusunu alamiyordu.
