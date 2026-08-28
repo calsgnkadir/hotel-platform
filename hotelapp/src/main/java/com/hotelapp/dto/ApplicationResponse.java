@@ -60,7 +60,6 @@ public class ApplicationResponse {
         private Double averageRating;
         private Long reviewCount;
         /** Faz B/#11: 0-100 güvenilirlik skoru — işletme aday seçerken hızlı filtre. */
-        private Integer reliabilityScore;
     }
 
     @Data @Builder

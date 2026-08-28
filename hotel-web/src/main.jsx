@@ -11,7 +11,7 @@ import './i18n'  // FAZ 1/#36 — i18n init
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
-      .then(reg => console.log('[PWA] SW registered:', reg.scope))
+      .then(reg => { if (import.meta.env.DEV) console.log('[PWA] SW registered:', reg.scope) })
       .catch(err => console.warn('[PWA] SW registration failed:', err))
   })
 }

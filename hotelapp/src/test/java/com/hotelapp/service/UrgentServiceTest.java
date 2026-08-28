@@ -160,16 +160,20 @@ class UrgentServiceTest {
         @Test
         @DisplayName("Aciliyet en yakın vardiyanın bitişinde söner")
         void urgentUntil_isNearestSlotEnd() {
+            // "bugun" yerine "yarin": computeUrgentUntil slot sonunu isAfter(now)
+            // ile suzuyor; bugun 23:00 slotu, test 23:00'ten SONRA kosarsa gecmise
+            // duser ve +3 slotu secilirdi (zamana-bagli kirilgan test). Yarin her
+            // saatte gelecekte kalir -> deterministik.
             LocalTime end = LocalTime.of(23, 0);
             JobListing l = listing(ListingStatus.ACTIVE,
                     slot(LocalDate.now().plusDays(3), LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                    slot(LocalDate.now(), LocalTime.of(16, 0), end));   // en yakin
+                    slot(LocalDate.now().plusDays(1), LocalTime.of(16, 0), end));   // en yakin
             when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
             when(userRepository.findAvailableNowCandidates(any(), any())).thenReturn(List.of());
 
             service().setUrgent(LISTING_ID, OWNER_ID, true);
 
-            assertThat(l.getUrgentUntil()).isEqualTo(LocalDateTime.of(LocalDate.now(), end));
+            assertThat(l.getUrgentUntil()).isEqualTo(LocalDateTime.of(LocalDate.now().plusDays(1), end));
         }
 
         @Test

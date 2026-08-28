@@ -85,7 +85,7 @@ export function wsConnect() {
       connected = true
       connectionState = STATE.CONNECTED
       reconnectAttempts = 0     // Basarili — backoff sifirla
-      console.log('[WS] Bağlandı')
+      import.meta.env.DEV && console.log('[WS] Bağlandı')
       // Bekleyen sub'ları gerçekle
       pendingSubs.forEach(({ destination, callback, ref }) => {
         ref.sub = client.subscribe(destination, (msg) => {
@@ -132,7 +132,7 @@ export function wsConnect() {
           // Stomp.js'ye sonraki retry delay'i ver — exponential backoff
           client.reconnectDelay = computeBackoffDelay()
         }
-        console.log(`[WS] Reconnect attempt #${reconnectAttempts} after ${client?.reconnectDelay}ms`)
+        import.meta.env.DEV && console.log(`[WS] Reconnect attempt #${reconnectAttempts} after ${client?.reconnectDelay}ms`)
         notifyStatus()
       }
     },
@@ -173,7 +173,7 @@ if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && !connected
         && (connectionState === STATE.RECONNECTING || connectionState === STATE.FAILED)) {
-      console.log('[WS] Tab visible — force reconnect')
+      import.meta.env.DEV && console.log('[WS] Tab visible — force reconnect')
       wsForceReconnect()
     }
   })
@@ -235,7 +235,7 @@ export function wsPublish(destination, body = {}) {
       destination,
       body: JSON.stringify(body),
     })
-    console.log('[WS] Publish:', destination)
+    import.meta.env.DEV && console.log('[WS] Publish:', destination)
   } catch (e) {
     console.warn('[WS] Publish failed:', e?.message)
   }

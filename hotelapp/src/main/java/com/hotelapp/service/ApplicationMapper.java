@@ -105,7 +105,7 @@ public class ApplicationMapper {
                 .build();
     }
 
-    /** Aday ozeti — avatar + rating + reliability score dahil */
+    /** Aday ozeti — avatar + rating (isletme -> aday). */
     public ApplicationResponse.CandidateSummary buildCandidateSummary(User candidate) {
         var rel = reliabilityService.computeForCandidate(candidate.getId());
         return ApplicationResponse.CandidateSummary.builder()
@@ -117,7 +117,6 @@ public class ApplicationMapper {
                         : null)
                 .averageRating(rel.getAverageRating())
                 .reviewCount(rel.getReviewCount())
-                .reliabilityScore(rel.getScore())
                 .build();
     }
 }

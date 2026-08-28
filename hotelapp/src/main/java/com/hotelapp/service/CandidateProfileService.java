@@ -39,7 +39,6 @@ public class CandidateProfileService {
     private final FileStorageService fileStorageService;
     private final ApplicationRepository applicationRepository;
     private final ReviewRepository reviewRepository;
-    private final ReliabilityService reliabilityService;
     private final ProfileViewService profileViewService;
     private final DocumentRepository documentRepository;
 
@@ -208,9 +207,7 @@ public class CandidateProfileService {
                     .orElse(null);
         }
 
-        // Guvenilirlik + sayilar
-        ReliabilityService.ReliabilityScore reliability =
-                reliabilityService.computeForCandidate(candidateId);
+        // Sayilar (tamamlanan is / no-show)
         long completedJobs = applicationRepository
                 .countByCandidateIdAndStatusAndNoShowFalse(candidateId, ApplicationStatus.ACCEPTED);
         long noShows = applicationRepository.countByCandidateIdAndNoShowTrue(candidateId);
@@ -241,11 +238,6 @@ public class CandidateProfileService {
                 .previousExperience(candidate.getPreviousExperience())
                 .smokes(candidate.getSmokes())
                 .hasLicense(candidate.getHasLicense())
-                .reliabilityScore(reliability != null ? reliability.getScore() : null)
-                .reliabilityTier(reliability != null && reliability.getScore() != null
-                        ? (reliability.getScore() >= 70 ? "HIGH"
-                          : reliability.getScore() >= 40 ? "MEDIUM" : "LOW")
-                        : null)
                 .completedJobs(completedJobs)
                 .noShowCount(noShows)
                 .averageRating(avgRating)
@@ -320,8 +312,6 @@ public class CandidateProfileService {
         private Boolean hasLicense;
 
         // Guvenilirlik metrikleri
-        private Integer reliabilityScore;
-        private String  reliabilityTier;  // HIGH/MEDIUM/LOW
         private Long    completedJobs;    // kabul + no-show degil
         private Long    noShowCount;
         private Double  averageRating;
