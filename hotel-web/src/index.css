@@ -1090,7 +1090,7 @@ textarea:focus-visible {
 .ah-surface .input::placeholder { color: var(--ah-ink-4) !important; }
 .ah-surface .input:focus { border-color: var(--ah-brand) !important; box-shadow: 0 0 0 3px var(--ah-brand-soft) !important; }
 .ah-surface .input:disabled { background: #f4f6f6 !important; color: var(--ah-ink-3) !important; }
-.ah-surface .label { color: var(--ah-ink-3); }
+.ah-surface .label { color: var(--ah-ink-2); }  /* form etiketleri daha okunur (ink-3 -> ink-2) */
 
 .ah-surface .btn-secondary { background: var(--ah-card); border: 1px solid var(--ah-line-2); color: var(--ah-ink-2); }
 .ah-surface .btn-secondary:hover { background: #f2f5f5; border-color: #bcc4c4; color: var(--ah-ink); }

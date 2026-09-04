@@ -250,7 +250,7 @@ export default function ProfileTab() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Fotograf */}
               <div className="card p-5">
-                <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--ah-ink-2)' }}>Profil Fotoğrafı</h3>
+                <h3 className="font-display text-[16px] font-semibold mb-4" style={{ color: 'var(--ah-ink)' }}>Profil Fotoğrafı</h3>
                 <div className="flex items-center gap-4">
                   <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                        style={{ background: 'rgba(15, 118, 110, 0.06)', border: '2px solid rgba(15, 118, 110, 0.20)' }}>
@@ -279,7 +279,7 @@ export default function ProfileTab() {
 
               {/* Temel Bilgiler */}
               <div className="card p-5 space-y-4">
-                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Temel Bilgiler</h3>
+                <h3 className="font-display text-[16px] font-semibold pb-2 border-b mb-1" style={{ color: 'var(--ah-ink)', borderColor: 'var(--ah-line)' }}>Temel Bilgiler</h3>
                 <div>
                   <label className="label">Ad Soyad *</label>
                   <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="input" />
@@ -316,7 +316,7 @@ export default function ProfileTab() {
 
               {/* Egitim & Ek */}
               <div className="card p-5 space-y-4">
-                <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b" style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>Eğitim & Ek</h3>
+                <h3 className="font-display text-[16px] font-semibold pb-2 border-b mb-1" style={{ color: 'var(--ah-ink)', borderColor: 'var(--ah-line)' }}>Eğitim & Ek</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="label">Eğitim Durumu</label>
