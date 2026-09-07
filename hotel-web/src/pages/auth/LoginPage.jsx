@@ -91,7 +91,7 @@ export default function LoginPage() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="label !mb-0">Şifre</label>
-                  <Link to="/forgot-password" className="text-[11px] font-semibold hover:underline" style={{ color: 'var(--ah-brand)' }}>
+                  <Link to="/forgot-password" className="text-[11px] font-semibold hover:underline" style={{ color: 'var(--ah-ink-2)' }}>
                     Şifremi Unuttum
                   </Link>
                 </div>
@@ -131,36 +131,14 @@ export default function LoginPage() {
 
             <p className="text-[12.5px] text-center mt-6" style={{ color: 'var(--ah-ink-3)' }}>
               Hesabın yok mu?{' '}
-              <Link to="/register" className="font-bold hover:underline" style={{ color: 'var(--ah-brand)' }}>
+              <Link to="/register" className="font-bold hover:underline" style={{ color: 'var(--ah-ink)' }}>
                 Ücretsiz oluştur
               </Link>
             </p>
 
-            {/* Demo hesaplar — sade details/summary */}
-            <details className="mt-6 pt-4" style={{ borderTop: '1px solid var(--ah-line)' }}>
-              <summary className="cursor-pointer text-[11px] font-semibold uppercase tracking-[0.06em] select-none inline-flex items-center gap-1.5"
-                       style={{ color: 'var(--ah-ink-4)' }}>
-                Demo hesaplar
-              </summary>
-              <div className="mt-3 space-y-1.5 text-[12.5px]">
-                <DemoRow k="Aday"    v="aday1@test.com" />
-                <DemoRow k="İşletme" v="isletme1@test.com" />
-                <DemoRow k="Şifre"   v="Password123!" />
-              </div>
-            </details>
           </div>
         </div>
       </main>
-    </div>
-  )
-}
-
-function DemoRow({ k, v }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 px-3 py-1.5 rounded-md"
-         style={{ background: 'var(--ah-page)' }}>
-      <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>{k}</span>
-      <code style={{ color: 'var(--ah-brand)' }}>{v}</code>
     </div>
   )
 }

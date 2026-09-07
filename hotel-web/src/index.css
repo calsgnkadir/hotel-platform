@@ -377,19 +377,22 @@ code, pre, kbd, samp {
   box-shadow: 0 0 0 4px rgba(205, 183, 143, 0.10) !important;
 }
 
-/* Card icindeki metin override — ivory hierarchy, never cool grays */
+/* Card icindeki text-ink-* override.
+   ESKI: ivory (koyu kart donemi) -> beyaz kartta GORUNMEZ yaziydi (Google
+   butonu ve text-ink-* Tailwind sinifi kullanan her sey kayboluyordu).
+   YENI: acik tema koyu ink skalasi. Koyu mod istenirse .dark .card ile ayri. */
 .card .text-ink-900,
 .card .text-ink-800 {
-  color: #f5efe2 !important;          /* headline ivory */
+  color: var(--ah-ink) !important;
 }
 .card .text-ink-700,
 .card .text-ink-600 {
-  color: #ede4d3 !important;          /* body ivory */
+  color: var(--ah-ink-2) !important;
 }
 .card .text-ink-500,
 .card .text-ink-400,
 .card .text-ink-300 {
-  color: #c9bdaa !important;          /* secondary muted ivory */
+  color: var(--ah-ink-3) !important;
 }
 .card .text-white {
   color: #f5efe2 !important;
