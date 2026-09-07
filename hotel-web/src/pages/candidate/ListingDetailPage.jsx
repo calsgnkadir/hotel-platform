@@ -85,7 +85,7 @@ export default function ListingDetailPage() {
           <p className="text-sm mb-4" style={{ color: 'var(--ah-ink-3)' }}>Bu ilan kaldırılmış veya yayında değil olabilir.</p>
           <button onClick={() => navigate(-1)}
             className="px-5 py-2.5 rounded-xl font-semibold transition-opacity hover:opacity-90"
-            style={{ background: '#0f766e', color: '#ffffff' }}>
+            style={{ background: '#1f2937', color: '#ffffff' }}>
             Geri Dön
           </button>
         </div>
@@ -321,7 +321,7 @@ export default function ListingDetailPage() {
               disabled={!hasFuture || applying}
               className="w-full py-3.5 text-[14px] font-semibold rounded-xl transition-all disabled:cursor-not-allowed hover:opacity-90"
               style={hasFuture
-                ? { background: '#0f766e', color: '#ffffff' }
+                ? { background: '#1f2937', color: '#ffffff' }
                 : { background: 'var(--ah-page)', color: 'var(--ah-ink-4)', border: '1px solid var(--ah-line)' }}>
               {hasFuture ? 'Bu İlana Başvur' : 'Süresi Doldu'}
             </button>

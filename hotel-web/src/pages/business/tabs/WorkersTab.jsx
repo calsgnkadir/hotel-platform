@@ -85,12 +85,12 @@ export default function WorkersTab({ applications, onOpenMessages }) {
         </div>
         <div className="tabular-nums"
              style={{
-               color: '#0f766e',
+               color: '#1f2937',
                fontSize: '28px',
                fontWeight: 600,
                letterSpacing: '-0.03em',
                lineHeight: 1,
-               filter: 'drop-shadow(0 0 14px rgba(15, 118, 110, 0.30))',
+               filter: 'drop-shadow(0 0 14px rgba(31, 41, 55, 0.30))',
              }}>
           {totalHours.toFixed(0)} <span className="text-[10px] font-medium uppercase tracking-[0.06em] ml-1" style={{ color: '#6b7574' }}>SAAT</span>
         </div>
@@ -131,7 +131,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
             </div>
             {/* FAZ D1 — son 8 hafta toplam başvuru trendi (yoğunluk göstergesi) */}
             <Sparkline data={weeklyTrend(applications, null)}
-                       color="#0f766e" width={56} height={24} />
+                       color="#1f2937" width={56} height={24} />
           </div>
         </div>
       </div>
@@ -149,9 +149,9 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                 ) : (
                   <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
                        style={{
-                         background: 'rgba(15, 118, 110, 0.08)',
-                         border: '1px solid rgba(15, 118, 110, 0.22)',
-                         color: '#0f766e',
+                         background: 'rgba(31, 41, 55, 0.08)',
+                         border: '1px solid rgba(31, 41, 55, 0.22)',
+                         color: '#1f2937',
                        }}>
                     {w.candidate?.fullName?.charAt(0) || '?'}
                   </div>

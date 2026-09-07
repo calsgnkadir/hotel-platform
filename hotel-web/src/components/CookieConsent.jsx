@@ -90,7 +90,7 @@ export default function CookieConsent() {
         background: 'rgba(12, 23, 38, 0.96)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(15, 118, 110, 0.25)',
+        border: '1px solid rgba(31, 41, 55, 0.25)',
         borderRadius: 14,
         padding: '18px 20px',
         boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
@@ -99,24 +99,24 @@ export default function CookieConsent() {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8,
       }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth="2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f2937" strokeWidth="2">
           <circle cx="12" cy="12" r="9" />
-          <circle cx="9.5" cy="9.5" r="1" fill="#0f766e" />
-          <circle cx="15.5" cy="11" r="1" fill="#0f766e" />
-          <circle cx="11" cy="15" r="1" fill="#0f766e" />
+          <circle cx="9.5" cy="9.5" r="1" fill="#1f2937" />
+          <circle cx="15.5" cy="11" r="1" fill="#1f2937" />
+          <circle cx="11" cy="15" r="1" fill="#1f2937" />
         </svg>
-        <h2 style={{ fontSize: 14, fontWeight: 700, color: '#2d968b', letterSpacing: '0.04em' }}>
+        <h2 style={{ fontSize: 14, fontWeight: 700, color: '#1f2937', letterSpacing: '0.04em' }}>
           Çerez Tercihleri
         </h2>
       </div>
 
       {!showDetails ? (
         <>
-          <p style={{ fontSize: 13, lineHeight: 1.55, color: 'rgba(15, 118, 110, 0.14)', marginBottom: 14 }}>
-            AjansHotel deneyimini iyileştirmek için çerezler kullanır. <strong style={{ color: '#2d968b' }}>Gerekli çerezler</strong> oturumun açık kalması için
+          <p style={{ fontSize: 13, lineHeight: 1.55, color: 'rgba(31, 41, 55, 0.14)', marginBottom: 14 }}>
+            AjansHotel deneyimini iyileştirmek için çerezler kullanır. <strong style={{ color: '#1f2937' }}>Gerekli çerezler</strong> oturumun açık kalması için
             zorunludur. Analitik ve pazarlama çerezleri opsiyoneldir.
             {' '}
-            <a href="/kvkk" style={{ color: '#2d968b', textDecoration: 'underline' }}>KVKK metni</a>.
+            <a href="/kvkk" style={{ color: '#1f2937', textDecoration: 'underline' }}>KVKK metni</a>.
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button onClick={acceptAll} style={btnPrimary}>Tümünü Kabul Et</button>
@@ -149,7 +149,7 @@ function Row({ label, subtitle, checked, onChange, disabled }) {
       display: 'flex', alignItems: 'flex-start', gap: 12,
       padding: 10, borderRadius: 8,
       background: 'rgba(255,255,255,0.03)',
-      border: '1px solid rgba(15, 118, 110, 0.08)',
+      border: '1px solid rgba(31, 41, 55, 0.08)',
       cursor: disabled ? 'not-allowed' : 'pointer',
     }}>
       <input
@@ -157,10 +157,10 @@ function Row({ label, subtitle, checked, onChange, disabled }) {
         checked={!!checked}
         disabled={disabled}
         onChange={e => onChange?.(e.target.checked)}
-        style={{ marginTop: 2, accentColor: '#0f766e' }}
+        style={{ marginTop: 2, accentColor: '#1f2937' }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#2d968b' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#1f2937' }}>
           {label}
           {disabled && <span style={{ marginLeft: 8, fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>(zorunlu)</span>}
         </div>
@@ -177,16 +177,16 @@ export function getCookiePrefs() {
 
 const btnPrimary = {
   padding: '8px 16px', borderRadius: 8,
-  background: 'linear-gradient(135deg, #0f766e, #2d968b)',
+  background: 'linear-gradient(135deg, #1f2937, #1f2937)',
   color: '#13110f', fontSize: 12, fontWeight: 700,
   border: 'none', cursor: 'pointer',
   whiteSpace: 'nowrap',
 }
 const btnGhost = {
   padding: '8px 16px', borderRadius: 8,
-  background: 'rgba(15, 118, 110, 0.10)',
-  color: '#2d968b', fontSize: 12, fontWeight: 600,
-  border: '1px solid rgba(15, 118, 110, 0.22)',
+  background: 'rgba(31, 41, 55, 0.10)',
+  color: '#1f2937', fontSize: 12, fontWeight: 600,
+  border: '1px solid rgba(31, 41, 55, 0.22)',
   cursor: 'pointer', whiteSpace: 'nowrap',
 }
 const btnLink = {

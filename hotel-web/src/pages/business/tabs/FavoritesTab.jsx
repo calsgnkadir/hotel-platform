@@ -115,9 +115,9 @@ export default function FavoritesTab({ onOpenMessages }) {
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg flex-shrink-0"
                  style={{
-                   background: 'rgba(15, 118, 110, 0.08)',
-                   border: '1px solid rgba(15, 118, 110, 0.22)',
-                   color: '#0f766e',
+                   background: 'rgba(31, 41, 55, 0.08)',
+                   border: '1px solid rgba(31, 41, 55, 0.22)',
+                   color: '#1f2937',
                  }}>
               {f.candidateName?.charAt(0) || '?'}
             </div>

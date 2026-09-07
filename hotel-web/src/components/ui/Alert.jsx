@@ -17,7 +17,7 @@ const VARIANTS = {
   default: {
     cls: 'bg-transparent',
     style: {
-      borderColor: 'rgba(15, 118, 110, 0.14)',
+      borderColor: 'rgba(31, 41, 55, 0.14)',
       color: '#3f4b4a',
     },
   },

@@ -64,7 +64,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
             ) : (
               <div
                 className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-semibold text-white"
-                style={{ background: '#0f766e' }}
+                style={{ background: '#1f2937' }}
               >
                 {initial}
               </div>
@@ -75,7 +75,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
           </h3>
           {c.otherPartyRole && (
             <div className="flex items-center justify-center mt-1">
-              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#0f766e' }}>
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#1f2937' }}>
                 {isBiz ? 'İşletme' : 'Aday'}
               </span>
             </div>
@@ -84,8 +84,8 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
 
         {/* Ilan kart */}
         {c.listingTitle && (
-          <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(15, 118, 110, 0.08)' }}>
-            <div className="text-[10px] tracking-[0.08em] uppercase mb-2" style={{ color: '#0f766e' }}>
+          <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(31, 41, 55, 0.08)' }}>
+            <div className="text-[10px] tracking-[0.08em] uppercase mb-2" style={{ color: '#1f2937' }}>
               İlan
             </div>
             <div
@@ -99,7 +99,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full transition-opacity hover:opacity-90"
-                  style={{ background: '#0f766e', color: '#ffffff' }}
+                  style={{ background: '#1f2937', color: '#ffffff' }}
                 >
                   İlana Git
                 </a>
@@ -109,8 +109,8 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
         )}
 
         {/* Sohbet istatistik — kompakt */}
-        <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(15, 118, 110, 0.08)' }}>
-          <div className="text-[10px] tracking-[0.08em] uppercase mb-2.5" style={{ color: '#0f766e' }}>
+        <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(31, 41, 55, 0.08)' }}>
+          <div className="text-[10px] tracking-[0.08em] uppercase mb-2.5" style={{ color: '#1f2937' }}>
             Sohbet
           </div>
           <div className="space-y-2 text-xs">
@@ -129,7 +129,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
                 <span style={{ color: '#6b7574' }}>Okunmamış</span>
                 <span
                   className="font-bold text-[10px] px-2 py-0.5 rounded-full"
-                  style={{ background: '#0f766e', color: '#ffffff' }}
+                  style={{ background: '#1f2937', color: '#ffffff' }}
                 >
                   {c.unreadCount}
                 </span>
@@ -140,7 +140,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
 
         {/* Hizli islemler */}
         <div className="px-5 py-4 space-y-2 flex-1">
-          <div className="text-[10px] tracking-[0.08em] uppercase mb-1" style={{ color: '#0f766e' }}>
+          <div className="text-[10px] tracking-[0.08em] uppercase mb-1" style={{ color: '#1f2937' }}>
             Hızlı İşlemler
           </div>
           {/* Dalga G — Kullanici profilini gor (role'a gore /p/business/:id veya /p/candidate/:id) */}
@@ -156,11 +156,11 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               background: 'var(--ah-page)',
-              color: '#0f766e',
+              color: '#1f2937',
               border: '1px solid var(--ah-line)',
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#1f2937" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
             <span className="font-semibold">
               {c?.otherPartyRole === 'BUSINESS_OWNER' ? 'İşletme Profili' : 'Aday Profili'}
             </span>
@@ -173,11 +173,11 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               background: 'var(--ah-page)',
-              color: '#0f766e',
+              color: '#1f2937',
               border: '1px solid var(--ah-line)',
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5 19.5 4.5m0 0v15m0-15h-15" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#1f2937" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5 19.5 4.5m0 0v15m0-15h-15" /></svg>
             <span className="font-semibold">İlanı Görüntüle</span>
           </button>
           {/* FAZ 11.W3.1 — Business: basvuruyu split-view'da ac (Wave 2 URL entegrasyonu) */}
@@ -187,8 +187,8 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
               className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5"
               style={{
                 background: 'var(--ah-brand-soft)',
-                color: '#0f766e',
-                border: '1px solid rgba(15, 118, 110, 0.35)',
+                color: '#1f2937',
+                border: '1px solid rgba(31, 41, 55, 0.35)',
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
@@ -212,7 +212,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
         </div>
 
         {/* Alt imza */}
-        <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'rgba(15, 118, 110, 0.08)' }}>
+        <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'rgba(31, 41, 55, 0.08)' }}>
           <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: 'var(--ah-ink-4)' }}>
             AjansHotel · Sohbet
           </span>

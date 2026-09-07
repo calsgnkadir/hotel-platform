@@ -18,10 +18,10 @@ function SearchInput({ value, onChange }) {
   return (
     <motion.div
       animate={{
-        borderColor: focused ? 'rgba(15, 118, 110, 0.45)' : 'rgba(15, 118, 110, 0.10)',
+        borderColor: focused ? 'rgba(31, 41, 55, 0.45)' : 'rgba(31, 41, 55, 0.10)',
         boxShadow: focused
-          ? '0 0 0 3px rgba(15, 118, 110, 0.08), 0 4px 14px rgba(0,0,0,0.20)'
-          : '0 0 0 0px rgba(15, 118, 110, 0)',
+          ? '0 0 0 3px rgba(31, 41, 55, 0.08), 0 4px 14px rgba(0,0,0,0.20)'
+          : '0 0 0 0px rgba(31, 41, 55, 0)',
       }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       className="relative rounded-xl"
@@ -32,7 +32,7 @@ function SearchInput({ value, onChange }) {
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
            strokeWidth={1.8} stroke="currentColor"
            className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-           style={{ color: focused ? '#0f766e' : '#6b7574' }}>
+           style={{ color: focused ? '#1f2937' : '#6b7574' }}>
         <path strokeLinecap="round" strokeLinejoin="round"
               d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
       </svg>
@@ -41,7 +41,7 @@ function SearchInput({ value, onChange }) {
              onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
              placeholder="Kişi, ilan veya mesaj…"
              className="w-full bg-transparent outline-none h-9 pl-8 pr-7 text-[12.5px]"
-             style={{ color: 'var(--text-headline)', caretColor: '#0f766e' }} />
+             style={{ color: 'var(--text-headline)', caretColor: '#1f2937' }} />
       {value && (
         <button type="button" onClick={() => onChange('')}
                 title="Temizle"
@@ -68,7 +68,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
       className="relative w-full text-left px-3 py-3 group overflow-hidden rounded-xl cursor-pointer"
       style={{
         background: isActive
-          ? 'linear-gradient(90deg, rgba(15, 118, 110, 0.08), rgba(15, 118, 110, 0.02))'
+          ? 'linear-gradient(90deg, rgba(31, 41, 55, 0.08), rgba(31, 41, 55, 0.02))'
           : 'transparent',
         marginBottom: 4,
       }}
@@ -77,12 +77,12 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
       {isActive && (
         <motion.span layoutId="conv-active-rail"
           className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
-          style={{ background: 'linear-gradient(180deg, #0f766e, #0f766e, #0b5d57)',
+          style={{ background: 'linear-gradient(180deg, #1f2937, #1f2937, #111827)',
                    boxShadow: 'none' }} />
       )}
       {/* Hover sweep */}
       <span aria-hidden className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-            style={{ background: 'linear-gradient(90deg, rgba(15, 118, 110, 0.06) 0%, transparent 60%)' }} />
+            style={{ background: 'linear-gradient(90deg, rgba(31, 41, 55, 0.06) 0%, transparent 60%)' }} />
 
       <div className="relative flex items-start gap-3">
         <div className="relative flex-shrink-0">
@@ -90,13 +90,13 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
             <img src={cldImg(conv.otherPartyAvatarUrl, { w: ImgSize.avatarSm })} alt={conv.otherPartyName}
               loading="lazy" decoding="async"
               className="w-10 h-10 rounded-full object-cover"
-              style={{ border: '1px solid rgba(15, 118, 110, 0.18)' }} />
+              style={{ border: '1px solid rgba(31, 41, 55, 0.18)' }} />
           ) : (
             <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-[15px]"
                  style={{
-                   background: 'linear-gradient(135deg, rgba(15, 118, 110, 0.55), rgba(244, 246, 246, 0.85))',
-                   border: '1px solid rgba(15, 118, 110, 0.18)',
-                   color: '#0f766e',
+                   background: 'linear-gradient(135deg, rgba(31, 41, 55, 0.55), rgba(244, 246, 246, 0.85))',
+                   border: '1px solid rgba(31, 41, 55, 0.18)',
+                   color: '#1f2937',
                  }}>
               {(conv.otherPartyName || '?').charAt(0).toUpperCase()}
             </div>
@@ -117,13 +117,13 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
           </div>
           {conv.listingTitle && (
             <div className="text-[10px] truncate mt-0.5 uppercase tracking-wider font-semibold"
-                 style={{ color: '#0f766e' }}>
+                 style={{ color: '#1f2937' }}>
               {conv.listingTitle}
             </div>
           )}
           <div className="flex items-center justify-between gap-2 mt-1.5">
             <div className={`text-[12px] truncate ${hasUnread ? 'font-medium' : 'font-normal'}`}
-                 style={{ color: hasUnread ? '#0f766e' : 'var(--text-secondary)' }}>
+                 style={{ color: hasUnread ? '#1f2937' : 'var(--text-secondary)' }}>
               {conv.lastMessagePreview || <span className="italic" style={{ color: 'var(--text-muted)' }}>Henüz mesaj yok</span>}
             </div>
             {hasUnread && (
@@ -147,7 +147,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
         onClick={(e) => { e.stopPropagation(); onToggleStar?.() }}
         title={isStarred ? 'Yildizi kaldir' : 'Yildizla'}
         className="absolute top-2 right-2 p-1 rounded-md transition-colors opacity-60 hover:opacity-100"
-        style={{ color: isStarred ? '#0f766e' : '#98a1a0' }}
+        style={{ color: isStarred ? '#1f2937' : '#98a1a0' }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill={isStarred ? 'currentColor' : 'none'}
              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -178,22 +178,22 @@ function EmptyRail({ userRole, onNavigate }) {
         className="relative w-20 h-20 mx-auto mb-4">
         <div className="absolute inset-0 rounded-full"
              style={{
-               background: 'radial-gradient(circle, rgba(15, 118, 110, 0.22) 0%, transparent 65%)',
+               background: 'radial-gradient(circle, rgba(31, 41, 55, 0.22) 0%, transparent 65%)',
                filter: 'blur(10px)',
              }} />
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className="relative w-full h-full">
           <defs>
             <linearGradient id="empty-bubble-grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%"  stopColor="#0f766e" />
-              <stop offset="100%" stopColor="#0b5d57" />
+              <stop offset="0%"  stopColor="#1f2937" />
+              <stop offset="100%" stopColor="#111827" />
             </linearGradient>
           </defs>
           <path d="M14 12h32a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H24l-10 8V20a8 8 0 0 1 0-8z"
                 fill="rgba(255, 255, 255, 0.85)"
                 stroke="url(#empty-bubble-grad)" strokeWidth="1.5" />
-          <circle cx="24" cy="29" r="1.8" fill="#0f766e" opacity="0.9" />
-          <circle cx="32" cy="29" r="1.8" fill="#0f766e" opacity="0.9" />
-          <circle cx="40" cy="29" r="1.8" fill="#0f766e" opacity="0.9" />
+          <circle cx="24" cy="29" r="1.8" fill="#1f2937" opacity="0.9" />
+          <circle cx="32" cy="29" r="1.8" fill="#1f2937" opacity="0.9" />
+          <circle cx="40" cy="29" r="1.8" fill="#1f2937" opacity="0.9" />
         </svg>
       </motion.div>
       <h4 className="type-body font-semibold mb-1.5" style={{ color: 'var(--text-headline)' }}>
@@ -209,9 +209,9 @@ function EmptyRail({ userRole, onNavigate }) {
         transition={{ type: 'spring', stiffness: 340, damping: 22 }}
         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[11.5px] font-semibold"
         style={{
-          background: 'linear-gradient(135deg, #0f766e 0%, #0f766e 50%, #0b5d57 100%)',
+          background: 'linear-gradient(135deg, #1f2937 0%, #1f2937 50%, #111827 100%)',
           color: '#ffffff',
-          border: '1px solid rgba(15, 118, 110, 0.45)',
+          border: '1px solid rgba(31, 41, 55, 0.45)',
           boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
         }}>
         {ctaLabel}
@@ -249,9 +249,9 @@ export default function ConversationsRail({
           </h3>
           <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full"
                 style={{
-                  background: 'rgba(15, 118, 110, 0.08)',
-                  border: '1px solid rgba(15, 118, 110, 0.18)',
-                  color: '#0f766e',
+                  background: 'rgba(31, 41, 55, 0.08)',
+                  border: '1px solid rgba(31, 41, 55, 0.18)',
+                  color: '#1f2937',
                 }}>
             {filteredConvs.length}{search ? ` / ${conversations.length}` : ''}
           </span>
@@ -272,9 +272,9 @@ export default function ConversationsRail({
                 onClick={() => onFilterChange(opt.id)}
                 className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
                 style={{
-                  background: isActive ? 'rgba(15, 118, 110, 0.14)' : 'rgba(255, 255, 255, 0.75)',
-                  color: isActive ? '#0f766e' : '#6b7574',
-                  border: `1px solid ${isActive ? 'rgba(15, 118, 110, 0.40)' : 'rgba(15, 118, 110, 0.12)'}`,
+                  background: isActive ? 'rgba(31, 41, 55, 0.14)' : 'rgba(255, 255, 255, 0.75)',
+                  color: isActive ? '#1f2937' : '#6b7574',
+                  border: `1px solid ${isActive ? 'rgba(31, 41, 55, 0.40)' : 'rgba(31, 41, 55, 0.12)'}`,
                 }}>
                 {opt.label}
                 {opt.count > 0 && (

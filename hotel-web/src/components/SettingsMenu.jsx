@@ -137,7 +137,7 @@ function MenuItem({ icon, label, onClick, href, onNavigate }) {
   const cls = "w-full px-4 py-3 flex items-center gap-3 type-body transition-colors border-b border-hairline"
   const style = { color: 'var(--text-primary)' }
   const hover = {
-    onMouseEnter: (e) => e.currentTarget.style.background = 'rgba(15, 118, 110, 0.06)',
+    onMouseEnter: (e) => e.currentTarget.style.background = 'rgba(31, 41, 55, 0.06)',
     onMouseLeave: (e) => e.currentTarget.style.background = 'transparent',
   }
   if (href) {

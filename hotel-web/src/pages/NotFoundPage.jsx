@@ -11,11 +11,11 @@ export default function NotFoundPage() {
       <div className="text-center max-w-md">
         <div className="tabular-nums inline-flex items-center justify-center w-28 h-28 rounded-full mb-7 text-5xl font-semibold"
              style={{
-               background: 'rgba(15, 118, 110, 0.08)',
-               border: '1px solid rgba(15, 118, 110, 0.22)',
-               color: '#2d968b',
+               background: 'rgba(31, 41, 55, 0.08)',
+               border: '1px solid rgba(31, 41, 55, 0.22)',
+               color: '#1f2937',
                letterSpacing: '-0.03em',
-               filter: 'drop-shadow(0 0 18px rgba(15, 118, 110, 0.25))',
+               filter: 'drop-shadow(0 0 18px rgba(31, 41, 55, 0.25))',
              }}>
           404
         </div>

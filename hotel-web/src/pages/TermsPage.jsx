@@ -16,7 +16,7 @@ export default function TermsPage() {
            style={{
              background:
                'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(74, 63, 51, 0.30) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(15, 118, 110, 0.10) 0%, transparent 60%)',
+               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(31, 41, 55, 0.10) 0%, transparent 60%)',
            }} />
 
       <div className="fixed top-3 left-4 z-40">
@@ -111,9 +111,9 @@ export default function TermsPage() {
 
           <Section title="10. İletişim">
             Sözleşmeyle ilgili sorularınız için: <a href="/iletisim"
-            style={{ color: '#2d968b', textDecoration: 'underline' }}>iletişim sayfası</a>. KVKK
+            style={{ color: '#1f2937', textDecoration: 'underline' }}>iletişim sayfası</a>. KVKK
             veri sorumlusu başvuruları için: <a href="/kvkk"
-            style={{ color: '#2d968b', textDecoration: 'underline' }}>KVKK metni</a>.
+            style={{ color: '#1f2937', textDecoration: 'underline' }}>KVKK metni</a>.
           </Section>
 
           <p style={{ marginTop: 24, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
@@ -129,7 +129,7 @@ function Section({ title, children }) {
   return (
     <section style={{ marginBottom: 22 }}>
       <h2 className="" style={{
-        fontSize: 15, fontWeight: 600, color: '#2d968b',
+        fontSize: 15, fontWeight: 600, color: '#1f2937',
         marginBottom: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
       }}>
         {title}

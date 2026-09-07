@@ -45,7 +45,7 @@ export default function ProfileCompletenessCard({ data }) {
             width: `${percentage}%`,
             background: percentage >= 100
               ? 'linear-gradient(90deg, #7a9f7a, #16a34a)'
-              : 'linear-gradient(90deg, #0f766e, #fff)',
+              : 'linear-gradient(90deg, #1f2937, #fff)',
           }}
         />
       </div>

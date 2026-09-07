@@ -102,7 +102,7 @@ export default function InstallPrompt() {
                 </p>
                 <button onClick={handleLater}
                   className="mt-3 text-xs font-semibold"
-                  style={{ color: '#0b5d57' }}>
+                  style={{ color: '#111827' }}>
                   Şimdi değil
                 </button>
               </div>

@@ -4,7 +4,7 @@ import { Area, AreaChart, ResponsiveContainer } from 'recharts'
  * FAZ 5.6 — Stat kart sparkline (Recharts AreaChart, axissiz/gridsiz)
  *
  * Kullanim:
- *   <Sparkline data={weeklyTrend(items)} color="#0f766e" />
+ *   <Sparkline data={weeklyTrend(items)} color="#1f2937" />
  */
 export function weeklyTrend(items, filterFn, weeks = 8) {
   const buckets = new Array(weeks).fill(0)
@@ -22,7 +22,7 @@ export function weeklyTrend(items, filterFn, weeks = 8) {
   return buckets.map((c, i) => ({ w: i, c }))
 }
 
-export default function Sparkline({ data, color = '#0f766e', width = 68, height = 26 }) {
+export default function Sparkline({ data, color = '#1f2937', width = 68, height = 26 }) {
   const allZero = !data || data.every(d => d.c === 0)
   if (allZero) {
     return (

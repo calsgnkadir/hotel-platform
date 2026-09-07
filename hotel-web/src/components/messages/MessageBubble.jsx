@@ -7,15 +7,15 @@
  *
  * FAZ 25 — Renk uyumu (kullanici istegi): eski teal->altin / gri->krem
  * gradyanlari birakildi. Artik WhatsApp gibi net iki ton:
- *   benim mesajim  = duz teal (#0f766e) + beyaz yazi
+ *   benim mesajim  = duz teal (#1f2937) + beyaz yazi
  *   karsi taraf    = beyaz kart + koyu ink yazi + ince cizgi
  */
 import { useState } from 'react'
 import cldImg, { ImgSize } from '../../lib/cldImg'
 import { formatTime, parseCallInvite, pdfThumbnailUrl, fileTypeMeta } from './utils'
 
-const BRAND = '#0f766e'
-const BRAND_DARK = '#0b5d57'
+const BRAND = '#1f2937'
+const BRAND_DARK = '#111827'
 
 /* ── FAZ 11.W3.3 — Reaction SVG preset (emoji yasak — proje kurali) ── */
 const REACTION_ICONS = {
@@ -105,7 +105,7 @@ function CallInviteBubble({ m, type, url }) {
           background: mine ? BRAND : '#ffffff',
           color: mine ? '#ffffff' : 'var(--ah-ink)',
           border: `1px solid ${mine ? BRAND : 'var(--ah-line)'}`,
-          boxShadow: mine ? '0 1px 2px rgba(15, 118, 110, 0.20)' : '0 1px 2px rgba(18, 32, 31, 0.06)',
+          boxShadow: mine ? '0 1px 2px rgba(31, 41, 55, 0.20)' : '0 1px 2px rgba(18, 32, 31, 0.06)',
         }}>
         <div className="flex items-center gap-3 px-4 py-3"
              style={{ background: mine ? 'rgba(255, 255, 255, 0.08)' : 'var(--ah-page)' }}>
@@ -244,7 +244,7 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
             background: mine ? BRAND : '#ffffff',
             color: mine ? '#ffffff' : 'var(--ah-ink)',
             border: `1px solid ${mine ? BRAND : 'var(--ah-line)'}`,
-            boxShadow: mine ? '0 1px 2px rgba(15, 118, 110, 0.20)' : '0 1px 2px rgba(18, 32, 31, 0.06)',
+            boxShadow: mine ? '0 1px 2px rgba(31, 41, 55, 0.20)' : '0 1px 2px rgba(18, 32, 31, 0.06)',
           }}>
 
           {/* FAZ 11.W3.3 — Quoted reply stub */}

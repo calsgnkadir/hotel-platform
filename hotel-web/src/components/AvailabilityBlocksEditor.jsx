@@ -89,12 +89,12 @@ export default function AvailabilityBlocksEditor() {
     <div className="card p-5"
          style={{
            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85))',
-           border: '1px solid rgba(15, 118, 110, 0.14)',
+           border: '1px solid rgba(31, 41, 55, 0.14)',
          }}>
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div>
           <h3 className="text-base tracking-[0.2em] uppercase pb-1"
-              style={{ color: '#0f766e' }}>
+              style={{ color: '#1f2937' }}>
             Haftalık Müsaitlik
           </h3>
           <p className="text-[11px] max-w-md" style={{ color: '#6b7574' }}>
@@ -105,9 +105,9 @@ export default function AvailabilityBlocksEditor() {
         <button type="button" onClick={addBlock}
           className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
           style={{
-            background: 'rgba(15, 118, 110, 0.10)',
-            border: '1px solid rgba(15, 118, 110, 0.28)',
-            color: '#0f766e',
+            background: 'rgba(31, 41, 55, 0.10)',
+            border: '1px solid rgba(31, 41, 55, 0.28)',
+            color: '#1f2937',
           }}>
           + Blok Ekle
         </button>
@@ -117,8 +117,8 @@ export default function AvailabilityBlocksEditor() {
 
       {!loading && sorted.length === 0 && (
         <div className="text-center py-6 rounded-lg"
-             style={{ background: 'rgba(15, 118, 110, 0.05)', border: '1px dashed rgba(15, 118, 110, 0.18)' }}>
-          <p className="text-xs" style={{ color: '#0f766e' }}>
+             style={{ background: 'rgba(31, 41, 55, 0.05)', border: '1px dashed rgba(31, 41, 55, 0.18)' }}>
+          <p className="text-xs" style={{ color: '#1f2937' }}>
             Henüz blok tanımlanmamış. <b>+ Blok Ekle</b> ile başla.
           </p>
         </div>
@@ -132,14 +132,14 @@ export default function AvailabilityBlocksEditor() {
             return (
               <div key={b.id ?? `new-${sortedIdx}`}
                    className="flex flex-wrap items-center gap-2 rounded-lg p-2"
-                   style={{ background: 'rgba(15, 118, 110, 0.05)', border: '1px solid rgba(15, 118, 110, 0.10)' }}>
+                   style={{ background: 'rgba(31, 41, 55, 0.05)', border: '1px solid rgba(31, 41, 55, 0.10)' }}>
                 <select value={b.dayOfWeek}
                         onChange={e => updateBlock(realIdx, { dayOfWeek: e.target.value })}
                         className="text-sm rounded-md px-2 py-1.5 min-w-[110px]"
                         style={{
                           background: 'rgba(255, 255, 255, 0.85)',
                           color: '#3f4b4a',
-                          border: '1px solid rgba(15, 118, 110, 0.22)',
+                          border: '1px solid rgba(31, 41, 55, 0.22)',
                         }}>
                   {DAY_ORDER.map(d => <option key={d} value={d}>{DAY_LABELS[d]}</option>)}
                 </select>
@@ -149,7 +149,7 @@ export default function AvailabilityBlocksEditor() {
                        style={{
                          background: 'rgba(255, 255, 255, 0.85)',
                          color: '#3f4b4a',
-                         border: '1px solid rgba(15, 118, 110, 0.22)',
+                         border: '1px solid rgba(31, 41, 55, 0.22)',
                          colorScheme: 'dark',
                        }} />
                 <span style={{ color: '#6b7574' }}>—</span>
@@ -159,7 +159,7 @@ export default function AvailabilityBlocksEditor() {
                        style={{
                          background: 'rgba(255, 255, 255, 0.85)',
                          color: '#3f4b4a',
-                         border: '1px solid rgba(15, 118, 110, 0.22)',
+                         border: '1px solid rgba(31, 41, 55, 0.22)',
                          colorScheme: 'dark',
                        }} />
                 <button type="button" onClick={() => removeBlock(realIdx)}
@@ -188,7 +188,7 @@ export default function AvailabilityBlocksEditor() {
             style={{
               background: 'var(--ah-brand-gradient)',
               color: '#ffffff',
-              border: '1px solid rgba(15, 118, 110, 0.55)',
+              border: '1px solid rgba(31, 41, 55, 0.55)',
               boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
             }}>
             {saving ? 'Kaydediliyor...' : 'Müsaitliği Kaydet'}

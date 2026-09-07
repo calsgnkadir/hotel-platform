@@ -392,7 +392,7 @@ function SortableSlot({ slot, index, totalCount, todayStr, onUpdate, onDuplicate
     transition,
     opacity: isDragging ? 0.55 : 1,
     zIndex: isDragging ? 30 : 'auto',
-    boxShadow: isDragging ? '0 12px 30px rgba(15, 118, 110, 0.30)' : undefined,
+    boxShadow: isDragging ? '0 12px 30px rgba(31, 41, 55, 0.30)' : undefined,
   }
 
   const locked = (slot.slotsFilled || 0) > 0

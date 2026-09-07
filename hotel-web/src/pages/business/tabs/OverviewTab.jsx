@@ -19,7 +19,7 @@ export default function OverviewTab({ applications, onTabChange }) {
         {/* Stat strip — number → hairline → label hierarchy (UX4 spec) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
-            { label: 'Toplam',      value: applications.length, color: '#0f766e' },
+            { label: 'Toplam',      value: applications.length, color: '#1f2937' },
             { label: 'Bekleyen',    value: pending,             color: '#c8923a' },
             { label: 'İnceleniyor', value: reviewing,           color: '#6b8aa3' },
             { label: 'Kabul',       value: accepted,            color: '#7a9f7a' },
@@ -169,15 +169,15 @@ function BizRecentRow({ app, last, onClick }) {
       role="button" tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
       className="relative pl-6 pr-5 py-3 flex items-center gap-3 group cursor-pointer"
-      style={{ borderBottom: last ? 'none' : '1px solid rgba(15, 118, 110, 0.05)' }}>
+      style={{ borderBottom: last ? 'none' : '1px solid rgba(31, 41, 55, 0.05)' }}>
       {/* Sol accent bar — always visible per UX4 spec */}
       <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
             style={{ background: accent }} />
       <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-semibold flex-shrink-0"
            style={{
-             background: 'linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(15, 118, 110, 0.06))',
-             border: '1px solid rgba(15, 118, 110, 0.22)',
-             color: '#0f766e',
+             background: 'linear-gradient(135deg, rgba(31, 41, 55, 0.08), rgba(31, 41, 55, 0.06))',
+             border: '1px solid rgba(31, 41, 55, 0.22)',
+             color: '#1f2937',
            }}>
         {(app.candidate?.fullName || '?').charAt(0).toUpperCase()}
       </div>

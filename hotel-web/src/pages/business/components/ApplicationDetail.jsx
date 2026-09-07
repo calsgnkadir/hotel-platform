@@ -204,7 +204,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               <img src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarMd })} alt={app.candidate.fullName}
                 loading="lazy" decoding="async"
                 className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                style={{ border: '1px solid rgba(15, 118, 110, 0.22)' }} />
+                style={{ border: '1px solid rgba(31, 41, 55, 0.22)' }} />
             ) : (
               <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0"
                    style={{
@@ -267,7 +267,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
         <div>
           <h3 className="type-overline mb-2">İlan</h3>
           <div className="tier-ground rounded-lg p-3 type-body font-medium"
-               style={{ background: 'rgba(15, 118, 110, 0.05)', color: 'var(--text-secondary)' }}>
+               style={{ background: 'rgba(31, 41, 55, 0.05)', color: 'var(--text-secondary)' }}>
             {app.listing?.title} · {app.listing?.businessName}
           </div>
         </div>
@@ -276,7 +276,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
           <div>
             <h3 className="type-overline mb-2">Ön Yazı</h3>
             <div className="rounded-lg p-4 type-body leading-relaxed"
-                 style={{ background: 'rgba(15, 118, 110, 0.05)', color: 'var(--text-secondary)' }}>
+                 style={{ background: 'rgba(31, 41, 55, 0.05)', color: 'var(--text-secondary)' }}>
               {app.coverLetter}
             </div>
           </div>
@@ -289,8 +289,8 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               {app.availabilities.map((av, i) => (
                 <span key={i} className="px-3 py-1.5 type-caption font-medium rounded-lg"
                       style={{
-                        background: 'rgba(15, 118, 110, 0.08)',
-                        border: '1px solid rgba(15, 118, 110, 0.22)',
+                        background: 'rgba(31, 41, 55, 0.08)',
+                        border: '1px solid rgba(31, 41, 55, 0.22)',
                         color: 'var(--accent-action)',
                       }}>
                   {av.dayOfWeek} · {av.startTime}–{av.endTime}
@@ -332,7 +332,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 return (
                   <div key={doc.id}
                     className="flex items-center justify-between rounded-lg px-3 py-2 gap-2"
-                    style={{ background: 'rgba(15, 118, 110, 0.05)' }}>
+                    style={{ background: 'rgba(31, 41, 55, 0.05)' }}>
                     <div className="min-w-0 flex-1">
                       <div className="type-body font-medium truncate" style={{ color: 'var(--text-secondary)' }}>{typeLabel}</div>
                       <div className="type-caption truncate">{doc.originalFileName}</div>
@@ -340,8 +340,8 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                     <button onClick={() => handleViewDoc(doc)}
                       className="type-overline px-3 py-1.5 rounded-md transition-colors flex-shrink-0"
                       style={{
-                        background: 'rgba(15, 118, 110, 0.10)',
-                        border: '1px solid rgba(15, 118, 110, 0.28)',
+                        background: 'rgba(31, 41, 55, 0.10)',
+                        border: '1px solid rgba(31, 41, 55, 0.28)',
                         color: 'var(--accent-action)',
                       }}>
                       Görüntüle
@@ -364,7 +364,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 const statusMeta = DOC_REQ_STATUS_LABELS[dr.status] || { cls: 'badge-expired', label: dr.status }
                 return (
                   <div key={dr.id} className="flex items-center justify-between rounded-lg px-3 py-2"
-                       style={{ background: 'rgba(15, 118, 110, 0.05)' }}>
+                       style={{ background: 'rgba(31, 41, 55, 0.05)' }}>
                     <span className="type-body" style={{ color: 'var(--text-secondary)' }}>{meta?.label || dr.documentType}</span>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusMeta.cls}`}>
                       {statusMeta.label}

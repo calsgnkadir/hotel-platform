@@ -294,7 +294,7 @@ body, .role-app-bg {
  * Karar geçmişi: [[project-ajanshotel-redesign]]
  * ═══════════════════════════════════════════════════════════════════════ */
 :root {
-  --ah-brand:#0f766e; --ah-brand-hover:#0b5d57; --ah-brand-soft:#e4f2f0;
+  --ah-brand:#1f2937; --ah-brand-hover:#111827; --ah-brand-soft:#eef0f2;
   /* Marka CTA gradienti. 31 yerde elle yazilmis iki farkli yazimi vardi
      ("...0%, ...100%" ve kisa hali); tek kaynaga alindi. Brand rengi
      degisirse gradient de kendiliginden takip etsin diye var'a bagli. */

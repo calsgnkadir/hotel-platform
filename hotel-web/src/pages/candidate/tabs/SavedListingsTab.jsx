@@ -88,14 +88,14 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
            style={{ background: 'linear-gradient(135deg, #f4f6f6 0%, #eef1f2 100%)' }}>
         {/* Champagne blob accent */}
         <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-40 pointer-events-none"
-             style={{ background: 'radial-gradient(circle, rgba(15, 118, 110, 0.30), transparent 65%)', filter: 'blur(28px)' }} />
+             style={{ background: 'radial-gradient(circle, rgba(31, 41, 55, 0.30), transparent 65%)', filter: 'blur(28px)' }} />
         {/* Salary chip — champagne hairline */}
         {salary && (
           <span className="absolute bottom-3 left-3 text-[12px] font-semibold tabular-nums px-3 py-1.5 rounded-full z-10 backdrop-blur-md"
                 style={{
                   background: 'rgba(255, 255, 255, 0.78)',
                   color: 'var(--ah-brand)',
-                  border: '1px solid rgba(15, 118, 110, 0.32)',
+                  border: '1px solid rgba(31, 41, 55, 0.32)',
                   letterSpacing: '-0.005em',
                 }}>
             {salary}

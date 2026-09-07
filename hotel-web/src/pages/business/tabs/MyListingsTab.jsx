@@ -175,13 +175,13 @@ export default function MyListingsTab({ applications = [] }) {
                     <span className="type-overline tabular-nums">
                       {last8wTotal}
                     </span>
-                    <Sparkline data={trendData} color="#0f766e" width={56} height={20} />
+                    <Sparkline data={trendData} color="#1f2937" width={56} height={20} />
                   </div>
                   <div className="flex gap-2 flex-wrap justify-end">
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => setFormTarget(listing)}
                       className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(15, 118, 110, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(15, 118, 110, 0.22)' }}>
+                      style={{ background: 'rgba(31, 41, 55, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
                       Düzenle
                     </button>
                   )}

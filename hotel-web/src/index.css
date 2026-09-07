@@ -206,11 +206,11 @@ code, pre, kbd, samp {
          inline-flex items-center justify-center gap-2;
   background: var(--ah-brand);
   color: #ffffff;
-  box-shadow: 0 1px 2px rgba(15, 118, 110, 0.20);
+  box-shadow: 0 1px 2px rgba(31, 41, 55, 0.20);
 }
 .btn-primary:hover {
   background: var(--ah-brand-hover);
-  box-shadow: 0 2px 10px rgba(15, 118, 110, 0.25);
+  box-shadow: 0 2px 10px rgba(31, 41, 55, 0.25);
   transform: translateY(-1px);
 }
 
@@ -353,28 +353,29 @@ code, pre, kbd, samp {
   border-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Card icindeki form elemanlari — warm graphite inputs */
+/* Card icindeki form elemanlari — ACIK tema (eski koyu-graphite leftover'i;
+   etiketler champagne, inputlar koyu zemin+ivory idi -> beyaz kartta yanlisti). */
 .card .label,
 .card label {
-  color: #c9bdaa !important;
+  color: var(--ah-ink-2) !important;
 }
 .card input,
 .card select,
 .card textarea {
-  background: rgba(13, 11, 9, 0.55) !important;
-  border-color: rgba(205, 183, 143, 0.14) !important;
-  color: #ede4d3 !important;
+  background: var(--ah-card) !important;
+  border-color: var(--ah-line) !important;
+  color: var(--ah-ink) !important;
 }
 .card input::placeholder,
 .card textarea::placeholder {
-  color: rgba(146, 134, 120, 0.85) !important;
+  color: var(--ah-ink-4) !important;
 }
 .card input:focus,
 .card select:focus,
 .card textarea:focus {
-  border-color: rgba(205, 183, 143, 0.55) !important;
-  background: rgba(34, 31, 27, 0.85) !important;
-  box-shadow: 0 0 0 4px rgba(205, 183, 143, 0.10) !important;
+  border-color: var(--ah-brand) !important;
+  background: var(--ah-card) !important;
+  box-shadow: 0 0 0 3px var(--ah-brand-soft) !important;
 }
 
 /* Card icindeki text-ink-* override.

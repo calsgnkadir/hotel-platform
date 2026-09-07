@@ -20,8 +20,8 @@ export default function VerifiedBadge({ size = 'sm', title = 'Doğrulanmış iş
       <svg width={dim} height={dim} viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <defs>
           <linearGradient id={`vb-grad-${size}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%"  stopColor="#2d968b" />
-            <stop offset="100%" stopColor="#0f766e" />
+            <stop offset="0%"  stopColor="#1f2937" />
+            <stop offset="100%" stopColor="#1f2937" />
           </linearGradient>
         </defs>
         {/* Çentikli yıldız: KYC için klasik X verified silüeti */}

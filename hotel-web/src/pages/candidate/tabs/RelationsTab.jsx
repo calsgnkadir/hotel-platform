@@ -49,9 +49,9 @@ export default function RelationsTab({ onTabChange }) {
             <button key={t.id} type="button" onClick={() => setTab(t.id)}
               className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
               style={{
-                background: active ? 'rgba(15, 118, 110, 0.14)' : 'rgba(255, 255, 255, 0.75)',
+                background: active ? 'rgba(31, 41, 55, 0.14)' : 'rgba(255, 255, 255, 0.75)',
                 color: active ? '#12201f' : '#6b7574',
-                border: `1px solid ${active ? 'rgba(15, 118, 110, 0.42)' : 'rgba(15, 118, 110, 0.10)'}`,
+                border: `1px solid ${active ? 'rgba(31, 41, 55, 0.42)' : 'rgba(31, 41, 55, 0.10)'}`,
               }}>
               {t.label}
               {t.count > 0 && (
@@ -102,9 +102,9 @@ export default function RelationsTab({ onTabChange }) {
                 className="mt-4 w-full text-[10px] font-semibold uppercase tracking-[0.06em] px-3 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
                 style={tab === 'following'
                   ? {
-                      background: 'rgba(15, 118, 110, 0.06)',
+                      background: 'rgba(31, 41, 55, 0.06)',
                       color: '#6b7574',
-                      border: '1px solid rgba(15, 118, 110, 0.18)',
+                      border: '1px solid rgba(31, 41, 55, 0.18)',
                     }
                   : {
                       background: 'rgba(122, 159, 122, 0.10)',

@@ -111,14 +111,14 @@ describe('ConfirmDialog', () => {
     expect(style).toContain('rgb(211, 148, 129)')   // #d39481
   })
 
-  it('destructive false -> title rengi marka teal (#2d968b)', () => {
+  it('destructive false -> title rengi marka (grafit #1f2937)', () => {
     render(
       <ConfirmDialog open title="Onay" onConfirm={() => {}} onClose={() => {}} />
     )
     const h2 = screen.getByText('Onay')
     const style = h2.getAttribute('style')
-    // Redesign (acik+teal): sampanya altin birakildi, marka teal'i kullaniliyor
-    expect(style).toContain('rgb(45, 150, 139)')    // #2d968b
+    // Marka rengi teal -> koyu grafit'e cevrildi (kullanici: az renk, teal degistir)
+    expect(style).toContain('rgb(31, 41, 55)')    // #1f2937
     expect(style).not.toContain('rgb(211, 148, 129)')  // yikici baslik rengi degil
   })
 })

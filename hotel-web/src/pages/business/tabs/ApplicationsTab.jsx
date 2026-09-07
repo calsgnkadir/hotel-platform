@@ -160,7 +160,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             <button key={v.id} onClick={() => setView(v.id)}
               className="type-overline px-3 py-1 rounded-full transition-all"
               style={view === v.id
-                ? { background: 'rgba(15, 118, 110, 0.18)', color: 'var(--text-headline)', border: '1px solid rgba(15, 118, 110, 0.42)' }
+                ? { background: 'rgba(31, 41, 55, 0.18)', color: 'var(--text-headline)', border: '1px solid rgba(31, 41, 55, 0.42)' }
                 : { color: 'var(--text-muted)', border: '1px solid transparent' }}>
               {v.label}
             </button>
@@ -326,7 +326,7 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
         padding: 16,
         background: 'var(--ah-card)',
         border: `1px solid ${active ? 'var(--ah-brand)' : 'var(--ah-line)'}`,
-        boxShadow: active ? '0 2px 12px rgba(15, 118, 110, .16)' : 'var(--elev-1)',
+        boxShadow: active ? '0 2px 12px rgba(31, 41, 55, .16)' : 'var(--elev-1)',
       }}
     >
       {/* ── Ust: durum rozeti ── */}

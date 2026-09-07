@@ -48,7 +48,7 @@ export default function AvatarCluster({
             marginLeft: -overlapPx,
             background: 'rgba(13, 11, 9, 0.85)',
             border: '2px solid #221f1b',
-            color: '#2d968b',
+            color: '#1f2937',
             fontSize: Math.floor(size * 0.42),
             zIndex: 0,
           }}
@@ -81,9 +81,9 @@ function AvatarBubble({ item, size, showOnlineDot, style }) {
         <div
           className="w-full h-full rounded-full flex items-center justify-center font-semibold"
           style={{
-            background: 'rgba(15, 118, 110, 0.08)',
+            background: 'rgba(31, 41, 55, 0.08)',
             border: '2px solid #221f1b',
-            color: '#2d968b',
+            color: '#1f2937',
             fontSize: Math.floor(size * 0.45),
             lineHeight: 1,
           }}

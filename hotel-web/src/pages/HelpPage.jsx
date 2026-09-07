@@ -87,7 +87,7 @@ export default function HelpPage() {
           <h1 className="text-2xl font-bold" style={{ color: '#f5efe2' }}>
             Yardım & SSS
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#c9bdaa' }}>
+          <p className="text-sm mt-1" style={{ color: 'var(--ah-ink-3)' }}>
             Sıkça sorulan sorular. Cevap bulamadıysan{' '}
             <Link to="/iletisim" className="underline font-semibold">iletişim sayfasından</Link>{' '}
             yaz.
@@ -103,9 +103,9 @@ export default function HelpPage() {
                 <button key={c.id} onClick={() => setCat(c.id)}
                   className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-colors"
                   style={{
-                    background: active ? 'rgba(15, 118, 110, 0.14)' : 'rgba(27, 24, 21, 0.75)',
+                    background: active ? 'rgba(31, 41, 55, 0.14)' : 'rgba(27, 24, 21, 0.75)',
                     color: active ? '#f5efe2' : '#928678',
-                    border: `1px solid ${active ? 'rgba(15, 118, 110, 0.42)' : 'rgba(15, 118, 110, 0.10)'}`,
+                    border: `1px solid ${active ? 'rgba(31, 41, 55, 0.42)' : 'rgba(31, 41, 55, 0.10)'}`,
                   }}>
                   {c.label}
                 </button>
@@ -118,12 +118,12 @@ export default function HelpPage() {
             onChange={e => setQuery(e.target.value)}
             placeholder="Soru içinde ara…"
             className="w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2"
-            style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(15, 118, 110, 0.14)', color: '#ede4d3' }}
+            style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(31, 41, 55, 0.14)', color: '#ede4d3' }}
           />
         </div>
 
         <section className="bg-white rounded-2xl shadow-xl border border-brand-200 p-6 sm:p-8">
-          <div className="text-[11px] uppercase tracking-widest mb-4" style={{ color: '#c9bdaa' }}>
+          <div className="text-[11px] uppercase tracking-widest mb-4" style={{ color: 'var(--ah-ink-3)' }}>
             {filtered.length} sonuç
           </div>
           {filtered.length === 0 ? (
@@ -137,7 +137,7 @@ export default function HelpPage() {
           )}
         </section>
 
-        <p className="text-center text-[12px] mt-5" style={{ color: '#c9bdaa' }}>
+        <p className="text-center text-[12px] mt-5" style={{ color: 'var(--ah-ink-3)' }}>
           Hâlâ aradığını bulamadın mı?{' '}
           <Link to="/iletisim" className="font-semibold underline">Bize yaz</Link>.
         </p>
@@ -158,7 +158,7 @@ function FaqItem({ cat, q, a }) {
       >
         <span className="flex items-center gap-2 min-w-0">
           <span className="text-[9px] uppercase tracking-widest font-bold flex-shrink-0 px-1.5 py-0.5 rounded"
-                style={{ background: 'rgba(15, 118, 110, 0.12)', color: '#2d968b', border: '1px solid rgba(15, 118, 110, 0.22)' }}>
+                style={{ background: 'rgba(31, 41, 55, 0.12)', color: '#1f2937', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
             {cat}
           </span>
           <span className="font-semibold text-[14px] truncate" style={{ color: '#f5efe2' }}>{q}</span>
@@ -169,7 +169,7 @@ function FaqItem({ cat, q, a }) {
         </svg>
       </button>
       {open && (
-        <p className="mt-2 text-[13px] leading-relaxed pl-1" style={{ color: '#c9bdaa' }}>
+        <p className="mt-2 text-[13px] leading-relaxed pl-1" style={{ color: 'var(--ah-ink-3)' }}>
           {a}
         </p>
       )}

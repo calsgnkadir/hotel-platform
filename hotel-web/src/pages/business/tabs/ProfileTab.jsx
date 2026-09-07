@@ -192,7 +192,7 @@ export default function ProfileTab() {
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
         <h3 className="font-display text-[16px] font-semibold pb-2 border-b"
-            style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>
+            style={{ color: '#1f2937', borderColor: 'rgba(31, 41, 55, 0.10)' }}>
           Temel Bilgiler
         </h3>
 
@@ -242,7 +242,7 @@ export default function ProfileTab() {
       {/* İletişim */}
       <div className="card p-5 space-y-4">
         <h3 className="font-display text-[16px] font-semibold pb-2 border-b"
-            style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>
+            style={{ color: '#1f2937', borderColor: 'rgba(31, 41, 55, 0.10)' }}>
           İletişim
         </h3>
 
@@ -294,7 +294,7 @@ export default function ProfileTab() {
 
       <div className="card p-5 space-y-3">
         <h3 className="font-display text-[16px] font-semibold pb-2 border-b"
-            style={{ color: '#0f766e', borderColor: 'rgba(15, 118, 110, 0.10)' }}>
+            style={{ color: '#1f2937', borderColor: 'rgba(31, 41, 55, 0.10)' }}>
           Çalışma Saatleri
         </h3>
         <WorkingHoursEditor
@@ -334,9 +334,9 @@ function BusinessPreviewCard({ form, logoUrl }) {
   return (
     <div className="card overflow-hidden">
       <div className="px-4 py-3 border-b flex items-center justify-between"
-           style={{ borderColor: 'rgba(15, 118, 110, 0.10)' }}>
+           style={{ borderColor: 'rgba(31, 41, 55, 0.10)' }}>
         <h3 className="text-base tracking-[0.2em] uppercase"
-            style={{ color: '#0f766e' }}>Canlı Önizleme</h3>
+            style={{ color: '#1f2937' }}>Canlı Önizleme</h3>
         <span className="text-[10px] font-semibold uppercase tracking-wider"
               style={{ color: '#98a1a0' }}>aday bu şekilde görür</span>
       </div>
@@ -345,13 +345,13 @@ function BusinessPreviewCard({ form, logoUrl }) {
         <div className="flex items-center gap-3 mb-4">
           <div className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
                style={{
-                 background: 'rgba(15, 118, 110, 0.08)',
-                 border: '1px solid rgba(15, 118, 110, 0.22)',
+                 background: 'rgba(31, 41, 55, 0.08)',
+                 border: '1px solid rgba(31, 41, 55, 0.22)',
                }}>
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-2xl" style={{ color: '#0f766e' }}>{initial}</span>
+              <span className="text-2xl" style={{ color: '#1f2937' }}>{initial}</span>
             )}
           </div>
           <div className="flex-1 min-w-0">
@@ -361,7 +361,7 @@ function BusinessPreviewCard({ form, logoUrl }) {
               {form.name || 'İşletme adınız'}
             </div>
             <div className="text-[11px] uppercase tracking-wider mt-0.5"
-                 style={{ color: '#0f766e' }}>
+                 style={{ color: '#1f2937' }}>
               {TYPE_LABELS[form.type] || form.type}
               {form.category && ` · ${form.category}`}
             </div>
@@ -411,22 +411,22 @@ function BusinessPreviewCard({ form, logoUrl }) {
         {/* Sosyal */}
         {(form.website || form.instagram || form.facebook) && (
           <div className="pt-3 border-t flex items-center gap-2 flex-wrap"
-               style={{ borderColor: 'rgba(15, 118, 110, 0.08)' }}>
+               style={{ borderColor: 'rgba(31, 41, 55, 0.08)' }}>
             {form.website && (
               <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded"
-                    style={{ background: 'rgba(15, 118, 110, 0.10)', color: '#0f766e', border: '1px solid rgba(15, 118, 110, 0.22)' }}>
+                    style={{ background: 'rgba(31, 41, 55, 0.10)', color: '#1f2937', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
                 Web
               </span>
             )}
             {form.instagram && (
               <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded"
-                    style={{ background: 'rgba(15, 118, 110, 0.10)', color: '#0f766e', border: '1px solid rgba(15, 118, 110, 0.22)' }}>
+                    style={{ background: 'rgba(31, 41, 55, 0.10)', color: '#1f2937', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
                 Instagram
               </span>
             )}
             {form.facebook && (
               <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded"
-                    style={{ background: 'rgba(15, 118, 110, 0.10)', color: '#0f766e', border: '1px solid rgba(15, 118, 110, 0.22)' }}>
+                    style={{ background: 'rgba(31, 41, 55, 0.10)', color: '#1f2937', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
                 Facebook
               </span>
             )}

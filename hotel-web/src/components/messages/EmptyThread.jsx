@@ -28,7 +28,7 @@ export default function EmptyThread() {
             style={{
               left: `${p.left}%`, top: `${p.top}%`,
               width: p.size, height: p.size,
-              background: '#0f766e',
+              background: '#1f2937',
             }} />
         ))}
       </div>
@@ -46,22 +46,22 @@ export default function EmptyThread() {
         >
           <div className="absolute inset-0 rounded-full"
                style={{
-                 background: 'radial-gradient(circle, rgba(15, 118, 110, 0.22) 0%, transparent 65%)',
+                 background: 'radial-gradient(circle, rgba(31, 41, 55, 0.22) 0%, transparent 65%)',
                  filter: 'blur(12px)',
                }} />
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className="relative w-full h-full">
             <defs>
               <linearGradient id="bubble-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%"  stopColor="#0f766e" />
-                <stop offset="100%" stopColor="#0b5d57" />
+                <stop offset="0%"  stopColor="#1f2937" />
+                <stop offset="100%" stopColor="#111827" />
               </linearGradient>
             </defs>
             <path d="M14 12h32a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H24l-10 8V20a8 8 0 0 1 0-8z"
                   fill="rgba(255, 255, 255, 0.85)"
                   stroke="url(#bubble-grad)" strokeWidth="1.5" />
-            <circle cx="24" cy="29" r="2" fill="#0f766e" opacity="0.9" />
-            <circle cx="32" cy="29" r="2" fill="#0f766e" opacity="0.9" />
-            <circle cx="40" cy="29" r="2" fill="#0f766e" opacity="0.9" />
+            <circle cx="24" cy="29" r="2" fill="#1f2937" opacity="0.9" />
+            <circle cx="32" cy="29" r="2" fill="#1f2937" opacity="0.9" />
+            <circle cx="40" cy="29" r="2" fill="#1f2937" opacity="0.9" />
           </svg>
         </motion.div>
         <h3 className="text-[18px] font-semibold mb-2" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.015em' }}>

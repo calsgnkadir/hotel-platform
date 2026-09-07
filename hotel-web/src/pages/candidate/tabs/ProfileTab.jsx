@@ -163,12 +163,12 @@ export default function ProfileTab() {
           {/* Profil ozeti */}
           <div className="card p-6 flex flex-col items-center text-center">
             <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden mb-4 relative"
-                 style={{ background: 'rgba(15, 118, 110, 0.08)', border: '2px solid rgba(15, 118, 110, 0.22)' }}>
+                 style={{ background: 'rgba(31, 41, 55, 0.08)', border: '2px solid rgba(31, 41, 55, 0.22)' }}>
               {profile?.avatarUrl ? (
                 <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
                      loading="lazy" decoding="async" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-4xl font-semibold" style={{ color: '#0f766e' }}>
+                <span className="text-4xl font-semibold" style={{ color: '#1f2937' }}>
                   {(profile?.fullName || 'A').charAt(0).toUpperCase()}
                 </span>
               )}
@@ -253,11 +253,11 @@ export default function ProfileTab() {
                 <h3 className="font-display text-[16px] font-semibold mb-4" style={{ color: 'var(--ah-ink)' }}>Profil Fotoğrafı</h3>
                 <div className="flex items-center gap-4">
                   <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-                       style={{ background: 'rgba(15, 118, 110, 0.06)', border: '2px solid rgba(15, 118, 110, 0.20)' }}>
+                       style={{ background: 'rgba(31, 41, 55, 0.06)', border: '2px solid rgba(31, 41, 55, 0.20)' }}>
                     {profile?.avatarUrl ? (
                       <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-4xl tracking-wider" style={{ color: '#0f766e' }}>{(profile?.fullName || 'A').charAt(0).toUpperCase()}</span>
+                      <span className="text-4xl tracking-wider" style={{ color: '#1f2937' }}>{(profile?.fullName || 'A').charAt(0).toUpperCase()}</span>
                     )}
                   </div>
                   <div className="flex-1 space-y-2">
@@ -339,7 +339,7 @@ export default function ProfileTab() {
               <div className="flex justify-end">
                 <button type="submit" disabled={saving}
                   className="px-6 py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-                  style={{ background: '#0f766e', color: '#ffffff' }}>
+                  style={{ background: '#1f2937', color: '#ffffff' }}>
                   {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
                 </button>
               </div>

@@ -29,9 +29,9 @@ const COLUMNS = [
     id: 'PENDING',
     label: 'Bekleyen',
     sub: 'Yeni başvurular + incelemede',
-    color: '#0f766e',
-    bg: 'rgba(15, 118, 110, 0.08)',
-    border: 'rgba(15, 118, 110, 0.18)',
+    color: '#1f2937',
+    bg: 'rgba(31, 41, 55, 0.08)',
+    border: 'rgba(31, 41, 55, 0.18)',
   },
   {
     id: 'HELD',
@@ -337,7 +337,7 @@ function Column({ col, count, children }) {
       className={`flex flex-col min-h-[480px] transition-all ${isOver ? 'tier-featured' : 'tier-raised'}`}
       style={{
         borderColor: isOver ? col.color : undefined,
-        boxShadow: isOver ? `0 0 24px ${col.color}55, inset 0 1px 0 rgba(15, 118, 110,0.12)` : undefined,
+        boxShadow: isOver ? `0 0 24px ${col.color}55, inset 0 1px 0 rgba(31, 41, 55,0.12)` : undefined,
       }}
     >
       <div className="px-4 py-3 flex items-center justify-between border-b border-hairline">
@@ -411,7 +411,7 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
           // (Eskiden rgba(255,255,255,...) idi: beyaz kartta gorunmuyordu.)
           background: selected ? 'var(--ah-brand-soft)' : 'var(--ah-card)',
           border: `1px solid ${selected ? 'var(--ah-brand)' : 'var(--ah-line)'}`,
-          boxShadow: selected ? '0 2px 10px rgba(15,118,110,.18)' : 'var(--elev-1)',
+          boxShadow: selected ? '0 2px 10px rgba(31,41,55,.18)' : 'var(--elev-1)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -538,7 +538,7 @@ function CardSilhouette({ app }) {
       className="rounded-xl p-3 pointer-events-none"
       style={{
         background: 'rgba(255, 255, 255, 0.95)',
-        border: '1.5px solid rgba(15, 118, 110, 0.45)',
+        border: '1.5px solid rgba(31, 41, 55, 0.45)',
         boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
         transform: 'rotate(-2deg)',
         width: '260px',

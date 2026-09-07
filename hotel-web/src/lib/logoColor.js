@@ -11,7 +11,7 @@
  * Kısıtlar:
  *  - Hepsi beyaz metinle ≥4.5:1 kontrast (logo harfi 17px bold = WCAG'de
  *    normal metin, 3:1 yetmez). Ölçülen en düşük: zeytin #4d7c0f → 4.99:1
- *  - Marka teal'i (#0f766e) BİLEREK dışarıda: logo, marka butonları/rozetleriyle
+ *  - Marka teal'i (#1f2937) BİLEREK dışarıda: logo, marka butonları/rozetleriyle
  *    karışmasın.
  */
 const LOGO_COLORS = [

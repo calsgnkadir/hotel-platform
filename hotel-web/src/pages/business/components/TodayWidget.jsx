@@ -57,7 +57,7 @@ export default function TodayWidget({ applications, onTabChange }) {
   if (reviewing.length > 0) {
     items.push({
       key: 'reviewing',
-      color: '#0f766e',
+      color: '#1f2937',
       label: `${reviewing.length} aday incelemede`,
       hint: 'Belgeleri ve mesajları kontrol et, karar ver',
       cta: 'İncele',
@@ -84,7 +84,7 @@ export default function TodayWidget({ applications, onTabChange }) {
       style={{
         background:
           'linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.85) 100%)',
-        border: '1px solid rgba(15, 118, 110, 0.14)',
+        border: '1px solid rgba(31, 41, 55, 0.14)',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.30)',
       }}
     >
@@ -98,7 +98,7 @@ export default function TodayWidget({ applications, onTabChange }) {
           width: '180px',
           height: '180px',
           background:
-            'radial-gradient(circle, rgba(15, 118, 110, 0.10) 0%, transparent 70%)',
+            'radial-gradient(circle, rgba(31, 41, 55, 0.10) 0%, transparent 70%)',
         }}
       />
 
@@ -107,13 +107,13 @@ export default function TodayWidget({ applications, onTabChange }) {
           <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
             <h2
               className="text-2xl sm:text-3xl tracking-wider uppercase text-white"
-              style={{ textShadow: '0 0 18px rgba(15, 118, 110, 0.30)' }}
+              style={{ textShadow: '0 0 18px rgba(31, 41, 55, 0.30)' }}
             >
               Bugün
             </h2>
             <span
               className="text-[10px] uppercase tracking-[0.2em] font-bold"
-              style={{ color: '#0f766e' }}
+              style={{ color: '#1f2937' }}
             >
               {new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}
             </span>
@@ -162,8 +162,8 @@ export default function TodayWidget({ applications, onTabChange }) {
                   className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
                   style={{
                     background: 'rgba(255, 255, 255, 0.75)',
-                    color: '#0f766e',
-                    border: '1px solid rgba(15, 118, 110, 0.14)',
+                    color: '#1f2937',
+                    border: '1px solid rgba(31, 41, 55, 0.14)',
                   }}
                 >
                   Ekibim

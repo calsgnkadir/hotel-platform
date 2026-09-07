@@ -13,7 +13,7 @@ export default function KvkkPage() {
            style={{
              background:
                'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(74, 63, 51, 0.30) 0%, transparent 60%),' +
-               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(15, 118, 110, 0.10) 0%, transparent 60%)',
+               'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(31, 41, 55, 0.10) 0%, transparent 60%)',
            }} />
 
       {/* Sabit sol üst geri butonu */}
@@ -110,8 +110,8 @@ export default function KvkkPage() {
           {/* Onay kutusu */}
           <div className="rounded-2xl p-4"
                style={{
-                 background: 'rgba(15, 118, 110, 0.06)',
-                 border: '1px solid rgba(15, 118, 110, 0.22)',
+                 background: 'rgba(31, 41, 55, 0.06)',
+                 border: '1px solid rgba(31, 41, 55, 0.22)',
                  color: '#ede4d3',
                }}>
             <p className="font-medium">
@@ -122,7 +122,7 @@ export default function KvkkPage() {
         </div>
 
         <div className="mt-8 pt-6 border-t text-center"
-             style={{ borderColor: 'rgba(15, 118, 110, 0.10)' }}>
+             style={{ borderColor: 'rgba(31, 41, 55, 0.10)' }}>
           <Link to="/register"
                 className="inline-block text-[12px] font-semibold uppercase tracking-[0.06em] px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5"
                 style={{
@@ -142,7 +142,7 @@ function Section({ title, children }) {
   return (
     <section>
       <h2 className="text-[15px] font-semibold uppercase tracking-[0.06em] mb-3"
-          style={{ color: '#2d968b' }}>
+          style={{ color: '#1f2937' }}>
         {title}
       </h2>
       <div style={{ color: '#ede4d3' }}>

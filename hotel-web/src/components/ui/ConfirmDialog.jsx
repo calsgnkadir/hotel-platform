@@ -70,7 +70,7 @@ export function ConfirmDialog({
         className="w-full max-w-md rounded-2xl border p-6 space-y-4"
         style={{
           background: 'linear-gradient(145deg, rgba(19, 17, 15, 0.94) 0%, rgba(13, 11, 9, 1) 100%)',
-          borderColor: destructive ? 'rgba(180, 106, 85, 0.30)' : 'rgba(15, 118, 110, 0.22)',
+          borderColor: destructive ? 'rgba(180, 106, 85, 0.30)' : 'rgba(31, 41, 55, 0.22)',
           boxShadow: '0 24px 64px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
         }}
       >
@@ -93,12 +93,12 @@ export function ConfirmDialog({
           <div className="flex-1 min-w-0">
             <h2 id="confirm-dialog-title"
                 className="text-xl tracking-wider uppercase"
-                style={{ color: destructive ? '#d39481' : '#2d968b' }}>
+                style={{ color: destructive ? '#d39481' : '#1f2937' }}>
               {title}
             </h2>
             {description && (
               <p className="text-[13px] mt-1.5 leading-relaxed"
-                 style={{ color: '#c9bdaa' }}>
+                 style={{ color: 'var(--ah-ink-3)' }}>
                 {description}
               </p>
             )}
@@ -115,8 +115,8 @@ export function ConfirmDialog({
             className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] rounded-full transition-all disabled:opacity-50 hover:-translate-y-0.5"
             style={{
               background: 'transparent',
-              color: '#c9bdaa',
-              border: '1px solid rgba(15, 118, 110, 0.14)',
+              color: 'var(--ah-ink-3)',
+              border: '1px solid rgba(31, 41, 55, 0.14)',
             }}
           >
             {cancelLabel}
@@ -139,7 +139,7 @@ export function ConfirmDialog({
                     // Eskiden '#1a1208' (koyu kahve) idi — altin butondan kalma.
                     // Teal gradient uzerinde ~2.6:1 kontrast veriyordu.
                     color: '#ffffff',
-                    border: '1px solid rgba(15, 118, 110, 0.55)',
+                    border: '1px solid rgba(31, 41, 55, 0.55)',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }
             }

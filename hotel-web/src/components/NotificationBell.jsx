@@ -213,9 +213,9 @@ export default function NotificationBell({ onNavigate }) {
                       {n.aggregateCount > 1 && (
                         <span className="flex-shrink-0 text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded-full"
                               style={{
-                                background: 'rgba(15, 118, 110, 0.16)',
-                                border: '1px solid rgba(15, 118, 110, 0.40)',
-                                color: '#2d968b',
+                                background: 'rgba(31, 41, 55, 0.16)',
+                                border: '1px solid rgba(31, 41, 55, 0.40)',
+                                color: '#1f2937',
                               }}>
                           ×{n.aggregateCount}
                         </span>

@@ -51,17 +51,17 @@ export default function EarningsWidget({ applications }) {
   return (
     <div className="relative overflow-hidden rounded-2xl"
          style={{
-           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(15, 118, 110, 0.50) 100%)',
-           border: '1px solid rgba(15, 118, 110, 0.10)',
+           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(31, 41, 55, 0.50) 100%)',
+           border: '1px solid rgba(31, 41, 55, 0.10)',
            boxShadow: '0 10px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04)',
          }}>
       {/* Köşede yüzen altın daire — saat ikonlu medallion */}
       <div aria-hidden className="absolute -top-10 -right-10 w-48 h-48 rounded-full pointer-events-none opacity-40"
-           style={{ background: 'radial-gradient(circle, rgba(15, 118, 110, 0.22) 0%, transparent 60%)', filter: 'blur(24px)' }} />
+           style={{ background: 'radial-gradient(circle, rgba(31, 41, 55, 0.22) 0%, transparent 60%)', filter: 'blur(24px)' }} />
 
       {/* HEADER */}
       <div className="relative px-5 py-3.5 flex items-center justify-between"
-           style={{ borderBottom: '1px solid rgba(15, 118, 110, 0.08)' }}>
+           style={{ borderBottom: '1px solid rgba(31, 41, 55, 0.08)' }}>
         <div>
           <h2 className="text-[15px] font-semibold" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>
             Çalışma <em className="not-italic font-semibold" style={{
@@ -77,7 +77,7 @@ export default function EarningsWidget({ applications }) {
           {/* FAZ 13 — Kazanç defteri (vardiya bazlı gerçek/planlı brüt) */}
           <button onClick={() => setLedgerOpen(true)}
             className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5 inline-flex items-center gap-1"
-            style={{ background: 'rgba(15, 118, 110, 0.10)', border: '1px solid rgba(15, 118, 110, 0.30)', color: '#0f766e' }}
+            style={{ background: 'rgba(31, 41, 55, 0.10)', border: '1px solid rgba(31, 41, 55, 0.30)', color: '#1f2937' }}
             title="Vardiya bazlı kazanç defteri">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -86,9 +86,9 @@ export default function EarningsWidget({ applications }) {
           </button>
           <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
                 style={{
-                  background: 'rgba(15, 118, 110, 0.08)',
-                  border: '1px solid rgba(15, 118, 110, 0.18)',
-                  color: '#0f766e',
+                  background: 'rgba(31, 41, 55, 0.08)',
+                  border: '1px solid rgba(31, 41, 55, 0.18)',
+                  color: '#1f2937',
                 }}>
             {completed.length} iş
           </span>
@@ -107,8 +107,8 @@ export default function EarningsWidget({ applications }) {
       {totalE === 0 && totalH > 0 && (
         <div className="relative mx-5 mb-4 mt-1 px-3 py-2 rounded-lg flex items-start gap-2 text-[11.5px]"
              style={{
-               background: 'rgba(15, 118, 110, 0.05)',
-               border: '1px solid rgba(15, 118, 110, 0.10)',
+               background: 'rgba(31, 41, 55, 0.05)',
+               border: '1px solid rgba(31, 41, 55, 0.10)',
                color: '#6b7574',
              }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -131,7 +131,7 @@ function Metric({ label, hours, earned, accent }) {
   return (
     <div className="px-5 py-4">
       <div className="text-[10.5px] uppercase tracking-[0.2em] font-semibold mb-1.5"
-           style={{ color: accent ? '#0f766e' : '#6b7574' }}>
+           style={{ color: accent ? '#1f2937' : '#6b7574' }}>
         {label}
       </div>
       <CountUpValue value={hours < 1 ? 0 : Math.round(hours)} suffix="sa" accent={accent} />
@@ -159,14 +159,14 @@ function CountUpValue({ value, suffix, accent }) {
   return (
     <div className="text-[28px] font-semibold leading-none tabular-nums"
          style={{
-           // Eskiden accent degilken 'linear-gradient(135deg, #ffffff, #0f766e)'
+           // Eskiden accent degilken 'linear-gradient(135deg, #ffffff, #1f2937)'
            // idi ve background-clip:text ile RAKAMA uygulaniyordu — sol yarisi
            // acik zeminde gorunmuyordu. Artik duz, okunur renk.
            color: accent ? 'var(--ah-brand)' : 'var(--ah-ink)',
            letterSpacing: '-0.03em',
          }}>
       {n} <span className="text-[15px] font-medium" style={{
-        background: 'none', WebkitBackgroundClip: 'unset', WebkitTextFillColor: accent ? '#0f766e' : '#0f766e',
+        background: 'none', WebkitBackgroundClip: 'unset', WebkitTextFillColor: accent ? '#1f2937' : '#1f2937',
       }}>{suffix}</span>
     </div>
   )
@@ -177,7 +177,7 @@ function Divider() {
   return (
     <div aria-hidden className="absolute top-4 bottom-4 w-px hidden sm:block"
          style={{
-           background: 'linear-gradient(180deg, transparent, rgba(15, 118, 110, 0.22), transparent)',
+           background: 'linear-gradient(180deg, transparent, rgba(31, 41, 55, 0.22), transparent)',
          }} />
   )
 }

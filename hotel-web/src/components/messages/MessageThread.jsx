@@ -229,13 +229,13 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
       {isDragging && (
         <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none rounded-lg"
              style={{
-               background: 'rgba(15, 118, 110, 0.10)',
+               background: 'rgba(31, 41, 55, 0.10)',
                backdropFilter: 'blur(4px)',
-               border: '4px dashed rgba(15, 118, 110, 0.45)',
+               border: '4px dashed rgba(31, 41, 55, 0.45)',
              }}>
           <div className="tier-featured px-8 py-6 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 strokeWidth={1.5} stroke="#0f766e" className="w-12 h-12 mx-auto mb-2">
+                 strokeWidth={1.5} stroke="#1f2937" className="w-12 h-12 mx-auto mb-2">
               <path strokeLinecap="round" strokeLinejoin="round"
                     d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
             </svg>
@@ -262,12 +262,12 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
           <img src={cldImg(conversation.otherPartyAvatarUrl, { w: ImgSize.avatarSm })} alt={conversation.otherPartyName}
             loading="lazy" decoding="async"
             className="w-9 h-9 rounded-full object-cover"
-            style={{ border: '1px solid rgba(15, 118, 110, 0.22)' }} />
+            style={{ border: '1px solid rgba(31, 41, 55, 0.22)' }} />
         ) : (
           <div className="w-9 h-9 rounded-full flex items-center justify-center"
                style={{
-                 background: 'rgba(15, 118, 110, 0.08)',
-                 border: '1px solid rgba(15, 118, 110, 0.22)',
+                 background: 'rgba(31, 41, 55, 0.08)',
+                 border: '1px solid rgba(31, 41, 55, 0.22)',
                  color: 'var(--accent-action)',
                }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"

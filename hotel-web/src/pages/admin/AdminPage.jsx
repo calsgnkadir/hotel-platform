@@ -319,7 +319,7 @@ function UsersTab() {
                 ${roleFilter === f.value
                   ? 'text-white shadow-sm'
                   : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={roleFilter === f.value ? { background: 'rgba(15, 118, 110, 0.14)', color: '#12201f', border: '1px solid rgba(15, 118, 110, 0.42)' } : {}}>
+              style={roleFilter === f.value ? { background: 'rgba(31, 41, 55, 0.14)', color: '#12201f', border: '1px solid rgba(31, 41, 55, 0.42)' } : {}}>
               {f.label}
             </button>
           ))}
@@ -459,7 +459,7 @@ function ReportsTab() {
               ${statusFilter === f.value
                 ? 'text-white shadow-sm'
                 : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={statusFilter === f.value ? { background: 'rgba(15, 118, 110, 0.14)', color: '#12201f', border: '1px solid rgba(15, 118, 110, 0.42)' } : {}}>
+            style={statusFilter === f.value ? { background: 'rgba(31, 41, 55, 0.14)', color: '#12201f', border: '1px solid rgba(31, 41, 55, 0.42)' } : {}}>
             {f.label}
           </button>
         ))}
@@ -572,7 +572,7 @@ function AuditTab() {
               ${actionFilter === f.value
                 ? 'text-white shadow-sm'
                 : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={actionFilter === f.value ? { background: 'rgba(15, 118, 110, 0.14)', color: '#12201f', border: '1px solid rgba(15, 118, 110, 0.42)' } : {}}>
+            style={actionFilter === f.value ? { background: 'rgba(31, 41, 55, 0.14)', color: '#12201f', border: '1px solid rgba(31, 41, 55, 0.42)' } : {}}>
             {f.label}
           </button>
         ))}
@@ -673,7 +673,7 @@ function ListingsTab() {
             <option value="CLOSED">Kapalı</option>
           </select>
           <div className="text-xs px-3 py-1 rounded-full"
-               style={{ background: 'rgba(15, 118, 110, 0.10)', color: '#0f766e' }}>
+               style={{ background: 'rgba(31, 41, 55, 0.10)', color: '#1f2937' }}>
             {items.length} ilan
           </div>
         </div>
@@ -820,9 +820,9 @@ function SupportTab() {
           <button key={f.v} onClick={() => setFilter(f.v)}
             style={{
               padding: '6px 14px', borderRadius: 999,
-              border: filter === f.v ? '1px solid #0f766e' : '1px solid rgba(148,163,184,0.3)',
-              background: filter === f.v ? 'rgba(15, 118, 110, 0.12)' : 'transparent',
-              color: filter === f.v ? '#0f766e' : '#94a3b8',
+              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(148,163,184,0.3)',
+              background: filter === f.v ? 'rgba(31, 41, 55, 0.12)' : 'transparent',
+              color: filter === f.v ? '#1f2937' : '#94a3b8',
               fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>
             {f.label}
@@ -843,7 +843,7 @@ function SupportTab() {
               <div key={t.id} style={{
                 padding: 14, borderRadius: 10,
                 background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(15, 118, 110, 0.08)',
+                border: '1px solid rgba(31, 41, 55, 0.08)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -853,8 +853,8 @@ function SupportTab() {
                         background: s.bg, color: s.color,
                         fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
                       }}>{t.status}</span>
-                      <span style={{ color: 'rgba(15, 118, 110, 0.14)', fontSize: 12, fontWeight: 700 }}>#{t.id}</span>
-                      <span style={{ color: '#0f766e', fontSize: 11, fontWeight: 600 }}>
+                      <span style={{ color: 'rgba(31, 41, 55, 0.14)', fontSize: 12, fontWeight: 700 }}>#{t.id}</span>
+                      <span style={{ color: '#1f2937', fontSize: 11, fontWeight: 600 }}>
                         {SUBJECT_LABEL[t.subject] || t.subject}
                       </span>
                       <span style={{ color: '#94a3b8', fontSize: 11 }}>
@@ -870,12 +870,12 @@ function SupportTab() {
                     {t.adminNote && (
                       <div style={{
                         marginTop: 8, padding: 10, borderRadius: 8,
-                        background: 'rgba(15, 118, 110, 0.04)',
-                        border: '1px solid rgba(15, 118, 110, 0.14)',
-                        fontSize: 12, color: '#0f766e',
+                        background: 'rgba(31, 41, 55, 0.04)',
+                        border: '1px solid rgba(31, 41, 55, 0.14)',
+                        fontSize: 12, color: '#1f2937',
                       }}>
                         <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
-                                      color: '#0f766e', marginBottom: 4 }}>ADMIN NOTU</div>
+                                      color: '#1f2937', marginBottom: 4 }}>ADMIN NOTU</div>
                         {t.adminNote}
                       </div>
                     )}
@@ -888,9 +888,9 @@ function SupportTab() {
                     <button onClick={() => { setOpenId(t.id); setNoteDraft(t.adminNote || '') }}
                       style={{
                         padding: '6px 12px', borderRadius: 6,
-                        background: 'rgba(15, 118, 110, 0.10)',
-                        border: '1px solid rgba(15, 118, 110, 0.22)',
-                        color: '#0f766e', fontSize: 11, fontWeight: 600,
+                        background: 'rgba(31, 41, 55, 0.10)',
+                        border: '1px solid rgba(31, 41, 55, 0.22)',
+                        color: '#1f2937', fontSize: 11, fontWeight: 600,
                         cursor: 'pointer', whiteSpace: 'nowrap',
                       }}>
                       Yanıtla
@@ -900,14 +900,14 @@ function SupportTab() {
 
                 {isOpen && (
                   <div style={{ marginTop: 12, paddingTop: 12,
-                                borderTop: '1px solid rgba(15, 118, 110, 0.08)' }}>
+                                borderTop: '1px solid rgba(31, 41, 55, 0.08)' }}>
                     <textarea value={noteDraft} onChange={e => setNoteDraft(e.target.value)}
                       placeholder="Kullanıcıya notun (opsiyonel — RESOLVED'da göstereceğiz)"
                       rows={3}
                       style={{
                         width: '100%', padding: 10, borderRadius: 8,
                         background: 'rgba(0,0,0,0.25)',
-                        border: '1px solid rgba(15, 118, 110, 0.10)',
+                        border: '1px solid rgba(31, 41, 55, 0.10)',
                         color: '#f3f4f6', fontSize: 12, outline: 'none',
                         resize: 'vertical',
                       }} />
@@ -982,9 +982,9 @@ function BusinessesTab() {
             style={{
               padding: '6px 14px',
               borderRadius: 999,
-              border: filter === f.v ? '1px solid #0f766e' : '1px solid rgba(148,163,184,0.3)',
-              background: filter === f.v ? 'rgba(15, 118, 110, 0.12)' : 'transparent',
-              color: filter === f.v ? '#0f766e' : '#94a3b8',
+              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(148,163,184,0.3)',
+              background: filter === f.v ? 'rgba(31, 41, 55, 0.12)' : 'transparent',
+              color: filter === f.v ? '#1f2937' : '#94a3b8',
               fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>
             {f.label}
@@ -996,7 +996,7 @@ function BusinessesTab() {
             flex: 1, minWidth: 220,
             padding: '8px 12px', borderRadius: 8,
             background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(15, 118, 110, 0.10)',
+            border: '1px solid rgba(31, 41, 55, 0.10)',
             color: '#f3f4f6', fontSize: 13, outline: 'none',
           }} />
       </div>
@@ -1011,7 +1011,7 @@ function BusinessesTab() {
             <div key={b.id} style={{
               padding: 14, borderRadius: 10,
               background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(15, 118, 110, 0.08)',
+              border: '1px solid rgba(31, 41, 55, 0.08)',
               display: 'flex', alignItems: 'center', gap: 12,
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -1020,8 +1020,8 @@ function BusinessesTab() {
                   {b.verifiedAt && (
                     <span style={{
                       padding: '2px 8px', borderRadius: 999,
-                      background: 'rgba(15, 118, 110, 0.12)',
-                      color: '#0f766e', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+                      background: 'rgba(31, 41, 55, 0.12)',
+                      color: '#1f2937', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
                     }}>DOĞRULANDI</span>
                   )}
                 </div>
@@ -1103,9 +1103,9 @@ function OutboxTab() {
             style={{
               padding: '6px 14px',
               borderRadius: 999,
-              border: filter === f.v ? '1px solid #0f766e' : '1px solid rgba(148,163,184,0.3)',
-              background: filter === f.v ? 'rgba(15, 118, 110, 0.12)' : 'transparent',
-              color: filter === f.v ? '#0f766e' : '#94a3b8',
+              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(148,163,184,0.3)',
+              background: filter === f.v ? 'rgba(31, 41, 55, 0.12)' : 'transparent',
+              color: filter === f.v ? '#1f2937' : '#94a3b8',
               fontSize: 12,
               fontWeight: 600,
               cursor: 'pointer',
@@ -1128,7 +1128,7 @@ function OutboxTab() {
                 padding: 14,
                 borderRadius: 10,
                 background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(15, 118, 110, 0.08)',
+                border: '1px solid rgba(31, 41, 55, 0.08)',
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: 12,
@@ -1144,8 +1144,8 @@ function OutboxTab() {
                       fontWeight: 700,
                       letterSpacing: '0.05em',
                     }}>{e.status}</span>
-                    <span style={{ color: 'rgba(15, 118, 110, 0.14)', fontSize: 13, fontWeight: 600 }}>#{e.id}</span>
-                    <span style={{ color: '#0f766e', fontSize: 11, fontWeight: 600 }}>{e.eventType}</span>
+                    <span style={{ color: 'rgba(31, 41, 55, 0.14)', fontSize: 13, fontWeight: 600 }}>#{e.id}</span>
+                    <span style={{ color: '#1f2937', fontSize: 11, fontWeight: 600 }}>{e.eventType}</span>
                     <span style={{ color: '#94a3b8', fontSize: 11 }}>
                       deneme {e.attempts}
                     </span>
@@ -1180,9 +1180,9 @@ function OutboxTab() {
                     style={{
                       padding: '6px 12px',
                       borderRadius: 6,
-                      background: 'rgba(15, 118, 110, 0.10)',
-                      border: '1px solid rgba(15, 118, 110, 0.22)',
-                      color: '#0f766e',
+                      background: 'rgba(31, 41, 55, 0.10)',
+                      border: '1px solid rgba(31, 41, 55, 0.22)',
+                      color: '#1f2937',
                       fontSize: 11,
                       fontWeight: 600,
                       cursor: 'pointer',
