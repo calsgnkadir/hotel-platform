@@ -53,7 +53,7 @@ export default function SavedListingsTab({ onTabChange }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-[12px]" style={{ color: '#6b7574' }}>
+        <p className="text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
           {saved.length} kayıtlı ilan
         </p>
       </div>
@@ -80,7 +80,7 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
            background: '#ffffff',
            borderRadius: '12px',
            border: 'none',
-           boxShadow: '0 12px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(245,239,226,0.03)',
+           boxShadow: 'var(--elev-2)',
          }}
          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)' }}
          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}>
@@ -94,7 +94,7 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
           <span className="absolute bottom-3 left-3 text-[12px] font-semibold tabular-nums px-3 py-1.5 rounded-full z-10 backdrop-blur-md"
                 style={{
                   background: 'rgba(255, 255, 255, 0.78)',
-                  color: '#0f766e',
+                  color: 'var(--ah-brand)',
                   border: '1px solid rgba(15, 118, 110, 0.32)',
                   letterSpacing: '-0.005em',
                 }}>
@@ -108,8 +108,8 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
                 className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110"
                 style={{
                   background: 'rgba(255, 255, 255, 0.78)',
-                  border: '1px solid rgba(180, 106, 85, 0.45)',
-                  color: '#d39481',
+                  border: '1px solid rgba(192, 57, 43, 0.35)',
+                  color: 'var(--ah-danger)',
                 }}>
           <svg width="14" height="14" viewBox="0 0 24 24"
                fill="currentColor" stroke="currentColor"
@@ -121,18 +121,18 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
 
       <div className="p-5">
         <h3 className="font-semibold text-[15px] leading-snug line-clamp-2"
-            style={{ color: '#12201f', letterSpacing: '-0.015em' }}>
+            style={{ color: 'var(--ah-ink)', letterSpacing: '-0.015em' }}>
           {listing.title}
         </h3>
-        <p className="text-[13px] mt-1.5" style={{ color: '#0f766e' }}>
+        <p className="text-[13px] mt-1.5" style={{ color: 'var(--ah-brand)' }}>
           {listing.businessName}
         </p>
         <div className="flex items-center gap-1.5 mt-2 text-[12px] flex-wrap"
-             style={{ color: '#6b7574' }}>
+             style={{ color: 'var(--ah-ink-3)' }}>
           <span>{listing.businessDistrict || 'İstanbul'}</span>
-          <span style={{ color: '#98a1a0' }}>·</span>
+          <span style={{ color: 'var(--ah-ink-4)' }}>·</span>
           <span>{POSITION_LABELS[listing.position] || listing.position}</span>
-          <span style={{ color: '#98a1a0' }}>·</span>
+          <span style={{ color: 'var(--ah-ink-4)' }}>·</span>
           <span>{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
         </div>
       </div>

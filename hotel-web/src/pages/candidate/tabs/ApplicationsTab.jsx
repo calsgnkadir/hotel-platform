@@ -13,7 +13,6 @@ import { CAND_STATUS_FILTERS } from '../../../components/candidate/StatusBadge'
 import { useConfirm } from '../../../lib/useConfirm'
 import SlotChipGroup from '../../../components/SlotChipGroup'
 import { formatSalary } from '../../../lib/salary'
-import { logoColor } from '../../../lib/logoColor'   // FAZ B.5.3 — tek kaynak
 import { PlatformRoleNotice } from '../../../components/LegalNotice'   // FAZ C.3
 
 /* REDESIGN v3 — açık zemin için durum renkleri (soft bg + koyu okunur metin) */
@@ -246,14 +245,14 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
               {/* SATIR — sol durum seridi + temiz duzen */}
               <div className="flex cursor-pointer transition-colors"
                    onClick={() => setExpandedId(isExpanded ? null : app.id)}
-                   onMouseEnter={(e) => { e.currentTarget.style.background = '#f7f9f9' }}
+                   onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--ah-band)' }}
                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}>
                 {/* durum seridi */}
                 <span className="w-1 self-stretch flex-shrink-0" style={{ background: sc.color }} aria-hidden="true" />
 
                 <div className="flex gap-3.5 p-4 flex-1 min-w-0">
-                  <span className="w-11 h-11 rounded-lg flex-shrink-0 grid place-items-center font-extrabold text-[16px] text-white"
-                        style={{ background: logoColor(app.listing?.businessName) }}>{initial}</span>
+                  <span className="w-11 h-11 rounded-lg flex-shrink-0 grid place-items-center font-extrabold text-[16px]"
+                        style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)', border: '1px solid var(--ah-line)' }}>{initial}</span>
 
                   <div className="flex-1 min-w-0">
                     {/* baslik satiri + durum rozeti */}
