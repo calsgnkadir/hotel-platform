@@ -48,6 +48,15 @@ services:
       JWT_SECRET: ${JWT_SECRET:?en az 32 karakter, tercihen base64 (openssl rand -base64 48)}
       # prod → application-prod.yml (graceful shutdown, kucuk havuz, CORS env'den).
       # demo → DemoSeeder: 10 aday/6 isletme/15 ilan + demo hesaplar (idempotent).
+      #
+      # ⚠ BU BILINCLI BIR DEMO/PORTFOY VITRINIDIR. 'demo' profili demo-aday1 /
+      #   demo-isletme1 hesaplarini SIFRE Demo1234! (herkesce bilinir) ile acar +
+      #   sahte ilan/basvuru tohumlar. Ziyaretcilerin denemesi icin boyle.
+      #   → Bu instance'a ASLA gercek kisisel veri (PII) girme.
+      #   → GERCEK URUNE gecerken 'demo'yu CIKAR: SPRING_PROFILES_ACTIVE: prod
+      #     (dev de asla eklenmemeli — /api/dev/** verification link'lerini acar).
+      #   Not: 'prod' aktif oldugu icin JWT_SECRET + APP_ENCRYPTION_KEY yine
+      #   ZORUNLU (guard'lar bos/zayifsa uygulamayi acmaz) — demo'da da ver.
       SPRING_PROFILES_ACTIVE: prod,demo
       SERVER_PORT: 8080
       # Sema Flyway ile; ddl-auto=validate (sema entity'lerle uyusmazsa acilmaz).
