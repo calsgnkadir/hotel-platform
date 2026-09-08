@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 text-white relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-6 relative z-10">
       <div className="text-center max-w-md">
         <div className="tabular-nums inline-flex items-center justify-center w-28 h-28 rounded-full mb-7 text-5xl font-semibold"
              style={{
@@ -19,15 +19,15 @@ export default function NotFoundPage() {
              }}>
           404
         </div>
-        <h1 className="text-2xl font-semibold mb-2" style={{ color: '#efefef', letterSpacing: '-0.02em' }}>Sayfa bulunamadı</h1>
-        <p className="text-[13px] mb-7" style={{ color: '#888888' }}>
+        <h1 className="text-2xl font-semibold mb-2" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.02em' }}>Sayfa bulunamadı</h1>
+        <p className="text-[13px] mb-7" style={{ color: 'var(--ah-ink-3)' }}>
           Aradığın sayfa silinmiş, taşınmış olabilir veya hiç var olmadı.
         </p>
         <Link to="/"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5"
           style={{
             background: 'var(--ah-brand-gradient)',
-            color: '#1a1208',
+            color: '#fff',
             boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
           }}>
           Ana Sayfaya Dön
