@@ -17,7 +17,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -144,6 +147,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+                // FIX: token'siz/expired /api/** cagrisi eskiden oauth2Login'in
+                // login-url entry point'ine 302 (→ /oauth2/authorization/google)
+                // donuyordu. JWT SPA icin yanlis: axios reactive-refresh yalnizca
+                // 401'de tetikleniyor, 302'yi (cross-origin OAuth'a follow → CORS)
+                // yakalayamadigi icin sessiz refresh KIRILIYORDU. /api/** artik 401
+                // (JSON) doner; OAuth redirect yalnizca tarayici rotalarinda kalir.
+                .exceptionHandling(ex -> ex.defaultAuthenticationEntryPointFor(
+                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                        new AntPathRequestMatcher("/api/**")))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
