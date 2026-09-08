@@ -15,7 +15,7 @@ export default function TermsPage() {
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
            style={{
              background:
-               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(64, 64, 64, 0.30) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(107, 117, 116, 0.06) 0%, transparent 60%),' +
                'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(31, 41, 55, 0.10) 0%, transparent 60%)',
            }} />
 
@@ -25,23 +25,23 @@ export default function TermsPage() {
 
       <div className="relative z-10 max-w-3xl mx-auto p-6 sm:p-10"
            style={{
-             background: '#1b1815',
+             background: 'var(--ah-card)',
              borderRadius: '12px',
              border: 'none',
-             boxShadow: '0 18px 48px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(239, 239, 239, 0.03)',
+             boxShadow: 'var(--elev-1)',
            }}>
         <div className="mb-7">
           <h1 className="text-3xl sm:text-[40px] font-semibold"
-              style={{ color: '#efefef', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
+              style={{ color: 'var(--ah-ink)', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kullanım Şartları
           </h1>
           <p className="text-[10px] uppercase tracking-[0.08em] font-medium mt-3"
-             style={{ color: '#888888' }}>
+             style={{ color: 'var(--ah-ink-3)' }}>
             Hizmet Sözleşmesi · Son güncelleme: 19 Haziran 2026
           </p>
         </div>
 
-        <div style={{ color: '#e5e5e5', fontSize: 14, lineHeight: 1.7 }}>
+        <div style={{ color: 'var(--ah-ink-2)', fontSize: 14, lineHeight: 1.7 }}>
           <Section title="1. Taraflar ve Tanımlar">
             İşbu sözleşme, AjansHotel platformu ("Platform") ile platformu kullanan tüm üyeler
             arasında akdedilmiştir. Üye, aday (CANDIDATE) ya da işletme sahibi (BUSINESS_OWNER)
@@ -134,7 +134,7 @@ function Section({ title, children }) {
       }}>
         {title}
       </h2>
-      <div style={{ color: '#e5e5e5' }}>
+      <div style={{ color: 'var(--ah-ink-2)' }}>
         {children}
       </div>
     </section>

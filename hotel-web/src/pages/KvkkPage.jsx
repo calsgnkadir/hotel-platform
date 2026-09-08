@@ -12,7 +12,7 @@ export default function KvkkPage() {
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
            style={{
              background:
-               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(64, 64, 64, 0.30) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(107, 117, 116, 0.06) 0%, transparent 60%),' +
                'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(31, 41, 55, 0.10) 0%, transparent 60%)',
            }} />
 
@@ -23,23 +23,23 @@ export default function KvkkPage() {
 
       <div className="relative z-10 max-w-3xl mx-auto rounded-2xl p-6 sm:p-10"
            style={{
-             background: '#1b1815',
+             background: 'var(--ah-card)',
              borderRadius: '12px',
              border: 'none',
-             boxShadow: '0 18px 48px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(239, 239, 239, 0.03)',
+             boxShadow: 'var(--elev-1)',
            }}>
         <div className="mb-7">
           <h1 className="text-3xl sm:text-[40px] font-semibold"
-              style={{ color: '#efefef', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
+              style={{ color: 'var(--ah-ink)', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kişisel Verilerin Korunması
           </h1>
           <p className="text-[10px] uppercase tracking-[0.08em] font-medium mt-3"
-             style={{ color: '#888888' }}>
+             style={{ color: 'var(--ah-ink-3)' }}>
             Aydınlatma Metni · Son güncelleme: 22 Mayıs 2026
           </p>
         </div>
 
-        <div className="space-y-6 text-sm leading-relaxed" style={{ color: '#e5e5e5' }}>
+        <div className="space-y-6 text-sm leading-relaxed" style={{ color: 'var(--ah-ink-2)' }}>
           <Section title="1. Veri Sorumlusu">
             <p>
               AjansHotel platformunun (bundan sonra "Platform") veri sorumlusu, platformu işleten
@@ -112,7 +112,7 @@ export default function KvkkPage() {
                style={{
                  background: 'rgba(31, 41, 55, 0.06)',
                  border: '1px solid rgba(31, 41, 55, 0.22)',
-                 color: '#e5e5e5',
+                 color: 'var(--ah-ink-2)',
                }}>
             <p className="font-medium">
               Platforma kayıt olarak bu aydınlatma metnini okuduğunuzu ve verilerinizin yukarıda
@@ -127,7 +127,7 @@ export default function KvkkPage() {
                 className="inline-block text-[12px] font-semibold uppercase tracking-[0.06em] px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5"
                 style={{
                   background: 'var(--ah-brand-gradient)',
-                  color: '#1a1208',
+                  color: '#fff',
                   boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                 }}>
             Kayıt sayfasına dön
@@ -145,7 +145,7 @@ function Section({ title, children }) {
           style={{ color: '#1f2937' }}>
         {title}
       </h2>
-      <div style={{ color: '#e5e5e5' }}>
+      <div style={{ color: 'var(--ah-ink-2)' }}>
         {children}
       </div>
     </section>

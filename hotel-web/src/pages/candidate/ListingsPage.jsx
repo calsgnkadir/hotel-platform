@@ -248,7 +248,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                       className="flex-1 py-2.5 type-overline rounded-2xl transition-all hover:-translate-y-0.5"
                       style={{
                         background: 'var(--ah-brand-gradient)',
-                        color: '#1a1208',
+                        color: '#fff',
                         boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                       }}>
                 Mesajlaşmayı Aç
@@ -428,14 +428,14 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
               className="relative overflow-hidden flex-1 py-2.5 type-overline rounded-2xl transition-all disabled:opacity-60 hover:-translate-y-0.5"
               style={{
                 background: 'var(--ah-brand-gradient)',
-                color: '#1a1208',
+                color: '#fff',
                 border: '1px solid rgba(31, 41, 55, 0.45)',
                 boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
               }}>
               {loading && (
                 <span aria-hidden className="absolute bottom-0 left-0 h-[2px]"
                       style={{
-                        background: '#1a1208',
+                        background: 'rgba(255, 255, 255, 0.6)',
                         opacity: 0.55,
                         animation: 'submit-progress 1400ms ease-in-out infinite',
                       }} />
