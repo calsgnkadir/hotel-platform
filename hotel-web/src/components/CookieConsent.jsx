@@ -87,14 +87,14 @@ export default function CookieConsent() {
         zIndex: 9999,
         maxWidth: 720,
         margin: '0 auto',
-        background: 'rgba(12, 23, 38, 0.96)',
+        background: 'rgba(22, 22, 22, 0.96)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid rgba(31, 41, 55, 0.25)',
         borderRadius: 14,
         padding: '18px 20px',
         boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-        color: '#ede4d3',
+        color: '#e5e5e5',
       }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8,
@@ -162,9 +162,9 @@ function Row({ label, subtitle, checked, onChange, disabled }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#1f2937' }}>
           {label}
-          {disabled && <span style={{ marginLeft: 8, fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>(zorunlu)</span>}
+          {disabled && <span style={{ marginLeft: 8, fontSize: 10, color: '#a1a1a1', fontWeight: 500 }}>(zorunlu)</span>}
         </div>
-        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{subtitle}</div>
+        <div style={{ fontSize: 11, color: '#a1a1a1', marginTop: 2 }}>{subtitle}</div>
       </div>
     </label>
   )
@@ -191,6 +191,6 @@ const btnGhost = {
 }
 const btnLink = {
   padding: '8px 12px', background: 'transparent',
-  color: '#94a3b8', fontSize: 12, fontWeight: 600,
+  color: '#a1a1a1', fontSize: 12, fontWeight: 600,
   border: 'none', cursor: 'pointer', textDecoration: 'underline',
 }

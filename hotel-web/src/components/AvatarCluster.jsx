@@ -99,7 +99,7 @@ function AvatarBubble({ item, size, showOnlineDot, style }) {
             right: 0,
             width: dotSize,
             height: dotSize,
-            background: '#7a9f7a',
+            background: '#6b7574',
             border: '2px solid #221f1b',
             boxShadow: 'none',
           }}

@@ -100,15 +100,15 @@ describe('ConfirmDialog', () => {
     expect(triangle).not.toBeNull()
   })
 
-  it('destructive true -> title rengi brick (#d39481)', () => {
+  it('destructive true -> title rengi gri (#6b7574)', () => {
     render(
       <ConfirmDialog open destructive title="Sil" onConfirm={() => {}} onClose={() => {}} />
     )
     const h2 = screen.getByText('Sil')
-    // Style attr'ında brick color'ı gecmeli
+    // "Sadece gri ve siyah" kimligi: yikici baslik da gri (eski brick #d39481 birakildi)
     const style = h2.getAttribute('style')
     // Browser hex -> rgb normalize eder
-    expect(style).toContain('rgb(211, 148, 129)')   // #d39481
+    expect(style).toContain('rgb(107, 117, 116)')   // #6b7574
   })
 
   it('destructive false -> title rengi marka (grafit #1f2937)', () => {
@@ -119,6 +119,6 @@ describe('ConfirmDialog', () => {
     const style = h2.getAttribute('style')
     // Marka rengi teal -> koyu grafit'e cevrildi (kullanici: az renk, teal degistir)
     expect(style).toContain('rgb(31, 41, 55)')    // #1f2937
-    expect(style).not.toContain('rgb(211, 148, 129)')  // yikici baslik rengi degil
+    expect(style).not.toContain('rgb(107, 117, 116)')  // yikici baslik rengi degil
   })
 })

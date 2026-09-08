@@ -272,7 +272,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
               <button
                 onClick={handleSkip}
                 className="w-full py-2 text-[11px] font-bold uppercase tracking-widest hover:underline transition-all"
-                style={{ color: '#928678' }}
+                style={{ color: '#888888' }}
               >
                 Şimdi atla
               </button>

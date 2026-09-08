@@ -108,7 +108,7 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
                 className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110"
                 style={{
                   background: 'rgba(255, 255, 255, 0.78)',
-                  border: '1px solid rgba(192, 57, 43, 0.35)',
+                  border: '1px solid rgba(107, 117, 116, 0.35)',
                   color: 'var(--ah-danger)',
                 }}>
           <svg width="14" height="14" viewBox="0 0 24 24"

@@ -17,13 +17,13 @@ import { PlatformRoleNotice } from '../../../components/LegalNotice'   // FAZ C.
 
 /* REDESIGN v3 — açık zemin için durum renkleri (soft bg + koyu okunur metin) */
 const STATUS_CONFIG = {
-  PENDING:   { label: 'Bekliyor',     color: '#b7791f', soft: '#fbf1e0', text: '#8a5e17' },   // amber
-  REVIEWING: { label: 'İnceleniyor',  color: '#1f57c3', soft: '#eaf1fd', text: '#1a49a6' },   // info blue
-  HELD:      { label: 'Hold · 24sa',  color: '#9a6a1f', soft: '#f6ecd9', text: '#7c5518' },   // deep amber
-  STANDBY:   { label: 'Yedek',        color: '#6d28d9', soft: '#f2ecfd', text: '#5b21b6' },   // FAZ C.1 mor
-  ACCEPTED:  { label: 'Kabul',        color: '#0a7c42', soft: '#e9f5ee', text: '#086335' },  // green
-  REJECTED:  { label: 'Red',          color: '#c0392b', soft: '#fbeae7', text: '#992d22' },   // red
-  WITHDRAWN: { label: 'İptal',        color: '#6b7574', soft: '#eef1f2', text: '#545c5b' },   // gri
+  PENDING:   { label: 'Bekliyor',     color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // amber
+  REVIEWING: { label: 'İnceleniyor',  color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // info blue
+  HELD:      { label: 'Hold · 24sa',  color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // deep amber
+  STANDBY:   { label: 'Yedek',        color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // FAZ C.1 mor
+  ACCEPTED:  { label: 'Kabul',        color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },  // green
+  REJECTED:  { label: 'Red',          color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // red
+  WITHDRAWN: { label: 'İptal',        color: '#6b7574', soft: '#eef1f2', text: '#3f4b4a' },   // gri
   EXPIRED:   { label: 'Süresi Doldu', color: '#98a1a0', soft: '#eef1f2', text: '#6b7574' },   // faint
 }
 
@@ -281,18 +281,18 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                     {/* FAZ C.1 — Acil yedek teklifi: asil aday gelmedi, sira sende */}
                     {app.standbyOfferActive && (
                       <div className="mt-3 rounded-lg p-3" onClick={(e) => e.stopPropagation()}
-                           style={{ background: '#f2ecfd', border: '1px solid #6d28d9' }}>
+                           style={{ background: '#eef0f2', border: '1px solid #6b7574' }}>
                         <div className="flex items-start gap-2">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b21b6"
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f4b4a"
                                strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
                                className="flex-shrink-0 mt-0.5" aria-hidden="true">
                             <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
                           </svg>
                           <div className="min-w-0">
-                            <div className="text-[13px] font-semibold" style={{ color: '#5b21b6' }}>
+                            <div className="text-[13px] font-semibold" style={{ color: '#3f4b4a' }}>
                               Sıra sende — asıl aday gelmedi
                             </div>
-                            <div className="text-[12px] mt-0.5" style={{ color: '#5b21b6' }}>
+                            <div className="text-[12px] mt-0.5" style={{ color: '#3f4b4a' }}>
                               Kabul edersen vardiya senin.
                               {standbyLeft(app.standbyDeadline) && (
                                 <> Cevap için <b className="tabular-nums">{standbyLeft(app.standbyDeadline)}</b> kaldı.</>
@@ -369,7 +369,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                 <div className="px-4 pb-3 -mt-1 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                   {app.note && (
                     <span className="inline-flex items-center gap-1.5 type-caption px-2 py-1 rounded-full"
-                          style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#8a5e17' }}>
+                          style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#3f4b4a' }}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                       İşletme notu
                     </span>
@@ -392,7 +392,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
               {isExpanded && app.note && (
                 <div className="px-4 pb-4" onClick={(e) => e.stopPropagation()}>
-                  <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#8a5e17' }}>
+                  <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#3f4b4a' }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>
                     <span className="type-body"><b className="font-semibold">İşletme Notu:</b> {app.note}</span>
                   </div>
@@ -419,7 +419,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                           {isPending && (
                             <>
                               {!hasUploaded && (
-                                <div className="type-caption rounded-md px-2 py-1.5 mt-2" style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#8a5e17' }}>
+                                <div className="type-caption rounded-md px-2 py-1.5 mt-2" style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#3f4b4a' }}>
                                   Bu belgeyi henüz yüklemedin. <b>Belgelerim</b> sekmesinden yükledikten sonra izin verebilirsin.
                                 </div>
                               )}
@@ -427,10 +427,10 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                                 <button onClick={() => handleRespond(dr.id, true)} disabled={respondingId === dr.id || !hasUploaded}
                                   title={!hasUploaded ? 'Önce bu belgeyi yükle' : ''}
                                   className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                  style={{ background: '#0a7c42', color: '#fff', border: '1px solid #0a7c42' }}>İzin Ver</button>
+                                  style={{ background: '#6b7574', color: '#fff', border: '1px solid #6b7574' }}>İzin Ver</button>
                                 <button onClick={() => handleRespond(dr.id, false)} disabled={respondingId === dr.id}
                                   className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-50"
-                                  style={{ background: '#fff', color: '#992d22', border: '1px solid var(--ah-line-2)' }}>Reddet</button>
+                                  style={{ background: '#fff', color: '#3f4b4a', border: '1px solid var(--ah-line-2)' }}>Reddet</button>
                               </div>
                             </>
                           )}
@@ -499,14 +499,14 @@ function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, sma
       border: '1px solid var(--ah-brand)',
     },
     success: {
-      background: '#0a7c42',
+      background: '#6b7574',
       color: '#fff',
-      border: '1px solid #0a7c42',
+      border: '1px solid #6b7574',
     },
     danger: {
-      background: '#c0392b',
+      background: '#6b7574',
       color: '#fff',
-      border: '1px solid #c0392b',
+      border: '1px solid #6b7574',
     },
     gold: {
       background: 'var(--ah-card)',
@@ -515,7 +515,7 @@ function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, sma
     },
     'ghost-danger': {
       background: 'var(--ah-card)',
-      color: '#992d22',
+      color: '#3f4b4a',
       border: '1px solid var(--ah-line-2)',
     },
   }

@@ -91,10 +91,10 @@ export default function ContactPage() {
 
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: '#f5efe2' }}>
+          <h1 className="text-2xl font-bold" style={{ color: '#efefef' }}>
             İletişim
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#928678' }}>
+          <p className="text-sm mt-1" style={{ color: '#888888' }}>
             Bize yazabileceğin birkaç yol var. Önce{' '}
             <Link to="/yardim" className="underline font-semibold">SSS</Link>
             'ye bakman cevabı hızlandırabilir.
@@ -103,7 +103,7 @@ export default function ContactPage() {
 
         {/* Veri sorumlusu kartı (KVKK m.10) */}
         <section className="bg-white rounded-2xl shadow-xl border border-brand-200 p-6 sm:p-8 mb-6">
-          <div className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: '#928678' }}>
+          <div className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: '#888888' }}>
             Veri Sorumlusu
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -120,22 +120,22 @@ export default function ContactPage() {
 
         {/* Form — mailto pre-fill */}
         <section className="bg-white rounded-2xl shadow-xl border border-brand-200 p-6 sm:p-8">
-          <div className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: '#928678' }}>
+          <div className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: '#888888' }}>
             Bize Yaz
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-[12px] font-semibold mb-1.5" style={{ color: '#928678' }}>
+              <label className="block text-[12px] font-semibold mb-1.5" style={{ color: '#888888' }}>
                 Konu
               </label>
               <select value={subject} onChange={e => setSubject(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2"
-                style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(31, 41, 55, 0.14)', color: '#ede4d3' }}>
+                style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(31, 41, 55, 0.14)', color: '#e5e5e5' }}>
                 {SUBJECTS.map(s => <option key={s.v} value={s.v}>{s.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-[12px] font-semibold mb-1.5" style={{ color: '#928678' }}>
+              <label className="block text-[12px] font-semibold mb-1.5" style={{ color: '#888888' }}>
                 Mesajın
               </label>
               <textarea
@@ -145,15 +145,15 @@ export default function ContactPage() {
                   ? 'KVKK madde 11 kapsamında hangi hakkını kullanmak istediğini açıkla. Kimlik doğrulaması için e-postanın kayıtlı adresinden gönderildiğini teyit edeceğiz.'
                   : 'Sorunu mümkün olduğunca detaylı yaz — hesap email\'in, kullandığın tarayıcı, hata mesajı vb. cevap süresi 24 saat.'}
                 className="w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 resize-y"
-                style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(31, 41, 55, 0.14)', color: '#ede4d3', minHeight: 140 }}
+                style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(31, 41, 55, 0.14)', color: '#e5e5e5', minHeight: 140 }}
               />
             </div>
             {sent ? (
               <div style={{
                 padding: 14, borderRadius: 12,
-                background: 'rgba(61, 220, 151, 0.10)',
-                border: '1px solid rgba(61, 220, 151, 0.35)',
-                color: '#15875a', fontSize: 13, fontWeight: 600,
+                background: 'rgba(181, 181, 181, 0.10)',
+                border: '1px solid rgba(181, 181, 181, 0.35)',
+                color: '#6c6c6c', fontSize: 13, fontWeight: 600,
                 textAlign: 'center',
               }}>
                 Talebin alındı. 24 saat içinde dönüş yapılacak.
@@ -166,8 +166,8 @@ export default function ContactPage() {
                   style={{
                     background: body.trim() && !sending
                       ? 'var(--ah-brand-gradient)'
-                      : 'rgba(146, 134, 120, 0.18)',
-                    color: body.trim() && !sending ? '#1a1208' : '#928678',
+                      : 'rgba(136, 136, 136, 0.18)',
+                    color: body.trim() && !sending ? '#1a1208' : '#888888',
                     border: 'none',
                     cursor: body.trim() && !sending ? 'pointer' : 'not-allowed',
                   }}>
@@ -185,8 +185,8 @@ export default function ContactPage() {
                 <a href={mailtoHref}
                    className="block w-full text-center px-5 py-3 rounded-xl font-semibold text-sm transition-all"
                    style={{
-                     background: body.trim() ? 'var(--ah-brand-gradient)' : 'rgba(146, 134, 120, 0.18)',
-                     color: body.trim() ? '#1a1208' : '#928678',
+                     background: body.trim() ? 'var(--ah-brand-gradient)' : 'rgba(136, 136, 136, 0.18)',
+                     color: body.trim() ? '#1a1208' : '#888888',
                      pointerEvents: body.trim() ? 'auto' : 'none',
                      opacity: body.trim() ? 1 : 0.7,
                    }}>
@@ -212,11 +212,11 @@ export default function ContactPage() {
 function InfoCard({ label, value, href, caption }) {
   const inner = (
     <>
-      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#928678' }}>{label}</div>
+      <div className="text-[10px] uppercase tracking-widest" style={{ color: '#888888' }}>{label}</div>
       <div className={`font-mono text-[13px] truncate mt-1 ${href ? 'underline' : ''}`}
-           style={{ color: '#f5efe2' }}>{value}</div>
+           style={{ color: '#efefef' }}>{value}</div>
       {caption && (
-        <div className="text-[10px] mt-1" style={{ color: '#64748b' }}>{caption}</div>
+        <div className="text-[10px] mt-1" style={{ color: '#727272' }}>{caption}</div>
       )}
     </>
   )

@@ -149,13 +149,13 @@ export default function CommandPalette() {
       <div
         onClick={e => e.stopPropagation()}
         className="w-full max-w-xl rounded-2xl border shadow-2xl overflow-hidden flex flex-col"
-        style={{ background: 'var(--bg-surface, #fff)', borderColor: 'var(--border-subtle, #ebe0cc)' }}
+        style={{ background: 'var(--bg-surface, #fff)', borderColor: 'var(--border-subtle, #e1e1e1)' }}
       >
         {/* Input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>
+        <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: 'var(--border-subtle, #e1e1e1)' }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                strokeWidth={1.8} stroke="currentColor"
-               className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted, #766c61)' }}>
+               className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted, #6d6d6d)' }}>
             <path strokeLinecap="round" strokeLinejoin="round"
               d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
           </svg>
@@ -169,7 +169,7 @@ export default function CommandPalette() {
             style={{ color: 'var(--text-primary, #171513)' }}
           />
           <kbd className="hidden sm:inline text-[10px] font-mono px-1.5 py-0.5 rounded border"
-               style={{ color: 'var(--text-muted, #766c61)', borderColor: 'var(--border-subtle, #ebe0cc)' }}>
+               style={{ color: 'var(--text-muted, #6d6d6d)', borderColor: 'var(--border-subtle, #e1e1e1)' }}>
             ESC
           </kbd>
         </div>
@@ -177,14 +177,14 @@ export default function CommandPalette() {
         {/* List */}
         <div ref={listRef} className="max-h-[55vh] overflow-y-auto p-2">
           {filtered.length === 0 && (
-            <div className="text-center text-sm py-8" style={{ color: 'var(--text-muted, #766c61)' }}>
+            <div className="text-center text-sm py-8" style={{ color: 'var(--text-muted, #6d6d6d)' }}>
               Eşleşen eylem bulunamadı
             </div>
           )}
           {grouped.map(([section, items]) => (
             <div key={section} className="mb-2 last:mb-0">
               <div className="text-[10px] uppercase tracking-widest font-bold px-2 py-1.5"
-                   style={{ color: 'var(--text-muted, #766c61)' }}>
+                   style={{ color: 'var(--text-muted, #6d6d6d)' }}>
                 {section}
               </div>
               {items.map(a => {
@@ -196,7 +196,7 @@ export default function CommandPalette() {
                     onMouseEnter={() => setActiveIdx(a._idx)}
                     className="w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center justify-between gap-3 transition-colors"
                     style={{
-                      background: active ? 'var(--accent-action-soft, #ede4d3)' : 'transparent',
+                      background: active ? 'var(--accent-action-soft, #e5e5e5)' : 'transparent',
                       color: active ? 'var(--accent-action, #1b1815)' : 'var(--text-primary, #171513)',
                     }}
                   >
@@ -216,18 +216,18 @@ export default function CommandPalette() {
 
         {/* Footer hint */}
         <div className="px-4 py-2 border-t text-[10px] flex items-center gap-4"
-             style={{ borderColor: 'var(--border-subtle, #ebe0cc)', color: 'var(--text-muted, #766c61)' }}>
+             style={{ borderColor: 'var(--border-subtle, #e1e1e1)', color: 'var(--text-muted, #6d6d6d)' }}>
           <span className="flex items-center gap-1.5">
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>Yukari</kbd>
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>Asagi</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #e1e1e1)' }}>Yukari</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #e1e1e1)' }}>Asagi</kbd>
             <span>gezin</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>Enter</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #e1e1e1)' }}>Enter</kbd>
             <span>seç</span>
           </span>
           <span className="ml-auto flex items-center gap-1.5">
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #ebe0cc)' }}>Ctrl K</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #e1e1e1)' }}>Ctrl K</kbd>
             <span>tekrar aç/kapat</span>
           </span>
         </div>

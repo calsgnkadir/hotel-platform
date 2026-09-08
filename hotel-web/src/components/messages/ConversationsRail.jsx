@@ -105,7 +105,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            {/* FAZ 17 fix: okunmus sohbet ismi eski mor paletten (#e9d5ff) kalmisti -> ivory */}
+            {/* FAZ 17 fix: okunmus sohbet ismi eski mor paletten (#dcdcdc) kalmisti -> ivory */}
             <div className="font-semibold text-[13.5px] truncate"
                  style={{ color: hasUnread ? 'var(--text-headline)' : 'var(--text-primary)', letterSpacing: '-0.01em' }}>
               {conv.otherPartyName}
@@ -154,7 +154,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
         </svg>
       </button>
-      <style>{`@keyframes conv-pulse { 0%,100% { box-shadow: 0 0 0 2px rgba(122, 159, 122, 0.28) } 50% { box-shadow: 0 0 0 5px rgba(122, 159, 122, 0.12) } }`}</style>
+      <style>{`@keyframes conv-pulse { 0%,100% { box-shadow: 0 0 0 2px rgba(107, 117, 116, 0.28) } 50% { box-shadow: 0 0 0 5px rgba(107, 117, 116, 0.12) } }`}</style>
     </motion.div>
   )
 }

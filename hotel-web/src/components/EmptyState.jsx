@@ -23,19 +23,19 @@ const ILLUSTRATIONS = {
         </linearGradient>
       </defs>
       {/* Arka plan daireler */}
-      <circle cx="35" cy="35" r="6" fill="#9fd2cc" opacity="0.3" />
+      <circle cx="35" cy="35" r="6" fill="#c7c7c7" opacity="0.3" />
       <circle cx="170" cy="50" r="4" fill="#1f2937" opacity="0.4" />
-      <circle cx="160" cy="130" r="5" fill="#9fd2cc" opacity="0.3" />
+      <circle cx="160" cy="130" r="5" fill="#c7c7c7" opacity="0.3" />
       {/* Kağıt */}
       <rect x="40" y="40" width="80" height="100" rx="6" fill="#fff" stroke="url(#emp-app-grad)" strokeWidth="3" />
-      <line x1="55" y1="60" x2="105" y2="60" stroke="#9fd2cc" strokeWidth="2" strokeLinecap="round" />
-      <line x1="55" y1="75" x2="100" y2="75" stroke="#9fd2cc" strokeWidth="2" strokeLinecap="round" />
-      <line x1="55" y1="90" x2="105" y2="90" stroke="#9fd2cc" strokeWidth="2" strokeLinecap="round" />
-      <line x1="55" y1="105" x2="90" y2="105" stroke="#9fd2cc" strokeWidth="2" strokeLinecap="round" />
+      <line x1="55" y1="60" x2="105" y2="60" stroke="#c7c7c7" strokeWidth="2" strokeLinecap="round" />
+      <line x1="55" y1="75" x2="100" y2="75" stroke="#c7c7c7" strokeWidth="2" strokeLinecap="round" />
+      <line x1="55" y1="90" x2="105" y2="90" stroke="#c7c7c7" strokeWidth="2" strokeLinecap="round" />
+      <line x1="55" y1="105" x2="90" y2="105" stroke="#c7c7c7" strokeWidth="2" strokeLinecap="round" />
       {/* Uçak */}
       <path d="M 130 70 L 170 50 L 165 65 L 145 75 Z M 165 65 L 175 80 L 160 80 Z"
             fill="url(#emp-app-grad)" stroke="#111827" strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M 145 78 L 130 95 L 138 88" stroke="#9fd2cc" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 3" fill="none" />
+      <path d="M 145 78 L 130 95 L 138 88" stroke="#c7c7c7" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 3" fill="none" />
     </svg>
   ),
 
@@ -48,11 +48,11 @@ const ILLUSTRATIONS = {
           <stop offset="100%" stopColor="#111827" />
         </linearGradient>
       </defs>
-      <circle cx="35" cy="30" r="5" fill="#9fd2cc" opacity="0.4" />
+      <circle cx="35" cy="30" r="5" fill="#c7c7c7" opacity="0.4" />
       <circle cx="175" cy="40" r="4" fill="#1f2937" opacity="0.3" />
       {/* Mercek */}
       <circle cx="90" cy="75" r="40" fill="#fff" stroke="url(#emp-list-grad)" strokeWidth="4" />
-      <circle cx="90" cy="75" r="32" fill="none" stroke="#9fd2cc" strokeWidth="1" />
+      <circle cx="90" cy="75" r="32" fill="none" stroke="#c7c7c7" strokeWidth="1" />
       <line x1="120" y1="105" x2="150" y2="135" stroke="url(#emp-list-grad)" strokeWidth="6" strokeLinecap="round" />
       {/* İçinde bina */}
       <rect x="75" y="65" width="30" height="25" fill="url(#emp-list-grad)" opacity="0.8" rx="2" />
@@ -72,7 +72,7 @@ const ILLUSTRATIONS = {
           <stop offset="100%" stopColor="#111827" />
         </linearGradient>
       </defs>
-      <circle cx="30" cy="40" r="5" fill="#9fd2cc" opacity="0.3" />
+      <circle cx="30" cy="40" r="5" fill="#c7c7c7" opacity="0.3" />
       <circle cx="175" cy="120" r="6" fill="#1f2937" opacity="0.3" />
       {/* Sol balon */}
       <path d="M 30 40 Q 30 25 45 25 L 95 25 Q 110 25 110 40 L 110 65 Q 110 80 95 80 L 60 80 L 45 95 L 50 80 Q 30 80 30 65 Z"
@@ -98,7 +98,7 @@ const ILLUSTRATIONS = {
           <stop offset="100%" stopColor="#111827" />
         </linearGradient>
       </defs>
-      <circle cx="30" cy="30" r="5" fill="#9fd2cc" opacity="0.3" />
+      <circle cx="30" cy="30" r="5" fill="#c7c7c7" opacity="0.3" />
       <circle cx="170" cy="30" r="4" fill="#1f2937" opacity="0.4" />
       {/* Sol adam */}
       <circle cx="65" cy="60" r="18" fill="url(#emp-work-grad)" opacity="0.7" />
@@ -122,7 +122,7 @@ const ILLUSTRATIONS = {
           <stop offset="100%" stopColor="#111827" />
         </linearGradient>
       </defs>
-      <circle cx="30" cy="30" r="5" fill="#9fd2cc" opacity="0.3" />
+      <circle cx="30" cy="30" r="5" fill="#c7c7c7" opacity="0.3" />
       <circle cx="170" cy="120" r="6" fill="#1f2937" opacity="0.3" />
       {/* Saat */}
       <circle cx="100" cy="80" r="50" fill="#fff" stroke="url(#emp-hist-grad)" strokeWidth="4" />
@@ -134,7 +134,7 @@ const ILLUSTRATIONS = {
         const y1 = 80 + 42 * Math.sin(rad)
         const x2 = 100 + 46 * Math.cos(rad)
         const y2 = 80 + 46 * Math.sin(rad)
-        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#9fd2cc" strokeWidth={i % 3 === 0 ? 3 : 1.5} strokeLinecap="round" />
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#c7c7c7" strokeWidth={i % 3 === 0 ? 3 : 1.5} strokeLinecap="round" />
       })}
       {/* Akrep + yelkovan */}
       <line x1="100" y1="80" x2="100" y2="50" stroke="#111827" strokeWidth="3" strokeLinecap="round" />
@@ -151,7 +151,7 @@ const ILLUSTRATIONS = {
           <stop offset="100%" stopColor="#111827" />
         </linearGradient>
       </defs>
-      <circle cx="35" cy="40" r="5" fill="#9fd2cc" opacity="0.3" />
+      <circle cx="35" cy="40" r="5" fill="#c7c7c7" opacity="0.3" />
       <circle cx="170" cy="120" r="6" fill="#1f2937" opacity="0.3" />
       {/* Kalp */}
       <path d="M 100 130 C 60 100 50 75 60 60 C 70 45 90 50 100 70 C 110 50 130 45 140 60 C 150 75 140 100 100 130 Z"
@@ -175,18 +175,18 @@ const ILLUSTRATIONS = {
           <stop offset="100%" stopColor="#111827" />
         </linearGradient>
       </defs>
-      <circle cx="35" cy="30" r="5" fill="#9fd2cc" opacity="0.4" />
+      <circle cx="35" cy="30" r="5" fill="#c7c7c7" opacity="0.4" />
       <circle cx="175" cy="40" r="4" fill="#1f2937" opacity="0.3" />
       {/* Mercek */}
       <circle cx="85" cy="70" r="35" fill="#fff" stroke="url(#emp-srch-grad)" strokeWidth="4" />
       <line x1="110" y1="95" x2="140" y2="125" stroke="url(#emp-srch-grad)" strokeWidth="6" strokeLinecap="round" />
       {/* X işareti — sonuç yok */}
-      <line x1="73" y1="58" x2="97" y2="82" stroke="#dc2626" strokeWidth="3.5" strokeLinecap="round" opacity="0.7" />
-      <line x1="97" y1="58" x2="73" y2="82" stroke="#dc2626" strokeWidth="3.5" strokeLinecap="round" opacity="0.7" />
+      <line x1="73" y1="58" x2="97" y2="82" stroke="#4d4d4d" strokeWidth="3.5" strokeLinecap="round" opacity="0.7" />
+      <line x1="97" y1="58" x2="73" y2="82" stroke="#4d4d4d" strokeWidth="3.5" strokeLinecap="round" opacity="0.7" />
       {/* Tozlar */}
-      <circle cx="50" cy="120" r="2" fill="#9fd2cc" opacity="0.6" />
-      <circle cx="155" cy="110" r="2" fill="#9fd2cc" opacity="0.6" />
-      <circle cx="130" cy="50" r="2" fill="#9fd2cc" opacity="0.6" />
+      <circle cx="50" cy="120" r="2" fill="#c7c7c7" opacity="0.6" />
+      <circle cx="155" cy="110" r="2" fill="#c7c7c7" opacity="0.6" />
+      <circle cx="130" cy="50" r="2" fill="#c7c7c7" opacity="0.6" />
     </svg>
   ),
 
@@ -199,7 +199,7 @@ const ILLUSTRATIONS = {
           <stop offset="100%" stopColor="#111827" />
         </linearGradient>
       </defs>
-      <circle cx="35" cy="40" r="5" fill="#9fd2cc" opacity="0.3" />
+      <circle cx="35" cy="40" r="5" fill="#c7c7c7" opacity="0.3" />
       <circle cx="170" cy="120" r="6" fill="#1f2937" opacity="0.3" />
       {/* Zil */}
       <path d="M 100 35 C 95 35 90 38 90 45 C 75 50 70 65 70 85 L 70 105 L 60 115 L 60 120 L 140 120 L 140 115 L 130 105 L 130 85 C 130 65 125 50 110 45 C 110 38 105 35 100 35 Z"
@@ -221,14 +221,14 @@ const ILLUSTRATIONS = {
           <stop offset="100%" stopColor="#111827" />
         </linearGradient>
       </defs>
-      <circle cx="35" cy="50" r="5" fill="#9fd2cc" opacity="0.3" />
+      <circle cx="35" cy="50" r="5" fill="#c7c7c7" opacity="0.3" />
       <circle cx="170" cy="120" r="6" fill="#1f2937" opacity="0.3" />
       {/* Kutu (3D) */}
       <path d="M 70 60 L 130 60 L 145 75 L 145 130 L 70 130 Z" fill="#fff" stroke="url(#emp-gen-grad)" strokeWidth="3" strokeLinejoin="round" />
       <path d="M 130 60 L 130 75 L 145 75" fill="none" stroke="url(#emp-gen-grad)" strokeWidth="3" strokeLinejoin="round" />
       <line x1="70" y1="75" x2="130" y2="75" stroke="url(#emp-gen-grad)" strokeWidth="2" />
       {/* İç boş efekti */}
-      <text x="107" y="105" textAnchor="middle" fontSize="32" fill="#9fd2cc" fontWeight="bold" opacity="0.5">?</text>
+      <text x="107" y="105" textAnchor="middle" fontSize="32" fill="#c7c7c7" fontWeight="bold" opacity="0.5">?</text>
     </svg>
   ),
 }

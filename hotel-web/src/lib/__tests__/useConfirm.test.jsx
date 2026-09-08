@@ -92,14 +92,17 @@ describe('useConfirm', () => {
     expect(result).toHaveBeenCalledWith(false)
   })
 
-  it('destructive true -> brick tinted confirm button (color check)', async () => {
+  it('destructive true -> gri gradient confirm button (color check)', async () => {
     renderWithProvider(
       <TestConsumer opts={{ title: 'Sil', confirmLabel: 'Evet', destructive: true }} onResult={() => {}} />
     )
     fireEvent.click(screen.getByText('trigger'))
     const btn = screen.getByText('Evet')
-    // Brick gradient (#b46a55 -> #8f4e3d) inline style kullaniliyor
-    expect(btn.getAttribute('style')).toContain('180, 106, 85')  // rgba(180, 106, 85, ...) shadow
+    // "Sadece gri ve siyah": yikici onay artik gri gradient (#6b7574 -> #5b5b5b),
+    // eski brick birakildi. Markanin gradient token'ini TASIMAMALI.
+    const style = btn.getAttribute('style')
+    expect(style).toContain('rgb(91, 91, 91)')   // #5b5b5b — jsdom hex'i rgb'ye normalize eder
+    expect(style).not.toContain('var(--ah-brand-gradient)')
   })
 
   it('destructive false -> filled brand (teal) confirm button', async () => {
@@ -113,8 +116,8 @@ describe('useConfirm', () => {
     // gercek degeri tokens.css'te tek yerde tanimli.
     const style = btn.getAttribute('style')
     expect(style).toContain('var(--ah-brand-gradient)')
-    // Yikici olmayan onay, tehlike rengini tasimamali
-    expect(style).not.toContain('180, 106, 85')
+    // Yikici olmayan onay, yikici gri gradient'i tasimamali
+    expect(style).not.toContain('rgb(91, 91, 91)')
   })
 
   it('default label\'lar destructive-aware secilir (Evet, sil vs Onayla)', async () => {

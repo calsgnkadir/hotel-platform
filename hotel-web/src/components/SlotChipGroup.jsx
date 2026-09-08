@@ -40,12 +40,12 @@ export default function SlotChipGroup({ slots, items, max = 4, size = 'sm' }) {
             fontSize: textSize,
             fontWeight: 500,
             background: chip.conflict
-              ? 'rgba(180, 106, 85, 0.10)'
+              ? 'rgba(107, 117, 116, 0.10)'
               : 'rgba(31, 41, 55, 0.06)',
             border: `1px solid ${
-              chip.conflict ? 'rgba(180, 106, 85, 0.35)' : 'rgba(31, 41, 55, 0.16)'
+              chip.conflict ? 'rgba(107, 117, 116, 0.35)' : 'rgba(31, 41, 55, 0.16)'
             }`,
-            color: chip.conflict ? '#d39481' : 'var(--text-secondary)',
+            color: chip.conflict ? '#6b7574' : 'var(--text-secondary)',
           }}
           title={chip.conflict ? 'Müsaitlikle çakışıyor' : undefined}
         >

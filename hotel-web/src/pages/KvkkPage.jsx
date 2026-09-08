@@ -12,7 +12,7 @@ export default function KvkkPage() {
       <div aria-hidden className="fixed inset-0 z-0 pointer-events-none"
            style={{
              background:
-               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(74, 63, 51, 0.30) 0%, transparent 60%),' +
+               'radial-gradient(ellipse 700px 500px at 15% 25%, rgba(64, 64, 64, 0.30) 0%, transparent 60%),' +
                'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(31, 41, 55, 0.10) 0%, transparent 60%)',
            }} />
 
@@ -26,20 +26,20 @@ export default function KvkkPage() {
              background: '#1b1815',
              borderRadius: '12px',
              border: 'none',
-             boxShadow: '0 18px 48px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(245,239,226,0.03)',
+             boxShadow: '0 18px 48px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(239, 239, 239, 0.03)',
            }}>
         <div className="mb-7">
           <h1 className="text-3xl sm:text-[40px] font-semibold"
-              style={{ color: '#f5efe2', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
+              style={{ color: '#efefef', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kişisel Verilerin Korunması
           </h1>
           <p className="text-[10px] uppercase tracking-[0.08em] font-medium mt-3"
-             style={{ color: '#928678' }}>
+             style={{ color: '#888888' }}>
             Aydınlatma Metni · Son güncelleme: 22 Mayıs 2026
           </p>
         </div>
 
-        <div className="space-y-6 text-sm leading-relaxed" style={{ color: '#ede4d3' }}>
+        <div className="space-y-6 text-sm leading-relaxed" style={{ color: '#e5e5e5' }}>
           <Section title="1. Veri Sorumlusu">
             <p>
               AjansHotel platformunun (bundan sonra "Platform") veri sorumlusu, platformu işleten
@@ -112,7 +112,7 @@ export default function KvkkPage() {
                style={{
                  background: 'rgba(31, 41, 55, 0.06)',
                  border: '1px solid rgba(31, 41, 55, 0.22)',
-                 color: '#ede4d3',
+                 color: '#e5e5e5',
                }}>
             <p className="font-medium">
               Platforma kayıt olarak bu aydınlatma metnini okuduğunuzu ve verilerinizin yukarıda
@@ -145,7 +145,7 @@ function Section({ title, children }) {
           style={{ color: '#1f2937' }}>
         {title}
       </h2>
-      <div style={{ color: '#ede4d3' }}>
+      <div style={{ color: '#e5e5e5' }}>
         {children}
       </div>
     </section>

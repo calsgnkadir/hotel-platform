@@ -37,34 +37,34 @@ const COLUMNS = [
     id: 'HELD',
     label: 'Hold',
     sub: 'Aday onayı bekleniyor (24 sa)',
-    color: '#c8923a',
-    bg: 'rgba(245, 158, 11, 0.08)',
-    border: 'rgba(245, 158, 11, 0.25)',
+    color: '#6b7574',
+    bg: 'rgba(107, 117, 116, 0.08)',
+    border: 'rgba(107, 117, 116, 0.25)',
   },
   {
     id: 'ACCEPTED',
     label: 'Kabul',
     sub: 'Çalışmaya hazır',
-    color: '#7a9f7a',
-    bg: 'rgba(122, 159, 122, 0.08)',
-    border: 'rgba(122, 159, 122, 0.22)',
+    color: '#6b7574',
+    bg: 'rgba(107, 117, 116, 0.08)',
+    border: 'rgba(107, 117, 116, 0.22)',
   },
   {
     // FAZ C.1 — Yedek havuzu: asil aday gelmezse otomatik cagrilir
     id: 'STANDBY',
     label: 'Yedek',
     sub: 'Gelmezse otomatik çağrılır',
-    color: '#6d28d9',
-    bg: 'rgba(109, 40, 217, 0.07)',
-    border: 'rgba(109, 40, 217, 0.20)',
+    color: '#6b7574',
+    bg: 'rgba(107, 117, 116, 0.07)',
+    border: 'rgba(107, 117, 116, 0.20)',
   },
   {
     id: 'REJECTED',
     label: 'Red',
     sub: 'Süreç kapandı',
-    color: '#b46a55',
-    bg: 'rgba(180, 106, 85, 0.08)',
-    border: 'rgba(180, 106, 85, 0.22)',
+    color: '#6b7574',
+    bg: 'rgba(107, 117, 116, 0.08)',
+    border: 'rgba(107, 117, 116, 0.22)',
   },
 ]
 
@@ -268,12 +268,12 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => handleBulkAction('ACCEPTED')}
               className="type-overline px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
-              style={{ background: 'rgba(122, 159, 122, 0.18)', color: '#a8c8a8', border: '1px solid rgba(122, 159, 122, 0.40)' }}>
+              style={{ background: 'rgba(107, 117, 116, 0.18)', color: '#bfbfbf', border: '1px solid rgba(107, 117, 116, 0.40)' }}>
               Toplu Kabul
             </button>
             <button type="button" onClick={() => handleBulkAction('REJECTED')}
               className="type-overline px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
-              style={{ background: 'rgba(180, 106, 85, 0.18)', color: '#d39481', border: '1px solid rgba(180, 106, 85, 0.40)' }}>
+              style={{ background: 'rgba(107, 117, 116, 0.18)', color: '#6b7574', border: '1px solid rgba(107, 117, 116, 0.40)' }}>
               Toplu Red
             </button>
             <button type="button" onClick={() => setSelectedIds(new Set())}

@@ -24,32 +24,32 @@ const VARIANTS = {
   success: {
     cls: 'border',
     style: {
-      borderColor: 'rgba(122, 159, 122, 0.35)',
-      background: 'rgba(122, 159, 122, 0.08)',
-      color: '#a8c8a8',
+      borderColor: 'rgba(107, 117, 116, 0.35)',
+      background: 'rgba(107, 117, 116, 0.08)',
+      color: '#bfbfbf',
     },
   },
   error: {
     cls: 'border',
     style: {
-      borderColor: 'rgba(180, 106, 85, 0.35)',
-      background: 'rgba(180, 106, 85, 0.08)',
-      color: '#d39481',
+      borderColor: 'rgba(107, 117, 116, 0.35)',
+      background: 'rgba(107, 117, 116, 0.08)',
+      color: '#6b7574',
     },
   },
   warning: {
     cls: 'border',
     style: {
-      borderColor: 'rgba(200, 146, 58, 0.35)',
-      background: 'rgba(200, 146, 58, 0.08)',
-      color: '#e0b766',
+      borderColor: 'rgba(107, 117, 116, 0.35)',
+      background: 'rgba(107, 117, 116, 0.08)',
+      color: '#bababa',
     },
   },
   info: {
     cls: 'border',
     style: {
-      borderColor: 'rgba(34, 211, 238, 0.40)',
-      background: 'rgba(34, 211, 238, 0.08)',
+      borderColor: 'rgba(175, 175, 175, 0.40)',
+      background: 'rgba(175, 175, 175, 0.08)',
       color: '#6b7574',
     },
   },

@@ -207,7 +207,7 @@ export default function KeyboardShortcuts() {
                 border: '1px solid rgba(31, 41, 55, 0.10)',
               }}
             >
-              <span className="text-[13px]" style={{ color: '#ede4d3' }}>
+              <span className="text-[13px]" style={{ color: '#e5e5e5' }}>
                 {row.label}
               </span>
               <span className="flex items-center gap-1">
@@ -233,7 +233,7 @@ export default function KeyboardShortcuts() {
           ))}
         </ul>
 
-        <p className="mt-5 text-[11px]" style={{ color: '#928678' }}>
+        <p className="mt-5 text-[11px]" style={{ color: '#888888' }}>
           Input alanına yazıyorsan kısayollar devre dışıdır. <kbd className="font-mono">g</kbd> bastıktan sonra 1.5 saniye içinde ikinci tuşa bas.
         </p>
       </div>

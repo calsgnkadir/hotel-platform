@@ -55,7 +55,7 @@ export const DOC_CATEGORIES = [
   {
     key: 'general',
     label: 'Genel',
-    color: '#234a82',
+    color: '#3a3f44',
     types: [
       { type: 'CV',                  label: 'CV / Özgeçmiş',     ext: 'PDF/DOCX', required: true  },
       { type: 'TRANSCRIPT',          label: 'Transkript',        ext: 'PDF',      required: false },
@@ -65,7 +65,7 @@ export const DOC_CATEGORIES = [
   {
     key: 'health',
     label: 'Sağlık',
-    color: '#dc2626',
+    color: '#494f55',
     types: [
       { type: 'HEALTH_CERTIFICATE',  label: 'Sağlık Raporu',     ext: 'PDF/JPG', required: false },
     ],
@@ -73,7 +73,7 @@ export const DOC_CATEGORIES = [
   {
     key: 'identity',
     label: 'Kimlik',
-    color: '#0891b2',
+    color: '#565c62',
     types: [
       { type: 'IDENTITY_DOCUMENT',   label: 'Kimlik Fotokopisi', ext: 'PDF/JPG', required: false },
       { type: 'CRIMINAL_RECORD',     label: 'Adli Sicil Kaydı',  ext: 'PDF',     required: false },

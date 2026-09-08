@@ -305,9 +305,9 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             <h3 className="type-overline mb-2">Notunuz</h3>
             <div className="rounded-2xl p-3 type-body"
                  style={{
-                   background: 'rgba(200, 146, 58, 0.10)',
-                   border: '1px solid rgba(200, 146, 58, 0.28)',
-                   color: '#e0b766',
+                   background: 'rgba(107, 117, 116, 0.10)',
+                   border: '1px solid rgba(107, 117, 116, 0.28)',
+                   color: '#bababa',
                  }}>
               {app.note}
             </div>
@@ -407,11 +407,11 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
         {app.status === 'STANDBY' && (
           <div className="border-t border-hairline pt-4 space-y-3">
             <h3 className="type-overline">Yedek Aday</h3>
-            <div className="rounded-xl p-3" style={{ background: '#f2ecfd', border: '1px solid #6d28d9' }}>
-              <div className="text-[13px] font-semibold" style={{ color: '#5b21b6' }}>
+            <div className="rounded-xl p-3" style={{ background: '#eef0f2', border: '1px solid #6b7574' }}>
+              <div className="text-[13px] font-semibold" style={{ color: '#3f4b4a' }}>
                 {app.standbyRank ? `${app.standbyRank}. yedek` : 'Yedek listesinde'}
               </div>
-              <div className="text-[12px] mt-1" style={{ color: '#5b21b6' }}>
+              <div className="text-[12px] mt-1" style={{ color: '#3f4b4a' }}>
                 {app.standbyOfferActive
                   ? `Acil teklif gönderildi — aday ${app.standbyDeadline
                       ? new Date(app.standbyDeadline).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit' })
@@ -422,7 +422,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
                 className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)' }}>
+                style={{ background: 'linear-gradient(135deg, #6b7574 0%, #797979 100%)' }}>
                 Direkt Kabul
               </button>
               <button onClick={handleRemoveStandby} disabled={actionLoading}
@@ -439,7 +439,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
           <div className="border-t border-hairline pt-4 space-y-3">
             <h3 className="type-overline">Karar</h3>
             {app.status === 'HELD' ? (
-              <p className="type-caption font-medium" style={{ color: '#e0b766' }}>
+              <p className="type-caption font-medium" style={{ color: '#bababa' }}>
                 HOLD aktif — aday {app.holdDeadline ? new Date(app.holdDeadline).toLocaleString('tr-TR') : 'belirsiz'} 'a kadar cevap vermeli
               </p>
             ) : (
@@ -451,7 +451,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
                 className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
                 style={{
-                  background: 'linear-gradient(135deg, #7a9f7a 0%, #5e8460 100%)',
+                  background: 'linear-gradient(135deg, #6b7574 0%, #797979 100%)',
                   boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                 }}>
                 Kabul
@@ -460,7 +460,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 <button onClick={handleHold} disabled={actionLoading}
                   className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
                   style={{
-                    background: 'linear-gradient(135deg, #c8923a 0%, #a3762d 100%)',
+                    background: 'linear-gradient(135deg, #6b7574 0%, #7a7a7a 100%)',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>
                   HOLD 24sa
@@ -469,7 +469,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               <button onClick={() => handleDecide('REJECTED')} disabled={actionLoading}
                 className={`py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 ${app.status === 'HELD' ? 'col-span-2' : ''}`}
                 style={{
-                  background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)',
+                  background: 'linear-gradient(135deg, #6b7574 0%, #5b5b5b 100%)',
                   boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                 }}>
                 Reddet
@@ -478,7 +478,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             {/* FAZ C.1 — Yedeğe alma: kararı ertelemeden güvence oluştur */}
             <button onClick={handleStandby} disabled={actionLoading}
               className="w-full py-2.5 rounded-2xl type-overline transition-all hover:-translate-y-0.5 disabled:opacity-60 inline-flex items-center justify-center gap-2"
-              style={{ background: '#f2ecfd', color: '#5b21b6', border: '1px solid #6d28d9' }}>
+              style={{ background: '#eef0f2', color: '#3f4b4a', border: '1px solid #6b7574' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
@@ -543,9 +543,9 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               disabled={actionLoading}
               className="w-full py-3 rounded-2xl type-overline transition-all hover:-translate-y-0.5 disabled:opacity-60"
               style={{
-                background: 'rgba(180, 106, 85, 0.10)',
-                color: '#d39481',
-                border: '1px solid rgba(180, 106, 85, 0.30)',
+                background: 'rgba(107, 117, 116, 0.10)',
+                color: '#6b7574',
+                border: '1px solid rgba(107, 117, 116, 0.30)',
               }}>
               Aday İşe Gelmedi (No-Show) Olarak İşaretle
             </button>
@@ -557,12 +557,12 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
           <div className="pt-4 border-t border-hairline">
             <div className="rounded-2xl px-4 py-3 flex items-start gap-2"
                  style={{
-                   background: 'rgba(180, 106, 85, 0.10)',
-                   border: '1px solid rgba(180, 106, 85, 0.28)',
+                   background: 'rgba(107, 117, 116, 0.10)',
+                   border: '1px solid rgba(107, 117, 116, 0.28)',
                  }}>
               <div>
-                <div className="type-body font-semibold" style={{ color: '#e3a896' }}>No-show olarak işaretlendi</div>
-                <div className="type-caption mt-0.5" style={{ color: '#d39481' }}>
+                <div className="type-body font-semibold" style={{ color: '#b3b3b3' }}>No-show olarak işaretlendi</div>
+                <div className="type-caption mt-0.5" style={{ color: '#6b7574' }}>
                   Bu aday kabul edilen iş için işe gelmediğini bildirdiniz. Strike hakkı düşürüldü.
                 </div>
               </div>

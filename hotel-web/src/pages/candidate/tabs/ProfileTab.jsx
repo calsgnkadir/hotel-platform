@@ -193,7 +193,7 @@ export default function ProfileTab() {
           {/* Is ariyorum toggle */}
           <div className="card p-4 flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold" style={{ color: form.isAvailable ? '#0a7c42' : 'var(--ah-ink)' }}>
+              <p className="text-[13px] font-semibold" style={{ color: form.isAvailable ? '#6b7574' : 'var(--ah-ink)' }}>
                 {form.isAvailable ? 'İş arıyorum' : 'Şu anda aramıyorum'}
               </p>
               <p className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-4)' }}>
@@ -205,7 +205,7 @@ export default function ProfileTab() {
             <button type="button" role="switch" aria-checked={form.isAvailable}
               onClick={() => setForm(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
               className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
-              style={{ background: form.isAvailable ? '#0a7c42' : 'var(--ah-line-2)' }}>
+              style={{ background: form.isAvailable ? '#6b7574' : 'var(--ah-line-2)' }}>
               <span className="inline-block h-4.5 w-4.5 rounded-full bg-white transition-transform"
                     style={{ width: 18, height: 18, transform: form.isAvailable ? 'translateX(21px)' : 'translateX(3px)' }} />
             </button>
@@ -218,12 +218,12 @@ export default function ProfileTab() {
                 Email Doğrulama
               </p>
               <p className="text-sm font-semibold mt-1"
-                 style={{ color: profile?.emailVerifiedAt ? '#0a7c42' : '#b7791f' }}>
+                 style={{ color: profile?.emailVerifiedAt ? '#6b7574' : '#6b7574' }}>
                 {profile?.emailVerifiedAt ? 'Doğrulandı' : 'Beklemede'}
               </p>
             </div>
             <span className="w-2.5 h-2.5 rounded-full"
-                  style={{ background: profile?.emailVerifiedAt ? '#0a7c42' : '#b7791f' }} />
+                  style={{ background: profile?.emailVerifiedAt ? '#6b7574' : '#6b7574' }} />
           </div>
 
           {/* Profil doluluk — sol alt (guvenilirlik skoru kaldirildi) */}
@@ -270,7 +270,7 @@ export default function ProfileTab() {
                     {profile?.avatarUrl && (
                       <button type="button" onClick={handleAvatarDelete}
                         className="block w-full px-4 py-2 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ background: '#fff', color: '#992d22', border: '1px solid var(--ah-line-2)' }}>Fotoğrafı Kaldır</button>
+                        style={{ background: '#fff', color: '#3f4b4a', border: '1px solid var(--ah-line-2)' }}>Fotoğrafı Kaldır</button>
                     )}
                     <p className="text-xs" style={{ color: 'var(--ah-ink-4)' }}>Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400×400 olarak kaydedilir</p>
                   </div>

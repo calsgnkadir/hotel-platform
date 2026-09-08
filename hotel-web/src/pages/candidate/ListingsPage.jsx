@@ -195,11 +195,11 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             {/* Check morph icon */}
             <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
                  style={{
-                   background: 'rgba(122, 159, 122, 0.14)',
-                   border: '1px solid rgba(122, 159, 122, 0.42)',
+                   background: 'rgba(107, 117, 116, 0.14)',
+                   border: '1px solid rgba(107, 117, 116, 0.42)',
                    boxShadow: 'none',
                  }}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7a9f7a"
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6b7574"
                    strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
                    style={{ animation: 'check-morph 400ms ease-out forwards' }}>
                 <polyline points="20 6 9 17 4 12" />
@@ -631,7 +631,7 @@ function DetailModal({ listing, onClose, onApply }) {
             onClick={() => { if (detailHasFuture) { onApply(listing); onClose() } }}
             disabled={!detailHasFuture}
             className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
-            style={{ background: '#047857', boxShadow: '0 3px 12px rgba(4,120,87,0.35)' }}>
+            style={{ background: '#5d5d5d', boxShadow: '0 3px 12px rgba(93, 93, 93, 0.35)' }}>
             {detailHasFuture ? 'Başvur' : 'Süresi Doldu'}
           </button>
         </div>
@@ -655,9 +655,9 @@ function DetailModal({ listing, onClose, onApply }) {
 const COVER_ART = {
   WAITER:        { tint: '31, 41, 55', icon: <path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8v2M10 8h4" /> },                                         // servis kubbesi
   DISHWASHER:    { tint: '107, 138, 163', icon: <><path d="M7 21c0-4 2-5 2-8a4 4 0 0 0-8 0" /><path d="M12 3c3 3 8 4 8 9a8 8 0 0 1-8 9" /><circle cx="16" cy="7" r="1.5" /></> },  // su
-  HOUSEKEEPING:  { tint: '122, 159, 122', icon: <><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6" /><path d="M3 18h18M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" /></> },        // yatak
-  RECEPTION:     { tint: '200, 146, 58',  icon: <><path d="M12 4v3" /><path d="M5 15a7 7 0 0 1 14 0" /><path d="M3 15h18v3H3z" /></> },            // resepsiyon cani
-  KITCHEN_STAFF: { tint: '180, 106, 85',  icon: <><path d="M7 8a4 4 0 0 1 3-6 4 4 0 0 1 4 0 4 4 0 0 1 3 6v3H7z" /><path d="M8 11v8M12 11v8M16 11v8M7 21h10" /></> },              // sef sapkasi
+  HOUSEKEEPING:  { tint: '107, 117, 116', icon: <><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6" /><path d="M3 18h18M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" /></> },        // yatak
+  RECEPTION:     { tint: '107, 117, 116',  icon: <><path d="M12 4v3" /><path d="M5 15a7 7 0 0 1 14 0" /><path d="M3 15h18v3H3z" /></> },            // resepsiyon cani
+  KITCHEN_STAFF: { tint: '107, 117, 116',  icon: <><path d="M7 8a4 4 0 0 1 3-6 4 4 0 0 1 4 0 4 4 0 0 1 3 6v3H7z" /><path d="M8 11v8M12 11v8M16 11v8M7 21h10" /></> },              // sef sapkasi
   BELLBOY:       { tint: '31, 41, 55', icon: <><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M9 8V6a3 3 0 0 1 6 0v2M4 13h16" /></> },  // valiz
   SECURITY:      { tint: '107, 138, 163', icon: <path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z" /> },                              // kalkan
   DEFAULT:       { tint: '31, 41, 55', icon: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01" /></> },  // bina
@@ -1364,9 +1364,9 @@ function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
         type="button"
         className="text-[10px] font-semibold uppercase tracking-[0.06em] px-2.5 py-1.5 rounded-full flex-shrink-0 transition-all hover:-translate-y-0.5"
         style={{
-          background: 'rgba(180, 106, 85, 0.10)',
-          color: '#d39481',
-          border: '1px solid rgba(180, 106, 85, 0.28)',
+          background: 'rgba(107, 117, 116, 0.10)',
+          color: '#6b7574',
+          border: '1px solid rgba(107, 117, 116, 0.28)',
         }}>
         Hepsini Temizle
       </button>
@@ -1402,7 +1402,7 @@ function ListingsPagination({ page, totalPages, onChange }) {
       </ListingsPageBtn>
       {pageNumbers().map((n, i) => (
         n === '…'
-          ? <span key={`e${i}`} className="w-9 text-center text-[13px]" style={{ color: '#6b6358' }}>…</span>
+          ? <span key={`e${i}`} className="w-9 text-center text-[13px]" style={{ color: '#646464' }}>…</span>
           : <ListingsPageBtn key={n} active={n === page} onClick={() => onChange(n)} ariaLabel={`Sayfa ${n}`}>
               {n}
             </ListingsPageBtn>
@@ -1489,7 +1489,7 @@ function OverviewStrip({ overview, hasLocation }) {
 
   tiles.push({
     key: 'urgent',
-    accent: urgentCount > 0 ? '#c0392b' : 'var(--ah-ink-4)',
+    accent: urgentCount > 0 ? '#6b7574' : 'var(--ah-ink-4)',
     value: urgentCount > 0 ? `${urgentCount} acil ilan` : 'Acil ilan yok',
     label: urgentCount > 0 ? 'hemen personel aranıyor' : 'şu an acil arayan yok',
     icon: <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />,
@@ -1586,9 +1586,9 @@ function AvailableNowToggle() {
       style={{
         padding: '6px 13px',
         fontWeight: active ? 600 : 500,
-        background: active ? '#b45309' : 'var(--ah-card)',
+        background: active ? '#626262' : 'var(--ah-card)',
         color:      active ? '#fff' : 'var(--ah-ink-2)',
-        border: `1px solid ${active ? '#b45309' : 'var(--ah-line-2)'}`,
+        border: `1px solid ${active ? '#626262' : 'var(--ah-line-2)'}`,
       }}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -201,9 +201,9 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
             onClick={() => setReportOpen(true)}
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5"
             style={{
-              background: 'rgba(180, 106, 85, 0.10)',
-              color: '#d39481',
-              border: '1px solid rgba(180, 106, 85, 0.22)',
+              background: 'rgba(107, 117, 116, 0.10)',
+              color: '#6b7574',
+              border: '1px solid rgba(107, 117, 116, 0.22)',
             }}
           >
             <span className="text-base">!</span>

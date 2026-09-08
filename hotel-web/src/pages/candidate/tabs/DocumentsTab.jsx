@@ -108,7 +108,7 @@ export default function DocumentsTab() {
                 </button>
                 <button type="button" onClick={() => handleDelete(doc.id, t.label)} disabled={deletingId === doc.id}
                         className="text-[12.5px] font-semibold rounded-lg px-3 py-1.5 disabled:opacity-50"
-                        style={{ background: '#fff', color: '#992d22', border: '1px solid var(--ah-line-2)' }}>
+                        style={{ background: '#fff', color: '#3f4b4a', border: '1px solid var(--ah-line-2)' }}>
                   Sil
                 </button>
               </div>

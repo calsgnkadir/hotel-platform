@@ -20,9 +20,9 @@ export default function OverviewTab({ applications, onTabChange }) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
             { label: 'Toplam',      value: applications.length, color: '#1f2937' },
-            { label: 'Bekleyen',    value: pending,             color: '#c8923a' },
-            { label: 'İnceleniyor', value: reviewing,           color: '#6b8aa3' },
-            { label: 'Kabul',       value: accepted,            color: '#7a9f7a' },
+            { label: 'Bekleyen',    value: pending,             color: '#6b7574' },
+            { label: 'İnceleniyor', value: reviewing,           color: '#858585' },
+            { label: 'Kabul',       value: accepted,            color: '#6b7574' },
           ].map(s => (
             <motion.div key={s.label}
               whileHover={{ y: -3 }}
@@ -199,12 +199,12 @@ function BizRecentRow({ app, last, onClick }) {
 }
 
 const STATUS_DOT = {
-  PENDING:   '#c8923a',
-  REVIEWING: '#6b8aa3',
-  HELD:      '#a17b3f',
-  STANDBY:   '#6d28d9',
-  ACCEPTED:  '#7a9f7a',
-  REJECTED:  '#b46a55',
+  PENDING:   '#6b7574',
+  REVIEWING: '#858585',
+  HELD:      '#7f7f7f',
+  STANDBY:   '#6b7574',
+  ACCEPTED:  '#6b7574',
+  REJECTED:  '#6b7574',
 }
 const STATUS_LABEL = {
   PENDING: 'yeni başvuru', REVIEWING: 'inceleniyor', HELD: 'beklemede',

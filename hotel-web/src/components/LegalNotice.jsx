@@ -26,12 +26,12 @@ export function SgkNotice() {
   return (
     <div className="rounded-2xl px-4 py-3 flex items-start gap-2.5"
          style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)' }}>
-      <InfoIcon color="#8a5e17" />
+      <InfoIcon color="#3f4b4a" />
       <div>
-        <div className="type-body font-semibold" style={{ color: '#8a5e17' }}>
+        <div className="type-body font-semibold" style={{ color: '#3f4b4a' }}>
           SGK işe giriş bildirgesi
         </div>
-        <div className="type-caption mt-0.5" style={{ color: '#8a5e17' }}>
+        <div className="type-caption mt-0.5" style={{ color: '#3f4b4a' }}>
           Adayı çalıştırmaya başlamadan önce, yasal olarak SGK işe giriş bildirgesini
           vermeniz gerekir. AjansHotel bir eşleştirme platformudur; iş ilişkisi
           doğrudan sizinle aday arasında kurulur ve bu yükümlülük işletmeye aittir.
