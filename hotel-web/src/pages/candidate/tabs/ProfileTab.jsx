@@ -158,76 +158,81 @@ export default function ProfileTab() {
       {/* FAZ 23 — Kariyer.net hesabim duzeni: sol profil rayi + sag icerik kartlari */}
       <div className="grid lg:grid-cols-[320px_1fr] gap-4 items-start mt-4">
 
-        {/* ================= SOL RAIL ================= */}
-        <div className="space-y-4 lg:sticky lg:top-4">
-          {/* Profil ozeti */}
-          <div className="card p-6 flex flex-col items-center text-center">
-            <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden mb-4 relative"
-                 style={{ background: 'rgba(31, 41, 55, 0.08)', border: '2px solid rgba(31, 41, 55, 0.22)' }}>
-              {profile?.avatarUrl ? (
-                <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
-                     loading="lazy" decoding="async" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-4xl font-semibold" style={{ color: '#1f2937' }}>
-                  {(profile?.fullName || 'A').charAt(0).toUpperCase()}
+        {/* ================= SOL RAIL — tek birlesik panel ================= */}
+        <div className="lg:sticky lg:top-4">
+          <div className="card overflow-hidden !p-0">
+            {/* Profil ozeti: avatar + isim + uye tarihi */}
+            <div className="p-6 flex flex-col items-center text-center">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden mb-4 relative"
+                   style={{ background: 'rgba(31, 41, 55, 0.08)', border: '2px solid rgba(31, 41, 55, 0.22)' }}>
+                {profile?.avatarUrl ? (
+                  <img src={cldImg(profile.avatarUrl, { w: ImgSize.avatarLg })} alt="Avatar"
+                       loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl font-semibold" style={{ color: '#1f2937' }}>
+                    {(profile?.fullName || 'A').charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--ah-ink)' }}>
+                {profile?.fullName || 'Aday'}
+              </h2>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
+                {profile?.email || ''}
+              </p>
+              <div className="w-full pt-3 mt-3 border-t flex items-center justify-between text-[11px]"
+                   style={{ borderColor: 'var(--ah-line)' }}>
+                <span style={{ color: 'var(--ah-ink-3)' }}>ÜYE OLDU</span>
+                <span className="font-semibold" style={{ color: 'var(--ah-ink-2)' }}>
+                  {profile?.createdAt
+                    ? new Date(profile.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
+                    : '—'}
                 </span>
-              )}
+              </div>
             </div>
-            <h2 className="text-lg font-bold" style={{ color: 'var(--ah-ink)' }}>
-              {profile?.fullName || 'Aday'}
-            </h2>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
-              {profile?.email || ''}
-            </p>
-            <div className="w-full pt-3 mt-3 border-t flex items-center justify-between text-[11px]"
+
+            {/* Is ariyorum toggle */}
+            <div className="px-6 py-4 flex items-center justify-between gap-3 border-t"
                  style={{ borderColor: 'var(--ah-line)' }}>
-              <span style={{ color: 'var(--ah-ink-3)' }}>ÜYE OLDU</span>
-              <span className="font-semibold" style={{ color: 'var(--ah-ink-2)' }}>
-                {profile?.createdAt
-                  ? new Date(profile.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
-                  : '—'}
-              </span>
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold" style={{ color: 'var(--ah-ink)' }}>
+                  {form.isAvailable ? 'İş arıyorum' : 'Şu anda aramıyorum'}
+                </p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
+                  {form.isAvailable
+                    ? 'İşletmeler seni 3 kat daha hızlı bulsun.'
+                    : 'Aktif olduğunda daha çok teklif alırsın.'}
+                </p>
+              </div>
+              <button type="button" role="switch" aria-checked={form.isAvailable}
+                onClick={() => setForm(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
+                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
+                style={{ background: form.isAvailable ? 'var(--ah-brand)' : 'var(--ah-line-2)' }}>
+                <span className="inline-block rounded-full bg-white transition-transform"
+                      style={{ width: 18, height: 18, transform: form.isAvailable ? 'translateX(21px)' : 'translateX(3px)' }} />
+              </button>
+            </div>
+
+            {/* Email durumu */}
+            <div className="px-6 py-4 flex items-center justify-between gap-3 border-t"
+                 style={{ borderColor: 'var(--ah-line)' }}>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: 'var(--ah-ink-3)' }}>
+                  Email Doğrulama
+                </p>
+                <p className="text-sm font-semibold mt-1" style={{ color: 'var(--ah-ink)' }}>
+                  {profile?.emailVerifiedAt ? 'Doğrulandı' : 'Beklemede'}
+                </p>
+              </div>
+              <span className="w-2.5 h-2.5 rounded-full"
+                    style={{ background: profile?.emailVerifiedAt ? 'var(--ah-ink)' : 'var(--ah-ink-4)' }} />
+            </div>
+
+            {/* Profil doluluk — panel sonu (guvenilirlik skoru kaldirildi) */}
+            <div className="px-6 py-5 border-t" style={{ borderColor: 'var(--ah-line)' }}>
+              <ProfileCompletenessCard data={completeness} bare />
             </div>
           </div>
-
-          {/* Is ariyorum toggle */}
-          <div className="card p-4 flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[13px] font-semibold" style={{ color: form.isAvailable ? '#6b7574' : 'var(--ah-ink)' }}>
-                {form.isAvailable ? 'İş arıyorum' : 'Şu anda aramıyorum'}
-              </p>
-              <p className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-4)' }}>
-                {form.isAvailable
-                  ? 'İşletmeler seni 3 kat daha hızlı bulsun.'
-                  : 'Aktif olduğunda daha çok teklif alırsın.'}
-              </p>
-            </div>
-            <button type="button" role="switch" aria-checked={form.isAvailable}
-              onClick={() => setForm(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
-              className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
-              style={{ background: form.isAvailable ? '#6b7574' : 'var(--ah-line-2)' }}>
-              <span className="inline-block h-4.5 w-4.5 rounded-full bg-white transition-transform"
-                    style={{ width: 18, height: 18, transform: form.isAvailable ? 'translateX(21px)' : 'translateX(3px)' }} />
-            </button>
-          </div>
-
-          {/* Email durumu */}
-          <div className="card p-4 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: 'var(--ah-ink-3)' }}>
-                Email Doğrulama
-              </p>
-              <p className="text-sm font-semibold mt-1"
-                 style={{ color: profile?.emailVerifiedAt ? '#6b7574' : '#6b7574' }}>
-                {profile?.emailVerifiedAt ? 'Doğrulandı' : 'Beklemede'}
-              </p>
-            </div>
-            <span className="w-2.5 h-2.5 rounded-full"
-                  style={{ background: profile?.emailVerifiedAt ? '#6b7574' : '#6b7574' }} />
-          </div>
-
-          {/* Profil doluluk — sol alt (guvenilirlik skoru kaldirildi) */}
-          <ProfileCompletenessCard data={completeness} />
         </div>
 
         {/* ================= SAG KOLON ================= */}
