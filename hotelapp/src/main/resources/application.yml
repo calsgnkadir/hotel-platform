@@ -172,6 +172,22 @@ app:
   encryption:
     key: ${APP_ENCRYPTION_KEY:}
 
+  # Faz 1 — Isletme aboneligi (iyzico). Isci HER ZAMAN ucretsiz.
+  # enforce=false iken hicbir sey kisitlanmaz (mevcut/demo akis bozulmaz);
+  # true olunca ilan acmak aktif deneme/abonelik ister.
+  billing:
+    enforce:       ${BILLING_ENFORCE:false}
+    trial-days:    ${BILLING_TRIAL_DAYS:14}
+    monthly-price: ${BILLING_MONTHLY_PRICE:499.00}
+    plan:          ${BILLING_PLAN:STANDARD_MONTHLY}
+  # iyzico SANDBOX (varsayilan public sandbox anahtarlari — gercek para YOK).
+  # Canliya gecis: IYZICO_* env + gercek merchant hesabi + ticari/yasal onay.
+  iyzico:
+    api-key:      ${IYZICO_API_KEY:sandbox-afXhZPW0MQlE4dCUUlHcEopnMBgXnAZI}
+    secret-key:   ${IYZICO_SECRET_KEY:sandbox-wbwpzKIiplZxI3hh5ALI4FJyfFYWnobP}
+    base-url:     ${IYZICO_BASE_URL:https://sandbox-api.iyzipay.com}
+    callback-url: ${IYZICO_CALLBACK_URL:http://localhost:8080/api/billing/callback}
+
 # FAZ 2/#18 — Actuator (health + circuit breaker durumu)
 # Production'da sadece /health public, diger endpoint'ler protected
 management:

@@ -44,6 +44,7 @@ public class JobListingService {
     private final NotificationService notificationService;
     private final com.hotelapp.repository.BusinessPhotoRepository businessPhotoRepository;  // D3
     private final FileStorageService fileStorageService;                                     // D3
+    private final BillingService billingService;                                             // Faz 1 — abonelik kapisi
     private final com.hotelapp.repository.UserAvailabilityBlockRepository availabilityBlockRepository;  // J2 müsaitlik filtre
     private final com.hotelapp.repository.ApplicationRepository applicationRepository;                 // Dalga 4 — guven sinyali
 
@@ -148,6 +149,13 @@ public class JobListingService {
         validateDates(request);
         validateSalary(request);
         validateSlots(request.getShiftSlots());
+
+        // Faz 1 — abonelik kapisi (girdi dogrulamasindan SONRA). app.billing.enforce=false
+        // iken daima gecer (mevcut/demo akis bozulmaz); true olunca aktif deneme/abonelik ister.
+        if (!billingService.hasActiveAccessByBusiness(business.getId())) {
+            throw new BusinessRuleException(
+                    "İlan yayınlamak için aktif bir deneme veya abonelik gerekli.");
+        }
 
         JobListing listing = JobListing.builder()
                 .business(business)
