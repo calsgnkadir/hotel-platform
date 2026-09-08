@@ -185,10 +185,12 @@ public class DemoSeeder implements CommandLineRunner {
                     .build();
             l = jobListingRepository.save(l);
 
-            // 1-3 slot — bazıları geçmiş, bazıları gelecek
-            int slotCount = 1 + random.nextInt(3);
+            // 2-4 slot — HEPSİ gelecekte (demo canlı görünsün; her ilanda
+            // başvurulabilir açık vardiya olsun). Eskiden -30..+30 idi → çoğu
+            // ilan yalnızca geçmiş slota düşüp "Dolu" görünüyordu.
+            int slotCount = 2 + random.nextInt(3);
             for (int s = 0; s < slotCount; s++) {
-                int dayOffset = -30 + random.nextInt(60);  // -30..+30 gün
+                int dayOffset = 1 + random.nextInt(20);  // 1..20 gün ileri
                 LocalDate date = LocalDate.now().plusDays(dayOffset);
                 LocalTime start = ls.shift == Shift.MORNING ? LocalTime.of(8, 0)
                               : ls.shift == Shift.EVENING ? LocalTime.of(16, 0)
