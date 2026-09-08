@@ -53,7 +53,7 @@ export default function LanguageSwitcher() {
                 ${l.code === current.code ? 'font-bold' : ''}`}
               style={{ color: '#13110f' }}>
               <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded"
-                    style={{ background: '#ede4d3', color: '#1b1815' }}>{l.code}</span>
+                    style={{ background: '#e5e5e5', color: '#1b1815' }}>{l.code}</span>
               <span>{l.label}</span>
               {l.code === current.code && <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="ml-auto w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>}
             </button>

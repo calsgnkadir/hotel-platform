@@ -31,7 +31,7 @@ const brandIcon = L.divIcon({
       border: 2px solid white;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+      box-shadow: 0 4px 12px rgba(107, 117, 116, 0.5);
       display: flex; align-items: center; justify-content: center;
     ">
       <div style="

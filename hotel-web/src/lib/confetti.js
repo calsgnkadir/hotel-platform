@@ -3,9 +3,12 @@ import confetti from 'canvas-confetti'
 /**
  * FAZ 5.11 — Tema renkleriyle confetti burst'leri.
  * canvas-confetti: ~5 kB, GPU-accel.
+ *
+ * "Sadece gri ve siyah" kimligi: burst monokrom — grafit'ten beyaza noteral
+ * tonlar. Renkli konfeti (eski altin/mavi) birakildi.
  */
 
-const PURPLE_PALETTE = ['#d4a853', '#d4a853', '#f7c43c', '#f7c43c', '#234a82', '#fbbf24']
+const NEUTRAL_PALETTE = ['#111827', '#3a3f44', '#6b7574', '#9aa0a6', '#c8ccce', '#ffffff']
 
 function prefersReducedMotion() {
   return typeof window !== 'undefined'
@@ -21,7 +24,7 @@ export function celebrate({ x = 0.5, y = 0.55 } = {}) {
     spread: 70,
     angle: 90,
     origin: { x, y },
-    colors: PURPLE_PALETTE,
+    colors: NEUTRAL_PALETTE,
     ticks: 180,
     scalar: 0.95,
     gravity: 0.9,
@@ -35,7 +38,7 @@ export function celebrate({ x = 0.5, y = 0.55 } = {}) {
       spread: 100,
       angle: 90,
       origin: { x, y: y + 0.02 },
-      colors: PURPLE_PALETTE,
+      colors: NEUTRAL_PALETTE,
       ticks: 140,
       scalar: 0.75,
     })
@@ -49,7 +52,7 @@ export function sideBursts() {
     particleCount: 60,
     spread: 55,
     ticks: 220,
-    colors: PURPLE_PALETTE,
+    colors: NEUTRAL_PALETTE,
     gravity: 0.85,
   }
   confetti({ ...opts, angle: 60,  origin: { x: 0, y: 0.7 } })

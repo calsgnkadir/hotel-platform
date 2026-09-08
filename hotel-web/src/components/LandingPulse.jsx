@@ -67,11 +67,11 @@ export default function LandingPulse() {
       position: 'relative',
       borderRadius: 18,
       padding: '20px 22px 18px',
-      background: 'rgba(12, 23, 38, 0.55)',
+      background: 'rgba(22, 22, 22, 0.55)',
       backdropFilter: 'blur(18px)',
       WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(205, 183, 143, 0.22)',
-      boxShadow: '0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(205, 183, 143, 0.08) inset',
+      border: '1px solid rgba(185, 185, 185, 0.22)',
+      boxShadow: '0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(185, 185, 185, 0.08) inset',
       overflow: 'hidden',
       minWidth: 320,
     }}>
@@ -84,7 +84,7 @@ export default function LandingPulse() {
           <PulseDot active={pulse != null} />
           <span style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.25em',
-            textTransform: 'uppercase', color: '#cdb78f',
+            textTransform: 'uppercase', color: '#b9b9b9',
           }}>
             Vardiya Nabzı · Canlı
           </span>
@@ -103,8 +103,8 @@ export default function LandingPulse() {
         {pulse?.generatedAt && (
           <div style={{
             marginTop: 12, paddingTop: 10,
-            borderTop: '1px solid rgba(205, 183, 143, 0.10)',
-            fontSize: 10, color: '#6b6358',
+            borderTop: '1px solid rgba(185, 185, 185, 0.10)',
+            fontSize: 10, color: '#646464',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <span>Son güncelleme</span>
@@ -126,16 +126,16 @@ function Stat({ label, value }) {
     <div>
       <div style={{
         fontSize: 32, lineHeight: 1, fontWeight: 700,
-        color: loading ? 'rgba(205, 183, 143, 0.18)' : '#fdfbf7',
+        color: loading ? 'rgba(185, 185, 185, 0.18)' : '#fdfbf7',
         letterSpacing: '-0.025em',
         fontVariantNumeric: 'tabular-nums',
-        textShadow: loading ? 'none' : '0 0 18px rgba(205, 183, 143, 0.28)',
+        textShadow: loading ? 'none' : '0 0 18px rgba(185, 185, 185, 0.28)',
         transition: 'color 300ms',
       }}>
         {loading ? '—' : display.toLocaleString('tr-TR')}
       </div>
       <div style={{
-        marginTop: 4, fontSize: 11, color: 'rgba(254, 247, 215, 0.65)',
+        marginTop: 4, fontSize: 11, color: 'rgba(246, 246, 246, 0.65)',
         letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 600,
       }}>
         {label}
@@ -177,14 +177,14 @@ function PulseDot({ active }) {
     }}>
       <span style={{
         position: 'absolute', inset: 0, borderRadius: '50%',
-        background: active ? 'var(--signal-green, #3ddc97)' : '#64748b',
+        background: active ? 'var(--signal-green, #b5b5b5)' : '#727272',
         opacity: 0.6,
         animation: active ? 'pulse-grow 1.8s ease-out infinite' : 'none',
       }} />
       <span style={{
         position: 'relative', width: 8, height: 8, borderRadius: '50%',
-        background: active ? 'var(--signal-green, #3ddc97)' : '#64748b',
-        boxShadow: active ? '0 0 8px var(--signal-green, #3ddc97)' : 'none',
+        background: active ? 'var(--signal-green, #b5b5b5)' : '#727272',
+        boxShadow: active ? '0 0 8px var(--signal-green, #b5b5b5)' : 'none',
       }} />
       <style>{`
         @keyframes pulse-grow {
@@ -210,9 +210,9 @@ function PulseWave() {
            }}>
         <defs>
           <linearGradient id="pulse-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor="#d4a853" stopOpacity="0" />
-            <stop offset="50%"  stopColor="#cdb78f" stopOpacity="0.7" />
-            <stop offset="100%" stopColor="#d4a853" stopOpacity="0" />
+            <stop offset="0%"   stopColor="#6b7574" stopOpacity="0" />
+            <stop offset="50%"  stopColor="#b9b9b9" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="#6b7574" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path

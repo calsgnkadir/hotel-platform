@@ -656,7 +656,7 @@ function ListingsTab() {
     }
   }
 
-  const statusColor = (s) => s === 'ACTIVE' ? '#7a9f7a' : (s === 'PAUSED' ? '#c8923a' : '#b46a55')
+  const statusColor = (s) => s === 'ACTIVE' ? '#6b7574' : (s === 'PAUSED' ? '#6b7574' : '#6b7574')
 
   return (
     <div className="space-y-4">
@@ -713,21 +713,21 @@ function ListingsTab() {
                 {l.status !== 'ACTIVE' && (
                   <button onClick={() => setStatus(l, 'ACTIVE')} disabled={busy === l.id}
                     className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: 'rgba(122, 159, 122, 0.14)', color: '#a8c8a8', border: '1px solid rgba(122, 159, 122, 0.35)' }}>
+                    style={{ background: 'rgba(107, 117, 116, 0.14)', color: '#bfbfbf', border: '1px solid rgba(107, 117, 116, 0.35)' }}>
                     Aktive Et
                   </button>
                 )}
                 {l.status !== 'PAUSED' && (
                   <button onClick={() => setStatus(l, 'PAUSED')} disabled={busy === l.id}
                     className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: 'rgba(200, 146, 58, 0.14)', color: '#fcd34d', border: '1px solid rgba(200, 146, 58, 0.35)' }}>
+                    style={{ background: 'rgba(107, 117, 116, 0.14)', color: '#d2d2d2', border: '1px solid rgba(107, 117, 116, 0.35)' }}>
                     Askıya Al
                   </button>
                 )}
                 {l.status !== 'CLOSED' && (
                   <button onClick={() => setStatus(l, 'CLOSED')} disabled={busy === l.id}
                     className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: 'rgba(180, 106, 85, 0.14)', color: '#d39481', border: '1px solid rgba(180, 106, 85, 0.35)' }}>
+                    style={{ background: 'rgba(107, 117, 116, 0.14)', color: '#6b7574', border: '1px solid rgba(107, 117, 116, 0.35)' }}>
                     Kapat
                   </button>
                 )}
@@ -799,10 +799,10 @@ function SupportTab() {
     { v: 'DISMISSED',   label: 'Reddedildi' },
   ]
   const statusStyle = {
-    OPEN:        { color: '#d97706', bg: 'rgba(217, 119, 6, 0.10)' },
-    IN_PROGRESS: { color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.10)' },
-    RESOLVED:    { color: '#16a34a', bg: 'rgba(22, 163, 74, 0.10)' },
-    DISMISSED:   { color: '#64748b', bg: 'rgba(100, 116, 139, 0.10)' },
+    OPEN:        { color: '#6b7574', bg: 'rgba(132, 132, 132, 0.10)' },
+    IN_PROGRESS: { color: '#7b7b7b', bg: 'rgba(123, 123, 123, 0.10)' },
+    RESOLVED:    { color: '#7f7f7f', bg: 'rgba(127, 127, 127, 0.10)' },
+    DISMISSED:   { color: '#727272', bg: 'rgba(114, 114, 114, 0.10)' },
   }
   const SUBJECT_LABEL = {
     GENERAL:         'Genel',
@@ -820,9 +820,9 @@ function SupportTab() {
           <button key={f.v} onClick={() => setFilter(f.v)}
             style={{
               padding: '6px 14px', borderRadius: 999,
-              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(148,163,184,0.3)',
+              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(161, 161, 161, 0.3)',
               background: filter === f.v ? 'rgba(31, 41, 55, 0.12)' : 'transparent',
-              color: filter === f.v ? '#1f2937' : '#94a3b8',
+              color: filter === f.v ? '#1f2937' : '#a1a1a1',
               fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>
             {f.label}
@@ -831,9 +831,9 @@ function SupportTab() {
       </div>
 
       {loading ? (
-        <div style={{ color: '#94a3b8' }}>Yükleniyor…</div>
+        <div style={{ color: '#a1a1a1' }}>Yükleniyor…</div>
       ) : items.length === 0 ? (
-        <div style={{ color: '#94a3b8', padding: 24, textAlign: 'center' }}>Bilet yok.</div>
+        <div style={{ color: '#a1a1a1', padding: 24, textAlign: 'center' }}>Bilet yok.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {items.map(t => {
@@ -857,7 +857,7 @@ function SupportTab() {
                       <span style={{ color: '#1f2937', fontSize: 11, fontWeight: 600 }}>
                         {SUBJECT_LABEL[t.subject] || t.subject}
                       </span>
-                      <span style={{ color: '#94a3b8', fontSize: 11 }}>
+                      <span style={{ color: '#a1a1a1', fontSize: 11 }}>
                         {t.userRole} · {t.userFullName} ({t.userEmail})
                       </span>
                     </div>
@@ -879,7 +879,7 @@ function SupportTab() {
                         {t.adminNote}
                       </div>
                     )}
-                    <div style={{ color: '#64748b', fontSize: 10, marginTop: 6 }}>
+                    <div style={{ color: '#727272', fontSize: 10, marginTop: 6 }}>
                       Açılma: {new Date(t.createdAt).toLocaleString('tr-TR')}
                       {t.resolvedAt && <> · Kapanış: {new Date(t.resolvedAt).toLocaleString('tr-TR')}</>}
                     </div>
@@ -932,10 +932,10 @@ function SupportTab() {
   )
 }
 
-const btnBlue  = { padding: '6px 12px', borderRadius: 6, background: 'rgba(59,130,246,0.15)', color: '#93c5fd', border: '1px solid rgba(59,130,246,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
-const btnGreen = { padding: '6px 12px', borderRadius: 6, background: 'rgba(22,163,74,0.15)', color: '#a8c8a8', border: '1px solid rgba(22,163,74,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
-const btnRed   = { padding: '6px 12px', borderRadius: 6, background: 'rgba(239,100,97,0.15)', color: '#d39481', border: '1px solid rgba(239,100,97,0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
-const btnGhost = { padding: '6px 12px', borderRadius: 6, background: 'transparent', color: '#94a3b8', border: '1px solid #475569', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+const btnBlue  = { padding: '6px 12px', borderRadius: 6, background: 'rgba(123, 123, 123, 0.15)', color: '#bebebe', border: '1px solid rgba(123, 123, 123, 0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+const btnGreen = { padding: '6px 12px', borderRadius: 6, background: 'rgba(127, 127, 127, 0.15)', color: '#bfbfbf', border: '1px solid rgba(127, 127, 127, 0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+const btnRed   = { padding: '6px 12px', borderRadius: 6, background: 'rgba(129, 129, 129, 0.15)', color: '#6b7574', border: '1px solid rgba(129, 129, 129, 0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+const btnGhost = { padding: '6px 12px', borderRadius: 6, background: 'transparent', color: '#a1a1a1', border: '1px solid #535353', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
 
 /* FAZ G.3 — İşletme doğrulama tab */
 function BusinessesTab() {
@@ -982,9 +982,9 @@ function BusinessesTab() {
             style={{
               padding: '6px 14px',
               borderRadius: 999,
-              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(148,163,184,0.3)',
+              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(161, 161, 161, 0.3)',
               background: filter === f.v ? 'rgba(31, 41, 55, 0.12)' : 'transparent',
-              color: filter === f.v ? '#1f2937' : '#94a3b8',
+              color: filter === f.v ? '#1f2937' : '#a1a1a1',
               fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>
             {f.label}
@@ -1002,9 +1002,9 @@ function BusinessesTab() {
       </div>
 
       {loading ? (
-        <div style={{ color: '#94a3b8' }}>Yükleniyor…</div>
+        <div style={{ color: '#a1a1a1' }}>Yükleniyor…</div>
       ) : items.length === 0 ? (
-        <div style={{ color: '#94a3b8', padding: 24, textAlign: 'center' }}>İşletme bulunamadı.</div>
+        <div style={{ color: '#a1a1a1', padding: 24, textAlign: 'center' }}>İşletme bulunamadı.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {items.map(b => (
@@ -1025,11 +1025,11 @@ function BusinessesTab() {
                     }}>DOĞRULANDI</span>
                   )}
                 </div>
-                <div style={{ color: '#94a3b8', fontSize: 11, marginTop: 2 }}>
+                <div style={{ color: '#a1a1a1', fontSize: 11, marginTop: 2 }}>
                   {b.type} · {b.district || '—'} · {b.ownerEmail}
                 </div>
                 {b.verifiedAt && (
-                  <div style={{ color: '#64748b', fontSize: 10, marginTop: 2 }}>
+                  <div style={{ color: '#727272', fontSize: 10, marginTop: 2 }}>
                     {new Date(b.verifiedAt).toLocaleString('tr-TR')} · admin #{b.verifiedBy}
                   </div>
                 )}
@@ -1037,9 +1037,9 @@ function BusinessesTab() {
               <button onClick={() => toggleVerified(b)}
                 style={{
                   padding: '6px 14px', borderRadius: 6,
-                  background: b.verifiedAt ? 'rgba(180, 106, 85, 0.12)' : 'var(--ah-brand-gradient)',
-                  border: b.verifiedAt ? '1px solid rgba(239, 100, 97, 0.3)' : 'none',
-                  color: b.verifiedAt ? '#d39481' : '#ffffff',
+                  background: b.verifiedAt ? 'rgba(107, 117, 116, 0.12)' : 'var(--ah-brand-gradient)',
+                  border: b.verifiedAt ? '1px solid rgba(129, 129, 129, 0.3)' : 'none',
+                  color: b.verifiedAt ? '#6b7574' : '#ffffff',
                   fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
                 }}>
                 {b.verifiedAt ? 'Onayı Kaldır' : 'Doğrula'}
@@ -1088,9 +1088,9 @@ function OutboxTab() {
   ]
 
   const statusStyle = {
-    DELIVERED: { color: '#16a34a', bg: 'rgba(22, 163, 74, 0.10)' },
-    PENDING:   { color: '#d97706', bg: 'rgba(217, 119, 6, 0.10)' },
-    DEAD:      { color: '#b91c1c', bg: 'rgba(185, 28, 28, 0.10)' },
+    DELIVERED: { color: '#7f7f7f', bg: 'rgba(127, 127, 127, 0.10)' },
+    PENDING:   { color: '#6b7574', bg: 'rgba(132, 132, 132, 0.10)' },
+    DEAD:      { color: '#3d3d3d', bg: 'rgba(61, 61, 61, 0.10)' },
   }
 
   return (
@@ -1103,9 +1103,9 @@ function OutboxTab() {
             style={{
               padding: '6px 14px',
               borderRadius: 999,
-              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(148,163,184,0.3)',
+              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(161, 161, 161, 0.3)',
               background: filter === f.v ? 'rgba(31, 41, 55, 0.12)' : 'transparent',
-              color: filter === f.v ? '#1f2937' : '#94a3b8',
+              color: filter === f.v ? '#1f2937' : '#a1a1a1',
               fontSize: 12,
               fontWeight: 600,
               cursor: 'pointer',
@@ -1116,9 +1116,9 @@ function OutboxTab() {
       </div>
 
       {loading ? (
-        <div style={{ color: '#94a3b8' }}>Yükleniyor…</div>
+        <div style={{ color: '#a1a1a1' }}>Yükleniyor…</div>
       ) : items.length === 0 ? (
-        <div style={{ color: '#94a3b8', padding: 24, textAlign: 'center' }}>Bu filtreyle event yok.</div>
+        <div style={{ color: '#a1a1a1', padding: 24, textAlign: 'center' }}>Bu filtreyle event yok.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {items.map(e => {
@@ -1146,10 +1146,10 @@ function OutboxTab() {
                     }}>{e.status}</span>
                     <span style={{ color: 'rgba(31, 41, 55, 0.14)', fontSize: 13, fontWeight: 600 }}>#{e.id}</span>
                     <span style={{ color: '#1f2937', fontSize: 11, fontWeight: 600 }}>{e.eventType}</span>
-                    <span style={{ color: '#94a3b8', fontSize: 11 }}>
+                    <span style={{ color: '#a1a1a1', fontSize: 11 }}>
                       deneme {e.attempts}
                     </span>
-                    <span style={{ color: '#64748b', fontSize: 11 }}>
+                    <span style={{ color: '#727272', fontSize: 11 }}>
                       {new Date(e.createdAt).toLocaleString('tr-TR')}
                     </span>
                   </div>
@@ -1157,7 +1157,7 @@ function OutboxTab() {
                     <div style={{
                       marginTop: 6,
                       fontSize: 11,
-                      color: '#d39481',
+                      color: '#6b7574',
                       fontFamily: 'Inter, sans-serif',
                       lineHeight: 1.4,
                     }}>
@@ -1167,7 +1167,7 @@ function OutboxTab() {
                   <div style={{
                     marginTop: 6,
                     fontSize: 10,
-                    color: '#64748b',
+                    color: '#727272',
                     fontFamily: 'Inter, sans-serif',
                     wordBreak: 'break-all',
                   }}>

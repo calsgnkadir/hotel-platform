@@ -142,7 +142,7 @@ export default function AvatarCropModal({ open, onClose, onConfirm }) {
 
   return (
     <div className="fixed inset-0 z-[55] flex items-center justify-center p-4"
-         style={{ background: 'rgba(15, 8, 35, 0.75)', backdropFilter: 'blur(6px)' }}
+         style={{ background: 'rgba(11, 11, 11, 0.75)', backdropFilter: 'blur(6px)' }}
          onClick={() => { reset(); onClose() }}>
       <div ref={dialogRef}
            role="dialog" aria-modal="true" aria-labelledby="avatar-crop-title"

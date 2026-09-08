@@ -23,7 +23,7 @@ function makeIcon(size = 32, hot = false) {
   const grad = hot
     ? 'var(--ah-brand)'
     : 'linear-gradient(135deg, #1b1815, #111827)'
-  const shadow = hot ? '0 4px 16px rgba(31, 41, 55, 0.55)' : '0 4px 12px rgba(74, 63, 51, 0.45)'
+  const shadow = hot ? '0 4px 16px rgba(31, 41, 55, 0.55)' : '0 4px 12px rgba(64, 64, 64, 0.45)'
   return L.divIcon({
     className: 'custom-map-marker',
     html: `

@@ -70,7 +70,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
              background: '#ffffff',
              borderRadius: '12px',
              border: 'none',
-             boxShadow: '0 14px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
+             boxShadow: '0 14px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(239, 239, 239, 0.03)',
            }}>
         <div className="flex items-center gap-4">
           <AvatarCluster items={clusterItems} size={40} max={5} showOnlineDot />
@@ -113,7 +113,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
             </div>
             {/* FAZ D1 — son 8 hafta yeni iseaccept trend */}
             <Sparkline data={weeklyTrend(applications, a => a.status === 'ACCEPTED')}
-                       color="#10b981" width={56} height={24} />
+                       color="#919191" width={56} height={24} />
           </div>
         </div>
         <div className="stat-card">

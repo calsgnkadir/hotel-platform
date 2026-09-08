@@ -61,7 +61,7 @@ export default function GdprCard() {
       }}>
         KVKK · Verileriniz
       </h3>
-      <p style={{ fontSize: 12, color: '#64748b', marginBottom: 16, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 12, color: '#727272', marginBottom: 16, lineHeight: 1.5 }}>
         KVKK madde 11 kapsamında verilerinize erişme ve silme hakkınız vardır.
       </p>
 
@@ -91,10 +91,10 @@ export default function GdprCard() {
             padding: '10px 16px',
             borderRadius: 8,
             background: 'transparent',
-            color: '#b91c1c',
+            color: '#3d3d3d',
             fontSize: 13,
             fontWeight: 600,
-            border: '1px solid rgba(185, 28, 28, 0.3)',
+            border: '1px solid rgba(61, 61, 61, 0.3)',
             cursor: 'pointer',
           }}>
           Hesabımı Sil

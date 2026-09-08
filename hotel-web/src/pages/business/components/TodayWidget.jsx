@@ -44,7 +44,7 @@ export default function TodayWidget({ applications, onTabChange }) {
   if (pending.length > 0) {
     items.push({
       key: 'pending',
-      color: '#c8923a',
+      color: '#6b7574',
       label: `${pending.length} başvuru karar bekliyor`,
       hint: oldestHoursAgo > 24
         ? `En eskisi ${Math.floor(oldestHoursAgo / 24)} gün önce — Kanban'a geç`
@@ -68,7 +68,7 @@ export default function TodayWidget({ applications, onTabChange }) {
   if (urgentHeld.length > 0) {
     items.push({
       key: 'urgent-held',
-      color: '#b46a55',
+      color: '#6b7574',
       label: `${urgentHeld.length} HOLD'da aday — 24 saatten az`,
       hint: 'Aday yanıtlamazsa otomatik düşecek',
       cta: 'Detay',
@@ -122,9 +122,9 @@ export default function TodayWidget({ applications, onTabChange }) {
             <span
               className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full animate-pulse"
               style={{
-                background: 'rgba(180, 106, 85, 0.14)',
-                color: '#d39481',
-                border: '1px solid rgba(180, 106, 85, 0.28)',
+                background: 'rgba(107, 117, 116, 0.14)',
+                color: '#6b7574',
+                border: '1px solid rgba(107, 117, 116, 0.28)',
               }}
             >
               {items.length} İŞ VAR
@@ -136,10 +136,10 @@ export default function TodayWidget({ applications, onTabChange }) {
           <div className="py-3 flex items-center gap-3">
             <span
               className="w-2 h-2 rounded-full animate-pulse"
-              style={{ background: '#7a9f7a' }}
+              style={{ background: '#6b7574' }}
             />
             <div>
-              <div className="text-lg tracking-wider uppercase" style={{ color: '#a8c8a8' }}>
+              <div className="text-lg tracking-wider uppercase" style={{ color: '#bfbfbf' }}>
                 Her şey yolunda
               </div>
               <div className="text-[11px] mt-0.5" style={{ color: '#6b7574' }}>

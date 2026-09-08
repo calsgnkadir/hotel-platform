@@ -37,7 +37,7 @@ export default class ErrorBoundary extends Component {
       <div className="min-h-screen flex items-center justify-center bg-cream-100 p-6">
         <div className="card max-w-md w-full p-6 text-center">
           <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white"
-               style={{ background: 'linear-gradient(135deg, #b46a55, #b91c1c)' }}>
+               style={{ background: 'linear-gradient(135deg, #6b7574, #3d3d3d)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" strokeWidth={1.8} className="w-8 h-8">
               <path strokeLinecap="round" strokeLinejoin="round"

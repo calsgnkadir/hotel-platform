@@ -1,28 +1,25 @@
 /**
- * FAZ B.5.3 — İşletme logo rengi (isimden deterministik).
+ * İşletme logo rengi (isimden deterministik).
  *
  * Aynı fonksiyon iki yerde birebir kopyalanmıştı (ListingsPage'de `logoColor`,
  * ApplicationsTab'de `appLogoColor`); tek kaynağa alındı.
  *
- * Palet notu: eski tonlar koyu temadan kalmaydı (#1f3a5f, #7a1f3d, #1f5f4a …)
- * ve açık teal zeminde çamurlu duruyordu. Yenisi canlı ve orta tonlu; renk
- * çemberine yayıldığı için işletmeler birbirinden ayrışıyor.
+ * Palet notu: arayüz "sadece gri ve siyah" kimliğine geçti — renkli paletler
+ * (eski canlı çember, ondan önce koyu tema tonları) tamamen bırakıldı. Logo
+ * zeminleri artık nötr gri tonlarında; işletmeler birbirinden ton farkıyla
+ * (koyu → orta gri) ayrışıyor.
  *
  * Kısıtlar:
  *  - Hepsi beyaz metinle ≥4.5:1 kontrast (logo harfi 17px bold = WCAG'de
- *    normal metin, 3:1 yetmez). Ölçülen en düşük: zeytin #4d7c0f → 4.99:1
- *  - Marka teal'i (#1f2937) BİLEREK dışarıda: logo, marka butonları/rozetleriyle
- *    karışmasın.
+ *    normal metin, 3:1 yetmez). Ölçülen en düşük: #6a7178 → 4.95:1
  */
 const LOGO_COLORS = [
-  '#2563eb',  // mavi
-  '#7c3aed',  // mor
-  '#a21caf',  // fuşya
-  '#be123c',  // gül kırmızısı
-  '#c2410c',  // turuncu
-  '#4d7c0f',  // zeytin yeşili
-  '#15803d',  // yeşil
-  '#0e7490',  // camgöbeği
+  '#2b2f33',  // grafit
+  '#3a3f44',  // koyu gri
+  '#494f55',  // gri
+  '#565c62',  // orta gri
+  '#616870',  // açık-orta gri
+  '#6a7178',  // açık gri (en açık — hâlâ ≥4.5:1)
 ]
 
 /**

@@ -119,8 +119,8 @@ export default function SettingsMenu({ onTabChange }) {
             type="button"
             onClick={handleLogout}
             className="w-full px-4 py-3 flex items-center gap-3 type-body transition-colors"
-            style={{ color: '#992d22' }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(192, 57, 43, 0.08)'}
+            style={{ color: '#3f4b4a' }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(107, 117, 116, 0.08)'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
             <LogoutIcon />

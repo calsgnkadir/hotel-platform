@@ -126,7 +126,7 @@ function LedgerRow({ entry, delay }) {
         <div className="tabular-nums leading-none" style={{ color: 'var(--text-headline)', fontSize: '18px', fontWeight: 600, letterSpacing: '-0.03em' }}>{day}</div>
         <div className="type-caption" style={{ fontSize: '10px', textTransform: 'lowercase' }}>{month}</div>
         <span aria-hidden className="mt-1.5 w-2 h-2 rounded-full"
-              style={{ background: clocked ? '#7a9f7a' : '#1f2937', boxShadow: `0 0 0 3px rgba(255, 255, 255,1), 0 0 8px ${clocked ? '#7a9f7a' : '#1f2937'}88` }} />
+              style={{ background: clocked ? '#6b7574' : '#1f2937', boxShadow: `0 0 0 3px rgba(255, 255, 255,1), 0 0 8px ${clocked ? '#6b7574' : '#1f2937'}88` }} />
       </div>
 
       {/* Kart */}
@@ -143,16 +143,16 @@ function LedgerRow({ entry, delay }) {
             {/* Saat + kaynak badge */}
             <span className="type-overline inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full"
                   style={{
-                    background: clocked ? 'rgba(122,159,122,0.12)' : 'rgba(31, 41, 55,0.08)',
-                    border: `1px solid ${clocked ? 'rgba(122,159,122,0.30)' : 'rgba(31, 41, 55,0.20)'}`,
-                    color: clocked ? '#a8c8a8' : 'var(--accent-action)',
+                    background: clocked ? 'rgba(148, 148, 148, 0.12)' : 'rgba(31, 41, 55,0.08)',
+                    border: `1px solid ${clocked ? 'rgba(148, 148, 148, 0.30)' : 'rgba(31, 41, 55,0.20)'}`,
+                    color: clocked ? '#bfbfbf' : 'var(--accent-action)',
                   }}
                   title={clocked ? 'Gerçek mesai kaydından' : 'Planlanan vardiya süresinden'}>
               {entry.hours} sa · {clocked ? 'mesai' : 'planlı'}
             </span>
             {entry.tipsIncluded && (
               <span className="type-overline inline-flex items-center px-1.5 py-0.5 rounded-full"
-                    style={{ background: 'rgba(200,146,58,0.10)', border: '1px solid rgba(200,146,58,0.28)', color: '#e0b766' }}>
+                    style={{ background: 'rgba(151, 151, 151, 0.10)', border: '1px solid rgba(151, 151, 151, 0.28)', color: '#bababa' }}>
                 + bahşiş
               </span>
             )}

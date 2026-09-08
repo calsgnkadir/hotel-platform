@@ -99,7 +99,7 @@ export default function SavedSearchManager({ filters, onApply }) {
                   }
                 : {
                     background: 'transparent',
-                    color: '#6b6358',
+                    color: '#646464',
                     border: '1px solid rgba(31, 41, 55, 0.14)',
                   }
             }
@@ -155,7 +155,7 @@ export default function SavedSearchManager({ filters, onApply }) {
         <div className="space-y-1.5 pt-2"
              style={{ borderTop: '1px solid rgba(31, 41, 55, 0.08)' }}>
           <div className="text-[10px] font-medium uppercase tracking-[0.06em] pt-2"
-               style={{ color: '#928678' }}>
+               style={{ color: '#888888' }}>
             Kayıtlı Aramalar · <span className="tabular-nums">{saved.length}</span>
           </div>
           <AnimatePresence initial={false}>
@@ -174,10 +174,10 @@ export default function SavedSearchManager({ filters, onApply }) {
                   <button onClick={() => onApply?.(s)}
                     title="Bu aramayı uygula"
                     className="flex-1 min-w-0 text-left">
-                    <div className="text-[12px] font-semibold truncate" style={{ color: '#f5efe2' }}>
+                    <div className="text-[12px] font-semibold truncate" style={{ color: '#efefef' }}>
                       {s.name}
                     </div>
-                    <div className="text-[10px] truncate mt-0.5" style={{ color: '#928678' }}>
+                    <div className="text-[10px] truncate mt-0.5" style={{ color: '#888888' }}>
                       {buildPreview(s)}
                     </div>
                   </button>
@@ -185,7 +185,7 @@ export default function SavedSearchManager({ filters, onApply }) {
                     title={s.notificationsEnabled ? 'Bildirimleri kapat' : 'Bildirimleri aç'}
                     className="w-6 h-6 grid place-items-center rounded-full transition-colors flex-shrink-0"
                     style={{
-                      color: s.notificationsEnabled ? '#1f2937' : '#928678',
+                      color: s.notificationsEnabled ? '#1f2937' : '#888888',
                       background: s.notificationsEnabled ? 'rgba(31, 41, 55, 0.10)' : 'transparent',
                     }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={s.notificationsEnabled ? 'currentColor' : 'none'}
@@ -197,7 +197,7 @@ export default function SavedSearchManager({ filters, onApply }) {
                   <button onClick={() => deleteMut.mutate(s.id)}
                     title="Sil"
                     className="w-6 h-6 grid place-items-center rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/20 flex-shrink-0"
-                    style={{ color: 'rgba(252, 165, 165, 0.85)' }}>
+                    style={{ color: 'rgba(183, 183, 183, 0.85)' }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" strokeWidth={2} className="w-3 h-3">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />

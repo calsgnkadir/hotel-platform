@@ -19,8 +19,8 @@ export default function NotFoundPage() {
              }}>
           404
         </div>
-        <h1 className="text-2xl font-semibold mb-2" style={{ color: '#f5efe2', letterSpacing: '-0.02em' }}>Sayfa bulunamadı</h1>
-        <p className="text-[13px] mb-7" style={{ color: '#928678' }}>
+        <h1 className="text-2xl font-semibold mb-2" style={{ color: '#efefef', letterSpacing: '-0.02em' }}>Sayfa bulunamadı</h1>
+        <p className="text-[13px] mb-7" style={{ color: '#888888' }}>
           Aradığın sayfa silinmiş, taşınmış olabilir veya hiç var olmadı.
         </p>
         <Link to="/"

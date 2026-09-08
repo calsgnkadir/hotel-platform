@@ -81,7 +81,7 @@ export default function InstallPrompt() {
     return (
       <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm z-[1000]">
         <div className="rounded-2xl shadow-2xl overflow-hidden"
-             style={{ background: 'linear-gradient(135deg, #ede4d3 0%, #ddd6fe 100%)' }}>
+             style={{ background: 'linear-gradient(135deg, #e5e5e5 0%, #dadada 100%)' }}>
           <div className="p-4">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
@@ -117,7 +117,7 @@ export default function InstallPrompt() {
   return (
     <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm z-[1000]">
       <div className="rounded-2xl shadow-2xl overflow-hidden"
-           style={{ background: 'linear-gradient(135deg, #ede4d3 0%, #ddd6fe 100%)' }}>
+           style={{ background: 'linear-gradient(135deg, #e5e5e5 0%, #dadada 100%)' }}>
         <div className="p-4">
           <div className="flex items-start gap-3">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-white"

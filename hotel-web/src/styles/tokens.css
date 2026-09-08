@@ -6,8 +6,8 @@
  *
  *   - 3 surface tokens (base / raised / floating) — warm-tint shift'le ayrışır,
  *     border kalınlığıyla değil. Borders artık container değil, separator.
- *   - Champagne (#cdb78f) primary accent — bright #d4a853 yalnız CTA'da kalır.
- *   - Ivory (#ede4d3) text — pages start to read like printed paper.
+ *   - Champagne (#b9b9b9) primary accent — bright #6b7574 yalnız CTA'da kalır.
+ *   - Ivory (#e5e5e5) text — pages start to read like printed paper.
  *   - Muted status colors (sage / brick / ochre) — neon yok.
  *
  * Eski isimler (--bg-app, --accent-action vb.) korundu; sadece değerler değişti.
@@ -103,9 +103,9 @@
   /* Yumusak derinlik — golge tinti sicak (kahve-gri) ve biraz daha belirgin;
      kartlar artik tamamen duz degil (klinik his kirildi). */
   --elev-0: none;
-  --elev-1: 0 1px 3px rgba(64, 56, 45, 0.08), 0 1px 2px rgba(64, 56, 45, 0.05);
-  --elev-2: 0 6px 18px rgba(64, 56, 45, 0.10);
-  --elev-3: 0 14px 34px rgba(64, 56, 45, 0.14);
+  --elev-1: 0 1px 3px rgba(57, 57, 57, 0.08), 0 1px 2px rgba(57, 57, 57, 0.05);
+  --elev-2: 0 6px 18px rgba(57, 57, 57, 0.10);
+  --elev-3: 0 14px 34px rgba(57, 57, 57, 0.14);
 }
 
 /* ================== BODY / GLOBAL ================== */
@@ -165,7 +165,7 @@ body, .role-app-bg {
 
 /* Headline gradient — used only on Page H1, never on stat numerals */
 .headline-champagne {
-  background: linear-gradient(135deg, #ede4d3 0%, #cdb78f 60%, #b8a274 100%);
+  background: linear-gradient(135deg, #e5e5e5 0%, #b9b9b9 60%, #a3a3a3 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -179,7 +179,7 @@ body, .role-app-bg {
   border: 1px solid var(--hairline);
 }
 .glass-panel-light {
-  background: rgba(245, 239, 226, 0.06);
+  background: rgba(239, 239, 239, 0.06);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--hairline);
@@ -306,10 +306,10 @@ body, .role-app-bg {
   /* FAZ B.5.1 — beyaz kart icinde ayrisan ic yuzey ("karar kutusu") */
   --ah-band:#f4f1ea;
   --ah-ink:#12201f;   --ah-ink-2:#3f4b4a; --ah-ink-3:#6b7574; --ah-ink-4:#7c8683;  /* ink-4: #98a1a0 -> #7c8683 (soluk metin gorunmuyordu, ~2.5:1 -> ~3.7:1) */
-  --ah-ok:#0a7c42;    --ah-ok-soft:#e9f5ee;
-  --ah-warn:#b7791f;  --ah-warn-soft:#fbf1e0;
-  --ah-danger:#c0392b;--ah-danger-soft:#fbeae7;
-  --ah-info:#1f57c3;  --ah-info-soft:#eaf1fd;
+  --ah-ok:#6b7574;    --ah-ok-soft:#eef0f2;
+  --ah-warn:#6b7574;  --ah-warn-soft:#eef0f2;
+  --ah-danger:#6b7574;--ah-danger-soft:#eef0f2;
+  --ah-info:#6b7574;  --ah-info-soft:#eef0f2;
   --ah-r:10px; --ah-rc:8px;
 }
 
@@ -341,7 +341,7 @@ body, .role-app-bg {
 .ah-chip--ver { color: var(--ah-brand); background: var(--ah-brand-soft); }
 .ah-chip--warn { color: var(--ah-warn); background: var(--ah-warn-soft); }
 /* FAZ C.2.2 — acil rozeti (kirmizi, en yuksek aciliyet sinyali) */
-.ah-chip--urgent { color: #992d22; background: var(--ah-danger-soft); border: 1px solid var(--ah-danger);
+.ah-chip--urgent { color: #3f4b4a; background: var(--ah-danger-soft); border: 1px solid var(--ah-danger);
   gap: 4px; text-transform: uppercase; letter-spacing: .02em; }
 
 /* İlan kartı (sektör: logo + bilgi + çip + CTA; dekoratif kapak yok) */
@@ -376,7 +376,7 @@ body, .role-app-bg {
 /* Puan: gap yerine svg margin — ::before ayiraci ile araya fazladan bosluk girmesin */
 .ah-job__rating { display: inline-flex; align-items: center; color: var(--ah-ink-2);
   font-weight: 600; font-variant-numeric: tabular-nums; }
-.ah-job__rating svg { color: #d9a406; flex-shrink: 0; margin-right: 3px; }
+.ah-job__rating svg { color: #a4a4a4; flex-shrink: 0; margin-right: 3px; }
 /* FAZ B.3 — kart uzerinde "sana X km" */
 .ah-job__dist { color: var(--ah-brand); font-weight: 600; }
 .ah-save { margin-left: auto; width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--ah-line);
@@ -442,17 +442,17 @@ body, .role-app-bg {
 html.dark, .auth-bg, .legacy-dark {
   --surface-base:#13110f; --surface-raised:#1b1815; --surface-floating:#221f1b;
   --bg-app:#13110f; --bg-surface:#1b1815; --bg-elevated:#221f1b; --bg-subtle:#1b1815; --bg-muted:#1b1815;
-  --hairline:rgba(205,183,143,0.08); --hairline-strong:rgba(205,183,143,0.22); --hairline-cta:rgba(212,168,83,0.45);
-  --border-subtle:rgba(205,183,143,0.08); --border-strong:rgba(205,183,143,0.35);
-  --text-primary:#ede4d3; --text-secondary:#c9bdaa; --text-muted:#928678; --text-faint:#6b6358;
-  --text-inverse:#13110f; --text-headline:#f5efe2;
-  --accent-action:#cdb78f; --accent-action-hover:#d4a853; --accent-action-cta:#d4a853; --accent-action-cta-2:#b8902d;
-  --accent-action-soft:rgba(205,183,143,0.12); --accent-action-glow:0 0 24px rgba(205,183,143,0.30);
-  --accent-positive:#8a9bb0; --accent-positive-hover:#a8b7c9; --accent-positive-soft:rgba(138,155,176,0.12); --accent-positive-text:#b8c4d2;
-  --signal-green:#7a9f7a; --signal-green-soft:rgba(122,159,122,0.12);
-  --signal-coral:#b46a55; --signal-coral-soft:rgba(180,106,85,0.12);
-  --signal-amber:#c8923a; --signal-amber-soft:rgba(200,146,58,0.12);
-  --signal-info:#6b8aa3;  --signal-info-soft:rgba(107,138,163,0.12);
+  --hairline:rgba(185, 185, 185, 0.08); --hairline-strong:rgba(185, 185, 185, 0.22); --hairline-cta:rgba(171, 171, 171, 0.45);
+  --border-subtle:rgba(185, 185, 185, 0.08); --border-strong:rgba(185, 185, 185, 0.35);
+  --text-primary:#e5e5e5; --text-secondary:#bebebe; --text-muted:#888888; --text-faint:#646464;
+  --text-inverse:#13110f; --text-headline:#efefef;
+  --accent-action:#b9b9b9; --accent-action-hover:#6b7574; --accent-action-cta:#6b7574; --accent-action-cta-2:#6b7574;
+  --accent-action-soft:rgba(185, 185, 185, 0.12); --accent-action-glow:0 0 24px rgba(185, 185, 185, 0.30);
+  --accent-positive:#999999; --accent-positive-hover:#b5b5b5; --accent-positive-soft:rgba(153, 153, 153, 0.12); --accent-positive-text:#c2c2c2;
+  --signal-green:#6b7574; --signal-green-soft:rgba(148, 148, 148, 0.12);
+  --signal-coral:#6b7574; --signal-coral-soft:rgba(120, 120, 120, 0.12);
+  --signal-amber:#6b7574; --signal-amber-soft:rgba(151, 151, 151, 0.12);
+  --signal-info:#858585;  --signal-info-soft:rgba(133, 133, 133, 0.12);
   /* ITEM 5 — koyu zeminde elevation (yine glow degil, notr derinlik) */
   --elev-1: 0 1px 2px rgba(0,0,0,0.35);
   --elev-2: 0 6px 18px rgba(0,0,0,0.45);

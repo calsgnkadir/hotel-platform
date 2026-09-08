@@ -2,6 +2,10 @@
  * Dalga G — Aday Public Profili
  * Route: /p/candidate/:id
  * Yetki: Sadece ilgili isletme (aday bu isletmenin ilanina basvurmussa) veya admin
+ *
+ * Tema: "sadece gri ve siyah" kimligine gecti — eski koyu-sampanya legacy-dark
+ * birakildi, sayfa .ah-surface altinda acik temaya alindi. Renk yok; hero
+ * grafit banner (marka tonu), geri kalan noteral gri/siyah.
  */
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -34,7 +38,7 @@ export default function CandidatePublicPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white relative z-10 legacy-dark">
+      <div className="ah-surface min-h-screen flex items-center justify-center relative z-10">
         <div className="spinner" />
       </div>
     )
@@ -59,19 +63,19 @@ export default function CandidatePublicPage() {
       ? 'Backend uygulamasına bağlanılamadı. Spring Boot çalışıyor mu?'
       : `HTTP ${status} — ${error?.response?.data?.message || 'Beklenmedik hata'}`
     return (
-      <div className="min-h-screen flex items-center justify-center text-white relative z-10 legacy-dark">
+      <div className="ah-surface min-h-screen flex items-center justify-center relative z-10">
         <div className="card max-w-md text-center p-8">
-          <h2 className="text-xl font-bold mb-2">{title}</h2>
-          <p className="text-sm opacity-80 mb-4">{msg}</p>
+          <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--ah-ink)' }}>{title}</h2>
+          <p className="text-sm mb-4" style={{ color: 'var(--ah-ink-3)' }}>{msg}</p>
           <div className="flex gap-2 justify-center">
             <button onClick={() => window.location.reload()}
               className="px-4 py-2 rounded-lg text-white font-semibold text-sm"
-              style={{ background: 'linear-gradient(135deg, #7a9f7a, #5e8460)' }}>
+              style={{ background: 'var(--ah-brand-gradient)' }}>
               Tekrar Dene
             </button>
             <button onClick={() => navigate(-1)}
-              className="px-4 py-2 rounded-lg text-white font-semibold text-sm"
-              style={{ background: 'linear-gradient(135deg, #d4a853 0%, #b8902d 100%)', color: '#1a1208' }}>
+              className="px-4 py-2 rounded-lg font-semibold text-sm"
+              style={{ background: 'var(--ah-band)', color: 'var(--ah-ink)', border: '1px solid var(--ah-line)' }}>
               Geri Dön
             </button>
           </div>
@@ -86,14 +90,14 @@ export default function CandidatePublicPage() {
     : '—'
 
   return (
-    <div className="min-h-screen text-white relative z-10 legacy-dark">
+    <div className="ah-surface min-h-screen relative z-10">
       {/* Top bar */}
-      <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 backdrop-blur-lg border-b border-hairline"
-              style={{ background: 'rgba(19, 17, 15, 0.85)' }}>
+      <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 backdrop-blur-lg border-b"
+              style={{ background: 'rgba(255, 255, 255, 0.85)', borderColor: 'var(--ah-line)' }}>
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)}
             className="tier-raised tier-raised-hover p-2"
-            style={{ borderRadius: '10px', color: 'var(--text-secondary)' }}
+            style={{ borderRadius: '10px', color: 'var(--ah-ink-2)' }}
             title="Geri">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                  strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -101,9 +105,9 @@ export default function CandidatePublicPage() {
             </svg>
           </button>
           <div className="type-caption truncate">
-            <Link to="/business" className="hover:text-champagne-300 transition-colors">Panel</Link>
-            <span className="mx-1.5">/</span>
-            <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>{profile.fullName}</span>
+            <Link to="/business" className="hover:underline transition-colors" style={{ color: 'var(--ah-ink-2)' }}>Panel</Link>
+            <span className="mx-1.5" style={{ color: 'var(--ah-ink-4)' }}>/</span>
+            <span className="font-medium" style={{ color: 'var(--ah-ink-2)' }}>{profile.fullName}</span>
           </div>
         </div>
       </header>
@@ -112,50 +116,50 @@ export default function CandidatePublicPage() {
         {/* HERO */}
         <div className="tier-raised !p-0 overflow-hidden">
           <div className="relative h-32"
-               style={{ background: 'linear-gradient(135deg, #221f1b 0%, #2d2823 50%, #1b1815 100%)' }}>
-            <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-25"
+               style={{ background: 'var(--ah-brand-gradient)' }}>
+            <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-15"
                  style={{ background: 'radial-gradient(circle, #fff, transparent 70%)' }} />
           </div>
           <div className="px-5 pb-5 -mt-12 relative">
             <div className="flex items-end gap-4 flex-wrap">
               <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                    style={{
-                     background: 'rgba(205, 183, 143, 0.12)',
-                     border: '3px solid rgba(19, 17, 15, 0.94)',
-                     boxShadow: '0 4px 16px rgba(0,0,0,0.30)',
+                     background: 'var(--ah-brand-soft)',
+                     border: '3px solid var(--ah-card)',
+                     boxShadow: 'var(--elev-2)',
                    }}>
                 {profile.avatarUrl ? (
                   <img src={profile.avatarUrl} alt={profile.fullName}
                        className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl" style={{ color: '#cdb78f' }}>{initial}</span>
+                  <span className="text-4xl font-semibold" style={{ color: 'var(--ah-brand)' }}>{initial}</span>
                 )}
               </div>
               <div className="flex-1 min-w-0 pb-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="type-display truncate">
+                  <h1 className="type-display truncate" style={{ color: 'var(--ah-ink)' }}>
                     {profile.fullName}
                   </h1>
                   {/* Dalga H2 — Is ariyorum rozeti (LinkedIn Open to Work) */}
                   {profile.isAvailable && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
                           style={{
-                            background: 'rgba(122, 159, 122, 0.12)',
-                            color: '#a8c8a8',
-                            border: '1px solid rgba(122, 159, 122, 0.35)',
+                            background: 'var(--ah-brand-soft)',
+                            color: 'var(--ah-brand)',
+                            border: '1px solid var(--ah-line-2)',
                           }}>
                       <span className="w-1.5 h-1.5 rounded-full inline-block"
-                            style={{ background: '#7a9f7a', boxShadow: '0 0 8px rgba(122, 159, 122, 0.55)' }} />
+                            style={{ background: 'var(--ah-brand)' }} />
                       İş Arıyor
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-1 flex-wrap text-[13px]"
-                     style={{ color: '#cdb78f' }}>
+                     style={{ color: 'var(--ah-ink-3)' }}>
                   {profile.district && <span>{profile.district}</span>}
                   {profile.reviewCount > 0 && (
                     <>
-                      <span style={{ color: '#6b6358' }}>·</span>
+                      <span style={{ color: 'var(--ah-ink-4)' }}>·</span>
                       <StarRating value={profile.averageRating} count={profile.reviewCount} size="sm" />
                     </>
                   )}
@@ -171,19 +175,16 @@ export default function CandidatePublicPage() {
             label="Tamamlanan İş"
             value={profile.completedJobs ?? 0}
             sub="kabul + çalışma"
-            color="#d4a853"
           />
           <MetricCard
             label="No-show"
             value={profile.noShowCount ?? 0}
             sub="iptal/gelmedim"
-            color={profile.noShowCount > 0 ? '#b46a55' : '#7a9f7a'}
           />
           <MetricCard
             label="Ortalama Puan"
             value={profile.averageRating ? profile.averageRating.toFixed(1) : '—'}
             sub={`${profile.reviewCount ?? 0} değerlendirme`}
-            color="#c8923a"
           />
         </div>
 
@@ -191,8 +192,8 @@ export default function CandidatePublicPage() {
         <div className="grid lg:grid-cols-2 gap-4">
           {/* SOL: Tercihler */}
           <div className="tier-raised p-5 space-y-4">
-            <h2 className="type-overline pb-2 border-b border-hairline"
-                style={{ color: 'var(--accent-action)', fontSize: '12px' }}>
+            <h2 className="type-overline pb-2 border-b"
+                style={{ color: 'var(--ah-ink)', borderColor: 'var(--ah-line)', fontSize: '12px' }}>
               İş Tercihleri
             </h2>
 
@@ -217,8 +218,8 @@ export default function CandidatePublicPage() {
 
           {/* SAG: Eğitim + Diğer */}
           <div className="tier-raised p-5 space-y-4">
-            <h2 className="type-overline pb-2 border-b border-hairline"
-                style={{ color: 'var(--accent-action)', fontSize: '12px' }}>
+            <h2 className="type-overline pb-2 border-b"
+                style={{ color: 'var(--ah-ink)', borderColor: 'var(--ah-line)', fontSize: '12px' }}>
               Genel Bilgiler
             </h2>
 
@@ -232,11 +233,11 @@ export default function CandidatePublicPage() {
         {/* Deneyim */}
         {profile.previousExperience && (
           <div className="tier-raised p-5">
-            <h2 className="type-overline pb-2 mb-3 border-b border-hairline"
-                style={{ color: 'var(--accent-action)', fontSize: '12px' }}>
+            <h2 className="type-overline pb-2 mb-3 border-b"
+                style={{ color: 'var(--ah-ink)', borderColor: 'var(--ah-line)', fontSize: '12px' }}>
               Önceki Deneyim
             </h2>
-            <p className="type-body leading-relaxed whitespace-pre-line">
+            <p className="type-body leading-relaxed whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
               {profile.previousExperience}
             </p>
           </div>
@@ -245,14 +246,14 @@ export default function CandidatePublicPage() {
         {/* Dalga G2 — Hassas iletisim bilgileri (sadece basvuru aldıysa açık) */}
         {profile.sensitiveUnlocked ? (
           <div className="tier-featured p-5">
-            <div className="flex items-center justify-between pb-2 mb-3 border-b border-hairline">
+            <div className="flex items-center justify-between pb-2 mb-3 border-b" style={{ borderColor: 'var(--ah-line)' }}>
               <h2 className="type-overline"
-                  style={{ color: 'var(--accent-action)', fontSize: '12px' }}>İletişim Bilgileri</h2>
+                  style={{ color: 'var(--ah-ink)', fontSize: '12px' }}>İletişim Bilgileri</h2>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
                     style={{
-                      background: 'rgba(122, 159, 122, 0.12)',
-                      color: '#a8c8a8',
-                      border: '1px solid rgba(122, 159, 122, 0.28)',
+                      background: 'var(--ah-brand-soft)',
+                      color: 'var(--ah-brand)',
+                      border: '1px solid var(--ah-line-2)',
                     }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -278,11 +279,10 @@ export default function CandidatePublicPage() {
             {/* Dalga I3 — CV indir butonu (sadece yuklendiyse) */}
             {profile.resumeUrl && (
               <a href={profile.resumeUrl} target="_blank" rel="noopener noreferrer"
-                 className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5"
+                 className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5 text-white"
                  style={{
-                   background: 'linear-gradient(135deg, #d4a853, #b8902d)',
-                   color: '#221f1b',
-                   boxShadow: '0 4px 16px rgba(205, 183, 143, 0.28)',
+                   background: 'var(--ah-brand-gradient)',
+                   boxShadow: 'var(--elev-1)',
                  }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -294,26 +294,26 @@ export default function CandidatePublicPage() {
               </a>
             )}
             <p className="text-[11px] mt-3 italic"
-               style={{ color: '#6b6358' }}>
+               style={{ color: 'var(--ah-ink-3)' }}>
               KVKK kapsamında bu bilgiler sadece adayın size başvurmuş olması nedeniyle gösteriliyor.
               Üçüncü kişilerle paylaşmayın.
             </p>
           </div>
         ) : (
           <div className="rounded-2xl p-4"
-               style={{ background: 'rgba(13, 11, 9, 0.55)', border: '1px dashed rgba(205, 183, 143, 0.18)' }}>
+               style={{ background: 'var(--ah-band)', border: '1px dashed var(--ah-line-2)' }}>
             <div className="flex items-start gap-3">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c8923a"
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ah-ink-3)"
                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                    className="flex-shrink-0 mt-0.5" aria-hidden="true">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
               <div className="text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
-                <p className="font-semibold mb-1" style={{ color: '#cdb78f' }}>
+                <p className="font-semibold mb-1" style={{ color: 'var(--ah-ink)' }}>
                   Hassas bilgiler gizli
                 </p>
-                <p style={{ color: '#6b6358' }}>
+                <p style={{ color: 'var(--ah-ink-3)' }}>
                   Email, telefon, mahalle ve doğum tarihi gibi bilgiler yalnızca aday
                   size başvurduğunda görüntülenebilir. İlanlarınız üzerinden başvuru
                   bekleyiniz.
@@ -327,16 +327,16 @@ export default function CandidatePublicPage() {
   )
 }
 
-function MetricCard({ label, value, sub, color }) {
+function MetricCard({ label, value, sub }) {
   return (
     <div className="tier-raised p-4">
-      <div className="type-overline mb-1">
+      <div className="type-overline mb-1" style={{ color: 'var(--ah-ink-3)' }}>
         {label}
       </div>
-      <div className="text-2xl tracking-wider mb-0.5 tabular-nums" style={{ color, fontWeight: 600 }}>
+      <div className="text-2xl tracking-wider mb-0.5 tabular-nums" style={{ color: 'var(--ah-ink)', fontWeight: 600 }}>
         {value}
       </div>
-      <div className="type-overline" style={{ color: 'var(--text-faint)' }}>
+      <div className="type-overline" style={{ color: 'var(--ah-ink-4)' }}>
         {sub}
       </div>
     </div>
@@ -346,7 +346,7 @@ function MetricCard({ label, value, sub, color }) {
 function Section({ label, children }) {
   return (
     <div>
-      <div className="type-overline mb-2">
+      <div className="type-overline mb-2" style={{ color: 'var(--ah-ink-3)' }}>
         {label}
       </div>
       {children}
@@ -360,9 +360,9 @@ function ChipList({ items }) {
       {items.map(it => (
         <span key={it} className="type-caption inline-flex items-center font-medium px-2.5 py-1 rounded-full"
               style={{
-                background: 'rgba(205, 183, 143, 0.10)',
-                color: 'var(--accent-action)',
-                border: '1px solid rgba(205, 183, 143, 0.18)',
+                background: 'var(--ah-brand-soft)',
+                color: 'var(--ah-brand)',
+                border: '1px solid var(--ah-line)',
               }}>
           {it}
         </span>
@@ -374,8 +374,8 @@ function ChipList({ items }) {
 function DetailRow({ label, value }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-1">
-      <span className="type-overline">{label}</span>
-      <span className="type-body font-semibold" style={{ color: 'var(--text-primary)' }}>{value}</span>
+      <span className="type-overline" style={{ color: 'var(--ah-ink-3)' }}>{label}</span>
+      <span className="type-body font-semibold" style={{ color: 'var(--ah-ink)' }}>{value}</span>
     </div>
   )
 }

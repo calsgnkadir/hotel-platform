@@ -51,17 +51,17 @@ export function fileTypeMeta(ext) {
   const docPath = 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z'
   switch (ext) {
     case 'pdf':
-      return { label: 'PDF', bg: 'rgba(180, 106, 85, 0.12)', border: 'rgba(180, 106, 85, 0.28)',
-               iconColor: '#dc2626', iconPath: docPath }
+      return { label: 'PDF', bg: 'rgba(107, 117, 116, 0.12)', border: 'rgba(107, 117, 116, 0.28)',
+               iconColor: '#4d4d4d', iconPath: docPath }
     case 'doc': case 'docx':
-      return { label: ext.toUpperCase(), bg: 'rgba(107, 138, 163, 0.12)', border: 'rgba(107, 138, 163, 0.28)',
-               iconColor: '#6b8aa3', iconPath: docPath }
+      return { label: ext.toUpperCase(), bg: 'rgba(133, 133, 133, 0.12)', border: 'rgba(133, 133, 133, 0.28)',
+               iconColor: '#858585', iconPath: docPath }
     case 'xls': case 'xlsx': case 'csv':
-      return { label: ext.toUpperCase(), bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.30)',
-               iconColor: '#059669', iconPath: docPath }
+      return { label: ext.toUpperCase(), bg: 'rgba(107, 117, 116, 0.12)', border: 'rgba(107, 117, 116, 0.30)',
+               iconColor: '#747474', iconPath: docPath }
     default:
       return { label: ext.toUpperCase().slice(0, 4) || 'FILE',
-               bg: 'rgba(205, 183, 143, 0.10)', border: 'rgba(205, 183, 143, 0.22)',
-               iconColor: '#8a7349', iconPath: docPath }
+               bg: 'rgba(185, 185, 185, 0.10)', border: 'rgba(185, 185, 185, 0.22)',
+               iconColor: '#757575', iconPath: docPath }
   }
 }

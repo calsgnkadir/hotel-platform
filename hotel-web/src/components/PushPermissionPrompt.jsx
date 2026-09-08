@@ -50,7 +50,7 @@ export default function PushPermissionPrompt() {
 
   return (
     <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm z-40 animate-fade-in">
-      <div className="card !p-4 shadow-2xl" style={{ background: 'linear-gradient(135deg, #ede4d3 0%, #ddd6fe 100%)' }}>
+      <div className="card !p-4 shadow-2xl" style={{ background: 'linear-gradient(135deg, #e5e5e5 0%, #dadada 100%)' }}>
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
                style={{ background: 'var(--ah-brand-gradient)' }}>

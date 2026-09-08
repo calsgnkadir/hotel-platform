@@ -84,7 +84,7 @@ export default function HelpPage() {
 
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: '#f5efe2' }}>
+          <h1 className="text-2xl font-bold" style={{ color: '#efefef' }}>
             Yardım & SSS
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--ah-ink-3)' }}>
@@ -104,7 +104,7 @@ export default function HelpPage() {
                   className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-colors"
                   style={{
                     background: active ? 'rgba(31, 41, 55, 0.14)' : 'rgba(27, 24, 21, 0.75)',
-                    color: active ? '#f5efe2' : '#928678',
+                    color: active ? '#efefef' : '#888888',
                     border: `1px solid ${active ? 'rgba(31, 41, 55, 0.42)' : 'rgba(31, 41, 55, 0.10)'}`,
                   }}>
                   {c.label}
@@ -118,7 +118,7 @@ export default function HelpPage() {
             onChange={e => setQuery(e.target.value)}
             placeholder="Soru içinde ara…"
             className="w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2"
-            style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(31, 41, 55, 0.14)', color: '#ede4d3' }}
+            style={{ background: 'rgba(13, 11, 9, 0.55)', borderColor: 'rgba(31, 41, 55, 0.14)', color: '#e5e5e5' }}
           />
         </div>
 
@@ -161,7 +161,7 @@ function FaqItem({ cat, q, a }) {
                 style={{ background: 'rgba(31, 41, 55, 0.12)', color: '#1f2937', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
             {cat}
           </span>
-          <span className="font-semibold text-[14px] truncate" style={{ color: '#f5efe2' }}>{q}</span>
+          <span className="font-semibold text-[14px] truncate" style={{ color: '#efefef' }}>{q}</span>
         </span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
              style={{ flexShrink: 0, color: '#1b1815', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }}>

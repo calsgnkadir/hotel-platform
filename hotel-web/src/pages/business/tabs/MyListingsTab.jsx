@@ -125,7 +125,7 @@ export default function MyListingsTab({ applications = [] }) {
                             title={listing.urgentUntil
                               ? `Acil · ${new Date(listing.urgentUntil).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}'a kadar`
                               : 'Acil ilan'}
-                            style={{ background: '#fbeae7', color: '#992d22', border: '1px solid #c0392b' }}>
+                            style={{ background: '#eef0f2', color: '#3f4b4a', border: '1px solid #6b7574' }}>
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                           <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
                         </svg>
@@ -194,8 +194,8 @@ export default function MyListingsTab({ applications = [] }) {
                         : 'Şu an müsait olan adaylara anında bildirim gönder'}
                       className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5 disabled:opacity-60 inline-flex items-center gap-1"
                       style={listing.urgent
-                        ? { background: '#c0392b', color: '#fff', border: '1px solid #c0392b' }
-                        : { background: '#fbeae7', color: '#992d22', border: '1px solid rgba(192, 57, 43, 0.35)' }}>
+                        ? { background: '#6b7574', color: '#fff', border: '1px solid #6b7574' }
+                        : { background: '#eef0f2', color: '#3f4b4a', border: '1px solid rgba(107, 117, 116, 0.35)' }}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
                       </svg>
@@ -205,21 +205,21 @@ export default function MyListingsTab({ applications = [] }) {
                   {listing.status === 'ACTIVE' && (
                     <button onClick={() => handleStatusChange(listing.id, 'PAUSED')}
                       className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(200, 146, 58, 0.10)', color: '#e0b766', border: '1px solid rgba(200, 146, 58, 0.28)' }}>
+                      style={{ background: 'rgba(107, 117, 116, 0.10)', color: '#bababa', border: '1px solid rgba(107, 117, 116, 0.28)' }}>
                       Durdur
                     </button>
                   )}
                   {listing.status === 'PAUSED' && (
                     <button onClick={() => handleStatusChange(listing.id, 'ACTIVE')}
                       className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(122, 159, 122, 0.12)', color: '#a8c8a8', border: '1px solid rgba(122, 159, 122, 0.30)' }}>
+                      style={{ background: 'rgba(107, 117, 116, 0.12)', color: '#bfbfbf', border: '1px solid rgba(107, 117, 116, 0.30)' }}>
                       Aktifleştir
                     </button>
                   )}
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => handleStatusChange(listing.id, 'CLOSED')}
                       className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(180, 106, 85, 0.08)', color: '#d39481', border: '1px solid rgba(180, 106, 85, 0.22)' }}>
+                      style={{ background: 'rgba(107, 117, 116, 0.08)', color: '#6b7574', border: '1px solid rgba(107, 117, 116, 0.22)' }}>
                       Kapat
                     </button>
                   )}

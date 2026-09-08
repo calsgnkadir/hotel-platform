@@ -70,7 +70,7 @@ export function ConfirmDialog({
         className="w-full max-w-md rounded-2xl border p-6 space-y-4"
         style={{
           background: 'linear-gradient(145deg, rgba(19, 17, 15, 0.94) 0%, rgba(13, 11, 9, 1) 100%)',
-          borderColor: destructive ? 'rgba(180, 106, 85, 0.30)' : 'rgba(31, 41, 55, 0.22)',
+          borderColor: destructive ? 'rgba(107, 117, 116, 0.30)' : 'rgba(31, 41, 55, 0.22)',
           boxShadow: '0 24px 64px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
         }}
       >
@@ -79,10 +79,10 @@ export function ConfirmDialog({
           {destructive && (
             <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                  style={{
-                   background: 'rgba(180, 106, 85, 0.12)',
-                   border: '1px solid rgba(180, 106, 85, 0.30)',
+                   background: 'rgba(107, 117, 116, 0.12)',
+                   border: '1px solid rgba(107, 117, 116, 0.30)',
                  }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d39481"
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7574"
                    strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                 <line x1="12" y1="9" x2="12" y2="13" />
@@ -93,7 +93,7 @@ export function ConfirmDialog({
           <div className="flex-1 min-w-0">
             <h2 id="confirm-dialog-title"
                 className="text-xl tracking-wider uppercase"
-                style={{ color: destructive ? '#d39481' : '#1f2937' }}>
+                style={{ color: destructive ? '#6b7574' : '#1f2937' }}>
               {title}
             </h2>
             {description && (
@@ -129,9 +129,9 @@ export function ConfirmDialog({
             style={
               destructive
                 ? {
-                    background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)',
+                    background: 'linear-gradient(135deg, #6b7574 0%, #5b5b5b 100%)',
                     color: '#ffffff',
-                    border: '1px solid rgba(180, 106, 85, 0.55)',
+                    border: '1px solid rgba(107, 117, 116, 0.55)',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }
                 : {

@@ -85,7 +85,7 @@ export default function RelationsTab({ onTabChange }) {
                    background: '#ffffff',
                    borderRadius: '12px',
                    border: 'none',
-                   boxShadow: '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(245,239,226,0.03)',
+                   boxShadow: '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(239, 239, 239, 0.03)',
                  }}>
               <button type="button"
                       onClick={() => navigate(`/p/business/${b.id}`)}
@@ -107,9 +107,9 @@ export default function RelationsTab({ onTabChange }) {
                       border: '1px solid rgba(31, 41, 55, 0.18)',
                     }
                   : {
-                      background: 'rgba(122, 159, 122, 0.10)',
-                      color: '#a8c8a8',
-                      border: '1px solid rgba(122, 159, 122, 0.32)',
+                      background: 'rgba(107, 117, 116, 0.10)',
+                      color: '#bfbfbf',
+                      border: '1px solid rgba(107, 117, 116, 0.32)',
                     }}>
                 {tab === 'following' ? 'Takipten Çık' : 'Engeli Kaldır'}
               </button>

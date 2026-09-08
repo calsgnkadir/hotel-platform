@@ -286,8 +286,8 @@ export default function ListingDetailPage() {
                     </div>
                     <span className="text-[10px] font-semibold uppercase tracking-[0.06em] px-2 py-0.5 rounded-full"
                           style={full
-                            ? { background: 'rgba(192, 57, 43, 0.10)', color: 'var(--ah-danger)', border: '1px solid rgba(192, 57, 43, 0.28)' }
-                            : { background: 'rgba(10, 124, 66, 0.10)', color: 'var(--ah-ok)', border: '1px solid rgba(10, 124, 66, 0.28)' }}>
+                            ? { background: 'rgba(107, 117, 116, 0.10)', color: 'var(--ah-danger)', border: '1px solid rgba(107, 117, 116, 0.28)' }
+                            : { background: 'rgba(107, 117, 116, 0.10)', color: 'var(--ah-ok)', border: '1px solid rgba(107, 117, 116, 0.28)' }}>
                       {full ? 'DOLU' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
                     </span>
                   </div>

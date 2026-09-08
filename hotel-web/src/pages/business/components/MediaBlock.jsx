@@ -87,7 +87,7 @@ export default function MediaBlock({
             {logoUrl && (
               <button type="button" onClick={onLogoDelete}
                 className="block w-full px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-all hover:-translate-y-0.5"
-                style={{ background: 'rgba(180, 106, 85, 0.12)', color: '#d39481', border: '1px solid rgba(180, 106, 85, 0.25)' }}>
+                style={{ background: 'rgba(107, 117, 116, 0.12)', color: '#6b7574', border: '1px solid rgba(107, 117, 116, 0.25)' }}>
                 Logoyu Kaldır
               </button>
             )}

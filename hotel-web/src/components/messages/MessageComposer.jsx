@@ -168,9 +168,9 @@ export default function MessageComposer({
               ×
             </button>
             <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg"
-                 style={{ background: 'rgba(180, 106, 85, 0.12)', border: '1px solid rgba(180, 106, 85, 0.32)' }}>
-              <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: '#b46a55' }} />
-              <span className="type-body font-mono" style={{ color: '#d39481' }}>
+                 style={{ background: 'rgba(107, 117, 116, 0.12)', border: '1px solid rgba(107, 117, 116, 0.32)' }}>
+              <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: '#6b7574' }} />
+              <span className="type-body font-mono" style={{ color: '#6b7574' }}>
                 Kayıt {fmtDuration(recDuration)}
               </span>
               <span className="type-caption ml-auto">Göndermek için durdur</span>
@@ -178,7 +178,7 @@ export default function MessageComposer({
             <button type="button" onClick={() => stopRecording(false)}
                     disabled={sending}
                     className="type-overline px-4 py-2 rounded-lg text-white flex-shrink-0 transition-colors disabled:opacity-50"
-                    style={{ background: 'linear-gradient(135deg, #b46a55 0%, #8f4e3d 100%)', border: '1px solid rgba(180, 106, 85, 0.45)' }}>
+                    style={{ background: 'linear-gradient(135deg, #6b7574 0%, #5b5b5b 100%)', border: '1px solid rgba(107, 117, 116, 0.45)' }}>
               Durdur
             </button>
           </>
@@ -219,7 +219,7 @@ export default function MessageComposer({
                   position: 'absolute',
                   right: 10, bottom: -16,
                   fontSize: 10,
-                  color: draft.length >= 1900 ? '#ef6461' : draft.length >= 1800 ? '#d97706' : 'var(--ah-ink-4)',
+                  color: draft.length >= 1900 ? '#6b7574' : draft.length >= 1800 ? '#6b7574' : 'var(--ah-ink-4)',
                   fontVariantNumeric: 'tabular-nums',
                   fontWeight: 600,
                 }}>
@@ -269,7 +269,7 @@ function SendButton({ sending, disabled }) {
         // Send = filled amber CTA (sayfada tek accent-filled element kurali):
         // uzun bir konusmada bu buton sohbet penceresi icindeki ana eylem.
         background: disabled
-          ? 'rgba(146, 134, 120, 0.20)'
+          ? 'rgba(136, 136, 136, 0.20)'
           : 'var(--ah-brand-gradient)',
         color: disabled ? 'var(--text-faint)' : '#ffffff',
         fontSize: 13,
