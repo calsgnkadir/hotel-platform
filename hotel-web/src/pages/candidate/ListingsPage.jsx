@@ -749,6 +749,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
   return (
     <div className={`ah-job ${listing.urgent ? 'ah-job--urgent' : ''}`} onClick={() => onDetail(listing)}
          role="button" tabIndex={0}
+         style={!shift ? { opacity: 0.72 } : undefined}
          onKeyDown={(e) => { if (e.key === 'Enter') onDetail(listing) }}>
       {/* Ust: logo + pozisyon (birincil) + isletme/ilce (baglam) + kaydet */}
       <div className="ah-job__top">
@@ -880,14 +881,23 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
       </div>
 
       <div className="ah-job__cta">
-        <button className="ah-btn ah-btn--p ah-btn--block ah-btn--arrow"
-                onClick={(e) => { e.stopPropagation(); onApply(listing) }}>
-          Başvur
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-          </svg>
-        </button>
+        {shift ? (
+          <button className="ah-btn ah-btn--p ah-btn--block ah-btn--arrow"
+                  onClick={(e) => { e.stopPropagation(); onApply(listing) }}>
+            Başvur
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+            </svg>
+          </button>
+        ) : (
+          <button className="ah-btn ah-btn--block" disabled aria-disabled="true"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ background: 'var(--ah-band)', color: 'var(--ah-ink-3)',
+                           border: '1px solid var(--ah-line)', cursor: 'not-allowed' }}>
+            {allFull ? 'Vardiyalar dolu' : totalSlots === 0 ? 'Vardiya eklenmemiş' : 'Süresi doldu'}
+          </button>
+        )}
       </div>
     </div>
   )
@@ -1023,9 +1033,11 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   // FAZ B.3 — Konum + mesafe. Kullanici acikca "Yakinlar once" derse istekle.
   const myLoc = useMyLocation()
   const [nearbyFirst, setNearbyFirst] = useState(false)
+  // Kullanici-gorunur siralama. 'relevance' = API'nin "sana ozel" (ranked) sirasi.
+  const [sortBy, setSortBy] = useState('relevance')
 
   // Dalga I1 — Engelli isletmeleri client-side filtrele (backend rebuild gerekene kadar)
-  // + FAZ B.3 — mesafe hesabi (varsa) + istege gore mesafeye gore sirala
+  // + FAZ B.3 — mesafe hesabi (varsa) + istege gore siralama
   const visibleListings = useMemo(() => {
     let list = blockedBusinessIds.size === 0
       ? listings
@@ -1039,18 +1051,30 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           l.businessLatitude, l.businessLongitude
         ),
       }))
-      if (nearbyFirst) {
-        list = [...list].sort((a, b) => {
-          const da = a._distanceKm; const db = b._distanceKm
-          if (da == null && db == null) return 0
-          if (da == null) return 1
-          if (db == null) return -1
-          return da - db
-        })
-      }
+    }
+
+    // Siralama: "Yakinlar once" toggle'i her seyin onunde (konum varsa);
+    // yoksa kullanicinin sectigi sira. 'relevance' API sirasini korur.
+    const wageOf = l => Number(l.salaryMax ?? l.salaryMin ?? 0)
+    if (nearbyFirst && myLoc.location) {
+      list = [...list].sort((a, b) => {
+        const da = a._distanceKm, db = b._distanceKm
+        if (da == null && db == null) return 0
+        if (da == null) return 1
+        if (db == null) return -1
+        return da - db
+      })
+    } else if (sortBy === 'newest') {
+      list = [...list].sort((a, b) =>
+        String(b.createdAt || '').localeCompare(String(a.createdAt || '')) || (b.id - a.id))
+    } else if (sortBy === 'wage') {
+      list = [...list].sort((a, b) => wageOf(b) - wageOf(a))
+    } else if (sortBy === 'rating') {
+      list = [...list].sort((a, b) =>
+        Number(b.businessAverageRating || 0) - Number(a.businessAverageRating || 0))
     }
     return list
-  }, [listings, blockedBusinessIds, myLoc.location, nearbyFirst])
+  }, [listings, blockedBusinessIds, myLoc.location, nearbyFirst, sortBy])
 
   // FAZ C.2.3 — Genel bakis seridi ozeti. Yeni API cagrisi yok; gorunen
   // listeden turetilir, filtre degisince kendiliginden guncellenir.
@@ -1091,6 +1115,20 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Siralama — API "sana ozel" varsayilan; kullanici degistirebilir */}
+          <label className="inline-flex items-center gap-1.5 text-[12.5px]" style={{ color: 'var(--ah-ink-3)' }}>
+            <span className="hidden sm:inline">Sırala</span>
+            <select value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(1) }}
+                    disabled={nearbyFirst}
+                    title={nearbyFirst ? 'Yakınlar açıkken sıralama mesafeye göre' : 'Sıralama'}
+                    className="input text-sm"
+                    style={{ padding: '6px 28px 6px 10px', width: 'auto', minWidth: 132 }}>
+              <option value="relevance">Sana özel</option>
+              <option value="newest">En yeni</option>
+              <option value="wage">Ücret (yüksek)</option>
+              <option value="rating">Puan (yüksek)</option>
+            </select>
+          </label>
           {/* FAZ C.2 — "Bugun musaitim": acil ilan acilirsa ilk bu adaylara gider */}
           <AvailableNowToggle />
           <NearbyToggle
@@ -1141,9 +1179,11 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             ))}
           </FilterRow>
 
-          <FilterRow label="Min Ücret">
+          <FilterRow label={(jobType === 'DAILY' || jobType === 'PART_TIME') ? 'Min Ücret (günlük)' : 'Min Ücret'}>
             <FilterChip active={!minSalary} onClick={() => setMinSalary('')}>Tümü</FilterChip>
-            {[5000, 10000, 15000, 20000, 30000].map(v => (
+            {((jobType === 'DAILY' || jobType === 'PART_TIME')
+              ? [500, 800, 1000, 1500, 2000]
+              : [10000, 15000, 20000, 25000, 30000]).map(v => (
               <FilterChip key={v} active={minSalary === String(v)}
                           onClick={() => setMinSalary(minSalary === String(v) ? '' : String(v))}>
                 {v.toLocaleString('tr-TR')} ₺+
@@ -1483,62 +1523,29 @@ function FilterChip({ active, onClick, children }) {
 
 /* FAZ C.2.3 — Ilanlar sekmesi genel bakis seridi.
    Gorunen listeden turetilen 3-4 kucuk stat; discovery hook + acil vitrini. */
+/* Kompakt ozet seridi: 3 koca kart yerine tek satir. Toplam ilan sayisi
+   zaten baslikta oldugu icin burada tekrarlanmaz; yalnizca deger katan
+   bilgiler (ort. ucret · acil · en yakin). Bilgi yoksa hic gorunmez. */
 function OverviewStrip({ overview, hasLocation }) {
-  const { total, urgentCount, nearestKm, avgDaily } = overview
-  const tiles = []
-
-  tiles.push({
-    key: 'urgent',
-    accent: urgentCount > 0 ? '#6b7574' : 'var(--ah-ink-4)',
-    value: urgentCount > 0 ? `${urgentCount} acil ilan` : 'Acil ilan yok',
-    label: urgentCount > 0 ? 'hemen personel aranıyor' : 'şu an acil arayan yok',
-    icon: <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />,
-  })
-
-  if (hasLocation && nearestKm != null) {
-    tiles.push({
-      key: 'near',
-      accent: 'var(--ah-brand)',
-      value: `En yakın ${formatDistance(nearestKm)}`,
-      label: 'sana en yakın ilan',
-      icon: <><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" /><circle cx="12" cy="10" r="3" /></>,
-    })
-  } else {
-    tiles.push({
-      key: 'total',
-      accent: 'var(--ah-brand)',
-      value: `${total} ilan`,
-      label: 'aramanda listelendi',
-      icon: <><rect x="3" y="4" width="18" height="4" rx="1" /><rect x="3" y="10" width="18" height="4" rx="1" /><rect x="3" y="16" width="18" height="4" rx="1" /></>,
-    })
-  }
-
-  if (avgDaily != null) {
-    tiles.push({
-      key: 'wage',
-      accent: 'var(--ah-ok)',
-      value: `${avgDaily.toLocaleString('tr-TR')} ₺`,
-      label: 'ortalama günlük ücret',
-      icon: <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>,
-    })
-  }
+  const { urgentCount, nearestKm, avgDaily } = overview
+  const bits = []
+  if (avgDaily != null)
+    bits.push({ strong: `${avgDaily.toLocaleString('tr-TR')} ₺`, soft: 'ort. günlük ücret' })
+  if (urgentCount > 0)
+    bits.push({ strong: `${urgentCount} acil`, soft: 'hemen aranıyor' })
+  if (hasLocation && nearestKm != null)
+    bits.push({ strong: formatDistance(nearestKm), soft: 'en yakın' })
+  if (!bits.length) return null
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-      {tiles.map(t => (
-        <div key={t.key} className="card flex items-center gap-2.5" style={{ padding: '11px 13px' }}>
-          <span className="grid place-items-center flex-shrink-0 rounded-lg"
-                style={{ width: 32, height: 32, background: 'var(--ah-band)' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24"
-                 fill={t.key === 'urgent' && urgentCount > 0 ? t.accent : 'none'}
-                 stroke={t.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                 aria-hidden="true">{t.icon}</svg>
-          </span>
-          <div className="min-w-0">
-            <div className="text-[14px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{t.value}</div>
-            <div className="text-[11px] truncate" style={{ color: 'var(--ah-ink-3)' }}>{t.label}</div>
-          </div>
-        </div>
+    <div className="card flex items-center flex-wrap gap-x-2 gap-y-1"
+         style={{ padding: '10px 14px' }}>
+      {bits.map((b, i) => (
+        <span key={i} className="inline-flex items-baseline gap-1.5 text-[12.5px]">
+          {i > 0 && <span className="mr-1.5" style={{ color: 'var(--ah-line-2)' }}>·</span>}
+          <span className="font-semibold tabular-nums" style={{ color: 'var(--ah-ink)' }}>{b.strong}</span>
+          <span style={{ color: 'var(--ah-ink-3)' }}>{b.soft}</span>
+        </span>
       ))}
     </div>
   )
