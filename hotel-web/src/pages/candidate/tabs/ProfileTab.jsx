@@ -238,7 +238,7 @@ export default function ProfileTab() {
         {/* ================= SAG KOLON ================= */}
         <div className="space-y-4 min-w-0">
           {/* Ic sekme cubugu */}
-          <div className="flex gap-5 border-b overflow-x-auto" style={{ borderColor: 'var(--ah-line)' }}>
+          <div className="flex gap-5 border-b overflow-x-auto no-scrollbar" style={{ borderColor: 'var(--ah-line)' }}>
             {[['bilgiler', 'Bilgilerim'], ['belgeler', 'Belgeler'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
               <button key={k} type="button" onClick={() => setPtab(k)}
                 className="text-[13.5px] font-semibold pb-2.5 -mb-px whitespace-nowrap transition-colors"

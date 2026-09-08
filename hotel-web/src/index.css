@@ -803,20 +803,23 @@ code, pre, kbd, samp {
 /* ────────────────────────────────────────────────────────────────
    SCROLL — Sıcak ton
    ──────────────────────────────────────────────────────────────── */
+/* Varsayilan (acik tema) scrollbar — eski #13110f siyah track birakildi;
+   acik app'te koyu bir cubuk olarak gorunuyordu. Koyu track sadece .dark altinda. */
 ::-webkit-scrollbar {
   width: 10px; height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #13110f;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(185, 185, 185, 0.20);
+  background: var(--ah-line-2);
   border-radius: 5px;
-  border: 2px solid #13110f;
+  border: 2px solid var(--ah-page);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(185, 185, 185, 0.42);
+  background: var(--ah-ink-4);
 }
+* { scrollbar-width: thin; scrollbar-color: var(--ah-line-2) transparent; }
 .dark ::-webkit-scrollbar-track { background: #13110f; }
 .dark ::-webkit-scrollbar-thumb { background: rgba(185, 185, 185, 0.20); }
 .dark ::-webkit-scrollbar-thumb:hover { background: rgba(185, 185, 185, 0.42); }
