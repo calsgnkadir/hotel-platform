@@ -125,10 +125,13 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
     })
     if (!ok) return
     try {
-      // Sirayla tek tek update — backend bulk endpoint yoksa
+      // Sirayla tek tek update — backend bulk endpoint yoksa.
+      // targetStatus 'ACCEPTED'|'REJECTED' → reviewApplication'in decision degeri.
+      // (Eski hatali cagri: hotelApi.updateApplicationStatus — boyle bir export yok,
+      //  toplu islem her seferinde patliyordu.)
       const hotelApi = await import('../../../api/hotel')
       await Promise.allSettled(
-        ids.map(id => hotelApi.updateApplicationStatus(id, targetStatus))
+        ids.map(id => hotelApi.reviewApplication(id, targetStatus))
       )
       const toast = (await import('react-hot-toast')).default
       toast.success(`${ids.length} başvuru güncellendi`)
