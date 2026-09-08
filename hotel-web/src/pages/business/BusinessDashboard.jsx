@@ -17,8 +17,9 @@ import ApplicationsTab from './tabs/ApplicationsTab'
 import WorkersTab from './tabs/WorkersTab'
 import FavoritesTab from './tabs/FavoritesTab'  // FAZ 2/#32
 import ProfileTab from './tabs/ProfileTab'
+import BillingTab from './tabs/BillingTab'
 
-const VALID_TABS = ['overview','mylistings','applications','workers','favorites','profile','messages']
+const VALID_TABS = ['overview','mylistings','applications','workers','favorites','billing','profile','messages']
 
 export default function BusinessDashboard() {
   const [params, setParams] = useSearchParams()
@@ -75,6 +76,7 @@ export default function BusinessDashboard() {
           {activeTab === 'workers'       && <WorkersTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'favorites'     && <FavoritesTab onOpenMessages={() => setActiveTab('messages')} />}
           {activeTab === 'messages'      && <MessagesPage />}
+          {activeTab === 'billing'       && <BillingTab />}
           {activeTab === 'profile'       && <ProfileTab />}
         </div>
       )}

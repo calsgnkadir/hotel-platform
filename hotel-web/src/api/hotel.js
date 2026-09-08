@@ -7,6 +7,20 @@ export async function getBusinessList(type) {
   return data
 }
 
+/* ── Faz 1 — İşletme aboneliği (iyzico SANDBOX) ── */
+export async function getBilling() {
+  const { data } = await api.get('/api/business/billing')
+  return data
+}
+export async function startBillingCheckout() {
+  const { data } = await api.post('/api/business/billing/checkout')
+  return data
+}
+export async function cancelBilling() {
+  const { data } = await api.post('/api/business/billing/cancel')
+  return data
+}
+
 // FAZ 5.9 — public profil sayfasi (login gerektirmez)
 export async function getPublicBusiness(id) {
   const { data } = await api.get(`/api/businesses/${id}`)
