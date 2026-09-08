@@ -180,6 +180,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Faz 1 — iyzico odeme (hosted checkout). SANDBOX; canliya gecis env key ile. -->
+        <dependency>
+            <groupId>com.iyzipay</groupId>
+            <artifactId>iyzipay-java</artifactId>
+            <version>2.0.129</version>
+        </dependency>
+
     </dependencies>
 
     <build>
