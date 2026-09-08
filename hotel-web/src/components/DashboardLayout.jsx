@@ -26,6 +26,7 @@ const Icons = {
   external:     <><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>,
   heart:        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>,
   eye:          <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>,
+  card:         <><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></>,
 }
 
 function Icon({ name, size = 16, active = false }) {
@@ -54,6 +55,7 @@ const businessNav = [
   { id: 'overview',      tKey: 'nav.overview',             icon: 'overview' },
   { id: 'mylistings',    tKey: 'nav.myListings',           icon: 'briefcase' },
   { id: 'applications',  tKey: 'nav.incomingApplications', icon: 'inbox' },
+  { id: 'billing',       label: 'Abonelik',                icon: 'card' },
   { id: 'profile',       label: 'Profilim',                icon: 'building' },
 ]
 
