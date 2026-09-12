@@ -2,8 +2,10 @@ package com.hotelapp.service;
 
 import com.hotelapp.entity.Business;
 import com.hotelapp.entity.Subscription;
+import com.hotelapp.enums.ListingStatus;
 import com.hotelapp.enums.SubscriptionStatus;
 import com.hotelapp.repository.BusinessRepository;
+import com.hotelapp.repository.JobListingRepository;
 import com.hotelapp.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +19,14 @@ import java.time.LocalDateTime;
 /**
  * Faz 1 — İşletme aboneliği (iyzico SANDBOX). İşçi tarafı her zaman ücretsiz.
  *
- * Akış: işletme paneli → deneme otomatik açılır → "Aboneliği başlat" iyzico
- * hosted forma yönlendirir → iyzico callback'e token atar → doğrulanır → ACTIVE.
+ * MODEL: İlk {free-listings} ilan ücretsiz. 4. ilandan itibaren aktif (ödenmiş)
+ * abonelik gerekir. Kapatılan (CLOSED) ilan kotayı boşaltır — eskisini kapatınca
+ * yeni ücretsiz ilan hakkı açılır.
  *
- * enforce=false iken hiçbir şey kısıtlanmaz (mevcut/demo akış bozulmaz);
- * true olunca ilan açmak aktif deneme/abonelik ister.
+ * Akış: "Aboneliği başlat" iyzico hosted forma yönlendirir → iyzico callback'e
+ * token atar → doğrulanır → ACTIVE → sınırsız ilan.
+ *
+ * enforce=false iken hiçbir şey kısıtlanmaz (demo/dev akış bozulmaz).
  */
 @Service
 @RequiredArgsConstructor
@@ -30,17 +35,20 @@ public class BillingService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final BusinessRepository businessRepository;
+    private final JobListingRepository jobListingRepository;
     private final IyzicoClient iyzico;
 
-    @Value("${app.billing.enforce:false}")       private boolean enforce;
-    @Value("${app.billing.trial-days:14}")        private int trialDays;
-    @Value("${app.billing.monthly-price:499.00}") private BigDecimal monthlyPrice;
-    @Value("${app.billing.plan:STANDARD_MONTHLY}")private String planName;
+    @Value("${app.billing.enforce:true}")           private boolean enforce;
+    @Value("${app.billing.free-listings:3}")        private int freeListings;
+    @Value("${app.billing.trial-days:14}")          private int trialDays;
+    @Value("${app.billing.monthly-price:499.00}")   private BigDecimal monthlyPrice;
+    @Value("${app.billing.plan:STANDARD_MONTHLY}")  private String planName;
     @Value("${app.base-url:http://localhost:5173}") private String appBaseUrl;
 
     public record BillingStatus(SubscriptionStatus status, String plan, LocalDateTime trialEndsAt,
                                 LocalDateTime currentPeriodEnd, boolean active, boolean enforced,
-                                BigDecimal monthlyPrice) {}
+                                BigDecimal monthlyPrice,
+                                int freeListings, long usedListings, long freeRemaining) {}
 
     @Transactional
     public BillingStatus statusForOwner(Long ownerId) {
@@ -97,15 +105,21 @@ public class BillingService {
     }
 
     /**
-     * İlan açma gibi işlemler için erişim kontrolü. enforce kapalıysa daima true —
-     * mevcut akış ve demo bozulmaz.
+     * İlan açma kapısı. enforce kapalıysa daima true (demo/dev bozulmaz).
+     * Aksi halde: aktif (ödenmiş) abonelik → sınırsız; yoksa CLOSED olmayan
+     * ilan sayısı ücretsiz kotanın altındaysa serbest.
      */
     @Transactional(readOnly = true)
-    public boolean hasActiveAccessByBusiness(Long businessId) {
+    public boolean canCreateListingByBusiness(Long businessId) {
         if (!enforce) return true;
         Subscription s = subscriptionRepository.findByBusinessId(businessId).orElse(null);
-        return s != null && isActive(s);
+        if (s != null && isPaid(s)) return true;                 // abonelik → sınırsız
+        long used = jobListingRepository.countByBusiness_IdAndStatusNot(businessId, ListingStatus.CLOSED);
+        return used < freeListings;                              // ilk N ilan ücretsiz
     }
+
+    /** Ücretsiz kota büyüklüğü — hata mesajı vb. için. */
+    public int getFreeListings() { return freeListings; }
 
     // ── iç yardımcılar ───────────────────────────────────────────────
     private Subscription getOrCreate(Long ownerId) {
@@ -114,7 +128,7 @@ public class BillingService {
         return subscriptionRepository.findByBusinessId(b.getId()).orElseGet(() -> {
             Subscription s = Subscription.builder()
                     .business(b)
-                    .status(SubscriptionStatus.TRIAL)
+                    .status(SubscriptionStatus.TRIAL)   // "ücretsiz plan" başlangıç durumu
                     .plan(planName)
                     .trialEndsAt(LocalDateTime.now().plusDays(trialDays))
                     .build();
@@ -122,17 +136,19 @@ public class BillingService {
         });
     }
 
-    private boolean isActive(Subscription s) {
-        LocalDateTime now = LocalDateTime.now();
-        if (s.getStatus() == SubscriptionStatus.TRIAL)
-            return s.getTrialEndsAt() != null && s.getTrialEndsAt().isAfter(now);
-        if (s.getStatus() == SubscriptionStatus.ACTIVE)
-            return s.getCurrentPeriodEnd() != null && s.getCurrentPeriodEnd().isAfter(now);
-        return false;
+    /** Gerçekten ödenmiş ve dönemi geçmemiş abonelik. */
+    private boolean isPaid(Subscription s) {
+        return s.getStatus() == SubscriptionStatus.ACTIVE
+                && s.getCurrentPeriodEnd() != null
+                && s.getCurrentPeriodEnd().isAfter(LocalDateTime.now());
     }
 
     private BillingStatus toStatus(Subscription s) {
+        long used = jobListingRepository.countByBusiness_IdAndStatusNot(
+                s.getBusiness().getId(), ListingStatus.CLOSED);
+        long remaining = Math.max(0, (long) freeListings - used);
         return new BillingStatus(s.getStatus(), s.getPlan(), s.getTrialEndsAt(),
-                s.getCurrentPeriodEnd(), isActive(s), enforce, monthlyPrice);
+                s.getCurrentPeriodEnd(), isPaid(s), enforce, monthlyPrice,
+                freeListings, used, remaining);
     }
 }

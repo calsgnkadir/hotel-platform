@@ -173,10 +173,12 @@ app:
     key: ${APP_ENCRYPTION_KEY:}
 
   # Faz 1 — Isletme aboneligi (iyzico). Isci HER ZAMAN ucretsiz.
-  # enforce=false iken hicbir sey kisitlanmaz (mevcut/demo akis bozulmaz);
-  # true olunca ilan acmak aktif deneme/abonelik ister.
+  # MODEL: ilk free-listings (3) ilan ucretsiz; sonrasi aktif abonelik ister.
+  # Kapatilan (CLOSED) ilan kotayi bosaltir. enforce=false iken hicbir sey
+  # kisitlanmaz (BILLING_ENFORCE=false ile demo'yu tamamen serbest birakabilirsin).
   billing:
-    enforce:       ${BILLING_ENFORCE:false}
+    enforce:       ${BILLING_ENFORCE:true}
+    free-listings: ${BILLING_FREE_LISTINGS:3}
     trial-days:    ${BILLING_TRIAL_DAYS:14}
     monthly-price: ${BILLING_MONTHLY_PRICE:499.00}
     plan:          ${BILLING_PLAN:STANDARD_MONTHLY}
