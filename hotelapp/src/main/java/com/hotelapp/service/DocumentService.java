@@ -19,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,7 +42,7 @@ public class DocumentService {
             DocumentType.IDENTITY_DOCUMENT);
 
     @Transactional
-    public DocumentDto upload(Long candidateId, MultipartFile file, DocumentType type) {
+    public DocumentDto upload(Long candidateId, MultipartFile file, DocumentType type, LocalDate expiresAt) {
         User candidate = userRepository.findById(candidateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aday", candidateId));
 
@@ -57,6 +59,7 @@ public class DocumentService {
                 .filePath(filePath)
                 .originalFileName(file.getOriginalFilename())
                 .isSensitive(SENSITIVE_TYPES.contains(type))
+                .expiresAt(expiresAt)   // yeniden yüklemede yeni tarih; hatırlatma damgası sıfır
                 .build();
 
         documentRepository.save(document);
@@ -151,6 +154,14 @@ public class DocumentService {
     }
 
     private DocumentDto toDto(Document doc) {
+        LocalDate exp = doc.getExpiresAt();
+        Boolean expired = null;
+        Long daysToExpiry = null;
+        if (exp != null) {
+            LocalDate today = LocalDate.now();
+            expired = exp.isBefore(today);
+            daysToExpiry = ChronoUnit.DAYS.between(today, exp);   // negatif = geçmiş
+        }
         return DocumentDto.builder()
                 .id(doc.getId())
                 .type(doc.getType())
@@ -158,6 +169,9 @@ public class DocumentService {
                 .isSensitive(doc.isSensitive())
                 .verified(doc.isVerified())
                 .uploadedAt(doc.getUploadedAt())
+                .expiresAt(exp)
+                .expired(expired)
+                .daysToExpiry(daysToExpiry)
                 .build();
     }
 
@@ -169,5 +183,8 @@ public class DocumentService {
         private boolean isSensitive;
         private boolean verified;
         private LocalDateTime uploadedAt;
+        private LocalDate expiresAt;      // null = süresiz
+        private Boolean expired;          // null = süresiz; true = süresi geçmiş
+        private Long daysToExpiry;        // null = süresiz; negatif = geçmiş
     }
 }

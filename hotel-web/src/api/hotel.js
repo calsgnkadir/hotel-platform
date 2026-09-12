@@ -308,10 +308,11 @@ export async function getMyDocuments() {
   return data
 }
 
-export async function uploadDocument(file, type) {
+export async function uploadDocument(file, type, expiresAt) {
   const form = new FormData()
   form.append('file', file)
   form.append('type', type)
+  if (expiresAt) form.append('expiresAt', expiresAt)  // YYYY-MM-DD (süreli belgeler)
   const { data } = await api.post('/api/documents/upload', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
