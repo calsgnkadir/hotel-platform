@@ -89,7 +89,7 @@ export default function BillingTab() {
   }
 
   const paid       = b.active
-  const free       = Number(b.freeListings ?? 3)
+  const free       = Number(b.freeListings ?? 5)
   const used       = Number(b.usedListings ?? 0)
   const remaining  = Number(b.freeRemaining ?? Math.max(0, free - used))
   const canPost    = paid || remaining > 0
