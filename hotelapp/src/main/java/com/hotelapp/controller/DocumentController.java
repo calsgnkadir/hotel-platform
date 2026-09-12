@@ -30,14 +30,17 @@ public class DocumentController {
 
     private final DocumentService documentService;
 
-    @Operation(summary = "Belge yükle — sadece CANDIDATE")
+    @Operation(summary = "Belge yükle — sadece CANDIDATE (expiresAt: süreli belgelerde son kullanma, YYYY-MM-DD)")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<DocumentDto> upload(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestParam("file") MultipartFile file,
-            @RequestParam("type") DocumentType type) {
-        return ResponseEntity.ok(documentService.upload(currentUser.getId(), file, type));
+            @RequestParam("type") DocumentType type,
+            @RequestParam(value = "expiresAt", required = false)
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            java.time.LocalDate expiresAt) {
+        return ResponseEntity.ok(documentService.upload(currentUser.getId(), file, type, expiresAt));
     }
 
     @Operation(summary = "Belgelerimi listele — sadece CANDIDATE")

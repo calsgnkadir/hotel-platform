@@ -59,7 +59,8 @@ public class ApplicationResponse {
         /** R3: adayın aldığı yorumların ortalaması (null = yok) ve sayısı */
         private Double averageRating;
         private Long reviewCount;
-        /** Faz B/#11: 0-100 güvenilirlik skoru — işletme aday seçerken hızlı filtre. */
+        /** Adayın süresi geçmemiş hijyen/sağlık belgesi var mı — "belgesi geçerli" filtresi. */
+        private boolean hasValidHealthCertificate;
     }
 
     @Data @Builder

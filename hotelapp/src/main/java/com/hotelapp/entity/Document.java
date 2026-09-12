@@ -5,6 +5,7 @@ import com.hotelapp.security.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -48,6 +49,14 @@ public class Document {
     // Admin tarafından doğrulandı mı
     private boolean verified = false;
     private LocalDateTime verifiedAt;
+
+    // Son kullanma tarihi (hijyen/sağlık, adli sicil gibi süreli belgeler).
+    // null → süresiz (CV vb.). Süresi dolmadan aday uyarılır, işletme
+    // "belgesi geçerli" filtresiyle görür.
+    private LocalDate expiresAt;
+
+    // Idempotency: bu belge için son-kullanma hatırlatması gönderildi mi.
+    private LocalDateTime expiryReminderSentAt;
 
     private LocalDateTime uploadedAt;
 

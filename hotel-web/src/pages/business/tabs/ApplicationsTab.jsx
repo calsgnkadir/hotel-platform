@@ -43,6 +43,8 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
     return () => clearTimeout(t)
   }, [search])
   const [page, setPage] = useState(0)
+  // "Belgesi geçerli" filtresi — sadece süresi geçmemiş hijyen/sağlık belgesi olan adaylar.
+  const [onlyValidCert, setOnlyValidCert] = useState(false)
 
   // W2.1 — URL'de secili basvuru id'si (?id=42). Refresh'te detail acik kalir.
   const [searchParams, setSearchParams] = useSearchParams()
@@ -111,6 +113,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
   // #84: status filtresi + aday adı araması (debounced)
   const filtered = applications.filter(a => {
     if (filter !== 'ALL' && a.status !== filter) return false
+    if (onlyValidCert && !a.candidate?.hasValidHealthCertificate) return false
     if (debouncedSearch.trim()) {
       const name = (a.candidate?.fullName || '').toLowerCase()
       if (!name.includes(debouncedSearch.trim().toLowerCase())) return false
@@ -145,6 +148,15 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
               </button>
             )
           })}
+          {/* Belge filtresi — süresi geçmemiş hijyen/sağlık belgesi olan adaylar */}
+          <button onClick={() => { setOnlyValidCert(v => !v); setPage(0) }}
+            title="Sadece süresi geçmemiş hijyen/sağlık belgesi olan adaylar"
+            className={`chip ${onlyValidCert ? 'is-active' : ''}`}>
+            Belgesi geçerli
+            <span className="text-[10px] tabular-nums opacity-80 ml-1">
+              ({applications.filter(a => a.candidate?.hasValidHealthCertificate).length})
+            </span>
+          </button>
         </div>
         <div className="relative flex-1 sm:max-w-xs sm:ml-auto">
           <input type="text" value={search}
@@ -181,6 +193,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
         ) : (
           <ApplicationsKanban
             applications={applications.filter(a => {
+              if (onlyValidCert && !a.candidate?.hasValidHealthCertificate) return false
               if (!debouncedSearch.trim()) return true
               const name = (a.candidate?.fullName || '').toLowerCase()
               return name.includes(debouncedSearch.trim().toLowerCase())
@@ -383,6 +396,17 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
           <span className="text-[12px] px-2 py-0.5 rounded-full"
                 style={{ background: 'var(--ah-band)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line)' }}>
             {slotCount} vardiya
+          </span>
+        )}
+        {app.candidate?.hasValidHealthCertificate && (
+          <span className="inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-full"
+                title="Süresi geçmemiş hijyen/sağlık belgesi var"
+                style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"
+                 strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Belgeli
           </span>
         )}
       </div>

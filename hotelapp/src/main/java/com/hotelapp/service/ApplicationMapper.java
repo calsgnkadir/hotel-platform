@@ -6,10 +6,13 @@ import com.hotelapp.entity.Application;
 import com.hotelapp.entity.Business;
 import com.hotelapp.entity.JobListing;
 import com.hotelapp.entity.User;
+import com.hotelapp.enums.DocumentType;
 import com.hotelapp.repository.ConversationRepository;
+import com.hotelapp.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -25,6 +28,7 @@ public class ApplicationMapper {
     private final ReliabilityService reliabilityService;
     private final FileStorageService fileStorageService;
     private final ConversationRepository conversationRepository;
+    private final DocumentRepository documentRepository;
 
     public ApplicationResponse toResponse(Application app) {
         List<ApplicationResponse.AvailabilityDto> avDtos = app.getAvailabilities().stream()
@@ -108,6 +112,8 @@ public class ApplicationMapper {
     /** Aday ozeti — avatar + rating (isletme -> aday). */
     public ApplicationResponse.CandidateSummary buildCandidateSummary(User candidate) {
         var rel = reliabilityService.computeForCandidate(candidate.getId());
+        boolean validHealthCert = documentRepository.existsValidByType(
+                candidate.getId(), DocumentType.HEALTH_CERTIFICATE, LocalDate.now());
         return ApplicationResponse.CandidateSummary.builder()
                 .id(candidate.getId())
                 .fullName(candidate.getFullName())
@@ -117,6 +123,7 @@ public class ApplicationMapper {
                         : null)
                 .averageRating(rel.getAverageRating())
                 .reviewCount(rel.getReviewCount())
+                .hasValidHealthCertificate(validHealthCert)
                 .build();
     }
 }
