@@ -33,6 +33,9 @@ public interface JobListingRepository
     /** #88: Bir işletmenin belirli statüde kaç ilanı var? (örn. ACTIVE) */
     long countByBusiness_OwnerIdAndStatus(Long ownerId, com.hotelapp.enums.ListingStatus status);
 
+    /** Faz 1 — Abonelik kotasi: bir isletmenin CLOSED olmayan (yer isgal eden) ilan sayisi. */
+    long countByBusiness_IdAndStatusNot(Long businessId, com.hotelapp.enums.ListingStatus status);
+
     /** FAZ G.8 — Platform geneli aktif ilan sayisi. */
     long countByStatus(com.hotelapp.enums.ListingStatus status);
 

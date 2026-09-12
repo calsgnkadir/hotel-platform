@@ -150,11 +150,13 @@ public class JobListingService {
         validateSalary(request);
         validateSlots(request.getShiftSlots());
 
-        // Faz 1 — abonelik kapisi (girdi dogrulamasindan SONRA). app.billing.enforce=false
-        // iken daima gecer (mevcut/demo akis bozulmaz); true olunca aktif deneme/abonelik ister.
-        if (!billingService.hasActiveAccessByBusiness(business.getId())) {
-            throw new BusinessRuleException(
-                    "İlan yayınlamak için aktif bir deneme veya abonelik gerekli.");
+        // Faz 1 — abonelik kapisi (girdi dogrulamasindan SONRA). enforce=false iken daima
+        // gecer (demo/dev bozulmaz). Model: ilk N ilan ucretsiz, sonrasi aktif abonelik.
+        if (!billingService.canCreateListingByBusiness(business.getId())) {
+            throw new BusinessRuleException(String.format(
+                    "Ücretsiz %d ilan hakkını kullandın. Daha fazla ilan yayınlamak için " +
+                    "Abonelik sekmesinden aboneliğini başlat.",
+                    billingService.getFreeListings()));
         }
 
         JobListing listing = JobListing.builder()
