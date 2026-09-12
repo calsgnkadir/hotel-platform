@@ -30,6 +30,10 @@ public interface JobListingRepository
 
     List<JobListing> findAllByBusiness_OwnerId(Long ownerId);
 
+    /** FAZ pagination — isletmenin kendi ilanlari, DB-seviyesi sayfalama. */
+    org.springframework.data.domain.Page<JobListing> findByBusiness_OwnerId(
+            Long ownerId, org.springframework.data.domain.Pageable pageable);
+
     /** #88: Bir işletmenin belirli statüde kaç ilanı var? (örn. ACTIVE) */
     long countByBusiness_OwnerIdAndStatus(Long ownerId, com.hotelapp.enums.ListingStatus status);
 

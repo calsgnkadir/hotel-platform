@@ -15,6 +15,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,12 +40,22 @@ public class JobListingController {
     private final JobListingQueryService jobListingQueryService;
     private final UrgentService urgentService;   // FAZ C.2
 
+    /** Sunucu tarafi sayfalama: istemci istese de tek sorguda tavani asamaz. */
+    private static final int DEFAULT_PAGE_SIZE = 60;
+    private static final int MAX_PAGE_SIZE     = 100;
+
+    private static Pageable pageable(int page, int size, Sort sort) {
+        int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        int safePage = Math.max(page, 0);
+        return PageRequest.of(safePage, safeSize, sort);
+    }
+
     @Operation(
-            summary = "Aktif ilanları listele",
-            description = "Tüm parametreler opsiyonel. shifts çoklu (MORNING,EVENING,NIGHT), keyword başlıkta arar. dateFrom/dateTo YYYY-MM-DD formatında. ranked=true: aday tercihlerine göre 'sana özel' sıralama (sadece authenticated)."
+            summary = "Aktif ilanları listele (sayfalı)",
+            description = "Tüm filtre parametreleri opsiyonel. shifts çoklu (MORNING,EVENING,NIGHT), keyword başlıkta arar. dateFrom/dateTo YYYY-MM-DD. ranked=true: aday tercihlerine göre 'sana özel' sıralama (sadece authenticated). page (0'dan başlar) + size (varsayılan 60, en fazla 100) ile sayfalanır; Page zarfı döner."
     )
     @GetMapping
-    public ResponseEntity<List<ListingResponse>> listActiveListings(
+    public ResponseEntity<Page<ListingResponse>> listActiveListings(
             @RequestParam(required = false) Position position,
             @RequestParam(required = false) JobType jobType,
             @RequestParam(required = false) List<Shift> shifts,
@@ -51,24 +65,31 @@ public class JobListingController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
             @RequestParam(required = false, defaultValue = "false") boolean ranked,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size,
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
+        Pageable pageable = pageable(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         if (ranked && currentUser != null) {
             return ResponseEntity.ok(
                     jobListingQueryService.getActiveListingsRanked(
                             currentUser.getId(),
-                            position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo));
+                            position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo, pageable));
         }
         return ResponseEntity.ok(
-                jobListingQueryService.getActiveListings(position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo));
+                jobListingQueryService.getActiveListings(
+                        position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo, pageable));
     }
 
-    @Operation(summary = "Kendi ilanlarımı listele — sadece BUSINESS_OWNER")
+    @Operation(summary = "Kendi ilanlarımı listele (sayfalı) — sadece BUSINESS_OWNER")
     @GetMapping("/my")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<List<ListingResponse>> myListings(
+    public ResponseEntity<Page<ListingResponse>> myListings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size,
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
-        return ResponseEntity.ok(jobListingQueryService.getMyListings(currentUser.getId()));
+        Pageable pageable = pageable(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return ResponseEntity.ok(jobListingQueryService.getMyListings(currentUser.getId(), pageable));
     }
 
     @Operation(summary = "Yeni ilan oluştur — sadece BUSINESS_OWNER")

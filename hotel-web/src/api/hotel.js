@@ -183,13 +183,17 @@ export async function getListings(filters = {}) {
   if (filters.dateFrom)            params.dateFrom  = filters.dateFrom  // YYYY-MM-DD
   if (filters.dateTo)              params.dateTo    = filters.dateTo
   if (filters.ranked)              params.ranked    = 'true'  // FAZ 5 — sana özel sıralama
+  // Sunucu tarafi sayfalama (backend Page zarfi doner). Istemci filtre/siralama/
+  // sayfalamayi bu set uzerinde yapar; size backend'de 100 ile tavanlanir.
+  params.page = filters.page ?? 0
+  params.size = filters.size ?? 100
   const { data } = await api.get('/api/listings', { params })
-  return data
+  return Array.isArray(data) ? data : (data?.content ?? [])
 }
 
-export async function getMyListings() {
-  const { data } = await api.get('/api/listings/my')
-  return data
+export async function getMyListings(size = 100) {
+  const { data } = await api.get('/api/listings/my', { params: { page: 0, size } })
+  return Array.isArray(data) ? data : (data?.content ?? [])
 }
 
 export async function createListing(payload) {
