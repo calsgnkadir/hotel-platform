@@ -1,12 +1,13 @@
 // FAZ 5.2 — CandidateDashboard'dan ayrildi (god class refactor)
 // Redesign: glass cards + status accent rail + Geist + motion micro-interactions
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import { keys } from '../../../lib/queryClient'
+import { useMyLocation } from '../../../lib/useMyLocation'
 import EmptyState from '../../../components/EmptyState'
 import ReviewModal from '../../../components/ReviewModal'
 import { CAND_STATUS_FILTERS } from '../../../components/candidate/StatusBadge'
@@ -82,6 +83,41 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
   })
 
   const uploadedTypes = new Set(myDocs.map(d => d.type))
+
+  // FAZ 2/#21 — Geo-fenced mesai (clock-in/out). Kabul edilen basvurular icin
+  // acik mesai durumunu tek batch call ile ceker; buton karar verir.
+  const myLoc = useMyLocation()
+  const [activeSessions, setActiveSessions] = useState({})   // { [appId]: WorkSessionDto|null }
+  const [clockBusyId, setClockBusyId] = useState(null)
+  const acceptedIds = applications.filter(a => a.status === 'ACCEPTED').map(a => a.id)
+  const acceptedKey = acceptedIds.join(',')
+
+  useEffect(() => {
+    if (!acceptedKey) { setActiveSessions({}); return }
+    let cancelled = false
+    hotelApi.getActiveSessionsBatch(acceptedKey.split(',').map(Number))
+      .then(map => { if (!cancelled) setActiveSessions(map || {}) })
+    return () => { cancelled = true }
+  }, [acceptedKey])
+
+  async function refreshSessions() {
+    if (!acceptedKey) return
+    const map = await hotelApi.getActiveSessionsBatch(acceptedKey.split(',').map(Number))
+    setActiveSessions(map || {})
+  }
+
+  async function handleClock(app, action) {
+    let pos = myLoc.location
+    if (!pos) pos = await myLoc.request()
+    if (!pos) { toast.error('Mesai kaydı için konum izni gerekli.'); return }
+    setClockBusyId(app.id)
+    try {
+      if (action === 'in') { await hotelApi.clockIn(app.id, pos.lat, pos.lng); toast.success('Mesaiye başladın') }
+      else                 { await hotelApi.clockOut(app.id, pos.lat, pos.lng); toast.success('Mesaiyi bitirdin') }
+      await refreshSessions()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setClockBusyId(null) }
+  }
 
   async function handleRespond(reqId, grant) {
     setRespondingId(reqId)
@@ -354,6 +390,12 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                       )}
 
                       {app.status === 'ACCEPTED' && (
+                        <ClockControls app={app} session={activeSessions[app.id]}
+                                       busy={clockBusyId === app.id} locLoading={myLoc.loading}
+                                       onClock={handleClock} />
+                      )}
+
+                      {app.status === 'ACCEPTED' && (
                         app.workCompleted ? (
                           <SpringBtn onClick={() => setReviewTarget({ id: app.id, title: app.listing?.businessName || 'İşletme' })} variant="gold" small>Puanla</SpringBtn>
                         ) : (
@@ -532,5 +574,35 @@ function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, sma
       {icon && <span className="relative">{icon}</span>}
       <span className="relative">{children}</span>
     </motion.button>
+  )
+}
+
+/* FAZ 2/#21 — Geo-fenced mesai kontrolu (kabul edilen basvuru). Acik session
+   varsa "Mesaideyim" + bitir; yoksa "Mesaiye basla". Konum 200m fence ile
+   backend'de dogrulanir. */
+function ClockControls({ app, session, busy, locLoading, onClock }) {
+  if (session) {
+    const t = session.clockInAt
+      ? new Date(session.clockInAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+      : ''
+    return (
+      <>
+        <span className="inline-flex items-center gap-1.5 text-[11.5px] px-2 py-1 rounded-md"
+              style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' }}>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} aria-hidden="true" />
+          Mesaidesin{t && ` · ${t}`}
+        </span>
+        <SpringBtn onClick={() => onClock(app, 'out')} disabled={busy} variant="danger" small>
+          {busy ? '...' : 'Mesaiyi bitir'}
+        </SpringBtn>
+      </>
+    )
+  }
+  return (
+    <SpringBtn onClick={() => onClock(app, 'in')} disabled={busy || locLoading} variant="success" small
+               icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>}>
+      {busy ? '...' : 'Mesaiye başla'}
+    </SpringBtn>
   )
 }
