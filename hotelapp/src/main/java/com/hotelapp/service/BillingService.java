@@ -39,7 +39,7 @@ public class BillingService {
     private final IyzicoClient iyzico;
 
     @Value("${app.billing.enforce:true}")           private boolean enforce;
-    @Value("${app.billing.free-listings:3}")        private int freeListings;
+    @Value("${app.billing.free-listings:5}")        private int freeListings;
     @Value("${app.billing.trial-days:14}")          private int trialDays;
     @Value("${app.billing.monthly-price:499.00}")   private BigDecimal monthlyPrice;
     @Value("${app.billing.plan:STANDARD_MONTHLY}")  private String planName;
