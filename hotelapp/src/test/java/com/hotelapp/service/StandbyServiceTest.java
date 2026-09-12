@@ -42,6 +42,7 @@ class StandbyServiceTest {
     @Mock private NotificationService notificationService;
     @Mock private OutboxService outboxService;
     @Mock private ApplicationMapper applicationMapper;
+    @Mock private SmsService smsService;
 
     private StandbyService service;
 
@@ -55,7 +56,7 @@ class StandbyServiceTest {
     private StandbyService svc() {
         if (service == null) {
             service = new StandbyService(applicationRepository, shiftSlotRepository,
-                    notificationService, outboxService, applicationMapper);
+                    notificationService, outboxService, applicationMapper, smsService);
             lenient().when(applicationMapper.toResponse(any()))
                     .thenReturn(ApplicationResponse.builder().build());
         }
