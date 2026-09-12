@@ -55,6 +55,7 @@ public class UrgentService {
     private final JobListingRepository jobListingRepository;
     private final NotificationService notificationService;
     private final OutboxService outboxService;
+    private final SmsService smsService;   // yedek kanal (push'a EK)
 
     // ================================================================
     // CANDIDATE — "hemen müsait" havuzu
@@ -175,11 +176,15 @@ public class UrgentService {
             String message = business + (when != null ? " · " + when : "")
                     + " — hemen müsait olduğun için sana önce haber veriyoruz.";
 
+            String smsText = "AjansHotel acil: " + listing.getTitle()
+                    + (when != null ? " (" + when + ")" : "")
+                    + " — hemen musait oldugun icin sana ilk haber. Uygulamadan bas.";
             int sent = 0;
             for (User u : targets) {
                 try {
                     notificationService.notify(u.getId(), NotificationType.URGENT_LISTING,
                             "Acil: " + listing.getTitle(), message, "/listings/" + listing.getId());
+                    smsService.send(u.getPhone(), smsText);   // yedek kanal — best-effort
                     sent++;
                 } catch (Exception ex) {
                     log.warn("[URGENT] bildirim basarisiz user={}: {}", u.getId(), ex.getMessage());

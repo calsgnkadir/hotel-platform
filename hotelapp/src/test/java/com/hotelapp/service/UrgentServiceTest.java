@@ -45,6 +45,7 @@ class UrgentServiceTest {
     @Mock private JobListingRepository jobListingRepository;
     @Mock private NotificationService notificationService;
     @Mock private OutboxService outboxService;
+    @Mock private SmsService smsService;
 
     private UrgentService svc;
 
@@ -55,7 +56,7 @@ class UrgentServiceTest {
     private UrgentService service() {
         if (svc == null) {
             svc = new UrgentService(userRepository, jobListingRepository,
-                    notificationService, outboxService);
+                    notificationService, outboxService, smsService);
         }
         return svc;
     }

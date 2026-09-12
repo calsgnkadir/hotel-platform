@@ -47,6 +47,7 @@ public class StandbyService {
     private final NotificationService notificationService;
     private final OutboxService outboxService;
     private final ApplicationMapper applicationMapper;
+    private final SmsService smsService;   // yedek kanal (push'a EK) — acil aktivasyonda
 
     // ================================================================
     // BUSINESS OWNER — yedek isaretle / geri al
@@ -177,6 +178,12 @@ public class StandbyService {
                 next.getJobListing().getTitle() + " için asıl aday gelmedi. "
                         + OFFER_WINDOW_HOURS + " saat içinde cevap ver — kabul edersen iş senin.",
                 "applications");
+
+        // Yedek kanal — zamana duyarli teklif, push'a EK olarak SMS (best-effort)
+        smsService.send(next.getCandidate().getPhone(),
+                "AjansHotel acil: " + next.getJobListing().getTitle()
+                        + " icin sira sende. " + OFFER_WINDOW_HOURS
+                        + " saat icinde uygulamadan cevap ver.");
 
         log.info("[STANDBY] listing={} icin yedek app={} cagrildi", listingId, next.getId());
         return next.getId();
