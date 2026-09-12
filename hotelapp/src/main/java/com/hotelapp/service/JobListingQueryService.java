@@ -16,6 +16,11 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,16 +50,25 @@ public class JobListingQueryService {
     private final JobListingService jobListingService;  // mapping delegasyonu icin
     private final UserRepository userRepository;        // FAZ 5 — ranked sort
 
-    /** Public: aktif ilan listele, dinamik filtre (Specification). */
+    /**
+     * FAZ pagination — ranked skorlamanin skorlayacagi havuz tavani. Sonsuz
+     * buyumeye karsi: en yeni bu kadar ilan skorlanip sayfalanir (eskiler zaten
+     * daha az alakali). Non-ranked yol tamamen DB-seviyesinde sayfalanir.
+     */
+    private static final int RANK_POOL = 300;
+
+    /** Public: aktif ilan listele, dinamik filtre (Specification) + DB-seviyesi sayfalama. */
     @Transactional(readOnly = true)
-    public List<ListingResponse> getActiveListings(
+    public Page<ListingResponse> getActiveListings(
             Position position, JobType jobType, List<Shift> shifts,
             String district, BigDecimal minSalary, String keyword,
-            LocalDate dateFrom, LocalDate dateTo
+            LocalDate dateFrom, LocalDate dateTo, Pageable pageable
     ) {
         Specification<JobListing> spec = buildActiveListingSpec(
                 position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo);
-        return jobListingService.toResponses(jobListingRepository.findAll(spec));
+        Page<JobListing> page = jobListingRepository.findAll(spec, pageable);
+        return new PageImpl<>(
+                jobListingService.toResponses(page.getContent()), pageable, page.getTotalElements());
     }
 
     /**
@@ -69,41 +83,43 @@ public class JobListingQueryService {
      * Kullanıcı yoksa veya aday değilse skor 0 — sıralama createdAt DESC olur.
      */
     @Transactional(readOnly = true)
-    public List<ListingResponse> getActiveListingsRanked(
+    public Page<ListingResponse> getActiveListingsRanked(
             Long candidateUserId,
             Position position, JobType jobType, List<Shift> shifts,
             String district, BigDecimal minSalary, String keyword,
-            LocalDate dateFrom, LocalDate dateTo
+            LocalDate dateFrom, LocalDate dateTo, Pageable pageable
     ) {
         Specification<JobListing> spec = buildActiveListingSpec(
                 position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo);
-        List<JobListing> raw = jobListingRepository.findAll(spec);
+        // Skorlama in-memory; havuzu en yeni RANK_POOL ile sinirla (sonsuz buyume yok).
+        Pageable poolReq = PageRequest.of(0, RANK_POOL, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<JobListing> raw = new ArrayList<>(jobListingRepository.findAll(spec, poolReq).getContent());
 
-        if (candidateUserId == null || raw.isEmpty()) {
-            return jobListingService.toResponses(raw);
+        User candidate = candidateUserId == null ? null : userRepository.findById(candidateUserId).orElse(null);
+        if (candidate != null) {
+            java.util.Set<Position> prefPositions = candidate.getPreferredPositions();
+            java.util.Set<String>   prefDistricts = candidate.getPreferredDistricts();
+            java.util.Set<JobType>  prefJobTypes  = candidate.getAvailabilityTypes();
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+            raw.sort((a, b) -> {
+                int sa = scoreListing(a, prefPositions, prefDistricts, prefJobTypes, now);
+                int sb = scoreListing(b, prefPositions, prefDistricts, prefJobTypes, now);
+                if (sa != sb) return Integer.compare(sb, sa);  // higher score first
+                return b.getCreatedAt().compareTo(a.getCreatedAt());  // tiebreak: yeni → eski
+            });
         }
+        // else: poolReq zaten createdAt DESC dondu — siralama korunur.
 
-        User candidate = userRepository.findById(candidateUserId).orElse(null);
-        if (candidate == null) {
-            return jobListingService.toResponses(raw);
-        }
+        return pageOf(raw, pageable);
+    }
 
-        java.util.Set<Position> prefPositions = candidate.getPreferredPositions();
-        java.util.Set<String>   prefDistricts = candidate.getPreferredDistricts();
-        java.util.Set<JobType>  prefJobTypes  = candidate.getAvailabilityTypes();
-
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
-
-        // Score'u entity üzerinde hesapla, sıralayıp sonra DTO'ya map et
-        raw.sort((a, b) -> {
-            int sa = scoreListing(a, prefPositions, prefDistricts, prefJobTypes, now);
-            int sb = scoreListing(b, prefPositions, prefDistricts, prefJobTypes, now);
-            if (sa != sb) return Integer.compare(sb, sa);  // higher score first
-            // tiebreak: yeni → eski
-            return b.getCreatedAt().compareTo(a.getCreatedAt());
-        });
-
-        return jobListingService.toResponses(raw);
+    /** Bellekte sirali listeyi istenen sayfaya dilimler; total = havuz boyutu. */
+    private Page<ListingResponse> pageOf(List<JobListing> sorted, Pageable pageable) {
+        int from = (int) Math.min((long) pageable.getPageNumber() * pageable.getPageSize(), sorted.size());
+        int to   = (int) Math.min((long) from + pageable.getPageSize(), sorted.size());
+        List<ListingResponse> content = jobListingService.toResponses(sorted.subList(from, to));
+        return new PageImpl<>(content, pageable, sorted.size());
     }
 
     /**
@@ -176,14 +192,10 @@ public class JobListingQueryService {
 
     /** Business owner: kendi ilanları (defensive 500 cap). */
     @Transactional(readOnly = true)
-    public List<ListingResponse> getMyListings(Long ownerId) {
-        var all = jobListingRepository.findAllByBusiness_OwnerId(ownerId);
-        if (all.size() > 500) {
-            log.warn("[GET-MY-LISTINGS] ownerId={} icin {} ilan var (>500), ilk 500 doneriyor",
-                    ownerId, all.size());
-            all = all.subList(0, 500);
-        }
-        return jobListingService.toResponses(all);
+    public Page<ListingResponse> getMyListings(Long ownerId, Pageable pageable) {
+        Page<JobListing> page = jobListingRepository.findByBusiness_OwnerId(ownerId, pageable);
+        return new PageImpl<>(
+                jobListingService.toResponses(page.getContent()), pageable, page.getTotalElements());
     }
 
     /** Tek ilan detayı. */
