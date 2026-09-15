@@ -757,22 +757,11 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         )}
         <div className="ah-job__hd">
           <div className="ah-job__title">{position}</div>
-          {/* FAZ B.5.4 — Tek meta satiri: isletme · puan · ilce · mesafe.
-              Eskiden 3 yere dagilmisti (__co / __loc / guven satirindaki puan);
-              aday tek bakista "kim, ne kadar guvenilir, ne kadar uzak" okuyor.
+          {/* FAZ B.5.4 — Tek meta satiri: isletme · ilce · mesafe.
+              (puan/yildiz kaldirildi — kullanici istegi.)
               Ayiraclar CSS'ten (.ah-job__meta > * + *::before) gelir. */}
           <div className="ah-job__meta">
             <span className="ah-job__co-name">{listing.businessName}</span>
-
-            {listing.businessReviewCount > 0 && (
-              <span className="ah-job__rating"
-                    title={`${Number(listing.businessAverageRating || 0).toFixed(1)} puan · ${listing.businessReviewCount} değerlendirme`}>
-                <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true">
-                  <path d="M11.48 3.5a.56.56 0 0 1 1.04 0l2.13 5.11 5.52.44a.56.56 0 0 1 .32.99l-4.2 3.6 1.28 5.38a.56.56 0 0 1-.84.61L12 16.73l-4.73 2.9a.56.56 0 0 1-.84-.61l1.28-5.39-4.2-3.6a.56.56 0 0 1 .32-.98l5.52-.44 2.13-5.12Z"/>
-                </svg>
-                {Number(listing.businessAverageRating || 0).toFixed(1)}
-              </span>
-            )}
 
             <span>{listing.businessDistrict || 'İstanbul'}</span>
 
@@ -1064,9 +1053,6 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         String(b.createdAt || '').localeCompare(String(a.createdAt || '')) || (b.id - a.id))
     } else if (sortBy === 'wage') {
       list = [...list].sort((a, b) => wageOf(b) - wageOf(a))
-    } else if (sortBy === 'rating') {
-      list = [...list].sort((a, b) =>
-        Number(b.businessAverageRating || 0) - Number(a.businessAverageRating || 0))
     }
     return list
   }, [listings, blockedBusinessIds, myLoc.location, nearbyFirst, sortBy])
@@ -1121,7 +1107,6 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
               <option value="relevance">Sana özel</option>
               <option value="newest">En yeni</option>
               <option value="wage">Ücret (yüksek)</option>
-              <option value="rating">Puan (yüksek)</option>
             </select>
           </label>
           {/* FAZ C.2 — "Bugun musaitim": acil ilan acilirsa ilk bu adaylara gider */}
