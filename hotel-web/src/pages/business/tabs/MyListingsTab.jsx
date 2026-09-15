@@ -16,6 +16,7 @@ const PAGE_SIZE = 6
 /* ── My Listings Tab — FAZ 0/#10 react-query + pagination ── */
 export default function MyListingsTab({ applications = [] }) {
   const [formTarget, setFormTarget] = useState(null)
+  const [dupTarget, setDupTarget] = useState(null)   // "Tekrar aç" (şablon) kaynağı
   const [page, setPage] = useState(1)
   const queryClient = useQueryClient()
 
@@ -178,6 +179,13 @@ export default function MyListingsTab({ applications = [] }) {
                     <Sparkline data={trendData} color="#1f2937" width={56} height={20} />
                   </div>
                   <div className="flex gap-2 flex-wrap justify-end">
+                  {/* Tekrar aç (şablon): vardiyalar gelecek haftaya taşınmış kopya. Kapalı ilan için de. */}
+                  <button onClick={() => setDupTarget(listing)}
+                    title="Bu ilanı vardiyalar gelecek haftaya taşınmış olarak yeniden yayınla"
+                    className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
+                    style={{ background: 'rgba(31, 41, 55, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
+                    Tekrar aç
+                  </button>
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => setFormTarget(listing)}
                       className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
@@ -236,10 +244,11 @@ export default function MyListingsTab({ applications = [] }) {
         )
       })()}
 
-      {formTarget && (
+      {(formTarget || dupTarget) && (
         <ListingFormModal
-          listing={formTarget === 'new' ? null : formTarget}
-          onClose={() => setFormTarget(null)}
+          listing={formTarget && formTarget !== 'new' ? formTarget : null}
+          duplicateFrom={dupTarget || null}
+          onClose={() => { setFormTarget(null); setDupTarget(null) }}
           onSuccess={fetchListings}
         />
       )}

@@ -28,41 +28,71 @@ function genSlotUid() {
 }
 
 /**
+ * Tekrar aç (şablon): kaynak slotların tarihlerini tam hafta katı kaydırarak
+ * geleceğe taşır — hafta günü korunur (Salı → Salı), en erken slot en az yarına
+ * gelir. "Her hafta aynı vardiya" akışının çekirdeği.
+ */
+function shiftSlotsToNextWeek(slots) {
+  const dayMs = 86400000
+  const parse = d => new Date(d + 'T00:00:00')
+  const dated = slots.filter(s => s.date)
+  if (!dated.length) return slots
+  const base = dated.reduce((min, s) => {
+    const t = parse(s.date).getTime()
+    return t < min ? t : min
+  }, parse(dated[0].date).getTime())
+  const tomorrow = new Date(); tomorrow.setHours(0, 0, 0, 0)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  let weeks = Math.ceil((tomorrow.getTime() - base) / (7 * dayMs))
+  if (weeks < 1) weeks = 1                     // gelecekteki ilanı bile en az +1 hafta
+  const deltaMs = weeks * 7 * dayMs
+  return slots.map(s => {
+    if (!s.date) return s
+    const nd = new Date(parse(s.date).getTime() + deltaMs)
+    return { ...s, date: nd.toISOString().slice(0, 10) }
+  })
+}
+
+/**
  * #9 refactor: BusinessDashboard'tan extract edildi.
  *
  * Yeni ilan oluşturma + mevcut ilan düzenleme.
  * Slot bazlı yapı: ilan + N vardiya slotu (date+start+end+slotsNeeded).
  */
-export default function ListingFormModal({ listing, onClose, onSuccess }) {
+export default function ListingFormModal({ listing, duplicateFrom, onClose, onSuccess }) {
   const isEdit = !!listing
+  const isDup  = !isEdit && !!duplicateFrom   // "Tekrar aç" — kaynaktan doldur, yeni ilan yarat
+  const src    = listing || duplicateFrom
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
-    position:     listing?.position     || 'WAITER',
-    jobType:      listing?.jobType      || 'PERMANENT',
+    position:     src?.position     || 'WAITER',
+    jobType:      src?.jobType      || 'PERMANENT',
     // shift kategorisi (Sabah/Akşam/Gece) kaldirildi — somut slot saatleri yeterli
-    title:        listing?.title        || '',
-    description:  listing?.description  || '',
-    requirements: listing?.requirements || '',
-    salaryMin:    listing?.salaryMin    ?? '',
-    salaryMax:    listing?.salaryMax    ?? '',
-    salaryType:    listing?.salaryType    ?? 'HOURLY',  // FAZ 2/#25 default saatlik
-    tipsIncluded:  listing?.tipsIncluded  ?? false,
-    startDate:    listing?.startDate    || '',
-    endDate:      listing?.endDate      || '',
+    title:        src?.title        || '',
+    description:  src?.description  || '',
+    requirements: src?.requirements || '',
+    salaryMin:    src?.salaryMin    ?? '',
+    salaryMax:    src?.salaryMax    ?? '',
+    salaryType:    src?.salaryType    ?? 'HOURLY',  // FAZ 2/#25 default saatlik
+    tipsIncluded:  src?.tipsIncluded  ?? false,
+    // Tekrar aç: eski kontrat dönemi geçmişte kalmış olabilir → temizle
+    startDate:    isDup ? '' : (src?.startDate || ''),
+    endDate:      isDup ? '' : (src?.endDate || ''),
   })
 
   // Faz E2: Slot listesi (date+start+end+slotsNeeded). FAZ 5.5b: _uid drag-drop icin stable id.
   const [slots, setSlots] = useState(() => {
-    if (listing?.shiftSlots?.length) {
-      return listing.shiftSlots.map(s => ({
+    if (src?.shiftSlots?.length) {
+      const mapped = src.shiftSlots.map(s => ({
         _uid:        genSlotUid(),
-        id:          s.id ?? null,
+        id:          isDup ? null : (s.id ?? null),     // dup: yeni slotlar (id yok)
         date:        s.date || '',
         startTime:   s.startTime ? s.startTime.slice(0, 5) : '',
         endTime:     s.endTime ? s.endTime.slice(0, 5) : '',
         slotsNeeded: s.slotsNeeded ?? 1,
-        slotsFilled: s.slotsFilled ?? 0,
+        slotsFilled: isDup ? 0 : (s.slotsFilled ?? 0),  // dup: doluluk sıfırlanır
       }))
+      return isDup ? shiftSlotsToNextWeek(mapped) : mapped
     }
     return [{ _uid: genSlotUid(), id: null, date: '', startTime: '', endTime: '', slotsNeeded: 1, slotsFilled: 0 }]
   })
@@ -199,10 +229,12 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
            className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
           <h2 id="listing-form-title" className="text-lg font-bold text-ink-900">
-            {isEdit ? 'İlanı Düzenle' : 'Yeni İlan Oluştur'}
+            {isEdit ? 'İlanı Düzenle' : isDup ? 'İlanı Tekrar Aç' : 'Yeni İlan Oluştur'}
           </h2>
           <p className="text-sm text-ink-500">
-            {isEdit ? 'Mevcut bilgileri güncelleyin' : 'Adayların göreceği iş ilanı'}
+            {isEdit ? 'Mevcut bilgileri güncelleyin'
+              : isDup ? 'Vardiyalar gelecek haftaya taşındı — kontrol edip yayınla'
+              : 'Adayların göreceği iş ilanı'}
           </p>
         </div>
 
@@ -367,7 +399,7 @@ export default function ListingFormModal({ listing, onClose, onSuccess }) {
               style={{ background: 'var(--ah-brand-gradient)' }}>
               {loading
                 ? (isEdit ? 'Güncelleniyor...' : 'Oluşturuluyor...')
-                : (isEdit ? 'Güncelle' : 'İlan Oluştur')}
+                : (isEdit ? 'Güncelle' : isDup ? 'Tekrar Yayınla' : 'İlan Oluştur')}
             </button>
           </div>
         </form>
