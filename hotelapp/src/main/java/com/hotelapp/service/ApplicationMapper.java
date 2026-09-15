@@ -25,7 +25,6 @@ import java.util.List;
 public class ApplicationMapper {
 
     private final ReviewService reviewService;
-    private final ReliabilityService reliabilityService;
     private final FileStorageService fileStorageService;
     private final ConversationRepository conversationRepository;
     private final DocumentRepository documentRepository;
@@ -111,7 +110,6 @@ public class ApplicationMapper {
 
     /** Aday ozeti — avatar + rating (isletme -> aday). */
     public ApplicationResponse.CandidateSummary buildCandidateSummary(User candidate) {
-        var rel = reliabilityService.computeForCandidate(candidate.getId());
         boolean validHealthCert = documentRepository.existsValidByType(
                 candidate.getId(), DocumentType.HEALTH_CERTIFICATE, LocalDate.now());
         return ApplicationResponse.CandidateSummary.builder()
@@ -121,8 +119,6 @@ public class ApplicationMapper {
                 .avatarUrl(candidate.getAvatarPath() != null
                         ? fileStorageService.publicUrl(candidate.getAvatarPath())
                         : null)
-                .averageRating(rel.getAverageRating())
-                .reviewCount(rel.getReviewCount())
                 .hasValidHealthCertificate(validHealthCert)
                 .build();
     }

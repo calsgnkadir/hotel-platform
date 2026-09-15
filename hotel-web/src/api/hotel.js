@@ -493,28 +493,7 @@ export async function viewDocument(documentId) {
   }
 }
 
-/* ── Yorum (Review) endpoints ── */
-// FAZ 2/#26 — 4 aspect destegi: rating tamam, aspects = { aspect1..4 }
-export async function createReview(applicationId, rating, comment, aspects = {}) {
-  const { data } = await api.post(`/api/applications/${applicationId}/reviews`,
-    { rating, comment, ...aspects })
-  return data
-}
-
-export async function getBusinessReviews(businessId) {
-  const { data } = await api.get(`/api/businesses/${businessId}/reviews`)
-  return data
-}
-
-export async function getBusinessRating(businessId) {
-  const { data } = await api.get(`/api/businesses/${businessId}/rating`)
-  return data
-}
-
-export async function getCandidateReviews(candidateId) {
-  const { data } = await api.get(`/api/candidates/${candidateId}/reviews`)
-  return data
-}
+/* Yorum/puanlama UI kaldirildi (kullanici istegi); ilgili API wrapper'lari da silindi. */
 
 /* ── Bildirim (Notification) endpoints ── */
 export async function getNotifications(limit = 20) {

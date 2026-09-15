@@ -90,7 +90,7 @@ export default function PhoneVerifyCard() {
         <>
           <p className="text-[13px] mt-1" style={{ color: 'var(--ah-ink-3)' }}>
             Numaran{status.phone ? ` (${status.phone})` : ''} için SMS ile kod gönderelim.
-            Doğrulanan adaylar işletmelerde daha güvenilir görünür.
+            Doğrulanmış numara karşı tarafa güven verir.
           </p>
 
           {!codeSent ? (

@@ -3,6 +3,7 @@ import * as hotelApi from '../../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
+import PhoneVerifyCard from '../../../components/PhoneVerifyCard'
 import GdprCard from '../../../components/GdprCard'
 import { SkeletonForm } from '../../../components/Skeleton'
 import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../../utils/validation'
@@ -319,6 +320,7 @@ export default function ProfileTab() {
     {/* === SAG KOLON: Canli Onizleme + Sifre + KVKK (alt alta) === */}
     <aside className="xl:sticky xl:top-4 xl:self-start space-y-4">
       <BusinessPreviewCard form={form} logoUrl={logoUrl} />
+      <PhoneVerifyCard />
       <ChangePasswordCard />
       <GdprCard />
     </aside>
