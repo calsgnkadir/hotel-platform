@@ -9,7 +9,6 @@ import { extractErrorMessage } from '../../../api/client'
 import { keys } from '../../../lib/queryClient'
 import { useMyLocation } from '../../../lib/useMyLocation'
 import EmptyState from '../../../components/EmptyState'
-import ReviewModal from '../../../components/ReviewModal'
 import { CAND_STATUS_FILTERS } from '../../../components/candidate/StatusBadge'
 import { useConfirm } from '../../../lib/useConfirm'
 import SlotChipGroup from '../../../components/SlotChipGroup'
@@ -128,8 +127,6 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setRespondingId(null) }
   }
-
-  const [reviewTarget, setReviewTarget] = useState(null)
 
   const [withdrawingId, setWithdrawingId] = useState(null)
   async function handleWithdraw(appId) {
@@ -394,14 +391,6 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                                        busy={clockBusyId === app.id} locLoading={myLoc.loading}
                                        onClock={handleClock} />
                       )}
-
-                      {app.status === 'ACCEPTED' && (
-                        app.workCompleted ? (
-                          <SpringBtn onClick={() => setReviewTarget({ id: app.id, title: app.listing?.businessName || 'İşletme' })} variant="gold" small>Puanla</SpringBtn>
-                        ) : (
-                          <span className="text-[11px] italic" title="Vardiya günü geçince puanlayabilirsiniz" style={{ color: 'var(--ah-ink-4)' }}>Çalışma sonrası puanlanır</span>
-                        )
-                      )}
                     </div>
                   </div>
                 </div>
@@ -486,15 +475,6 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           )
         })}
       </div>
-      )}
-
-{reviewTarget && (
-        <ReviewModal
-          applicationId={reviewTarget.id}
-          title={reviewTarget.title}
-          onClose={() => setReviewTarget(null)}
-          onSuccess={onRefresh}
-        />
       )}
 
       {/* FAZ C.3 — Platform konumlandirmasi (seffaflik): aracilik, isveren degil */}

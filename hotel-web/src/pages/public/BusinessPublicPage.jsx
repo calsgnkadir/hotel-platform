@@ -89,35 +89,6 @@ function useSeoMeta({ title, description, image, url }) {
   }, [title, description, image, url])
 }
 
-function StarRow({ avg, count }) {
-  if (!avg || !count) {
-    return (
-      <span className="text-[11px] uppercase tracking-widest" style={{ color: 'var(--ah-ink-4)' }}>
-        Henüz puan yok
-      </span>
-    )
-  }
-  const full = Math.floor(avg)
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex gap-0.5">
-        {[1,2,3,4,5].map(i => (
-          <svg key={i} viewBox="0 0 20 20" className="w-4 h-4"
-               fill={i <= full ? 'var(--ah-ink-2)' : 'var(--ah-line-2)'}>
-            <path d="M9.05 2.93a1 1 0 011.9 0l1.5 4.3a1 1 0 00.95.67h4.5a1 1 0 01.6 1.8l-3.7 2.7a1 1 0 00-.35 1.1l1.4 4.3a1 1 0 01-1.55 1.1l-3.7-2.7a1 1 0 00-1.2 0l-3.7 2.7a1 1 0 01-1.55-1.1l1.4-4.3a1 1 0 00-.35-1.1l-3.7-2.7a1 1 0 01.6-1.8h4.5a1 1 0 00.95-.67l1.5-4.3z" />
-          </svg>
-        ))}
-      </div>
-      <span className="text-lg tracking-wider" style={{ color: 'var(--ah-ink)' }}>
-        {avg.toFixed(1)}
-      </span>
-      <span className="text-[11px]" style={{ color: 'var(--ah-ink-3)' }}>
-        ({count} değerlendirme)
-      </span>
-    </div>
-  )
-}
-
 export default function BusinessPublicPage() {
   const confirm = useConfirm()
   const { id } = useParams()
@@ -257,11 +228,6 @@ export default function BusinessPublicPage() {
       latitude: business.latitude,
       longitude: business.longitude,
     } : undefined,
-    aggregateRating: business.averageRating && business.reviewCount ? {
-      '@type': 'AggregateRating',
-      ratingValue: business.averageRating,
-      reviewCount: business.reviewCount,
-    } : undefined,
   }
 
   return (
@@ -329,9 +295,6 @@ export default function BusinessPublicPage() {
                   </h1>
                   <div className="text-sm mt-1.5" style={{ color: 'var(--ah-ink-3)' }}>
                     {fullLocation || business.city || '—'}
-                  </div>
-                  <div className="mt-3">
-                    <StarRow avg={business.averageRating} count={business.reviewCount} />
                   </div>
                   {/* Dalga I1 — Aday icin Takip Et + Kullaniciyi Bildir */}
                   {isCandidate && (

@@ -326,8 +326,6 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
   const date = app.createdAt
     ? new Date(app.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—'
-  const rating = app.candidate?.averageRating
-  const reviewCount = app.candidate?.reviewCount || 0
   const slotCount = app.requestedSlots?.length || 0
 
   return (
@@ -380,18 +378,8 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
         </div>
       </div>
 
-      {/* ── Karar bilgisi: puan · vardiya (orta bosluğu doldurur) ── */}
+      {/* ── Karar bilgisi: vardiya + belge (orta bosluğu doldurur) ── */}
       <div className="flex items-center gap-2 flex-wrap mt-3">
-        {rating != null && (
-          <span className="inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-full"
-                style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' }}>
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3" aria-hidden="true">
-              <path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 9.4l6.9-.6z"/>
-            </svg>
-            {rating.toFixed(1)}
-            <span className="font-normal" style={{ color: 'var(--ah-ink-3)' }}>({reviewCount})</span>
-          </span>
-        )}
         {slotCount > 0 && (
           <span className="text-[12px] px-2 py-0.5 rounded-full"
                 style={{ background: 'var(--ah-band)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line)' }}>

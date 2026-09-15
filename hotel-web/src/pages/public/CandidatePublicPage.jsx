@@ -10,7 +10,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import * as hotelApi from '../../api/hotel'
-import StarRating from '../../components/StarRating'
 import usePageTitle from '../../lib/usePageTitle'
 import { POSITION_LABELS } from '../../utils/labels'
 
@@ -157,20 +156,14 @@ export default function CandidatePublicPage() {
                 <div className="flex items-center gap-2 mt-1 flex-wrap text-[13px]"
                      style={{ color: 'var(--ah-ink-3)' }}>
                   {profile.district && <span>{profile.district}</span>}
-                  {profile.reviewCount > 0 && (
-                    <>
-                      <span style={{ color: 'var(--ah-ink-4)' }}>·</span>
-                      <StarRating value={profile.averageRating} count={profile.reviewCount} size="sm" />
-                    </>
-                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Deneyim metrikleri — guvenilirlik skoru kaldirildi (kullanici istegi) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Deneyim metrikleri — puanlama ve guvenilirlik skoru gosterilmez (kullanici istegi) */}
+        <div className="grid grid-cols-2 gap-3">
           <MetricCard
             label="Tamamlanan İş"
             value={profile.completedJobs ?? 0}
@@ -180,11 +173,6 @@ export default function CandidatePublicPage() {
             label="No-show"
             value={profile.noShowCount ?? 0}
             sub="iptal/gelmedim"
-          />
-          <MetricCard
-            label="Ortalama Puan"
-            value={profile.averageRating ? profile.averageRating.toFixed(1) : '—'}
-            sub={`${profile.reviewCount ?? 0} değerlendirme`}
           />
         </div>
 

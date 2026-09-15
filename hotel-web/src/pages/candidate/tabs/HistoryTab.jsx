@@ -4,13 +4,10 @@ import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import EmptyState from '../../../components/EmptyState'
-import ReviewModal from '../../../components/ReviewModal'
 import { totalHoursForApplication } from '../../../utils/shifts'
 import { POSITION_LABELS } from '../../../utils/labels'
 
 export default function HistoryTab({ applications, onOpenMessages }) {
-  const [reviewTarget, setReviewTarget] = useState(null)
-
   // Sadece kabul edilmis + calisma tamamlanmis basvurular
   const completed = applications
     .filter(a => a.status === 'ACCEPTED' && a.workCompleted)
@@ -22,7 +19,6 @@ export default function HistoryTab({ applications, onOpenMessages }) {
 
   const totalHours = completed.reduce((s, a) => s + totalHoursForApplication(a), 0)
   const uniqueBusinesses = new Set(completed.map(a => a.listing?.businessId)).size
-  const reviewedCount = completed.filter(a => a.candidateReviewedBusiness).length
 
   if (completed.length === 0) {
     return (
@@ -34,7 +30,7 @@ export default function HistoryTab({ applications, onOpenMessages }) {
           steps={[
             { label: 'Başvurun kabul edilsin',  hint: 'Başvurularım sekmesinden takip et' },
             { label: 'Vardiya günü geç',         hint: 'Saat + tarih otomatik kayda alınır' },
-            { label: 'İşletmeyi puanla',         hint: 'Burada toplam saat + verdiğin puanlar görünür' },
+            { label: 'Geçmişin birikir',         hint: 'Toplam saat ve çalıştığın işletmeler burada görünür' },
           ]}
         />
       </div>
@@ -43,7 +39,7 @@ export default function HistoryTab({ applications, onOpenMessages }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5">
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} />
@@ -57,13 +53,6 @@ export default function HistoryTab({ applications, onOpenMessages }) {
             <span className="text-[10px] uppercase tracking-[0.04em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>Farklı İşletme</span>
           </div>
           <div className="text-xl font-black leading-none" style={{ color: 'var(--ah-ink)' }}>{uniqueBusinesses}</div>
-        </div>
-        <div className="stat-card !p-3">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} />
-            <span className="text-[10px] uppercase tracking-[0.04em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>Verilen Puan</span>
-          </div>
-          <div className="text-xl font-black leading-none" style={{ color: 'var(--ah-ink)' }}>{reviewedCount}<span className="text-sm font-bold" style={{ color: 'var(--ah-ink-4)' }}>/{completed.length}</span></div>
         </div>
       </div>
 
@@ -103,19 +92,6 @@ export default function HistoryTab({ applications, onOpenMessages }) {
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                  {app.candidateReviewedBusiness ? (
-                    <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-brand-50 text-brand-700 inline-flex items-center gap-1">
-                      Puanladın
-                    </span>
-                  ) : (
-                    <button onClick={() => setReviewTarget({
-                        id: app.id,
-                        title: app.listing?.businessName || 'İşletme',
-                      })}
-                      className="text-xs px-2.5 py-1.5 rounded-lg transition-opacity hover:opacity-90 font-semibold" style={{ background: 'var(--ah-brand)', color: '#fff' }}>
-                      Puanla
-                    </button>
-                  )}
                   {app.listing?.businessOwnerId && (
                     <button
                       onClick={async () => {
@@ -137,14 +113,6 @@ export default function HistoryTab({ applications, onOpenMessages }) {
           )
         })}
       </div>
-
-      {reviewTarget && (
-        <ReviewModal
-          applicationId={reviewTarget.id}
-          title={reviewTarget.title}
-          onClose={() => setReviewTarget(null)}
-          onSuccess={() => setReviewTarget(null)} />
-      )}
     </div>
   )
 }

@@ -13,7 +13,6 @@ import { useQuery } from '@tanstack/react-query'
 import * as hotelApi from '../../api/hotel'
 import { keys } from '../../lib/queryClient'
 import { useAuth } from '../../context/AuthContext'
-import StarRating from '../../components/StarRating'
 import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
 import { SkeletonDetail } from '../../components/Skeleton'
@@ -179,10 +178,6 @@ export default function ListingDetailPage() {
             )}
             <div className="flex items-center gap-2 flex-wrap mt-2">
               <p className="text-base font-medium" style={{ color: 'var(--ah-ink-2)' }}>{listing.businessName}</p>
-              {listing.businessReviewCount > 0 && (
-                <StarRating value={listing.businessAverageRating}
-                  count={listing.businessReviewCount} size="sm" />
-              )}
             </div>
           </div>
         </div>
@@ -444,9 +439,6 @@ function SimilarListings({ listingId, onNavigate }) {
                   </div>
                   <div className="text-[12px] truncate mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{l.businessName}</div>
                 </div>
-                {l.businessReviewCount > 0 && (
-                  <StarRating value={l.businessAverageRating} count={l.businessReviewCount} size="xs" />
-                )}
               </div>
               <div className="flex items-center gap-1.5 mt-2 flex-wrap text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
                 <span>{l.businessDistrict || 'İstanbul'}</span>

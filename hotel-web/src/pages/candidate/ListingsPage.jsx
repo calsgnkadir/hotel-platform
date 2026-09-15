@@ -17,7 +17,6 @@ import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import { keys } from '../../lib/queryClient'
 import ReportModal from '../../components/ReportModal'
-import StarRating from '../../components/StarRating'
 import VerifiedBadge from '../../components/VerifiedBadge'
 import HoverPhotoCarousel from '../../components/HoverPhotoCarousel'  // FAZ D3
 import GalleryCarousel from '../../components/GalleryCarousel'
@@ -484,10 +483,6 @@ function DetailModal({ listing, onClose, onApply }) {
               <h2 className="text-lg font-bold text-ink-900 leading-tight">{listing.title}</h2>
               <div className="flex items-center gap-2 flex-wrap mt-0.5">
                 <p className="text-sm text-ink-500">{listing.businessName}</p>
-                {listing.businessReviewCount > 0 && (
-                  <StarRating value={listing.businessAverageRating}
-                    count={listing.businessReviewCount} size="sm" />
-                )}
               </div>
             </div>
             <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 flex-shrink-0">
