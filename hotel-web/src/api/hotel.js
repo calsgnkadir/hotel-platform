@@ -329,6 +329,20 @@ export async function getDocumentUrl(documentId) {
   return data.url || data
 }
 
+/* ── Telefon doğrulama (OTP) — opsiyonel, herhangi bir kullanıcı ── */
+export async function getPhoneStatus() {
+  const { data } = await api.get('/api/profile/phone/status')
+  return data   // { phone (maskeli), verified, hasPhone }
+}
+export async function sendPhoneCode() {
+  const { data } = await api.post('/api/profile/phone/send-code')
+  return data
+}
+export async function verifyPhoneCode(code) {
+  const { data } = await api.post('/api/profile/phone/verify', { code })
+  return data
+}
+
 /* ── Application endpoints (Business owner) ── */
 // #84: Sayfalı + filtreli. opts: { status, listingId, q, page, size }
 // PageResponse döner: { content, page, size, totalElements, totalPages, first, last }

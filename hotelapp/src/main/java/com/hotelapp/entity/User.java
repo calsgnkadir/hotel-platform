@@ -61,6 +61,17 @@ public class User {
 
     private String phone;
 
+    // Telefon doğrulama (OTP/SMS). phoneVerifiedAt set → numara doğrulandı.
+    // Bekleyen kod ephemeral: phoneOtpCode + expiry + attempts. SMS DEV MODE'da
+    // kod log'a düşer; gerçek gönderim SMS_ENABLED=true + sağlayıcı ile.
+    private LocalDateTime phoneVerifiedAt;
+    private String phoneOtpCode;
+    private LocalDateTime phoneOtpExpiresAt;
+    private LocalDateTime phoneOtpSentAt;
+    @Column(nullable = false)
+    @Builder.Default
+    private int phoneOtpAttempts = 0;
+
     // Set to true only when admin verifies student document
     @Column(nullable = false)
     @Builder.Default
@@ -99,6 +110,11 @@ public class User {
     public boolean isEmailVerified() {
         return emailVerifiedAt != null
                 || (provider != null && provider != com.hotelapp.enums.AuthProvider.LOCAL);
+    }
+
+    /** Telefon numarasi dogrulandi mi (OTP). */
+    public boolean isPhoneVerified() {
+        return phoneVerifiedAt != null;
     }
 
     // ================================================================

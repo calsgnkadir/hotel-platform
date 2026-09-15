@@ -9,6 +9,7 @@ import { calculateCandidateCompleteness } from '../../../lib/profileCompleteness
 import AvatarCropModal from '../../../components/AvatarCropModal'
 import { useConfirm } from '../../../lib/useConfirm'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
+import PhoneVerifyCard from '../../../components/PhoneVerifyCard'
 import GdprCard from '../../../components/GdprCard'
 import { SkeletonForm } from '../../../components/Skeleton'
 import { Alert } from '../../../components/ui/Alert'
@@ -356,9 +357,12 @@ export default function ProfileTab() {
 
           {/* ===== GÜVENLİK ===== */}
           {ptab === 'guvenlik' && (
-            <div className="grid lg:grid-cols-2 gap-4 items-start">
-              <ChangePasswordCard />
-              <GdprCard />
+            <div className="space-y-4">
+              <PhoneVerifyCard />
+              <div className="grid lg:grid-cols-2 gap-4 items-start">
+                <ChangePasswordCard />
+                <GdprCard />
+              </div>
             </div>
           )}
         </div>
