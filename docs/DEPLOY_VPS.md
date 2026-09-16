@@ -178,6 +178,29 @@ docker compose --env-file deploy/prod/.env.prod -f deploy/prod/docker-compose.pr
 docker compose --env-file deploy/prod/.env.prod -f deploy/prod/docker-compose.prod.yml down -v
 ```
 
+## Yedekleme (backup)
+
+DB `mysql_data` volume'unde tutulur. Sunucu/disk olurse veri gider — duzenli **mysqldump** al.
+Bu repoda hazir script'ler: `deploy/prod/backup.sh` (yedek + rotasyon) ve `deploy/prod/restore.sh` (geri yukle).
+
+```bash
+# tek seferlik yedek (deploy/prod icinden)
+cd deploy/prod && chmod +x backup.sh restore.sh
+./backup.sh                      # -> backups/hotel_platform-YYYYMMDD-HHMMSS.sql.gz
+
+# her gece 03:30 otomatik (crontab -e)
+30 3 * * * cd /opt/ajanshotel/deploy/prod && ./backup.sh >> backups/backup.log 2>&1
+
+# geri yukleme (DIKKAT: ustune yazar)
+./restore.sh backups/hotel_platform-YYYYMMDD-HHMMSS.sql.gz
+```
+
+- `backup.sh` son **14** yedegi tutar (`KEEP` env ile degistir), `--single-transaction` ile
+  kilitsiz/tutarli dump alir, bos/bozuk dump'i yakalayip hata doner (cron alarmi icin).
+- **Off-site kopya sart:** yedekler sunucuda; diski kaybedersen yedek de gider. En az bir
+  kopyayi baska yere al (rclone -> S3/Backblaze B2, ya da `scp` ile baska sunucu).
+- Ayda bir **geri yukleme provasi** yap — test edilmemis yedek, yedek degildir.
+
 ## Sorun giderme
 
 | Belirti | Çözüm |

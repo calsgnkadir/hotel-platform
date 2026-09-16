@@ -226,6 +226,29 @@ olmamasından kötüdür.
 
 ---
 
+## Yedekleme (backup)
+
+Fly volume'leri gunluk otomatik snapshot alir (varsayilan ~5 gun saklama):
+
+```bash
+fly volumes list --app ajanshotel-mysql
+fly volumes snapshots list <volume-id>
+```
+
+Ama volume snapshot'i calisan MySQL icin crash-consistent'tir; **mantiksal (mysqldump)
+yedek daha guvenli.** SSH ile al (parolayi kendi ortam degiskeninden okur):
+
+```bash
+fly ssh console --app ajanshotel-mysql -C \
+  'sh -c "mysqldump -uroot -p$MYSQL_ROOT_PASSWORD --single-transaction hotel_platform | gzip"' \
+  > hotel_platform-$(date +%F).sql.gz
+```
+
+Dosyayi off-site sakla (yerel makine / S3). Geri yukleme: dump'i `fly ssh console`
+uzerinden `mysql -uroot -p... hotel_platform`'a boru ile ver. Ayda bir prova yap.
+
+---
+
 ## Sorun giderme
 
 | Belirti | Sebep / çözüm |
