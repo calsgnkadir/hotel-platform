@@ -536,29 +536,29 @@ code, pre, kbd, samp {
   backdrop-filter: blur(8px);
 }
 .badge-pending {
-  background: rgba(107, 117, 116, 0.12);                /* ochre */
-  color: #bababa;
-  border-color: rgba(107, 117, 116, 0.30);
+  background: var(--ah-warn-soft);
+  color: var(--ah-warn);
+  border-color: transparent;
 }
 .badge-reviewing {
-  background: rgba(185, 185, 185, 0.10);
-  color: #b9b9b9;
-  border-color: rgba(185, 185, 185, 0.28);
+  background: var(--ah-info-soft);
+  color: var(--ah-info);
+  border-color: transparent;
 }
 .badge-accepted {
-  background: rgba(107, 117, 116, 0.14);               /* sage */
-  color: #bfbfbf;
-  border-color: rgba(107, 117, 116, 0.32);
+  background: var(--ah-ok-soft);
+  color: var(--ah-ok);
+  border-color: transparent;
 }
 .badge-rejected {
-  background: rgba(107, 117, 116, 0.14);                /* brick */
-  color: #6b7574;
-  border-color: rgba(107, 117, 116, 0.30);
+  background: var(--ah-danger-soft);
+  color: var(--ah-danger);
+  border-color: transparent;
 }
 .badge-expired {
-  background: rgba(133, 133, 133, 0.10);
-  color: #afafaf;
-  border-color: rgba(133, 133, 133, 0.22);
+  background: var(--ah-band);
+  color: var(--ah-ink-4);
+  border-color: transparent;
 }
 .dark .badge-pending,
 .dark .badge-reviewing,

@@ -2,7 +2,7 @@
 export default function StatusBadge({ status }) {
   // Chat-v2: PENDING artik "mesajlasma acik" — karar mesajdan veriliyor
   const map = {
-    PENDING:   { cls: 'badge-accepted',  icon: '', label: 'Mesajlaşma açık' },
+    PENDING:   { cls: 'badge-pending',   icon: '', label: 'Mesajlaşma açık' },
     REVIEWING: { cls: 'badge-reviewing', icon: '', label: 'İnceleniyor' },
     HELD:      { cls: 'badge-reviewing', icon: '', label: 'HOLD — Cevap Bekleniyor' },
     STANDBY:   { cls: 'badge-reviewing', icon: '', label: 'Yedek' },

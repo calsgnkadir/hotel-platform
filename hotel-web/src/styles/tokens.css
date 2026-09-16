@@ -306,10 +306,13 @@ body, .role-app-bg {
   /* FAZ B.5.1 — beyaz kart icinde ayrisan ic yuzey ("karar kutusu") */
   --ah-band:#f4f1ea;
   --ah-ink:#12201f;   --ah-ink-2:#3f4b4a; --ah-ink-3:#5c6564; --ah-ink-4:#6b7574;  /* muted tonlar okunurluk icin koyulastirildi: ink-3 ~5.6:1, ink-4 ~4.8:1 (ikisi de AA) */
-  --ah-ok:#6b7574;    --ah-ok-soft:#eef0f2;
-  --ah-warn:#6b7574;  --ah-warn-soft:#eef0f2;
-  --ah-danger:#6b7574;--ah-danger-soft:#eef0f2;
-  --ah-info:#6b7574;  --ah-info-soft:#eef0f2;
+  /* Semantik sinyal renkleri — MUTED (neon degil), grafit marka ile uyumlu.
+     Sadece durum rozetleri + tehlikeli aksiyon + acil icin; marka gri her yerde kalir.
+     Metin koyu, -soft pale zeminde AA okunur. (Onceden hepsi #6b7574'e ezilmisti.) */
+  --ah-ok:#2f6b4f;    --ah-ok-soft:#e7f1eb;   /* muted orman yesili — basari/kabul */
+  --ah-warn:#8a5a16;  --ah-warn-soft:#f5ecda; /* muted amber — bekleyen/uyari */
+  --ah-danger:#9c3b30;--ah-danger-soft:#f6e6e3;/* muted kiremit — red/tehlike/acil */
+  --ah-info:#3a627e;  --ah-info-soft:#e8eef4; /* muted arduvaz mavi — inceleniyor/bilgi */
   --ah-r:10px; --ah-rc:8px;
 }
 

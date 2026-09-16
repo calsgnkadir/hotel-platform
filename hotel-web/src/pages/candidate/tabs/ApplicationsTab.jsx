@@ -17,14 +17,14 @@ import { PlatformRoleNotice } from '../../../components/LegalNotice'   // FAZ C.
 
 /* REDESIGN v3 — açık zemin için durum renkleri (soft bg + koyu okunur metin) */
 const STATUS_CONFIG = {
-  PENDING:   { label: 'Bekliyor',     color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // amber
-  REVIEWING: { label: 'İnceleniyor',  color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // info blue
-  HELD:      { label: 'Hold · 24sa',  color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // deep amber
-  STANDBY:   { label: 'Yedek',        color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // FAZ C.1 mor
-  ACCEPTED:  { label: 'Kabul',        color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },  // green
-  REJECTED:  { label: 'Red',          color: '#6b7574', soft: '#eef0f2', text: '#3f4b4a' },   // red
-  WITHDRAWN: { label: 'İptal',        color: '#6b7574', soft: '#eef1f2', text: '#3f4b4a' },   // gri
-  EXPIRED:   { label: 'Süresi Doldu', color: '#98a1a0', soft: '#eef1f2', text: '#6b7574' },   // faint
+  PENDING:   { label: 'Bekliyor',     color: 'var(--ah-warn)',   soft: 'var(--ah-warn-soft)',   text: 'var(--ah-warn)' },   // amber
+  REVIEWING: { label: 'İnceleniyor',  color: 'var(--ah-info)',   soft: 'var(--ah-info-soft)',   text: 'var(--ah-info)' },   // info mavi
+  HELD:      { label: 'Hold · 24sa',  color: 'var(--ah-warn)',   soft: 'var(--ah-warn-soft)',   text: 'var(--ah-warn)' },   // amber (bekleme)
+  STANDBY:   { label: 'Yedek',        color: 'var(--ah-info)',   soft: 'var(--ah-info-soft)',   text: 'var(--ah-info)' },   // info
+  ACCEPTED:  { label: 'Kabul',        color: 'var(--ah-ok)',     soft: 'var(--ah-ok-soft)',     text: 'var(--ah-ok)' },     // yesil
+  REJECTED:  { label: 'Red',          color: 'var(--ah-danger)', soft: 'var(--ah-danger-soft)', text: 'var(--ah-danger)' }, // kiremit
+  WITHDRAWN: { label: 'İptal',        color: 'var(--ah-ink-4)',  soft: 'var(--ah-band)',        text: 'var(--ah-ink-3)' },  // notr
+  EXPIRED:   { label: 'Süresi Doldu', color: 'var(--ah-ink-4)',  soft: 'var(--ah-band)',        text: 'var(--ah-ink-4)' },  // soluk
 }
 
 const DOC_TYPE_LABELS = {
@@ -521,14 +521,14 @@ function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, sma
       border: '1px solid var(--ah-brand)',
     },
     success: {
-      background: '#6b7574',
+      background: 'var(--ah-ok)',
       color: '#fff',
-      border: '1px solid #6b7574',
+      border: '1px solid var(--ah-ok)',
     },
     danger: {
-      background: '#6b7574',
+      background: 'var(--ah-danger)',
       color: '#fff',
-      border: '1px solid #6b7574',
+      border: '1px solid var(--ah-danger)',
     },
     gold: {
       background: 'var(--ah-card)',
@@ -537,7 +537,7 @@ function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, sma
     },
     'ghost-danger': {
       background: 'var(--ah-card)',
-      color: '#3f4b4a',
+      color: 'var(--ah-danger)',
       border: '1px solid var(--ah-line-2)',
     },
   }

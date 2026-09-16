@@ -129,9 +129,9 @@ export function ConfirmDialog({
             style={
               destructive
                 ? {
-                    background: 'linear-gradient(135deg, #6b7574 0%, #5b5b5b 100%)',
+                    background: 'var(--ah-danger)',   // muted kiremit — yikici aksiyon sinyali
                     color: '#ffffff',
-                    border: '1px solid rgba(107, 117, 116, 0.55)',
+                    border: '1px solid var(--ah-danger)',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }
                 : {
