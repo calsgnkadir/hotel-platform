@@ -222,10 +222,14 @@ public class JobListingQueryService {
         JobListing base = jobListingRepository.findById(listingId)
                 .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
 
-        // Sadece aktif ilanlar arasindan aday cikart
+        // Sadece aktif ilanlar arasindan aday cikart.
+        // Sinirsiz buyumeye karsi: en yeni RANK_POOL aktif ilanla sinirla — bu metod
+        // her ilan detay sayfasinda calisir; tum aktif ilanlari belltege almak
+        // ilan sayisi buyudukce yavaslar (ranked yolla ayni cap deseni).
         Specification<JobListing> spec = (root, q, cb) ->
                 cb.equal(root.get("status"), ListingStatus.ACTIVE);
-        List<JobListing> candidates = jobListingRepository.findAll(spec);
+        Pageable poolReq = PageRequest.of(0, RANK_POOL, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<JobListing> candidates = jobListingRepository.findAll(spec, poolReq).getContent();
 
         List<JobListing> ranked = candidates.stream()
                 .filter(l -> !l.getId().equals(base.getId()))
