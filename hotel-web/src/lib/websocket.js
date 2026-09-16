@@ -75,6 +75,14 @@ export function wsConnect() {
     connectHeaders: {
       Authorization: `Bearer ${token}`,
     },
+    // Her (re)connect oncesi token'i TAZE oku. STOMP'un auto-reconnect'i ayni client'i
+    // kullanip connectHeaders'daki ilk (yakalanmis) token'i tekrar gonderiyordu; 15 dk
+    // sonra access token dolunca reconnect'ler bayat token'la fail oluyordu. localStorage'daki
+    // token API refresh interceptor'i (client.js) ile taze tutuluyor -> buradan tekrar okuyoruz.
+    beforeConnect: () => {
+      const fresh = getToken()
+      if (fresh && client) client.connectHeaders = { Authorization: `Bearer ${fresh}` }
+    },
     // FAZ D.10 — Stomp's own reconnectDelay (her fail'de bu degeri yeniden hesaplariz)
     reconnectDelay: initialDelay,
     heartbeatIncoming: 10000,
