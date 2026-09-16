@@ -2,6 +2,7 @@ package com.hotelapp.service;
 
 import com.hotelapp.entity.Business;
 import com.hotelapp.entity.JobListing;
+import com.hotelapp.entity.ShiftSlot;
 import com.hotelapp.entity.User;
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.ListingStatus;
@@ -9,6 +10,7 @@ import com.hotelapp.enums.Position;
 import com.hotelapp.enums.Role;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.UnauthorizedException;
+import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.BusinessPhotoRepository;
 import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.JobListingRepository;
@@ -29,7 +31,11 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +49,7 @@ class JobListingServiceTest {
     @Mock private BusinessPhotoRepository businessPhotoRepository;
     @Mock private FileStorageService fileStorageService;
     @Mock private UserAvailabilityBlockRepository availabilityBlockRepository;
+    @Mock private ApplicationRepository applicationRepository;
 
     @InjectMocks
     private JobListingService service;
@@ -78,6 +85,49 @@ class JobListingServiceTest {
         s.setEndTime(LocalTime.parse(end));
         s.setSlotsNeeded(needed);
         return s;
+    }
+
+    // ============================================================
+    @Nested
+    @DisplayName("updateListing — slot silme koruması (FK ihlali engeli)")
+    class UpdateListingSlotGuard {
+
+        @Test
+        @DisplayName("Başvurusu olan slot silinmeye çalışılırsa BusinessRuleException, save çağrılmaz")
+        void removingSlotWithApplications_throws() {
+            // Mevcut ilan: id=100 slotu var, sahibi OWNER_ID
+            JobListing listing = JobListing.builder()
+                    .id(5L)
+                    .business(businessOwnedBy(OWNER_ID))
+                    .position(Position.WAITER)
+                    .jobType(JobType.PERMANENT)
+                    .title("Garson")
+                    .status(ListingStatus.ACTIVE)
+                    .build();
+            listing.setShiftSlots(new java.util.ArrayList<>());   // @Builder.Default'a bagimli kalma
+            ShiftSlot existing = ShiftSlot.builder()
+                    .id(100L)
+                    .jobListing(listing)
+                    .date(LocalDate.now().plusDays(2))
+                    .startTime(LocalTime.parse("10:00"))
+                    .endTime(LocalTime.parse("18:00"))
+                    .slotsNeeded(1)
+                    .slotsFilled(0)
+                    .build();
+            listing.getShiftSlots().add(existing);
+
+            when(jobListingRepository.findById(5L)).thenReturn(Optional.of(listing));
+            // Request'te id=100 YOK (yeni slot) -> silinmek isteniyor; ve o slota basvuru var
+            when(applicationRepository.existsByRequestedSlots_Id(100L)).thenReturn(true);
+
+            assertThatThrownBy(() -> service.updateListing(5L, OWNER_ID, validRequest()))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("Başvuru alınmış");
+
+            // Slot silinmemis, save cagrilmamis olmali (mutasyon guard'dan once bloklandi)
+            assertThat(listing.getShiftSlots()).contains(existing);
+            verify(jobListingRepository, never()).save(any());
+        }
     }
 
     // ============================================================
