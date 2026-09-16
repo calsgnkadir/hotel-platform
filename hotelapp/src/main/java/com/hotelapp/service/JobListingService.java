@@ -376,6 +376,18 @@ public class JobListingService {
                 .filter(java.util.Objects::nonNull)
                 .collect(java.util.stream.Collectors.toSet());
 
+        // Basvuru alinmis vardiya silinemez: application_shift_slots FK'sinde ON DELETE
+        // CASCADE yok; orphanRemoval ile silmeye calisirsak MySQL FK ihlali (500) firlatir.
+        // Once request'te kalmayan (silinecek) slotlari tarayip basvuru var mi diye bak.
+        for (ShiftSlot existing : listing.getShiftSlots()) {
+            boolean beingRemoved = existing.getId() != null && !incomingIds.contains(existing.getId());
+            if (beingRemoved && applicationRepository.existsByRequestedSlots_Id(existing.getId())) {
+                throw new BusinessRuleException(
+                        "Başvuru alınmış bir vardiya silinemez. Vardiyanın tarih/saatini "
+                        + "düzenleyebilir ya da ilanı kapatabilirsin.");
+            }
+        }
+
         listing.getShiftSlots().removeIf(s -> s.getId() != null && !incomingIds.contains(s.getId()));
 
         java.util.Map<Long, ShiftSlot> existingById = listing.getShiftSlots().stream()

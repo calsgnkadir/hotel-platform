@@ -48,6 +48,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     /** Aday bu isletmenin herhangi bir ilanina basvurmus mu — public profile yetki kontrolu (basit) */
     boolean existsByCandidateIdAndJobListingBusinessOwnerId(Long candidateId, Long ownerId);
 
+    /** Bu vardiya slotuna basvurusu olan (application_shift_slots'ta referans) bir basvuru var mi.
+     *  Slot silmeden once FK ihlali/veri kaybi engeli icin. */
+    boolean existsByRequestedSlots_Id(Long slotId);
+
     /** Aday bu isletmede CALISMIS mi (ACCEPTED basvuru) — hassas bilgi yetki kontrolu */
     boolean existsByCandidateIdAndJobListingBusinessOwnerIdAndStatus(
             Long candidateId, Long ownerId, ApplicationStatus status);
