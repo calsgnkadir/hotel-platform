@@ -170,6 +170,10 @@ public class AuthService {
 
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepository.save(user);
+
+        // Guvenlik: sifre degisince mevcut tum oturumlari (refresh token) iptal et
+        // (calinan/eski oturumlar gecerli kalmasin).
+        refreshTokenService.revokeAllForUser(userId);
     }
 
     @Data

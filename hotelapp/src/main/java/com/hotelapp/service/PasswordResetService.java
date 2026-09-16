@@ -39,6 +39,7 @@ public class PasswordResetService {
     private final PasswordResetTokenRepository tokenRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;   // sifirlama sonrasi oturum iptali
 
     @Value("${app.base-url:http://localhost:5173}")
     private String appBaseUrl;
@@ -136,6 +137,10 @@ public class PasswordResetService {
         prt.setUsedAt(LocalDateTime.now());
         tokenRepository.save(prt);
 
-        log.info("[PWD-RESET] Şifre güncellendi: userId={}", user.getId());
+        // Guvenlik: sifirlama sonrasi tum mevcut oturumlari (refresh token) iptal et —
+        // hesap kurtarma senaryosunda saldirganin eski oturumu gecerli kalmasin.
+        refreshTokenService.revokeAllForUser(user.getId());
+
+        log.info("[PWD-RESET] Şifre güncellendi + oturumlar iptal edildi: userId={}", user.getId());
     }
 }
