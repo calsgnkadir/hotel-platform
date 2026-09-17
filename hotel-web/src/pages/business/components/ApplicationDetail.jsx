@@ -407,8 +407,8 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
         {app.status === 'STANDBY' && (
           <div className="border-t border-hairline pt-4 space-y-3">
             <h3 className="type-overline">Yedek Aday</h3>
-            <div className="rounded-xl p-3" style={{ background: '#eef0f2', border: '1px solid #6b7574' }}>
-              <div className="text-[13px] font-semibold" style={{ color: '#3f4b4a' }}>
+            <div className="rounded-xl p-3" style={{ background: 'var(--ah-info-soft)', border: '1px solid var(--ah-info)' }}>
+              <div className="text-[13px] font-semibold" style={{ color: 'var(--ah-info)' }}>
                 {app.standbyRank ? `${app.standbyRank}. yedek` : 'Yedek listesinde'}
               </div>
               <div className="text-[12px] mt-1" style={{ color: '#3f4b4a' }}>
