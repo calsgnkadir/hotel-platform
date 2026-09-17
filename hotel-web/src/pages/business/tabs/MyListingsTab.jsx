@@ -126,7 +126,7 @@ export default function MyListingsTab({ applications = [] }) {
                             title={listing.urgentUntil
                               ? `Acil · ${new Date(listing.urgentUntil).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}'a kadar`
                               : 'Acil ilan'}
-                            style={{ background: '#eef0f2', color: '#3f4b4a', border: '1px solid #6b7574' }}>
+                            style={{ background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)', border: '1px solid var(--ah-danger)' }}>
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                           <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
                         </svg>
@@ -202,8 +202,8 @@ export default function MyListingsTab({ applications = [] }) {
                         : 'Şu an müsait olan adaylara anında bildirim gönder'}
                       className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5 disabled:opacity-60 inline-flex items-center gap-1"
                       style={listing.urgent
-                        ? { background: '#6b7574', color: '#fff', border: '1px solid #6b7574' }
-                        : { background: '#eef0f2', color: '#3f4b4a', border: '1px solid rgba(107, 117, 116, 0.35)' }}>
+                        ? { background: 'var(--ah-danger)', color: '#fff', border: '1px solid var(--ah-danger)' }
+                        : { background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)', border: '1px solid transparent' }}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
                       </svg>

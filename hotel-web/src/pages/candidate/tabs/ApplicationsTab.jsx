@@ -314,9 +314,9 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                     {/* FAZ C.1 — Acil yedek teklifi: asil aday gelmedi, sira sende */}
                     {app.standbyOfferActive && (
                       <div className="mt-3 rounded-lg p-3" onClick={(e) => e.stopPropagation()}
-                           style={{ background: '#eef0f2', border: '1px solid #6b7574' }}>
+                           style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)' }}>
                         <div className="flex items-start gap-2">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f4b4a"
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ah-warn)"
                                strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
                                className="flex-shrink-0 mt-0.5" aria-hidden="true">
                             <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
