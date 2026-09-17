@@ -89,7 +89,7 @@ Aynı imajlar herhangi bir VPS'te `docker compose up` ile de çalışır.
 
 ## Ekran Görüntüleri
 
-### İşletme Paneli — güncel arayüz (açık + teal)
+### İşletme Paneli — güncel arayüz (açık, grafit gri + muted semantik)
 
 Gelen başvuruları **Kanban** (sürükle-bırak durum yönetimi) veya **A4 kart
 listesi** olarak yönet:
@@ -118,7 +118,7 @@ listesi** olarak yönet:
 
 > [!NOTE]
 > **Aşağıdaki aday/genel sayfa görselleri eski.** 8 Haziran 2026'da, arayüz
-> açık-teal tasarıma geçirilmeden önce çekildiler; koyu temayı gösteriyorlar
+> güncel açık tasarıma geçirilmeden önce çekildiler; eski koyu temayı gösteriyorlar
 > (yukarıdaki işletme paneli görselleri günceldir). Aday tarafı da yeniden
 > çekilecek — rehber: [`docs/screenshots/README.md`](docs/screenshots/README.md).
 > Bu sırada güncel aday arayüzü için [Docker ile](#hızlı-başlangıç-docker) çalıştırıp
@@ -174,7 +174,7 @@ listesi** olarak yönet:
 - **Şikayet sistemi** — Kullanıcı bildir + admin moderasyon
 - **Audit log** — Ban / no-show / şikayet işlemleri loglanır
 - **Admin paneli** — Kullanıcı yönetimi + şikayet inceleme + işlem geçmişi
-- **Editorial dark luxe UI** — Warm graphite + champagne + ivory palet, tek font (Inter 400/500/600/700), unified rounded-2xl card sistemi, hairline separators, muted status colors (sage/brick/ochre — no neon)
+- **Sade açık arayüz** — Grafit/gri marka (`#1f2937`) + muted semantik durum renkleri (yeşil/amber/kiremit/mavi — sadece durum sinyali, dekorasyon değil), tek font (Inter), birleşik rounded kart sistemi, hairline ayraçlar
 - **KVKK uyumlu** — Açık rıza akışı + aydınlatma metni
 
 ---
@@ -225,7 +225,7 @@ hotel-platform/
 │   │   ├── context/           Auth + Theme
 │   │   ├── api/               Axios client + endpoint helpers
 │   │   └── utils/             Validation, formatters
-│   └── tailwind.config.js     Neon brand palette
+│   └── tailwind.config.js     Grafit/gri palet
 │
 └── README.md                  Bu dosya
 ```
@@ -240,7 +240,7 @@ hotel-platform/
 | **Database**    | MySQL 8 (Hibernate ORM, Specification API)       |
 | **Storage**     | Cloudinary (belge + foto, signed URL)            |
 | **Frontend**    | React 18, Vite 5, React Router 6, React Hook Form|
-| **Styling**     | Tailwind 3 (dark mode + neon palette)            |
+| **Styling**     | Tailwind 3 (tek açık tema · grafit + muted semantik) |
 | **Grafikler**   | Recharts (PieChart, AreaChart, BarChart)         |
 | **Auth**        | JJWT (HS256) + Spring Security                   |
 | **Rate Limit**  | Bucket4j                                         |
@@ -443,11 +443,11 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] Harita konum gösterimi (Leaflet + OpenStreetMap)
 - [x] **Kayıtlı Aramalar** — kullanıcı filtre setini kaydeder, yeni eşleşmede bildirim (scheduled matcher, 30 dk)
 - [x] **Akıllı sıralama** — aday tercihlerine göre weighted ranking (position +50, district +30, jobType +20, recency +10)
-- [x] **Editorial dark luxe UI** — warm graphite + champagne + ivory palet, tek font ailesi (Inter), unified rounded-2xl card sistemi
+- [x] **Sade açık arayüz** — grafit/gri marka (`#1f2937`) + muted semantik durum renkleri (yeşil/amber/kiremit/mavi, sadece durum sinyali), tek font (Inter), birleşik rounded kart sistemi, hairline ayraçlar
+- [x] **Test coverage** — 30 backend test dosyası (JUnit unit + integration), 11 frontend vitest, 4 Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
 - [x] Landing "Vardiya Nabzı" canlı widget (WebSocket broadcast)
 
 ### Sıradaki
-- [ ] Test coverage (backend unit + frontend vitest + E2E Playwright)
 - [ ] Metrics dashboard (Grafana / Prometheus)
 - [ ] Public rate-limit ayrı tier (anonim read için, k6 baseline ~1 req/s)
 - [ ] Sanal liste (react-window) — 1000+ kayıt için
