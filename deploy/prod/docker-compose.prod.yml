@@ -74,6 +74,13 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-dummy-client-id}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-dummy-client-secret}
       RESEND_API_KEY: ${RESEND_API_KEY:-test-key}
+      # iyzico odeme — bos birakilirsa SANDBOX (gercek para YOK; demo icin dogru).
+      # CANLIYA GECIS: kayitli sirket + gercek merchant hesabi -> .env.prod'da
+      # IYZICO_API_KEY/SECRET doldur, IYZICO_BASE_URL=https://api.iyzipay.com yap.
+      IYZICO_API_KEY: ${IYZICO_API_KEY:-sandbox-afXhZPW0MQlE4dCUUlHcEopnMBgXnAZI}
+      IYZICO_SECRET_KEY: ${IYZICO_SECRET_KEY:-sandbox-wbwpzKIiplZxI3hh5ALI4FJyfFYWnobP}
+      IYZICO_BASE_URL: ${IYZICO_BASE_URL:-https://sandbox-api.iyzipay.com}
+      IYZICO_CALLBACK_URL: ${IYZICO_CALLBACK_URL:-$PUBLIC_URL/api/billing/callback}
       # KVKK alan sifreleme anahtari — verilmezse alan sifreleme kapali (log uyarir).
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-}
       # 512MB-1GB makinede JVM sinirla.
