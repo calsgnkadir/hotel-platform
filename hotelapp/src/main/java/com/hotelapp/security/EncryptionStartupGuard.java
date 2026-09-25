@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -20,7 +21,9 @@ import java.util.Arrays;
  * Bu guard yalnizca "prod" profili aktifken calisir: key yoksa uygulamanin
  * ACILMASINI engeller. Boylece prod asla kazayla sifresiz PII ile ayaga kalkmaz.
  * dev/demo/test profillerinde no-op.
+ * Lazy-init açıkken de açılışta çalışsın diye eager.
  */
+@Lazy(false)
 @Component
 @RequiredArgsConstructor
 @Slf4j

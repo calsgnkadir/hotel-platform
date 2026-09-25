@@ -368,7 +368,11 @@ docker compose down -v && docker compose up -d
 
 ### Canlıya alma
 
-- **Tek sunucu (önerilen):** tüm stack tek Linux sunucuda `docker compose` +
+- **Render + Aiven (bedava, kartsız):** frontend Render static site, backend
+  Render free web service (Docker), MySQL Aiven free. Tek tıkla Blueprint →
+  [`render.yaml`](render.yaml), adımlar ve kısıtlar (0.1 CPU'da ~6 dk açılış,
+  uyku, keep-alive) → [`docs/DEPLOY_RENDER.md`](docs/DEPLOY_RENDER.md).
+- **Tek sunucu:** tüm stack tek Linux sunucuda `docker compose` +
   Caddy (otomatik HTTPS, tek origin). Öğrenci kredisiyle bedava (GitHub Student
   Pack → DigitalOcean, ya da Azure for Students). Hazır config + adım adım
   rehber → [`docs/DEPLOY_VPS.md`](docs/DEPLOY_VPS.md) ve [`deploy/prod/`](deploy/prod).

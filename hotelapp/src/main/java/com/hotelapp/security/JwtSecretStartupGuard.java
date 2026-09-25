@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -19,7 +20,9 @@ import java.util.Arrays;
  *
  * Bu guard yalnizca "prod" profilinde calisir: secret bos, dev-default'a esit
  * ya da 32 karakterden kisa ise uygulamayi ACMAZ. dev/demo/test'te no-op.
+ * Lazy-init açıkken de açılışta çalışsın diye eager.
  */
+@Lazy(false)
 @Component
 @RequiredArgsConstructor
 @Slf4j

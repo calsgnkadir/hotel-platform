@@ -52,6 +52,12 @@ spring:
       # Pool çöktüğünde daha hızlı yeni conn yarat (default 30 sn)
       leak-detection-threshold: 60000
 
+  # Yönetilen MySQL'ler (Aiven vb.) sql_require_primary_key=ON gelir; V1/V9'daki
+  # koleksiyon tabloları PK'siz → migration CREATE TABLE'da düşer. Yalnız
+  # Flyway bağlantılarında kapatılır (Aiven'ın dış uygulamalar için önerdiği yol).
+  flyway:
+    init-sqls: SET SESSION sql_require_primary_key = 0
+
   jpa:
     hibernate:
       # ⚠⚠ DİKKAT — FAZ 4.3 Flyway eklendikten sonra MUTLAKA "validate"'e çevir.

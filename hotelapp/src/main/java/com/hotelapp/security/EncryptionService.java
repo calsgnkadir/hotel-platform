@@ -3,6 +3,7 @@ package com.hotelapp.security;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
@@ -28,7 +29,11 @@ import java.util.Base64;
  * Key: APP_ENCRYPTION_KEY env var, base64-encoded 256-bit (32 byte).
  *  - Boş bırakılırsa SERVICE no-op (dev/test, encrypt çağrısı plain döner)
  *  - Prod'da set edilmesi zorunlu — log uyarısı boot'ta düşer
+ *
+ * Lazy-init açıkken de (Render: SPRING_MAIN_LAZY_INITIALIZATION) eager:
+ * EncryptionHolder açılışta dolmazsa JPA converter'ları alanları şifresiz yazar.
  */
+@Lazy(false)
 @Service
 @Slf4j
 public class EncryptionService {

@@ -1,0 +1,101 @@
+# Kadrom — Render Blueprint (tamamı bedava plan). Adım adım: docs/DEPLOY_RENDER.md
+#
+#   kadrom.me      → kadrom-web  (static site: bedava, uyumaz)
+#   api.kadrom.me  → kadrom-api  (Docker, free: 512MB / 0.1 CPU)
+#   MySQL          → Aiven free (Render dışında; bağlantı bilgisi ilk kurulumda sorulur)
+#
+# Free web service 15 dk istek gelmezse uyur ve 0.1 CPU'da açılış ~6 dk sürer.
+# Bu yüzden dışarıdan 5 dk'da bir /actuator/health/liveness'e ping atılmalı
+# (UptimeRobot). 7/24 açık ~744 saat/ay → free kotası 750 saat.
+
+services:
+  - type: web
+    name: kadrom-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    dockerfilePath: ./hotelapp/Dockerfile
+    dockerContext: ./hotelapp
+    buildFilter:
+      paths:
+        - hotelapp/**
+    # Liveness DB'ye dokunmaz; yavaş makinede sağlık kontrolü yüzünden restart olmasın.
+    healthCheckPath: /actuator/health/liveness
+    domains:
+      - api.kadrom.me
+    envVars:
+      # Demo vitrini: demo hesaplar + örnek veri (bkz. deploy/prod/docker-compose.prod.yml notu).
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod,demo
+      - key: PORT
+        value: "8080"
+      - key: SERVER_PORT
+        value: "8080"
+      # 0.1 CPU'da açılışı ~17,5 dk'dan ~6 dk'ya indirir. Güvenlik guard'ları,
+      # şifreleme ve @Scheduled işler lazy-init'ten muaf (eager kalır).
+      - key: SPRING_MAIN_LAZY_INITIALIZATION
+        value: "true"
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k
+      - key: FLYWAY_ENABLED
+        value: "true"
+      - key: JPA_DDL_AUTO
+        value: validate
+      # Aiven → Service → Overview → Connection information
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: defaultdb
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_ENCRYPTION_KEY
+        generateValue: true
+      - key: APP_BASE_URL
+        value: https://kadrom.me
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: https://kadrom.me,https://www.kadrom.me
+      # kadrom.me ↔ api.kadrom.me aynı site → Lax yeterli.
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: COOKIE_SAMESITE
+        value: Lax
+      - key: IYZICO_CALLBACK_URL
+        value: https://api.kadrom.me/api/billing/callback
+      # Opsiyonel entegrasyonlar — sahte değerle ilgili özellik kapalı, uygulama açılır.
+      - key: CLOUDINARY_URL
+        value: cloudinary://test:test@test
+      - key: GOOGLE_CLIENT_ID
+        value: dummy-client-id
+      - key: GOOGLE_CLIENT_SECRET
+        value: dummy-client-secret
+      - key: RESEND_API_KEY
+        value: test-key
+
+  - type: web
+    name: kadrom-web
+    runtime: static
+    branch: main
+    buildCommand: cd hotel-web && npm ci && npm run build
+    staticPublishPath: ./hotel-web/dist
+    buildFilter:
+      paths:
+        - hotel-web/**
+    domains:
+      - kadrom.me
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: VITE_API_URL
+        value: https://api.kadrom.me
+    routes:
+      # SPA: bilinmeyen yollar index.html'e (React Router).
+      - type: rewrite
+        source: /*
+        destination: /index.html
