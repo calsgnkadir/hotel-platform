@@ -77,7 +77,7 @@ public class PasswordResetService {
         String resetLink = appBaseUrl + "/reset-password?token=" + token;
         String html = emailService.buildPasswordResetHtml(user.getFullName(), resetLink);
         try {
-            emailService.queue(user.getEmail(), "AjansHotel — Şifre Sıfırlama", html);
+            emailService.queue(user.getEmail(), "Kadrom — Şifre Sıfırlama", html);
             // FAZ 9.6 — Link INFO seviyeden DEBUG'a: prod log'larinda reset link sizmaz.
             // Dev'de logging.level ayari ile gorulebilir.
             log.info("[PWD-RESET] Token oluşturuldu + email gönderildi: userId={}", user.getId());

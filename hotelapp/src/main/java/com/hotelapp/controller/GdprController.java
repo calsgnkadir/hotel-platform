@@ -45,7 +45,7 @@ public class GdprController {
         Map<String, Object> data = gdprService.exportUserData(currentUser.getId());
         byte[] json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(data);
 
-        String filename = "ajanshotel-verim-"
+        String filename = "kadrom-verim-"
                 + currentUser.getId() + "-"
                 + java.time.LocalDate.now().format(DateTimeFormatter.ISO_DATE)
                 + ".json";

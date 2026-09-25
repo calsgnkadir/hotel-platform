@@ -34,7 +34,7 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
   const wsOk = useWsConnected()
 
   const convId = conversation?.id
-  const OFFLINE_QUEUE_KEY = `ajanshotel.offline-queue.${convId}`
+  const OFFLINE_QUEUE_KEY = `kadrom.offline-queue.${convId}`
 
   // Yeni mesajı cache'in başına ekle (optimistic update — anında UI'a yansır).
   // Backend page'i en yeniden eskiye sıralıyor: content[0] en yeni.
@@ -165,7 +165,7 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
   async function sendCall(type) {
     if (sending) return
     // Rastgele room — tahmin edilemez, sohbet-bazlı isim
-    const slug = `ajanshotel-${convId}-${Math.random().toString(36).slice(2, 10)}`
+    const slug = `kadrom-${convId}-${Math.random().toString(36).slice(2, 10)}`
     const baseUrl = `https://meet.jit.si/${slug}`
     // Sesli arama için video muted
     const callUrl = type === 'audio' ? `${baseUrl}#config.startWithVideoMuted=true` : baseUrl

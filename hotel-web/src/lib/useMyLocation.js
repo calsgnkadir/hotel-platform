@@ -7,7 +7,7 @@ import { getCurrentPosition, isGeolocationSupported } from './geolocation'
  * - Sadece kullanici acikca isterse (`request()`) konum sorulur.
  * - Sunucuya gonderilmez, tamamen client-side.
  */
-const STORAGE_KEY = 'ajanshotel:my-location'
+const STORAGE_KEY = 'kadrom:my-location'
 const TTL_MS = 30 * 60_000 // 30 dk
 
 function readCache() {

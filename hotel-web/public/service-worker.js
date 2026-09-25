@@ -10,7 +10,7 @@
  */
 
 // Dalga G3 bump — eski v5 'business:1 503' konsol hatasi temizlensin
-const CACHE_VERSION = 'ajanshotel-v6'
+const CACHE_VERSION = 'kadrom-v6'
 const APP_SHELL = [
   '/',
   '/favicon.svg',
@@ -98,13 +98,13 @@ self.addEventListener('push', (event) => {
   let data = {}
   try { data = event.data ? event.data.json() : {} } catch { data = {} }
 
-  const title = data.title || 'AjansHotel'
+  const title = data.title || 'Kadrom'
   const options = {
     body: data.body || 'Yeni bir bildirim var — kontrol et.',
     icon: '/favicon.svg',
     badge: '/favicon.svg',
     data: { link: data.link || '/', notificationId: data.notificationId },
-    tag: data.notificationId ? `notif-${data.notificationId}` : 'ajanshotel-generic',
+    tag: data.notificationId ? `notif-${data.notificationId}` : 'kadrom-generic',
     renotify: false,
   }
   event.waitUntil(self.registration.showNotification(title, options))

@@ -29,13 +29,13 @@ export default function LandingPage() {
       <header className="sticky top-0 z-30 border-b" style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-baseline gap-2">
-            <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.01em', color: 'var(--ah-ink)' }}>AjansHotel</span>
+            <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.01em', color: 'var(--ah-ink)' }}>Kadrom</span>
             <span className="hidden sm:inline" style={{ fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--ah-ink-4)' }}>istanbul</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-7 text-[13px] font-medium" style={{ color: 'var(--ah-ink-3)' }}>
             <a href="#nasil" className="hover:underline" style={{ color: 'inherit' }}>Nasıl çalışır</a>
-            <a href="#neden" className="hover:underline" style={{ color: 'inherit' }}>Neden AjansHotel</a>
+            <a href="#neden" className="hover:underline" style={{ color: 'inherit' }}>Neden Kadrom</a>
             <a href="#iletisim" className="hover:underline" style={{ color: 'inherit' }}>İletişim</a>
           </nav>
 
@@ -245,15 +245,15 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-wrap items-center justify-between gap-4 text-[12px]"
              style={{ color: 'var(--ah-ink-3)' }}>
           <div className="flex items-baseline gap-2">
-            <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>AjansHotel</span>
+            <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>Kadrom</span>
             <span className="text-[9px] uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>istanbul</span>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link to="/kvkk" className="hover:underline" style={{ color: 'inherit' }}>KVKK</Link>
             <Link to="/terms" className="hover:underline" style={{ color: 'inherit' }}>Kullanım Koşulları</Link>
             <Link to="/yardim" className="hover:underline" style={{ color: 'inherit' }}>Yardım</Link>
-            <a href="mailto:destek@ajanshotel.com" className="hover:underline" style={{ color: 'inherit' }}>destek@ajanshotel.com</a>
-            <span style={{ color: 'var(--ah-ink-4)' }}>© 2026 AjansHotel</span>
+            <a href="mailto:destek@kadrom.me" className="hover:underline" style={{ color: 'inherit' }}>destek@kadrom.me</a>
+            <span style={{ color: 'var(--ah-ink-4)' }}>© 2026 Kadrom</span>
           </div>
         </div>
       </footer>

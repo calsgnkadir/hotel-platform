@@ -1,4 +1,4 @@
-# AjansHotel — tam yerel stack: MySQL + Spring Boot + React (nginx).
+# Kadrom — tam yerel stack: MySQL + Spring Boot + React (nginx).
 # Kullanim:  cp .env.example .env  &&  docker compose up --build
 # Sonra: frontend http://localhost:5174 · API/Swagger http://localhost:8081/swagger-ui
 #

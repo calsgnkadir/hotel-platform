@@ -1,8 +1,8 @@
 ####################################################################
-# AjansHotel — Spring Boot backend (Fly.io)
+# Kadrom — Spring Boot backend (Fly.io)
 #
 # Frontend Vercel'de kalir; burasi yalnizca API + WebSocket.
-# Veritabani: ajanshotel-mysql.internal (ayni Fly organizasyonu, 6PN ozel agi)
+# Veritabani: kadrom-mysql.internal (ayni Fly organizasyonu, 6PN ozel agi)
 #
 # Deploy (repo kokunden):
 #   fly deploy -c deploy/fly/backend.fly.toml --dockerfile hotelapp/Dockerfile
@@ -10,7 +10,7 @@
 # Ayrintili kurulum + secret listesi: docs/DEPLOY_FLY.md
 ####################################################################
 
-app = 'ajanshotel-api'
+app = 'kadrom-api'
 primary_region = 'ams'
 
 [build]
@@ -24,7 +24,7 @@ primary_region = 'ams'
   SERVER_PORT = '8080'
 
   # Veritabani — 6PN ic ag adi. Parola secret olarak verilir.
-  DB_HOST = 'ajanshotel-mysql.internal'
+  DB_HOST = 'kadrom-mysql.internal'
   DB_PORT = '3306'
   DB_NAME = 'hotel_platform'
   DB_USERNAME = 'root'

@@ -1049,7 +1049,7 @@ textarea:focus-visible {
 }
 
 
-/* REDESIGN v3 - acik teal scoped overrides (bkz project-ajanshotel-redesign) */
+/* REDESIGN v3 - acik teal scoped overrides */
 .ah-surface {
   background: var(--ah-page);
   color: var(--ah-ink-2);

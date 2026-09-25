@@ -1,7 +1,7 @@
 /**
  * FAZ G.3 — İşletme KYC onay rozeti.
  *
- * Twitter/X verified pattern, AjansHotel paletinde (mavi yerine altın).
+ * Twitter/X verified pattern, Kadrom paletinde (mavi yerine altın).
  * 3 boyut: sm (14px) — ilan kartı yanı, md (18px) — public profil başlığı,
  * lg (22px) — hero alanlar.
  */

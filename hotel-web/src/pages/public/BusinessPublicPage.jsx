@@ -160,7 +160,7 @@ export default function BusinessPublicPage() {
     : (photos[0]?.url ? cldImg(photos[0].url, { w: 1200 }) : null)
 
   useSeoMeta({
-    title: business ? `${business.name} · ${TYPE_LABELS[business.type] || ''} · AjansHotel` : 'AjansHotel',
+    title: business ? `${business.name} · ${TYPE_LABELS[business.type] || ''} · Kadrom` : 'Kadrom',
     description: business?.description?.slice(0, 160) ||
       (business ? `${business.name} hakkında bilgi, fotoğraflar ve aktif ilanlar.` : ''),
     image: seoImage,
@@ -171,7 +171,7 @@ export default function BusinessPublicPage() {
     const url = window.location.href
     if (navigator.share) {
       navigator.share({
-        title: business?.name || 'AjansHotel',
+        title: business?.name || 'Kadrom',
         text: business?.description?.slice(0, 100) || '',
         url,
       }).catch(() => {})
@@ -244,7 +244,7 @@ export default function BusinessPublicPage() {
                 style={{ background: 'rgba(255, 255, 255, 0.85)', borderColor: 'var(--ah-line)' }}>
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link to="/" className="flex items-baseline gap-2">
-              <span className="text-xl tracking-wider" style={{ color: 'var(--ah-ink)' }}>AJANSHOTEL</span>
+              <span className="text-xl tracking-wider" style={{ color: 'var(--ah-ink)' }}>KADROM</span>
               <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: 'var(--ah-ink-3)' }}>istanbul</span>
             </Link>
             <div className="flex items-center gap-2">
@@ -524,7 +524,7 @@ export default function BusinessPublicPage() {
           {/* Footer */}
           <footer className="text-center py-6">
             <Link to="/" className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--ah-ink-4)' }}>
-              AjansHotel · İstanbul Hospitality Network
+              Kadrom · İstanbul Hospitality Network
             </Link>
           </footer>
         </main>

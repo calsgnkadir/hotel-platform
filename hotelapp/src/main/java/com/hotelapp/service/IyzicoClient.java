@@ -64,7 +64,7 @@ public class IyzicoClient {
             buyer.setName(safe(owner != null ? owner.getFullName() : business.getName(), "Isletme"));
             buyer.setSurname("Yetkili");
             buyer.setGsmNumber("+905350000000");
-            buyer.setEmail(owner != null && owner.getEmail() != null ? owner.getEmail() : "isletme@ajanshotel.local");
+            buyer.setEmail(owner != null && owner.getEmail() != null ? owner.getEmail() : "isletme@kadrom.local");
             buyer.setIdentityNumber("11111111111"); // sandbox
             buyer.setRegistrationAddress(safe(business.getDistrict(), "Istanbul"));
             buyer.setCity(safe(business.getDistrict(), "Istanbul"));

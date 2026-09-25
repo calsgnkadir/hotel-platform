@@ -20,7 +20,7 @@ export default function GdprCard() {
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/json' }))
       const a = document.createElement('a')
       a.href = url
-      a.download = `ajanshotel-verim-${new Date().toISOString().slice(0, 10)}.json`
+      a.download = `kadrom-verim-${new Date().toISOString().slice(0, 10)}.json`
       document.body.appendChild(a)
       a.click()
       a.remove()

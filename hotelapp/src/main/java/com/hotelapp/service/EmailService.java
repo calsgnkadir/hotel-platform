@@ -35,7 +35,7 @@ public class EmailService {
     public EmailService(
             @Value("${app.email.resend.api-key:}")     String apiKey,
             @Value("${app.email.resend.from:onboarding@resend.dev}") String fromEmail,
-            @Value("${app.email.resend.from-name:AjansHotel}")       String fromName,
+            @Value("${app.email.resend.from-name:Kadrom}")       String fromName,
             org.springframework.beans.factory.ObjectProvider<OutboxService> outboxProvider
     ) {
         this.apiKey   = apiKey;

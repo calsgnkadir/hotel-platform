@@ -50,7 +50,7 @@ jobs:
             curl -sS -o /dev/null \
                  -w "%{http_code}|%{time_total}" \
                  --max-time "$timeout" \
-                 -H "User-Agent: AjansHotel-HealthCheck/1.0" \
+                 -H "User-Agent: Kadrom-HealthCheck/1.0" \
                  "$url" 2>/dev/null || echo "000|0"
           }
 
@@ -63,7 +63,7 @@ jobs:
                  -w "%{http_code}|%{time_total}" \
                  --max-time "$timeout" \
                  -H "Authorization: Bearer $token" \
-                 -H "User-Agent: AjansHotel-HealthCheck/1.0" \
+                 -H "User-Agent: Kadrom-HealthCheck/1.0" \
                  "$url" 2>/dev/null || echo "000|0"
           }
 

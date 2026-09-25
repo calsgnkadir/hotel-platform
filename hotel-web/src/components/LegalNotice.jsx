@@ -33,7 +33,7 @@ export function SgkNotice() {
         </div>
         <div className="type-caption mt-0.5" style={{ color: '#3f4b4a' }}>
           Adayı çalıştırmaya başlamadan önce, yasal olarak SGK işe giriş bildirgesini
-          vermeniz gerekir. AjansHotel bir eşleştirme platformudur; iş ilişkisi
+          vermeniz gerekir. Kadrom bir eşleştirme platformudur; iş ilişkisi
           doğrudan sizinle aday arasında kurulur ve bu yükümlülük işletmeye aittir.
           Vardiya yaklaştığında size hatırlatma göndeririz.
         </div>
@@ -48,10 +48,10 @@ export function SgkNotice() {
  */
 export function PlatformRoleNotice({ audience = 'candidate' }) {
   const text = audience === 'business'
-    ? 'AjansHotel, işletmeler ile adayları buluşturan bir eşleştirme platformudur; '
+    ? 'Kadrom, işletmeler ile adayları buluşturan bir eşleştirme platformudur; '
       + 'taraf değildir. İş sözleşmesi, ücret ödemesi, SGK ve diğer yasal yükümlülükler '
       + 'doğrudan işletme ile aday arasındadır.'
-    : 'AjansHotel, seni işletmelerle doğrudan buluşturan bir eşleştirme platformudur — '
+    : 'Kadrom, seni işletmelerle doğrudan buluşturan bir eşleştirme platformudur — '
       + 'aracı komisyonu almaz. İş ilişkisi, ücret ve sigorta işlemleri seninle işletme '
       + 'arasında kurulur.'
   return (

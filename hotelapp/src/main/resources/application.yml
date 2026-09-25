@@ -123,7 +123,7 @@ app:
       # Resend default test domain: onboarding@resend.dev
       # Kendi domain'in olunca buraya değiştir (DNS doğrulamadan sonra)
       from:     ${RESEND_FROM:onboarding@resend.dev}
-      from-name: ${RESEND_FROM_NAME:AjansHotel}
+      from-name: ${RESEND_FROM_NAME:Kadrom}
     password-reset:
       expiry-hours: ${PWD_RESET_EXPIRY_HOURS:1}
 

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
  * FAZ 3 — Email HTML şablonları (mor brand v4).
  *
  * Tüm email'ler ortak layout kullanır:
- *   - üstte AjansHotel logosu + mor neon strip
+ *   - üstte Kadrom logosu + mor neon strip
  *   - merkez başlık + içerik
  *   - footer (otomatik mail uyarısı + tarih)
  *
@@ -21,7 +21,7 @@ public class EmailTemplates {
     /** Welcome — yeni hesap açtıktan sonra hoş geldin maili. */
     public String welcome(String userName, String role, String dashboardUrl) {
         String roleText = "BUSINESS_OWNER".equals(role)
-                ? "İşletmen artık AjansHotel'de — ilanları yayınla, başvuruları gör, talent pool oluştur."
+                ? "İşletmen artık Kadrom'da — ilanları yayınla, başvuruları gör, talent pool oluştur."
                 : "İşletmelerin günlük/dönemlik ilanlarına başvur, mesajlaş, hızlıca işe başla.";
 
         String ctaText = "BUSINESS_OWNER".equals(role)
@@ -50,7 +50,7 @@ public class EmailTemplates {
             </div>
             """.formatted(escape(userName), roleText, primaryButton(dashboardUrl, ctaText));
 
-        return layout("AjansHotel'e Hoş Geldin", body);
+        return layout("Kadrom'a Hoş Geldin", body);
     }
 
     /** FAZ 4.4 — Email dogrulama linki maili. */
@@ -63,7 +63,7 @@ public class EmailTemplates {
               Merhaba %s,
             </p>
             <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3d3631;">
-              AjansHotel hesabını oluşturduğun için teşekkürler! Hesabını tam aktifleştirmek için
+              Kadrom hesabını oluşturduğun için teşekkürler! Hesabını tam aktifleştirmek için
               aşağıdaki butona tıkla.
             </p>
 
@@ -100,7 +100,7 @@ public class EmailTemplates {
               Merhaba %s,
             </p>
             <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3d3631;">
-              AjansHotel hesabın için şifre sıfırlama talebi aldık. Aşağıdaki butonla
+              Kadrom hesabın için şifre sıfırlama talebi aldık. Aşağıdaki butonla
               yeni bir şifre belirleyebilirsin.
             </p>
 
@@ -218,7 +218,7 @@ public class EmailTemplates {
             <head>
               <meta charset="utf-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>AjansHotel</title>
+              <title>Kadrom</title>
             </head>
             <body style="margin:0; padding:0; background:#fdfbf7;
                          font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
@@ -244,7 +244,7 @@ public class EmailTemplates {
                     <tr><td style="padding:32px 32px 8px;">
                       <h1 style="margin:0; font-size:26px; font-weight:900; letter-spacing:-0.4px;
                                  color:#171513;">
-                        AjansHotel
+                        Kadrom
                       </h1>
                       <p style="margin:2px 0 0; font-size:10px; letter-spacing:3px;
                                 text-transform:uppercase; color:#9333ea; font-weight:600;">
@@ -260,7 +260,7 @@ public class EmailTemplates {
                     <!-- Footer -->
                     <tr><td style="padding:20px 32px; border-top:1px solid #f4ede2; background:#faf7f2;">
                       <p style="margin:0; font-size:11px; line-height:1.6; color:#766c61;">
-                        AjansHotel &middot; İstanbul · 2026<br>
+                        Kadrom &middot; İstanbul · 2026<br>
                         Bu otomatik bir mail — yanıtlama.
                         <br><br>
                         Maili istemiyorsan

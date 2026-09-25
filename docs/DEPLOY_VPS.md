@@ -46,10 +46,10 @@ sıkışır; 2 GB rahat). 1 vCPU yeterli.
 Sunucunun public IP'sini al. Domain sağlayıcında bir **A kaydı**:
 
 ```
-ajanshotel.example.com   →   <SUNUCU_IP>
+kadrom.me   →   <SUNUCU_IP>
 ```
 
-DNS yayılmadan Caddy sertifika alamaz. `ping ajanshotel.example.com` IP'yi
+DNS yayılmadan Caddy sertifika alamaz. `ping kadrom.me` IP'yi
 gösteriyorsa hazırsın.
 
 > Henüz domain yoksa §7'deki **HTTP-only hızlı test** ile IP üzerinden deneyebilirsin.
@@ -85,8 +85,8 @@ nano deploy/prod/.env.prod
 En az şunları doldur (`.env.prod` repoya girmez — `.gitignore`'da):
 
 ```bash
-DOMAIN=ajanshotel.example.com
-PUBLIC_URL=https://ajanshotel.example.com
+DOMAIN=kadrom.me
+PUBLIC_URL=https://kadrom.me
 DB_PASSWORD=<güçlü rastgele parola>
 JWT_SECRET=<openssl rand -base64 48 çıktısı>
 ```
@@ -125,11 +125,11 @@ içinde "certificate obtained" görünür).
 ## 5. Doğrula
 
 ```bash
-curl https://ajanshotel.example.com/actuator/health      # {"status":"UP"}
-curl https://ajanshotel.example.com/api/listings -o /dev/null -w "%{http_code}\n"  # 200
+curl https://kadrom.me/actuator/health      # {"status":"UP"}
+curl https://kadrom.me/api/listings -o /dev/null -w "%{http_code}\n"  # 200
 ```
 
-Tarayıcıda `https://ajanshotel.example.com` → landing açılır, `demo-isletme1@test.com`
+Tarayıcıda `https://kadrom.me` → landing açılır, `demo-isletme1@test.com`
 / `Demo1234!` ile giriş yapılır, ilanlar gelir, mesajlaşma (WebSocket) çalışır.
 
 ---
@@ -138,7 +138,7 @@ Tarayıcıda `https://ajanshotel.example.com` → landing açılır, `demo-islet
 
 Canlıyı **doğruladıktan sonra**:
 
-1. GitHub → Settings → Secrets → Actions → `BACKEND_URL` = `https://ajanshotel.example.com`
+1. GitHub → Settings → Secrets → Actions → `BACKEND_URL` = `https://kadrom.me`
 2. `.github/workflows/daily-health-check.yml` içindeki yorumlu `schedule` bloğunu aç.
 3. Actions → Health Check → Run workflow ile elle bir kez çalıştır, `status.md` yeşil mi bak.
 4. README rozetini ve CV'ni gerçek "Canlı Demo" olarak güncelle.
@@ -189,7 +189,7 @@ cd deploy/prod && chmod +x backup.sh restore.sh
 ./backup.sh                      # -> backups/hotel_platform-YYYYMMDD-HHMMSS.sql.gz
 
 # her gece 03:30 otomatik (crontab -e)
-30 3 * * * cd /opt/ajanshotel/deploy/prod && ./backup.sh >> backups/backup.log 2>&1
+30 3 * * * cd /opt/kadrom/deploy/prod && ./backup.sh >> backups/backup.log 2>&1
 
 # geri yukleme (DIKKAT: ustune yazar)
 ./restore.sh backups/hotel_platform-YYYYMMDD-HHMMSS.sql.gz

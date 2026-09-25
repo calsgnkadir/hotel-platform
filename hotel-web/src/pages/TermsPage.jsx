@@ -43,7 +43,7 @@ export default function TermsPage() {
 
         <div style={{ color: 'var(--ah-ink-2)', fontSize: 14, lineHeight: 1.7 }}>
           <Section title="1. Taraflar ve Tanımlar">
-            İşbu sözleşme, AjansHotel platformu ("Platform") ile platformu kullanan tüm üyeler
+            İşbu sözleşme, Kadrom platformu ("Platform") ile platformu kullanan tüm üyeler
             arasında akdedilmiştir. Üye, aday (CANDIDATE) ya da işletme sahibi (BUSINESS_OWNER)
             sıfatıyla platforma kayıt olan gerçek veya tüzel kişiyi ifade eder.
           </Section>

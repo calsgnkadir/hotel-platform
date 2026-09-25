@@ -130,7 +130,7 @@ management:
 # Build/git info /actuator/info'da görünür (build sırasında doldurulur)
 info:
   app:
-    name: AjansHotel
+    name: Kadrom
     version: ${APP_VERSION:dev}
   java:
     version: ${java.version}

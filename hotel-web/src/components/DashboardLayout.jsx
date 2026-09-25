@@ -111,7 +111,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           {/* Ust satir: marka + (desktop) nav + sag aksiyonlar */}
           <div className="h-14 flex items-center gap-4">
             <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2 flex-shrink-0">
-              <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '0.02em', color: 'var(--ah-ink)' }}>AjansHotel</span>
+              <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '0.02em', color: 'var(--ah-ink)' }}>Kadrom</span>
               <span className="hidden sm:inline" style={{ fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--ah-ink-4)' }}>istanbul</span>
             </Link>
 

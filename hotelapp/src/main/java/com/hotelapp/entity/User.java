@@ -207,7 +207,7 @@ public class User {
     }
 
     // Profil fotoğrafı — Cloudinary storage ref (D7)
-    // Format: "upload:image:ajanshotel/avatars/{userId}/{uuid}.jpg"
+    // Format: "upload:image:kadrom/avatars/{userId}/{uuid}.jpg"
     private String avatarPath;
 
     // ================================================================

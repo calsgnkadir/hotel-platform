@@ -1,18 +1,18 @@
 ####################################################################
-# AjansHotel — MySQL (Fly.io)
+# Kadrom — MySQL (Fly.io)
 #
 # Fly'in yonetilen MySQL'i yok; MySQL 8'i kalici disk (volume) ile
 # kendi uygulamasi olarak calistiriyoruz.
 #
 # ONEMLI: Bu app'in PUBLIC IP'si YOK. Sadece Fly'in ozel agi (6PN)
-# uzerinden erisilir: backend'den host adi `ajanshotel-mysql.internal`.
+# uzerinden erisilir: backend'den host adi `kadrom-mysql.internal`.
 # Bu yuzden asagida [http_service] / [[services]] bloklari bilerek yok —
 # olsaydi veritabani internete acilirdi.
 #
 # Kurulum: docs/DEPLOY_FLY.md
 ####################################################################
 
-app = 'ajanshotel-mysql'
+app = 'kadrom-mysql'
 primary_region = 'ams'          # Amsterdam — Istanbul'a en yakin dusuk gecikmeli bolge
 
 [build]

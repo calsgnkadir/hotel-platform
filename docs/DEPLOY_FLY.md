@@ -1,16 +1,16 @@
-# Fly.io Deploy Rehberi — AjansHotel
+# Fly.io Deploy Rehberi — Kadrom
 
 Backend (Spring Boot) + MySQL Fly.io'da, frontend Vercel'de kalır.
 
 ```
 ┌──────────────────────┐        HTTPS         ┌─────────────────────────┐
-│  Vercel              │ ───────────────────► │  Fly: ajanshotel-api    │
+│  Vercel              │ ───────────────────► │  Fly: kadrom-api    │
 │  hotel-web (React)   │ ◄─────────────────── │  Spring Boot :8080      │
 └──────────────────────┘   WSS (/ws-native)   └───────────┬─────────────┘
                                                           │ 6PN özel ağ
                                                           │ (public IP yok)
                                               ┌───────────▼─────────────┐
-                                              │  Fly: ajanshotel-mysql  │
+                                              │  Fly: kadrom-mysql  │
                                               │  MySQL 8 + volume       │
                                               └─────────────────────────┘
 ```
@@ -25,7 +25,7 @@ kimlik doğrulama için **kredi kartı** istiyor.
 
 Dolayısıyla:
 
-- Public bir AjansHotel örneği **yok** — README'de "Canlı Demo" iddiası da yok
+- Public bir Kadrom örneği **yok** — README'de "Canlı Demo" iddiası da yok
 - Projeyi çalışır görmenin yolu `docker compose up` (README → Hızlı Başlangıç)
 - Aşağıdaki config'ler test edilmiş durumda duruyor; kartını bağlamak isteyen
   ya da başka bir Docker platformuna taşımak isteyen doğrudan kullanabilir
@@ -69,51 +69,51 @@ fly auth login
 ## 2. MySQL uygulamasını oluştur
 
 ```bash
-fly apps create ajanshotel-mysql --org personal
+fly apps create kadrom-mysql --org personal
 ```
 
 Kalıcı disk (makine yeniden yaratılınca veri gitmesin):
 
 ```bash
-fly volumes create mysql_data --app ajanshotel-mysql --region ams --size 1
+fly volumes create mysql_data --app kadrom-mysql --region ams --size 1
 ```
 
 Kök parolayı ata — **güçlü ve rastgele bir parola üret, aşağıdakini olduğu gibi kullanma**:
 
 ```bash
-fly secrets set MYSQL_ROOT_PASSWORD='BURAYA-GUCLU-PAROLA' --app ajanshotel-mysql
+fly secrets set MYSQL_ROOT_PASSWORD='BURAYA-GUCLU-PAROLA' --app kadrom-mysql
 ```
 
 Deploy et:
 
 ```bash
-fly deploy -c deploy/fly/mysql.fly.toml --app ajanshotel-mysql
+fly deploy -c deploy/fly/mysql.fly.toml --app kadrom-mysql
 ```
 
 Ayağa kalktığını doğrula:
 
 ```bash
-fly logs --app ajanshotel-mysql
+fly logs --app kadrom-mysql
 ```
 
 `ready for connections` satırını görmelisin.
 
 > **Public IP yok.** `mysql.fly.toml` içinde bilerek `[http_service]` /
 > `[[services]]` bloğu yok — veritabanı yalnızca Fly'ın özel ağından
-> (`ajanshotel-mysql.internal`) erişilebilir. Dışarı açma.
+> (`kadrom-mysql.internal`) erişilebilir. Dışarı açma.
 
 ---
 
 ## 3. Backend uygulamasını oluştur
 
 ```bash
-fly apps create ajanshotel-api --org personal
+fly apps create kadrom-api --org personal
 ```
 
 ### Secret'ları ata
 
 ```bash
-fly secrets set --app ajanshotel-api \
+fly secrets set --app kadrom-api \
   DB_PASSWORD='2.-ADIMDAKI-AYNI-PAROLA' \
   JWT_SECRET="$(openssl rand -base64 48)" \
   APP_ENCRYPTION_KEY="$(openssl rand -base64 32)" \
@@ -135,14 +135,14 @@ fly secrets set --app ajanshotel-api \
 ### Deploy
 
 ```bash
-fly deploy -c deploy/fly/backend.fly.toml --app ajanshotel-api
+fly deploy -c deploy/fly/backend.fly.toml --app kadrom-api
 ```
 
 İlk açılışta Flyway 10 migration'ı uygular ve `demo` profili örnek veriyi
 yükler (idempotent). Logları izle:
 
 ```bash
-fly logs --app ajanshotel-api
+fly logs --app kadrom-api
 ```
 
 Görmen gerekenler:
@@ -156,8 +156,8 @@ Started HotelStudentPlatformApplication
 ### Doğrula
 
 ```bash
-curl https://ajanshotel-api.fly.dev/actuator/health
-curl https://ajanshotel-api.fly.dev/v3/api-docs -o NUL -w "%{http_code}\n"
+curl https://kadrom-api.fly.dev/actuator/health
+curl https://kadrom-api.fly.dev/v3/api-docs -o NUL -w "%{http_code}\n"
 ```
 
 `{"status":"UP"}` ve `200` bekleniyor.
@@ -170,14 +170,14 @@ Vercel → Project → Settings → Environment Variables:
 
 | Key | Value |
 |---|---|
-| `VITE_API_URL` | `https://ajanshotel-api.fly.dev` |
+| `VITE_API_URL` | `https://kadrom-api.fly.dev` |
 
 Sonra **Redeploy** (env değişikliği otomatik build tetiklemez).
 
 Frontend adresi değişirse backend'in CORS'unu da güncelle:
 
 ```bash
-fly secrets set APP_CORS_ALLOWED_ORIGINS='https://YENI-ADRES' --app ajanshotel-api
+fly secrets set APP_CORS_ALLOWED_ORIGINS='https://YENI-ADRES' --app kadrom-api
 ```
 
 ---
@@ -187,7 +187,7 @@ fly secrets set APP_CORS_ALLOWED_ORIGINS='https://YENI-ADRES' --app ajanshotel-a
 Google Cloud Console → Credentials → OAuth 2.0 Client → Authorized redirect URIs:
 
 ```
-https://ajanshotel-api.fly.dev/login/oauth2/code/google
+https://kadrom-api.fly.dev/login/oauth2/code/google
 ```
 
 ---
@@ -196,7 +196,7 @@ https://ajanshotel-api.fly.dev/login/oauth2/code/google
 
 Backend gerçekten canlıyken:
 
-1. GitHub → Settings → Secrets → Actions → `BACKEND_URL` = `https://ajanshotel-api.fly.dev`
+1. GitHub → Settings → Secrets → Actions → `BACKEND_URL` = `https://kadrom-api.fly.dev`
 2. `.github/workflows/daily-health-check.yml` içindeki yorumlu `schedule` bloğunu geri aç:
 
 ```yaml
@@ -231,7 +231,7 @@ olmamasından kötüdür.
 Fly volume'leri gunluk otomatik snapshot alir (varsayilan ~5 gun saklama):
 
 ```bash
-fly volumes list --app ajanshotel-mysql
+fly volumes list --app kadrom-mysql
 fly volumes snapshots list <volume-id>
 ```
 
@@ -239,7 +239,7 @@ Ama volume snapshot'i calisan MySQL icin crash-consistent'tir; **mantiksal (mysq
 yedek daha guvenli.** SSH ile al (parolayi kendi ortam degiskeninden okur):
 
 ```bash
-fly ssh console --app ajanshotel-mysql -C \
+fly ssh console --app kadrom-mysql -C \
   'sh -c "mysqldump -uroot -p$MYSQL_ROOT_PASSWORD --single-transaction hotel_platform | gzip"' \
   > hotel_platform-$(date +%F).sql.gz
 ```
@@ -253,7 +253,7 @@ uzerinden `mysql -uroot -p... hotel_platform`'a boru ile ver. Ayda bir prova yap
 
 | Belirti | Sebep / çözüm |
 |---|---|
-| `Communications link failure` | MySQL makinesi durmuş. `fly status --app ajanshotel-mysql`, gerekirse `fly machine start`. |
+| `Communications link failure` | MySQL makinesi durmuş. `fly status --app kadrom-mysql`, gerekirse `fly machine start`. |
 | `Unknown column 'version'` | Eski V4 migration'ı. Bu repoda düzeltildi — güncel `main`'de olduğundan emin ol. |
 | `Validate failed: migration checksum mismatch` | V4 idempotent hâle getirilirken checksum'ı değişti. Fly'da sıfırdan bir DB kurulduğu için bu hatayı **görmemen gerekir**; yerel eski bir şemada görürsen tek seferlik SQL onarımı: [README → Veritabanı migration'ları](../README.md#veritabanı-migrationları) |
 | CORS hatası | `APP_CORS_ALLOWED_ORIGINS` Vercel adresiyle birebir eşleşmeli (sonda `/` olmayacak). |

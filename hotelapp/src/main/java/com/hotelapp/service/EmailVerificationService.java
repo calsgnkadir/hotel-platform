@@ -60,7 +60,7 @@ public class EmailVerificationService {
         String verifyLink = appBaseUrl + "/verify-email?token=" + token;
         try {
             String html = emailTemplates.verifyEmail(user.getFullName(), verifyLink);
-            emailService.queue(user.getEmail(), "AjansHotel — Email Doğrulama", html);
+            emailService.queue(user.getEmail(), "Kadrom — Email Doğrulama", html);
             // FAZ 9.6 — Link INFO seviyeden DEBUG'a: prod log'larinda verify link sizmaz.
             log.info("[EMAIL-VERIFY] Token olusturuldu + mail gonderildi: userId={}", user.getId());
             log.debug("[EMAIL-VERIFY] Verify link: {}", verifyLink);

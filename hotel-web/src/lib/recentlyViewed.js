@@ -7,7 +7,7 @@
  *
  * Schema: { id, title, businessName, district, position, salary, viewedAt }
  */
-const KEY = 'ajanshotel.recently-viewed-listings'
+const KEY = 'kadrom.recently-viewed-listings'
 const MAX_ITEMS = 20
 
 export function getRecent() {

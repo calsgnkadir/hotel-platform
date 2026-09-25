@@ -35,7 +35,7 @@ public class VapidService {
 
     @Value("${app.push.vapid.public-key:}")  private String publicKeyB64;
     @Value("${app.push.vapid.private-key:}") private String privateKeyB64;
-    @Value("${app.push.vapid.subject:mailto:noreply@ajanshotel.local}")
+    @Value("${app.push.vapid.subject:mailto:noreply@kadrom.local}")
     private String subject;
 
     private ECPrivateKey privateKey;

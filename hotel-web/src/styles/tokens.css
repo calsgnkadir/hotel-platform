@@ -291,7 +291,7 @@ body, .role-app-bg {
  * bileşenleri kendi renklerini taşır (koyu ekranları etkilemez). Ekranlar
  * tek tek bu sisteme migrate edilir; her migrate edilen ekranın kökü
  * `.ah-surface` ile sarılır → o bölge açık zemine döner.
- * Karar geçmişi: [[project-ajanshotel-redesign]]
+ * Karar geçmişi: grafit marka + kısıtlı semantik renk (2026-09)
  * ═══════════════════════════════════════════════════════════════════════ */
 :root {
   --ah-brand:#1f2937; --ah-brand-hover:#111827; --ah-brand-soft:#eef0f2;

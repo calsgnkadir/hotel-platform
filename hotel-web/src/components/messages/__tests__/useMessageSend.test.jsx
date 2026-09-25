@@ -26,7 +26,7 @@ vi.mock('../../../lib/useWsConnected', () => ({ default: () => wsConnected }))
  * ise kuyruga ALINMAZ — tekrar denemek ayni hatayi verir.
  */
 const CONV = { id: 7 }
-const QUEUE_KEY = 'ajanshotel.offline-queue.7'
+const QUEUE_KEY = 'kadrom.offline-queue.7'
 
 function setup({ conversation = CONV, onSent = vi.fn(), onMessageSent = vi.fn() } = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -171,7 +171,7 @@ describe('useMessageSend (FAZ 20)', () => {
     await act(async () => { await result.current.sendCall('audio') })
 
     const [, content] = hotelApi.sendMessage.mock.calls[0]
-    expect(content).toMatch(/^\[CALL:audio\]https:\/\/meet\.jit\.si\/ajanshotel-7-/)
+    expect(content).toMatch(/^\[CALL:audio\]https:\/\/meet\.jit\.si\/kadrom-7-/)
     expect(content).toContain('startWithVideoMuted=true')
     expect(window.open).toHaveBeenCalled()
   })

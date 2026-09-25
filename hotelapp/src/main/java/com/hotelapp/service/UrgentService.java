@@ -176,7 +176,7 @@ public class UrgentService {
             String message = business + (when != null ? " · " + when : "")
                     + " — hemen müsait olduğun için sana önce haber veriyoruz.";
 
-            String smsText = "AjansHotel acil: " + listing.getTitle()
+            String smsText = "Kadrom acil: " + listing.getTitle()
                     + (when != null ? " (" + when + ")" : "")
                     + " — hemen musait oldugun icin sana ilk haber. Uygulamadan bas.";
             int sent = 0;

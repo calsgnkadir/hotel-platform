@@ -214,7 +214,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
         {/* Alt imza */}
         <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'rgba(31, 41, 55, 0.08)' }}>
           <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: 'var(--ah-ink-4)' }}>
-            AjansHotel · Sohbet
+            Kadrom · Sohbet
           </span>
         </div>
       </div>

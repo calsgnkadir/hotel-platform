@@ -42,7 +42,7 @@ export default function KvkkPage() {
         <div className="space-y-6 text-sm leading-relaxed" style={{ color: 'var(--ah-ink-2)' }}>
           <Section title="1. Veri Sorumlusu">
             <p>
-              AjansHotel platformunun (bundan sonra "Platform") veri sorumlusu, platformu işleten
+              Kadrom platformunun (bundan sonra "Platform") veri sorumlusu, platformu işleten
               kişi/kurumdur. Platform, otel ve aday arasında iş eşleştirmesi yapan bir çevrimiçi
               hizmettir.
             </p>

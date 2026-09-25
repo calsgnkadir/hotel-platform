@@ -181,7 +181,7 @@ public class StandbyService {
 
         // Yedek kanal — zamana duyarli teklif, push'a EK olarak SMS (best-effort)
         smsService.send(next.getCandidate().getPhone(),
-                "AjansHotel acil: " + next.getJobListing().getTitle()
+                "Kadrom acil: " + next.getJobListing().getTitle()
                         + " icin sira sende. " + OFFER_WINDOW_HOURS
                         + " saat icinde uygulamadan cevap ver.");
 

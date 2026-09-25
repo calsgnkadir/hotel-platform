@@ -79,7 +79,7 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
           {/* Baslik */}
           <div className="text-center">
             <div className="text-base font-bold" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>
-              AjansHotel
+              Kadrom
             </div>
             <h2 id="auth-modal-title" className="mt-3"
                 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.015em', color: 'var(--ah-ink)' }}>

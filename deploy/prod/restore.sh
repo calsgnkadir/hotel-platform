@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AjansHotel — prod MySQL geri yukleme (docker-compose / VPS).
+# Kadrom — prod MySQL geri yukleme (docker-compose / VPS).
 # DIKKAT: hotel_platform veritabaninin ustune yazar. Once mevcut durumun yedegini al.
 #
 # Kullanim:  ./restore.sh backups/hotel_platform-YYYYMMDD-HHMMSS.sql.gz

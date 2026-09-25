@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-const BASE = 'AjansHotel'
+const BASE = 'Kadrom'
 
 /**
  * FAZ 14.3 — Dinamik document.title (SEO + tab okunabilirligi).
@@ -9,7 +9,7 @@ const BASE = 'AjansHotel'
  * dinamik title indexlenen sayfalarda (public business profili, ilan
  * detayi) aramada dogru baslik gosterir. Unmount'ta base title'a doner.
  *
- * usePageTitle('Wave3 Otel — Besiktas')  ->  "Wave3 Otel — Besiktas | AjansHotel"
+ * usePageTitle('Wave3 Otel — Besiktas')  ->  "Wave3 Otel — Besiktas | Kadrom"
  * usePageTitle(null)                     ->  degisiklik yok (loading safhasi)
  */
 export default function usePageTitle(title) {

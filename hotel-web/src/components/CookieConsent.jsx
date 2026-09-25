@@ -113,7 +113,7 @@ export default function CookieConsent() {
       {!showDetails ? (
         <>
           <p style={{ fontSize: 13, lineHeight: 1.55, color: 'rgba(31, 41, 55, 0.14)', marginBottom: 14 }}>
-            AjansHotel deneyimini iyileştirmek için çerezler kullanır. <strong style={{ color: '#1f2937' }}>Gerekli çerezler</strong> oturumun açık kalması için
+            Kadrom deneyimini iyileştirmek için çerezler kullanır. <strong style={{ color: '#1f2937' }}>Gerekli çerezler</strong> oturumun açık kalması için
             zorunludur. Analitik ve pazarlama çerezleri opsiyoneldir.
             {' '}
             <a href="/kvkk" style={{ color: '#1f2937', textDecoration: 'underline' }}>KVKK metni</a>.

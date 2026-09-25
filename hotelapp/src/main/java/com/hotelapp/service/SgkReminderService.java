@@ -18,7 +18,7 @@ import java.util.List;
  * FAZ C.3 — SGK "işe giriş bildirgesi" hatırlatıcısı.
  *
  * <p>Türk mevzuatında işveren, sigortalıyı çalışmaya başlatmadan ÖNCE SGK'ya
- * işe giriş bildirgesi vermek zorundadır. AjansHotel bir eşleştirme platformu
+ * işe giriş bildirgesi vermek zorundadır. Kadrom bir eşleştirme platformu
  * olduğu için bu yükümlülük İŞLETMEYE aittir — platform onu yerine getirmez,
  * ama vardiya yaklaşınca hatırlatarak hem işvereni ihlalden korur hem de
  * kendi hukuki duruşunu ("aracı platform, işveren değil") güçlendirir.

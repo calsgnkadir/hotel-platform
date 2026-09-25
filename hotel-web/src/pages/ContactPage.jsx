@@ -30,7 +30,7 @@ function isAuthed() {
  * pre-filled mailto açar (statik). I.5'te SupportTicket backend gelince
  * gerçek POST endpoint'e bağlanacak.
  *
- * JSON-LD ContactPoint schema SEO için (Google "AjansHotel iletişim"
+ * JSON-LD ContactPoint schema SEO için (Google "Kadrom iletişim"
  * aramasında destek bilgisi snippet'ı gösterir).
  */
 const SUBJECTS = [
@@ -42,8 +42,8 @@ const SUBJECTS = [
   { v: 'is',      label: 'İş birliği / Basın' },
 ]
 
-const SUPPORT_EMAIL = 'destek@ajanshotel.com'
-const KVKK_EMAIL    = 'kvkk@ajanshotel.com'
+const SUPPORT_EMAIL = 'destek@kadrom.me'
+const KVKK_EMAIL    = 'kvkk@kadrom.me'
 
 export default function ContactPage() {
   const [subject, setSubject] = useState('genel')
@@ -54,7 +54,7 @@ export default function ContactPage() {
   const targetEmail = subject === 'kvkk' ? KVKK_EMAIL : SUPPORT_EMAIL
   const subjLabel = SUBJECTS.find(s => s.v === subject)?.label || 'Genel'
   const mailtoHref = `mailto:${targetEmail}` +
-    `?subject=${encodeURIComponent('[AjansHotel] ' + subjLabel)}` +
+    `?subject=${encodeURIComponent('[Kadrom] ' + subjLabel)}` +
     `&body=${encodeURIComponent(body)}`
 
   async function submitToBackend(e) {
@@ -76,7 +76,7 @@ export default function ContactPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
-    name: 'AjansHotel · İletişim',
+    name: 'Kadrom · İletişim',
     contactPoint: [
       { '@type': 'ContactPoint', email: SUPPORT_EMAIL, contactType: 'Müşteri destek', areaServed: 'TR', availableLanguage: 'Turkish' },
       { '@type': 'ContactPoint', email: KVKK_EMAIL,    contactType: 'KVKK',           areaServed: 'TR', availableLanguage: 'Turkish' },

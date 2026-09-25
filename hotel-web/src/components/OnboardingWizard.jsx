@@ -56,7 +56,7 @@ const ICON_LISTING = (
 const STEPS_CANDIDATE = [
   {
     title: 'Hoş Geldin',
-    description: "AjansHotel ile İstanbul'daki en iyi otel, restoran ve kafe işlerini birkaç dokunuşla bul. Hadi profilini tamamlayalım.",
+    description: "Kadrom ile İstanbul'daki en iyi otel, restoran ve kafe işlerini birkaç dokunuşla bul. Hadi profilini tamamlayalım.",
     icon: ICON_WAVE,
   },
   {
@@ -83,7 +83,7 @@ const STEPS_CANDIDATE = [
 const STEPS_BUSINESS = [
   {
     title: 'Hoş Geldin',
-    description: "AjansHotel ile İstanbul'un en yetkin otel/restoran personelini hızla bul. Hadi işletme profilini tamamlayalım.",
+    description: "Kadrom ile İstanbul'un en yetkin otel/restoran personelini hızla bul. Hadi işletme profilini tamamlayalım.",
     icon: ICON_WAVE,
   },
   {

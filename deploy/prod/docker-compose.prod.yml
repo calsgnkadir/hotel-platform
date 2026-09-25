@@ -1,5 +1,5 @@
 # ══════════════════════════════════════════════════════════════════
-# AjansHotel — PRODUCTION stack (tek sunucu, docker compose)
+# Kadrom — PRODUCTION stack (tek sunucu, docker compose)
 #
 # Yerel docker-compose.yml'den FARKLARI:
 #   - Tek giris noktasi Caddy (80/443, otomatik HTTPS/Let's Encrypt).
@@ -67,7 +67,7 @@ services:
       COOKIE_SAMESITE: ${COOKIE_SAMESITE:-Lax}
       # Frontend ile ayni public adres. CORS ayni-origin'de tetiklenmez ama
       # application-prod.yml bu degiskeni ZORUNLU okur (default yok).
-      APP_BASE_URL: ${PUBLIC_URL:?orn. https://ajanshotel.example.com}
+      APP_BASE_URL: ${PUBLIC_URL:?orn. https://kadrom.me}
       APP_CORS_ALLOWED_ORIGINS: ${PUBLIC_URL:?zorunlu}
       # Opsiyonel entegrasyonlar — verilmezse o ozellik devre disi, uygulama yine acilir.
       CLOUDINARY_URL: ${CLOUDINARY_URL:-cloudinary://test:test@test}
@@ -116,7 +116,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      DOMAIN: ${DOMAIN:?Caddy icin alan adi, orn. ajanshotel.example.com (HTTP-only test icin :80)}
+      DOMAIN: ${DOMAIN:?Caddy icin alan adi, orn. kadrom.me (HTTP-only test icin :80)}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

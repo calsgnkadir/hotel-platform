@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
     info = @Info(
-        title       = "AjansHotel API",
+        title       = "Kadrom API",
         version     = "2.0",
         description = """
             İstanbul'un otel iş platformu — adayları ve işletmeleri buluşturur.

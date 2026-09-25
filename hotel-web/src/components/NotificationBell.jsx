@@ -50,7 +50,7 @@ function timeAgo(dateStr) {
  */
 // Ayarlar sekmesinden gelen "mute" flag'ı
 function isMuted() {
-  try { return localStorage.getItem('ajanshotel.notifications.muted') === '1' }
+  try { return localStorage.getItem('kadrom.notifications.muted') === '1' }
   catch { return false }
 }
 
@@ -100,8 +100,8 @@ export default function NotificationBell({ onNavigate }) {
         queryClient.invalidateQueries({ queryKey: keys.notifications.unreadCount() })
       }
     }
-    window.addEventListener('ajanshotel:notifications-muted-changed', handler)
-    return () => window.removeEventListener('ajanshotel:notifications-muted-changed', handler)
+    window.addEventListener('kadrom:notifications-muted-changed', handler)
+    return () => window.removeEventListener('kadrom:notifications-muted-changed', handler)
   }, [queryClient])
 
   // Dışına tıklayınca kapat

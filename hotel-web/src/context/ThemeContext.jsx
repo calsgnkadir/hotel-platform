@@ -16,7 +16,7 @@ import { createContext, useContext, useEffect } from 'react'
  */
 const ThemeContext = createContext({ theme: 'light', toggle: () => {}, toggleTheme: () => {} })
 
-const STORAGE_KEY = 'ajanshotel-theme'
+const STORAGE_KEY = 'kadrom-theme'
 
 export function ThemeProvider({ children }) {
   useEffect(() => {

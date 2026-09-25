@@ -9,7 +9,7 @@ test.describe('Register wizard', () => {
     await page.goto('/register')
 
     // Header + step indicator
-    await expect(page.locator('body')).toContainText(/AjansHotel/i)
+    await expect(page.locator('body')).toContainText(/Kadrom/i)
     await expect(page.locator('body')).toContainText(/tur/i)   // step indicator label
 
     // Iki rol kart secenegi

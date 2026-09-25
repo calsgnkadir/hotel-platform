@@ -4,8 +4,8 @@ import { test, expect } from '@playwright/test'
 test.describe('Landing', () => {
   test('Landing page yüklenir + brand görünür', async ({ page }) => {
     await page.goto('/')
-    // Brand text — AjansHotel / AJANSHOTEL navbar'da gözükür
-    await expect(page.locator('body')).toContainText(/Ajanshotel|AJANSHOTEL|İlan|İş/i)
+    // Brand text — Kadrom navbar'da gözükür
+    await expect(page.locator('body')).toContainText(/Kadrom|İlan|İş/i)
   })
 
   test('Login linki tıklanabilir', async ({ page }) => {

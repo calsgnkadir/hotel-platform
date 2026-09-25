@@ -19,7 +19,7 @@ import java.util.UUID;
 /**
  * Dosya storage — Cloudinary tabanlı (Railway ephemeral disk yerine).
  *
- * DB'ye saklanan değer: Cloudinary public_id (örn: "ajanshotel/documents/5/cv_abc123")
+ * DB'ye saklanan değer: Cloudinary public_id (örn: "kadrom/documents/5/cv_abc123")
  *   Tam URL gerektiğinde {@link #publicUrl(String)} ile build edilir.
  *
  * Hassas belgeler (criminal/health/identity) için resource_type=raw, type=authenticated kullanılır;
@@ -62,7 +62,7 @@ public class FileStorageService {
         String ext = getExtension(file.getOriginalFilename()).toLowerCase();
         // Görseller image olarak, diğerleri raw olarak yüklenir
         String resourceType = isImageExt(ext) ? "image" : "raw";
-        String folder = "ajanshotel/documents/" + studentId;
+        String folder = "kadrom/documents/" + studentId;
         // RAW (PDF/DOC): uzantı public_id'ye dahil (Cloudinary delivery için gerekli)
         // IMAGE (JPG/PNG/WEBP): uzantı public_id'de YOK (Cloudinary formatı içerikten algılar)
         String publicId = "image".equals(resourceType)
@@ -117,7 +117,7 @@ public class FileStorageService {
         if (isImageExt(ext))      resourceType = "image";
         else if (isAudioExt(ext)) resourceType = "video";
         else                      resourceType = "raw";
-        String folder = "ajanshotel/messages/" + conversationId;
+        String folder = "kadrom/messages/" + conversationId;
         String publicId = "image".equals(resourceType)
                 ? folder + "/" + UUID.randomUUID()
                 : folder + "/" + UUID.randomUUID() + "." + ext;
@@ -151,7 +151,7 @@ public class FileStorageService {
                 "Kabul edilenler: JPG, JPEG, PNG, WEBP, HEIC",
                 "Görsel çok büyük (%.1f MB). Maksimum 10 MB olmalı.");
 
-        String folder = "ajanshotel/business/" + businessId + "/" + subfolder;
+        String folder = "kadrom/business/" + businessId + "/" + subfolder;
         // GÖRSELLERDE uzantı YOK — Cloudinary formatı içerikten algılar.
         // Uzantı koyarsak (.webp/.jpg) yanlış yorumlanıp bozuk görsel oluyor.
         String publicId = folder + "/" + UUID.randomUUID();
@@ -170,7 +170,7 @@ public class FileStorageService {
         try {
             cloudinary.uploader().upload(file.getBytes(), options);
             log.info("Cloudinary görsel yüklendi: {} (size={} KB)", publicId, file.getSize() / 1024);
-            // Format: "upload:image:ajanshotel/business/.../uuid"
+            // Format: "upload:image:kadrom/business/.../uuid"
             return "upload:image:" + publicId;
         } catch (IOException e) {
             throw new BusinessRuleException("Cloudinary'ye yüklenemedi: " + e.getMessage());
@@ -185,7 +185,7 @@ public class FileStorageService {
                 "Kabul edilenler: JPG, JPEG, PNG, WEBP, HEIC",
                 "Profil fotoğrafı çok büyük (%.1f MB). Maksimum 5 MB olmalı.");
 
-        String folder = "ajanshotel/avatars/" + userId;
+        String folder = "kadrom/avatars/" + userId;
         // GÖRSELLERDE uzantı YOK — Cloudinary formatı içerikten algılar.
         String publicId = folder + "/" + UUID.randomUUID();
 
@@ -371,8 +371,8 @@ public class FileStorageService {
 
     /**
      * DB'de saklanan ref formatı: "type:resource_type:public_id"
-     * Örn: "authenticated:raw:ajanshotel/documents/5/abc-uuid"
-     *      "upload:image:ajanshotel/business/3/logo/xyz-uuid"
+     * Örn: "authenticated:raw:kadrom/documents/5/abc-uuid"
+     *      "upload:image:kadrom/business/3/logo/xyz-uuid"
      * Geriye uyumluluk: eski "documents/5/..." formatlı path'ler için raw/authenticated varsayılır.
      */
     private ParsedRef parseRef(String storedRef) {

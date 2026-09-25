@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
           <BackButton to="/login" label="Girişe Dön" />
           <span className="hidden sm:block w-px h-5" style={{ background: 'var(--ah-line-2)' }} />
           <Link to="/" className="hidden sm:flex items-baseline gap-2">
-            <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>AjansHotel</span>
+            <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>Kadrom</span>
             <span className="text-[9px] uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>istanbul</span>
           </Link>
         </div>
@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
               <h2 className="text-lg font-bold" style={{ color: 'var(--ah-ink)' }}>Email gönderildi</h2>
               <p className="text-[13px] leading-relaxed" style={{ color: 'var(--ah-ink-3)' }}>
                 Eğer <span className="font-mono" style={{ color: 'var(--ah-brand)' }}>{getValues('email')}</span> kayıtlı
-                bir hesabaysa, birkaç dakika içinde inbox'una <strong style={{ color: 'var(--ah-ink)' }}>"AjansHotel — Şifre Sıfırlama"</strong>
+                bir hesabaysa, birkaç dakika içinde inbox'una <strong style={{ color: 'var(--ah-ink)' }}>"Kadrom — Şifre Sıfırlama"</strong>
                 {' '}başlıklı bir mail gelecek. Spam klasörünü de kontrol et.
               </p>
               <p className="text-[11px] italic" style={{ color: 'var(--ah-ink-4)' }}>

@@ -1,6 +1,6 @@
 <div align="center">
 
-# AjansHotel
+# Kadrom
 
 **İstanbul'daki hotel, restoran ve kafelerde günlük/aylık iş arayan adaylarla işletmeleri buluşturan platform.**
 
@@ -126,7 +126,7 @@ listesi** olarak yönet:
 
 ### Landing — hero + canlı vardiya nabzı
 
-<p align="center"><img src="docs/screenshots/landing.png" alt="AjansHotel Landing" width="100%" /></p>
+<p align="center"><img src="docs/screenshots/landing.png" alt="Kadrom Landing" width="100%" /></p>
 
 ### Aday Paneli · İlan Detayı · Mesajlaşma · KVKK
 

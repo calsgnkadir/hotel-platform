@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AjansHotel — prod MySQL yedekleme (docker-compose / VPS).
+# Kadrom — prod MySQL yedekleme (docker-compose / VPS).
 #
 # Ne yapar: calisan mysql container'indan hotel_platform veritabanini
 # --single-transaction ile (InnoDB tutarli, kilit yok) mysqldump'lar, gzip'ler,
@@ -7,7 +7,7 @@
 #
 # Kullanim:
 #   deploy/prod dizininden:  ./backup.sh
-#   cron (her gece 03:30):   30 3 * * *  cd /opt/ajanshotel/deploy/prod && ./backup.sh >> backups/backup.log 2>&1
+#   cron (her gece 03:30):   30 3 * * *  cd /opt/kadrom/deploy/prod && ./backup.sh >> backups/backup.log 2>&1
 #
 # Env (opsiyonel): BACKUP_DIR (varsayilan ./backups), KEEP (varsayilan 14)
 # DB_PASSWORD .env.prod'tan okunur (compose ile ayni kaynak).
@@ -50,4 +50,4 @@ ls -1t "$BACKUP_DIR"/${DB_NAME}-*.sql.gz | head -n "$KEEP"
 # ONEMLI: Bu dosyalar SUNUCUDA duruyor — disk olursen yedek de gider.
 # En az bir kopyayi baska yere al (rclone/scp ile S3, B2, baska sunucu).
 # Ornek (rclone yapilandirdiysan):
-#   rclone copy "$OUT" remote:ajanshotel-backups/
+#   rclone copy "$OUT" remote:kadrom-backups/

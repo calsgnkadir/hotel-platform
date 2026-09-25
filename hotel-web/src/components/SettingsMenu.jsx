@@ -22,14 +22,14 @@ export default function SettingsMenu({ onTabChange }) {
   }
 
   const [muted, setMuted] = useState(() => {
-    try { return localStorage.getItem('ajanshotel.notifications.muted') === '1' }
+    try { return localStorage.getItem('kadrom.notifications.muted') === '1' }
     catch { return false }
   })
 
   useEffect(() => {
     try {
-      localStorage.setItem('ajanshotel.notifications.muted', muted ? '1' : '0')
-      window.dispatchEvent(new Event('ajanshotel:notifications-muted-changed'))
+      localStorage.setItem('kadrom.notifications.muted', muted ? '1' : '0')
+      window.dispatchEvent(new Event('kadrom:notifications-muted-changed'))
     } catch {}
   }, [muted])
 

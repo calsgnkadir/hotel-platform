@@ -1,4 +1,4 @@
-# AjansHotel — Caddy edge (tek giris noktasi).
+# Kadrom — Caddy edge (tek giris noktasi).
 #
 # {$DOMAIN} ortam degiskeninden gelir (docker-compose.prod.yml). Caddy bu alan
 # adi icin Let's Encrypt sertifikasini OTOMATIK alir/yeniler (port 80+443 acik

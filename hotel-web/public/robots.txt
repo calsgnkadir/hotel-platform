@@ -24,4 +24,4 @@ Disallow: /forgot-password
 User-agent: Googlebot
 Allow: /
 
-Sitemap: https://hotel-platform-seven.vercel.app/sitemap.xml
+Sitemap: https://kadrom.me/sitemap.xml

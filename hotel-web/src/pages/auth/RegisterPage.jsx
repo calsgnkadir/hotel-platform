@@ -58,7 +58,7 @@ export default function RegisterPage() {
           <BackButton to="/login" label="Girişe Dön" />
           <span className="hidden sm:block w-px h-5" style={{ background: 'var(--ah-line-2)' }} />
           <Link to="/" className="hidden sm:flex items-baseline gap-2">
-            <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>AjansHotel</span>
+            <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>Kadrom</span>
             <span className="text-[9px] uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>istanbul</span>
           </Link>
         </div>
@@ -75,7 +75,7 @@ export default function RegisterPage() {
               fontSize: 'clamp(24px, 3.5vw, 30px)', lineHeight: 1.15, fontWeight: 800,
               letterSpacing: '-0.02em', color: 'var(--ah-ink)',
             }}>
-              AjansHotel'e katıl
+              Kadrom'a katıl
             </h1>
             <p className="text-[13.5px] mt-2" style={{ color: 'var(--ah-ink-3)' }}>
               İstanbul'un iş platformu

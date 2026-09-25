@@ -23,8 +23,8 @@ import ConversationsRail from '../components/messages/ConversationsRail'
 import MessageThread from '../components/messages/MessageThread'
 import ContextPanel from '../components/messages/ContextPanel'
 
-const STAR_KEY = 'ajanshotel.starred-conversations'
-const PANEL_KEY = 'ajanshotel.messages.context-panel'
+const STAR_KEY = 'kadrom.starred-conversations'
+const PANEL_KEY = 'kadrom.messages.context-panel'
 
 function loadStarred() {
   try { return new Set(JSON.parse(localStorage.getItem(STAR_KEY) || '[]')) }

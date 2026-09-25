@@ -131,7 +131,7 @@ export default function InstallPrompt() {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-sm" style={{ color: '#13110f' }}>
-                AjansHotel'i yükle
+                Kadrom'u yükle
               </h3>
               <p className="text-xs mb-3" style={{ color: '#1b1815' }}>
                 Ana ekrandan tek tıkla aç, native uygulama hissi yaşa.
