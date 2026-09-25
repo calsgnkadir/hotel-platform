@@ -4,6 +4,8 @@ import com.hotelapp.enums.SupportStatus;
 import com.hotelapp.enums.SupportSubject;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -33,7 +35,9 @@ public class SupportTicket {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // Enum kolonları Flyway'de varchar; Hibernate'in MySQL native enum beklentisini kapatır.
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false, length = 32)
     private SupportSubject subject;
 
@@ -41,6 +45,7 @@ public class SupportTicket {
     private String message;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false, length = 16)
     @Builder.Default
     private SupportStatus status = SupportStatus.OPEN;

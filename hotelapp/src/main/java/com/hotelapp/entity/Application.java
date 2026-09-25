@@ -4,6 +4,8 @@ import com.hotelapp.enums.ApplicationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,7 +33,9 @@ public class Application {
     @JoinColumn(name = "job_listing_id", nullable = false)
     private JobListing jobListing;
 
+    // Kolon Flyway'de varchar; Hibernate MySQL'de varsayılan olarak native enum bekler (validate).
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false)
     @Builder.Default
     private ApplicationStatus status = ApplicationStatus.PENDING;

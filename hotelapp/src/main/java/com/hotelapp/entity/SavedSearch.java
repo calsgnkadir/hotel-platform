@@ -5,6 +5,8 @@ import com.hotelapp.enums.Position;
 import com.hotelapp.enums.Shift;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,11 +35,14 @@ public class SavedSearch {
     @Column(nullable = false, length = 100)
     private String name;
 
+    // Enum kolonları Flyway'de varchar; Hibernate'in MySQL native enum beklentisini kapatır.
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(length = 32)
     private Position position;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "job_type", length = 32)
     private JobType jobType;
 
@@ -60,6 +65,7 @@ public class SavedSearch {
     @CollectionTable(name = "saved_search_shifts", joinColumns = @JoinColumn(name = "saved_search_id"))
     @Column(name = "shift", length = 16)
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Builder.Default
     private Set<Shift> shifts = new HashSet<>();
 

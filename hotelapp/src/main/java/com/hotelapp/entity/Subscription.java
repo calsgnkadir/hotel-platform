@@ -3,6 +3,8 @@ package com.hotelapp.entity;
 import com.hotelapp.enums.SubscriptionStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +26,7 @@ public class Subscription {
     private Business business;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR) // V12'de varchar; MySQL native enum değil
     @Column(nullable = false, length = 20)
     private SubscriptionStatus status;
 

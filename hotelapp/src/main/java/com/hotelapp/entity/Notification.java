@@ -3,6 +3,8 @@ package com.hotelapp.entity;
 import com.hotelapp.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -28,7 +30,9 @@ public class Notification {
     @JoinColumn(name = "recipient_id", nullable = false)
     private User recipient;
 
+    // Kolon Flyway'de varchar (yeni tip eklemek migration gerektirmesin).
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false, length = 30)
     private NotificationType type;
 
