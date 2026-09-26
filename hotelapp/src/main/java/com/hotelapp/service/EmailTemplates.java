@@ -151,7 +151,6 @@ public class EmailTemplates {
               <ul style="margin:8px 0 0; padding:0 0 0 18px; font-size:13px; line-height:1.7; color:#065f46;">
                 <li>İşletme ile mesajlaş — start tarih/saatini netleştir</li>
                 <li>Mesai başlayınca panelden GPS clock-in yap</li>
-                <li>Çalışma bittikten sonra puan vermeyi unutma</li>
               </ul>
             </div>
 
@@ -160,6 +159,30 @@ public class EmailTemplates {
                     primaryButton(dashboardUrl, "Başvuruyu Gör &rarr;"));
 
         return layout("Başvurun Kabul Edildi", body);
+    }
+
+    /** Günün ekip listesi (.xlsx ekli) — işletme için. */
+    public String rosterReady(String businessName, String listingTitle, String dateText,
+                              int sheetBytesKb, String dashboardUrl) {
+        String body = """
+            <h2 style="margin:0 0 16px; font-size:22px; font-weight:800; color:#171513; letter-spacing:-0.3px;">
+              Ekip listesi hazır
+            </h2>
+            <p style="margin:0 0 12px; font-size:15px; line-height:1.6; color:#3d3631;">
+              Merhaba %s,
+            </p>
+            <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#3d3631;">
+              <strong style="color:#171513;">"%s"</strong> ilanının <strong>%s</strong>
+              ekip listesi ekte (Excel). Ad, telefon, vardiya, giriş/çıkış saatleri ve
+              imza sütunu var.
+            </p>
+            <p style="margin:0 0 20px; font-size:12px; line-height:1.6; color:#766c61;">
+              Liste panelden de her zaman indirilebilir (%d KB).
+            </p>
+            %s
+            """.formatted(escape(businessName), escape(listingTitle), escape(dateText), sheetBytesKb,
+                    primaryButton(dashboardUrl, "İlanlarıma Git &rarr;"));
+        return layout("Ekip listesi hazır", body);
     }
 
     /** Başvurun reddedildi — aday için (yumuşak ton). */

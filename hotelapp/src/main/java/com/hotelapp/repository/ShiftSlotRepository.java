@@ -8,6 +8,11 @@ import java.util.List;
 public interface ShiftSlotRepository extends JpaRepository<ShiftSlot, Long> {
     List<ShiftSlot> findAllByJobListingId(Long jobListingId);
 
+    /** Akşam ekip listesi: o gün vardiyası olan ilanlar. */
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT DISTINCT s.jobListing.id FROM ShiftSlot s WHERE s.date = :date")
+    List<Long> findListingIdsWithSlotOn(@org.springframework.data.repository.query.Param("date") java.time.LocalDate date);
+
     /**
      * FAZ G.8 — Platform genelinde "acik kalan" vardiya slot sayisi:
      * tarih bugun veya sonrasi + slotsFilled < slotsNeeded + ilan ACTIVE.

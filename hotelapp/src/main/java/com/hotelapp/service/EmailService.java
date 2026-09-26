@@ -99,6 +99,46 @@ public class EmailService {
         }
     }
 
+    /**
+     * Ek dosyalı e-posta (ekip listesi .xlsx). Outbox'a yazılmaz — ek büyük ve
+     * gönderilemezse liste panelden indirilebilir durumda; kayıp kritik değil.
+     */
+    @CircuitBreaker(name = "resend", fallbackMethod = "sendWithAttachmentFallback")
+    public void sendWithAttachment(String toEmail, String subject, String htmlBody,
+                                   String fileName, byte[] content) {
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("[EMAIL DEV MODE] API key yok — ekli email gönderilmedi: to={} subject={} ek={} ({} bayt)",
+                    toEmail, subject, fileName, content.length);
+            return;
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + apiKey);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("from",    fromName + " <" + fromEmail + ">");
+        body.put("to",      new String[]{ toEmail });
+        body.put("subject", subject);
+        body.put("html",    htmlBody);
+        body.put("attachments", java.util.List.of(Map.of(
+                "filename", fileName,
+                "content",  java.util.Base64.getEncoder().encodeToString(content))));
+        try {
+            restTemplate.postForEntity(RESEND_API_URL, new HttpEntity<>(body, headers), String.class);
+            log.info("[EMAIL] Ekli gönderildi: to={} subject={} ek={}", toEmail, subject, fileName);
+        } catch (RestClientException e) {
+            log.error("[EMAIL] Ekli gönderim hatası: to={} hata={}", toEmail, e.getMessage());
+            throw new IllegalStateException("Email gönderilemedi: " + e.getMessage(), e);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void sendWithAttachmentFallback(String toEmail, String subject, String htmlBody,
+                                           String fileName, byte[] content, Throwable t) {
+        log.warn("[EMAIL][CB-FALLBACK] ekli email atlandı - to={} subject={} sebep={}",
+                toEmail, subject, t.getMessage());
+    }
+
     /** FAZ 2/#18 - Circuit breaker fallback: Resend down ise sessiz log */
     @SuppressWarnings("unused")
     private void sendFallback(String toEmail, String subject, String htmlBody, Throwable t) {

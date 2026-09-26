@@ -475,6 +475,22 @@ export async function markNoShow(applicationId) {
   return data  // { application, candidateStrikesRemaining, autoBanned, bannedUntil }
 }
 
+// Ekip listesi (.xlsx) — her vardiya günü ayrı sayfa; date (YYYY-MM-DD) verilirse sadece o gün
+export async function downloadRoster(listingId, date = null) {
+  const res = await api.get(`/api/business/listings/${listingId}/roster`, {
+    params: date ? { date } : {},
+    responseType: 'blob',
+  })
+  const url = URL.createObjectURL(res.data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `kadrom-ekip-${listingId}${date ? '-' + date : ''}.xlsx`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
 export async function requestDocument(applicationId, documentType) {
   const { data } = await api.post(`/api/business/applications/${applicationId}/document-requests`, { documentType })
   return data

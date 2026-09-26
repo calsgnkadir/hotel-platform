@@ -17,6 +17,7 @@ const PAGE_SIZE = 6
 export default function MyListingsTab({ applications = [] }) {
   const [formTarget, setFormTarget] = useState(null)
   const [dupTarget, setDupTarget] = useState(null)   // "Tekrar aç" (şablon) kaynağı
+  const [rosterBusyId, setRosterBusyId] = useState(null)
   const [page, setPage] = useState(1)
   const queryClient = useQueryClient()
 
@@ -27,6 +28,18 @@ export default function MyListingsTab({ applications = [] }) {
   })
 
   if (error) toast.error('İlanlar yüklenemedi')
+
+  // Ekip listesi (.xlsx): kabul edilenler, gün gün; giriş/çıkış + imza sütunu
+  async function handleRoster(listingId) {
+    setRosterBusyId(listingId)
+    try {
+      await hotelApi.downloadRoster(listingId)
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+    } finally {
+      setRosterBusyId(null)
+    }
+  }
 
   const fetchListings = () =>
     queryClient.invalidateQueries({ queryKey: ['my-listings'] })
@@ -179,6 +192,14 @@ export default function MyListingsTab({ applications = [] }) {
                     <Sparkline data={trendData} color="#1f2937" width={56} height={20} />
                   </div>
                   <div className="flex gap-2 flex-wrap justify-end">
+                  {/* Ekip listesi — sahada imza/yoklama çıktısı; her akşam 20:00'de e-postayla da gelir */}
+                  <button onClick={() => handleRoster(listing.id)}
+                    disabled={rosterBusyId === listing.id}
+                    title="Kabul edilen adaylar, vardiya günlerine göre (Excel). Her akşam 20:00'de e-postana da gelir."
+                    className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                    style={{ background: 'rgba(31, 41, 55, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
+                    {rosterBusyId === listing.id ? 'Hazırlanıyor…' : 'Ekip listesi'}
+                  </button>
                   {/* Tekrar aç (şablon): vardiyalar gelecek haftaya taşınmış kopya. Kapalı ilan için de. */}
                   <button onClick={() => setDupTarget(listing)}
                     title="Bu ilanı vardiyalar gelecek haftaya taşınmış olarak yeniden yayınla"
