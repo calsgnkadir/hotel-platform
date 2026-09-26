@@ -188,7 +188,7 @@ public class DemoSeeder implements CommandLineRunner {
                                                       : com.hotelapp.enums.PaymentMethod.CASH)
                     .paymentNote(ls.bizIdx % 2 == 0 ? "Her cuma akşamı IBAN'a." : "Vardiya bitiminde elden.")
                     .meetingPoint(ls.bizIdx % 2 == 0
-                            ? "Personel girişi (arka kapı), güvenlik kulübesinin önü. Ekip başı kapıda karşılar."
+                            ? "Personel girişi (arka kapı), güvenlik kulübesinin önü."
                             : "Ana giriş yanındaki servis kapısı.")
                     .meetingMinutesBefore(ls.bizIdx % 2 == 0 ? 30 : 15)
                     .salaryMin(java.math.BigDecimal.valueOf(ls.minSal))

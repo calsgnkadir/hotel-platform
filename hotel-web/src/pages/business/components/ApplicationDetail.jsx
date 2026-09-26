@@ -339,16 +339,16 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
           )}
         </div>
 
-        {/* Belge isteme artık sohbetten: kart düşer, aday tek tıkla gönderir */}
+        {/* Belge sohbetten: mesajla iste, aday hazır belgesini tek tıkla gönderir */}
         <div>
           <button onClick={handleStartConversation}
             className="type-overline w-full px-4 py-2 rounded-lg transition-all"
             style={{ background: 'rgba(31, 41, 55, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
-            Sohbette belge iste
+            Sohbete git
           </button>
           <p className="type-caption mt-1.5">
-            Adli sicil, hijyen/sağlık belgesi veya kimlik: sohbetteki belge düğmesinden iste;
-            aday gönderince yukarıda görünür.
+            Adli sicil, hijyen raporu gibi belgeleri sohbette yazarak iste; aday hazır
+            belgesini oradan tek tıkla gönderir, gönderince yukarıda görünür.
           </p>
         </div>
 

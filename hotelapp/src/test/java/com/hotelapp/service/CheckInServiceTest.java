@@ -10,6 +10,7 @@ import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
+import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.JobListingRepository;
 import com.hotelapp.repository.WorkSessionRepository;
 import com.hotelapp.service.RosterService.RosterRow;
@@ -34,6 +35,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,6 +44,7 @@ import static org.mockito.Mockito.when;
 class CheckInServiceTest {
 
     @Mock private JobListingRepository jobListingRepository;
+    @Mock private BusinessRepository businessRepository;
     @Mock private ApplicationRepository applicationRepository;
     @Mock private WorkSessionRepository workSessionRepository;
     @Mock private RosterService rosterService;
@@ -49,10 +52,11 @@ class CheckInServiceTest {
 
     private static final ZoneId TR = ZoneId.of("Europe/Istanbul");
     private static final LocalDate TODAY = LocalDate.of(2026, 10, 3);
-    private static final Long OWNER = 7L, CAND = 101L;
+    private static final Long OWNER = 7L, BIZ = 3L;
 
+    private Business business;
     private JobListing listing;
-    private Application accepted;
+    private ShiftSlot todaySlot;
 
     @BeforeEach
     void setUp() {
@@ -60,54 +64,118 @@ class CheckInServiceTest {
         ReflectionTestUtils.setField(service, "baseUrl", "https://kadrom.me/");
         service.clock = Clock.fixed(TODAY.atTime(7, 50).atZone(TR).toInstant(), TR);
 
-        User owner = User.builder().id(OWNER).build();
-        listing = JobListing.builder().id(10L).title("Banket")
-                .business(Business.builder().name("Grand Otel").owner(owner).build())
-                .meetingPoint("B kapısı").build();
-        ShiftSlot slot = ShiftSlot.builder().date(TODAY)
-                .startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(16, 0)).build();
-        accepted = Application.builder().id(1L).status(ApplicationStatus.ACCEPTED).jobListing(listing)
-                .candidate(User.builder().id(CAND).fullName("Ayşe").build())
-                .requestedSlots(new HashSet<>(Set.of(slot))).build();
+        business = Business.builder().id(BIZ).name("Grand Otel").owner(User.builder().id(OWNER).build()).build();
+        listing = JobListing.builder().id(10L).title("Banket").business(business).meetingPoint("B kapısı").build();
+        todaySlot = ShiftSlot.builder().date(TODAY).startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(16, 0)).build();
+        lenient().when(workSessionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        lenient().when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(any())).thenReturn(List.of());
+        lenient().when(workSessionRepository.findByApplicationCandidateIdAndClockOutAtIsNull(any())).thenReturn(List.of());
+    }
+
+    private Application accepted(long id, String name, String phone, ShiftSlot... slots) {
+        return Application.builder().id(id).status(ApplicationStatus.ACCEPTED).jobListing(listing)
+                .candidate(User.builder().id(100 + id).fullName(name).phone(phone).build())
+                .requestedSlots(new HashSet<>(Set.of(slots))).build();
+    }
+
+    private void team(Application... apps) {
+        when(applicationRepository.findAllByJobListing_Business_IdAndStatus(BIZ, ApplicationStatus.ACCEPTED))
+                .thenReturn(List.of(apps));
     }
 
     @Test
-    void token_round_trips_and_rejects_tampering() {
-        String t = service.tokenFor(10L, TODAY);
-        CheckInService.Parsed p = service.parse(t);
-        assertThat(p.listingId()).isEqualTo(10L);
-        assertThat(p.date()).isEqualTo(TODAY);
+    void business_qr_is_permanent_and_tamper_proof() {
+        String t = service.tokenFor(BIZ);
+        assertThat(service.parse(t)).isEqualTo(BIZ);
+        assertThat(service.tokenFor(BIZ)).isEqualTo(t);   // her gün aynı — bir kez basılıp asılır
 
-        String otherListing = service.tokenFor(11L, TODAY);
-        String forged = otherListing.split("\\.")[0] + "." + t.split("\\.")[1];
+        String other = service.tokenFor(4L);
+        String forged = other.split("\\.")[0] + "." + t.split("\\.")[1];
         assertThatThrownBy(() -> service.parse(forged)).isInstanceOf(BusinessRuleException.class);
         assertThatThrownBy(() -> service.parse("garbage")).isInstanceOf(BusinessRuleException.class);
     }
 
     @Test
-    void accepted_candidate_checks_in_once() {
-        when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing));
-        when(applicationRepository.findAllByJobListingId(10L)).thenReturn(List.of(accepted));
-        when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(1L)).thenReturn(List.of());
-        when(workSessionRepository.findByApplicationCandidateIdAndClockOutAtIsNull(CAND)).thenReturn(List.of());
-        when(workSessionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+    void logged_in_candidate_checks_in_to_todays_shift() {
+        team(accepted(1, "Ayşe Demir", "05551000001", todaySlot));
 
-        CheckInService.CheckInResult r = service.checkIn(service.tokenFor(10L, TODAY), CAND);
+        CheckInService.CheckInResult r = service.checkIn(service.tokenFor(BIZ), 101L);
 
-        assertThat(r.isAlreadyCheckedIn()).isFalse();
         assertThat(r.getShift()).isEqualTo("08:00 – 16:00");
-        assertThat(r.getMeetingPoint()).isEqualTo("B kapısı");
         assertThat(r.getClockInAt()).isEqualTo(TODAY.atTime(7, 50));
+        assertThat(r.isAlreadyCheckedIn()).isFalse();
+    }
+
+    @Test
+    void candidate_without_shift_today_is_rejected() {
+        ShiftSlot tomorrow = ShiftSlot.builder().date(TODAY.plusDays(1))
+                .startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(16, 0)).build();
+        team(accepted(1, "Ayşe Demir", "05551000001", tomorrow));
+
+        assertThatThrownBy(() -> service.checkIn(service.tokenFor(BIZ), 101L))
+                .isInstanceOf(BusinessRuleException.class);
+        verify(workSessionRepository, never()).save(any());
+    }
+
+    @Test
+    void overnight_shift_from_yesterday_still_counts_after_midnight() {
+        ShiftSlot night = ShiftSlot.builder().date(TODAY.minusDays(1))
+                .startTime(LocalTime.of(22, 0)).endTime(LocalTime.of(6, 0)).build();
+        ShiftSlot yesterdayDay = ShiftSlot.builder().date(TODAY.minusDays(1))
+                .startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(16, 0)).build();
+        team(accepted(1, "Gece Ekip", "05551000001", night),
+             accepted(2, "Dun Gunduz", "05551000002", yesterdayDay));
+
+        assertThat(service.checkInByName(service.tokenFor(BIZ), "Gece Ekip", null).getShift())
+                .isEqualTo("22:00 – 06:00");
+        assertThatThrownBy(() -> service.checkInByName(service.tokenFor(BIZ), "Dun Gunduz", null))
+                .isInstanceOf(BusinessRuleException.class);
+    }
+
+    @Test
+    void name_checkin_ignores_case_spaces_and_turkish_letters() {
+        team(accepted(1, "Ayşe Işık", "05551000001", todaySlot));
+
+        CheckInService.CheckInResult r = service.checkInByName(service.tokenFor(BIZ), "  ayse   ISIK ", null);
+
+        assertThat(r.isNeedPhone()).isFalse();
+        assertThat(r.getFullName()).isEqualTo("Ayşe Işık");
+        verify(workSessionRepository).save(any());
+    }
+
+    @Test
+    void name_not_on_todays_list_is_rejected() {
+        team(accepted(1, "Ayşe Demir", "05551000001", todaySlot));
+
+        assertThatThrownBy(() -> service.checkInByName(service.tokenFor(BIZ), "Mehmet Kaya", null))
+                .isInstanceOf(BusinessRuleException.class);
+        verify(workSessionRepository, never()).save(any());
+    }
+
+    @Test
+    void same_name_twice_asks_for_phone_last4() {
+        team(accepted(1, "Ali Yılmaz", "0555 100 00 11", todaySlot),
+             accepted(2, "Ali Yılmaz", "0555 100 00 22", todaySlot));
+        String t = service.tokenFor(BIZ);
+
+        assertThat(service.checkInByName(t, "Ali Yılmaz", null).isNeedPhone()).isTrue();
+        verify(workSessionRepository, never()).save(any());
+
+        CheckInService.CheckInResult r = service.checkInByName(t, "Ali Yılmaz", "0022");
+        assertThat(r.getApplicationId()).isEqualTo(2L);
+
+        assertThatThrownBy(() -> service.checkInByName(t, "Ali Yılmaz", "9999"))
+                .isInstanceOf(BusinessRuleException.class);
     }
 
     @Test
     void second_scan_same_day_is_idempotent() {
-        when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing));
-        when(applicationRepository.findAllByJobListingId(10L)).thenReturn(List.of(accepted));
+        Application a = accepted(1, "Ayşe Demir", "05551000001", todaySlot);
+        team(a);
         when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(1L)).thenReturn(List.of(
                 WorkSession.builder().clockInAt(TODAY.atTime(7, 40)).build()));
 
-        CheckInService.CheckInResult r = service.checkIn(service.tokenFor(10L, TODAY), CAND);
+        CheckInService.CheckInResult r = service.checkInByName(service.tokenFor(BIZ), "Ayşe Demir", null);
 
         assertThat(r.isAlreadyCheckedIn()).isTrue();
         assertThat(r.getClockInAt()).isEqualTo(TODAY.atTime(7, 40));
@@ -115,69 +183,18 @@ class CheckInServiceTest {
     }
 
     @Test
-    void yesterdays_qr_is_rejected() {
-        assertThatThrownBy(() -> service.checkIn(service.tokenFor(10L, TODAY.minusDays(1)), CAND))
-                .isInstanceOf(BusinessRuleException.class);
-    }
-
-    @Test
-    void candidate_without_accepted_application_is_rejected() {
-        accepted.setStatus(ApplicationStatus.PENDING);
-        when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing));
-        when(applicationRepository.findAllByJobListingId(10L)).thenReturn(List.of(accepted));
-
-        assertThatThrownBy(() -> service.checkIn(service.tokenFor(10L, TODAY), CAND))
-                .isInstanceOf(BusinessRuleException.class);
-        verify(workSessionRepository, never()).save(any());
-    }
-
-    @Test
     void manual_checkin_only_by_listing_owner() {
-        when(applicationRepository.findById(1L)).thenReturn(Optional.of(accepted));
+        Application a = accepted(1, "Ayşe Demir", "05551000001", todaySlot);
+        when(applicationRepository.findById(1L)).thenReturn(Optional.of(a));
 
         assertThatThrownBy(() -> service.manualCheckIn(1L, 999L)).isInstanceOf(UnauthorizedException.class);
 
-        when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(1L)).thenReturn(List.of());
         service.manualCheckIn(1L, OWNER);
         verify(workSessionRepository).save(any());
     }
 
     @Test
-    void lead_link_and_qr_token_are_not_interchangeable() {
-        String qr = service.tokenFor(10L, TODAY);
-        String lead = service.leadTokenFor(10L, TODAY);
-        assertThat(service.parseLead(lead).listingId()).isEqualTo(10L);
-        assertThatThrownBy(() -> service.parseLead(qr)).isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> service.parse(lead)).isInstanceOf(BusinessRuleException.class);
-    }
-
-    @Test
-    void lead_sees_attendance_without_lead_url_and_expired_link_fails() {
-        when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing));
-        when(rosterService.collectRows(listing, TODAY)).thenReturn(Map.of(TODAY, List.of()));
-
-        CheckInService.AttendanceDto a = service.attendanceForLead(service.leadTokenFor(10L, TODAY));
-        assertThat(a.getLeadUrl()).isNull();   // ekip başı yeni link üretemez
-        assertThat(a.getCheckinUrl()).contains("/checkin/");
-
-        assertThatThrownBy(() -> service.attendanceForLead(service.leadTokenFor(10L, TODAY.minusDays(1))))
-                .isInstanceOf(BusinessRuleException.class);
-    }
-
-    @Test
-    void lead_can_mark_only_this_listings_candidates() {
-        when(applicationRepository.findById(1L)).thenReturn(Optional.of(accepted));
-        when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(1L)).thenReturn(List.of());
-
-        service.manualCheckInByLead(service.leadTokenFor(10L, TODAY), 1L);
-        verify(workSessionRepository).save(any());
-
-        assertThatThrownBy(() -> service.manualCheckInByLead(service.leadTokenFor(11L, TODAY), 1L))
-                .isInstanceOf(UnauthorizedException.class);
-    }
-
-    @Test
-    void attendance_counts_arrivals_and_builds_checkin_url() {
+    void attendance_counts_arrivals_and_shows_business_qr() {
         when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing));
         when(rosterService.collectRows(listing, TODAY)).thenReturn(Map.of(TODAY, List.of(
                 new RosterRow(1L, "Ayşe", "", "08:00 – 16:00", "07:50", "", "İşte"),
@@ -187,8 +204,12 @@ class CheckInServiceTest {
 
         assertThat(a.getExpected()).isEqualTo(2);
         assertThat(a.getArrived()).isEqualTo(1);
-        assertThat(a.getCheckinUrl()).startsWith("https://kadrom.me/checkin/");
-        assertThat(service.parse(a.getCheckinUrl().substring("https://kadrom.me/checkin/".length())).listingId())
-                .isEqualTo(10L);
+        assertThat(a.getCheckinUrl()).isEqualTo("https://kadrom.me/checkin/" + service.tokenFor(BIZ));
+    }
+
+    @Test
+    void normalize_handles_turkish() {
+        assertThat(CheckInService.normalize("  İSMAİL   Çağrı ")).isEqualTo("ismail cagri");
+        assertThat(CheckInService.normalize("ŞÜKRÜ Öztürk")).isEqualTo("sukru ozturk");
     }
 }

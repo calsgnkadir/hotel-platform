@@ -62,42 +62,6 @@ class ChatDocumentServiceTest {
     }
 
     @Test
-    void owner_requests_document_creates_pending_request_and_posts_card() {
-        when(conversationRepository.findById(CONV)).thenReturn(Optional.of(conv(true)));
-        when(documentRequestRepository.findByApplicationIdAndDocumentType(APP, DocumentType.CRIMINAL_RECORD))
-                .thenReturn(Optional.empty());
-
-        service.requestInChat(CONV, OWNER, DocumentType.CRIMINAL_RECORD);
-
-        ArgumentCaptor<DocumentRequest> saved = ArgumentCaptor.forClass(DocumentRequest.class);
-        verify(documentRequestRepository).save(saved.capture());
-        assertThat(saved.getValue().getStatus()).isEqualTo(DocumentRequestStatus.PENDING);
-        assertThat(sentContent(OWNER)).isEqualTo("[DOC_REQUEST:CRIMINAL_RECORD]");
-    }
-
-    @Test
-    void re_request_keeps_existing_grant() {
-        when(conversationRepository.findById(CONV)).thenReturn(Optional.of(conv(true)));
-        DocumentRequest granted = DocumentRequest.builder()
-                .documentType(DocumentType.HEALTH_CERTIFICATE).status(DocumentRequestStatus.GRANTED).build();
-        when(documentRequestRepository.findByApplicationIdAndDocumentType(APP, DocumentType.HEALTH_CERTIFICATE))
-                .thenReturn(Optional.of(granted));
-
-        service.requestInChat(CONV, OWNER, DocumentType.HEALTH_CERTIFICATE);
-
-        assertThat(granted.getStatus()).isEqualTo(DocumentRequestStatus.GRANTED);
-    }
-
-    @Test
-    void candidate_cannot_request_documents() {
-        when(conversationRepository.findById(CONV)).thenReturn(Optional.of(conv(true)));
-
-        assertThatThrownBy(() -> service.requestInChat(CONV, CAND, DocumentType.CRIMINAL_RECORD))
-                .isInstanceOf(UnauthorizedException.class);
-        verify(documentRequestRepository, never()).save(any());
-    }
-
-    @Test
     void candidate_shares_own_document_grants_access_and_posts_card() {
         when(conversationRepository.findById(CONV)).thenReturn(Optional.of(conv(false)));
         when(applicationRepository.findFirstByCandidateIdAndJobListing_Business_OwnerIdOrderByCreatedAtDesc(CAND, OWNER))
@@ -141,15 +105,16 @@ class ChatDocumentServiceTest {
         when(applicationRepository.findFirstByCandidateIdAndJobListing_Business_OwnerIdOrderByCreatedAtDesc(anyLong(), anyLong()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.requestInChat(CONV, OWNER, DocumentType.CRIMINAL_RECORD))
+        when(documentRepository.findById(DOC)).thenReturn(Optional.of(Document.builder()
+                .id(DOC).type(DocumentType.CRIMINAL_RECORD).student(User.builder().id(CAND).build()).build()));
+
+        assertThatThrownBy(() -> service.shareInChat(CONV, CAND, DOC))
                 .isInstanceOf(BusinessRuleException.class);
         verify(messageService, never()).sendMessage(anyLong(), anyLong(), any());
     }
 
     @Test
     void notification_preview_is_readable() {
-        assertThat(MessageService.readablePreview("[DOC_REQUEST:CRIMINAL_RECORD]"))
-                .isEqualTo("Belge istedi: Adli sicil kaydı");
         assertThat(MessageService.readablePreview("[DOC_SHARED:42:HEALTH_CERTIFICATE]"))
                 .isEqualTo("Belge gönderdi: Hijyen / sağlık belgesi");
         assertThat(MessageService.readablePreview("Merhaba")).isEqualTo("Merhaba");

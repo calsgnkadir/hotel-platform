@@ -476,22 +476,23 @@ export async function getAttendance(listingId, date = null) {
   return data  // { checkinUrl, expected, arrived, rows[], meetingPoint, ... }
 }
 
-// Ekip başı: telefonu olmayanı elle "geldi" işaretle
+// İşletme: telefonu olmayanı elle "geldi" işaretle
 export async function manualCheckIn(applicationId) {
   await api.post(`/api/business/applications/${applicationId}/manual-checkin`)
 }
 
-// Ekip başı (hesapsız, imzalı link) — yoklamayı gör / "geldi" işaretle
-export async function getLeadAttendance(leadToken) {
-  const { data } = await api.get(`/api/public/attendance/${encodeURIComponent(leadToken)}`)
-  return data
+// Giriş QR'ı (hesapsız): işletme adı + ad soyadla giriş
+export async function getCheckInInfo(token) {
+  const { data } = await api.get(`/api/public/checkin/${encodeURIComponent(token)}`)
+  return data  // { businessName }
 }
 
-export async function leadCheckIn(leadToken, applicationId) {
-  await api.post(`/api/public/attendance/${encodeURIComponent(leadToken)}/checkin/${applicationId}`)
+export async function checkInByName(token, fullName, phoneLast4 = null) {
+  const { data } = await api.post(`/api/public/checkin/${encodeURIComponent(token)}`, { fullName, phoneLast4 })
+  return data  // { needPhone } | { fullName, listingTitle, clockInAt, shift, ... }
 }
 
-// Aday: QR okutunca açılan /checkin/:token sayfası
+// Aday (girişli): QR okutunca açılan /checkin/:token sayfası
 export async function candidateCheckIn(token) {
   const { data } = await api.post('/api/candidate/checkin', { token })
   return data  // { listingTitle, businessName, clockInAt, alreadyCheckedIn, shift, meetingPoint }
@@ -710,12 +711,6 @@ export async function toggleMessageReaction(conversationId, messageId, reaction)
 }
 
 /** Chat refactor v2: dosya/foto ekli mesaj gönder (multipart). */
-// Belgeyi sohbetten iste (işletme) / gönder (aday) — kart mesajı döner
-export async function requestChatDocument(conversationId, documentType) {
-  const { data } = await api.post(`/api/messages/conversations/${conversationId}/document-request`, { documentType })
-  return data  // MessageDto
-}
-
 export async function shareChatDocument(conversationId, documentId) {
   const { data } = await api.post(`/api/messages/conversations/${conversationId}/share-document`, { documentId })
   return data  // MessageDto

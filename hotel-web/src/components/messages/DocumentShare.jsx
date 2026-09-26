@@ -1,14 +1,12 @@
 /**
- * Belgeyi sohbetten iste / gönder.
+ * Belgeyi sohbetten gönder.
  *
- * İşletme "Belge iste" der → sohbete istek kartı düşer. Aday karttaki
- * "Belgeyi gönder" ile (ya da kompozerdeki belge menüsünden kendiliğinden)
- * yüklü belgesini paylaşır. Paylaşım = o başvuru için o belge tipine izin;
- * işletme "Görüntüle" ile açar (erişim kontrolü backend'de).
+ * İşletme belgeyi (adli sicil, hijyen raporu...) sohbette normal mesajla ister;
+ * aday kompozerdeki belge menüsünden yüklü belgesini tek tıkla gönderir.
+ * Paylaşım = o başvuru için o belge tipine izin; işletme karttaki "Görüntüle"
+ * ile açar (erişim kontrolü backend'de). Ayrı "talep → onay" adımı yok.
  *
- * Mesaj token'ları (backend ChatDocumentService üretir):
- *   [DOC_REQUEST:CRIMINAL_RECORD]
- *   [DOC_SHARED:42:CRIMINAL_RECORD]
+ * Mesaj token'ı (backend ChatDocumentService üretir): [DOC_SHARED:42:CRIMINAL_RECORD]
  */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -26,45 +24,30 @@ export const CHAT_DOC_LABELS = {
   TRANSCRIPT:          'Transkript',
 }
 
-/** İşletmenin sohbette en sık istediği belgeler (sırası önemli). */
-const REQUESTABLE = ['CRIMINAL_RECORD', 'HEALTH_CERTIFICATE', 'IDENTITY_DOCUMENT', 'CV']
-
 export function parseDocToken(content) {
   if (!content) return null
-  let m = content.match(/^\[DOC_REQUEST:([A-Z_]+)\]$/)
-  if (m) return { kind: 'request', type: m[1] }
-  m = content.match(/^\[DOC_SHARED:(\d+):([A-Z_]+)\]$/)
-  if (m) return { kind: 'shared', documentId: Number(m[1]), type: m[2] }
-  return null
+  const m = content.match(/^\[DOC_SHARED:(\d+):([A-Z_]+)\]$/)
+  return m ? { documentId: Number(m[1]), type: m[2] } : null
 }
 
 const DOC_ICON = 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z'
 
-/** Sohbet içindeki istek / paylaşım kartı. */
-export function DocumentCardBubble({ m, doc, role, onShareType }) {
+/** Sohbet içindeki "belge paylaşıldı" kartı. */
+export function DocumentCardBubble({ m, doc }) {
   const mine = m.mine
   const label = CHAT_DOC_LABELS[doc.type] || 'Belge'
-  const isRequest = doc.kind === 'request'
   const [busy, setBusy] = useState(false)
 
-  const title = isRequest ? `${label} istendi` : `${label} paylaşıldı`
-  const sub = isRequest
-    ? (mine ? 'Adaydan istedin' : 'Yüklü belgeni tek tıkla gönderebilirsin')
-    : (mine ? 'İşletme artık bu belgeyi görebilir' : 'Aday belgeyi paylaştı')
-
-  async function handleAction() {
+  async function handleView() {
     setBusy(true)
     try {
-      if (isRequest) await onShareType?.(doc.type)
-      else await hotelApi.viewDocument(doc.documentId)
+      await hotelApi.viewDocument(doc.documentId)
     } catch (err) {
       toast.error(extractErrorMessage(err))
     } finally {
       setBusy(false)
     }
   }
-
-  const showAction = isRequest ? (!mine && role === 'CANDIDATE') : true
 
   return (
     <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
@@ -84,42 +67,29 @@ export function DocumentCardBubble({ m, doc, role, onShareType }) {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-sm">{title}</div>
+            <div className="font-semibold text-sm">{label}</div>
             <div className="text-[11px]" style={{ color: mine ? 'rgba(255, 255, 255, 0.65)' : 'var(--ah-ink-4)' }}>
-              {sub} · {formatTime(m.sentAt)}
+              {mine ? 'Gönderdin — işletme görebilir' : 'Aday belgeyi gönderdi'} · {formatTime(m.sentAt)}
             </div>
           </div>
         </div>
-        {showAction && (
-          <button type="button" onClick={handleAction} disabled={busy}
-                  className="w-full px-4 py-2.5 text-sm font-semibold border-t transition-opacity hover:opacity-90 disabled:opacity-60"
-                  style={{ background: '#111827', color: '#ffffff', borderColor: mine ? 'rgba(255, 255, 255, 0.14)' : 'var(--ah-line)' }}>
-            {busy ? 'Bekle…' : isRequest ? 'Belgeyi gönder' : 'Görüntüle'}
-          </button>
-        )}
+        <button type="button" onClick={handleView} disabled={busy}
+                className="w-full px-4 py-2.5 text-sm font-semibold border-t transition-opacity hover:opacity-90 disabled:opacity-60"
+                style={{ background: '#111827', color: '#ffffff', borderColor: mine ? 'rgba(255, 255, 255, 0.14)' : 'var(--ah-line)' }}>
+          {busy ? 'Bekle…' : 'Görüntüle'}
+        </button>
       </div>
     </div>
   )
 }
 
-/**
- * Kompozerdeki belge menüsü.
- *  - İşletme: hangi belgeyi isteyeceğini seçer.
- *  - Aday: yüklü belgelerinden birini gönderir.
- */
-export function DocumentMenu({ role, onRequest, onShare, onClose }) {
-  const isBiz = role === 'BUSINESS_OWNER'
+/** Kompozerdeki belge menüsü (aday): yüklü belgelerinden birini gönderir. */
+export function DocumentMenu({ onShare, onClose }) {
   const [docs, setDocs] = useState(null)
 
   useEffect(() => {
-    if (isBiz) return
     hotelApi.getMyDocuments().then(setDocs).catch(() => setDocs([]))
-  }, [isBiz])
-
-  function pick(fn) {
-    onClose?.()
-    fn()
-  }
+  }, [])
 
   const itemCls = 'w-full text-left px-3 py-2 text-sm rounded-md hover:bg-[var(--ah-page)]'
 
@@ -128,18 +98,12 @@ export function DocumentMenu({ role, onRequest, onShare, onClose }) {
          style={{ background: 'var(--ah-card, #ffffff)', border: '1px solid var(--ah-line)' }}>
       <div className="px-3 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.06em]"
            style={{ color: 'var(--ah-ink-4)' }}>
-        {isBiz ? 'Adaydan belge iste' : 'Belge paylaş'}
+        Belge paylaş
       </div>
-      {isBiz && REQUESTABLE.map(t => (
-        <button key={t} type="button" role="menuitem" className={itemCls}
-                style={{ color: 'var(--ah-ink)' }} onClick={() => pick(() => onRequest(t))}>
-          {CHAT_DOC_LABELS[t]}
-        </button>
-      ))}
-      {!isBiz && docs === null && (
+      {docs === null && (
         <div className="px-3 py-2 text-sm" style={{ color: 'var(--ah-ink-4)' }}>Yükleniyor…</div>
       )}
-      {!isBiz && docs?.length === 0 && (
+      {docs?.length === 0 && (
         <div className="px-3 py-2 text-sm" style={{ color: 'var(--ah-ink-3)' }}>
           Henüz belge yüklemedin.{' '}
           <Link to="/candidate?tab=documents" className="font-semibold underline" style={{ color: 'var(--ah-ink)' }}>
@@ -147,9 +111,9 @@ export function DocumentMenu({ role, onRequest, onShare, onClose }) {
           </Link>
         </div>
       )}
-      {!isBiz && docs?.map(d => (
+      {docs?.map(d => (
         <button key={d.id} type="button" role="menuitem" className={itemCls}
-                onClick={() => pick(() => onShare(d.id))}>
+                onClick={() => { onClose?.(); onShare(d.id) }}>
           <div className="font-medium" style={{ color: 'var(--ah-ink)' }}>
             {CHAT_DOC_LABELS[d.type] || d.type}
             {d.expired && <span className="ml-1.5 text-[11px]" style={{ color: 'var(--ah-danger)' }}>süresi dolmuş</span>}
@@ -159,16 +123,4 @@ export function DocumentMenu({ role, onRequest, onShare, onClose }) {
       ))}
     </div>
   )
-}
-
-/**
- * İstek kartındaki "Belgeyi gönder": o tipteki en yeni, süresi dolmamış belgeyi
- * seçer. Yoksa adayı Belgelerim'e yönlendirir.
- */
-export async function pickDocumentForType(type) {
-  const docs = await hotelApi.getMyDocuments()
-  const candidates = (docs || [])
-    .filter(d => d.type === type && !d.expired)
-    .sort((a, b) => (b.uploadedAt || '').localeCompare(a.uploadedAt || ''))
-  return candidates[0] || null
 }

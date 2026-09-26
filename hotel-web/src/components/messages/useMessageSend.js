@@ -182,7 +182,7 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
     }
   }
 
-  /** Belge iste (işletme) / gönder (aday) — sohbete kart düşer. */
+  /** Aday: yüklü belgesini sohbete gönder — kart düşer. */
   async function sendDocAction(apiCall) {
     if (sending) return false
     setSending(true)
@@ -198,8 +198,7 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
       setSending(false)
     }
   }
-  const requestDoc = (documentType) => sendDocAction(() => hotelApi.requestChatDocument(convId, documentType))
   const shareDoc   = (documentId)   => sendDocAction(() => hotelApi.shareChatDocument(convId, documentId))
 
-  return { sending, sendText, sendFile, sendFiles, sendCall, requestDoc, shareDoc }
+  return { sending, sendText, sendFile, sendFiles, sendCall, shareDoc }
 }

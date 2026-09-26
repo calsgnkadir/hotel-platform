@@ -161,7 +161,7 @@ function CallInviteBubble({ m, type, url }) {
  * Tek mesaj balonu — attachment + quoted reply + reactions + turn grouping.
  * showMeta: turn boundary'de gonderen adi + saat header'i gosterilir.
  */
-export default function MessageBubble({ m, showMeta = true, onReply, onReact, role, onShareDocType }) {
+export default function MessageBubble({ m, showMeta = true, onReply, onReact }) {
   const mine = m.mine
   const isImage = m.attachmentType === 'image'
   const isAudio = m.attachmentType === 'audio'
@@ -173,7 +173,7 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact, ro
   const call = !hasAttach ? parseCallInvite(m.content) : null
   if (call) return <CallInviteBubble m={m} type={call.type} url={call.url} />
   const doc = !hasAttach ? parseDocToken(m.content) : null
-  if (doc) return <DocumentCardBubble m={m} doc={doc} role={role} onShareType={onShareDocType} />
+  if (doc) return <DocumentCardBubble m={m} doc={doc} />
 
   const reactions = m.reactions || []
   const innerBg = mine ? 'rgba(255, 255, 255, 0.10)' : 'var(--ah-page)'

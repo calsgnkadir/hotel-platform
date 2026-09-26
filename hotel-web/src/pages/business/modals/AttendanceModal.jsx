@@ -7,10 +7,9 @@ import useFocusTrap from '../../../lib/useFocusTrap'
 import AttendanceBoard from '../components/AttendanceBoard'
 
 /**
- * Yoklama (işletme). Toplanma noktasında QR'ı göster/yazdır; herkes telefonuyla
- * okutup giriş yapar. Liste 15 sn'de bir yenilenir; telefonu olmayanı "Geldi"
- * ile işaretle. Sahada işletme yoksa "Ekip başı linki"ni WhatsApp'tan gönder:
- * ekip başı hesap açmadan aynı ekranı kullanır (sadece o ilan + o gün).
+ * Yoklama (işletme). İşletmenin kalıcı giriş QR'ı personel girişine asılır;
+ * gelen herkes okutup adını yazar (ya da aday hesabıyla otomatik). Liste 15
+ * sn'de bir yenilenir; telefonu olmayanı "Geldi" ile işaretle.
  */
 export default function AttendanceModal({ listing, onClose }) {
   const today = new Date().toLocaleDateString('en-CA')   // YYYY-MM-DD (yerel)
@@ -30,19 +29,6 @@ export default function AttendanceModal({ listing, onClose }) {
     await hotelApi.manualCheckIn(applicationId)
     await queryClient.invalidateQueries({ queryKey })
   }
-
-  async function copyLeadLink() {
-    try {
-      await navigator.clipboard.writeText(data.leadUrl)
-      toast.success('Ekip başı linki kopyalandı')
-    } catch {
-      toast.error('Kopyalanamadı — linki elle seç')
-    }
-  }
-
-  const waText = data?.leadUrl
-    ? encodeURIComponent(`${listing.title} — ${date} yoklama linki (ekip başı): ${data.leadUrl}`)
-    : ''
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -76,29 +62,6 @@ export default function AttendanceModal({ listing, onClose }) {
               onDownload={() => hotelApi.downloadRoster(listing.id, date).catch(e => toast.error(extractErrorMessage(e)))}
             />
 
-            {/* Ekip başı: hesapsız link — sahadaki sorumluya gönder */}
-            {data.leadUrl && (
-              <div className="rounded-xl p-3 print:hidden"
-                   style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)' }}>
-                <div className="text-sm font-semibold" style={{ color: 'var(--ah-ink)' }}>Ekip başı linki</div>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
-                  Sahadaki sorumluya gönder: hesap açmadan bu QR'ı gösterir, kimin geldiğini görür,
-                  telefonu olmayanı "Geldi" işaretler. Sadece bu ilan ve {date} için geçerli.
-                </p>
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  <button type="button" onClick={copyLeadLink}
-                          className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-                          style={{ background: '#1f2937', color: '#ffffff' }}>
-                    Linki kopyala
-                  </button>
-                  <a href={`https://wa.me/?text=${waText}`} target="_blank" rel="noopener noreferrer"
-                     className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-                     style={{ border: '1px solid var(--ah-line)', color: 'var(--ah-ink)' }}>
-                    WhatsApp ile gönder
-                  </a>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>

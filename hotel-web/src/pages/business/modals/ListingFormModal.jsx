@@ -408,7 +408,7 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
               <label className="label">Toplanma yeri <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
               <textarea name="meetingPoint" value={form.meetingPoint} onChange={handleChange}
                 maxLength={2000} className="input resize-none h-16 text-sm"
-                placeholder="Örn: Otel personel girişi (B kapısı), güvenlik kulübesinin önü. Ekip başı: Ahmet" />
+                placeholder="Örn: Otel personel girişi (B kapısı), güvenlik kulübesinin önü" />
             </div>
             <div>
               <label className="label">Kaç dk önce?</label>

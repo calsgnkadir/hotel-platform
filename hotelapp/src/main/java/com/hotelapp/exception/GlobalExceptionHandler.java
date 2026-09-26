@@ -125,6 +125,14 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, "Endpoint bulunamadı: " + ex.getRequestURL());
     }
 
+    // 404 — Spring 6.1+ eşleşmeyen yol için bunu atar; yakalanmazsa genel
+    // handler'a düşüp 500 dönüyordu.
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoResource(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, "Endpoint bulunamadı: /" + ex.getResourcePath());
+    }
+
     // FAZ 4.7 — 409 — Optimistic lock catch (eszamanli iki update'in birincisi
     // gectiyse, ikinci kullaniciya "tekrar dene" diyelim, "sistem hatasi" demeyelim)
     @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)

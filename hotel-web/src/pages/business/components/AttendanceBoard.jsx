@@ -11,13 +11,12 @@ const STATUS_STYLE = {
 }
 
 /**
- * Yoklama panosu — işletme penceresi (AttendanceModal) ve ekip başının
- * hesapsız sayfası (LeadAttendancePage) ortak kullanır.
+ * Yoklama panosu (işletme). QR = işletmenin kalıcı giriş QR'ı.
  *
  *  data         : backend AttendanceDto
  *  canMark      : "Geldi" butonu gösterilsin mi (sadece vardiya günü)
  *  onMarkArrived: async (applicationId) => void
- *  onDownload   : opsiyonel — Excel indir (ekip başında yok)
+ *  onDownload   : opsiyonel — Excel indir
  */
 export default function AttendanceBoard({ data, canMark, onMarkArrived, onDownload }) {
   const [busyId, setBusyId] = useState(null)
@@ -42,7 +41,7 @@ export default function AttendanceBoard({ data, canMark, onMarkArrived, onDownlo
           <QRCodeSVG value={data.checkinUrl} size={188} level="M" />
         </div>
         <p className="text-xs mt-2" style={{ color: 'var(--ah-ink-3)' }}>
-          {canMark ? 'Herkes telefon kamerasıyla okutsun' : 'Sadece vardiya gününde geçerli'}
+          Kalıcı giriş QR'ın — yazdırıp personel girişine as. Gelen herkes okutup adını yazar.
         </p>
         {data.meetingPoint && (
           <p className="text-xs mt-2 text-left rounded-lg p-2 whitespace-pre-line"

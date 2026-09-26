@@ -23,7 +23,6 @@ import ContactPage from './pages/ContactPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import ListingDetailPage from './pages/candidate/ListingDetailPage'
 import CheckInPage from './pages/candidate/CheckInPage'  // QR yoklama
-import LeadAttendancePage from './pages/LeadAttendancePage'  // ekip başı (hesapsız link)
 import BusinessPublicPage from './pages/public/BusinessPublicPage'  // FAZ 5.9
 import CandidatePublicPage from './pages/public/CandidatePublicPage'  // Dalga G
 import NotFoundPage from './pages/NotFoundPage'  // FAZ 3 - 404
@@ -106,9 +105,8 @@ function AnimatedRoutes() {
 
         {/* FAZ 1/#47 — Public listing detail (paylasilabilir URL) */}
         <Route path="/listings/:id"    element={<ListingDetailPage />} />
-        {/* QR yoklama: toplanma noktasındaki QR bu linki açar (giriş yoksa login → geri döner) */}
-        <Route path="/ekip/:token"     element={<LeadAttendancePage />} />
-        <Route path="/checkin/:token"  element={<ProtectedRoute roles={['CANDIDATE']}><CheckInPage /></ProtectedRoute>} />
+        {/* Giriş QR'ı: işletmenin personel girişinde asılı; hesapsız da açılır (ad soyad sorar) */}
+        <Route path="/checkin/:token"  element={<CheckInPage />} />
 
         {/* FAZ 5.9 — Public isletme profil (paylasilabilir + SEO) */}
         <Route path="/p/business/:id"  element={<BusinessPublicPage />} />

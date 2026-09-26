@@ -7,7 +7,6 @@ import com.hotelapp.entity.Conversation;
 import com.hotelapp.entity.Document;
 import com.hotelapp.entity.DocumentRequest;
 import com.hotelapp.enums.DocumentRequestStatus;
-import com.hotelapp.enums.DocumentType;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
@@ -22,19 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 /**
- * Belgeyi sohbetten iste / gönder.
+ * Belgeyi sohbetten gönder.
  *
- * Eski akış (başvuru ekranında talep → aday ayrı ekranda onay → işletme ayrı
- * ekranda bakar) uzundu. Şimdi:
- *   - İşletme sohbette "belge iste" der → sohbete bir istek kartı düşer.
- *   - Aday karttan (ya da kendiliğinden) yüklü belgesini seçip gönderir.
- * Paylaşım, mevcut izin modelini kullanır: ilgili başvuruda o belge tipi için
- * DocumentRequest GRANTED olur; işletme belgeyi yine /api/documents/{id}/download
- * ile açar ve erişim kontrolü (hasGrantedAccess) orada aynen yapılır.
+ * İşletme belgeyi (adli sicil, hijyen raporu...) sohbette normal mesajla ister;
+ * aday yüklü belgesini sohbetten tek tıkla gönderir. Ayrı "talep → onay"
+ * adımı yok. Paylaşım, mevcut izin modelini kullanır: ilgili başvuruda o belge
+ * tipi için DocumentRequest GRANTED olur; işletme belgeyi yine
+ * /api/documents/{id}/url ile açar ve erişim kontrolü (hasGrantedAccess) orada
+ * aynen yapılır.
  *
- * Mesaj içerik token'ları (frontend kart olarak çizer):
- *   [DOC_REQUEST:CRIMINAL_RECORD]
- *   [DOC_SHARED:42:CRIMINAL_RECORD]
+ * Mesaj içerik token'ı (frontend kart olarak çizer): [DOC_SHARED:42:CRIMINAL_RECORD]
  */
 @Service
 @RequiredArgsConstructor
@@ -45,28 +41,6 @@ public class ChatDocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentRequestRepository documentRequestRepository;
     private final MessageService messageService;
-
-    @Transactional
-    public MessageDto requestInChat(Long conversationId, Long ownerId, DocumentType type) {
-        Conversation conv = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sohbet", conversationId));
-        if (!conv.getBusinessOwner().getId().equals(ownerId)) {
-            throw new UnauthorizedException("Bu sohbette belge isteyemezsin");
-        }
-        Application app = resolveApplication(conv);
-
-        DocumentRequest dr = documentRequestRepository
-                .findByApplicationIdAndDocumentType(app.getId(), type)
-                .orElseGet(() -> DocumentRequest.builder().application(app).documentType(type).build());
-        // Daha önce reddedildiyse yeniden sorulabilir; verilmiş izin geri alınmaz.
-        if (dr.getStatus() != DocumentRequestStatus.GRANTED) {
-            dr.setStatus(DocumentRequestStatus.PENDING);
-            dr.setRespondedAt(null);
-        }
-        documentRequestRepository.save(dr);
-
-        return post(conversationId, ownerId, "[DOC_REQUEST:" + type.name() + "]");
-    }
 
     @Transactional
     public MessageDto shareInChat(Long conversationId, Long candidateId, Long documentId) {
