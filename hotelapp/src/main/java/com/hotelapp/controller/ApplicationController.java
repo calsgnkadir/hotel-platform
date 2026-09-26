@@ -2,7 +2,6 @@ package com.hotelapp.controller;
 
 import com.hotelapp.dto.ApplicationRequest;
 import com.hotelapp.dto.ApplicationResponse;
-import com.hotelapp.dto.DocRequestCreate;
 import com.hotelapp.dto.PageResponse;
 import com.hotelapp.dto.ReviewRequest;
 import com.hotelapp.entity.User;
@@ -81,18 +80,6 @@ public class ApplicationController {
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(
                 applicationService.withdrawApplication(applicationId, currentUser.getId()));
-    }
-
-    @Operation(summary = "Belge talebine yanıt ver (izin ver/reddet) — sadece CANDIDATE")
-    @PutMapping("/api/candidate/document-requests/{requestId}/respond")
-    @PreAuthorize("hasRole('CANDIDATE')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<Void> respondToDocumentRequest(
-            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
-            @PathVariable Long requestId,
-            @RequestParam boolean grant) {
-        applicationService.respondToDocumentRequest(requestId, currentUser.getId(), grant);
-        return ResponseEntity.noContent().build();
     }
 
     // ============================================================
@@ -221,18 +208,6 @@ public class ApplicationController {
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(
                 applicationService.markNoShow(applicationId, currentUser.getId()));
-    }
-
-    @Operation(summary = "Adaydan hassas belge talep et — sadece BUSINESS_OWNER")
-    @PostMapping("/api/business/applications/{applicationId}/document-requests")
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<ApplicationResponse> requestDocument(
-            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
-            @PathVariable Long applicationId,
-            @Valid @RequestBody DocRequestCreate dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(applicationService.requestDocument(applicationId, currentUser.getId(), dto));
     }
 
     @Operation(summary = "Bu başvuru için erişebildiğim adayın belgeleri — BUSINESS_OWNER")

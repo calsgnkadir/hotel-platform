@@ -527,69 +527,6 @@ public class ApplicationService {
     }
 
     // ----------------------------------------------------------------
-    // BUSINESS OWNER: Request sensitive document
-    // ----------------------------------------------------------------
-    @Transactional
-    public ApplicationResponse requestDocument(Long applicationId, Long ownerId, DocRequestCreate dto) {
-        Application application = getApplicationForBusinessOwner(applicationId, ownerId);
-
-        boolean exists = documentRequestRepository
-                .findByApplicationIdAndDocumentType(applicationId, dto.getDocumentType())
-                .isPresent();
-
-        if (exists) {
-            throw new BusinessRuleException("Bu belge tipi için zaten bir talep oluşturulmuş");
-        }
-
-        DocumentRequest docRequest = DocumentRequest.builder()
-                .application(application)
-                .documentType(dto.getDocumentType())
-                .build();
-
-        documentRequestRepository.save(docRequest);
-
-        // Bildirim: adaya belge talebi
-        notificationService.notify(application.getCandidate().getId(), NotificationType.DOCUMENT_REQUEST,
-                "Belge talebi",
-                application.getJobListing().getBusiness().getName() + " senden "
-                        + dto.getDocumentType().name() + " belgesi istedi",
-                "applications");
-
-        return applicationMapper.toResponse(application);
-    }
-
-    // ----------------------------------------------------------------
-    // CANDIDATE: Respond to document request
-    // ----------------------------------------------------------------
-    @Transactional
-    public void respondToDocumentRequest(Long requestId, Long candidateId, boolean grant) {
-        DocumentRequest docRequest = documentRequestRepository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Belge talebi", requestId));
-
-        if (!docRequest.getApplication().getCandidate().getId().equals(candidateId)) {
-            throw UnauthorizedException.keyed("error.request.notOwner");
-        }
-
-        if (docRequest.getStatus() != DocumentRequestStatus.PENDING) {
-            throw new BusinessRuleException("Bu talep zaten yanıtlanmış: " + docRequest.getStatus());
-        }
-
-        docRequest.setStatus(grant ? DocumentRequestStatus.GRANTED : DocumentRequestStatus.DENIED);
-        docRequest.setRespondedAt(LocalDateTime.now());
-        documentRequestRepository.save(docRequest);
-
-        // Bildirim: işletmeye belge izni sonucu
-        Application app = docRequest.getApplication();
-        Long ownerId = app.getJobListing().getBusiness().getOwner().getId();
-        notificationService.notify(ownerId,
-                grant ? NotificationType.DOCUMENT_GRANTED : NotificationType.DOCUMENT_DENIED,
-                grant ? "Belge izni verildi" : "Belge izni reddedildi",
-                app.getCandidate().getFullName() + " · " + docRequest.getDocumentType().name()
-                        + (grant ? " belgesine erişim verdi" : " belgesine erişimi reddetti"),
-                "applications");
-    }
-
-    // ----------------------------------------------------------------
     // Helper: verify the application belongs to this business owner
     // ----------------------------------------------------------------
     private Application getApplicationForBusinessOwner(Long applicationId, Long ownerId) {

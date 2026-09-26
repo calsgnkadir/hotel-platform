@@ -291,11 +291,6 @@ function genIdempotencyKey() {
   return 'idem-' + Math.random().toString(36).slice(2) + '-' + Date.now().toString(36)
 }
 
-export async function respondDocumentRequest(requestId, grant) {
-  const { data } = await api.put(`/api/candidate/document-requests/${requestId}/respond`, null, { params: { grant } })
-  return data
-}
-
 // D6: Aday başvurusunu iptal eder (sadece PENDING/REVIEWING)
 export async function withdrawApplication(applicationId) {
   const { data } = await api.put(`/api/candidate/applications/${applicationId}/withdraw`)
@@ -486,6 +481,16 @@ export async function manualCheckIn(applicationId) {
   await api.post(`/api/business/applications/${applicationId}/manual-checkin`)
 }
 
+// Ekip başı (hesapsız, imzalı link) — yoklamayı gör / "geldi" işaretle
+export async function getLeadAttendance(leadToken) {
+  const { data } = await api.get(`/api/public/attendance/${encodeURIComponent(leadToken)}`)
+  return data
+}
+
+export async function leadCheckIn(leadToken, applicationId) {
+  await api.post(`/api/public/attendance/${encodeURIComponent(leadToken)}/checkin/${applicationId}`)
+}
+
 // Aday: QR okutunca açılan /checkin/:token sayfası
 export async function candidateCheckIn(token) {
   const { data } = await api.post('/api/candidate/checkin', { token })
@@ -506,11 +511,6 @@ export async function downloadRoster(listingId, date = null) {
   a.click()
   a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
-
-export async function requestDocument(applicationId, documentType) {
-  const { data } = await api.post(`/api/business/applications/${applicationId}/document-requests`, { documentType })
-  return data
 }
 
 export async function getApplicationDocuments(applicationId) {

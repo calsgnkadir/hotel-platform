@@ -50,6 +50,7 @@ class JobListingServiceTest {
     @Mock private FileStorageService fileStorageService;
     @Mock private UserAvailabilityBlockRepository availabilityBlockRepository;
     @Mock private ApplicationRepository applicationRepository;
+    @Mock private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private JobListingService service;
@@ -260,6 +261,52 @@ class JobListingServiceTest {
             assertThatThrownBy(() -> service.updateStatus(42L, OTHER_ID, ListingStatus.PAUSED))
                     .isInstanceOf(UnauthorizedException.class)
                     .hasMessageContaining("error.listing.notOwner");
+        }
+
+        @Test
+        @DisplayName("Kapatinca ekip listesi olayi yayinlanir (bir kez)")
+        void closing_publishes_roster_event_once() {
+            Business biz = businessOwnedBy(OWNER_ID);
+            biz.setType(com.hotelapp.enums.BusinessType.HOTEL);
+            JobListing l = JobListing.builder()
+                    .business(biz)
+                    .position(Position.WAITER)
+                    .jobType(JobType.DAILY)
+                    .title("Garson")
+                    .status(ListingStatus.ACTIVE)
+                    .build();
+            l.setId(42L);
+            org.mockito.Mockito.lenient().when(reviewService.getBusinessRating(any()))
+                    .thenReturn(ReviewService.RatingSummary.empty());
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
+            verify(eventPublisher).publishEvent(new com.hotelapp.event.ListingClosedEvent(42L));
+
+            // Zaten kapaliyken tekrar kapatmak yeni e-posta tetiklemez
+            service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
+            verify(eventPublisher, org.mockito.Mockito.times(1)).publishEvent(any(Object.class));
+        }
+
+        @Test
+        @DisplayName("Duraklatma ekip listesi tetiklemez")
+        void pausing_does_not_publish() {
+            Business biz = businessOwnedBy(OWNER_ID);
+            biz.setType(com.hotelapp.enums.BusinessType.HOTEL);
+            JobListing l = JobListing.builder()
+                    .business(biz)
+                    .position(Position.WAITER)
+                    .jobType(JobType.DAILY)
+                    .title("Garson")
+                    .status(ListingStatus.ACTIVE)
+                    .build();
+            l.setId(42L);
+            org.mockito.Mockito.lenient().when(reviewService.getBusinessRating(any()))
+                    .thenReturn(ReviewService.RatingSummary.empty());
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            service.updateStatus(42L, OWNER_ID, ListingStatus.PAUSED);
+            verify(eventPublisher, never()).publishEvent(any(Object.class));
         }
     }
 }

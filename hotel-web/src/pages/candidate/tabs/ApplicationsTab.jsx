@@ -2,11 +2,9 @@
 // Redesign: glass cards + status accent rail + Geist + motion micro-interactions
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { useQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
-import { keys } from '../../../lib/queryClient'
 import { useMyLocation } from '../../../lib/useMyLocation'
 import EmptyState from '../../../components/EmptyState'
 import { CAND_STATUS_FILTERS } from '../../../components/candidate/StatusBadge'
@@ -25,15 +23,6 @@ const STATUS_CONFIG = {
   REJECTED:  { label: 'Red',          color: 'var(--ah-danger)', soft: 'var(--ah-danger-soft)', text: 'var(--ah-danger)' }, // kiremit
   WITHDRAWN: { label: 'İptal',        color: 'var(--ah-ink-4)',  soft: 'var(--ah-band)',        text: 'var(--ah-ink-3)' },  // notr
   EXPIRED:   { label: 'Süresi Doldu', color: 'var(--ah-ink-4)',  soft: 'var(--ah-band)',        text: 'var(--ah-ink-4)' },  // soluk
-}
-
-const DOC_TYPE_LABELS = {
-  CV: 'CV',
-  TRANSCRIPT: 'Transkript',
-  STUDENT_CERTIFICATE: 'Öğrenci Belgesi',
-  CRIMINAL_RECORD: 'Adli Sicil',
-  HEALTH_CERTIFICATE: 'Sağlık Raporu',
-  IDENTITY_DOCUMENT: 'Kimlik Fotokopisi',
 }
 
 /* Kariyer.net tarzi satir listesi (FAZ 22) — gorece tarih.
@@ -68,20 +57,10 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     return true
   })
 
-  const [respondingId, setRespondingId] = useState(null)
   const [statusFilter, setStatusFilter] = useState('')
   // FAZ 11.W1.1 — Rich card: anywhere-click expands detail inline.
   // Wave 2'de split-panel gelince bu state kaldirilir.
   const [expandedId, setExpandedId] = useState(null)
-
-  const { data: myDocs = [] } = useQuery({
-    queryKey: keys.documents.my(),
-    queryFn: () => hotelApi.getMyDocuments(),
-    staleTime: 60 * 1000,
-    retry: 0,
-  })
-
-  const uploadedTypes = new Set(myDocs.map(d => d.type))
 
   // FAZ 2/#21 — Geo-fenced mesai (clock-in/out). Kabul edilen basvurular icin
   // acik mesai durumunu tek batch call ile ceker; buton karar verir.
@@ -116,16 +95,6 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
       await refreshSessions()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setClockBusyId(null) }
-  }
-
-  async function handleRespond(reqId, grant) {
-    setRespondingId(reqId)
-    try {
-      await hotelApi.respondDocumentRequest(reqId, grant)
-      toast.success(grant ? 'Belgeye izin verildi' : 'Talep reddedildi')
-      onRefresh?.()
-    } catch (err) { toast.error(extractErrorMessage(err)) }
-    finally { setRespondingId(null) }
   }
 
   const [withdrawingId, setWithdrawingId] = useState(null)
@@ -265,8 +234,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           const salaryStr = formatSalary(app.listing?.salaryMin, app.listing?.salaryMax, app.listing?.salaryType, app.listing?.tipsIncluded)
           const slot0 = requestedSlots[0]
           const initial = (app.listing?.businessName || '?').trim().charAt(0).toUpperCase()
-          const hasPendingDoc = (app.documentRequests || []).some(dr => dr.status === 'PENDING')
-          const hasAttention = !!app.note || hasPendingDoc
+          const hasAttention = !!app.note
           const metaBits = [
             requestedSlots.length > 0 && `${requestedSlots.length} vardiya`,
             slot0 && `${new Date(slot0.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${(slot0.startTime || '').slice(0, 5)}`,
@@ -405,12 +373,6 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                       İşletme notu
                     </span>
                   )}
-                  {hasPendingDoc && (
-                    <span className="inline-flex items-center gap-1.5 type-caption px-2 py-1 rounded-full"
-                          style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-brand)', color: 'var(--ah-brand)' }}>
-                      {(app.documentRequests || []).filter(dr => dr.status === 'PENDING').length} belge talebi
-                    </span>
-                  )}
                   <button type="button" onClick={() => setExpandedId(app.id)} className="type-caption ml-auto" style={{ fontWeight: 600, color: 'var(--ah-brand)' }}>Detay ▽</button>
                 </div>
               )}
@@ -430,47 +392,6 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                 </div>
               )}
 
-              {isExpanded && app.documentRequests?.length > 0 && (
-                <div className="px-4 pb-4">
-                  <div className="type-overline mb-2">Belge Talepleri</div>
-                  <div className="space-y-2">
-                    {app.documentRequests.map(dr => {
-                      const label = DOC_TYPE_LABELS[dr.documentType] || dr.documentType
-                      const isPending = dr.status === 'PENDING'
-                      const hasUploaded = uploadedTypes.has(dr.documentType)
-                      return (
-                        <div key={dr.id} className="rounded-lg px-3 py-2.5"
-                          style={{ background: isPending ? 'var(--ah-warn-soft)' : '#f4f6f6', border: `1px solid ${isPending ? 'var(--ah-warn)' : 'var(--ah-line)'}` }}>
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <span className="type-body font-medium" style={{ color: 'var(--ah-ink-2)' }}>{label}</span>
-                            {!isPending && (
-                              <span className={`badge ${dr.status === 'GRANTED' ? 'badge-accepted' : 'badge-rejected'}`}>{dr.status === 'GRANTED' ? 'İzin Verdin' : 'Reddettin'}</span>
-                            )}
-                          </div>
-                          {isPending && (
-                            <>
-                              {!hasUploaded && (
-                                <div className="type-caption rounded-md px-2 py-1.5 mt-2" style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#3f4b4a' }}>
-                                  Bu belgeyi henüz yüklemedin. <b>Belgelerim</b> sekmesinden yükledikten sonra izin verebilirsin.
-                                </div>
-                              )}
-                              <div className="flex gap-2 mt-2">
-                                <button onClick={() => handleRespond(dr.id, true)} disabled={respondingId === dr.id || !hasUploaded}
-                                  title={!hasUploaded ? 'Önce bu belgeyi yükle' : ''}
-                                  className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                  style={{ background: '#6b7574', color: '#fff', border: '1px solid #6b7574' }}>İzin Ver</button>
-                                <button onClick={() => handleRespond(dr.id, false)} disabled={respondingId === dr.id}
-                                  className="flex-1 py-1.5 rounded-md type-overline transition-all disabled:opacity-50"
-                                  style={{ background: '#fff', color: '#3f4b4a', border: '1px solid var(--ah-line-2)' }}>Reddet</button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
           )
         })}

@@ -143,6 +143,40 @@ class CheckInServiceTest {
     }
 
     @Test
+    void lead_link_and_qr_token_are_not_interchangeable() {
+        String qr = service.tokenFor(10L, TODAY);
+        String lead = service.leadTokenFor(10L, TODAY);
+        assertThat(service.parseLead(lead).listingId()).isEqualTo(10L);
+        assertThatThrownBy(() -> service.parseLead(qr)).isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> service.parse(lead)).isInstanceOf(BusinessRuleException.class);
+    }
+
+    @Test
+    void lead_sees_attendance_without_lead_url_and_expired_link_fails() {
+        when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing));
+        when(rosterService.collectRows(listing, TODAY)).thenReturn(Map.of(TODAY, List.of()));
+
+        CheckInService.AttendanceDto a = service.attendanceForLead(service.leadTokenFor(10L, TODAY));
+        assertThat(a.getLeadUrl()).isNull();   // ekip başı yeni link üretemez
+        assertThat(a.getCheckinUrl()).contains("/checkin/");
+
+        assertThatThrownBy(() -> service.attendanceForLead(service.leadTokenFor(10L, TODAY.minusDays(1))))
+                .isInstanceOf(BusinessRuleException.class);
+    }
+
+    @Test
+    void lead_can_mark_only_this_listings_candidates() {
+        when(applicationRepository.findById(1L)).thenReturn(Optional.of(accepted));
+        when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(1L)).thenReturn(List.of());
+
+        service.manualCheckInByLead(service.leadTokenFor(10L, TODAY), 1L);
+        verify(workSessionRepository).save(any());
+
+        assertThatThrownBy(() -> service.manualCheckInByLead(service.leadTokenFor(11L, TODAY), 1L))
+                .isInstanceOf(UnauthorizedException.class);
+    }
+
+    @Test
     void attendance_counts_arrivals_and_builds_checkin_url() {
         when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing));
         when(rosterService.collectRows(listing, TODAY)).thenReturn(Map.of(TODAY, List.of(

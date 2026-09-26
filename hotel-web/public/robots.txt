@@ -19,6 +19,8 @@ Disallow: /oauth-success
 Disallow: /verify-email
 Disallow: /reset-password
 Disallow: /forgot-password
+Disallow: /ekip/
+Disallow: /checkin/
 
 # Google'a "JSON-LD'leri keşfedebilirsin" ipucu
 User-agent: Googlebot

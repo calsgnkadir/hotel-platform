@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
-import { SENSITIVE_DOC_TYPES_BIZ, DOC_REQ_STATUS_LABELS } from '../lib/constants'
+import { SENSITIVE_DOC_TYPES_BIZ } from '../lib/constants'
 import { StatusBadge } from './Badges'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'
@@ -28,7 +28,6 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
   const [actionLoading, setActionLoading] = useState(false)
   const [accessibleDocs, setAccessibleDocs] = useState([])
   const [docsLoading, setDocsLoading] = useState(false)
-  const [requestingType, setRequestingType] = useState('')
 
   // Erisilabilir belgeleri yukle
   useEffect(() => {
@@ -38,7 +37,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
       .then(setAccessibleDocs)
       .catch(() => setAccessibleDocs([]))
       .finally(() => setDocsLoading(false))
-  }, [app?.id, app?.documentRequests?.length])
+  }, [app?.id])
 
   // Favori durumu
   const [isFavorited, setIsFavorited] = useState(false)
@@ -163,19 +162,6 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
         toast.success(`No-show işaretlendi. Adayın kalan strike hakkı: ${result.candidateStrikesRemaining}`)
       }
       onChanged?.(result.application)
-      onRefresh?.()
-    } catch (err) { toast.error(extractErrorMessage(err)) }
-    finally { setActionLoading(false) }
-  }
-
-  async function handleRequestDoc() {
-    if (!requestingType) return
-    setActionLoading(true)
-    try {
-      const updated = await hotelApi.requestDocument(app.id, requestingType)
-      toast.success('Belge talebi gönderildi')
-      setRequestingType('')
-      onChanged?.(updated)
       onRefresh?.()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionLoading(false) }
@@ -321,7 +307,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             <p className="type-caption">Yükleniyor...</p>
           ) : accessibleDocs.length === 0 ? (
             <p className="type-caption mb-3">
-              Bu aday henüz belge yüklememiş veya hassas belgeler için izin yok.
+              Aday henüz belge paylaşmadı.
             </p>
           ) : (
             <div className="space-y-1.5 mb-3">
@@ -353,54 +339,17 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
           )}
         </div>
 
-        {/* Belge Talepleri */}
+        {/* Belge isteme artık sohbetten: kart düşer, aday tek tıkla gönderir */}
         <div>
-          <h3 className="type-overline mb-2">Belge Talepleri</h3>
-
-          {app.documentRequests?.length > 0 ? (
-            <div className="space-y-1.5 mb-3">
-              {app.documentRequests.map(dr => {
-                const meta = SENSITIVE_DOC_TYPES_BIZ.find(t => t.type === dr.documentType)
-                const statusMeta = DOC_REQ_STATUS_LABELS[dr.status] || { cls: 'badge-expired', label: dr.status }
-                return (
-                  <div key={dr.id} className="flex items-center justify-between rounded-lg px-3 py-2"
-                       style={{ background: 'rgba(31, 41, 55, 0.05)' }}>
-                    <span className="type-body" style={{ color: 'var(--text-secondary)' }}>{meta?.label || dr.documentType}</span>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusMeta.cls}`}>
-                      {statusMeta.label}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <p className="type-caption mb-3">Henüz belge talep edilmemiş</p>
-          )}
-
-          {['PENDING', 'REVIEWING'].includes(app.status) && (() => {
-            const requestedTypes = new Set(app.documentRequests?.map(dr => dr.documentType) || [])
-            const availableTypes = SENSITIVE_DOC_TYPES_BIZ.filter(t => !requestedTypes.has(t.type))
-            if (availableTypes.length === 0) {
-              return <p className="type-caption">Tüm hassas belge tipleri zaten talep edilmiş.</p>
-            }
-            return (
-              <div className="flex gap-2">
-                <select value={requestingType} onChange={e => setRequestingType(e.target.value)}
-                  className="input text-sm flex-1">
-                  <option value="">Belge tipi seç...</option>
-                  {availableTypes.map(t => <option key={t.type} value={t.type}>{t.label}</option>)}
-                </select>
-                <button onClick={handleRequestDoc} disabled={!requestingType || actionLoading}
-                  className="type-overline px-4 py-2 rounded-lg disabled:opacity-50 transition-all"
-                  style={{
-                    background: 'var(--ah-brand-gradient)',
-                    color: '#ffffff',
-                  }}>
-                  Talep Et
-                </button>
-              </div>
-            )
-          })()}
+          <button onClick={handleStartConversation}
+            className="type-overline w-full px-4 py-2 rounded-lg transition-all"
+            style={{ background: 'rgba(31, 41, 55, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
+            Sohbette belge iste
+          </button>
+          <p className="type-caption mt-1.5">
+            Adli sicil, hijyen/sağlık belgesi veya kimlik: sohbetteki belge düğmesinden iste;
+            aday gönderince yukarıda görünür.
+          </p>
         </div>
 
         {/* FAZ C.1 — Yedek durumu paneli */}

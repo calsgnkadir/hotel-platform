@@ -56,5 +56,18 @@ public class CheckInController {
         return ResponseEntity.ok(checkInService.checkIn(body.token(), currentUser.getId()));
     }
 
+    @Operation(summary = "Ekip başı (hesapsız, imzalı link): o günün yoklaması")
+    @GetMapping("/api/public/attendance/{leadToken}")
+    public ResponseEntity<AttendanceDto> leadAttendance(@PathVariable String leadToken) {
+        return ResponseEntity.ok(checkInService.attendanceForLead(leadToken));
+    }
+
+    @Operation(summary = "Ekip başı (imzalı link): adayı 'geldi' işaretle")
+    @PostMapping("/api/public/attendance/{leadToken}/checkin/{applicationId}")
+    public ResponseEntity<Void> leadCheckIn(@PathVariable String leadToken, @PathVariable Long applicationId) {
+        checkInService.manualCheckInByLead(leadToken, applicationId);
+        return ResponseEntity.noContent().build();
+    }
+
     public record CheckInBody(@NotBlank String token) {}
 }

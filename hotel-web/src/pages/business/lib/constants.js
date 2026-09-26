@@ -31,12 +31,6 @@ export const SENSITIVE_DOC_TYPES_BIZ = [
   { type: 'IDENTITY_DOCUMENT',  label: 'Kimlik Fotokopisi' },
 ]
 
-export const DOC_REQ_STATUS_LABELS = {
-  PENDING: { cls: 'bg-amber-50 text-amber-700',   label: 'Bekliyor' },
-  GRANTED: { cls: 'bg-brand-50 text-brand-700',   label: 'İzin Verildi' },
-  DENIED:  { cls: 'bg-red-50 text-red-700',        label: 'Reddedildi' },
-}
-
 export const BUSINESS_TYPE_LABELS = {
   HOTEL: 'Otel',
   RESTAURANT: 'Restoran',

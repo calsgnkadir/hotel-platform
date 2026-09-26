@@ -40,6 +40,7 @@ import java.util.List;
 @Slf4j
 public class JobListingService {
 
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
     private final JobListingRepository jobListingRepository;
     private final BusinessRepository businessRepository;
     private final com.hotelapp.repository.UserRepository userRepository;
@@ -344,8 +345,11 @@ public class JobListingService {
     @Transactional
     public ListingResponse updateStatus(Long listingId, Long ownerId, ListingStatus status) {
         JobListing listing = getListingForOwner(listingId, ownerId);
+        boolean closing = status == ListingStatus.CLOSED && listing.getStatus() != ListingStatus.CLOSED;
         listing.setStatus(status);
         jobListingRepository.save(listing);
+        // Kapanınca tüm günlerin ekip listesi işletmeye e-postayla (commit sonrası, async)
+        if (closing) eventPublisher.publishEvent(new com.hotelapp.event.ListingClosedEvent(listing.getId()));
         return toResponse(listing);
     }
 
@@ -696,7 +700,7 @@ public class JobListingService {
         private SalaryType salaryType;
         private Boolean tipsIncluded;
         // V16 — iş günü + ödeme netliği. Ödeme ne zaman/nasıl yeni ilanlarda zorunlu.
-        @Size(max = 2000) private String dressCode;
+        @NotBlank(message = "Kıyafet ve getirilecekleri yaz") @Size(max = 2000) private String dressCode;
         @NotNull(message = "Ödeme zamanı seçilmeli") private PaymentPeriod paymentPeriod;
         @NotNull(message = "Ödeme şekli seçilmeli") private PaymentMethod paymentMethod;
         @Size(max = 255) private String paymentNote;

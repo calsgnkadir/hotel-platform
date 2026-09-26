@@ -156,6 +156,7 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
       return toast.error('Min. ücret zorunlu (veya tipi "Görüşülecek" yap)')
     }
 
+    if (!form.dressCode.trim()) return toast.error('Kıyafet ve getirilecekleri yaz (örn. siyah pantolon, beyaz gömlek, kimlik)')
     if (!form.paymentPeriod) return toast.error('Ödeme zamanını seç (aynı gün / haftalık / aylık)')
     if (!form.paymentMethod) return toast.error('Ödeme şeklini seç (nakit / havale)')
 
@@ -395,7 +396,7 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
 
           {/* V16 — İş günü netliği: serbest metin, seçenek değil */}
           <div>
-            <label className="label">Kıyafet ve getirilecekler <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
+            <label className="label">Kıyafet ve getirilecekler *</label>
             <textarea name="dressCode" value={form.dressCode} onChange={handleChange}
               maxLength={2000} className="input resize-none h-20 text-sm"
               placeholder="Örn: Siyah kumaş pantolon, beyaz gömlek, kapalı siyah ayakkabı. Kimliğini ve hijyen belgeni yanında getir." />

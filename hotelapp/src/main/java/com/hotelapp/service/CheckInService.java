@@ -70,7 +70,15 @@ public class CheckInService {
     // ── Token ──────────────────────────────────────────────────────────
 
     String tokenFor(Long listingId, LocalDate date) {
-        String payload = listingId + ":" + date;
+        return encode(listingId + ":" + date);
+    }
+
+    /** Ekip başı linki: aynı anahtar, farklı payload → QR belirteci yerine kullanılamaz (ve tersi). */
+    String leadTokenFor(Long listingId, LocalDate date) {
+        return encode("lead:" + listingId + ":" + date);
+    }
+
+    private String encode(String payload) {
         String p = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
         return p + "." + sign(payload);
     }
@@ -79,6 +87,19 @@ public class CheckInService {
     record Parsed(Long listingId, LocalDate date) {}
 
     Parsed parse(String token) {
+        String[] f = verified(token, "QR kodu geçersiz").split(":");
+        if (f.length != 2) throw new BusinessRuleException("QR kodu geçersiz");
+        return new Parsed(Long.valueOf(f[0]), LocalDate.parse(f[1]));
+    }
+
+    Parsed parseLead(String token) {
+        String[] f = verified(token, "Ekip başı linki geçersiz").split(":");
+        if (f.length != 3 || !"lead".equals(f[0])) throw new BusinessRuleException("Ekip başı linki geçersiz");
+        return new Parsed(Long.valueOf(f[1]), LocalDate.parse(f[2]));
+    }
+
+    /** İmzayı ve biçimi doğrular, payload'u döner; bozuksa verilen mesajla hata. */
+    private String verified(String token, String error) {
         try {
             String[] parts = token.split("\\.");
             if (parts.length != 2) throw new IllegalArgumentException();
@@ -88,9 +109,11 @@ public class CheckInService {
                 throw new IllegalArgumentException();
             }
             String[] f = payload.split(":");
-            return new Parsed(Long.valueOf(f[0]), LocalDate.parse(f[1]));
+            LocalDate.parse(f[f.length - 1]);
+            Long.valueOf(f[f.length - 2]);
+            return payload;
         } catch (RuntimeException e) {
-            throw new BusinessRuleException("QR kodu geçersiz");
+            throw new BusinessRuleException(error);
         }
     }
 
@@ -111,6 +134,43 @@ public class CheckInService {
     public AttendanceDto attendance(Long listingId, Long ownerId, LocalDate date) {
         JobListing l = ownedListing(listingId, ownerId);
         LocalDate d = date != null ? date : LocalDate.now(clock);
+        AttendanceDto dto = build(l, d);
+        dto.setLeadUrl(base() + "/ekip/" + leadTokenFor(l.getId(), d));
+        return dto;
+    }
+
+    /** Ekip başı (hesapsız, linkle): o ilanın o günkü yoklaması. Geçmiş günün linki çalışmaz. */
+    @Transactional(readOnly = true)
+    public AttendanceDto attendanceForLead(String leadToken) {
+        Parsed p = parseLead(leadToken);
+        if (p.date().isBefore(LocalDate.now(clock))) {
+            throw new BusinessRuleException("Bu ekip başı linkinin süresi doldu");
+        }
+        JobListing l = jobListingRepository.findById(p.listingId())
+                .orElseThrow(() -> new ResourceNotFoundException("İlan", p.listingId()));
+        return build(l, p.date());
+    }
+
+    /** Ekip başı linkiyle elle "geldi": sadece o gün, sadece o ilanın başvurusu. */
+    @Transactional
+    public void manualCheckInByLead(String leadToken, Long applicationId) {
+        Parsed p = parseLead(leadToken);
+        if (!p.date().equals(LocalDate.now(clock))) {
+            throw new BusinessRuleException("Yoklama sadece vardiya günü alınabilir");
+        }
+        Application app = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
+        if (!app.getJobListing().getId().equals(p.listingId())) {
+            throw new UnauthorizedException("Bu aday bu ilanın ekibinde değil");
+        }
+        markArrived(app, "lead");
+    }
+
+    private String base() {
+        return baseUrl.replaceAll("/$", "");
+    }
+
+    private AttendanceDto build(JobListing l, LocalDate d) {
         List<RosterRow> rows = rosterService.collectRows(l, d).getOrDefault(d, List.of());
         long arrived = rows.stream().filter(r -> !r.clockIn().isEmpty()).count();
         String token = tokenFor(l.getId(), d);
@@ -120,7 +180,7 @@ public class CheckInService {
                 .date(d)
                 .meetingPoint(l.getMeetingPoint())
                 .meetingMinutesBefore(l.getMeetingMinutesBefore())
-                .checkinUrl(baseUrl.replaceAll("/$", "") + "/checkin/" + token)
+                .checkinUrl(base() + "/checkin/" + token)
                 .expected(rows.size())
                 .arrived((int) arrived)
                 .rows(rows)
@@ -135,6 +195,10 @@ public class CheckInService {
         if (!app.getJobListing().getBusiness().getOwner().getId().equals(ownerId)) {
             throw new UnauthorizedException("Bu başvuru senin ilanına ait değil");
         }
+        markArrived(app, "owner:" + ownerId);
+    }
+
+    private void markArrived(Application app, String by) {
         if (app.getStatus() != ApplicationStatus.ACCEPTED) {
             throw new BusinessRuleException("Sadece kabul edilmiş aday yoklamaya eklenebilir");
         }
@@ -142,7 +206,7 @@ public class CheckInService {
         if (todaysSession(app.getId(), today).isEmpty()) {
             workSessionRepository.save(WorkSession.builder()
                     .application(app).clockInAt(LocalDateTime.now(clock)).build());
-            log.info("[CHECKIN-MANUAL] appId={} owner={}", applicationId, ownerId);
+            log.info("[CHECKIN-MANUAL] appId={} by={}", app.getId(), by);
         }
     }
 
@@ -219,6 +283,8 @@ public class CheckInService {
         private String meetingPoint;
         private Integer meetingMinutesBefore;
         private String checkinUrl;
+        /** Sadece işletmeye döner: ekip başına WhatsApp'tan gönderilecek hesapsız link. */
+        private String leadUrl;
         private int expected;
         private int arrived;
         private List<RosterRow> rows;

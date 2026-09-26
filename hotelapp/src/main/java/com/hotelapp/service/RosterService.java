@@ -72,6 +72,15 @@ public class RosterService {
         return toXlsx(listing, collectRows(listing, onlyDate));
     }
 
+    /** İlan kapanınca: tüm günler; kabul edilen kimse yoksa null. */
+    @Transactional(readOnly = true)
+    public byte[] xlsxAllOrNull(Long listingId) {
+        JobListing listing = jobListingRepository.findById(listingId)
+                .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
+        Map<LocalDate, List<RosterRow>> rows = collectRows(listing, null);
+        return rows.isEmpty() ? null : toXlsx(listing, rows);
+    }
+
     /** Scheduler için: o günün listesi; o gün kimse yoksa null (e-posta atılmaz). */
     @Transactional(readOnly = true)
     public byte[] xlsxForDateOrNull(Long listingId, LocalDate date) {
