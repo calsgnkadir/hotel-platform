@@ -58,7 +58,7 @@ public class RosterService {
     private final WorkSessionRepository workSessionRepository;
 
     /** Satır verisi (xlsx'ten bağımsız — test edilebilir). */
-    public record RosterRow(String fullName, String phone, String shift,
+    public record RosterRow(Long applicationId, String fullName, String phone, String shift,
                             String clockIn, String clockOut, String status) {}
 
     /** İşletme sahibinin kendi ilanı için tam liste (date null → tüm günler). */
@@ -123,7 +123,7 @@ public class RosterService {
                 : ws == null ? "Bekleniyor"
                 : ws.getClockOutAt() == null ? "İşte" : "Tamamladı";
         String phone = a.getCandidate().getPhone();
-        return new RosterRow(a.getCandidate().getFullName(), phone == null ? "" : phone, shift, in, out, status);
+        return new RosterRow(a.getId(), a.getCandidate().getFullName(), phone == null ? "" : phone, shift, in, out, status);
     }
 
     byte[] toXlsx(JobListing listing, Map<LocalDate, List<RosterRow>> byDate) {
@@ -163,7 +163,8 @@ public class RosterService {
                         (date == null || date.equals(LocalDate.MIN) ? "" : D.format(date) + " · ")
                         + e.getValue().size() + " kişi · Oluşturma: "
                         + DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(LocalDateTime.now())
-                        + " · Kadrom");
+                        + " · Kadrom"
+                        + (listing.getMeetingPoint() != null ? " · Toplanma: " + listing.getMeetingPoint() : ""));
 
                 Row h = sh.createRow(3);
                 for (int i = 0; i < HEADERS.length; i++) {

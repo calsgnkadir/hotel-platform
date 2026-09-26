@@ -177,6 +177,8 @@ public class JobListingService {
                 .paymentPeriod(request.getPaymentPeriod())
                 .paymentMethod(request.getPaymentMethod())
                 .paymentNote(trimToNull(request.getPaymentNote()))
+                .meetingPoint(trimToNull(request.getMeetingPoint()))
+                .meetingMinutesBefore(request.getMeetingMinutesBefore())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .shiftStart(request.getShiftStart())
@@ -372,6 +374,8 @@ public class JobListingService {
         listing.setPaymentPeriod(request.getPaymentPeriod());
         listing.setPaymentMethod(request.getPaymentMethod());
         listing.setPaymentNote(trimToNull(request.getPaymentNote()));
+        listing.setMeetingPoint(trimToNull(request.getMeetingPoint()));
+        listing.setMeetingMinutesBefore(request.getMeetingMinutesBefore());
         listing.setStartDate(request.getStartDate());
         listing.setEndDate(request.getEndDate());
         listing.setShiftStart(request.getShiftStart());
@@ -594,6 +598,8 @@ public class JobListingService {
                 .paymentPeriod(l.getPaymentPeriod() != null ? l.getPaymentPeriod().name() : null)
                 .paymentMethod(l.getPaymentMethod() != null ? l.getPaymentMethod().name() : null)
                 .paymentNote(l.getPaymentNote())
+                .meetingPoint(l.getMeetingPoint())
+                .meetingMinutesBefore(l.getMeetingMinutesBefore())
                 .startDate(l.getStartDate())
                 .endDate(l.getEndDate())
                 .shiftStart(l.getShiftStart())
@@ -694,6 +700,10 @@ public class JobListingService {
         @NotNull(message = "Ödeme zamanı seçilmeli") private PaymentPeriod paymentPeriod;
         @NotNull(message = "Ödeme şekli seçilmeli") private PaymentMethod paymentMethod;
         @Size(max = 255) private String paymentNote;
+        // V17 — toplanma yeri + kaç dk önce
+        @Size(max = 2000) private String meetingPoint;
+        @jakarta.validation.constraints.Min(0) @jakarta.validation.constraints.Max(240)
+        private Integer meetingMinutesBefore;
         private LocalDate startDate;
         private LocalDate endDate;
         private LocalTime shiftStart;
@@ -744,6 +754,8 @@ public class JobListingService {
         private String paymentPeriod;  // SAME_DAY/WEEKLY/BIWEEKLY/MONTHLY veya null (eski ilan)
         private String paymentMethod;  // CASH/BANK_TRANSFER veya null
         private String paymentNote;
+        private String meetingPoint;
+        private Integer meetingMinutesBefore;
         private LocalDate startDate;
         private LocalDate endDate;
         private LocalTime shiftStart;

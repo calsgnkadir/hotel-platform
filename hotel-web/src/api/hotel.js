@@ -475,6 +475,23 @@ export async function markNoShow(applicationId) {
   return data  // { application, candidateStrikesRemaining, autoBanned, bannedUntil }
 }
 
+// QR yoklama — işletme: günün QR linki + beklenen/gelen listesi
+export async function getAttendance(listingId, date = null) {
+  const { data } = await api.get(`/api/business/listings/${listingId}/attendance`, { params: date ? { date } : {} })
+  return data  // { checkinUrl, expected, arrived, rows[], meetingPoint, ... }
+}
+
+// Ekip başı: telefonu olmayanı elle "geldi" işaretle
+export async function manualCheckIn(applicationId) {
+  await api.post(`/api/business/applications/${applicationId}/manual-checkin`)
+}
+
+// Aday: QR okutunca açılan /checkin/:token sayfası
+export async function candidateCheckIn(token) {
+  const { data } = await api.post('/api/candidate/checkin', { token })
+  return data  // { listingTitle, businessName, clockInAt, alreadyCheckedIn, shift, meetingPoint }
+}
+
 // Ekip listesi (.xlsx) — her vardiya günü ayrı sayfa; date (YYYY-MM-DD) verilirse sadece o gün
 export async function downloadRoster(listingId, date = null) {
   const res = await api.get(`/api/business/listings/${listingId}/roster`, {

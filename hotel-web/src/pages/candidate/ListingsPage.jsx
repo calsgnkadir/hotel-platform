@@ -282,7 +282,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* V16 — Başvurmadan önce: ödeme + kıyafet netliği */}
-          {(formatPayment(listing.paymentPeriod, listing.paymentMethod) || listing.dressCode) && (
+          {(formatPayment(listing.paymentPeriod, listing.paymentMethod) || listing.dressCode || listing.meetingPoint) && (
             <div className="rounded-lg p-3 text-sm space-y-1.5"
                  style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)' }}>
               {formatPayment(listing.paymentPeriod, listing.paymentMethod) && (
@@ -290,6 +290,13 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                   <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Ödeme: </span>
                   {formatPayment(listing.paymentPeriod, listing.paymentMethod)}
                   {listing.paymentNote && ` — ${listing.paymentNote}`}
+                </p>
+              )}
+              {listing.meetingPoint && (
+                <p className="whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
+                  <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Toplanma: </span>
+                  {listing.meetingPoint}
+                  {listing.meetingMinutesBefore ? ` (${listing.meetingMinutesBefore} dk önce)` : ''}
                 </p>
               )}
               {listing.dressCode && (

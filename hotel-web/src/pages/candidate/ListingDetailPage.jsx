@@ -237,7 +237,7 @@ export default function ListingDetailPage() {
         </div>
 
         {/* V16 — İş günü + ödeme netliği: başvurmadan önce görünsün */}
-        {(payment || listing.paymentNote || listing.dressCode) && (
+        {(payment || listing.paymentNote || listing.dressCode || listing.meetingPoint) && (
           <div className="card p-6 space-y-4">
             {(payment || listing.paymentNote) && (
               <div>
@@ -248,6 +248,18 @@ export default function ListingDetailPage() {
                 {listing.paymentNote && (
                   <p className="text-sm mt-0.5" style={{ color: 'var(--ah-ink-2)' }}>{listing.paymentNote}</p>
                 )}
+              </div>
+            )}
+            {listing.meetingPoint && (
+              <div>
+                <h3 className="mb-1.5" style={SEC_HEAD}>Toplanma yeri</h3>
+                <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
+                  {listing.meetingPoint}
+                  {listing.meetingMinutesBefore ? ` — vardiyadan ${listing.meetingMinutesBefore} dk önce` : ''}
+                </p>
+                <p className="text-[11px] mt-1" style={{ color: 'var(--ah-ink-4)' }}>
+                  Vardınca oradaki QR kodu telefonunla okut, girişin kaydedilir.
+                </p>
               </div>
             )}
             {listing.dressCode && (

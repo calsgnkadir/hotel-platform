@@ -6,6 +6,7 @@ import { extractErrorMessage } from '../../../api/client'
 import { keys } from '../../../lib/queryClient'
 import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_SHORT, STATUS_LABELS } from '../lib/constants'
 import ListingFormModal from '../modals/ListingFormModal'
+import AttendanceModal from '../modals/AttendanceModal'
 import EmptyState from '../../../components/EmptyState'
 import { SkeletonList } from '../../../components/Skeleton'
 import { formatSalary } from '../../../lib/salary'  // FAZ 2/#25
@@ -18,6 +19,7 @@ export default function MyListingsTab({ applications = [] }) {
   const [formTarget, setFormTarget] = useState(null)
   const [dupTarget, setDupTarget] = useState(null)   // "Tekrar aç" (şablon) kaynağı
   const [rosterBusyId, setRosterBusyId] = useState(null)
+  const [attendanceTarget, setAttendanceTarget] = useState(null)  // QR yoklama
   const [page, setPage] = useState(1)
   const queryClient = useQueryClient()
 
@@ -192,6 +194,13 @@ export default function MyListingsTab({ applications = [] }) {
                     <Sparkline data={trendData} color="#1f2937" width={56} height={20} />
                   </div>
                   <div className="flex gap-2 flex-wrap justify-end">
+                  {/* QR yoklama — toplanma noktasında göster, adaylar okutsun */}
+                  <button onClick={() => setAttendanceTarget(listing)}
+                    title="Toplanma noktası için QR + canlı yoklama listesi"
+                    className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
+                    style={{ background: '#1f2937', color: '#ffffff', border: '1px solid #1f2937' }}>
+                    Yoklama
+                  </button>
                   {/* Ekip listesi — sahada imza/yoklama çıktısı; her akşam 20:00'de e-postayla da gelir */}
                   <button onClick={() => handleRoster(listing.id)}
                     disabled={rosterBusyId === listing.id}
@@ -272,6 +281,10 @@ export default function MyListingsTab({ applications = [] }) {
           onClose={() => { setFormTarget(null); setDupTarget(null) }}
           onSuccess={fetchListings}
         />
+      )}
+
+      {attendanceTarget && (
+        <AttendanceModal listing={attendanceTarget} onClose={() => setAttendanceTarget(null)} />
       )}
     </div>
   )

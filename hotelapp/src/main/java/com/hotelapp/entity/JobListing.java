@@ -86,6 +86,13 @@ public class JobListing {
     @Column(length = 255)
     private String paymentNote;
 
+    // V17 — Toplu vardiya: nerede toplanılacak (serbest metin + tarif) ve
+    // vardiya başlangıcından kaç dakika önce. Girişte QR yoklama bu noktada yapılır.
+    @Column(columnDefinition = "TEXT")
+    private String meetingPoint;
+
+    private Integer meetingMinutesBefore;
+
     // For seasonal/daily jobs
     private LocalDate startDate;
     private LocalDate endDate;

@@ -81,6 +81,9 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
     paymentPeriod: src?.paymentPeriod || '',
     paymentMethod: src?.paymentMethod || '',
     paymentNote:   src?.paymentNote   || '',
+    // V17 — toplu vardiya: toplanma yeri + kaç dk önce
+    meetingPoint:         src?.meetingPoint         || '',
+    meetingMinutesBefore: src?.meetingMinutesBefore ?? '',
     // Tekrar aç: eski kontrat dönemi geçmişte kalmış olabilir → temizle
     startDate:    isDup ? '' : (src?.startDate || ''),
     endDate:      isDup ? '' : (src?.endDate || ''),
@@ -204,6 +207,8 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
         paymentPeriod: form.paymentPeriod,
         paymentMethod: form.paymentMethod,
         paymentNote:   form.paymentNote.trim() || null,
+        meetingPoint:  form.meetingPoint.trim() || null,
+        meetingMinutesBefore: form.meetingMinutesBefore === '' ? null : parseInt(form.meetingMinutesBefore, 10),
         startDate:   form.startDate || null,
         endDate:     form.endDate || null,
         shiftStart:  null,
@@ -394,6 +399,21 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
             <textarea name="dressCode" value={form.dressCode} onChange={handleChange}
               maxLength={2000} className="input resize-none h-20 text-sm"
               placeholder="Örn: Siyah kumaş pantolon, beyaz gömlek, kapalı siyah ayakkabı. Kimliğini ve hijyen belgeni yanında getir." />
+          </div>
+
+          {/* V17 — Toplanma: kalabalık vardiyalarda nerede ve ne zaman buluşulacak (QR yoklama burada) */}
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-3">
+            <div>
+              <label className="label">Toplanma yeri <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
+              <textarea name="meetingPoint" value={form.meetingPoint} onChange={handleChange}
+                maxLength={2000} className="input resize-none h-16 text-sm"
+                placeholder="Örn: Otel personel girişi (B kapısı), güvenlik kulübesinin önü. Ekip başı: Ahmet" />
+            </div>
+            <div>
+              <label className="label">Kaç dk önce?</label>
+              <input type="number" name="meetingMinutesBefore" value={form.meetingMinutesBefore}
+                onChange={handleChange} min="0" max="240" className="input text-sm" placeholder="30" />
+            </div>
           </div>
 
           {/* Faz E2: Vardiya slotları */}
