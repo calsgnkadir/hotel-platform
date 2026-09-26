@@ -25,7 +25,7 @@ import EmptyState from '../../components/EmptyState'
 import { SkeletonListingGrid } from '../../components/Skeleton'
 import SavedSearchManager from '../../components/SavedSearchManager'
 // ListingsMapView kaldirildi (kullanici istegi)
-import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
+import { formatSalary, formatPayment } from '../../lib/salary'  // FAZ 2/#25
 import { useMyLocation } from '../../lib/useMyLocation'                    // FAZ B.3
 import { distanceKm, formatDistance } from '../../lib/distance'            // FAZ B.3
 import { shiftDuration } from '../../lib/shiftTime'                        // FAZ B.5.5
@@ -281,6 +281,26 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* V16 — Başvurmadan önce: ödeme + kıyafet netliği */}
+          {(formatPayment(listing.paymentPeriod, listing.paymentMethod) || listing.dressCode) && (
+            <div className="rounded-lg p-3 text-sm space-y-1.5"
+                 style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)' }}>
+              {formatPayment(listing.paymentPeriod, listing.paymentMethod) && (
+                <p style={{ color: 'var(--ah-ink-2)' }}>
+                  <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Ödeme: </span>
+                  {formatPayment(listing.paymentPeriod, listing.paymentMethod)}
+                  {listing.paymentNote && ` — ${listing.paymentNote}`}
+                </p>
+              )}
+              {listing.dressCode && (
+                <p className="whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
+                  <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Kıyafet: </span>
+                  {listing.dressCode}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Ön Yazı */}
           <div>
             <label className="label">Ön Yazı <span className="text-ink-400 font-normal">(opsiyonel)</span></label>

@@ -19,7 +19,7 @@ import { SkeletonDetail } from '../../components/Skeleton'
 import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
 import { ApplyModal } from './ListingsPage'
-import { formatSalary } from '../../lib/salary'  // FAZ 2/#25
+import { formatSalary, formatPayment } from '../../lib/salary'  // FAZ 2/#25
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -95,6 +95,7 @@ export default function ListingDetailPage() {
   const shift = null  // legacy shift kategorisi gosterilmiyor — slot saatleri yeterli
   const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const hasDates = listing.startDate || listing.endDate
+  const payment = formatPayment(listing.paymentPeriod, listing.paymentMethod)
   const slots = [...(listing.shiftSlots || [])].sort((a, b) => {
     const c = (a.date || '').localeCompare(b.date || '')
     return c !== 0 ? c : (a.startTime || '').localeCompare(b.startTime || '')
@@ -234,6 +235,31 @@ export default function ListingDetailPage() {
             {listing.description || 'Açıklama eklenmemiş.'}
           </p>
         </div>
+
+        {/* V16 — İş günü + ödeme netliği: başvurmadan önce görünsün */}
+        {(payment || listing.paymentNote || listing.dressCode) && (
+          <div className="card p-6 space-y-4">
+            {(payment || listing.paymentNote) && (
+              <div>
+                <h3 className="mb-1.5" style={SEC_HEAD}>Ödeme</h3>
+                {payment && (
+                  <p className="text-sm font-semibold" style={{ color: 'var(--ah-ink)' }}>{payment}</p>
+                )}
+                {listing.paymentNote && (
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--ah-ink-2)' }}>{listing.paymentNote}</p>
+                )}
+              </div>
+            )}
+            {listing.dressCode && (
+              <div>
+                <h3 className="mb-1.5" style={SEC_HEAD}>Kıyafet ve getirilecekler</h3>
+                <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
+                  {listing.dressCode}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {listing.requirements && (
           <div className="card p-6">

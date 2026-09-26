@@ -2,12 +2,16 @@ package com.hotelapp.entity;
 
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.ListingStatus;
+import com.hotelapp.enums.PaymentMethod;
+import com.hotelapp.enums.PaymentPeriod;
 import com.hotelapp.enums.Position;
 import com.hotelapp.enums.SalaryType;
 import com.hotelapp.enums.Shift;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -61,6 +65,26 @@ public class JobListing {
     // Garson/servis personeli icin bahsis (tip) seffafligi.
     // null = belirsiz, true = bahsis dahil (ek kazanc), false = sadece sabit ucret
     private Boolean tipsIncluded;
+
+    // V16 — İş günü netliği. Serbest metin: kıyafet, getirilecekler (kimlik vb.).
+    @Column(columnDefinition = "TEXT")
+    private String dressCode;
+
+    // V16 — Ödeme netliği: ne zaman + nasıl. Yeni ilanlarda zorunlu (DTO),
+    // eski ilanlarda null kalabilir. Kolonlar varchar (yeni değer migration istemesin).
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(length = 20)
+    private PaymentPeriod paymentPeriod;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(length = 20)
+    private PaymentMethod paymentMethod;
+
+    /** Ödeme detayı, örn. "Her cuma akşamı IBAN'a". */
+    @Column(length = 255)
+    private String paymentNote;
 
     // For seasonal/daily jobs
     private LocalDate startDate;

@@ -44,3 +44,23 @@ export function formatSalary(min, max, salaryType, tipsIncluded) {
   const base = suffix ? `${range} / ${suffix}` : range
   return tipsIncluded ? `${base} + bahşiş` : base
 }
+
+// V16 — Ödeme netliği: ücret NE ZAMAN ve NASIL ödenir.
+export const PAYMENT_PERIOD_OPTIONS = [
+  { value: 'SAME_DAY', label: 'Aynı gün' },
+  { value: 'WEEKLY',   label: 'Haftalık' },
+  { value: 'BIWEEKLY', label: '15 günde bir' },
+  { value: 'MONTHLY',  label: 'Aylık' },
+]
+
+export const PAYMENT_METHOD_OPTIONS = [
+  { value: 'CASH',          label: 'Elden nakit' },
+  { value: 'BANK_TRANSFER', label: 'IBAN\'a havale' },
+]
+
+/** "Haftalık · IBAN'a havale"  — eski ilanlarda (alan yok) null. */
+export function formatPayment(period, method) {
+  const p = PAYMENT_PERIOD_OPTIONS.find(o => o.value === period)?.label
+  const m = PAYMENT_METHOD_OPTIONS.find(o => o.value === method)?.label
+  return [p, m].filter(Boolean).join(' · ') || null
+}

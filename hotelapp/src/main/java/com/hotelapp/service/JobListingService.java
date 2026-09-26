@@ -5,6 +5,8 @@ import com.hotelapp.entity.JobListing;
 import com.hotelapp.entity.ShiftSlot;
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.ListingStatus;
+import com.hotelapp.enums.PaymentMethod;
+import com.hotelapp.enums.PaymentPeriod;
 import com.hotelapp.enums.Position;
 import com.hotelapp.enums.SalaryType;
 import com.hotelapp.enums.Shift;
@@ -17,6 +19,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -170,6 +173,10 @@ public class JobListingService {
                 .salaryMax(request.getSalaryMax())
                 .salaryType(request.getSalaryType())     // FAZ 2/#25
                 .tipsIncluded(request.getTipsIncluded()) // FAZ 2/#25
+                .dressCode(trimToNull(request.getDressCode()))
+                .paymentPeriod(request.getPaymentPeriod())
+                .paymentMethod(request.getPaymentMethod())
+                .paymentNote(trimToNull(request.getPaymentNote()))
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .shiftStart(request.getShiftStart())
@@ -361,6 +368,10 @@ public class JobListingService {
         listing.setSalaryMax(request.getSalaryMax());
         listing.setSalaryType(request.getSalaryType());     // FAZ 2/#25
         listing.setTipsIncluded(request.getTipsIncluded()); // FAZ 2/#25
+        listing.setDressCode(trimToNull(request.getDressCode()));
+        listing.setPaymentPeriod(request.getPaymentPeriod());
+        listing.setPaymentMethod(request.getPaymentMethod());
+        listing.setPaymentNote(trimToNull(request.getPaymentNote()));
         listing.setStartDate(request.getStartDate());
         listing.setEndDate(request.getEndDate());
         listing.setShiftStart(request.getShiftStart());
@@ -579,6 +590,10 @@ public class JobListingService {
                 .salaryMax(l.getSalaryMax())
                 .salaryType(l.getSalaryType() != null ? l.getSalaryType().name() : null) // FAZ 2/#25
                 .tipsIncluded(l.getTipsIncluded())                                       // FAZ 2/#25
+                .dressCode(l.getDressCode())
+                .paymentPeriod(l.getPaymentPeriod() != null ? l.getPaymentPeriod().name() : null)
+                .paymentMethod(l.getPaymentMethod() != null ? l.getPaymentMethod().name() : null)
+                .paymentNote(l.getPaymentNote())
                 .startDate(l.getStartDate())
                 .endDate(l.getEndDate())
                 .shiftStart(l.getShiftStart())
@@ -653,6 +668,12 @@ public class JobListingService {
                 .toList();
     }
 
+    private static String trimToNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
+
     // ----------------------------------------------------------------
     // DTOs
     // ----------------------------------------------------------------
@@ -668,6 +689,11 @@ public class JobListingService {
         // FAZ 2/#25 — Ucret seffafligi
         private SalaryType salaryType;
         private Boolean tipsIncluded;
+        // V16 — iş günü + ödeme netliği. Ödeme ne zaman/nasıl yeni ilanlarda zorunlu.
+        @Size(max = 2000) private String dressCode;
+        @NotNull(message = "Ödeme zamanı seçilmeli") private PaymentPeriod paymentPeriod;
+        @NotNull(message = "Ödeme şekli seçilmeli") private PaymentMethod paymentMethod;
+        @Size(max = 255) private String paymentNote;
         private LocalDate startDate;
         private LocalDate endDate;
         private LocalTime shiftStart;
@@ -714,6 +740,10 @@ public class JobListingService {
         // FAZ 2/#25 — Ucret tipi seffafligi
         private String salaryType;     // HOURLY/DAILY/MONTHLY/NEGOTIABLE veya null
         private Boolean tipsIncluded;  // true = bahsis dahil
+        private String dressCode;
+        private String paymentPeriod;  // SAME_DAY/WEEKLY/BIWEEKLY/MONTHLY veya null (eski ilan)
+        private String paymentMethod;  // CASH/BANK_TRANSFER veya null
+        private String paymentNote;
         private LocalDate startDate;
         private LocalDate endDate;
         private LocalTime shiftStart;

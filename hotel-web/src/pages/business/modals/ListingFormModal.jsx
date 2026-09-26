@@ -4,6 +4,7 @@ import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_LABELS } from '../lib/constants'
 import useFocusTrap from '../../../lib/useFocusTrap'
+import { PAYMENT_PERIOD_OPTIONS, PAYMENT_METHOD_OPTIONS } from '../../../lib/salary'
 import {
   DndContext,
   PointerSensor,
@@ -75,6 +76,11 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
     salaryMax:    src?.salaryMax    ?? '',
     salaryType:    src?.salaryType    ?? 'HOURLY',  // FAZ 2/#25 default saatlik
     tipsIncluded:  src?.tipsIncluded  ?? false,
+    // V16 — iş günü + ödeme netliği
+    dressCode:     src?.dressCode     || '',
+    paymentPeriod: src?.paymentPeriod || '',
+    paymentMethod: src?.paymentMethod || '',
+    paymentNote:   src?.paymentNote   || '',
     // Tekrar aç: eski kontrat dönemi geçmişte kalmış olabilir → temizle
     startDate:    isDup ? '' : (src?.startDate || ''),
     endDate:      isDup ? '' : (src?.endDate || ''),
@@ -147,6 +153,9 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
       return toast.error('Min. ücret zorunlu (veya tipi "Görüşülecek" yap)')
     }
 
+    if (!form.paymentPeriod) return toast.error('Ödeme zamanını seç (aynı gün / haftalık / aylık)')
+    if (!form.paymentMethod) return toast.error('Ödeme şeklini seç (nakit / havale)')
+
     const min = form.salaryMin ? parseFloat(form.salaryMin) : null
     const max = form.salaryMax ? parseFloat(form.salaryMax) : null
     if (min !== null && max !== null && max < min) {
@@ -191,6 +200,10 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
         salaryMax:    max,
         salaryType:   form.salaryType || 'HOURLY',
         tipsIncluded: !!form.tipsIncluded,
+        dressCode:     form.dressCode.trim() || null,
+        paymentPeriod: form.paymentPeriod,
+        paymentMethod: form.paymentMethod,
+        paymentNote:   form.paymentNote.trim() || null,
         startDate:   form.startDate || null,
         endDate:     form.endDate || null,
         shiftStart:  null,
@@ -330,6 +343,58 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
               Bahşiş (servis bedeli) ek olarak verilir
             </span>
           </label>
+
+          {/* V16 — Ödeme netliği: aday başvurmadan ne zaman/nasıl ödeneceğini bilsin */}
+          <div className="space-y-3">
+            <div>
+              <label className="label">Ödeme ne zaman? *</label>
+              <div className="flex flex-wrap gap-2">
+              {PAYMENT_PERIOD_OPTIONS.map(opt => (
+                <button key={opt.value} type="button"
+                  aria-pressed={form.paymentPeriod === opt.value}
+                  onClick={() => setForm(f => ({ ...f, paymentPeriod: opt.value }))}
+                  className={`text-xs font-semibold py-2 px-3 rounded-lg border-2 transition ${
+                    form.paymentPeriod === opt.value
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white dark:bg-ink-800 border-ink-200 dark:border-ink-700 text-ink-600 dark:text-ink-300 hover:border-brand-300'
+                  }`}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            </div>
+            <div>
+              <label className="label">Ödeme nasıl? *</label>
+              <div className="flex flex-wrap gap-2">
+              {PAYMENT_METHOD_OPTIONS.map(opt => (
+                <button key={opt.value} type="button"
+                  aria-pressed={form.paymentMethod === opt.value}
+                  onClick={() => setForm(f => ({ ...f, paymentMethod: opt.value }))}
+                  className={`text-xs font-semibold py-2 px-3 rounded-lg border-2 transition ${
+                    form.paymentMethod === opt.value
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white dark:bg-ink-800 border-ink-200 dark:border-ink-700 text-ink-600 dark:text-ink-300 hover:border-brand-300'
+                  }`}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            </div>
+            <div>
+              <label className="label">Ödeme detayı <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
+              <input type="text" name="paymentNote" value={form.paymentNote} onChange={handleChange}
+                maxLength={255} className="input text-sm"
+                placeholder="Örn: Her cuma akşamı IBAN'a / vardiya bitiminde elden" />
+            </div>
+          </div>
+
+          {/* V16 — İş günü netliği: serbest metin, seçenek değil */}
+          <div>
+            <label className="label">Kıyafet ve getirilecekler <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
+            <textarea name="dressCode" value={form.dressCode} onChange={handleChange}
+              maxLength={2000} className="input resize-none h-20 text-sm"
+              placeholder="Örn: Siyah kumaş pantolon, beyaz gömlek, kapalı siyah ayakkabı. Kimliğini ve hijyen belgeni yanında getir." />
+          </div>
 
           {/* Faz E2: Vardiya slotları */}
           {(() => {

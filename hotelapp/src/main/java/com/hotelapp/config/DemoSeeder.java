@@ -179,6 +179,14 @@ public class DemoSeeder implements CommandLineRunner {
                     .title(ls.title)
                     .description("Demo ilan: " + ls.title + " · " + biz.getName())
                     .requirements("Ekip çalışması, gülümseme. Demo data.")
+                    .dressCode(ls.pos == Position.KITCHEN_STAFF || ls.pos == Position.DISHWASHER
+                            ? "Kapalı, kaymaz ayakkabı. Önlük ve bone işletmeden. Kimliğini yanında getir."
+                            : "Siyah kumaş pantolon, beyaz gömlek, kapalı siyah ayakkabı. Kimliğini yanında getir.")
+                    .paymentPeriod(ls.bizIdx % 2 == 0 ? com.hotelapp.enums.PaymentPeriod.WEEKLY
+                                                      : com.hotelapp.enums.PaymentPeriod.SAME_DAY)
+                    .paymentMethod(ls.bizIdx % 2 == 0 ? com.hotelapp.enums.PaymentMethod.BANK_TRANSFER
+                                                      : com.hotelapp.enums.PaymentMethod.CASH)
+                    .paymentNote(ls.bizIdx % 2 == 0 ? "Her cuma akşamı IBAN'a." : "Vardiya bitiminde elden.")
                     .salaryMin(java.math.BigDecimal.valueOf(ls.minSal))
                     .salaryMax(java.math.BigDecimal.valueOf(ls.maxSal))
                     .status(ListingStatus.ACTIVE)
