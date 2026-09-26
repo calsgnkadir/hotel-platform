@@ -181,9 +181,10 @@ public class MessageService {
         Long recipientId = conv.getCandidate().getId().equals(senderId)
                 ? conv.getBusinessOwner().getId()
                 : conv.getCandidate().getId();
-        String preview = msg.getContent().length() > 80
-                ? msg.getContent().substring(0, 80) + "…"
-                : msg.getContent();
+        String readable = readablePreview(msg.getContent());
+        String preview = readable.length() > 80
+                ? readable.substring(0, 80) + "…"
+                : readable;
         notificationService.notify(recipientId,
                 NotificationType.NEW_MESSAGE,
                 "Yeni mesaj: " + sender.getFullName(),
@@ -194,6 +195,27 @@ public class MessageService {
         MessageDto senderView = toMessageDto(msg, senderId);
         broadcastMessage(conv, msg, senderId, recipientId);
         return senderView;
+    }
+
+    /** Bildirim önizlemesi: sohbet kart token'larını okunur metne çevirir. */
+    static String readablePreview(String content) {
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("^\\[DOC_(REQUEST|SHARED):(?:\\d+:)?([A-Z_]+)]$").matcher(content);
+        if (m.matches()) {
+            String label = switch (m.group(2)) {
+                case "CRIMINAL_RECORD"     -> "Adli sicil kaydı";
+                case "HEALTH_CERTIFICATE"  -> "Hijyen / sağlık belgesi";
+                case "IDENTITY_DOCUMENT"   -> "Kimlik";
+                case "STUDENT_CERTIFICATE" -> "Öğrenci belgesi";
+                case "TRANSCRIPT"          -> "Transkript";
+                case "CV"                  -> "CV";
+                default -> "Belge";
+            };
+            return ("REQUEST".equals(m.group(1)) ? "Belge istedi: " : "Belge gönderdi: ") + label;
+        }
+        if (content.startsWith("[CALL:video]")) return "Görüntülü görüşme daveti";
+        if (content.startsWith("[CALL:audio]")) return "Sesli görüşme daveti";
+        return content;
     }
 
     // ----------------------------------------------------------------
@@ -239,9 +261,9 @@ public class MessageService {
                 ? conv.getBusinessOwner().getId()
                 : conv.getCandidate().getId();
         String preview;
-        if ("image".equals(type))      preview = "📷 Foto gönderdi";
-        else if ("audio".equals(type)) preview = "🎙 Sesli mesaj";
-        else                            preview = "📎 " + orig;
+        if ("image".equals(type))      preview = "Foto gönderdi";
+        else if ("audio".equals(type)) preview = "Sesli mesaj";
+        else                            preview = "Dosya: " + orig;
         notificationService.notify(recipientId,
                 NotificationType.NEW_MESSAGE,
                 "Yeni mesaj: " + sender.getFullName(),
@@ -458,11 +480,10 @@ public class MessageService {
         User otherParty = iAmCandidate ? c.getBusinessOwner() : c.getCandidate();
 
         Message last = messageRepository.findFirstByConversationIdOrderBySentAtDesc(c.getId());
-        String preview = last == null
+        String lastText = last == null ? null : readablePreview(last.getContent());
+        String preview = lastText == null
                 ? null
-                : (last.getContent().length() > 100
-                        ? last.getContent().substring(0, 100) + "…"
-                        : last.getContent());
+                : (lastText.length() > 100 ? lastText.substring(0, 100) + "…" : lastText);
 
         long unread = messageRepository.countUnreadInConversation(c.getId(), viewerId);
 

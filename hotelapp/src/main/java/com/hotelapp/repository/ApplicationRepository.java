@@ -134,6 +134,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findAllByJobListing_Business_OwnerId(Long ownerId);
 
+    /** Sohbetten belge paylaşımı: çiftin en son başvurusu (izin buna bağlanır). */
+    Optional<Application> findFirstByCandidateIdAndJobListing_Business_OwnerIdOrderByCreatedAtDesc(
+            Long candidateId, Long ownerId);
+
     List<Application> findAllByJobListing_Business_OwnerIdAndStatus(Long ownerId, ApplicationStatus status);
 
     List<Application> findAllByJobListingId(Long jobListingId);

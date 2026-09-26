@@ -182,5 +182,24 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
     }
   }
 
-  return { sending, sendText, sendFile, sendFiles, sendCall }
+  /** Belge iste (işletme) / gönder (aday) — sohbete kart düşer. */
+  async function sendDocAction(apiCall) {
+    if (sending) return false
+    setSending(true)
+    try {
+      const msg = await apiCall()
+      finish(msg)
+      onMessageSent?.()
+      return true
+    } catch (err) {
+      toast.error(extractErrorMessage(err))
+      return false
+    } finally {
+      setSending(false)
+    }
+  }
+  const requestDoc = (documentType) => sendDocAction(() => hotelApi.requestChatDocument(convId, documentType))
+  const shareDoc   = (documentId)   => sendDocAction(() => hotelApi.shareChatDocument(convId, documentId))
+
+  return { sending, sendText, sendFile, sendFiles, sendCall, requestDoc, shareDoc }
 }

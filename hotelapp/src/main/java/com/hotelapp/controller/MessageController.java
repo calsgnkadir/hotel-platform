@@ -5,7 +5,8 @@ import com.hotelapp.dto.MessageDto;
 import com.hotelapp.dto.MessageRequest;
 import com.hotelapp.dto.PageResponse;
 import com.hotelapp.dto.StartConversationRequest;
-import com.hotelapp.entity.User;
+import com.hotelapp.enums.DocumentType;
+import com.hotelapp.service.ChatDocumentService;
 import com.hotelapp.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -31,6 +32,7 @@ import java.util.Map;
 public class MessageController {
 
     private final MessageService messageService;
+    private final ChatDocumentService chatDocumentService;
 
     @Operation(summary = "Sohbetlerimi listele (sayfalı, son mesaja göre)")
     @GetMapping("/conversations")
@@ -131,5 +133,31 @@ public class MessageController {
                 messageService.toggleReaction(conversationId, messageId, currentUser.getId(), req.reaction()));
     }
 
+    @Operation(summary = "İşletme: sohbette adaydan belge iste (adli sicil, sağlık, hijyen...)")
+    @PostMapping("/conversations/{conversationId}/document-request")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<MessageDto> requestDocument(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long conversationId,
+            @Valid @RequestBody DocRequestBody body) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                chatDocumentService.requestInChat(conversationId, currentUser.getId(), body.documentType()));
+    }
+
+    @Operation(summary = "Aday: yüklü belgesini sohbetten gönder (işletmeye o belge için izin verir)")
+    @PostMapping("/conversations/{conversationId}/share-document")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<MessageDto> shareDocument(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long conversationId,
+            @Valid @RequestBody ShareDocBody body) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                chatDocumentService.shareInChat(conversationId, currentUser.getId(), body.documentId()));
+    }
+
     public record ReactionRequest(@jakarta.validation.constraints.NotBlank String reaction) {}
+    public record DocRequestBody(@jakarta.validation.constraints.NotNull DocumentType documentType) {}
+    public record ShareDocBody(@jakarta.validation.constraints.NotNull Long documentId) {}
 }

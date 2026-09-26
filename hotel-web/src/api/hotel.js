@@ -677,6 +677,17 @@ export async function toggleMessageReaction(conversationId, messageId, reaction)
 }
 
 /** Chat refactor v2: dosya/foto ekli mesaj gönder (multipart). */
+// Belgeyi sohbetten iste (işletme) / gönder (aday) — kart mesajı döner
+export async function requestChatDocument(conversationId, documentType) {
+  const { data } = await api.post(`/api/messages/conversations/${conversationId}/document-request`, { documentType })
+  return data  // MessageDto
+}
+
+export async function shareChatDocument(conversationId, documentId) {
+  const { data } = await api.post(`/api/messages/conversations/${conversationId}/share-document`, { documentId })
+  return data  // MessageDto
+}
+
 export async function sendMessageAttachment(conversationId, file, caption = '') {
   const form = new FormData()
   form.append('file', file)

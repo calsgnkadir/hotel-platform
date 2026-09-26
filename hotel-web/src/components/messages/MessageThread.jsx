@@ -24,6 +24,7 @@ import { SkeletonMessages } from '../Skeleton'
 import { wsSubscribe } from '../../lib/websocket'
 import useWsConnected from '../../lib/useWsConnected'
 import MessageBubble from './MessageBubble'
+import { pickDocumentForType } from './DocumentShare'
 import MessageComposer from './MessageComposer'
 import EmptyThread from './EmptyThread'
 import useMessageSend from './useMessageSend'
@@ -77,12 +78,22 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
   // Composer kayittayken surukle-birak bloklanir (overlay thread genisliginde)
   const [composerRecording, setComposerRecording] = useState(false)
 
+  // İstek kartındaki "Belgeyi gönder": o tipteki güncel belgeyi bul ve paylaş.
+  async function shareDocOfType(type) {
+    const doc = await pickDocumentForType(type)
+    if (!doc) {
+      toast('Bu belge yüklü değil (ya da süresi dolmuş). Belgelerim sekmesinden yükleyip tekrar dene.')
+      return
+    }
+    await shareDoc(doc.id)
+  }
+
   function scrollToBottom() {
     setTimeout(() => scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
   }
 
   // FAZ 20 — Gonderim motoru. Her basarili gonderimde onSent tetiklenir.
-  const { sending, sendText, sendFile, sendFiles, sendCall } = useMessageSend({
+  const { sending, sendText, sendFile, sendFiles, sendCall, requestDoc, shareDoc } = useMessageSend({
     conversation,
     onSent: (msg) => { lastSeenIdRef.current = msg.id; scrollToBottom() },
     onMessageSent,
@@ -319,7 +330,8 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
               {showDay && <DayDivider label={dayLabel(m.sentAt)} />}
               <div className={isNewTurn && !showDay ? 'pt-2.5' : ''}>
                 <MessageBubble m={m} showMeta={isNewTurn}
-                               onReply={setReplyTo} onReact={handleReact} />
+                               onReply={setReplyTo} onReact={handleReact}
+                               role={user?.role} onShareDocType={shareDocOfType} />
               </div>
             </div>
           )
@@ -359,6 +371,8 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
         sendText={sendText}
         sendFile={sendFile}
         sendCall={sendCall}
+        requestDoc={requestDoc}
+        shareDoc={shareDoc}
         onRecordingChange={setComposerRecording}
       />
     </div>

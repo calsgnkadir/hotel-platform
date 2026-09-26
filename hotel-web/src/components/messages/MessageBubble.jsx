@@ -13,6 +13,7 @@
 import { useState } from 'react'
 import cldImg, { ImgSize } from '../../lib/cldImg'
 import { formatTime, parseCallInvite, pdfThumbnailUrl, fileTypeMeta } from './utils'
+import { parseDocToken, DocumentCardBubble } from './DocumentShare'
 
 const BRAND = '#1f2937'
 const BRAND_DARK = '#111827'
@@ -160,7 +161,7 @@ function CallInviteBubble({ m, type, url }) {
  * Tek mesaj balonu — attachment + quoted reply + reactions + turn grouping.
  * showMeta: turn boundary'de gonderen adi + saat header'i gosterilir.
  */
-export default function MessageBubble({ m, showMeta = true, onReply, onReact }) {
+export default function MessageBubble({ m, showMeta = true, onReply, onReact, role, onShareDocType }) {
   const mine = m.mine
   const isImage = m.attachmentType === 'image'
   const isAudio = m.attachmentType === 'audio'
@@ -171,6 +172,8 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
   // Sesli/Görüntülü arama davet mesajı?
   const call = !hasAttach ? parseCallInvite(m.content) : null
   if (call) return <CallInviteBubble m={m} type={call.type} url={call.url} />
+  const doc = !hasAttach ? parseDocToken(m.content) : null
+  if (doc) return <DocumentCardBubble m={m} doc={doc} role={role} onShareType={onShareDocType} />
 
   const reactions = m.reactions || []
   const innerBg = mine ? 'rgba(255, 255, 255, 0.10)' : 'var(--ah-page)'
