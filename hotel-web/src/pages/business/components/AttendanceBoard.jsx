@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { QRCodeSVG } from 'qrcode.react'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 
@@ -11,7 +10,7 @@ const STATUS_STYLE = {
 }
 
 /**
- * Yoklama panosu (işletme). QR = işletmenin kalıcı giriş QR'ı.
+ * Yoklama panosu (işletme). Girişler çalışanın kişisel QR kartı okutulunca düşer.
  *
  *  data         : backend AttendanceDto
  *  canMark      : "Geldi" butonu gösterilsin mi (sadece vardiya günü)
@@ -35,26 +34,21 @@ export default function AttendanceBoard({ data, canMark, onMarkArrived, onDownlo
 
   return (
     <div className="grid gap-5 sm:grid-cols-[220px_1fr]">
-      {/* QR — toplanma noktasında göster ya da yazdırıp as */}
-      <div className="text-center">
-        <div className="inline-block p-3 rounded-xl bg-white" style={{ border: '1px solid var(--ah-line)' }}>
-          <QRCodeSVG value={data.checkinUrl} size={188} level="M" />
-        </div>
-        <p className="text-xs mt-2" style={{ color: 'var(--ah-ink-3)' }}>
-          Kalıcı giriş QR'ın — yazdırıp personel girişine as. Gelen herkes okutup adını yazar.
-        </p>
+      {/* Nasıl çalışır — QR çalışanın telefonunda; görevli okutur */}
+      <div className="rounded-xl p-3 text-xs space-y-2 self-start"
+           style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)', color: 'var(--ah-ink-2)' }}>
+        <div className="text-sm font-semibold" style={{ color: 'var(--ah-ink)' }}>Kapıda giriş</div>
+        <p>Her çalışanın uygulamasında vardiya günü kişisel <b>giriş kartı (QR)</b> çıkar.</p>
+        <p>Kapıdaki görevli kendi telefon kamerasıyla okutur — giriş saati bu listeye düşer, çalışanın adı ve fotoğrafı görünür.</p>
+        <p>Kart tek kullanımlık: ikinci okutmada "zaten kullanıldı" uyarısı çıkar.</p>
+        <p>Telefonu olmayanı listeden <b>Geldi</b> ile işaretle.</p>
         {data.meetingPoint && (
-          <p className="text-xs mt-2 text-left rounded-lg p-2 whitespace-pre-line"
-             style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)', color: 'var(--ah-ink-2)' }}>
+          <p className="pt-1 border-t whitespace-pre-line" style={{ borderColor: 'var(--ah-line)' }}>
             <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Toplanma: </span>
             {data.meetingPoint}
             {data.meetingMinutesBefore ? ` (vardiyadan ${data.meetingMinutesBefore} dk önce)` : ''}
           </p>
         )}
-        <button type="button" onClick={() => window.print()}
-                className="mt-3 text-xs font-semibold underline print:hidden" style={{ color: 'var(--ah-ink)' }}>
-          QR'ı yazdır
-        </button>
       </div>
 
       <div className="min-w-0">

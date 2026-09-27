@@ -16,6 +16,7 @@ import * as hotelApi from '../../api/hotel'
 import { keys } from '../../lib/queryClient'
 import { SkeletonList } from '../../components/Skeleton'
 import OnboardingWizard, { shouldShowOnboarding } from '../../components/OnboardingWizard'
+import EntryPasses from '../../components/candidate/EntryPasses'  // vardiya günü giriş kartı
 
 import ListingsPage from './ListingsPage'
 import MessagesPage from '../MessagesPage'
@@ -71,6 +72,8 @@ export default function CandidateDashboard() {
       ) : (
         /* FAZ 5.4 — CSS-based tab transition (Framer key remount tetiklenmiyordu) */
         <div key={activeTab} className="page-enter">
+          {/* Vardiya günü: kapıda okutulacak kişisel giriş kartı (sohbet ekranı hariç) */}
+          {activeTab !== 'messages' && <EntryPasses />}
           {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={refetchApplications} onMessagesOpen={() => handleTabChange('messages')} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => handleTabChange('messages')} onTabChange={handleTabChange} />}
           {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={() => handleTabChange('messages')} />}

@@ -470,10 +470,10 @@ export async function markNoShow(applicationId) {
   return data  // { application, candidateStrikesRemaining, autoBanned, bannedUntil }
 }
 
-// QR yoklama — işletme: günün QR linki + beklenen/gelen listesi
+// Yoklama — işletme: beklenen/gelen listesi
 export async function getAttendance(listingId, date = null) {
   const { data } = await api.get(`/api/business/listings/${listingId}/attendance`, { params: date ? { date } : {} })
-  return data  // { checkinUrl, expected, arrived, rows[], meetingPoint, ... }
+  return data  // { expected, arrived, rows[], meetingPoint, ... }
 }
 
 // İşletme: telefonu olmayanı elle "geldi" işaretle
@@ -481,21 +481,16 @@ export async function manualCheckIn(applicationId) {
   await api.post(`/api/business/applications/${applicationId}/manual-checkin`)
 }
 
-// Giriş QR'ı (hesapsız): işletme adı + ad soyadla giriş
-export async function getCheckInInfo(token) {
-  const { data } = await api.get(`/api/public/checkin/${encodeURIComponent(token)}`)
-  return data  // { businessName }
+// Giriş kartı (kişisel, tek kullanımlık QR)
+export async function getMyPasses() {
+  const { data } = await api.get('/api/candidate/passes')
+  return data  // [{ applicationId, businessName, shift, passUrl, usedAt, meetingPoint, ... }]
 }
 
-export async function checkInByName(token, fullName, phoneLast4 = null) {
-  const { data } = await api.post(`/api/public/checkin/${encodeURIComponent(token)}`, { fullName, phoneLast4 })
-  return data  // { needPhone } | { fullName, listingTitle, clockInAt, shift, ... }
-}
-
-// Aday (girişli): QR okutunca açılan /checkin/:token sayfası
-export async function candidateCheckIn(token) {
-  const { data } = await api.post('/api/candidate/checkin', { token })
-  return data  // { listingTitle, businessName, clockInAt, alreadyCheckedIn, shift, meetingPoint }
+// Görevli (işletme hesabı): çalışanın kartını okut
+export async function scanPass(token) {
+  const { data } = await api.post(`/api/business/passes/${encodeURIComponent(token)}/scan`)
+  return data  // { fullName, photoUrl, shift, clockInAt, alreadyUsed }
 }
 
 // Ekip listesi (.xlsx) — her vardiya günü ayrı sayfa; date (YYYY-MM-DD) verilirse sadece o gün

@@ -140,9 +140,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findAllByJobListing_Business_OwnerIdAndStatus(Long ownerId, ApplicationStatus status);
 
-    /** QR giriş: işletmenin kabul edilmiş başvuruları (bugünkü vardiya serviste süzülür). */
-    List<Application> findAllByJobListing_Business_IdAndStatus(Long businessId, ApplicationStatus status);
-
     List<Application> findAllByJobListingId(Long jobListingId);
 
     @Query("SELECT a FROM Application a WHERE a.status = 'PENDING' AND a.deadline < :now")
