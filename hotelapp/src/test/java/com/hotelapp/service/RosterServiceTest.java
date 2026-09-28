@@ -124,4 +124,26 @@ class RosterServiceTest {
         assertThatThrownBy(() -> service.buildForOwner(10L, 999L, null))
                 .isInstanceOf(UnauthorizedException.class);
     }
+
+    @Test
+    void midnight_entry_belongs_to_night_shift_in_roster_and_excel() throws Exception {
+        ShiftSlot night = ShiftSlot.builder().id(3L).date(D1)
+                .startTime(LocalTime.of(22, 0)).endTime(LocalTime.of(6, 0)).build();
+        ShiftSlot morning = ShiftSlot.builder().id(4L).date(D2)
+                .startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(16, 0)).build();
+        when(applicationRepository.findAllByJobListingId(10L))
+                .thenReturn(List.of(app(1, "Ayşe", ApplicationStatus.ACCEPTED, night, morning)));
+        // Check both historical (no slot) and new explicit slot records.
+        for (Long slotId : java.util.Arrays.asList(null, 3L)) {
+            when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(1L)).thenReturn(List.of(
+                    WorkSession.builder().shiftSlotId(slotId).clockInAt(D2.atTime(0, 10)).build()));
+            var rows = service.collectRows(listing(), null);
+            assertThat(rows.get(D1).get(0).clockIn()).isEqualTo("00:10");
+            assertThat(rows.get(D2).get(0).clockIn()).isEmpty();
+            try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(service.toXlsx(listing(), rows)))) {
+                assertThat(wb.getSheet("03.10.2026").getRow(4).getCell(4).getStringCellValue()).isEqualTo("00:10");
+                assertThat(wb.getSheet("04.10.2026").getRow(4).getCell(4).getStringCellValue()).isEmpty();
+            }
+        }
+    }
 }

@@ -2,6 +2,7 @@ package com.hotelapp.service;
 
 import com.hotelapp.entity.Application;
 import com.hotelapp.entity.Business;
+import com.hotelapp.entity.ShiftSlot;
 import com.hotelapp.entity.WorkSession;
 import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.exception.BusinessRuleException;
@@ -42,11 +43,14 @@ public class WorkSessionService {
 
     private final WorkSessionRepository workSessionRepository;
     private final ApplicationRepository applicationRepository;
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
 
     @Transactional
     public WorkSessionDto clockIn(Long candidateId, Long applicationId,
                                    BigDecimal lat, BigDecimal lng) {
-        Application app = getOwnedAcceptedApplication(applicationId, candidateId);
+        Application app = applicationRepository.findByIdForCheckIn(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
+        validateApplication(app, candidateId);
         Business biz = app.getJobListing().getBusiness();
 
         // Isletme konumu yoksa fence yapilamaz
@@ -72,9 +76,16 @@ public class WorkSessionService {
                     "Zaten acik bir mesain var. Once 'Mesaiyi Bitir' yapmalisin.");
         }
 
+        LocalDateTime now = LocalDateTime.now(clock);
+        ShiftSlot slot = ShiftAttendance.inferSlot(app.getRequestedSlots(), now).orElse(null);
+        if (slot != null && ShiftAttendance.sessionFor(app, slot,
+                workSessionRepository.findByApplicationIdOrderByClockInAtDesc(applicationId)).isPresent()) {
+            throw new BusinessRuleException("Bu vardiya için giriş zaten kayıtlı");
+        }
         WorkSession ws = WorkSession.builder()
                 .application(app)
-                .clockInAt(LocalDateTime.now())
+                .shiftSlotId(slot == null ? null : slot.getId())
+                .clockInAt(now)
                 .clockInLat(lat)
                 .clockInLng(lng)
                 .clockInDistanceMeters(distance)
@@ -138,6 +149,11 @@ public class WorkSessionService {
     private Application getOwnedAcceptedApplication(Long appId, Long candidateId) {
         Application app = applicationRepository.findById(appId)
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", appId));
+        validateApplication(app, candidateId);
+        return app;
+    }
+
+    private void validateApplication(Application app, Long candidateId) {
         if (!app.getCandidate().getId().equals(candidateId)) {
             throw UnauthorizedException.keyed("error.application.notOwner");
         }
@@ -145,7 +161,6 @@ public class WorkSessionService {
             throw new BusinessRuleException(
                     "Mesai kaydedebilmek icin basvurun ACCEPTED olmali. Mevcut: " + app.getStatus());
         }
-        return app;
     }
 
     /** Haversine — iki GPS noktasi arasi mesafe (metre, yaklasik). */

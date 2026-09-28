@@ -1,0 +1,35 @@
+services:
+  frontend-tests:
+    build:
+      context: ./hotel-web
+      target: build
+    command: ["npm", "test"]
+  backend-tests:
+    build:
+      context: ./hotelapp
+      target: build
+    command: ["mvn", "-B", "-ntp", "test"]
+  mysql-tests:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: qr_concurrency
+      MYSQL_ROOT_PASSWORD: qr-test-only
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pqr-test-only", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  backend-mysql-tests:
+    extends: backend-tests
+    depends_on:
+      mysql-tests:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-tests:3306/qr_concurrency?allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: qr-test-only
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+    command: ["mvn", "-B", "-ntp", "-Dtest=CheckInConcurrencyTest", "test"]

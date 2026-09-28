@@ -59,7 +59,7 @@ public class RosterService {
 
     /** Satır verisi (xlsx'ten bağımsız — test edilebilir). */
     public record RosterRow(Long applicationId, String fullName, String phone, String shift,
-                            String clockIn, String clockOut, String status) {}
+                            String clockIn, String clockOut, String status, Long shiftSlotId, boolean canCheckIn) {}
 
     /** İşletme sahibinin kendi ilanı için tam liste (date null → tüm günler). */
     @Transactional(readOnly = true)
@@ -109,30 +109,30 @@ public class RosterService {
 
             if (slots.isEmpty()) {
                 if (onlyDate == null) {
-                    byDate.computeIfAbsent(null, k -> new ArrayList<>()).add(row(a, "—", null, a.isNoShow()));
+                    byDate.computeIfAbsent(null, k -> new ArrayList<>()).add(row(a, "—", null, a.isNoShow(), null));
                 }
                 continue;
             }
             for (ShiftSlot s : slots) {
                 if (onlyDate != null && !onlyDate.equals(s.getDate())) continue;
-                WorkSession ws = sessions.stream()
-                        .filter(x -> x.getClockInAt() != null && x.getClockInAt().toLocalDate().equals(s.getDate()))
-                        .findFirst().orElse(null);
+                WorkSession ws = ShiftAttendance.sessionFor(a, s, sessions).orElse(null);
                 String shift = T.format(s.getStartTime()) + " – " + T.format(s.getEndTime());
-                byDate.computeIfAbsent(s.getDate(), k -> new ArrayList<>()).add(row(a, shift, ws, a.isNoShow()));
+                byDate.computeIfAbsent(s.getDate(), k -> new ArrayList<>()).add(row(a, shift, ws, a.isNoShow(), s));
             }
         }
         return byDate;
     }
 
-    private RosterRow row(Application a, String shift, WorkSession ws, boolean noShow) {
+    private RosterRow row(Application a, String shift, WorkSession ws, boolean noShow, ShiftSlot slot) {
         String in  = ws != null && ws.getClockInAt()  != null ? T.format(ws.getClockInAt())  : "";
         String out = ws != null && ws.getClockOutAt() != null ? T.format(ws.getClockOutAt()) : "";
         String status = noShow ? "Gelmedi"
                 : ws == null ? "Bekleniyor"
                 : ws.getClockOutAt() == null ? "İşte" : "Tamamladı";
         String phone = a.getCandidate().getPhone();
-        return new RosterRow(a.getId(), a.getCandidate().getFullName(), phone == null ? "" : phone, shift, in, out, status);
+        return new RosterRow(a.getId(), a.getCandidate().getFullName(), phone == null ? "" : phone, shift, in, out, status,
+                slot == null ? null : slot.getId(), slot != null && ws == null && !noShow
+                && ShiftAttendance.isCurrent(slot, LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul"))));
     }
 
     byte[] toXlsx(JobListing listing, Map<LocalDate, List<RosterRow>> byDate) {

@@ -7,12 +7,11 @@ import useFocusTrap from '../../../lib/useFocusTrap'
 import AttendanceBoard from '../components/AttendanceBoard'
 
 /**
- * Yoklama (işletme). İşletmenin kalıcı giriş QR'ı personel girişine asılır;
- * gelen herkes okutup adını yazar (ya da aday hesabıyla otomatik). Liste 15
- * sn'de bir yenilenir; telefonu olmayanı "Geldi" ile işaretle.
+ * Yoklama (işletme). Görevli çalışanın kişisel kartını okutur;
+ * telefonu olmayanı ilgili vardiyanın "Geldi" düğmesiyle işaretler.
  */
 export default function AttendanceModal({ listing, onClose }) {
-  const today = new Date().toLocaleDateString('en-CA')   // YYYY-MM-DD (yerel)
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' })
   const [date, setDate] = useState(today)
   const queryClient = useQueryClient()
   const dialogRef = useRef(null)
@@ -22,11 +21,11 @@ export default function AttendanceModal({ listing, onClose }) {
   const { data, isLoading, error } = useQuery({
     queryKey,
     queryFn: () => hotelApi.getAttendance(listing.id, date),
-    refetchInterval: date === today ? 15000 : false,
+    refetchInterval: 15000,
   })
 
-  async function markArrived(applicationId) {
-    await hotelApi.manualCheckIn(applicationId)
+  async function markArrived(applicationId, shiftSlotId) {
+    await hotelApi.manualCheckIn(applicationId, shiftSlotId)
     await queryClient.invalidateQueries({ queryKey })
   }
 
@@ -57,7 +56,6 @@ export default function AttendanceModal({ listing, onClose }) {
           <div className="p-5 space-y-5">
             <AttendanceBoard
               data={data}
-              canMark={date === today}
               onMarkArrived={markArrived}
               onDownload={() => hotelApi.downloadRoster(listing.id, date).catch(e => toast.error(extractErrorMessage(e)))}
             />

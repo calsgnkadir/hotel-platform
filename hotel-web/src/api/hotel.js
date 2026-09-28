@@ -477,8 +477,8 @@ export async function getAttendance(listingId, date = null) {
 }
 
 // İşletme: telefonu olmayanı elle "geldi" işaretle
-export async function manualCheckIn(applicationId) {
-  await api.post(`/api/business/applications/${applicationId}/manual-checkin`)
+export async function manualCheckIn(applicationId, shiftSlotId) {
+  await api.post(`/api/business/applications/${applicationId}/manual-checkin`, null, { params: { shiftSlotId } })
 }
 
 // Giriş kartı (kişisel, tek kullanımlık QR)

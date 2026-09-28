@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "work_sessions",
+        uniqueConstraints = @UniqueConstraint(name = "uk_ws_application_shift", columnNames = {"application_id", "shift_slot_id"}),
         indexes = {
             @Index(name = "idx_ws_app", columnList = "application_id"),
             @Index(name = "idx_ws_open", columnList = "application_id,clock_out_at")
@@ -34,6 +35,10 @@ public class WorkSession {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "application_id", nullable = false)
     private Application application;
+
+    /** Stable shift identity; nullable for historical sessions. */
+    @Column(name = "shift_slot_id")
+    private Long shiftSlotId;
 
     @Column(nullable = false)
     private LocalDateTime clockInAt;

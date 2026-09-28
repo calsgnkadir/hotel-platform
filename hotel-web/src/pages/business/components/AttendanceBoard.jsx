@@ -13,18 +13,17 @@ const STATUS_STYLE = {
  * Yoklama panosu (işletme). Girişler çalışanın kişisel QR kartı okutulunca düşer.
  *
  *  data         : backend AttendanceDto
- *  canMark      : "Geldi" butonu gösterilsin mi (sadece vardiya günü)
- *  onMarkArrived: async (applicationId) => void
+ *  onMarkArrived: async (applicationId, shiftSlotId) => void
  *  onDownload   : opsiyonel — Excel indir
  */
-export default function AttendanceBoard({ data, canMark, onMarkArrived, onDownload }) {
+export default function AttendanceBoard({ data, onMarkArrived, onDownload }) {
   const [busyId, setBusyId] = useState(null)
   const rows = data.rows || []
 
-  async function mark(applicationId) {
+  async function mark(applicationId, shiftSlotId) {
     setBusyId(applicationId)
     try {
-      await onMarkArrived(applicationId)
+      await onMarkArrived(applicationId, shiftSlotId)
     } catch (err) {
       toast.error(extractErrorMessage(err))
     } finally {
@@ -72,7 +71,7 @@ export default function AttendanceBoard({ data, canMark, onMarkArrived, onDownlo
             {rows.map(r => {
               const st = STATUS_STYLE[r.status] || STATUS_STYLE['Bekleniyor']
               return (
-                <li key={`${r.applicationId}-${r.shift}`} className="py-2 flex items-center gap-3">
+                <li key={`${r.applicationId}-${r.shiftSlotId}`} className="py-2 flex items-center gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate" style={{ color: 'var(--ah-ink)' }}>{r.fullName}</div>
                     <div className="text-[11px]" style={{ color: 'var(--ah-ink-4)' }}>
@@ -83,8 +82,8 @@ export default function AttendanceBoard({ data, canMark, onMarkArrived, onDownlo
                         style={{ background: st.bg, color: st.fg }}>
                     {r.status}
                   </span>
-                  {canMark && r.status === 'Bekleniyor' && (
-                    <button type="button" onClick={() => mark(r.applicationId)}
+                  {r.canCheckIn && r.status === 'Bekleniyor' && (
+                    <button type="button" onClick={() => mark(r.applicationId, r.shiftSlotId)}
                             disabled={busyId === r.applicationId}
                             className="text-xs font-semibold px-2.5 py-1 rounded-lg disabled:opacity-60 print:hidden"
                             style={{ background: '#1f2937', color: '#ffffff' }}>

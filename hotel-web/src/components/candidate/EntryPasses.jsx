@@ -21,13 +21,13 @@ export default function EntryPasses() {
   })
 
   if (passes.length === 0) return null
-  const current = open && passes.find(p => p.applicationId === open)
+  const current = open && passes.find(p => p.passUrl === open)
 
   return (
     <>
       <div className="space-y-2 mb-4">
         {passes.map(p => (
-          <button key={p.applicationId} type="button" onClick={() => setOpen(p.applicationId)}
+          <button key={p.passUrl} type="button" onClick={() => setOpen(p.passUrl)}
                   className="card w-full !p-3 flex items-center gap-3 text-left transition-shadow hover:shadow-md">
             <div className="p-1.5 rounded-lg bg-white shrink-0" style={{ border: '1px solid var(--ah-line)', opacity: p.usedAt ? 0.35 : 1 }}>
               <QRCodeSVG value={p.passUrl} size={48} level="M" />
@@ -39,6 +39,7 @@ export default function EntryPasses() {
               <div className="text-sm font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
                 {p.businessName} · {p.shift}
               </div>
+              <div className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>{p.shiftDate}</div>
               <div className="text-xs" style={{ color: p.usedAt ? 'var(--ah-ok)' : 'var(--ah-ink-3)' }}>
                 {p.usedAt ? `Giriş yapıldı · ${fmtTime(p.usedAt)}` : 'Kapıdaki görevliye okut — dokun, büyüsün'}
               </div>
@@ -60,6 +61,7 @@ export default function EntryPasses() {
             <div className="text-sm" style={{ color: 'var(--ah-ink-3)' }}>
               {current.businessName} · {current.shift}
             </div>
+            <div className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>{current.shiftDate}</div>
 
             <div className="relative inline-block mt-4 p-3 rounded-xl bg-white" style={{ border: '1px solid var(--ah-line)' }}>
               <div style={{ opacity: current.usedAt ? 0.15 : 1 }}>

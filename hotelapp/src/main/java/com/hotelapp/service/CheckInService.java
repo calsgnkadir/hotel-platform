@@ -43,10 +43,10 @@ import java.util.Optional;
  * {baseUrl}/giris/{token} açılır (işletme hesabıyla) → giriş saati yazılır ve
  * çalışanın adı + fotoğrafı gösterilir (görevli yüzü karşılaştırır). Aynı kart
  * aynı gün ikinci kez okutulursa "zaten kullanıldı" döner — yeni kayıt açılmaz.
- * QR ancak kişi kapıdayken görevlinin telefonuyla okutulabildiği için uzaktan
- * "geldi" gösterilemez. Telefonu olmayanı işletme listeden "Geldi" ile işaretler.
+ * Görevli kimliği yüz/fotoğraf ile kontrol etmelidir; QR fiziksel mevcudiyet
+ * kanıtı değildir. Telefonu olmayanı işletme listeden "Geldi" ile işaretler.
  *
- * Token: base64url("pass:{applicationId}:{yyyy-MM-dd}") + "." + HMAC-SHA256 (ilk 16 bayt).
+ * Token: base64url("pass2:{applicationId}:{slotId}:{yyyy-MM-dd}") + "." + HMAC-SHA256.
  */
 @Service
 @RequiredArgsConstructor
@@ -71,19 +71,26 @@ public class CheckInService {
     /** Testte saat sabitlenebilsin diye. */
     Clock clock = Clock.system(TR);
 
-    // ── Token (başvuru + vardiya günü) ─────────────────────────────────
+    // ── Token (başvuru + vardiya + gün) ────────────────────────────────
 
     String tokenFor(Long applicationId, LocalDate shiftDate) {
-        String payload = "pass:" + applicationId + ":" + shiftDate;
+        return signedToken("pass:" + applicationId + ":" + shiftDate);
+    }
+
+    String tokenFor(Long applicationId, Long slotId, LocalDate shiftDate) {
+        return signedToken("pass2:" + applicationId + ":" + slotId + ":" + shiftDate);
+    }
+
+    private String signedToken(String payload) {
         String p = Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
         return p + "." + sign(payload);
     }
 
-    record Parsed(Long applicationId, LocalDate shiftDate) {}
+    record Parsed(Long applicationId, Long slotId, LocalDate shiftDate) {}
 
     Parsed parse(String token) {
         try {
-            String[] parts = token.split("\\.");
+            String[] parts = token.split("\\.", -1);
             if (parts.length != 2) throw new IllegalArgumentException();
             String payload = new String(Base64.getUrlDecoder().decode(parts[0]), StandardCharsets.UTF_8);
             if (!MessageDigest.isEqual(sign(payload).getBytes(StandardCharsets.UTF_8),
@@ -91,8 +98,14 @@ public class CheckInService {
                 throw new IllegalArgumentException();
             }
             String[] f = payload.split(":");
-            if (f.length != 3 || !"pass".equals(f[0])) throw new IllegalArgumentException();
-            return new Parsed(Long.valueOf(f[1]), LocalDate.parse(f[2]));
+            if (f.length == 4 && "pass2".equals(f[0])) {
+                return new Parsed(Long.valueOf(f[1]), Long.valueOf(f[2]), LocalDate.parse(f[3]));
+            }
+            // Already issued cards remain usable only when their date identifies one shift.
+            if (f.length == 3 && "pass".equals(f[0])) {
+                return new Parsed(Long.valueOf(f[1]), null, LocalDate.parse(f[2]));
+            }
+            throw new IllegalArgumentException();
         } catch (RuntimeException e) {
             throw new BusinessRuleException("Giriş kartı geçersiz");
         }
@@ -113,23 +126,22 @@ public class CheckInService {
 
     @Transactional(readOnly = true)
     public List<PassDto> myPasses(Long candidateId) {
-        LocalDate today = LocalDate.now(clock);
+        LocalDateTime now = LocalDateTime.now(clock);
         return applicationRepository.findAllByCandidateId(candidateId).stream()
                 .filter(a -> a.getStatus() == ApplicationStatus.ACCEPTED)
                 .flatMap(a -> a.getRequestedSlots().stream()
-                        .filter(s -> isCurrent(s, today))
-                        .min(Comparator.comparing(ShiftSlot::getStartTime))
-                        .stream()
+                        .filter(s -> ShiftAttendance.isCurrent(s, now))
                         .map(s -> toPass(a, s)))
-                .sorted(Comparator.comparing(PassDto::getShift))
+                .sorted(Comparator.comparing(PassDto::getShiftDate).thenComparing(PassDto::getShift))
                 .toList();
     }
 
     private PassDto toPass(Application a, ShiftSlot s) {
         JobListing l = a.getJobListing();
-        WorkSession used = sessionOn(a.getId(), s.getDate(), overnight(s)).orElse(null);
+        WorkSession used = sessionOn(a, s).orElse(null);
         return PassDto.builder()
                 .applicationId(a.getId())
+                .shiftSlotId(s.getId())
                 .fullName(a.getCandidate().getFullName())
                 .businessName(l.getBusiness().getName())
                 .listingTitle(l.getTitle())
@@ -137,7 +149,7 @@ public class CheckInService {
                 .shift(T.format(s.getStartTime()) + " – " + T.format(s.getEndTime()))
                 .meetingPoint(l.getMeetingPoint())
                 .meetingMinutesBefore(l.getMeetingMinutesBefore())
-                .passUrl(baseUrl.replaceAll("/$", "") + "/giris/" + tokenFor(a.getId(), s.getDate()))
+                .passUrl(baseUrl.replaceAll("/$", "") + "/giris/" + tokenFor(a.getId(), s.getId(), s.getDate()))
                 .usedAt(used == null ? null : used.getClockInAt())
                 .build();
     }
@@ -147,7 +159,7 @@ public class CheckInService {
     @Transactional
     public ScanResult scan(String token, Long ownerId) {
         Parsed p = parse(token);
-        Application app = applicationRepository.findById(p.applicationId())
+        Application app = applicationRepository.findByIdForCheckIn(p.applicationId())
                 .orElseThrow(() -> new BusinessRuleException("Giriş kartı geçersiz"));
         if (!app.getJobListing().getBusiness().getOwner().getId().equals(ownerId)) {
             throw new UnauthorizedException("Bu kart senin işletmene ait değil");
@@ -155,20 +167,24 @@ public class CheckInService {
         if (app.getStatus() != ApplicationStatus.ACCEPTED) {
             throw new BusinessRuleException("Bu çalışanın başvurusu artık kabul edilmiş durumda değil");
         }
-        ShiftSlot slot = app.getRequestedSlots().stream()
+        List<ShiftSlot> matching = app.getRequestedSlots().stream()
                 .filter(s -> s.getDate().equals(p.shiftDate()))
-                .min(Comparator.comparing(ShiftSlot::getStartTime))
-                .orElseThrow(() -> new BusinessRuleException("Bu kartın vardiyası bulunamadı"));
-        if (!isCurrent(slot, LocalDate.now(clock))) {
-            throw new BusinessRuleException("Bu kart " + p.shiftDate() + " vardiyası için — bugün geçerli değil");
+                .filter(s -> p.slotId() == null || s.getId().equals(p.slotId())).toList();
+        if (matching.size() != 1) {
+            throw new BusinessRuleException("Kartın vardiyası belirlenemedi — giriş kartını yeniden aç");
+        }
+        ShiftSlot slot = matching.get(0);
+        LocalDateTime now = LocalDateTime.now(clock);
+        if (!ShiftAttendance.isCurrent(slot, now)) {
+            throw new BusinessRuleException("Bu kart " + p.shiftDate() + " vardiyası için — şu anda geçerli değil");
         }
 
-        // Tek kullanımlık: aynı vardiya günü için ikinci okutma yeni kayıt açmaz
-        WorkSession ws = sessionOn(app.getId(), slot.getDate(), overnight(slot)).orElse(null);
+        // The application lock and unique (application, shift) constraint protect all entry paths.
+        WorkSession ws = sessionOn(app, slot).orElse(null);
         boolean alreadyUsed = ws != null;
         if (ws == null) {
             ws = workSessionRepository.save(WorkSession.builder()
-                    .application(app).clockInAt(LocalDateTime.now(clock)).build());
+                    .application(app).shiftSlotId(slot.getId()).clockInAt(now).build());
             log.info("[PASS-SCAN] appId={} owner={}", app.getId(), ownerId);
         }
         User c = app.getCandidate();
@@ -206,8 +222,8 @@ public class CheckInService {
 
     /** Telefonu olmayan / kartını açamayan çalışanı listeden "geldi" işaretle. */
     @Transactional
-    public void manualCheckIn(Long applicationId, Long ownerId) {
-        Application app = applicationRepository.findById(applicationId)
+    public void manualCheckIn(Long applicationId, Long ownerId, Long slotId) {
+        Application app = applicationRepository.findByIdForCheckIn(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
         if (!app.getJobListing().getBusiness().getOwner().getId().equals(ownerId)) {
             throw new UnauthorizedException("Bu başvuru senin ilanına ait değil");
@@ -215,40 +231,26 @@ public class CheckInService {
         if (app.getStatus() != ApplicationStatus.ACCEPTED) {
             throw new BusinessRuleException("Sadece kabul edilmiş aday yoklamaya eklenebilir");
         }
-        LocalDate today = LocalDate.now(clock);
-        if (sessionOn(app.getId(), today, false).isEmpty()) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        List<ShiftSlot> matching = app.getRequestedSlots().stream()
+                .filter(s -> slotId == null || s.getId().equals(slotId))
+                .filter(s -> ShiftAttendance.isCurrent(s, now)).toList();
+        if (matching.size() != 1) {
+            throw new BusinessRuleException("Geçerli tek bir vardiya seçmelisin");
+        }
+        ShiftSlot slot = matching.get(0);
+        if (sessionOn(app, slot).isEmpty()) {
             workSessionRepository.save(WorkSession.builder()
-                    .application(app).clockInAt(LocalDateTime.now(clock)).build());
+                    .application(app).shiftSlotId(slot.getId()).clockInAt(now).build());
             log.info("[CHECKIN-MANUAL] appId={} owner={}", app.getId(), ownerId);
         }
     }
 
     // ── Yardımcılar ────────────────────────────────────────────────────
 
-    /** Bugünün vardiyası ya da dün başlayıp gece yarısını geçen (22:00–06:00 gibi) vardiya. */
-    static boolean isCurrent(ShiftSlot s, LocalDate today) {
-        if (today.equals(s.getDate())) return true;
-        return today.minusDays(1).equals(s.getDate()) && overnight(s);
-    }
-
-    /**
-     * Vardiyaya ait giriş kaydı: vardiya günü açılan kayıt; gece vardiyasında
-     * (22:00–06:00) ertesi gün öğlene kadar açılan kayıt da sayılır.
-     */
-    private Optional<WorkSession> sessionOn(Long applicationId, LocalDate shiftDate, boolean overnight) {
-        return workSessionRepository.findByApplicationIdOrderByClockInAtDesc(applicationId).stream()
-                .filter(w -> w.getClockInAt() != null)
-                .filter(w -> {
-                    LocalDate d = w.getClockInAt().toLocalDate();
-                    if (d.equals(shiftDate)) return true;
-                    return overnight && d.equals(shiftDate.plusDays(1))
-                            && w.getClockInAt().toLocalTime().isBefore(java.time.LocalTime.NOON);
-                })
-                .findFirst();
-    }
-
-    private static boolean overnight(ShiftSlot s) {
-        return s.getEndTime() != null && s.getStartTime() != null && s.getEndTime().isBefore(s.getStartTime());
+    private Optional<WorkSession> sessionOn(Application app, ShiftSlot slot) {
+        return ShiftAttendance.sessionFor(app, slot,
+                workSessionRepository.findByApplicationIdOrderByClockInAtDesc(app.getId()));
     }
 
     private JobListing ownedListing(Long listingId, Long ownerId) {
@@ -263,6 +265,7 @@ public class CheckInService {
     @Data @Builder
     public static class PassDto {
         private Long applicationId;
+        private Long shiftSlotId;
         private String fullName;
         private String businessName;
         private String listingTitle;

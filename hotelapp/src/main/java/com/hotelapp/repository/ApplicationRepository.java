@@ -16,6 +16,11 @@ import java.util.Optional;
 
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
 
+    /** Serialize QR, manual and GPS entry writes before checking existing sessions. */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Application a WHERE a.id = :id")
+    Optional<Application> findByIdForCheckIn(@Param("id") Long id);
+
     List<Application> findAllByCandidateId(Long candidateId);
 
     /**

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, Link } from 'react-router-dom'
 
 vi.mock('../../../api/hotel', () => ({
   getMyPasses: vi.fn(),
@@ -47,6 +48,14 @@ describe('EntryPasses (çalışan giriş kartı)', () => {
     wrap(<EntryPasses />)
     expect(await screen.findByText(/Giriş yapıldı · 07:52/)).toBeInTheDocument()
   })
+
+  it('aynı başvurunun ikinci vardiyası kendi kartını açar', async () => {
+    hotelApi.getMyPasses.mockResolvedValue([pass, { ...pass, shift: '16:00 – 23:00', passUrl: 'https://kadrom.me/giris/second' }])
+    wrap(<EntryPasses />)
+    fireEvent.click(await screen.findByText(/Grand Otel · 16:00 – 23:00/))
+    expect(screen.getByRole('dialog')).toHaveTextContent('16:00 – 23:00')
+    expect(screen.getByRole('dialog')).not.toHaveTextContent('08:00 – 16:00')
+  })
 })
 
 function renderScan() {
@@ -85,5 +94,31 @@ describe('ScanPassPage (görevli okutma ekranı)', () => {
     hotelApi.scanPass.mockRejectedValue({ response: { data: { message: 'Giriş kartı geçersiz' } } })
     renderScan()
     expect(await screen.findByText('Geçersiz kart')).toBeInTheDocument()
+  })
+
+  it('StrictMode tekrarında yalnız bir istek gönderir', async () => {
+    hotelApi.scanPass.mockResolvedValue({ fullName: 'Ayşe', shift: '08:00 – 16:00', clockInAt: '2026-10-03T07:50:00' })
+    render(<StrictMode><MemoryRouter initialEntries={['/giris/first']}>
+      <Routes><Route path="/giris/:token" element={<ScanPassPage />} /></Routes>
+    </MemoryRouter></StrictMode>)
+    expect(await screen.findByText('Ayşe')).toBeInTheDocument()
+    expect(hotelApi.scanPass).toHaveBeenCalledTimes(1)
+  })
+
+  it('yeni karta geçince okutur ve eski isteğin geç yanıtını göstermez', async () => {
+    let resolveFirst
+    hotelApi.scanPass.mockImplementation(token => token === 'first'
+      ? new Promise(resolve => { resolveFirst = resolve })
+      : Promise.resolve({ fullName: 'İkinci kişi', shift: '16:00 – 23:00', clockInAt: '2026-10-03T16:00:00' }))
+    render(<MemoryRouter initialEntries={['/giris/first']}>
+      <Link to="/giris/second">Sonraki kart</Link>
+      <Routes><Route path="/giris/:token" element={<ScanPassPage />} /></Routes>
+    </MemoryRouter>)
+    await waitFor(() => expect(hotelApi.scanPass).toHaveBeenCalledWith('first'))
+    fireEvent.click(screen.getByText('Sonraki kart'))
+    expect(await screen.findByText('İkinci kişi')).toBeInTheDocument()
+    await act(async () => resolveFirst({ fullName: 'Eski kişi', clockInAt: '2026-10-03T07:50:00' }))
+    expect(screen.queryByText('Eski kişi')).not.toBeInTheDocument()
+    expect(hotelApi.scanPass).toHaveBeenCalledTimes(2)
   })
 })

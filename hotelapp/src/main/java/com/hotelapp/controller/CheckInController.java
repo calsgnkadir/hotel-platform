@@ -60,8 +60,9 @@ public class CheckInController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> manualCheckIn(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
-            @PathVariable Long applicationId) {
-        checkInService.manualCheckIn(applicationId, currentUser.getId());
+            @PathVariable Long applicationId,
+            @RequestParam(required = false) Long shiftSlotId) {
+        checkInService.manualCheckIn(applicationId, currentUser.getId(), shiftSlotId);
         return ResponseEntity.noContent().build();
     }
 }

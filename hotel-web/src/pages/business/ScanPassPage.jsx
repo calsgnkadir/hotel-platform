@@ -15,15 +15,21 @@ const fmtTime = iso => new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digi
 export default function ScanPassPage() {
   const { token } = useParams()
   usePageTitle('Giriş kartı')
-  const [state, setState] = useState({ status: 'loading' })
-  const started = useRef(false)
+  const [resultState, setState] = useState({ status: 'loading' })
+  const request = useRef(null)
+  const state = resultState.token === token ? resultState : { status: 'loading' }
 
   useEffect(() => {
-    if (started.current) return   // StrictMode çift çağrısında tek okutma
-    started.current = true
-    hotelApi.scanPass(token)
-      .then(result => setState({ status: 'ok', result }))
-      .catch(err => setState({ status: 'error', message: extractErrorMessage(err) }))
+    let active = true
+    // Reuse the in-flight request during StrictMode's effect replay, but scan new tokens.
+    if (request.current?.token !== token) {
+      request.current = { token, promise: hotelApi.scanPass(token) }
+    }
+    setState({ status: 'loading', token })
+    request.current.promise
+      .then(result => { if (active) setState({ status: 'ok', token, result }) })
+      .catch(err => { if (active) setState({ status: 'error', token, message: extractErrorMessage(err) }) })
+    return () => { active = false }
   }, [token])
 
   const r = state.result
