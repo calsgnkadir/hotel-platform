@@ -11,8 +11,8 @@
  *   karsi taraf    = beyaz kart + koyu ink yazi + ince cizgi
  */
 import { useState } from 'react'
-import cldImg, { ImgSize } from '../../lib/cldImg'
-import { formatTime, parseCallInvite, pdfThumbnailUrl, fileTypeMeta } from './utils'
+import PrivateAttachment from './PrivateAttachment'
+import { formatTime, parseCallInvite } from './utils'
 import { parseDocToken, DocumentCardBubble } from './DocumentShare'
 
 const BRAND = '#1f2937'
@@ -48,49 +48,6 @@ function ReadReceipt({ isRead }) {
       <path d="m5 12 4 4 6-6" />
       <path d="m11 16 6-6 2 2" opacity="0.85" />
     </svg>
-  )
-}
-
-/* ── Dosya eki: PDF/DOC/diğer için ayrı ikon + renk chip (FAZ D5) ── */
-function FileAttachment({ m }) {
-  const mine = m.mine
-  const name = m.attachmentName || 'Dosya'
-  const ext = (name.split('.').pop() || '').toLowerCase()
-  const meta = fileTypeMeta(ext)
-  // FAZ D5 son adım: PDF için Cloudinary'den ilk sayfa thumbnail dene
-  const [thumbFailed, setThumbFailed] = useState(false)
-  const pdfThumb = ext === 'pdf' ? pdfThumbnailUrl(m.attachmentUrl) : null
-  const showThumb = pdfThumb && !thumbFailed
-
-  return (
-    <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer"
-       className="flex items-center gap-2.5 px-3 py-2.5 border-b"
-       style={{ borderColor: mine ? 'rgba(255, 255, 255, 0.16)' : 'var(--ah-line)' }}>
-      {showThumb ? (
-        <img src={pdfThumb}
-             alt="PDF önizleme" onError={() => setThumbFailed(true)}
-             loading="lazy" decoding="async"
-             className="w-12 h-16 rounded-md object-cover flex-shrink-0"
-             style={{ border: `1px solid ${meta.border}`, background: meta.bg }} />
-      ) : (
-        <div className="w-9 h-11 rounded-md flex flex-col items-center justify-center flex-shrink-0 relative"
-             style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke={meta.iconColor} strokeWidth={1.6} className="w-4 h-4 -mb-0.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d={meta.iconPath} />
-          </svg>
-          <span className="text-[8px] font-bold tracking-wider" style={{ color: meta.iconColor }}>
-            {meta.label}
-          </span>
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold truncate text-[13px]">{name}</div>
-        <div className="text-[10px]" style={{ color: mine ? 'rgba(255, 255, 255, 0.6)' : 'var(--ah-ink-4)' }}>
-          {m.attachmentSize ? `${(m.attachmentSize / 1024).toFixed(0)} KB · ` : ''}indirmek için tıkla
-        </div>
-      </div>
-    </a>
   )
 }
 
@@ -163,9 +120,6 @@ function CallInviteBubble({ m, type, url }) {
  */
 export default function MessageBubble({ m, showMeta = true, onReply, onReact }) {
   const mine = m.mine
-  const isImage = m.attachmentType === 'image'
-  const isAudio = m.attachmentType === 'audio'
-  const isFile  = m.attachmentType === 'file'
   const hasAttach = !!m.attachmentUrl
   const [pickerOpen, setPickerOpen] = useState(false)
 
@@ -266,28 +220,7 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
             </div>
           )}
 
-          {/* Attachment */}
-          {hasAttach && isImage && (
-            <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer" className="block">
-              <img src={cldImg(m.attachmentUrl, { w: ImgSize.card })} alt={m.attachmentName || 'foto'}
-                   loading="lazy" decoding="async"
-                   className="max-h-72 w-auto object-contain"
-                   style={{ background: innerBg }} />
-            </a>
-          )}
-          {hasAttach && isAudio && (
-            <div className="flex items-center gap-2 px-3 py-2.5"
-                 style={{ background: innerBg }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                   strokeWidth={1.8} stroke="currentColor"
-                   className="w-5 h-5 shrink-0" style={{ color: mine ? 'rgba(255, 255, 255, 0.7)' : 'var(--ah-ink-4)' }}>
-                <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
-              </svg>
-              <audio controls preload="metadata" src={m.attachmentUrl} className="h-8 max-w-[200px]" />
-            </div>
-          )}
-          {hasAttach && isFile && <FileAttachment m={m} />}
+          {hasAttach && <PrivateAttachment key={m.id} message={m} />}
 
           {/* Metin (varsa) */}
           {m.content && m.content.trim() && (

@@ -57,7 +57,6 @@ export default function CommandPalette() {
         { id: 'cand-overview',  label: 'Genel Bakış',          keywords: 'anasayfa dashboard ana ozet', section: 'Sayfa', go: toCand('overview') },
         { id: 'cand-listings',  label: 'İlanları Keşfet',      keywords: 'is is-ilani aktif',           section: 'Sayfa', go: toCand('listings') },
         { id: 'cand-apps',      label: 'Başvurularım',         keywords: 'basvurular application',      section: 'Sayfa', go: toCand('applications') },
-        { id: 'cand-docs',      label: 'Belgelerim',           keywords: 'sertifika cv document',       section: 'Sayfa', go: toCand('documents') },
         { id: 'cand-msgs',      label: 'Mesajlarım',           keywords: 'sohbet chat',                  section: 'Sayfa', go: toCand('messages') },
         { id: 'cand-profile',   label: 'Profilim',             keywords: 'profil ayar settings',         section: 'Sayfa', go: toCand('profile') },
         { id: 'cand-history',   label: 'Geçmiş İşlerim',       keywords: 'gecmis tamamlanmis history',   section: 'Sayfa', go: toCand('history') },

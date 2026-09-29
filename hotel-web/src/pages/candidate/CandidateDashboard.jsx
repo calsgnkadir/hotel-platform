@@ -22,13 +22,12 @@ import ListingsPage from './ListingsPage'
 import MessagesPage from '../MessagesPage'
 import ApplicationsTab from './tabs/ApplicationsTab'
 import HistoryTab from './tabs/HistoryTab'
-import DocumentsTab from './tabs/DocumentsTab'
 import ProfileTab from './tabs/ProfileTab'
 import SavedListingsTab from './tabs/SavedListingsTab'  // Dalga H1
 import RelationsTab from './tabs/RelationsTab'              // Dalga I1
 
 // FAZ 26 — 'overview' (Genel Bakis) tamamen kaldirildi; varsayilan sekme 'listings'.
-const VALID_TABS = ['listings','saved','relations','applications','history','documents','messages','profile']
+const VALID_TABS = ['listings','saved','relations','applications','history','messages','profile']
 
 export default function CandidateDashboard() {
   const { user } = useAuth()
@@ -77,7 +76,6 @@ export default function CandidateDashboard() {
           {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={refetchApplications} onMessagesOpen={() => handleTabChange('messages')} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => handleTabChange('messages')} onTabChange={handleTabChange} />}
           {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={() => handleTabChange('messages')} />}
-          {activeTab === 'documents'     && <DocumentsTab />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
           {activeTab === 'saved'         && <SavedListingsTab onTabChange={handleTabChange} />}

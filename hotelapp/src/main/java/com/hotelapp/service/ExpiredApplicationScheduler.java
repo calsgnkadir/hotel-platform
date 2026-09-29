@@ -86,7 +86,7 @@ public class ExpiredApplicationScheduler {
      * Belge son-kullanma hatirlaticisi. Her sabah 09:15: son kullanma tarihi
      * yaklasan (veya gecmis ama hatirlatilmamis) belgeler icin adaya tek sefer uyari.
      */
-    @Scheduled(cron = "0 15 9 * * *")
+    // Retired: profile documents are no longer collected.
     public void sendDocumentExpiryReminders() {
         try {
             int n = documentExpiryReminderService.sendDueReminders();

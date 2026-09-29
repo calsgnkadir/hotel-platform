@@ -224,6 +224,17 @@ public class MessageService {
     private static final Set<String> IMAGE_EXTS = Set.of("jpg", "jpeg", "png", "webp", "heic", "heif", "gif");
     private static final Set<String> AUDIO_EXTS = Set.of("mp3", "m4a", "ogg", "wav", "webm");
 
+    @Transactional(readOnly = true)
+    public Message getAttachmentForUser(Long conversationId, Long messageId, Long viewerId) {
+        getConversationForUser(conversationId, viewerId);
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mesaj", messageId));
+        if (!message.getConversation().getId().equals(conversationId) || message.getAttachmentUrl() == null) {
+            throw new ResourceNotFoundException("Dosya", messageId);
+        }
+        return message;
+    }
+
     @Transactional
     public MessageDto sendAttachment(Long conversationId, Long senderId, MultipartFile file, String caption) {
         Conversation conv = getConversationForUser(conversationId, senderId);
@@ -539,7 +550,9 @@ public class MessageService {
                 .sentAt(m.getSentAt())
                 .isRead(m.getIsRead())
                 .mine(mine)
-                .attachmentUrl(m.getAttachmentUrl())
+                .attachmentUrl(m.getAttachmentUrl() == null ? null :
+                        "/api/messages/conversations/" + m.getConversation().getId()
+                                + "/messages/" + m.getId() + "/attachment")
                 .attachmentType(m.getAttachmentType())
                 .attachmentName(m.getAttachmentName())
                 .attachmentSize(m.getAttachmentSize())

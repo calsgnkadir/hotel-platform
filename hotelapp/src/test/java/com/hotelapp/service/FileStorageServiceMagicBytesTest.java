@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * FileStorageService magic byte / MIME spoofing testleri.
  *
  * Cloudinary mock'lanir (validate() upload'a ulasmadan once tetiklenir);
- * private validate metodu store(file, studentId) cagrisinin icinden
+ * private validate metodu storeMessageAttachment(file, conversationId) cagrisinin icinden
  * sirasi 1. olarak isler — validation hatasi orada atilirsa Cloudinary
  * call hic yapilmaz.
  */
@@ -38,7 +38,7 @@ class FileStorageServiceMagicBytesTest {
         // Upload Cloudinary'ye gidecek — burada NPE yerine kontrol hatası bekliyoruz mu?
         // Aslinda validate() gecip Cloudinary'ye gidecek; mock olduğu için NPE atar.
         // O yüzden validate hatası ATMAMASI bizim için yeterli — gerçek upload fail edebilir.
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isNotInstanceOf(BusinessRuleException.class);
     }
 
@@ -48,7 +48,7 @@ class FileStorageServiceMagicBytesTest {
         byte[] jpgHeader = bytes(0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46);
         MockMultipartFile file = new MockMultipartFile("file", "foto.jpg", "image/jpeg", jpgHeader);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isNotInstanceOf(BusinessRuleException.class);
     }
 
@@ -58,7 +58,7 @@ class FileStorageServiceMagicBytesTest {
         byte[] pngHeader = bytes(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
         MockMultipartFile file = new MockMultipartFile("file", "logo.png", "image/png", pngHeader);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isNotInstanceOf(BusinessRuleException.class);
     }
 
@@ -73,7 +73,7 @@ class FileStorageServiceMagicBytesTest {
         );
         MockMultipartFile file = new MockMultipartFile("file", "foto.webp", "image/webp", webpHeader);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isNotInstanceOf(BusinessRuleException.class);
     }
 
@@ -88,7 +88,7 @@ class FileStorageServiceMagicBytesTest {
         );
         MockMultipartFile file = new MockMultipartFile("file", "iphone.heic", "image/heic", heicHeader);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isNotInstanceOf(BusinessRuleException.class);
     }
 
@@ -100,7 +100,7 @@ class FileStorageServiceMagicBytesTest {
         byte[] pngHeader = bytes(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
         MockMultipartFile file = new MockMultipartFile("file", "cv.pdf", "application/pdf", pngHeader);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("uzantısıyla uyumsuz");
     }
@@ -111,7 +111,7 @@ class FileStorageServiceMagicBytesTest {
         byte[] exeHeader = bytes(0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00);  // MZ - Windows PE
         MockMultipartFile file = new MockMultipartFile("file", "foto.jpg", "image/jpeg", exeHeader);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("uzantısıyla uyumsuz");
     }
@@ -122,7 +122,7 @@ class FileStorageServiceMagicBytesTest {
         byte[] pdfHeader = bytes(0x25, 0x50, 0x44, 0x46, 0x2D, 0x31);
         MockMultipartFile file = new MockMultipartFile("file", "image.png", "image/png", pdfHeader);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("uzantısıyla uyumsuz");
     }
@@ -134,7 +134,7 @@ class FileStorageServiceMagicBytesTest {
     void emptyFile_isRejected() {
         MockMultipartFile file = new MockMultipartFile("file", "bos.pdf", "application/pdf", new byte[0]);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("Boş dosya");
     }
@@ -145,7 +145,7 @@ class FileStorageServiceMagicBytesTest {
         byte[] data = bytes(0x4D, 0x5A);
         MockMultipartFile file = new MockMultipartFile("file", "tool.exe", "application/octet-stream", data);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("formatı desteklenmiyor");
     }
@@ -156,7 +156,7 @@ class FileStorageServiceMagicBytesTest {
         byte[] data = bytes(0x25, 0x50, 0x44, 0x46);
         MockMultipartFile file = new MockMultipartFile("file", "../../etc/passwd.pdf", "application/pdf", data);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("Geçersiz dosya adı");
     }
@@ -167,7 +167,7 @@ class FileStorageServiceMagicBytesTest {
         byte[] data = bytes(0x25, 0x50, 0x44, 0x46);
         MockMultipartFile file = new MockMultipartFile("file", "noext", "application/octet-stream", data);
 
-        assertThatThrownBy(() -> service.store(file, 1L))
+        assertThatThrownBy(() -> service.storeMessageAttachment(file, 1L))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("uzantısı yok");
     }

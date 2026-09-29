@@ -33,14 +33,15 @@ public class DocumentController {
     @Operation(summary = "Belge yükle — sadece CANDIDATE (expiresAt: süreli belgelerde son kullanma, YYYY-MM-DD)")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('CANDIDATE')")
-    public ResponseEntity<DocumentDto> upload(
+    public ResponseEntity<?> upload(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @RequestParam("file") MultipartFile file,
             @RequestParam("type") DocumentType type,
             @RequestParam(value = "expiresAt", required = false)
             @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
             java.time.LocalDate expiresAt) {
-        return ResponseEntity.ok(documentService.upload(currentUser.getId(), file, type, expiresAt));
+        return ResponseEntity.status(HttpStatus.GONE).body(Map.of("message",
+                "Profil belgesi yükleme kaldırıldı. Gerekli dosyayı ilgili sohbetten paylaşın."));
     }
 
     @Operation(summary = "Belgelerimi listele — sadece CANDIDATE")

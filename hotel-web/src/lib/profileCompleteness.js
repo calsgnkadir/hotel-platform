@@ -26,8 +26,6 @@ const CANDIDATE_FIELDS = [
   // duzenlemede o bolumlerin UI'si kaldirildi (tercihler sadece ilan
   // filtrelemede kullaniliyor), dolayisiyla doluluga sayilmamali.
   { key: 'experienceYears',    label: 'Deneyim yılı',         weight: 6, isNumber: true },
-  // Yüklü en az 1 belge (CV vb.) — özel kontrol
-  { key: '__hasDocument',      label: 'En az 1 belge (CV)',   weight: 6 },
 ]
 
 // ── İŞLETME ─────────────────────────────────────────────────────────
@@ -80,8 +78,8 @@ function calculate(profile, fields, extras = {}) {
   return { percentage, missing, max, earned }
 }
 
-export function calculateCandidateCompleteness(profile, { hasDocument = false } = {}) {
-  return calculate(profile, CANDIDATE_FIELDS, { __hasDocument: hasDocument })
+export function calculateCandidateCompleteness(profile) {
+  return calculate(profile, CANDIDATE_FIELDS)
 }
 
 export function calculateBusinessCompleteness(profile, { hasPhoto = false, hasListing = false } = {}) {

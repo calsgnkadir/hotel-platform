@@ -182,23 +182,5 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
     }
   }
 
-  /** Aday: yüklü belgesini sohbete gönder — kart düşer. */
-  async function sendDocAction(apiCall) {
-    if (sending) return false
-    setSending(true)
-    try {
-      const msg = await apiCall()
-      finish(msg)
-      onMessageSent?.()
-      return true
-    } catch (err) {
-      toast.error(extractErrorMessage(err))
-      return false
-    } finally {
-      setSending(false)
-    }
-  }
-  const shareDoc   = (documentId)   => sendDocAction(() => hotelApi.shareChatDocument(convId, documentId))
-
-  return { sending, sendText, sendFile, sendFiles, sendCall, shareDoc }
+  return { sending, sendText, sendFile, sendFiles, sendCall }
 }

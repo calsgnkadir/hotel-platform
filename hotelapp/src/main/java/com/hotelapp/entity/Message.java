@@ -40,7 +40,7 @@ public class Message {
     private String content = "";
 
     // ── Attachment alanları (refactor v2: chat-only akış) ──
-    /** Cloudinary public URL (image/file/audio). null = sadece metin mesajı. */
+    /** Private storage reference; never expose it in DTOs. null = text only. */
     @Column(name = "attachment_url", length = 500)
     private String attachmentUrl;
 

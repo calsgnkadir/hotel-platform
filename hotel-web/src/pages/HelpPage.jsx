@@ -16,7 +16,7 @@ const FAQS = [
   { cat: 'Aday', q: 'Bir ilana başvurduktan sonra ne olur?',
     a: 'İşletme başvurunu inceler. Onaylarsa "Kabul" durumuna geçer, mesajlaşma sekmesinden iletişime geçebilirsin. Reddedilirse "Red" olarak görürsün.' },
   { cat: 'Aday', q: 'Belgelerimi yüklemek zorunda mıyım?',
-    a: 'Hayır, başvurmak için zorunlu değil. Ancak CV, transkript ve hassas belgeleri yüklersen başvuruların daha hızlı değerlendirilir.' },
+    a: 'Hayır. Profilinde veya başvuru sırasında belge yüklemen gerekmez. İşletme bir belge isterse ilgili sohbette Dosya / Foto ekle düğmesiyle paylaşabilirsin.' },
   { cat: 'Aday', q: 'Başvurumu iptal edebilir miyim?',
     a: 'Evet, sadece "Beklemede" veya "İncelemede" durumdaki başvurular iptal edilebilir. Kabul edilmiş bir başvuruyu iptal edemezsin (no-show olarak işaretlenir).' },
   { cat: 'Aday', q: 'İşletme beni "HOLD"a aldı, ne demek?',

@@ -2,16 +2,11 @@ package com.hotelapp.service;
 
 import com.hotelapp.entity.Application;
 import com.hotelapp.entity.Document;
-import com.hotelapp.entity.DocumentRequest;
-import com.hotelapp.entity.User;
-import com.hotelapp.enums.DocumentRequestStatus;
 import com.hotelapp.enums.DocumentType;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.DocumentRepository;
-import com.hotelapp.repository.DocumentRequestRepository;
-import com.hotelapp.repository.UserRepository;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -23,47 +18,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
-    private final DocumentRequestRepository documentRequestRepository;
-    private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
     private final FileStorageService fileStorageService;
 
-    private static final Set<DocumentType> SENSITIVE_TYPES = Set.of(
-            DocumentType.CRIMINAL_RECORD,
-            DocumentType.HEALTH_CERTIFICATE,
-            DocumentType.IDENTITY_DOCUMENT);
-
     @Transactional
     public DocumentDto upload(Long candidateId, MultipartFile file, DocumentType type, LocalDate expiresAt) {
-        User candidate = userRepository.findById(candidateId)
-                .orElseThrow(() -> new ResourceNotFoundException("Aday", candidateId));
-
-        documentRepository.findByStudentIdAndType(candidateId, type).ifPresent(existing -> {
-            fileStorageService.delete(existing.getFilePath());
-            documentRepository.delete(existing);
-        });
-
-        String filePath = fileStorageService.store(file, candidateId);
-
-        Document document = Document.builder()
-                .student(candidate)
-                .type(type)
-                .filePath(filePath)
-                .originalFileName(file.getOriginalFilename())
-                .isSensitive(SENSITIVE_TYPES.contains(type))
-                .expiresAt(expiresAt)   // yeniden yüklemede yeni tarih; hatırlatma damgası sıfır
-                .build();
-
-        documentRepository.save(document);
-        return toDto(document);
+        throw new com.hotelapp.exception.BusinessRuleException("Profil belgesi yükleme kaldırıldı. Dosyayı sohbetten paylaşın.");
     }
 
     @Transactional(readOnly = true)
@@ -87,14 +53,11 @@ public class DocumentService {
 
     @Transactional(readOnly = true)
     public List<DocumentDto> getPublicDocuments(Long candidateId) {
-        return documentRepository.findAllByStudentIdAndIsSensitiveFalse(candidateId)
-                .stream().map(this::toDto).toList();
+        return List.of();
     }
 
     /**
-     * İşletme sahibinin bir başvuru için erişebileceği tüm belgeleri döner.
-     * - Adayın tüm AÇIK (sensitive=false) belgeleri
-     * - Bu başvuru için GRANTED durumda olan hassas belge tiplerine ait belgeler
+     * Legacy compatibility: profile documents are no longer shared with applications.
      */
     @Transactional(readOnly = true)
     public List<DocumentDto> getAccessibleDocsForApplication(Long applicationId, Long ownerId) {
@@ -105,52 +68,15 @@ public class DocumentService {
             throw UnauthorizedException.keyed("error.application.notOwner");
         }
 
-        Set<DocumentType> grantedSensitiveTypes = app.getDocumentRequests().stream()
-                .filter(dr -> dr.getStatus() == DocumentRequestStatus.GRANTED)
-                .map(DocumentRequest::getDocumentType)
-                .collect(Collectors.toSet());
-
-        Long candidateId = app.getCandidate().getId();
-        return documentRepository.findAllByStudentId(candidateId).stream()
-                .filter(d -> !d.isSensitive() || grantedSensitiveTypes.contains(d.getType()))
-                .map(this::toDto)
-                .toList();
+        return List.of();
     }
 
     /**
-     * Belgeye erişim kontrolü yapar ve Cloudinary signed URL döner.
-     * Caller (controller) bu URL'ye 302 redirect eder.
+     * Retired public-link delivery. Existing records remain available for owner deletion.
      */
     @Transactional(readOnly = true)
     public String getDownloadUrl(Long documentId, Long requesterId, boolean isBusinessOwner) {
-        Document document = documentRepository.findById(documentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Belge", documentId));
-
-        if (!isBusinessOwner) {
-            // Aday kendi belgesini her zaman görebilir
-            if (!document.getStudent().getId().equals(requesterId)) {
-                throw UnauthorizedException.keyed("error.document.noAccess");
-            }
-            return fileStorageService.publicUrl(document.getFilePath());
-        }
-
-        // İşletme sahibi — hassas olmayan belgelere erişebilir
-        if (!document.isSensitive()) {
-            return fileStorageService.publicUrl(document.getFilePath());
-        }
-
-        // Hassas belge → talep + onay kontrolü
-        boolean granted = documentRequestRepository.hasGrantedAccess(
-                requesterId,
-                document.getStudent().getId(),
-                document.getType());
-
-        if (!granted) {
-            throw new UnauthorizedException(
-                    "Bu belgeye erişmek için adaydan talep oluşturup onay almanız gerekiyor");
-        }
-
-        return fileStorageService.publicUrl(document.getFilePath());
+        throw new com.hotelapp.exception.BusinessRuleException("Bu eski profil belgesi artık paylaşılamıyor. Dosyayı ilgili sohbetten yeniden paylaşın.");
     }
 
     private DocumentDto toDto(Document doc) {

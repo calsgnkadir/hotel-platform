@@ -82,7 +82,7 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
   }
 
   // FAZ 20 — Gonderim motoru. Her basarili gonderimde onSent tetiklenir.
-  const { sending, sendText, sendFile, sendFiles, sendCall, shareDoc } = useMessageSend({
+  const { sending, sendText, sendFile, sendFiles, sendCall } = useMessageSend({
     conversation,
     onSent: (msg) => { lastSeenIdRef.current = msg.id; scrollToBottom() },
     onMessageSent,
@@ -359,7 +359,6 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
         sendText={sendText}
         sendFile={sendFile}
         sendCall={sendCall}
-        shareDoc={shareDoc}
         onRecordingChange={setComposerRecording}
       />
     </div>

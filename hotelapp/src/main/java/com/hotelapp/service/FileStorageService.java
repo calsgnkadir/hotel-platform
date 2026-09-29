@@ -3,7 +3,6 @@ package com.hotelapp.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.hotelapp.exception.BusinessRuleException;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,13 +16,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Dosya storage — Cloudinary tabanlı (Railway ephemeral disk yerine).
- *
- * DB'ye saklanan değer: Cloudinary public_id (örn: "kadrom/documents/5/cv_abc123")
- *   Tam URL gerektiğinde {@link #publicUrl(String)} ile build edilir.
- *
- * Hassas belgeler (criminal/health/identity) için resource_type=raw, type=authenticated kullanılır;
- * indirme zamanı signed URL üretilir. Görseller ve public belgeler için type=upload (CDN'den public).
+ * Cloudinary storage. Chat originals are authenticated and delivered only by the
+ * membership-checked backend proxy. Business images and avatars remain public.
  */
 @Service
 @RequiredArgsConstructor
@@ -50,58 +44,8 @@ public class FileStorageService {
     private static final long MAX_IMAGE_SIZE = 10L * 1024 * 1024;  // 10 MB
 
     // -----------------------------------------------------------------------
-    // Aday belge yükleme
-    // -----------------------------------------------------------------------
-    // FAZ 2/#18: Cloudinary down/yavaslarsa devre acilir, yukleme hatasi clean dondurulur
-    @CircuitBreaker(name = "cloudinary", fallbackMethod = "storeFallback")
-    public String store(MultipartFile file, Long studentId) {
-        validate(file, ALLOWED_EXTENSIONS, MAX_FILE_SIZE,
-                "Kabul edilenler: PDF, JPG, JPEG, PNG, WEBP, HEIC, DOC, DOCX",
-                "Dosya çok büyük (%.1f MB). Maksimum 15 MB olmalı.");
-
-        String ext = getExtension(file.getOriginalFilename()).toLowerCase();
-        // Görseller image olarak, diğerleri raw olarak yüklenir
-        String resourceType = isImageExt(ext) ? "image" : "raw";
-        String folder = "kadrom/documents/" + studentId;
-        // RAW (PDF/DOC): uzantı public_id'ye dahil (Cloudinary delivery için gerekli)
-        // IMAGE (JPG/PNG/WEBP): uzantı public_id'de YOK (Cloudinary formatı içerikten algılar)
-        String publicId = "image".equals(resourceType)
-                ? folder + "/" + UUID.randomUUID()
-                : folder + "/" + UUID.randomUUID() + "." + ext;
-
-        // type=upload + UUID path → URL tahmin edilemez, backend access control yapar
-        // (signed URL karmaşıklığı yerine "security through obscurity" + auth endpoint)
-        Map<String, Object> options = ObjectUtils.asMap(
-                "public_id", publicId,
-                "resource_type", resourceType,
-                "type", "upload",
-                "overwrite", true,
-                "use_filename", false,
-                "unique_filename", false
-        );
-
-        try {
-            cloudinary.uploader().upload(file.getBytes(), options);
-            log.info("Cloudinary belge yüklendi: {} (size={} KB)", publicId, file.getSize() / 1024);
-            // DB'ye saklanacak değer: "upload:resource_type:public_id"
-            return "upload:" + resourceType + ":" + publicId;
-        } catch (IOException e) {
-            throw new BusinessRuleException("Cloudinary'ye yüklenemedi: " + e.getMessage());
-        }
-    }
-
-    /** FAZ 2/#18 - Cloudinary circuit breaker fallback */
-    @SuppressWarnings("unused")
-    private String storeFallback(MultipartFile file, Long studentId, Throwable t) {
-        log.warn("[STORE][CB-FALLBACK] Cloudinary devre disi - studentId={} sebep={}",
-                studentId, t.getMessage());
-        throw new BusinessRuleException(
-                "Dosya yukleme servisi su an kullanilamiyor — lutfen birkac dakika sonra tekrar dene.");
-    }
-
-    // -----------------------------------------------------------------------
     // #80v2 / chat refactor: Mesaj eki yükleme — image/file/audio
-    // Public CDN URL döner (DB'ye direkt URL kaydedilir — mesajlarda kullanım).
+    // Private storage reference only; downloads require conversation membership.
     // -----------------------------------------------------------------------
     public String storeMessageAttachment(MultipartFile file, Long conversationId) {
         validate(file, ALLOWED_EXTENSIONS, MAX_FILE_SIZE,
@@ -109,35 +53,24 @@ public class FileStorageService {
                 "Dosya çok büyük (%.1f MB). Maksimum 15 MB olmalı.");
 
         String ext = getExtension(file.getOriginalFilename()).toLowerCase();
-        // Cloudinary resource_type:
-        //   image: jpg/png/webp...
-        //   video: mp3/m4a/ogg/wav/webm (audio dahil)
-        //   raw:   pdf/doc/docx
-        String resourceType;
-        if (isImageExt(ext))      resourceType = "image";
-        else if (isAudioExt(ext)) resourceType = "video";
-        else                      resourceType = "raw";
+        // Store originals without public previews or transformations.
+        String resourceType = "raw";
         String folder = "kadrom/messages/" + conversationId;
-        String publicId = "image".equals(resourceType)
-                ? folder + "/" + UUID.randomUUID()
-                : folder + "/" + UUID.randomUUID() + "." + ext;
+        String publicId = folder + "/" + UUID.randomUUID() + "." + ext;
 
         Map<String, Object> options = ObjectUtils.asMap(
                 "public_id", publicId,
                 "resource_type", resourceType,
-                "type", "upload",
-                "overwrite", true,
+                "type", "authenticated",
+                "overwrite", false,
                 "use_filename", false,
                 "unique_filename", false
         );
 
         try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> result = cloudinary.uploader().upload(file.getBytes(), options);
-            String secureUrl = (String) result.get("secure_url");
+            cloudinary.uploader().upload(file.getBytes(), options);
             log.info("Cloudinary mesaj eki yüklendi: {} (size={} KB)", publicId, file.getSize() / 1024);
-            // Direkt CDN URL'i döner — DB'ye direkt URL kaydedilir
-            return secureUrl;
+            return "authenticated:raw:" + publicId;
         } catch (IOException e) {
             throw new BusinessRuleException("Cloudinary'ye yüklenemedi: " + e.getMessage());
         }
@@ -244,14 +177,12 @@ public class FileStorageService {
     }
 
     // -----------------------------------------------------------------------
-    // Signed URL üret (type=authenticated için — 1 saat geçerli)
+    // Internal signed delivery URL. This signature does NOT expire.
+    // Private chat URLs must never leave the backend; use readPrivateAttachment.
     // -----------------------------------------------------------------------
     public String signedUrl(String storedRef) {
         if (storedRef == null || storedRef.isBlank()) return null;
         ParsedRef ref = parseRef(storedRef);
-
-        // 1 saat sonra expire et
-        long expiresAt = (System.currentTimeMillis() / 1000) + 3600;
 
         return cloudinary.url()
                 .secure(true)
@@ -260,6 +191,30 @@ public class FileStorageService {
                 .signed(true)
                 .source(ref.publicId)
                 .generate();
+    }
+
+    public byte[] readPrivateAttachment(String storedRef) {
+        if (storedRef == null || !storedRef.startsWith("authenticated:raw:kadrom/messages/")) {
+            throw new BusinessRuleException("Eski dosyanın güvenli depolamaya taşınması gerekiyor. Dosyayı sohbetten yeniden paylaşabilirsiniz.");
+        }
+        java.net.HttpURLConnection connection = null;
+        try {
+            connection = (java.net.HttpURLConnection) java.net.URI.create(signedUrl(storedRef)).toURL().openConnection();
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(30000);
+            connection.setInstanceFollowRedirects(false);
+            if (connection.getResponseCode() != 200) throw new IOException("Storage unavailable");
+            try (var input = connection.getInputStream()) {
+                byte[] data = input.readNBytes((int) MAX_FILE_SIZE + 1);
+                if (data.length > MAX_FILE_SIZE) throw new IOException("Attachment too large");
+                return data;
+            }
+        } catch (IOException e) {
+            // Do not expose signed URLs or provider credentials in errors.
+            throw new BusinessRuleException("Dosya şu anda alınamıyor. Lütfen tekrar deneyin.");
+        } finally {
+            if (connection != null) connection.disconnect();
+        }
     }
 
     // -----------------------------------------------------------------------

@@ -140,21 +140,6 @@ public class ApplicationService {
         var m = metricsProvider.getIfAvailable();
         if (m != null) m.applicationsCreated.increment();
 
-        // Aday başvuru sırasında belirli hassas belgelere önceden izin verdiyse,
-        // her biri için GRANTED durumda DocumentRequest oluştur. İşletme görür/inceler.
-        if (request.getGrantedSensitiveTypes() != null && !request.getGrantedSensitiveTypes().isEmpty()) {
-            LocalDateTime now = LocalDateTime.now();
-            for (com.hotelapp.enums.DocumentType type : request.getGrantedSensitiveTypes()) {
-                DocumentRequest preGranted = DocumentRequest.builder()
-                        .application(application)
-                        .documentType(type)
-                        .status(DocumentRequestStatus.GRANTED)
-                        .respondedAt(now)
-                        .build();
-                documentRequestRepository.save(preGranted);
-            }
-        }
-
         // Chat refactor v2: NEW_APPLICATION bildirimi kaldırıldı.
         // Yerine NEW_MESSAGE bildirimi (auto-conversation içinde) gönderilir.
         // Eski enum durumunu korumak için kod silinmiyor, sadece tetikleyici.

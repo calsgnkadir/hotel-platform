@@ -81,7 +81,6 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   const [successResp, setSuccessResp] = useState(null)  // { conversationId, applicationId }
 
   const [selectedSlotIds, setSelectedSlotIds] = useState([])
-  const [files, setFiles] = useState([])   // [{file, type}]
 
   const allSlots = [...(listing.shiftSlots || [])].sort((a, b) => {
     const c = (a.date || '').localeCompare(b.date || '')
@@ -111,23 +110,6 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
     setSelectedSlotIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
-  function onFilesChange(e) {
-    const picked = Array.from(e.target.files || [])
-    const filtered = picked.filter(f => {
-      if (f.size > 15 * 1024 * 1024) {
-        toast.error(`${f.name} 15 MB'dan büyük — atlandı`)
-        return false
-      }
-      return true
-    })
-    setFiles(prev => [...prev, ...filtered])
-    e.target.value = ''   // aynı dosyayı tekrar seçebilmek için
-  }
-
-  function removeFile(idx) {
-    setFiles(prev => prev.filter((_, i) => i !== idx))
-  }
-
   async function handleSubmit(e) {
     e.preventDefault()
     if (hasSlots && selectedSlotIds.length === 0) {
@@ -146,17 +128,6 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
       })
 
       const convId = appResp.conversationId
-      // 2) Seçili dosyaları conversation'a attachment olarak yükle
-      if (convId && files.length > 0) {
-        for (const f of files) {
-          try {
-            await hotelApi.sendMessageAttachment(convId, f, '')
-          } catch (err) {
-            toast.error(`${f.name} yüklenemedi: ${extractErrorMessage(err)}`, { id: f.name })
-          }
-        }
-      }
-
       // FAZ 11.W1.3 — success state: summary card + auto-close 6s
       setSuccessResp({ conversationId: convId, applicationId: appResp.id })
       setSubmitState('success')
@@ -382,65 +353,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             </div>
           )}
 
-          {/* Chat refactor v2: Belge ekleme — başvuruyla beraber mesajlaşmaya yüklenir */}
-          <div>
-            <label className="label">
-              Belgeler / Fotoğraflar
-              <span className="text-ink-400 font-normal ml-1">(opsiyonel — CV, transkript, sertifika vb.)</span>
-            </label>
-
-            <label className="block cursor-pointer rounded-lg border-2 border-dashed border-slate-300 dark:border-ink-700
-                              hover:border-brand-400 dark:hover:border-brand-500 transition-colors
-                              bg-cream-50 dark:bg-ink-800/50 px-4 py-5 text-center">
-              <input
-                type="file"
-                multiple
-                accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx"
-                onChange={onFilesChange}
-                className="hidden"
-              />
-              <div className="flex items-center justify-center gap-2 text-sm text-ink-600 dark:text-ink-300">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                     strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round"
-                        d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
-                </svg>
-                <span className="font-semibold">Dosya seç</span>
-                <span className="text-xs text-ink-400">PDF / JPG / PNG / DOC — her biri max 15 MB</span>
-              </div>
-            </label>
-
-            {/* Seçilen dosyalar listesi */}
-            {files.length > 0 && (
-              <div className="mt-2 space-y-1.5">
-                {files.map((f, i) => (
-                  <div key={i}
-                       className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg
-                                  border border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                           strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-ink-500 shrink-0">
-                        <path strokeLinecap="round" strokeLinejoin="round"
-                              d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 3.75-3-3m0 0-3 3m3-3v11.25m6-2.25h.008v.008H15v-.008Zm0 0H4.5" />
-                      </svg>
-                      <span className="text-sm text-ink-700 dark:text-cream-200 truncate">{f.name}</span>
-                      <span className="text-[10px] text-ink-400 font-mono shrink-0">
-                        {(f.size / 1024).toFixed(0)} KB
-                      </span>
-                    </div>
-                    <button type="button" onClick={() => removeFile(i)}
-                            className="text-red-500 hover:text-red-700 text-xs font-semibold shrink-0">
-                      Kaldır
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <p className="text-xs text-ink-400 mt-1.5">
-              ⓘ Belgelerin işletmeyle mesajlaşmada otomatik paylaşılır. Daha sonra mesajdan da ekleyebilirsin.
-            </p>
-          </div>
+          <p className="text-sm text-ink-500">Başvuru için belge yüklemen gerekmez. İşletme isterse belgelerini sohbetten dosya olarak paylaşabilirsin.</p>
 
           {/* Footer — filled amber CTA (modal-icinde tek accent) */}
           <div className="flex gap-3 pt-2 sticky bottom-0 py-3 -mx-6 px-6 border-t border-hairline"

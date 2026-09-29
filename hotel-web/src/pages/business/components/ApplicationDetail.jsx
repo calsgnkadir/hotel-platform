@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
-import { SENSITIVE_DOC_TYPES_BIZ } from '../lib/constants'
 import { StatusBadge } from './Badges'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'
@@ -26,19 +25,6 @@ import { SgkNotice } from '../../../components/LegalNotice'   // FAZ C.3
 export default function ApplicationDetail({ app, variant = 'panel', onClose, onRefresh, onOpenMessages, onChanged }) {
   const confirm = useConfirm()
   const [actionLoading, setActionLoading] = useState(false)
-  const [accessibleDocs, setAccessibleDocs] = useState([])
-  const [docsLoading, setDocsLoading] = useState(false)
-
-  // Erisilabilir belgeleri yukle
-  useEffect(() => {
-    if (!app) { setAccessibleDocs([]); return }
-    setDocsLoading(true)
-    hotelApi.getApplicationDocuments(app.id)
-      .then(setAccessibleDocs)
-      .catch(() => setAccessibleDocs([]))
-      .finally(() => setDocsLoading(false))
-  }, [app?.id])
-
   // Favori durumu
   const [isFavorited, setIsFavorited] = useState(false)
   const [favLoading, setFavLoading] = useState(false)
@@ -50,14 +36,6 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
   }, [app?.candidate?.id])
 
   if (!app) return null
-
-  async function handleViewDoc(doc) {
-    try {
-      await hotelApi.viewDocument(doc.id)
-    } catch (err) {
-      toast.error(extractErrorMessage(err))
-    }
-  }
 
   async function handleToggleFavorite() {
     if (!app?.candidate?.id) return
@@ -300,45 +278,6 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
           </div>
         )}
 
-        {/* Görüntülenebilir Belgeler */}
-        <div>
-          <h3 className="type-overline mb-2">Görüntülenebilir Belgeler</h3>
-          {docsLoading ? (
-            <p className="type-caption">Yükleniyor...</p>
-          ) : accessibleDocs.length === 0 ? (
-            <p className="type-caption mb-3">
-              Aday henüz belge paylaşmadı.
-            </p>
-          ) : (
-            <div className="space-y-1.5 mb-3">
-              {accessibleDocs.map(doc => {
-                const typeLabel = (
-                  SENSITIVE_DOC_TYPES_BIZ.find(t => t.type === doc.type)?.label
-                ) || doc.type
-                return (
-                  <div key={doc.id}
-                    className="flex items-center justify-between rounded-lg px-3 py-2 gap-2"
-                    style={{ background: 'rgba(31, 41, 55, 0.05)' }}>
-                    <div className="min-w-0 flex-1">
-                      <div className="type-body font-medium truncate" style={{ color: 'var(--text-secondary)' }}>{typeLabel}</div>
-                      <div className="type-caption truncate">{doc.originalFileName}</div>
-                    </div>
-                    <button onClick={() => handleViewDoc(doc)}
-                      className="type-overline px-3 py-1.5 rounded-md transition-colors flex-shrink-0"
-                      style={{
-                        background: 'rgba(31, 41, 55, 0.10)',
-                        border: '1px solid rgba(31, 41, 55, 0.28)',
-                        color: 'var(--accent-action)',
-                      }}>
-                      Görüntüle
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
         {/* Belge sohbetten: mesajla iste, aday hazır belgesini tek tıkla gönderir */}
         <div>
           <button onClick={handleStartConversation}
@@ -347,8 +286,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             Sohbete git
           </button>
           <p className="type-caption mt-1.5">
-            Adli sicil, hijyen raporu gibi belgeleri sohbette yazarak iste; aday hazır
-            belgesini oradan tek tıkla gönderir, gönderince yukarıda görünür.
+            Gerekli belgeleri sohbette iste. Aday dosyasını doğrudan bu sohbete ekleyebilir; paylaşılan dosyalar sohbette görünür.
           </p>
         </div>
 

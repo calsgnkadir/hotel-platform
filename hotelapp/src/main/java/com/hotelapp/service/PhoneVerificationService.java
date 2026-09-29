@@ -45,7 +45,7 @@ public class PhoneVerificationService {
 
     @Transactional
     public PhoneStatus sendCode(Long userId) {
-        User u = getUser(userId);
+        User u = getLockedUser(userId);
         if (u.getPhone() == null || u.getPhone().isBlank())
             throw new BusinessRuleException("Önce profiline telefon numarası ekle.");
         if (u.isPhoneVerified())
@@ -67,9 +67,9 @@ public class PhoneVerificationService {
         return status(userId);
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = IncorrectPhoneCodeException.class)
     public PhoneStatus verify(Long userId, String code) {
-        User u = getUser(userId);
+        User u = getLockedUser(userId);
         if (u.isPhoneVerified()) return status(userId);
         if (u.getPhoneOtpCode() == null || u.getPhoneOtpExpiresAt() == null)
             throw new BusinessRuleException("Aktif doğrulama kodu yok. Yeni kod iste.");
@@ -83,7 +83,7 @@ public class PhoneVerificationService {
             u.setPhoneOtpAttempts(u.getPhoneOtpAttempts() + 1);
             userRepository.save(u);
             int left = Math.max(0, MAX_ATTEMPTS - u.getPhoneOtpAttempts());
-            throw new BusinessRuleException("Kod hatalı. Kalan deneme: " + left);
+            throw new IncorrectPhoneCodeException("Kod hatalı. Kalan deneme: " + left);
         }
 
         u.setPhoneVerifiedAt(LocalDateTime.now());
@@ -94,6 +94,15 @@ public class PhoneVerificationService {
         userRepository.save(u);
         log.info("[PHONE-OTP] dogrulandi userId={}", userId);
         return status(userId);
+    }
+
+    private static class IncorrectPhoneCodeException extends BusinessRuleException {
+        IncorrectPhoneCodeException(String message) { super(message); }
+    }
+
+    private User getLockedUser(Long id) {
+        return userRepository.findByIdForPhoneVerification(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", id));
     }
 
     private User getUser(Long id) {

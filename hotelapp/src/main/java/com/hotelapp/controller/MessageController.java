@@ -5,7 +5,6 @@ import com.hotelapp.dto.MessageDto;
 import com.hotelapp.dto.MessageRequest;
 import com.hotelapp.dto.PageResponse;
 import com.hotelapp.dto.StartConversationRequest;
-import com.hotelapp.service.ChatDocumentService;
 import com.hotelapp.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -31,7 +30,25 @@ import java.util.Map;
 public class MessageController {
 
     private final MessageService messageService;
-    private final ChatDocumentService chatDocumentService;
+    private final com.hotelapp.service.FileStorageService fileStorageService;
+
+    @GetMapping("/conversations/{conversationId}/messages/{messageId}/attachment")
+    @PreAuthorize("hasAnyRole('CANDIDATE','BUSINESS_OWNER')")
+    public ResponseEntity<byte[]> attachment(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable Long conversationId, @PathVariable Long messageId) {
+        var message = messageService.getAttachmentForUser(conversationId, messageId, currentUser.getId());
+        byte[] content = fileStorageService.readPrivateAttachment(message.getAttachmentUrl());
+        String name = message.getAttachmentName() == null ? "dosya" : message.getAttachmentName();
+        var contentType = org.springframework.http.MediaTypeFactory.getMediaType(name)
+                .orElse(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-store, private")
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Content-Disposition", org.springframework.http.ContentDisposition.attachment()
+                        .filename(name, java.nio.charset.StandardCharsets.UTF_8).build().toString())
+                .contentType(contentType).body(content);
+    }
 
     @Operation(summary = "Sohbetlerimi listele (sayfalı, son mesaja göre)")
     @GetMapping("/conversations")
@@ -136,12 +153,12 @@ public class MessageController {
     @PostMapping("/conversations/{conversationId}/share-document")
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<MessageDto> shareDocument(
+    public ResponseEntity<?> shareDocument(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long conversationId,
             @Valid @RequestBody ShareDocBody body) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                chatDocumentService.shareInChat(conversationId, currentUser.getId(), body.documentId()));
+        return ResponseEntity.status(HttpStatus.GONE).body(Map.of("message",
+                "Belgeyi cihazınızdan sohbet eki olarak gönderin."));
     }
 
     public record ReactionRequest(@jakarta.validation.constraints.NotBlank String reaction) {}

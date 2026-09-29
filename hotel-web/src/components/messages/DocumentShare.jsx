@@ -8,8 +8,7 @@
  *
  * Mesaj token'ı (backend ChatDocumentService üretir): [DOC_SHARED:42:CRIMINAL_RECORD]
  */
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import * as hotelApi from '../../api/hotel'
 import { extractErrorMessage } from '../../api/client'
 import toast from 'react-hot-toast'
@@ -79,48 +78,6 @@ export function DocumentCardBubble({ m, doc }) {
           {busy ? 'Bekle…' : 'Görüntüle'}
         </button>
       </div>
-    </div>
-  )
-}
-
-/** Kompozerdeki belge menüsü (aday): yüklü belgelerinden birini gönderir. */
-export function DocumentMenu({ onShare, onClose }) {
-  const [docs, setDocs] = useState(null)
-
-  useEffect(() => {
-    hotelApi.getMyDocuments().then(setDocs).catch(() => setDocs([]))
-  }, [])
-
-  const itemCls = 'w-full text-left px-3 py-2 text-sm rounded-md hover:bg-[var(--ah-page)]'
-
-  return (
-    <div role="menu" className="absolute bottom-12 left-0 z-30 w-64 rounded-xl p-1.5 shadow-lg"
-         style={{ background: 'var(--ah-card, #ffffff)', border: '1px solid var(--ah-line)' }}>
-      <div className="px-3 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.06em]"
-           style={{ color: 'var(--ah-ink-4)' }}>
-        Belge paylaş
-      </div>
-      {docs === null && (
-        <div className="px-3 py-2 text-sm" style={{ color: 'var(--ah-ink-4)' }}>Yükleniyor…</div>
-      )}
-      {docs?.length === 0 && (
-        <div className="px-3 py-2 text-sm" style={{ color: 'var(--ah-ink-3)' }}>
-          Henüz belge yüklemedin.{' '}
-          <Link to="/candidate?tab=documents" className="font-semibold underline" style={{ color: 'var(--ah-ink)' }}>
-            Belgelerim
-          </Link>
-        </div>
-      )}
-      {docs?.map(d => (
-        <button key={d.id} type="button" role="menuitem" className={itemCls}
-                onClick={() => { onClose?.(); onShare(d.id) }}>
-          <div className="font-medium" style={{ color: 'var(--ah-ink)' }}>
-            {CHAT_DOC_LABELS[d.type] || d.type}
-            {d.expired && <span className="ml-1.5 text-[11px]" style={{ color: 'var(--ah-danger)' }}>süresi dolmuş</span>}
-          </div>
-          <div className="text-[11px] truncate" style={{ color: 'var(--ah-ink-4)' }}>{d.originalFileName}</div>
-        </button>
-      ))}
     </div>
   )
 }

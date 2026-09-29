@@ -15,7 +15,6 @@ import { SkeletonForm } from '../../../components/Skeleton'
 import { Alert } from '../../../components/ui/Alert'
 import AvailabilityBlocksEditor from '../../../components/AvailabilityBlocksEditor'
 import { validateTurkeyPhone, formatTurkeyPhoneInput, validateAdultAge, birthDateBounds } from '../../../utils/validation'
-import DocumentsTab from './DocumentsTab'   // Belgelerim Profilim'e tasindi
 import {
   GENDER_LABELS, EDUCATION_LABELS, AVAILABILITY_LABELS, POSITION_LABELS
 } from '../../../utils/labels'
@@ -144,8 +143,7 @@ export default function ProfileTab() {
   if (!form) return null
 
   const completeness = calculateCandidateCompleteness(
-    { ...form, avatarUrl: profile?.avatarUrl, about: profile?.about, experienceYears: profile?.experienceYears },
-    { hasDocument: (profile?.documents?.length ?? 0) > 0 }
+    { ...form, avatarUrl: profile?.avatarUrl, about: profile?.about, experienceYears: profile?.experienceYears }
   )
 
   return (
@@ -240,7 +238,7 @@ export default function ProfileTab() {
         <div className="space-y-4 min-w-0">
           {/* Ic sekme cubugu */}
           <div className="flex gap-5 border-b overflow-x-auto no-scrollbar" style={{ borderColor: 'var(--ah-line)' }}>
-            {[['bilgiler', 'Bilgilerim'], ['belgeler', 'Belgeler'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
+            {[['bilgiler', 'Bilgilerim'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
               <button key={k} type="button" onClick={() => setPtab(k)}
                 className="text-[13.5px] font-semibold pb-2.5 -mb-px whitespace-nowrap transition-colors"
                 style={ptab === k
@@ -353,7 +351,6 @@ export default function ProfileTab() {
           )}
 
           {/* ===== BELGELER ===== */}
-          {ptab === 'belgeler' && <DocumentsTab />}
 
           {/* ===== GÜVENLİK ===== */}
           {ptab === 'guvenlik' && (
@@ -370,5 +367,4 @@ export default function ProfileTab() {
     </div>
   )
 }
-
 
