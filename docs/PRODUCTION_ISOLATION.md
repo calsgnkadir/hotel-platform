@@ -1,7 +1,12 @@
 # Üretim ve demo ayrımı
 
-VPS Compose, Render ve Fly backend yalnızca `prod` kullanır. `prod` ile `dev`,
+VPS Compose ve Fly backend yalnızca `prod` kullanır. `prod` ile `dev`,
 `demo` veya `test` birleştirilirse uygulama veritabanına bağlanmadan durur.
+
+**İstisna — CV vitrini (Render):** `prod,showcase`. Prod kontrollerinin hepsi açık
+kalır; `showcase` yalnızca demo verisini yükler ve demo hesap kontrolünü
+(`ProductionDemoDataGuard`) kapatır. Vitrin veritabanı gerçek kullanıcıyla
+paylaşılmaz; gerçek ürün ayrı, temiz veritabanıyla `prod` olarak açılır.
 Üretim `root` kullanamaz ve Hibernate `ddl-auto=validate` olmak zorundadır.
 Flyway şemayı yönetir; uygulama hesabının hedef şemada DDL yetkisine ihtiyacı vardır.
 

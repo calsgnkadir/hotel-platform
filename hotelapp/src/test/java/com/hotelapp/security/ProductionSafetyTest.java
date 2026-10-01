@@ -29,6 +29,15 @@ class ProductionSafetyTest {
         context("prod").withPropertyValues("spring.jpa.hibernate.ddl-auto=update")
                 .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("JPA_DDL_AUTO=validate"));
     }
+    @Test void showcaseKeepsProductionChecks() {
+        // Vitrin: prod korumaları açık, demo verisine izin var
+        context("prod", "showcase").run(ctx -> assertThat(ctx).hasNotFailed());
+        context("prod", "showcase").withPropertyValues("spring.datasource.username=root")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("dedicated database user"));
+        context("prod", "showcase", "demo")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("prod cannot be combined"));
+    }
+
     @Test void localDemoIsUnaffected() {
         context("dev", "demo").withPropertyValues("spring.datasource.username=root", "spring.jpa.hibernate.ddl-auto=update")
                 .run(ctx -> assertThat(ctx).hasNotFailed());

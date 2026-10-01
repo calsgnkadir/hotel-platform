@@ -34,7 +34,9 @@ import java.util.*;
  *   - 4 sohbet + birkaç mesaj
  */
 @Component
-@Profile("demo & !prod")
+// Yerel demo (dev,demo) ya da canlı vitrin (prod,showcase). prod + demo hâlâ yasak:
+// vitrin, prod'un bütün güvenlik kontrolleriyle çalışır; sadece örnek veri yükler.
+@Profile("(demo & !prod) | showcase")
 @RequiredArgsConstructor
 @Slf4j
 @Order(10)  // SchemaMigration sonrası

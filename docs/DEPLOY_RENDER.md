@@ -14,6 +14,18 @@ repoda hazır: [`render.yaml`](../render.yaml) (Render Blueprint).
 `kadrom.me` ve `api.kadrom.me` aynı site sayılır → refresh çerezi SameSite=Lax
 ile her tarayıcıda (Safari dahil) çalışır.
 
+## Bu ortam bir CV vitrini
+
+Render kurulumu **gerçek ürün değil, vitrindir**: backend `prod,showcase` ile çalışır.
+`prod`'un bütün güvenlik kontrolleri açıktır (JWT/şifreleme anahtarı zorunlu, `root`
+yasak, `ddl-auto=validate`, `prod`+`demo`/`dev`/`test` birleşimi yasak); `showcase`
+yalnızca örnek veriyi ve demo hesapları yükler. Frontend `VITE_SHOWCASE=true` ile
+üstte "demo vitrini, gerçek kişisel bilgi girmeyin" bandı gösterir.
+
+Gerçek ürüne geçince: `SPRING_PROFILES_ACTIVE=prod` (showcase'siz), **ayrı ve temiz**
+bir veritabanı, ayrı DB kullanıcısı ve gerçek Cloudinary/e-posta/ödeme anahtarları
+([PRODUCTION_ISOLATION.md](PRODUCTION_ISOLATION.md)).
+
 ## Bilinmesi gereken kısıtlar
 
 | Kısıt | Etki | Çözüm |
@@ -21,7 +33,7 @@ ile her tarayıcıda (Safari dahil) çalışır.
 | Free web service **0.1 CPU** | Açılış ~6 dk (yerelde `--cpus=0.1 --memory=512m` ile ölçüldü). Render başlatma için 15 dk tanır; ayarsız 17,5 dk sürüyordu → `render.yaml`'daki lazy-init + C1 JIT şart. | Render her deploy'u zero-downtime yapar: yeni sürüm açılana kadar eskisi yayında kalır. |
 | 15 dk istek gelmezse **uyur** | Sonraki ziyaretçi ~6 dk bekler | UptimeRobot 5 dk'da bir ping (adım 5). 7/24 açık ≈ 744 saat/ay, free kotası 750 saat. |
 | Aiven free **1 GB disk**, uzun süre kullanılmazsa kapanır | Demo verisi küçük; ping DB'ye de dokunur (Hikari keepalive) | Kapanırsa Aiven konsolundan "Power on". |
-| Aiven `sql_require_primary_key=ON` | V1/V9'daki koleksiyon tabloları PK'siz | Sağlayıcı izin veriyorsa `SPRING_FLYWAY_INIT_SQLS=SET SESSION sql_require_primary_key = 0` açıkça ayarlanabilir. Kısıtlı uygulama hesabına global yönetici yetkisi verme; migration hazırlığını yöneticiyle doğrula. |
+| Aiven `sql_require_primary_key=ON` | V1/V9'daki koleksiyon tabloları PK'siz | `render.yaml` → `SPRING_FLYWAY_INIT_SQLS=SET SESSION sql_require_primary_key = 0` (yalnız Render/Aiven; diğer kurulumlara uygulanmaz). Bu oturum ayarı yetki ister: yerel MySQL benzetiminde yönetici kullanıcıyla doğrulandı; Aiven'ın `avnadmin` kullanıcısıyla ve kısıtlı ayrı kullanıcıyla henüz **denenmedi**. |
 
 > **Bu adımlar sana ait:** hesap açma, şifreler, DNS. Asistan hesap/kimlik
 > işlemi yapamaz. Aşağıdaki her şey tıklama; komut yok.
@@ -34,7 +46,7 @@ ile her tarayıcıda (Safari dahil) çalışır.
 2. **Create service → MySQL → Free plan**. Bölge: Avrupa'da ne varsa
    (Frankfurt/Amsterdam yakın). Ad: `kadrom-db`.
 3. Servis **Running** olunca **Overview → Connection information**'dan şunları
-   bir kenara not et: **Host**, **Port**, **User**, **Password**. Uygulama için yalnızca hedef veritabanına yetkili ayrı kullanıcı oluştur; yönetici hesabını backend'e verme.
+   bir kenara not et: **Host**, **Port**, **User** (`avnadmin`), **Password**. Vitrinde `avnadmin` kullanılabilir (izole demo veritabanı; `root` olmadığı için prod kontrolünden geçer). Gerçek ürüne geçerken ayrı, yalnızca hedef veritabanına yetkili kullanıcı oluştur ve migration yetkisini yöneticiyle doğrula.
    Veritabanı adı `defaultdb` (render.yaml'da hazır).
 
 ## 2. Render — Blueprint (5 dk + ilk build ~10 dk)
@@ -49,7 +61,7 @@ ile her tarayıcıda (Safari dahil) çalışır.
    - `Successfully applied ... now at version v15`
    - `[JWT-GUARD] prod profili + guclu JWT_SECRET — OK`
    - `Started HotelStudentPlatformApplication`
-   - Demo seed satırı olmamalı; üretim örnek hesap oluşturmaz.
+   - `[DEMO-SEED] ✓ 10 aday, 6 işletme, 15 ilan ...` (vitrin: `prod,showcase`)
 
 ## 3. Domain — Namecheap DNS
 
@@ -77,7 +89,7 @@ curl https://api.kadrom.me/actuator/health/liveness
 ```
 
 → `{"status":"UP"}`. Tarayıcıda <https://kadrom.me> → landing açılır;
-kendi hesabınla kayıt ve giriş akışını doğrula. Eski demo hesapları varsa açılış durur; [geçiş rehberini](PRODUCTION_ISOLATION.md) uygula.
+`demo-aday1@test.com` / `demo-isletme1@test.com` (şifre `Demo1234!`, sitedeki bantta da yazar) ile giriş yap. Gerçek ürüne geçişte demo hesapları olan veritabanında açılış durur; [geçiş rehberini](PRODUCTION_ISOLATION.md) uygula.
 
 ## 5. Uyumasın — UptimeRobot (2 dk)
 

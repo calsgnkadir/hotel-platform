@@ -25,9 +25,12 @@ services:
     domains:
       - api.kadrom.me
     envVars:
-      # Gercek uretim: demo verisi olusturulmaz; DB kullanicisi root olmamali.
+      # CV VITRINI: prod'un butun guvenlik kontrolleri acik (anahtarlar zorunlu,
+      # root yasak, ddl validate) + 'showcase' sadece demo verisini yukler.
+      # Bu ortama GERCEK KISISEL VERI girilmez; sitede uyari bandi gorunur.
+      # Gercek urune gecince: 'prod' (showcase'siz) + AYRI, temiz veritabani.
       - key: SPRING_PROFILES_ACTIVE
-        value: prod
+        value: prod,showcase
       - key: PORT
         value: "8080"
       - key: SERVER_PORT
@@ -40,6 +43,11 @@ services:
         value: -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k
       - key: FLYWAY_ENABLED
         value: "true"
+      # Aiven sql_require_primary_key=ON; V1/V9'daki koleksiyon tablolari PK'siz.
+      # Sadece Flyway baglantisinda, oturum bazinda kapatilir (Aiven'in dis
+      # uygulamalar icin onerdigi yol). Diger kurulumlara uygulanmaz.
+      - key: SPRING_FLYWAY_INIT_SQLS
+        value: SET SESSION sql_require_primary_key = 0
       - key: JPA_DDL_AUTO
         value: validate
       # Aiven → Service → Overview → Connection information
@@ -92,6 +100,9 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "20"
+      # Ust uyari bandi: "demo vitrini, gercek kisisel bilgi girme" + demo hesaplar
+      - key: VITE_SHOWCASE
+        value: "true"
       - key: VITE_API_URL
         value: https://api.kadrom.me
     routes:

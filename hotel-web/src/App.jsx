@@ -34,6 +34,7 @@ import InstallPrompt from './components/InstallPrompt'
 import ErrorBoundary from './components/ErrorBoundary'
 // FAZ 3 — A11y: Skip-to-content link
 import SkipLink from './components/SkipLink'
+import ShowcaseBanner from './components/ShowcaseBanner'  // CV vitrini uyarısı (VITE_SHOWCASE)
 // FAZ 5.3 — Command Palette Ctrl+K
 import CommandPalette from './components/CommandPalette'
 // FAZ 5.10 — Klavye kisayollari (? + g+harf chord)
@@ -58,6 +59,7 @@ export default function App() {
       <AuthProvider>
       <ConfirmProvider>
         <SkipLink />              {/* FAZ 3 / A11y — klavye Tab ilk durak */}
+        <ShowcaseBanner />
         {/* FAZ 26 — Global BeamsBackground (koyu zemin + altın huzme animasyon)
             kaldirildi: acik+teal temayla celisiyordu, animasyon istenmiyor. */}
         <Toaster position="top-right" toastOptions={{ duration: 3500 }} />

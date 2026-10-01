@@ -8,9 +8,12 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-/** Removing the demo profile does not remove accounts seeded in an old database. */
+/**
+ * Removing the demo profile does not remove accounts seeded in an old database.
+ * Vitrin (prod,showcase) bilerek demo hesaplarla çalışır; orada bu kontrol kapalı.
+ */
 @Component
-@Profile("prod")
+@Profile("prod & !showcase")
 @Lazy(false)
 @DependsOn("entityManagerFactory")
 @RequiredArgsConstructor
