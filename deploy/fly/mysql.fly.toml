@@ -20,6 +20,8 @@ primary_region = 'ams'          # Amsterdam — Istanbul'a en yakin dusuk gecikm
 
 [env]
   MYSQL_DATABASE = 'hotel_platform'
+  MYSQL_USER = 'kadrom_app'
+  # MYSQL_PASSWORD secret: backend DB_PASSWORD ile ayni; root parolasindan farkli.
   # Kok parola secret olarak verilir:  fly secrets set MYSQL_ROOT_PASSWORD=...
 
 [mounts]

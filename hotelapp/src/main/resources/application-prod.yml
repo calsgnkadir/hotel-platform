@@ -52,21 +52,13 @@ spring:
       # Pool çöktüğünde daha hızlı yeni conn yarat (default 30 sn)
       leak-detection-threshold: 60000
 
-  # Yönetilen MySQL'ler (Aiven vb.) sql_require_primary_key=ON gelir; V1/V9'daki
-  # koleksiyon tabloları PK'siz → migration CREATE TABLE'da düşer. Yalnız
-  # Flyway bağlantılarında kapatılır (Aiven'ın dış uygulamalar için önerdiği yol).
-  flyway:
-    init-sqls: SET SESSION sql_require_primary_key = 0
+  # Managed providers can configure Flyway init SQL explicitly if required.
+  # Do not change restricted MySQL session variables for every installation.
 
   jpa:
     hibernate:
-      # ⚠⚠ DİKKAT — FAZ 4.3 Flyway eklendikten sonra MUTLAKA "validate"'e çevir.
-      # "update" Hibernate'in entity diff'inden DDL üretmesi demek — prod'da:
-      #   - Yanlış sütun rename (silinen+yenisi sıfırdan oluşturulur → veri kaybı)
-      #   - Concurrent migration race condition
-      #   - Çift backend pod'unda çakışan DDL
-      # Geçici çare: "validate" (Flyway gerekir) veya "none" (manuel SQL).
-      ddl-auto:    ${JPA_DDL_AUTO:update}
+      # Flyway owns schema changes; Hibernate only validates production.
+      ddl-auto:    ${JPA_DDL_AUTO:validate}
     show-sql:      false
     open-in-view:  false   # F0.13 — Hibernate session servlet thread'inde açık kalmasın
     properties:

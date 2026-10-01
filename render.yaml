@@ -25,9 +25,9 @@ services:
     domains:
       - api.kadrom.me
     envVars:
-      # Demo vitrini: demo hesaplar + örnek veri (bkz. deploy/prod/docker-compose.prod.yml notu).
+      # Gercek uretim: demo verisi olusturulmaz; DB kullanicisi root olmamali.
       - key: SPRING_PROFILES_ACTIVE
-        value: prod,demo
+        value: prod
       - key: PORT
         value: "8080"
       - key: SERVER_PORT

@@ -10,7 +10,7 @@
 #   cron (her gece 03:30):   30 3 * * *  cd /opt/kadrom/deploy/prod && ./backup.sh >> backups/backup.log 2>&1
 #
 # Env (opsiyonel): BACKUP_DIR (varsayilan ./backups), KEEP (varsayilan 14)
-# DB_PASSWORD .env.prod'tan okunur (compose ile ayni kaynak).
+# MYSQL_ROOT_PASSWORD .env.prod'tan okunur (compose ile ayni kaynak).
 set -euo pipefail
 
 cd "$(dirname "$0")"                       # deploy/prod
@@ -19,9 +19,9 @@ DB_NAME="hotel_platform"
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
 KEEP="${KEEP:-14}"                         # son 14 yedegi tut
 
-# DB_PASSWORD'u .env.prod'tan al (varsa) — compose ile ayni deger
+# MYSQL_ROOT_PASSWORD'u .env.prod'tan al (varsa) — compose ile ayni deger
 if [ -f .env.prod ]; then set -a; . ./.env.prod; set +a; fi
-: "${DB_PASSWORD:?DB_PASSWORD gerekli (.env.prod icinde ya da ortam degiskeni olarak)}"
+: "${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD gerekli (.env.prod icinde ya da ortam degiskeni olarak)}"
 
 mkdir -p "$BACKUP_DIR"
 TS="$(date +%Y%m%d-%H%M%S)"
@@ -29,7 +29,7 @@ OUT="$BACKUP_DIR/${DB_NAME}-${TS}.sql.gz"
 
 echo "[backup $(date '+%F %T')] $DB_NAME -> $OUT"
 docker compose -f "$COMPOSE_FILE" exec -T mysql \
-  mysqldump -uroot -p"$DB_PASSWORD" \
+  mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" \
     --single-transaction --quick --routines --triggers --events \
     "$DB_NAME" | gzip -c > "$OUT"
 

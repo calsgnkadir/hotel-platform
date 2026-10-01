@@ -81,7 +81,7 @@ fly volumes create mysql_data --app kadrom-mysql --region ams --size 1
 Kök parolayı ata — **güçlü ve rastgele bir parola üret, aşağıdakini olduğu gibi kullanma**:
 
 ```bash
-fly secrets set MYSQL_ROOT_PASSWORD='BURAYA-GUCLU-PAROLA' --app kadrom-mysql
+fly secrets set MYSQL_ROOT_PASSWORD='AYRI-YONETICI-PAROLASI' MYSQL_PASSWORD='UYGULAMA-PAROLASI' --app kadrom-mysql
 ```
 
 Deploy et:
@@ -114,7 +114,7 @@ fly apps create kadrom-api --org personal
 
 ```bash
 fly secrets set --app kadrom-api \
-  DB_PASSWORD='2.-ADIMDAKI-AYNI-PAROLA' \
+  DB_PASSWORD='2.-ADIMDAKI-MYSQL_PASSWORD' \
   JWT_SECRET="$(openssl rand -base64 48)" \
   APP_ENCRYPTION_KEY="$(openssl rand -base64 32)" \
   CLOUDINARY_URL='cloudinary://KEY:SECRET@CLOUD_NAME' \
@@ -138,8 +138,7 @@ fly secrets set --app kadrom-api \
 fly deploy -c deploy/fly/backend.fly.toml --app kadrom-api
 ```
 
-İlk açılışta Flyway 10 migration'ı uygular ve `demo` profili örnek veriyi
-yükler (idempotent). Logları izle:
+İlk açılışta Flyway migration'ları uygular. Yalnızca `prod` aktiftir; demo verisi oluşturulmaz. Mevcut volume için [geçiş rehberini](PRODUCTION_ISOLATION.md) uygula. Logları izle:
 
 ```bash
 fly logs --app kadrom-api
@@ -148,8 +147,7 @@ fly logs --app kadrom-api
 Görmen gerekenler:
 
 ```
-Successfully applied 10 migrations
-DEMO-SEED ...
+Successfully applied ... migrations
 Started HotelStudentPlatformApplication
 ```
 

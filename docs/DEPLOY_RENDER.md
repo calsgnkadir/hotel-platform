@@ -21,7 +21,7 @@ ile her tarayıcıda (Safari dahil) çalışır.
 | Free web service **0.1 CPU** | Açılış ~6 dk (yerelde `--cpus=0.1 --memory=512m` ile ölçüldü). Render başlatma için 15 dk tanır; ayarsız 17,5 dk sürüyordu → `render.yaml`'daki lazy-init + C1 JIT şart. | Render her deploy'u zero-downtime yapar: yeni sürüm açılana kadar eskisi yayında kalır. |
 | 15 dk istek gelmezse **uyur** | Sonraki ziyaretçi ~6 dk bekler | UptimeRobot 5 dk'da bir ping (adım 5). 7/24 açık ≈ 744 saat/ay, free kotası 750 saat. |
 | Aiven free **1 GB disk**, uzun süre kullanılmazsa kapanır | Demo verisi küçük; ping DB'ye de dokunur (Hikari keepalive) | Kapanırsa Aiven konsolundan "Power on". |
-| Aiven `sql_require_primary_key=ON` | V1/V9'daki koleksiyon tabloları PK'siz | `application-prod.yml` → Flyway bağlantısında oturum bazında kapatılır (Aiven'ın önerdiği yol). |
+| Aiven `sql_require_primary_key=ON` | V1/V9'daki koleksiyon tabloları PK'siz | Sağlayıcı izin veriyorsa `SPRING_FLYWAY_INIT_SQLS=SET SESSION sql_require_primary_key = 0` açıkça ayarlanabilir. Kısıtlı uygulama hesabına global yönetici yetkisi verme; migration hazırlığını yöneticiyle doğrula. |
 
 > **Bu adımlar sana ait:** hesap açma, şifreler, DNS. Asistan hesap/kimlik
 > işlemi yapamaz. Aşağıdaki her şey tıklama; komut yok.
@@ -34,7 +34,7 @@ ile her tarayıcıda (Safari dahil) çalışır.
 2. **Create service → MySQL → Free plan**. Bölge: Avrupa'da ne varsa
    (Frankfurt/Amsterdam yakın). Ad: `kadrom-db`.
 3. Servis **Running** olunca **Overview → Connection information**'dan şunları
-   bir kenara not et: **Host**, **Port**, **User** (`avnadmin`), **Password**.
+   bir kenara not et: **Host**, **Port**, **User**, **Password**. Uygulama için yalnızca hedef veritabanına yetkili ayrı kullanıcı oluştur; yönetici hesabını backend'e verme.
    Veritabanı adı `defaultdb` (render.yaml'da hazır).
 
 ## 2. Render — Blueprint (5 dk + ilk build ~10 dk)
@@ -49,7 +49,7 @@ ile her tarayıcıda (Safari dahil) çalışır.
    - `Successfully applied ... now at version v15`
    - `[JWT-GUARD] prod profili + guclu JWT_SECRET — OK`
    - `Started HotelStudentPlatformApplication`
-   - `[DEMO-SEED] ✓ 10 aday, 6 işletme, 15 ilan ...`
+   - Demo seed satırı olmamalı; üretim örnek hesap oluşturmaz.
 
 ## 3. Domain — Namecheap DNS
 
@@ -77,8 +77,7 @@ curl https://api.kadrom.me/actuator/health/liveness
 ```
 
 → `{"status":"UP"}`. Tarayıcıda <https://kadrom.me> → landing açılır;
-`demo-isletme1@test.com` / `demo-aday1@test.com` hesaplarıyla (şifre demo
-seed logunda) giriş yapılabilir.
+kendi hesabınla kayıt ve giriş akışını doğrula. Eski demo hesapları varsa açılış durur; [geçiş rehberini](PRODUCTION_ISOLATION.md) uygula.
 
 ## 5. Uyumasın — UptimeRobot (2 dk)
 

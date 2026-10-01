@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * #79: Demo profili için zengin örnek veri.
  *
- * Aktivasyon: SPRING_PROFILES_ACTIVE=dev,demo (veya prod,demo - dikkatli ol!)
+ * Aktivasyon: SPRING_PROFILES_ACTIVE=dev,demo. Production ile birlestirilemez.
  *
  * Idempotent: "demo-aday1@test.com" varsa hiç dokunmaz. Yoksa baştan kurar.
  * Şifreler: Demo1234! (hepsi)
@@ -34,7 +34,7 @@ import java.util.*;
  *   - 4 sohbet + birkaç mesaj
  */
 @Component
-@Profile("demo")
+@Profile("demo & !prod")
 @RequiredArgsConstructor
 @Slf4j
 @Order(10)  // SchemaMigration sonrası

@@ -7,7 +7,7 @@
 #   - Frontend + backend AYNI ORIGIN'den servis edilir (Caddy /api,/ws → backend,
 #     gerisi → frontend). CORS tetiklenmez, mixed-content olmaz.
 #   - Secret'lar zorunlu (${VAR:?...}); dev fallback yok.
-#   - Profil: prod,demo → prod ayarlari + DemoSeeder (recruiter demo hesabiyla girsin).
+#   - Profil: sadece prod. Demo icin kokteki yerel Compose ve ayri veritabani.
 #
 # Repo KOKUNDEN calistir:
 #   cp deploy/prod/.env.prod.example deploy/prod/.env.prod   # doldur
@@ -22,7 +22,9 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: hotel_platform
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?deploy/prod/.env.prod icinde DB_PASSWORD zorunlu}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?ayri MySQL yonetici parolasi zorunlu}
+      MYSQL_USER: kadrom_app
+      MYSQL_PASSWORD: ${DB_PASSWORD:?uygulama kullanicisinin parolasi zorunlu}
     volumes:
       - mysql_data:/var/lib/mysql
     # ports YOK — DB yalnizca ic agdan (backend) erisilir, internete kapali.
@@ -43,21 +45,11 @@ services:
       DB_HOST: mysql
       DB_PORT: 3306
       DB_NAME: hotel_platform
-      DB_USERNAME: root
+      DB_USERNAME: kadrom_app
       DB_PASSWORD: ${DB_PASSWORD:?zorunlu}
       JWT_SECRET: ${JWT_SECRET:?en az 32 karakter, tercihen base64 (openssl rand -base64 48)}
-      # prod → application-prod.yml (graceful shutdown, kucuk havuz, CORS env'den).
-      # demo → DemoSeeder: 10 aday/6 isletme/15 ilan + demo hesaplar (idempotent).
-      #
-      # ⚠ BU BILINCLI BIR DEMO/PORTFOY VITRINIDIR. 'demo' profili demo-aday1 /
-      #   demo-isletme1 hesaplarini SIFRE Demo1234! (herkesce bilinir) ile acar +
-      #   sahte ilan/basvuru tohumlar. Ziyaretcilerin denemesi icin boyle.
-      #   → Bu instance'a ASLA gercek kisisel veri (PII) girme.
-      #   → GERCEK URUNE gecerken 'demo'yu CIKAR: SPRING_PROFILES_ACTIVE: prod
-      #     (dev de asla eklenmemeli — /api/dev/** verification link'lerini acar).
-      #   Not: 'prod' aktif oldugu icin JWT_SECRET + APP_ENCRYPTION_KEY yine
-      #   ZORUNLU (guard'lar bos/zayifsa uygulamayi acmaz) — demo'da da ver.
-      SPRING_PROFILES_ACTIVE: prod,demo
+      # Production rejects dev/demo/test profiles and pre-existing demo accounts.
+      SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: 8080
       # Sema Flyway ile; ddl-auto=validate (sema entity'lerle uyusmazsa acilmaz).
       FLYWAY_ENABLED: "true"
@@ -81,8 +73,8 @@ services:
       IYZICO_SECRET_KEY: ${IYZICO_SECRET_KEY:-sandbox-wbwpzKIiplZxI3hh5ALI4FJyfFYWnobP}
       IYZICO_BASE_URL: ${IYZICO_BASE_URL:-https://sandbox-api.iyzipay.com}
       IYZICO_CALLBACK_URL: ${IYZICO_CALLBACK_URL:-$PUBLIC_URL/api/billing/callback}
-      # KVKK alan sifreleme anahtari — verilmezse alan sifreleme kapali (log uyarir).
-      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-}
+      # Alan sifreleme anahtari prod icin zorunlu.
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?256-bit base64 anahtar zorunlu}
       # 512MB-1GB makinede JVM sinirla.
       JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=70 -XX:+UseSerialGC}
     # ports YOK — Caddy ic agdan backend:8080'e ulasir.

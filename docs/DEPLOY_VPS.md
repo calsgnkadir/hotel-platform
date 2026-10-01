@@ -87,7 +87,9 @@ En az şunları doldur (`.env.prod` repoya girmez — `.gitignore`'da):
 ```bash
 DOMAIN=kadrom.me
 PUBLIC_URL=https://kadrom.me
-DB_PASSWORD=<güçlü rastgele parola>
+MYSQL_ROOT_PASSWORD=<ayrı güçlü yönetici parolası>
+DB_PASSWORD=<kadrom_app için farklı güçlü parola>
+APP_ENCRYPTION_KEY=<openssl rand -base64 32 çıktısı>
 JWT_SECRET=<openssl rand -base64 48 çıktısı>
 ```
 
@@ -112,8 +114,7 @@ docker compose --env-file deploy/prod/.env.prod -f deploy/prod/docker-compose.pr
 Görmen gerekenler:
 
 ```
-Successfully applied 10 migrations
-[DEMO-SEED] ✓ 10 aday, 6 işletme, 15 ilan ...
+Successfully applied ... migrations
 Started HotelStudentPlatformApplication
 ```
 
@@ -129,8 +130,7 @@ curl https://kadrom.me/actuator/health      # {"status":"UP"}
 curl https://kadrom.me/api/listings -o /dev/null -w "%{http_code}\n"  # 200
 ```
 
-Tarayıcıda `https://kadrom.me` → landing açılır, `demo-isletme1@test.com`
-/ `Demo1234!` ile giriş yapılır, ilanlar gelir, mesajlaşma (WebSocket) çalışır.
+Tarayıcıda `https://kadrom.me` açılır. Kendi hesabınla kayıt, giriş ve mesajlaşmayı doğrula. Üretimde demo hesap oluşturulmaz.
 
 ---
 
@@ -174,8 +174,6 @@ docker compose --env-file deploy/prod/.env.prod -f deploy/prod/docker-compose.pr
 # durdur (veri volume'de kalir)
 docker compose --env-file deploy/prod/.env.prod -f deploy/prod/docker-compose.prod.yml down
 
-# TAMAMEN sifirla (DB dahil — demo veriyi yeniden kurar)
-docker compose --env-file deploy/prod/.env.prod -f deploy/prod/docker-compose.prod.yml down -v
 ```
 
 ## Yedekleme (backup)
@@ -200,6 +198,10 @@ cd deploy/prod && chmod +x backup.sh restore.sh
 - **Off-site kopya sart:** yedekler sunucuda; diski kaybedersen yedek de gider. En az bir
   kopyayi baska yere al (rclone -> S3/Backblaze B2, ya da `scp` ile baska sunucu).
 - Ayda bir **geri yukleme provasi** yap — test edilmemis yedek, yedek degildir.
+
+## Mevcut veritabanından geçiş
+
+[Üretim izolasyonu ve mevcut volume geçişi](PRODUCTION_ISOLATION.md) adımlarını uygula. Yeni MySQL ortam değişkenleri mevcut volume üzerinde kullanıcı veya parola değiştirmez.
 
 ## Sorun giderme
 

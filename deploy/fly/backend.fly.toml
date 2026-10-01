@@ -18,8 +18,8 @@ primary_region = 'ams'
 
 [env]
   # prod  → application-prod.yml (graceful shutdown, kucuk Hikari havuzu, CORS env'den)
-  # demo  → DemoSeeder calisir; bos bir demo yerine gezilebilir veri gelir
-  SPRING_PROFILES_ACTIVE = 'prod,demo'
+  # Demo profili uretimde yasak; ayri demo veritabani kullanin.
+  SPRING_PROFILES_ACTIVE = 'prod'
 
   SERVER_PORT = '8080'
 
@@ -27,7 +27,7 @@ primary_region = 'ams'
   DB_HOST = 'kadrom-mysql.internal'
   DB_PORT = '3306'
   DB_NAME = 'hotel_platform'
-  DB_USERNAME = 'root'
+  DB_USERNAME = 'kadrom_app'
 
   # Flyway ACIK. V4 idempotent hale getirildikten sonra temiz bir semada
   # 10 migration da uygulaniyor ve sema JPA entity'leriyle birebir tutuyor —
