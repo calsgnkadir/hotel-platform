@@ -14,7 +14,7 @@ API istemcisiyle alıp geçici blob üzerinden gösterir/indirir; bileşen kapan
 ## Önceki sürümden geçiş
 
 - Veritabanındaki eski belge veya mesaj kayıtları otomatik silinmez.
-- Profil yükleme ve profil belgesini sohbet kartı olarak paylaşma uçları 410 döner.
+- Profil belge sistemi kodu tamamen kaldırıldı (yükleme, belge kartı, "belgesi geçerli" filtresi, son kullanma hatırlatıcısı); eski uçlar artık 404 döner. `documents` ve `document_requests` tabloları veritabanında silinmeden durur (geri dönüşsüz işlem yapılmadı).
 - Eski profil belgelerinin doğrudan URL dağıtımı ve başvuruda otomatik belge izni kaldırılmıştır.
 - Eski herkese açık sohbet ekleri güvenli proxy tarafından açılmaz; kullanıcıdan yeniden paylaşması istenir.
 - **Bu kod, Cloudinary'de önceden oluşturulmuş herkese açık nesneleri kendiliğinden özel yapmaz.**

@@ -86,7 +86,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   // Nav'da olmayan (ayarlar menusu / mesaj ikonu) sekmeler icin baslik fallback'i
   const EXTRA_TITLES = {
     messages: 'Mesajlar', profile: 'Profilim', relations: 'Takip Ettiklerim',
-    history: 'Geçmiş İşlerim', workers: 'Bizde Çalışanlar', documents: 'Belgelerim',
+    history: 'Geçmiş İşlerim', workers: 'Bizde Çalışanlar',
   }
   const currentTitle = (() => {
     const item = navItems.find(n => n.id === activeTab)

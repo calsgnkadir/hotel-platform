@@ -6,7 +6,6 @@ import com.hotelapp.entity.*;
 import com.hotelapp.entity.Conversation;
 import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.enums.NotificationType;
-import com.hotelapp.enums.DocumentRequestStatus;
 import com.hotelapp.enums.ListingStatus;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
@@ -32,7 +31,6 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
     private final JobListingRepository jobListingRepository;
-    private final DocumentRequestRepository documentRequestRepository;
     private final ShiftSlotRepository shiftSlotRepository;
     // FAZ 18 — Audit: AuditLogService DOGRUDAN cagrilmaz; outbox uzerinden
     // (at-least-once + retry). Eskiden burada kullanilmayan bir AuditLogService

@@ -1,13 +1,11 @@
 package com.hotelapp.service;
 
 import com.hotelapp.entity.User;
-import com.hotelapp.enums.DocumentType;
 import com.hotelapp.enums.Role;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.BusinessRepository;
-import com.hotelapp.repository.DocumentRepository;
 import com.hotelapp.repository.JobListingRepository;
 import com.hotelapp.repository.UserRepository;
 import jakarta.validation.constraints.Min;
@@ -29,7 +27,6 @@ public class AdminService {
     private final BusinessRepository businessRepository;
     private final JobListingRepository jobListingRepository;
     private final ApplicationRepository applicationRepository;
-    private final DocumentRepository documentRepository;
 
     // ================================================================
     // Listing & detail
@@ -47,10 +44,6 @@ public class AdminService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", id));
 
-        boolean hasStudentDoc = documentRepository
-                .findByStudentIdAndType(user.getId(), DocumentType.STUDENT_CERTIFICATE)
-                .isPresent();
-
         long applicationCount = applicationRepository.findAllByCandidateId(user.getId()).size();
         long listingCount = jobListingRepository.findAllByBusiness_OwnerId(user.getId()).size();
 
@@ -66,7 +59,6 @@ public class AdminService {
                 .currentlyBanned(isBanned(user))
                 .createdAt(user.getCreatedAt())
                 .district(user.getDistrict())
-                .hasStudentDoc(hasStudentDoc)
                 .applicationCount(applicationCount)
                 .listingCount(listingCount)
                 .build();
@@ -185,7 +177,6 @@ public class AdminService {
         private Boolean currentlyBanned;
         private LocalDateTime createdAt;
         private String district;
-        private Boolean hasStudentDoc;
         private long applicationCount;
         private long listingCount;
     }

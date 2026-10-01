@@ -264,23 +264,6 @@ export default function CandidatePublicPage() {
               )}
             </div>
 
-            {/* Dalga I3 — CV indir butonu (sadece yuklendiyse) */}
-            {profile.resumeUrl && (
-              <a href={profile.resumeUrl} target="_blank" rel="noopener noreferrer"
-                 className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5 text-white"
-                 style={{
-                   background: 'var(--ah-brand-gradient)',
-                   boxShadow: 'var(--elev-1)',
-                 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                CV / Özgeçmiş İndir
-              </a>
-            )}
             <p className="text-[11px] mt-3 italic"
                style={{ color: 'var(--ah-ink-3)' }}>
               KVKK kapsamında bu bilgiler sadece adayın size başvurmuş olması nedeniyle gösteriliyor.

@@ -41,7 +41,6 @@ public class ApplicationResponse {
     private ListingSummary listing;
 
     private List<AvailabilityDto> availabilities;
-    private List<DocumentRequestDto> documentRequests;
 
     /** Faz E1: Adayın başvurduğu slot(lar) */
     private List<RequestedSlotDto> requestedSlots;
@@ -56,8 +55,6 @@ public class ApplicationResponse {
         private String email;
         /** D7: Cloudinary CDN URL'i, null olabilir */
         private String avatarUrl;
-        /** Adayın süresi geçmemiş hijyen/sağlık belgesi var mı — "belgesi geçerli" filtresi. */
-        private boolean hasValidHealthCertificate;
     }
 
     @Data @Builder
@@ -78,14 +75,6 @@ public class ApplicationResponse {
         private DayOfWeek dayOfWeek;
         private LocalTime startTime;
         private LocalTime endTime;
-    }
-
-    @Data @Builder
-    public static class DocumentRequestDto {
-        private Long id;
-        private String documentType;
-        private String status;
-        private LocalDateTime requestedAt;
     }
 
     /** Faz E1 */

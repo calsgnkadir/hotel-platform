@@ -6,9 +6,7 @@ import com.hotelapp.entity.Application;
 import com.hotelapp.entity.Business;
 import com.hotelapp.entity.JobListing;
 import com.hotelapp.entity.User;
-import com.hotelapp.enums.DocumentType;
 import com.hotelapp.repository.ConversationRepository;
-import com.hotelapp.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +25,6 @@ public class ApplicationMapper {
     private final ReviewService reviewService;
     private final FileStorageService fileStorageService;
     private final ConversationRepository conversationRepository;
-    private final DocumentRepository documentRepository;
 
     public ApplicationResponse toResponse(Application app) {
         List<ApplicationResponse.AvailabilityDto> avDtos = app.getAvailabilities().stream()
@@ -35,15 +32,6 @@ public class ApplicationMapper {
                         .dayOfWeek(av.getDayOfWeek())
                         .startTime(av.getStartTime())
                         .endTime(av.getEndTime())
-                        .build())
-                .toList();
-
-        List<ApplicationResponse.DocumentRequestDto> drDtos = app.getDocumentRequests().stream()
-                .map(dr -> ApplicationResponse.DocumentRequestDto.builder()
-                        .id(dr.getId())
-                        .documentType(dr.getDocumentType().name())
-                        .status(dr.getStatus().name())
-                        .requestedAt(dr.getRequestedAt())
                         .build())
                 .toList();
 
@@ -97,7 +85,6 @@ public class ApplicationMapper {
                         .businessOwnerId(business.getOwner().getId())  // #77 mesajlasma
                         .build())
                 .availabilities(avDtos)
-                .documentRequests(drDtos)
                 .requestedSlots(slotDtos)
                 // chat-v2: her basvuru icin (aday, isletme sahibi) eslesmesinin conversation ID'si
                 .conversationId(conversationRepository
@@ -110,8 +97,6 @@ public class ApplicationMapper {
 
     /** Aday ozeti — avatar + rating (isletme -> aday). */
     public ApplicationResponse.CandidateSummary buildCandidateSummary(User candidate) {
-        boolean validHealthCert = documentRepository.existsValidByType(
-                candidate.getId(), DocumentType.HEALTH_CERTIFICATE, LocalDate.now());
         return ApplicationResponse.CandidateSummary.builder()
                 .id(candidate.getId())
                 .fullName(candidate.getFullName())
@@ -119,7 +104,6 @@ public class ApplicationMapper {
                 .avatarUrl(candidate.getAvatarPath() != null
                         ? fileStorageService.publicUrl(candidate.getAvatarPath())
                         : null)
-                .hasValidHealthCertificate(validHealthCert)
                 .build();
     }
 }

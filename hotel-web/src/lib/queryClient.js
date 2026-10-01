@@ -52,10 +52,6 @@ export const keys = {
     list: (filters) => [...keys.listings.all, 'list', filters],
     detail: (id) => [...keys.listings.all, 'detail', id],
   },
-  documents: {
-    all: ['documents'],
-    my: () => [...keys.documents.all, 'my'],
-  },
   reviews: {
     all: ['reviews'],
     listing: (listingId) => [...keys.reviews.all, 'listing', listingId],

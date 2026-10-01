@@ -55,14 +55,6 @@ const WEEKDAYS_SHORT = [
   { key: 'SUNDAY',    label: 'Paz' },
 ]
 
-// Hassas belge tipleri — açık olanlar (CV, TRANSCRIPT, STUDENT_CERTIFICATE) zaten herkese açık
-const SENSITIVE_DOC_LABELS = {
-  CRIMINAL_RECORD:    'Adli Sicil',
-  HEALTH_CERTIFICATE: 'Sağlık Raporu',
-  IDENTITY_DOCUMENT:  'Kimlik Fotokopisi',
-}
-const SENSITIVE_DOC_TYPES = Object.keys(SENSITIVE_DOC_LABELS)
-
 // FAZ 2/#25 — formatSalary ortak helper'a tasindi (lib/salary.js)
 
 /* ── Apply Modal (Chat refactor v2) ──
@@ -124,7 +116,6 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
         jobListingId: listing.id,
         coverLetter,
         slotIds: selectedSlotIds,
-        grantedSensitiveTypes: [],
       })
 
       const convId = appResp.conversationId

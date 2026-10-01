@@ -20,7 +20,6 @@ public class ExpiredApplicationScheduler {
     private final ApplicationRepository applicationRepository;
     private final StandbyService standbyService;   // FAZ C.1
     private final SgkReminderService sgkReminderService;   // FAZ C.3
-    private final DocumentExpiryReminderService documentExpiryReminderService;   // belge son-kullanma
 
     // Her gece 02:00'de çalışır
     @Scheduled(cron = "0 0 2 * * *")
@@ -79,20 +78,6 @@ public class ExpiredApplicationScheduler {
             if (n > 0) log.info("[SGK] {} isletmeye ise giris bildirgesi hatirlatmasi gonderildi", n);
         } catch (Exception e) {
             log.warn("[SGK] hatirlatma gonderimi basarisiz: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * Belge son-kullanma hatirlaticisi. Her sabah 09:15: son kullanma tarihi
-     * yaklasan (veya gecmis ama hatirlatilmamis) belgeler icin adaya tek sefer uyari.
-     */
-    // Retired: profile documents are no longer collected.
-    public void sendDocumentExpiryReminders() {
-        try {
-            int n = documentExpiryReminderService.sendDueReminders();
-            if (n > 0) log.info("[DOC-EXPIRY] {} adaya belge son-kullanma hatirlatmasi gonderildi", n);
-        } catch (Exception e) {
-            log.warn("[DOC-EXPIRY] hatirlatma gonderimi basarisiz: {}", e.getMessage());
         }
     }
 }

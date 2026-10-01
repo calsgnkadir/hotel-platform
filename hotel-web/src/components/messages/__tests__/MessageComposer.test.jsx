@@ -2,6 +2,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import MessageComposer, { fmtDuration, QuickReplyChips } from '../MessageComposer'
 
+// Dosyanın ilk testi bileşenin ilk yükleme maliyetini de ödüyor (tam takım
+// paralel koşarken ~5,5 sn); varsayılan 5 sn sınırı rastgele düşürüyordu.
+vi.setConfig({ testTimeout: 15000 })
+
 vi.mock('../../../lib/websocket', () => ({ wsPublish: vi.fn() }))
 vi.mock('react-hot-toast', () => ({
   default: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn() }),

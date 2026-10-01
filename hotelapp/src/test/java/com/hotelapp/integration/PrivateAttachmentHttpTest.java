@@ -49,12 +49,13 @@ class PrivateAttachmentHttpTest {
                     .andExpect(content().bytes("%PDF-test".getBytes()));
         }
     }
-    @Test void profileDocumentUploadIsRetired() throws Exception {
+    @Test void profileDocumentUploadIsRemoved() throws Exception {
+        // Belge yükleme tamamen kaldırıldı (uç yok → 404); belge sadece sohbet eki.
         User a=create(Role.CANDIDATE);
         mvc.perform(multipart("/api/documents/upload")
                 .file("file","%PDF-test".getBytes()).param("type","CRIMINAL_RECORD")
                 .with(user(new UserPrincipal(a))))
-                .andExpect(status().isGone());
+                .andExpect(status().isNotFound());
         verifyNoInteractions(storage);
     }
 }

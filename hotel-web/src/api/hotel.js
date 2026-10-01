@@ -297,33 +297,6 @@ export async function withdrawApplication(applicationId) {
   return data
 }
 
-/* ── Document endpoints (Candidate) ── */
-export async function getMyDocuments() {
-  const { data } = await api.get('/api/documents/my')
-  return data
-}
-
-export async function uploadDocument(file, type, expiresAt) {
-  const form = new FormData()
-  form.append('file', file)
-  form.append('type', type)
-  if (expiresAt) form.append('expiresAt', expiresAt)  // YYYY-MM-DD (süreli belgeler)
-  const { data } = await api.post('/api/documents/upload', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
-  return data
-}
-
-export async function deleteDocument(documentId) {
-  await api.delete(`/api/documents/${documentId}`)
-}
-
-// FAZ 2/#33 — Sertifika cüzdanı: belge önizleme URL'i (Cloudinary)
-export async function getDocumentUrl(documentId) {
-  const { data } = await api.get(`/api/documents/${documentId}/url`)
-  return data.url || data
-}
-
 /* ── Telefon doğrulama (OTP) — opsiyonel, herhangi bir kullanıcı ── */
 export async function getPhoneStatus() {
   const { data } = await api.get('/api/profile/phone/status')
@@ -507,19 +480,6 @@ export async function downloadRoster(listingId, date = null) {
   a.click()
   a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
-
-export async function getApplicationDocuments(applicationId) {
-  const { data } = await api.get(`/api/business/applications/${applicationId}/documents`)
-  return data
-}
-
-export async function viewDocument(documentId) {
-  // Backend Cloudinary signed URL döner (1 saat geçerli)
-  const { data } = await api.get(`/api/documents/${documentId}/url`)
-  if (data?.url) {
-    window.open(data.url, '_blank', 'noopener,noreferrer')
-  }
 }
 
 /* Yorum/puanlama UI kaldirildi (kullanici istegi); ilgili API wrapper'lari da silindi. */
@@ -706,11 +666,6 @@ export async function toggleMessageReaction(conversationId, messageId, reaction)
 }
 
 /** Chat refactor v2: dosya/foto ekli mesaj gönder (multipart). */
-export async function shareChatDocument(conversationId, documentId) {
-  const { data } = await api.post(`/api/messages/conversations/${conversationId}/share-document`, { documentId })
-  return data  // MessageDto
-}
-
 export async function sendMessageAttachment(conversationId, file, caption = '') {
   const form = new FormData()
   form.append('file', file)

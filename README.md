@@ -4,7 +4,7 @@
 
 **İstanbul'daki hotel, restoran ve kafelerde günlük/aylık iş arayan adaylarla işletmeleri buluşturan platform.**
 
-Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya planı → başvuru → mesajlaşma → puanlama.
+Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya planı → başvuru → mesajlaşma → kapıda QR giriş.
 
 [![CI](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml)
 
@@ -149,20 +149,17 @@ listesi** olarak yönet:
 ### Aday Tarafı
 
 - **Vardiya bazlı başvuru** — Tek bir ilana birden fazla vardiya seçeneğiyle başvuru
-- **Belge yönetimi** — CV, transkript, adli sicil, sağlık raporu (Cloudinary)
-- **Hassas belge izni** — Kimlik/adli sicil sadece **açık rıza** ile işletmeye açılır
+- **Sohbetten belge/foto** — Adli sicil, hijyen raporu vb. uygulamada saklanmaz; işletme isterse aday sohbetten ek olarak gönderir. Ekler gizli saklanır, yalnızca sohbetin iki tarafı açabilir.
 - **Akıllı sıralama** — İlanlar tercihine göre puanlanır (position/district/jobType/recency); "sana özel" default listing sıralaması
 - **Kayıtlı Aramalar** — Filtre setini kaydet; yeni eşleşen ilan gelince otomatik bildirim (30 dk scan)
 - **Tercih bazlı eşleştirme** — İlgi alanına uygun ilan açılınca otomatik bildirim
-- **Geçmiş işlerim** — Çalışılmış vardiyalar + saat toplamı + puanlama hakkı
-- **Çift yönlü puanlama** — İşletmeye yıldız + yorum
+- **Geçmiş işlerim** — Çalışılmış vardiyalar + saat toplamı
 
 ### İşletme Tarafı
 
 - **Vardiya editörü** — Tarih + saat + ihtiyaç sayısı, drag-drop sıralı galeri
 - **Başvuru iş akışı** — Bekliyor → İnceleniyor → Kabul / Red
 - **No-show takibi** — 2 hatadan sonra otomatik 30 günlük ban
-- **Belge talep sistemi** — Aday'a tek tek belge isteme
 - **İstatistik panosu** — Donut, bar chart, kabul oranı, ortalama yanıt süresi
 - **Bizde çalışanlar** — Geçmiş çalışma kaydı + toplam saat
 
@@ -199,7 +196,7 @@ listesi** olarak yönet:
         └──────── docker compose: 3 servis, tek ağ ────────┘
 
                 ┌──────────────────┐
-                │   Cloudinary     │  ◄── Belge + foto yükleme
+                │   Cloudinary     │  ◄── Sohbet ekleri (gizli) + işletme görselleri
                 │   (CDN + DAM)    │      (signed URL)
                 └──────────────────┘
 ```
@@ -238,7 +235,7 @@ hotel-platform/
 | :-------------- | :----------------------------------------------- |
 | **Backend**     | Spring Boot 3.2, Java 17, Hibernate 6.4, JWT     |
 | **Database**    | MySQL 8 (Hibernate ORM, Specification API)       |
-| **Storage**     | Cloudinary (belge + foto, signed URL)            |
+| **Storage**     | Cloudinary (gizli sohbet ekleri + herkese açık işletme görselleri) |
 | **Frontend**    | React 18, Vite 5, React Router 6, React Hook Form|
 | **Styling**     | Tailwind 3 (tek açık tema · grafit + muted semantik) |
 | **Grafikler**   | Recharts (PieChart, AreaChart, BarChart)         |
@@ -440,8 +437,8 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 ### Tamamlanan
 - [x] Vardiya bazlı ilan + başvuru
 - [x] Mesajlaşma + bildirimler (WebSocket + Web Push)
-- [x] Çift yönlü puanlama
-- [x] Cloudinary entegrasyonu
+- [x] Kişisel tek kullanımlık QR giriş kartı + Excel ekip listesi
+- [x] Cloudinary entegrasyonu (gizli sohbet ekleri)
 - [x] Dashboard istatistikleri (Recharts)
 - [x] Email + şifre sıfırlama (Resend SMTP + Outbox pattern)
 - [x] Harita konum gösterimi (Leaflet + OpenStreetMap)

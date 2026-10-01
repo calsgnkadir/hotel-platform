@@ -9,8 +9,6 @@ import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.service.ApplicationQueryService;
 import com.hotelapp.service.ApplicationService;
 import com.hotelapp.service.ApplicationService.NoShowResult;
-import com.hotelapp.service.DocumentService;
-import com.hotelapp.service.DocumentService.DocumentDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,7 +32,6 @@ public class ApplicationController {
 
     private final ApplicationService applicationService;
     private final ApplicationQueryService applicationQueryService;  // FAZ C
-    private final DocumentService documentService;
     private final com.hotelapp.service.StandbyService standbyService;  // FAZ C.1
 
     // ============================================================
@@ -208,15 +205,5 @@ public class ApplicationController {
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(
                 applicationService.markNoShow(applicationId, currentUser.getId()));
-    }
-
-    @Operation(summary = "Bu başvuru için erişebildiğim adayın belgeleri — BUSINESS_OWNER")
-    @GetMapping("/api/business/applications/{applicationId}/documents")
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<List<DocumentDto>> getAccessibleDocs(
-            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
-            @PathVariable Long applicationId) {
-        return ResponseEntity.ok(documentService.getAccessibleDocsForApplication(applicationId, currentUser.getId()));
     }
 }

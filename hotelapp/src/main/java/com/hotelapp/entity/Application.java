@@ -111,12 +111,6 @@ public class Application {
     @Builder.Default
     private Set<ShiftSlot> requestedSlots = new HashSet<>();
 
-    // FAZ 9.2 — N+1 fix: BatchSize
-    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
-    @BatchSize(size = 50)
-    @Builder.Default
-    private List<DocumentRequest> documentRequests = new ArrayList<>();
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

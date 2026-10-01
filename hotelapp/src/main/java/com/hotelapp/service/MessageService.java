@@ -197,22 +197,8 @@ public class MessageService {
         return senderView;
     }
 
-    /** Bildirim önizlemesi: sohbet kart token'larını okunur metne çevirir. */
+    /** Bildirim önizlemesi: arama daveti token'larını okunur metne çevirir. */
     static String readablePreview(String content) {
-        java.util.regex.Matcher m = java.util.regex.Pattern
-                .compile("^\\[DOC_SHARED:\\d+:([A-Z_]+)]$").matcher(content);
-        if (m.matches()) {
-            String label = switch (m.group(1)) {
-                case "CRIMINAL_RECORD"     -> "Adli sicil kaydı";
-                case "HEALTH_CERTIFICATE"  -> "Hijyen / sağlık belgesi";
-                case "IDENTITY_DOCUMENT"   -> "Kimlik";
-                case "STUDENT_CERTIFICATE" -> "Öğrenci belgesi";
-                case "TRANSCRIPT"          -> "Transkript";
-                case "CV"                  -> "CV";
-                default -> "Belge";
-            };
-            return "Belge gönderdi: " + label;
-        }
         if (content.startsWith("[CALL:video]")) return "Görüntülü görüşme daveti";
         if (content.startsWith("[CALL:audio]")) return "Sesli görüşme daveti";
         return content;

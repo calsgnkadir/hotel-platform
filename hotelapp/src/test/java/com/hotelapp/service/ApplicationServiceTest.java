@@ -51,7 +51,6 @@ class ApplicationServiceTest {
     @Mock private ApplicationRepository applicationRepository;
     @Mock private UserRepository userRepository;
     @Mock private JobListingRepository jobListingRepository;
-    @Mock private com.hotelapp.repository.DocumentRequestRepository documentRequestRepository;
     @Mock private com.hotelapp.repository.ShiftSlotRepository shiftSlotRepository;
     @Mock private OutboxService outboxService;
     @Mock private NotificationService notificationService;

@@ -1,6 +1,5 @@
 package com.hotelapp.dto;
 
-import com.hotelapp.enums.DocumentType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -25,14 +24,6 @@ public class ApplicationRequest {
      * Yeni akışta en az 1 zorunlu.
      */
     private List<Long> slotIds; // optional in DTO, validated in service
-
-    /**
-     * Aday başvururken hassas belge tiplerini önceden işletmeye açık yapabilir.
-     * Bu tipler için otomatik GRANTED durumda DocumentRequest oluşturulur,
-     * işletmenin ayrıca talep etmesine gerek kalmaz.
-     * Açık belgeler (CV, TRANSCRIPT, STUDENT_CERTIFICATE) zaten herkese açık.
-     */
-    private Set<DocumentType> grantedSensitiveTypes; // optional
 
     @Data
     public static class AvailabilityDto {

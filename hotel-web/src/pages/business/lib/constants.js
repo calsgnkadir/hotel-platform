@@ -25,12 +25,6 @@ export const SHIFT_SHORT = {
 
 export const STATUS_LABELS = { ACTIVE: 'Aktif', PAUSED: 'Durduruldu', CLOSED: 'Kapatıldı' }
 
-export const SENSITIVE_DOC_TYPES_BIZ = [
-  { type: 'CRIMINAL_RECORD',    label: 'Adli Sicil' },
-  { type: 'HEALTH_CERTIFICATE', label: 'Sağlık Raporu' },
-  { type: 'IDENTITY_DOCUMENT',  label: 'Kimlik Fotokopisi' },
-]
-
 export const BUSINESS_TYPE_LABELS = {
   HOTEL: 'Otel',
   RESTAURANT: 'Restoran',

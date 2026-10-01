@@ -149,18 +149,5 @@ public class MessageController {
                 messageService.toggleReaction(conversationId, messageId, currentUser.getId(), req.reaction()));
     }
 
-    @Operation(summary = "Aday: yüklü belgesini sohbetten gönder (işletmeye o belge için izin verir)")
-    @PostMapping("/conversations/{conversationId}/share-document")
-    @PreAuthorize("hasRole('CANDIDATE')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> shareDocument(
-            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
-            @PathVariable Long conversationId,
-            @Valid @RequestBody ShareDocBody body) {
-        return ResponseEntity.status(HttpStatus.GONE).body(Map.of("message",
-                "Belgeyi cihazınızdan sohbet eki olarak gönderin."));
-    }
-
     public record ReactionRequest(@jakarta.validation.constraints.NotBlank String reaction) {}
-    public record ShareDocBody(@jakarta.validation.constraints.NotNull Long documentId) {}
 }

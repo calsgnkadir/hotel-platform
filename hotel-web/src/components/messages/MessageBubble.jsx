@@ -13,7 +13,6 @@
 import { useState } from 'react'
 import PrivateAttachment from './PrivateAttachment'
 import { formatTime, parseCallInvite } from './utils'
-import { parseDocToken, DocumentCardBubble } from './DocumentShare'
 
 const BRAND = '#1f2937'
 const BRAND_DARK = '#111827'
@@ -126,8 +125,6 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
   // Sesli/Görüntülü arama davet mesajı?
   const call = !hasAttach ? parseCallInvite(m.content) : null
   if (call) return <CallInviteBubble m={m} type={call.type} url={call.url} />
-  const doc = !hasAttach ? parseDocToken(m.content) : null
-  if (doc) return <DocumentCardBubble m={m} doc={doc} />
 
   const reactions = m.reactions || []
   const innerBg = mine ? 'rgba(255, 255, 255, 0.10)' : 'var(--ah-page)'
