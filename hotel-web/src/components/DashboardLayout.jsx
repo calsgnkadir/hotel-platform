@@ -144,9 +144,12 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       <main className="fade-in relative z-10" style={{ color: 'var(--ah-ink-2)' }}>
         <EmailVerifyBanner />
 
-        {/* Page heading — sade, koyu ink */}
-        <div className="px-4 lg:px-8 pt-6 lg:pt-8 pb-5">
-          <h1 style={{ fontSize: 'clamp(22px, 3vw, 28px)', lineHeight: 1.15, fontWeight: 700,
+        {/* Page heading — sade, koyu ink. Mobilde gizli: ustteki sekme satiri
+            hangi sayfada oldugunu zaten gosteriyor; dikey yer icerige kalsin.
+            (Ekran okuyucu icin baslik mobilde de var.) */}
+        <div className="px-4 lg:px-8 pt-3 md:pt-6 lg:pt-8 md:pb-5">
+          <h1 className="sr-only md:not-sr-only"
+              style={{ fontSize: 'clamp(22px, 3vw, 28px)', lineHeight: 1.15, fontWeight: 700,
                        letterSpacing: '-0.01em', color: 'var(--ah-ink)' }}>
             {currentTitle}
           </h1>

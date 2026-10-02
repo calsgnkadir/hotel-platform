@@ -819,10 +819,23 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
 }
 
 /* ── Listings Page — FAZ 0/#10 + FAZ 1/#47 + FAZ 1/#30 split + harita ── */
+const FILTERS_OPEN_KEY = 'kadrom.listings.filters-open'
+
 export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen }) {
   const navigate = useNavigate()
   const [applyTarget, setApplyTarget] = useState(null)
-  const [showFilters, setShowFilters] = useState(false)
+  // Filtre paneli (mobil/tablet): kapali baslar ki ilanlar ilk ekranda gorunsun;
+  // acip kapatma tercihi bu cihazda hatirlanir. Genis ekranda (lg) filtreler
+  // solda kenar sutununda hep gorunur, bu durumdan etkilenmez.
+  const [showFilters, setShowFilters] = useState(() => {
+    try { return localStorage.getItem(FILTERS_OPEN_KEY) === '1' } catch { return false }
+  })
+  function toggleFilters() {
+    setShowFilters(open => {
+      try { localStorage.setItem(FILTERS_OPEN_KEY, open ? '0' : '1') } catch { /* yok say */ }
+      return !open
+    })
+  }
   const [page, setPage] = useState(1)
   const PAGE_SIZE = 6
 
@@ -1017,18 +1030,68 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
 
   return (
     <div className="ah-surface space-y-4">
-      {/* Baslik + Yakinlar toggle */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="text-[22px] font-semibold" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.02em' }}>İş İlanları</h2>
-          <p className="text-[12px] mt-1 tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>
-            {loading ? '...' : `${listings.length} ilan`}
-            {activeFilterCount > 0 && ` · ${activeFilterCount} filtre aktif`}
-          </p>
+      {/* Ust arac cubugu — mobilde ilk ekranda ilanlar gorunsun diye kompakt:
+          1. satir arama + Filtreler, 2. satir sayi + siralama + toggle'lar
+          (dar ekranda alt satira tasmak yerine yana kayar). Sayfa basligi
+          panelde (DashboardLayout) — burada tekrar edilmez. */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#98a1a0"
+                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
+              placeholder="İlan başlığında ara..."
+              className="input text-sm"
+              style={{ paddingLeft: '2.5rem', paddingRight: keyword ? '2.5rem' : undefined }} />
+            {keyword && (
+              <button onClick={() => setKeyword('')}
+                aria-label="Aramayı temizle"
+                className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                style={{ color: 'var(--ah-ink-3)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ah-ink)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ah-ink-3)' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <button type="button" onClick={toggleFilters} aria-expanded={showFilters}
+          aria-controls="listing-filters"
+          className="lg:hidden inline-flex items-center gap-1.5 flex-shrink-0 rounded-lg text-[13px] font-semibold"
+          style={{
+            padding: '9px 12px',
+            background: showFilters ? 'var(--ah-brand-soft)' : 'var(--ah-card)',
+            color: 'var(--ah-ink)',
+            border: '1px solid var(--ah-line-2)',
+          }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 6h18M7 12h10M10 18h4" />
+          </svg>
+          Filtreler
+          {activeFilterCount > 0 && (
+            <span className="tabular-nums rounded-full text-[11px] leading-none text-white"
+                  style={{ background: 'var(--ah-brand)', padding: '3px 6px' }}>
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 py-0.5 no-scrollbar">
+        <span className="text-[12.5px] tabular-nums flex-shrink-0 mr-auto pr-1" style={{ color: 'var(--ah-ink-3)' }}>
+          {loading ? '...' : `${listings.length} ilan`}
+        </span>
           {/* Siralama — API "sana ozel" varsayilan; kullanici degistirebilir */}
-          <label className="inline-flex items-center gap-1.5 text-[12.5px]" style={{ color: 'var(--ah-ink-3)' }}>
+          <label className="inline-flex flex-shrink-0 items-center gap-1.5 text-[12.5px]" style={{ color: 'var(--ah-ink-3)' }}>
             <span className="hidden sm:inline">Sırala</span>
             <select value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(1) }}
                     disabled={nearbyFirst}
@@ -1040,7 +1103,9 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
               <option value="wage">Ücret (yüksek)</option>
             </select>
           </label>
-          {/* FAZ C.2 — "Bugun musaitim": acil ilan acilirsa ilk bu adaylara gider */}
+          {/* FAZ C.2 — "Bugun musaitim": acil ilan acilirsa ilk bu adaylara gider.
+              Yana kayan satirda sikismasin / iki satira kirilmasin. */}
+          <div className="flex-shrink-0 whitespace-nowrap flex items-center gap-2">
           <AvailableNowToggle />
           <NearbyToggle
             nearbyFirst={nearbyFirst}
@@ -1054,7 +1119,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             hasLocation={!!myLoc.location}
             error={myLoc.error}
           />
-        </div>
+          </div>
       </div>
 
       {/* FAZ C.2.3 — Mini genel bakis seridi: bos/sikici liste hissini kirar,
@@ -1066,7 +1131,9 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       {/* FAZ B.5.2 — Filtreler: ilce KALDIRILDI (konum = mesafe).
           Tarih / calisma turu / min ucret tek tikla secilen chip'ler;
           pozisyon uzun liste oldugu icin select kaliyor. */}
-      <div className="card" style={{ padding: '14px 16px' }}>
+      <div className="lg:grid lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-5 lg:items-start space-y-4 lg:space-y-0">
+      <aside className={`${showFilters ? '' : 'hidden'} lg:block lg:sticky lg:top-20`}>
+      <div id="listing-filters" className="card" style={{ padding: '14px 16px' }}>
         <div className="space-y-3">
           <FilterRow label="Tarih">
             {[
@@ -1160,7 +1227,9 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           )}
         </div>
       </div>
+      </aside>
 
+      <div className="min-w-0 space-y-4">
         <ActiveFilterBar
           filters={{ keyword: debouncedKeyword, position, jobType, minSalary, shifts, datePreset, customFrom, customTo }}
           labels={{ POSITION_LABELS, JOB_TYPE_LABELS }}
@@ -1174,32 +1243,6 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           }}
           onClearAll={clearFilters}
         />
-
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-               width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#98a1a0"
-               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
-            placeholder="İlan başlığında ara..."
-            className="input text-sm"
-            style={{ paddingLeft: '2.5rem', paddingRight: keyword ? '2.5rem' : undefined }} />
-          {keyword && (
-            <button onClick={() => setKeyword('')}
-              aria-label="Aramayı temizle"
-              className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-              style={{ color: 'var(--ah-ink-3)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ah-ink)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ah-ink-3)' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
 
         {loading ? (
           <SkeletonListingGrid count={6} />
@@ -1220,7 +1263,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         ) : (
           <>
             <motion.div
-              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
               variants={LIST_STAGGER}
               initial="hidden"
               animate="visible"
@@ -1246,6 +1289,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             )}
           </>
         )}
+      </div>
+      </div>
 
       {/* #47 — Detail kendi route */}
 
@@ -1404,7 +1449,7 @@ function FilterRow({ label, children }) {
       <span className="text-[10px] font-semibold uppercase tracking-[0.04em]" style={{ color: 'var(--ah-ink-4)' }}>
         {label}
       </span>
-      <div className="flex items-center gap-1.5 overflow-x-auto -mx-1 px-1 py-0.5
+      <div className="flex items-center gap-1.5 overflow-x-auto -mx-1 px-1 py-0.5 lg:flex-wrap lg:overflow-visible
                       [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {children}
       </div>

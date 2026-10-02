@@ -3,16 +3,22 @@ import api from '../api/client'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 
+const DISMISS_KEY = 'kadrom.email-verify-banner.dismissed'
+
 /**
  * FAZ 4.4 — Email doğrulanmamış kullanıcılar için banner.
- * Dashboard'ın en üstünde görünür. Email zaten doğrulanmışsa null döner.
+ * Tek satır (mobilde ilk ekranı doldurmasın); bu oturum için kapatılabilir.
+ * Email zaten doğrulanmışsa null döner.
  */
 export default function EmailVerifyBanner() {
   const { user } = useAuth()
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  const [dismissed, setDismissed] = useState(() => {
+    try { return sessionStorage.getItem(DISMISS_KEY) === '1' } catch { return false }
+  })
 
-  if (!user || user.emailVerified) return null
+  if (!user || user.emailVerified || dismissed) return null
 
   async function resend() {
     setSending(true)
@@ -27,23 +33,32 @@ export default function EmailVerifyBanner() {
     }
   }
 
+  function dismiss() {
+    try { sessionStorage.setItem(DISMISS_KEY, '1') } catch { /* yok say */ }
+    setDismissed(true)
+  }
+
   return (
-    <div className="mx-4 mt-4 px-4 py-3 rounded-xl border flex items-center gap-3 flex-wrap"
-         style={{ background: '#f2f2f2', borderColor: '#d2d2d2', color: '#414141' }}>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
-      <div className="flex-1 min-w-[200px]">
-        <p className="text-sm font-semibold">Email adresini doğrula</p>
-        <p className="text-xs mt-0.5">
-          {user.email} adresine gönderilen doğrulama linkine tıkla.
-          Hesabın aktif ama doğrulanana kadar bazı işlemler kısıtlı olabilir.
-        </p>
-      </div>
+    <div role="status" className="mx-4 lg:mx-8 mt-3 px-3 py-2 rounded-lg border flex items-center gap-2 text-[12.5px]"
+         style={{ background: 'var(--ah-warn-soft)', borderColor: 'var(--ah-warn)', color: 'var(--ah-ink-2)' }}>
+      <span className="min-w-0 flex-1 truncate">
+        <b style={{ color: 'var(--ah-ink)' }}>E-postanı doğrula</b>
+        <span className="hidden sm:inline"> — {user.email} adresine gönderilen linke tıkla.</span>
+      </span>
       <button
         onClick={resend}
         disabled={sending || sent}
-        className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors disabled:opacity-50"
-        style={{ background: '#fff', borderColor: '#d2d2d2', color: '#414141' }}>
-        {sent ? 'Gönderildi' : sending ? 'Gönderiliyor...' : 'Tekrar Gönder'}
+        className="flex-shrink-0 font-semibold underline disabled:opacity-50 disabled:no-underline"
+        style={{ color: 'var(--ah-ink)' }}>
+        {sent ? 'Gönderildi' : sending ? 'Gönderiliyor...' : 'Tekrar gönder'}
+      </button>
+      <button onClick={dismiss} aria-label="Uyarıyı kapat"
+        className="flex-shrink-0 w-6 h-6 grid place-items-center rounded"
+        style={{ color: 'var(--ah-ink-3)' }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+          <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+        </svg>
       </button>
     </div>
   )
