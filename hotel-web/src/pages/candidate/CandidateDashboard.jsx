@@ -2,10 +2,8 @@
 // Eski: 1334 satir tek dosya. Yeni: layout-only + tab componentleri ayri.
 //   tabs/ApplicationsTab.jsx
 //   tabs/HistoryTab.jsx
-//   tabs/DocumentsTab.jsx
 //   tabs/ProfileTab.jsx
 //   components/candidate/StatusBadge.jsx
-//   components/candidate/EarningsWidget.jsx
 //   utils/shifts.js + utils/labels.js
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'

@@ -106,12 +106,6 @@ export async function getCandidateProfile() {
   return data
 }
 
-/** FAZ 13 — Kazanç ledger'i: vardiya bazlı brüt kazanç + özet. */
-export async function getMyEarnings() {
-  const { data } = await api.get('/api/candidate/earnings')
-  return data  // EarningsResponse
-}
-
 /** FAZ 16 — Benzer ilanlar (content-based, public). */
 export async function getSimilarListings(id, limit = 6) {
   const { data } = await api.get(`/api/listings/${id}/similar`, { params: { limit } })

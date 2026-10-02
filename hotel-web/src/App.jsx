@@ -60,8 +60,6 @@ export default function App() {
       <ConfirmProvider>
         <SkipLink />              {/* FAZ 3 / A11y — klavye Tab ilk durak */}
         <ShowcaseBanner />
-        {/* FAZ 26 — Global BeamsBackground (koyu zemin + altın huzme animasyon)
-            kaldirildi: acik+teal temayla celisiyordu, animasyon istenmiyor. */}
         <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
         <PushPermissionPrompt />  {/* FAZ 1/#23 — Web Push */}
         <InstallPrompt />          {/* FAZ 2/#8 — PWA install */}
