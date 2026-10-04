@@ -853,7 +853,7 @@ function SupportTab() {
                         background: s.bg, color: s.color,
                         fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
                       }}>{t.status}</span>
-                      <span style={{ color: 'rgba(31, 41, 55, 0.14)', fontSize: 12, fontWeight: 700 }}>#{t.id}</span>
+                      <span style={{ color: 'var(--ah-ink-4)', fontSize: 12, fontWeight: 700 }}>#{t.id}</span>
                       <span style={{ color: '#1f2937', fontSize: 11, fontWeight: 600 }}>
                         {SUBJECT_LABEL[t.subject] || t.subject}
                       </span>
@@ -1144,7 +1144,7 @@ function OutboxTab() {
                       fontWeight: 700,
                       letterSpacing: '0.05em',
                     }}>{e.status}</span>
-                    <span style={{ color: 'rgba(31, 41, 55, 0.14)', fontSize: 13, fontWeight: 600 }}>#{e.id}</span>
+                    <span style={{ color: 'var(--ah-ink-4)', fontSize: 13, fontWeight: 600 }}>#{e.id}</span>
                     <span style={{ color: '#1f2937', fontSize: 11, fontWeight: 600 }}>{e.eventType}</span>
                     <span style={{ color: '#a1a1a1', fontSize: 11 }}>
                       deneme {e.attempts}

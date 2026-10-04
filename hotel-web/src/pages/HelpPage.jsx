@@ -26,7 +26,7 @@ const FAQS = [
 
   // ── İSLETME ──
   { cat: 'İşletme', q: '"Doğrulanmış işletme" rozetini nasıl alırım?',
-    a: 'Vergi numarası + faaliyet belgesi + telefon doğrulaması ile admin onayına başvurursun. Onay sonrası profilinde ve ilanlarında altın yıldız rozeti görünür — güven sinyali.' },
+    a: 'Vergi numarası + faaliyet belgesi + telefon doğrulaması ile admin onayına başvurursun. Onay sonrası profilinde ve ilanlarında "Doğrulanmış işletme" onay rozeti görünür — güven sinyali.' },
   { cat: 'İşletme', q: 'İlan oluştururken hangi alanlar zorunlu?',
     a: 'Pozisyon, başlık, açıklama ve en az 1 vardiya slotu (tarih + başlangıç/bitiş saat + kaç aday). Ücret ve gereksinimler güçlü öneri ama opsiyonel.' },
   { cat: 'İşletme', q: 'Bir adayı "no-show" olarak nasıl işaretlerim?',

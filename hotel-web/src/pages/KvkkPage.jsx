@@ -53,10 +53,11 @@ export default function KvkkPage() {
               <li><b>Kimlik bilgileri:</b> Ad, soyad, doğum tarihi, cinsiyet (opsiyonel)</li>
               <li><b>İletişim bilgileri:</b> E-posta, telefon, adres, ilçe</li>
               <li><b>Eğitim ve deneyim:</b> Eğitim durumu, önceki iş tecrübesi (aday)</li>
-              <li><b>Belgeler:</b> CV, transkript, adli sicil, sağlık raporu, kimlik fotokopisi (aday)</li>
+              <li><b>Sohbet ekleri:</b> Sohbette gönderdiğin dosya ve fotoğraflar (ör. işletmenin istediği adli sicil kaydı veya hijyen belgesi). Platform belge arşivi tutmaz.</li>
               <li><b>İşletme bilgileri:</b> Ad, tür, lokasyon, açıklama, logo, galeri fotoğrafları (işletme)</li>
               <li><b>Başvuru verileri:</b> İlan, ön yazı, müsaitlik, başvuru durumu</li>
-              <li><b>Teknik veriler:</b> IP adresi, oturum tokeni, kullanım istatistikleri</li>
+              <li><b>Vardiya kayıtları:</b> Giriş-çıkış saatleri; GPS ile mesaiye başlarken ve bitirirken o anki konum ve işyerine uzaklık</li>
+              <li><b>Teknik veriler:</b> IP adresi, oturum bilgisi, profil görüntülenme kayıtları</li>
             </ul>
           </Section>
 
@@ -79,16 +80,26 @@ export default function KvkkPage() {
 
           <Section title="5. Veri Paylaşımı">
             <p>
-              <b>Hassas belgeler</b> (adli sicil, sağlık raporu, kimlik) yalnızca senin açık iznin ile,
-              başvurduğun işletmenin görüntülemesine açılır. Açık belgeler (CV, transkript, öğrenci belgesi)
-              ilan başvurusu kapsamında işletmeyle paylaşılır.
+              Başvurduğunda profil bilgilerin (ad, deneyim, tercihler) ilgili işletmeyle paylaşılır.
+              Telefon ve e-posta gibi iletişim bilgilerin yalnızca başvurunu <b>kabul eden</b> işletmeye açılır;
+              kabul edildiğin vardiyalar için adın, telefonun ve giriş-çıkış saatlerin o işletmenin ekip listesinde yer alır.
+            </p>
+            <p className="mt-2">
+              <b>Sohbet ekleri</b> yalnızca o sohbetin iki tarafınca görüntülenebilir; herkese açık bir bağlantıyla paylaşılmaz.
             </p>
             <p className="mt-2">
               Verileriniz üçüncü taraflarla pazarlama amacıyla paylaşılmaz.
             </p>
           </Section>
 
-          <Section title="6. KVKK Madde 11 Hakları">
+          <Section title="6. Çerezler">
+            <p>
+              Yalnızca zorunlu çerezler ve tarayıcı kaydı kullanılır: oturumun açık kalması, güvenlik ve
+              dil/görünüm tercihlerin. Analitik, reklam veya takip çerezi kullanılmaz.
+            </p>
+          </Section>
+
+          <Section title="7. KVKK Madde 11 Hakları">
             <p>Aşağıdaki haklara sahipsiniz:</p>
             <ul className="list-disc pl-5 space-y-1 mt-2">
               <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
@@ -100,7 +111,7 @@ export default function KvkkPage() {
             </ul>
           </Section>
 
-          <Section title="7. İletişim">
+          <Section title="8. İletişim">
             <p>
               KVKK kapsamındaki taleplerinizi platformun destek e-posta adresine iletebilirsiniz.
               Talebiniz en geç <b>30 gün</b> içinde değerlendirilir.
