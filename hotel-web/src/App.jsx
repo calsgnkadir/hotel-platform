@@ -1,31 +1,35 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { initHapticForToasts } from './lib/haptic'  // FAZ 3
 import { queryClient } from './lib/queryClient'
+import { lazyPage } from './lib/lazyPage'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import ProtectedRoute from './components/ProtectedRoute'
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
-import ResetPasswordPage from './pages/auth/ResetPasswordPage'
-import OAuthSuccessPage from './pages/auth/OAuthSuccessPage'
-import LandingPage from './pages/LandingPage'
-import CandidateDashboard from './pages/candidate/CandidateDashboard'
-import BusinessDashboard from './pages/business/BusinessDashboard'
-import AdminPage from './pages/admin/AdminPage'
-import KvkkPage from './pages/KvkkPage'
-import TermsPage from './pages/TermsPage'
-import HelpPage from './pages/HelpPage'
-import ContactPage from './pages/ContactPage'
-import VerifyEmailPage from './pages/VerifyEmailPage'
-import ListingDetailPage from './pages/candidate/ListingDetailPage'
-import ScanPassPage from './pages/business/ScanPassPage'  // giriş kartı okutma (görevli)
-import BusinessPublicPage from './pages/public/BusinessPublicPage'  // FAZ 5.9
-import CandidatePublicPage from './pages/public/CandidatePublicPage'  // Dalga G
-import NotFoundPage from './pages/NotFoundPage'  // FAZ 3 - 404
+import LandingPage from './pages/LandingPage'  // ilk giriş kapısı: ana paketle gelsin
+
+// Diğer sayfalar ilk ziyarette ayrı parça olarak iner (lazy loading):
+// ana sayfaya gelen, hiç girmeyeceği panel/harita/grafik kodunu indirmez.
+const LoginPage           = lazyPage(() => import('./pages/auth/LoginPage'))
+const RegisterPage        = lazyPage(() => import('./pages/auth/RegisterPage'))
+const ForgotPasswordPage  = lazyPage(() => import('./pages/auth/ForgotPasswordPage'))
+const ResetPasswordPage   = lazyPage(() => import('./pages/auth/ResetPasswordPage'))
+const OAuthSuccessPage    = lazyPage(() => import('./pages/auth/OAuthSuccessPage'))
+const CandidateDashboard  = lazyPage(() => import('./pages/candidate/CandidateDashboard'))
+const BusinessDashboard   = lazyPage(() => import('./pages/business/BusinessDashboard'))
+const AdminPage           = lazyPage(() => import('./pages/admin/AdminPage'))
+const KvkkPage            = lazyPage(() => import('./pages/KvkkPage'))
+const TermsPage           = lazyPage(() => import('./pages/TermsPage'))
+const HelpPage            = lazyPage(() => import('./pages/HelpPage'))
+const ContactPage         = lazyPage(() => import('./pages/ContactPage'))
+const VerifyEmailPage     = lazyPage(() => import('./pages/VerifyEmailPage'))
+const ListingDetailPage   = lazyPage(() => import('./pages/candidate/ListingDetailPage'))
+const ScanPassPage        = lazyPage(() => import('./pages/business/ScanPassPage'))  // giriş kartı okutma (görevli)
+const BusinessPublicPage  = lazyPage(() => import('./pages/public/BusinessPublicPage'))  // FAZ 5.9
+const CandidatePublicPage = lazyPage(() => import('./pages/public/CandidatePublicPage'))  // Dalga G
+const NotFoundPage        = lazyPage(() => import('./pages/NotFoundPage'))  // FAZ 3 - 404
 // FAZ 1/#23 — Web Push prompt (pure Java VAPID, in-app calisiyor)
 import PushPermissionPrompt from './components/PushPermissionPrompt'
 // FAZ 2/#8 — PWA install prompt
@@ -89,6 +93,7 @@ function AnimatedRoutes() {
   const rootKey = location.pathname.split('/')[1] || 'root'
   return (
     <div key={rootKey} className="page-enter">
+      <Suspense fallback={<PageFallback />}>
       <Routes>
         {/* Public */}
         <Route path="/"         element={<LandingPage />} />
@@ -147,6 +152,30 @@ function AnimatedRoutes() {
         {/* FAZ 3 — 404 fallback (replace Navigate ile sessiz redirect yerine bilgi sayfasi) */}
         <Route path="*"  element={<NotFoundPage />} />
       </Routes>
+      </Suspense>
+    </div>
+  )
+}
+
+// Sayfa parçası inerken: hızlı bağlantıda göz kırpması olmasın diye ilk
+// 250 ms boş kalır, sonra ince bir yükleniyor çubuğu gösterir.
+function PageFallback() {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const id = setTimeout(() => setVisible(true), 250)
+    return () => clearTimeout(id)
+  }, [])
+  return (
+    <div role="status" aria-live="polite" className="min-h-[60vh]">
+      {visible && (
+        <>
+          <div className="fixed top-0 left-0 right-0 h-0.5 overflow-hidden z-50"
+               style={{ background: 'var(--ah-line)' }}>
+            <div className="h-full w-1/3 animate-pulse" style={{ background: 'var(--ah-ink)' }} />
+          </div>
+          <span className="sr-only">Sayfa yükleniyor</span>
+        </>
+      )}
     </div>
   )
 }
