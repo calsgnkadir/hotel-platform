@@ -162,7 +162,7 @@ export default function CandidatePublicPage() {
           </div>
         </div>
 
-        {/* Deneyim metrikleri — puanlama ve guvenilirlik skoru gosterilmez (kullanici istegi) */}
+        {/* Deneyim metrikleri — guvenilirlik skoru gosterilmez (kullanici istegi) */}
         <div className="grid grid-cols-2 gap-3">
           <MetricCard
             label="Tamamlanan İş"

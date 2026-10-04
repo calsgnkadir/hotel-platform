@@ -303,8 +303,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
 /* ─────────── Aday karti — is-ilani stili (sol hizali) ───────────
  * Eski hali 1:1.414 A4 oraniyla zorla uzatiliyor + icerik dikey ortalaniyordu;
  * kart cok uzun oldugu icin ORTASI BOMBOS kaliyordu (kullanici sikayeti).
- * Yeni hali: avatar + kimlik YAN YANA, altinda karar bilgisi (puan · vardiya ·
- * ilan), en altta meta + aksiyon. Sabit oran YOK — icerik kadar yukselir,
+ * Yeni hali: avatar + kimlik YAN YANA, altinda karar bilgisi (vardiya · ilan), en altta meta + aksiyon. Sabit oran YOK — icerik kadar yukselir,
  * grid'de min-height ile hizalanir. Tum renkler --ah-* token.
  */
 function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {

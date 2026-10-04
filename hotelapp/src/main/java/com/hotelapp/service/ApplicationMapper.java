@@ -5,12 +5,14 @@ import com.hotelapp.dto.ApplicationResponse.RequestedSlotDto;
 import com.hotelapp.entity.Application;
 import com.hotelapp.entity.Business;
 import com.hotelapp.entity.JobListing;
+import com.hotelapp.entity.ShiftSlot;
 import com.hotelapp.entity.User;
 import com.hotelapp.repository.ConversationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -22,7 +24,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApplicationMapper {
 
-    private final ReviewService reviewService;
     private final FileStorageService fileStorageService;
     private final ConversationRepository conversationRepository;
 
@@ -71,8 +72,7 @@ public class ApplicationMapper {
                         && app.getStandbyOfferedAt() != null
                         && app.getStandbyDeadline() != null
                         && app.getStandbyDeadline().isAfter(java.time.LocalDateTime.now()))
-                .workCompleted(reviewService.isWorkCompleted(app))
-                .candidateReviewedBusiness(reviewService.hasCandidateReviewedBusiness(app.getId()))
+                .workCompleted(isWorkCompleted(app))
                 .candidate(buildCandidateSummary(app.getCandidate()))
                 .listing(ApplicationResponse.ListingSummary.builder()
                         .id(listing.getId())
@@ -95,7 +95,23 @@ public class ApplicationMapper {
                 .build();
     }
 
-    /** Aday ozeti — avatar + rating (isletme -> aday). */
+    /**
+     * Basvurudaki tum vardiyalar gecmiste mi (calisma tamamlandi mi)?
+     * Slot yoksa (eski basvuru) tamamlandi sayilir (backward compat).
+     */
+    static boolean isWorkCompleted(Application application) {
+        if (application.getRequestedSlots() == null || application.getRequestedSlots().isEmpty()) {
+            return true;
+        }
+        LocalDate today = LocalDate.now();
+        return application.getRequestedSlots().stream()
+                .map(ShiftSlot::getDate)
+                .max(Comparator.naturalOrder())
+                .map(latest -> latest.isBefore(today))
+                .orElse(true);
+    }
+
+    /** Aday ozeti — ad + avatar. */
     public ApplicationResponse.CandidateSummary buildCandidateSummary(User candidate) {
         return ApplicationResponse.CandidateSummary.builder()
                 .id(candidate.getId())

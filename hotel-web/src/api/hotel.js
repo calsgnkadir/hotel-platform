@@ -476,8 +476,6 @@ export async function downloadRoster(listingId, date = null) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-/* Yorum/puanlama UI kaldirildi (kullanici istegi); ilgili API wrapper'lari da silindi. */
-
 /* ── Bildirim (Notification) endpoints ── */
 export async function getNotifications(limit = 20) {
   const { data } = await api.get('/api/notifications', { params: { limit } })

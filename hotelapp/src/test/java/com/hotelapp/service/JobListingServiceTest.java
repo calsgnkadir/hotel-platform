@@ -44,7 +44,6 @@ class JobListingServiceTest {
     @Mock private JobListingRepository jobListingRepository;
     @Mock private BusinessRepository businessRepository;
     @Mock private UserRepository userRepository;
-    @Mock private ReviewService reviewService;
     @Mock private NotificationService notificationService;
     @Mock private BusinessPhotoRepository businessPhotoRepository;
     @Mock private FileStorageService fileStorageService;
@@ -276,8 +275,6 @@ class JobListingServiceTest {
                     .status(ListingStatus.ACTIVE)
                     .build();
             l.setId(42L);
-            org.mockito.Mockito.lenient().when(reviewService.getBusinessRating(any()))
-                    .thenReturn(ReviewService.RatingSummary.empty());
             when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
 
             service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
@@ -301,8 +298,6 @@ class JobListingServiceTest {
                     .status(ListingStatus.ACTIVE)
                     .build();
             l.setId(42L);
-            org.mockito.Mockito.lenient().when(reviewService.getBusinessRating(any()))
-                    .thenReturn(ReviewService.RatingSummary.empty());
             when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
 
             service.updateStatus(42L, OWNER_ID, ListingStatus.PAUSED);

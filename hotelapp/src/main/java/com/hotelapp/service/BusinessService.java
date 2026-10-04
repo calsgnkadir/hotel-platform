@@ -27,7 +27,6 @@ public class BusinessService {
     private final BusinessRepository businessRepository;
     private final BusinessPhotoRepository businessPhotoRepository;
     private final FileStorageService fileStorageService;
-    private final ReviewService reviewService;
 
     // Maksimum galeri foto sayısı per işletme
     private static final int MAX_GALLERY_PHOTOS = 10;
@@ -281,7 +280,6 @@ public class BusinessService {
     // Mapping
     // ----------------------------------------------------------------
     private BusinessDto toDto(Business b) {
-        var rating = reviewService.getBusinessRating(b.getId());
         return BusinessDto.builder()
                 .id(b.getId())
                 .name(b.getName())
@@ -307,8 +305,6 @@ public class BusinessService {
                         .findByBusinessIdAndIsCoverTrue(b.getId())
                         .map(p -> fileStorageService.publicUrl(p.getFilePath()))
                         .orElse(null))
-                .averageRating(rating.getAverageRating())
-                .reviewCount(rating.getReviewCount())
                 .verified(b.getVerifiedAt() != null)  // FAZ G.3
                 .build();
     }
@@ -339,9 +335,6 @@ public class BusinessService {
         private String logoUrl;
         /** #86: Kapak fotoğrafı URL'i — kartlarda preview için. */
         private String coverPhotoUrl;
-        // R3
-        private Double averageRating;  // null = yorum yok
-        private Long reviewCount;
         // FAZ G.3 — KYC onayli isletme rozeti
         private Boolean verified;
     }

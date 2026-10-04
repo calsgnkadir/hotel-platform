@@ -30,7 +30,6 @@ import java.util.*;
  *   - 10 aday (farklı yaş, ilçe, pozisyon tercihi)
  *   - ~15 aktif ilan
  *   - ~60 başvuru (PENDING/REVIEWING/ACCEPTED/REJECTED gerçekçi dağılım)
- *   - ~15 review (4-5 yıldız ağırlıklı)
  *   - 4 sohbet + birkaç mesaj
  */
 @Component
@@ -47,7 +46,6 @@ public class DemoSeeder implements CommandLineRunner {
     private final JobListingRepository jobListingRepository;
     private final ShiftSlotRepository shiftSlotRepository;
     private final ApplicationRepository applicationRepository;
-    private final ReviewRepository reviewRepository;
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final PasswordEncoder passwordEncoder;
@@ -266,30 +264,7 @@ public class DemoSeeder implements CommandLineRunner {
             }
         }
 
-        // ── 5) Yorumlar (ACCEPTED + slot tarihi geçmiş olanların ~%70'i) ──
-        int reviewCount = 0;
-        for (Application app : allApps) {
-            if (app.getStatus() != ApplicationStatus.ACCEPTED) continue;
-            // Slot tarihi geçmiş mi?
-            boolean past = app.getRequestedSlots().stream()
-                    .map(ShiftSlot::getDate)
-                    .allMatch(d -> d.isBefore(LocalDate.now()));
-            if (!past) continue;
-            if (random.nextDouble() > 0.70) continue;  // %30'u henüz puanlamadı
-
-            int rating = 3 + random.nextInt(3);  // 3-5 yıldız ağırlıklı
-            Review rev = Review.builder()
-                    .application(app)
-                    .byRole("CANDIDATE")
-                    .rating(rating)
-                    .comment("Demo yorum: deneyimim güzeldi. " + rating + " yıldız.")
-                    .createdAt(LocalDateTime.now().minusDays(random.nextInt(20)))
-                    .build();
-            reviewRepository.save(rev);
-            reviewCount++;
-        }
-
-        // ── 6) Sohbetler + mesajlar (4 örnek) ────────────────
+        // ── 5) Sohbetler + mesajlar (4 örnek) ────────────────
         int chatCount = 0;
         for (int i = 0; i < Math.min(4, allApps.size()); i++) {
             Application app = allApps.get(i);
@@ -334,9 +309,9 @@ public class DemoSeeder implements CommandLineRunner {
             chatCount++;
         }
 
-        log.info("[DEMO-SEED] ✓ {} aday, {} işletme, {} ilan, {} başvuru, {} yorum, {} sohbet",
+        log.info("[DEMO-SEED] ✓ {} aday, {} işletme, {} ilan, {} başvuru, {} sohbet",
                 candidates.size(), businesses.size(), listings.size(),
-                allApps.size(), reviewCount, chatCount);
+                allApps.size(), chatCount);
         log.info("[DEMO-SEED] Giriş: demo-aday1@test.com / demo-isletme1@test.com — şifre: {}",
                 DEMO_PASSWORD_RAW);
     }

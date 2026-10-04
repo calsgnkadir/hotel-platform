@@ -32,10 +32,8 @@ public class ApplicationResponse {
     private LocalDateTime standbyDeadline;
     /** FAZ C.1: Aktif bir acil teklif var mı (aday ekranında geri sayım gösterilir). */
     private boolean standbyOfferActive;
-    /** R5: tüm vardiyalar geçmişte mi (puanlanabilir mi) */
+    /** R5: tüm vardiyalar geçmişte mi (geçmiş işler listesi) */
     private boolean workCompleted;
-    /** #78: Aday bu başvuru için işletmeye puan verdi mi? */
-    private boolean candidateReviewedBusiness;
 
     private CandidateSummary candidate;
     private ListingSummary listing;

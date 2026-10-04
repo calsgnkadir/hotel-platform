@@ -10,7 +10,6 @@ import com.hotelapp.enums.Position;
 import com.hotelapp.enums.Role;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.ApplicationRepository;
-import com.hotelapp.repository.ReviewRepository;
 import com.hotelapp.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
 import java.time.LocalDate;
@@ -36,7 +35,6 @@ public class CandidateProfileService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final ApplicationRepository applicationRepository;
-    private final ReviewRepository reviewRepository;
     private final ProfileViewService profileViewService;
 
     // ----------------------------------------------------------------
@@ -199,15 +197,6 @@ public class CandidateProfileService {
                 .countByCandidateIdAndStatusAndNoShowFalse(candidateId, ApplicationStatus.ACCEPTED);
         long noShows = applicationRepository.countByCandidateIdAndNoShowTrue(candidateId);
 
-        // Aday'in aldigi rating'ler (isletme -> aday)
-        Object[] ratingAgg = reviewRepository.aggregateForCandidate(candidateId);
-        Double avgRating = null;
-        Long reviewCount = 0L;
-        if (ratingAgg != null && ratingAgg.length >= 2 && ratingAgg[1] != null) {
-            avgRating  = ratingAgg[0] != null ? ((Number) ratingAgg[0]).doubleValue() : null;
-            reviewCount = ((Number) ratingAgg[1]).longValue();
-        }
-
         return PublicCandidateProfileDto.builder()
                 .id(candidate.getId())
                 .fullName(candidate.getFullName())
@@ -227,8 +216,6 @@ public class CandidateProfileService {
                 .hasLicense(candidate.getHasLicense())
                 .completedJobs(completedJobs)
                 .noShowCount(noShows)
-                .averageRating(avgRating)
-                .reviewCount(reviewCount)
                 .memberSince(candidate.getCreatedAt())
                 // Hassas alanlar — sadece yetkili viewer icin doldur, aksi takdirde null
                 .email(canSeeSensitive ? candidate.getEmail() : null)
@@ -239,7 +226,6 @@ public class CandidateProfileService {
                 .sensitiveUnlocked(canSeeSensitive)
                 // Dalga H2 — herkese acik (LinkedIn Open to Work gibi)
                 .isAvailable(candidate.getIsAvailable())
-                // Dalga I3 — CV URL (sadece kabul edilmis isletme indirir)
                 .build();
     }
 
@@ -300,8 +286,6 @@ public class CandidateProfileService {
         // Guvenilirlik metrikleri
         private Long    completedJobs;    // kabul + no-show degil
         private Long    noShowCount;
-        private Double  averageRating;
-        private Long    reviewCount;
 
         private LocalDateTime memberSince;
 

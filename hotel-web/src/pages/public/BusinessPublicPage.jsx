@@ -18,7 +18,7 @@ const MapView = lazy(() => import('../../components/MapView'))
  * Route: /p/business/:id
  * - Login gerektirmez
  * - SEO meta tags: document.title + og:title + og:image + description
- * - Logo + gallery + ortalama puan + ilanlar + harita + iletisim
+ * - Logo + gallery + ilanlar + harita + iletisim
  */
 
 const TYPE_LABELS = {
@@ -263,7 +263,7 @@ export default function BusinessPublicPage() {
         </header>
 
         <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-          {/* HERO — grafit band + logo + name + location + rating */}
+          {/* HERO — grafit band + logo + name + location */}
           <section className="tier-raised !p-0 overflow-hidden">
             <div className="relative h-28" style={{ background: 'var(--ah-brand-gradient)' }}>
               <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-15"

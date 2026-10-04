@@ -49,8 +49,8 @@ export default function TermsPage() {
           </Section>
 
           <Section title="2. Hizmetin Kapsamı">
-            Platform, hospitality sektöründeki iş ilanı, başvuru, vardiya yönetimi, mesajlaşma ve
-            puanlama hizmetlerini sunar. Platform <strong>aracı</strong> konumundadır — iş ilişkisi
+            Platform, hospitality sektöründeki iş ilanı, başvuru, vardiya yönetimi, giriş-çıkış
+            kaydı ve mesajlaşma hizmetlerini sunar. Platform <strong>aracı</strong> konumundadır — iş ilişkisi
             doğrudan aday ile işletme arasında kurulur. Çalışan ücreti, vergi yükümlülükleri ve SGK
             sorumluluğu işletmeye aittir.
           </Section>

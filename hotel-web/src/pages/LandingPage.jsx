@@ -5,13 +5,13 @@ import AuthModal from '../components/AuthModal'
 /**
  * Landing v4 — FAZ A.1 (acik + teal, kurumsal).
  *
- * Eski v3 "editorial dark luxe" (DarkVeil WebGL, RotatingText, LandingPulse,
- * altin glow) BIRAKILDI: animasyon yok, koyu zemin yok, emoji yok.
+ * Animasyon yok, koyu zemin yok, emoji yok.
  *
  * Konumlandirma (kullanici vizyonu): "internetteki ajans" —
  * isletme ajansa komisyon odemez, calisan kazancinin tamamini alir.
  * Guven blogu urunun GERCEK ozelliklerini anlatir (GPS giris-cikis,
- * cift yonlu puan, belge cuzdani) — uydurma istatistik yok.
+ * kisisel giris karti, Excel ekip listesi) — uydurma istatistik yok.
+ * Puanlama ve uygulama ici belge sistemi yok; burada da anlatilmaz.
  */
 
 const POSITIONS = ['Garson', 'Komi', 'Bulaşıkçı', 'Resepsiyon', 'Kat Hizmetleri', 'Mutfak Personeli', 'Bellboy', 'Güvenlik']
@@ -99,7 +99,7 @@ export default function LandingPage() {
 
             {/* Guven satiri — urunun gercek ozellikleri */}
             <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
-              {['GPS doğrulamalı giriş-çıkış', 'Çift yönlü puanlama', 'KVKK uyumlu belge cüzdanı'].map(label => (
+              {['GPS doğrulamalı giriş-çıkış', 'Kişisel giriş kartı', 'Excel ekip listesi'].map(label => (
                 <span key={label} className="flex items-center gap-1.5">
                   <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="var(--ah-ok)"
                        strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -119,7 +119,7 @@ export default function LandingPage() {
                       style={{ background: 'var(--ah-brand)' }}>K</span>
                 <div className="min-w-0">
                   <div className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Karaköy Kıyı Restoran</div>
-                  <div className="text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>Beyoğlu · 4.6 puan · 38 vardiya tamamlandı</div>
+                  <div className="text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>Beyoğlu · 38 vardiya tamamlandı</div>
                 </div>
               </div>
               <div className="p-4 space-y-2">
@@ -155,17 +155,17 @@ export default function LandingPage() {
           <StepsCard
             title="Çalışan"
             steps={[
-              ['Profilini oluştur', 'Deneyimini, belgelerini ve çalışmak istediğin pozisyonları ekle.'],
+              ['Profilini oluştur', 'Deneyimini ve çalışmak istediğin pozisyonları ekle.'],
               ['Vardiyaya başvur', 'İlana değil, çalışabileceğin spesifik vardiya gün ve saatine başvurursun.'],
-              ['Çalış, kazan, puanla', 'GPS ile giriş-çıkış yap; kazancın kayıt altında, işletmeyi sen de puanla.'],
+              ['Çalış, kazan', 'Kapıda kişisel giriş kartını okut ya da GPS ile giriş-çıkış yap; çalıştığın her vardiya kayıt altında.'],
             ]}
           />
           <StepsCard
             title="İşletme"
             steps={[
               ['Vardiya ilanı ver', 'Pozisyon, gün, saat ve ücreti belirt — dakikalar içinde yayında.'],
-              ['Adayı seç', 'Başvuranların geçmiş vardiya sayısını ve aldıkları puanı gör.'],
-              ['Takip et', 'Giriş-çıkış GPS kaydıyla doğrulanır; vardiya sonunda çalışanı değerlendir.'],
+              ['Adayı seç', 'Başvuranların tamamladığı vardiya sayısını ve gelmediği vardiyaları gör.'],
+              ['Takip et', 'Görevlin giriş kartını okutur, giriş saati yazılır; ekip listesi Excel olarak e-postana gelir.'],
             ]}
           />
         </div>
@@ -203,9 +203,9 @@ export default function LandingPage() {
               text="Giriş ve çıkış, işyerine uzaklıkla birlikte kayda geçer. Kim, ne zaman, nerede — tartışma değil, kayıt konuşur."
             />
             <WhyCard
-              iconPath="M11.48 3.5a.56.56 0 0 1 1.04 0l2.13 5.11 5.52.44a.56.56 0 0 1 .32.99l-4.2 3.6 1.28 5.38a.56.56 0 0 1-.84.61L12 16.73l-4.73 2.9a.56.56 0 0 1-.84-.61l1.28-5.39-4.2-3.6a.56.56 0 0 1 .32-.98l5.52-.44 2.13-5.12Z"
-              title="Çift yönlü puanlama"
-              text="Sadece işletme adayı değil, çalışan da işletmeyi puanlar. Vardiyaya gelmeyenin de ücret geciktirenin de sicili görünür."
+              iconPath="M4 4h6v6H4ZM14 4h6v6h-6ZM4 14h6v6H4ZM14 14h2v2h-2ZM18 18h2v2h-2ZM14 18h2M18 14h2"
+              title="Kapıda tek okutma"
+              text="Her çalışanın kişisel, tek kullanımlık giriş kartı var. Görevli okutur, giriş saati yazılır; aynı kart ikinci kez geçmez."
             />
             <WhyCard
               iconPath="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"

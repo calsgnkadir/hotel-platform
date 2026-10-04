@@ -689,7 +689,6 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         <div className="ah-job__hd">
           <div className="ah-job__title">{position}</div>
           {/* FAZ B.5.4 — Tek meta satiri: isletme · ilce · mesafe.
-              (puan/yildiz kaldirildi — kullanici istegi.)
               Ayiraclar CSS'ten (.ah-job__meta > * + *::before) gelir. */}
           <div className="ah-job__meta">
             <span className="ah-job__co-name">{listing.businessName}</span>
@@ -752,9 +751,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         </div>
       </div>
 
-      {/* FAZ B.2 — Isletme guven satiri: dogrulama + tamamlanan is sayisi.
-          FAZ B.5.4 — Puan buradan CIKARILDI, meta satirina tasindi; iki yerde
-          birden gorunmesin. Burada kalanlar puanin anlatmadigi kanitlar. */}
+      {/* FAZ B.2 — Isletme guven satiri: dogrulama + tamamlanan is sayisi. */}
       {(listing.businessVerified || listing.businessWorkerCount > 0) && (
         <div className="ah-job__trust">
           {listing.businessVerified && (
