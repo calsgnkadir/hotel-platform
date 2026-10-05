@@ -95,12 +95,13 @@ api.interceptors.request.use(async (config) => {
 
   if (token) config.headers.Authorization = `Bearer ${token}`
 
-  // FAZ 12 — Backend i18n: kullanicinin secili dilini (i18next localStorage 'lang')
-  // Accept-Language olarak gonder. Backend hata mesajlari bu dile gore doner.
+  // FAZ 12 — Backend i18n: kullanicinin secili dilini Accept-Language olarak gonder.
+  // Dil secimi localStorage 'lang'e yazilir (LanguageSwitcher). Kayit yoksa 'tr'
+  // gonderilir — boylece tarayicinin otomatik 'en-US' basligi devreye girmez ve
+  // backend hata mesajlari UI ile tutarli (Turkce) doner.
   try {
-    const lang = localStorage.getItem('lang')
-    if (lang) config.headers['Accept-Language'] = lang
-  } catch { /* localStorage yoksa sessiz */ }
+    config.headers['Accept-Language'] = localStorage.getItem('lang') || 'tr'
+  } catch { config.headers['Accept-Language'] = 'tr' }
 
   return config
 })
