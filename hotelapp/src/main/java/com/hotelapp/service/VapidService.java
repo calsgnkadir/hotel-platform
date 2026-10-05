@@ -26,7 +26,8 @@ import java.util.Base64;
  *  - public-key: 65-byte uncompressed (0x04 || X(32) || Y(32)), Base64URL-no-padding
  *  - private-key: 32-byte raw, Base64URL-no-padding
  *
- * Eger config'te bos ise startup'ta auto-generate + log basar (dev kullanim icin).
+ * Eger config'te bos ise startup'ta auto-generate eder (dev kullanim icin).
+ * Ozel anahtar loglanmaz.
  */
 // MANUEL JWT - jjwt aud array yapiyordu, FCM string istiyor.
 @Service
@@ -59,9 +60,7 @@ public class VapidService {
             this.privateKeyB64 = b64url(privBytes);
             log.warn("=================================================================");
             log.warn("FAZ 1/#23 — VAPID anahtarlari yok, AUTO-GENERATE edildi.");
-            log.warn("Prod icin env'e ekle (yoksa restart'ta abone uyumsuz olur):");
-            log.warn("  VAPID_PUBLIC_KEY={}",  this.publicKeyB64);
-            log.warn("  VAPID_PRIVATE_KEY={}", this.privateKeyB64);
+            log.warn("Prod icin kalici VAPID_PUBLIC_KEY ve VAPID_PRIVATE_KEY cifti yapilandirin; aksi halde restart sonrasi abonelikler gecersiz olur.");
             log.warn("=================================================================");
         }
 
