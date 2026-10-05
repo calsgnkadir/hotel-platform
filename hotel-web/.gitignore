@@ -6,3 +6,6 @@ dist
 *.log
 .vscode
 .idea
+# Playwright çıktıları
+test-results
+playwright-report

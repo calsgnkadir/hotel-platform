@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
 import * as authApi from '../api/auth'
-import api from '../api/client'
 import { wsConnect, wsDisconnect } from '../lib/websocket'
 import { presenceInit, presenceSubscribe, presenceUnsubscribe } from '../lib/presence'
 import { syncPushSubscription, getPushEndpoint } from '../lib/webpush'
@@ -53,16 +52,28 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
-    // F0.2: Backend'i bilgilendir refresh token DB'de revoke + cookie sil.
-    // Push adresi de gider: ortak cihazda bir sonraki kisiye bu kullanicinin
-    // bildirimi gitmesin (sunucu kullaniciyi refresh token'dan bulur).
-    const pushEndpoint = await getPushEndpoint()
-    try { await api.post('/api/auth/logout', pushEndpoint ? { pushEndpoint } : undefined) } catch { /* sessiz */ }
+    // Once bu cihazdaki oturum ANINDA kapanir: eskiden sunucu istegi bitene kadar
+    // token localStorage'da kaliyordu; o arada sayfa yenilenir/kapanirsa oturum acik kaliyordu.
     presenceUnsubscribe()
     wsDisconnect()
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)
+
+    // F0.2: Sunucu refresh token'i iptal eder + cookie'yi siler. Push adresi de gider:
+    // ortak cihazda bir sonraki kisiye bu kullanicinin bildirimi gitmesin (sunucu
+    // kullaniciyi refresh cookie'den bulur — access token gerekmez).
+    // keepalive: sayfa kapansa/yenilense de istek tamamlanir.
+    const pushEndpoint = await getPushEndpoint()
+    try {
+      await fetch((import.meta.env.VITE_API_URL || '') + '/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pushEndpoint ? { pushEndpoint } : {}),
+      })
+    } catch { /* sessiz: yerel oturum zaten kapandi */ }
   }
 
   function persist(authResponse) {

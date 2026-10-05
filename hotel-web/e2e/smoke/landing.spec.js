@@ -16,10 +16,16 @@ test.describe('Landing', () => {
     await expect(page).toHaveURL(/\/login/)
   })
 
-  test('Register linki tıklanabilir', async ({ page }) => {
+  test('Kayıt Ol: rol + e-posta seçilince kayıt formu hazır açılır', async ({ page }) => {
     await page.goto('/')
-    const registerLink = page.getByRole('link', { name: /kayıt|register|üye/i }).first()
-    await registerLink.click()
+    await page.getByRole('button', { name: 'Kayıt Ol' }).first().click()
+    const dialog = page.getByRole('dialog', { name: 'Hesap oluştur veya giriş yap' })
+    await expect(dialog).toBeVisible()
+    await dialog.getByText('İş arıyorum').click()
+    await dialog.getByPlaceholder('email@adresin.com').fill('yeni-aday@test.com')
+    await dialog.getByRole('button', { name: 'Email ile devam et' }).click()
+
     await expect(page).toHaveURL(/\/register/)
+    await expect(page.getByPlaceholder('ornek@email.com')).toHaveValue('yeni-aday@test.com')
   })
 })

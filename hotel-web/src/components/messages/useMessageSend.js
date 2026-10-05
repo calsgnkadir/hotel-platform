@@ -38,11 +38,14 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
 
   // Yeni mesajı cache'in başına ekle (optimistic update — anında UI'a yansır).
   // Backend page'i en yeniden eskiye sıralıyor: content[0] en yeni.
+  // Yarış: sunucunun WS bildirimi HTTP yanıtından önce gelip listeyi yeniden
+  // yükleyebilir; o zaman mesaj zaten listededir — ikinci kez eklenmez.
   function appendMsg(msg) {
     if (!convId) return
     queryClient.setQueryData(keys.conversations.messages(convId), (old) => {
       if (!old) return { content: [msg] }
-      return { ...old, content: [msg, ...old.content] }
+      if (msg?.id != null && old.content?.some(m => m.id === msg.id)) return old
+      return { ...old, content: [msg, ...(old.content || [])] }
     })
   }
 

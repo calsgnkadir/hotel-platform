@@ -66,6 +66,21 @@ describe('useMessageSend (FAZ 20)', () => {
     expect(readQueue()).toEqual([])
   })
 
+  it('WS yenilemesi mesaji zaten getirdiyse ikinci kez eklenmez (cift balon yok)', async () => {
+    const msg = { id: 101, content: 'Merhaba' }
+    let resolveSend
+    hotelApi.sendMessage.mockReturnValue(new Promise(r => { resolveSend = r }))
+    const { result, qc } = setup()
+
+    let pending
+    act(() => { pending = result.current.sendText('Merhaba', null) })
+    // HTTP yanıtı gelmeden WS bildirimi listeyi sunucudan yeniledi
+    qc.setQueryData(keys.conversations.messages(7), { content: [msg, { id: 100, content: 'eski' }] })
+    await act(async () => { resolveSend(msg); await pending })
+
+    expect(qc.getQueryData(keys.conversations.messages(7)).content.map(m => m.id)).toEqual([101, 100])
+  })
+
   it('AG hatasinda "queued" doner ve mesaj kuyruga yazilir — kaybolmaz', async () => {
     hotelApi.sendMessage.mockRejectedValue(networkError())
     const { result, onMessageSent } = setup()

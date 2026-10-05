@@ -36,7 +36,22 @@ class MessagesTest {
     void turkishResolution() {
         LocaleContextHolder.setLocale(Locale.forLanguageTag("tr"));
         String msg = buildMessages().get("error.application.notOwner");
-        assertThat(msg).isEqualTo("Bu basvuru size ait degil");
+        assertThat(msg).isEqualTo("Bu başvuru size ait değil");
+    }
+
+    @Test
+    @DisplayName("TR: tırnaklı argümanlı mesajda {0} doldurulur (HOLD''a)")
+    void turkishApostropheWithArgs() {
+        LocaleContextHolder.setLocale(Locale.forLanguageTag("tr"));
+        String msg = buildMessages().get("error.application.holdOnlyPending", "ACCEPTED");
+        assertThat(msg).isEqualTo("Yalnızca bekleyen veya incelenen başvuru HOLD'a alınabilir. Mevcut durum: ACCEPTED");
+    }
+
+    @Test
+    @DisplayName("TR: giriş hatası düzgün Türkçe")
+    void turkishBadCredentials() {
+        LocaleContextHolder.setLocale(Locale.forLanguageTag("tr"));
+        assertThat(buildMessages().get("error.badCredentials")).isEqualTo("E-posta veya şifre hatalı");
     }
 
     @Test

@@ -39,7 +39,8 @@ test.describe('Register wizard', () => {
   test('Isletme rolu secildiyse step 2 rozetinde Isletme Sahibi', async ({ page }) => {
     await page.goto('/register')
     await page.getByText(/eleman arıyorum/i).click()
-    await expect(page.getByText(/isletme sahibi|işletme sahibi/i).first()).toBeVisible()
+    // Not: JS regex /i, "İ" ile "i"yi eşleştirmez — Türkçe metin birebir aranır
+    await expect(page.getByText('İşletme Sahibi').first()).toBeVisible()
   })
 
   test('Girise Don linki /login gider', async ({ page }) => {

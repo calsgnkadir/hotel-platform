@@ -154,8 +154,9 @@ app:
           timeoutDuration: 10s
 
   # FAZ 1/#23 — Web Push (VAPID) — Pure Java, BouncyCastle YOK.
-  # Key'ler bos ise startup'ta auto-generate edilir + log'a basilir (dev icin).
-  # Prod: env vars ile set et (key'leri kaybetme — yeniden uretirsen abone uyumsuz olur).
+  # Key'ler bos ise startup'ta gecici cift uretilir (dev icin; ozel anahtar loglanmaz).
+  # Prod: env vars ZORUNLU (yoksa acilmaz); key'leri kaybetme — yeniden uretirsen abone uyumsuz olur.
+  # Uretim: docs/DEPLOY_RENDER.md → "Bildirim anahtarlari".
   push:
     vapid:
       public-key:  ${VAPID_PUBLIC_KEY:}     # 65-byte uncompressed, Base64URL no-padding

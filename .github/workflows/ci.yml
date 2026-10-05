@@ -31,7 +31,7 @@ jobs:
           cache: maven
 
       # Testler H2 in-memory (application-test.yml, @ActiveProfiles("test"))
-      # kullaniyor — CI'da MySQL servisi GEREKMIYOR. 259 unit + 4 entegrasyon testi.
+      # kullaniyor — bu job'da MySQL servisi GEREKMIYOR (gercek MySQL: e2e job'u).
       - name: Build & test
         run: mvn -B -ntp verify
 
@@ -59,3 +59,92 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  e2e:
+    name: E2E (Playwright · gerçek MySQL + backend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root-only
+          MYSQL_DATABASE: hotel_db
+          MYSQL_USER: hotel
+          MYSQL_PASSWORD: ci-test-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build backend jar
+        working-directory: hotelapp
+        run: mvn -B -ntp -DskipTests package
+
+      # dev,demo: Flyway V1→son sürüm gerçek MySQL'de + demo verisi. Tüm değerler test amaçlı.
+      # Rate limit kapalı: akış testi kısa sürede birkaç kez giriş yapıyor.
+      - name: Start backend
+        working-directory: hotelapp
+        env:
+          SPRING_PROFILES_ACTIVE: dev,demo
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_NAME: hotel_db
+          DB_USERNAME: hotel
+          DB_PASSWORD: ci-test-only
+          JPA_DDL_AUTO: validate
+          CLOUDINARY_URL: cloudinary://test:test@test
+          GOOGLE_CLIENT_ID: ci-test
+          GOOGLE_CLIENT_SECRET: ci-test
+          APP_RATELIMIT_ENABLED: 'false'
+        run: |
+          JAR=$(ls target/*.jar | grep -v original | head -1)
+          nohup java -jar "$JAR" > ../backend.log 2>&1 &
+          for i in $(seq 1 90); do
+            if grep -q "DEMO-SEED\] ✓" ../backend.log; then echo "Backend hazır"; exit 0; fi
+            if grep -q "Application run failed" ../backend.log; then cat ../backend.log; exit 1; fi
+            sleep 3
+          done
+          echo "Backend zamanında açılmadı"; tail -100 ../backend.log; exit 1
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: hotel-web/package-lock.json
+
+      - name: Install
+        working-directory: hotel-web
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: hotel-web
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright
+        working-directory: hotel-web
+        env:
+          E2E_BACKEND: '1'
+        run: npx playwright test
+
+      - name: Upload report and backend log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            hotel-web/playwright-report
+            hotel-web/test-results
+            backend.log
+          retention-days: 7
