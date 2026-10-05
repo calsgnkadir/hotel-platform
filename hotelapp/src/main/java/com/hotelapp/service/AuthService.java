@@ -40,6 +40,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;  // F0.2
+    private final PushSubscriptionService pushSubscriptionService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -144,10 +145,16 @@ public class AuthService {
                 .build();
     }
 
-    /** F0.2 — Logout: refresh token revoke */
+    /**
+     * F0.2 — Logout: refresh token revoke.
+     * Tarayıcının push adresi geldiyse o cihazdaki abonelik bu kullanıcıdan koparılır
+     * (ortak telefonda bir sonraki kişiye bildirim gitmesin). Kullanıcı refresh
+     * token'dan bulunur; erişim token'ının süresi dolmuş olsa da çalışır.
+     */
     @Transactional
-    public void logout(String rawRefreshToken) {
-        refreshTokenService.revoke(rawRefreshToken);
+    public void logout(String rawRefreshToken, String pushEndpoint) {
+        refreshTokenService.revoke(rawRefreshToken)
+                .ifPresent(userId -> pushSubscriptionService.unsubscribe(userId, pushEndpoint));
     }
 
     /**

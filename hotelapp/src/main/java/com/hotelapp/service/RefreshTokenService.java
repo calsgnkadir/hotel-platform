@@ -96,12 +96,18 @@ public class RefreshTokenService {
         return new RotationResult(token.getUser(), newRawToken);
     }
 
+    /**
+     * Token'ı iptal eder. Henüz iptal edilmemiş geçerli bir token idiyse sahibinin
+     * id'sini döner (çıkışta o kullanıcıya ait push aboneliğini koparmak için).
+     */
     @Transactional
-    public void revoke(String rawToken) {
-        if (rawToken == null || rawToken.isBlank()) return;
-        repo.findByTokenHash(sha256(rawToken)).ifPresent(t -> {
+    public java.util.Optional<Long> revoke(String rawToken) {
+        if (rawToken == null || rawToken.isBlank()) return java.util.Optional.empty();
+        return repo.findByTokenHash(sha256(rawToken)).map(t -> {
+            boolean wasValid = t.isValid();
             t.setRevoked(true);
             repo.save(t);
+            return wasValid ? t.getUser().getId() : null;
         });
     }
 

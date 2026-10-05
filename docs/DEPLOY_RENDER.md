@@ -54,14 +54,35 @@ bir veritabanı, ayrı DB kullanıcısı ve gerçek Cloudinary/e-posta/ödeme an
 1. <https://dashboard.render.com> → **GitHub ile kaydol** (kart istemez).
 2. **New → Blueprint** → bu repoyu seç → Render `render.yaml`'ı okur, iki servisi
    (`kadrom-api`, `kadrom-web`) listeler.
-3. Sorulan 4 değeri Aiven'dan gir: `DB_HOST`, `DB_PORT`, `DB_USERNAME`,
-   `DB_PASSWORD`. `JWT_SECRET` ve `APP_ENCRYPTION_KEY`'i Render kendisi üretir.
+3. Sorulan değerleri gir:
+   - Aiven'dan 4 değer: `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`.
+   - Bildirim anahtarları: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (aşağıdaki
+     "Bildirim anahtarları" bölümü).
+   `JWT_SECRET` ve `APP_ENCRYPTION_KEY`'i Render kendisi üretir.
 4. **Apply**. `kadrom-web` birkaç dakikada, `kadrom-api` build + ~6 dk açılışla
    hazır olur. Logda şunları gör:
-   - `Successfully applied ... now at version v15`
+   - `Successfully applied ... now at version v19`
    - `[JWT-GUARD] prod profili + guclu JWT_SECRET — OK`
    - `Started HotelStudentPlatformApplication`
    - `[DEMO-SEED] ✓ 10 aday, 6 işletme, 15 ilan ...` (vitrin: `prod,showcase`)
+
+### Bildirim anahtarları (VAPID)
+
+Push bildirimleri bir anahtar çiftiyle imzalanır. Çift **bir kez** üretilir ve
+hep aynı kalır; değişirse herkesin bildirim kaydı geçersiz olur.
+
+1. Kendi bilgisayarında (Node yüklü) şunu çalıştır:
+
+   ```bash
+   node -e "const c=require('crypto');const k=c.generateKeyPairSync('ec',{namedCurve:'prime256v1'});const p=k.publicKey.export({format:'jwk'});const s=k.privateKey.export({format:'jwk'});const b=x=>Buffer.from(x,'base64url');console.log('VAPID_PUBLIC_KEY='+Buffer.concat([Buffer.from([4]),b(p.x),b(p.y)]).toString('base64url'));console.log('VAPID_PRIVATE_KEY='+s.d)"
+   ```
+
+2. Çıkan iki satırı Render → `kadrom-api` → **Environment**'a gir.
+3. Özel anahtarı (`VAPID_PRIVATE_KEY`) kimseyle paylaşma, repoya veya sohbete
+   yapıştırma; bir parola yöneticisinde sakla.
+
+Vitrinde (`prod,showcase`) boş bırakılırsa uygulama açılır ama her yeniden
+başlatmada abonelikler bozulur. Gerçek üründe (`prod`) boşsa sunucu **açılmaz**.
 
 ## 3. Domain — Namecheap DNS
 

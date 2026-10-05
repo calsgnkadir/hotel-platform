@@ -85,6 +85,13 @@ services:
         value: dummy-client-secret
       - key: RESEND_API_KEY
         value: test-key
+      # Push bildirimleri: kalici anahtar cifti (docs/DEPLOY_RENDER.md → "Bildirim anahtarlari").
+      # Bossa vitrin acilir ama her restart'ta abonelikler gecersiz olur;
+      # gercek urunde (prod, showcase'siz) bos birakilirsa sunucu acilmaz.
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
 
   - type: web
     name: kadrom-web

@@ -101,14 +101,14 @@ public class CandidateProfileService {
         User user = userRepository.findById(candidateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", candidateId));
 
-        // Eski avatar varsa Cloudinary'den sil
-        if (user.getAvatarPath() != null) {
-            fileStorageService.delete(user.getAvatarPath());
-        }
-
+        // Önce yeni fotoğraf yüklenir; eskisi ancak kayıt başarılı olunca silinir.
+        // Yükleme düşerse eski fotoğraf yerinde kalır.
+        String oldRef = user.getAvatarPath();
         String ref = fileStorageService.storeAvatar(file, candidateId);
+        fileStorageService.deleteOnRollback(ref);
         user.setAvatarPath(ref);
         userRepository.save(user);
+        fileStorageService.deleteAfterCommit(oldRef);
         return toDto(user);
     }
 
@@ -117,7 +117,7 @@ public class CandidateProfileService {
         User user = userRepository.findById(candidateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", candidateId));
         if (user.getAvatarPath() != null) {
-            fileStorageService.delete(user.getAvatarPath());
+            fileStorageService.deleteAfterCommit(user.getAvatarPath());
             user.setAvatarPath(null);
             userRepository.save(user);
         }

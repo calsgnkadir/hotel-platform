@@ -1,10 +1,8 @@
 package com.hotelapp.controller;
 
-import com.hotelapp.entity.PushSubscription;
-import com.hotelapp.repository.PushSubscriptionRepository;
 import com.hotelapp.security.UserPrincipal;
+import com.hotelapp.service.PushSubscriptionService;
 import com.hotelapp.service.VapidService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -24,7 +22,7 @@ import java.util.Map;
 public class PushController {
 
     private final VapidService vapidService;
-    private final PushSubscriptionRepository repo;
+    private final PushSubscriptionService subscriptionService;
 
     /** Public — frontend tarayicidan subscribe ederken bu key'i kullanir. */
     @GetMapping("/vapid-public-key")
@@ -32,41 +30,25 @@ public class PushController {
         return Map.of("publicKey", vapidService.getPublicKey());
     }
 
-    /** Yeni abonelik kaydet (ayni endpoint varsa update). */
+    /** Yeni abonelik kaydet (ayni endpoint varsa bu kullaniciya gecer). */
     @PostMapping("/subscribe")
-    @Transactional
     public ResponseEntity<Void> subscribe(@AuthenticationPrincipal UserPrincipal currentUser,
                                           @Valid @RequestBody SubscriptionDto body) {
         if (currentUser == null) {
             return ResponseEntity.badRequest().build();
         }
-        // Ayni tarayici baska bir hesapla girerse kayit yeni kullaniciya gecer
-        // (ortak cihazda bildirim eski kullaniciya gitmesin).
-        PushSubscription sub = repo.findByEndpoint(body.endpoint)
-                .orElseGet(() -> PushSubscription.builder()
-                        .endpoint(body.endpoint)
-                        .build());
-        sub.setUser(currentUser.getUser());
-        sub.setP256dh(body.p256dhKey());
-        sub.setAuthSecret(body.authKey());
-        repo.save(sub);
+        subscriptionService.subscribe(currentUser.getUser(), body.endpoint, body.p256dhKey(), body.authKey());
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Aboneligi sil: kullanici bildirimi kapatinca veya cikis yapinca.
-     * Sadece kendi kaydini silebilir.
-     */
+    /** Aboneligi sil (kullanici bildirimi kapatinca). Sadece kendi kaydini silebilir. */
     @PostMapping("/unsubscribe")
-    @Transactional
     public ResponseEntity<Void> unsubscribe(@AuthenticationPrincipal UserPrincipal currentUser,
                                             @Valid @RequestBody SubscriptionDto body) {
         if (currentUser == null) {
             return ResponseEntity.badRequest().build();
         }
-        repo.findByEndpoint(body.endpoint)
-                .filter(s -> s.getUser().getId().equals(currentUser.getId()))
-                .ifPresent(repo::delete);
+        subscriptionService.unsubscribe(currentUser.getId(), body.endpoint);
         return ResponseEntity.noContent().build();
     }
 

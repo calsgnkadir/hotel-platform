@@ -61,7 +61,27 @@ class WebPushServiceTest {
         org.springframework.test.util.ReflectionTestUtils.setField(vapid, "subject", "mailto:test@kadrom.local");
         vapid.init();  // anahtar yok → test için üretir
         repo = mock(PushSubscriptionRepository.class);
-        service = new WebPushService(vapid, repo, new ObjectMapper());
+        // Sahte push sunucusu yerel adreste; testte politika her adrese izin verir
+        PushEndpointPolicy allowAll = new PushEndpointPolicy() {
+            @Override public boolean isAllowed(String endpoint) { return true; }
+        };
+        service = new WebPushService(vapid, repo, new ObjectMapper(), allowAll);
+    }
+
+    @Test
+    @DisplayName("Izinli servis olmayan adrese istek atilmaz, kayit silinir (SSRF)")
+    void disallowedEndpoint_notContacted_andDeleted() throws Exception {
+        VapidService vapid = new VapidService();
+        org.springframework.test.util.ReflectionTestUtils.setField(vapid, "subject", "mailto:test@kadrom.local");
+        vapid.init();
+        WebPushService strict = new WebPushService(vapid, repo, new ObjectMapper(), new PushEndpointPolicy());
+        PushSubscription sub = PushSubscription.builder().endpoint(endpoint()).build();
+        when(repo.findAllByUserId(7L)).thenReturn(List.of(sub));
+
+        strict.doSend(7L, new WebPushService.PushMessage("T", "M", "/", 1L));
+
+        assertThat(received).isEmpty();
+        verify(repo).delete(sub);
     }
 
     @AfterEach

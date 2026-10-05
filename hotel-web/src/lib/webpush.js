@@ -11,8 +11,8 @@
  * Izin sadece giris yapmis kullaniciya, anlamli bir anda sorulur
  * (requestPushMoment — ilk basvuru / ilk ilan). Girişte izin zaten varsa
  * abonelik sessizce bu kullaniciya baglanir (syncPushSubscription); cikista
- * sunucudan koparilir (detachPushFromServer) ki ortak cihazda baskasinin
- * bildirimi gelmesin.
+ * sunucudan koparilir (getPushEndpoint → /api/auth/logout) ki ortak cihazda
+ * baskasinin bildirimi gelmesin.
  */
 import api from '../api/client'
 
@@ -133,14 +133,20 @@ export async function syncPushSubscription() {
   }
 }
 
-/** Cikista: tarayici aboneligi kalir, sadece sunucudaki bu kullanici kaydi silinir. */
-export async function detachPushFromServer() {
-  if (!SUPPORTED) return
+/**
+ * Cikista sunucuya bu tarayicinin push adresi gonderilir; sunucu kaydi bu
+ * kullanicidan koparir (refresh token'dan bulur — erisim token'i dolmus olsa da).
+ * Tarayici aboneligi kalir; ayni cihazda biri girince ona baglanir.
+ */
+export async function getPushEndpoint() {
+  if (!SUPPORTED) return null
   try {
     const reg = await navigator.serviceWorker.getRegistration('/service-worker.js')
     const sub = await reg?.pushManager.getSubscription()
-    if (sub) await api.post('/api/push/unsubscribe', { endpoint: sub.endpoint })
-  } catch { /* sessiz: cikisi engellemesin */ }
+    return sub?.endpoint || null
+  } catch {
+    return null
+  }
 }
 
 export async function isSubscribed() {

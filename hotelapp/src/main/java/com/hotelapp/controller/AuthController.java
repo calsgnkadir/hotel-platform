@@ -89,9 +89,11 @@ public class AuthController {
     @Operation(summary = "Çıkış yap (refresh token iptal eder)")
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout(HttpServletRequest request,
-                                                       HttpServletResponse response) {
+                                                       HttpServletResponse response,
+                                                       @RequestBody(required = false) Map<String, String> body) {
         String rawRefreshToken = readRefreshCookie(request);
-        if (rawRefreshToken != null) authService.logout(rawRefreshToken);
+        String pushEndpoint = body != null ? body.get("pushEndpoint") : null;
+        if (rawRefreshToken != null) authService.logout(rawRefreshToken, pushEndpoint);
         clearRefreshCookie(response);
         return ResponseEntity.ok(Map.of("message", "Çıkış yapıldı"));
     }

@@ -6,6 +6,8 @@ import com.hotelapp.exception.BusinessRuleException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -161,6 +163,33 @@ public class FileStorageService {
             // Silme hatası kritik değil
             log.warn("Cloudinary silinemedi: {} — {}", ref.publicId, e.getMessage());
         }
+    }
+
+    /**
+     * Dosyayı ancak veritabanı işlemi başarıyla kaydedilince siler (fotoğraf değiştirme /
+     * kaldırma). İşlem geri alınırsa dosya yerinde kalır; profil kırık görsele bakmaz.
+     * Aktif işlem yoksa hemen siler.
+     */
+    public void deleteAfterCommit(String storedRef) {
+        if (storedRef == null || storedRef.isBlank()) return;
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            delete(storedRef);
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() { delete(storedRef); }
+        });
+    }
+
+    /** Yeni yüklenen dosyayı, veritabanı işlemi geri alınırsa temizler (sahipsiz dosya kalmasın). */
+    public void deleteOnRollback(String storedRef) {
+        if (storedRef == null || storedRef.isBlank()
+                || !TransactionSynchronizationManager.isSynchronizationActive()) return;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCompletion(int status) {
+                if (status == STATUS_ROLLED_BACK) delete(storedRef);
+            }
+        });
     }
 
     // -----------------------------------------------------------------------

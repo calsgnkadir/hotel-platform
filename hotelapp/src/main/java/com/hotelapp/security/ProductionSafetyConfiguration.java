@@ -24,6 +24,13 @@ public class ProductionSafetyConfiguration {
             if (!"validate".equals(env.getProperty("spring.jpa.hibernate.ddl-auto"))) {
                 throw new IllegalStateException("PROD-SAFETY: production requires JPA_DDL_AUTO=validate; schema changes belong in Flyway.");
             }
+            // Kalici VAPID anahtari yoksa her restart'ta yenisi uretilir ve tum push
+            // abonelikleri gecersiz olur. Vitrin (showcase) demo oldugu icin muaf.
+            if (!env.acceptsProfiles(Profiles.of("showcase"))
+                    && (env.getProperty("app.push.vapid.public-key", "").isBlank()
+                        || env.getProperty("app.push.vapid.private-key", "").isBlank())) {
+                throw new IllegalStateException("PROD-SAFETY: set a persistent VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY pair; otherwise every restart invalidates all push subscriptions.");
+            }
         };
     }
 }

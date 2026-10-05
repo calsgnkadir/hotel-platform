@@ -162,10 +162,24 @@ class RefreshTokenServiceTest {
                 .revoked(false).build();
         when(repo.findByTokenHash(any())).thenReturn(Optional.of(t));
 
-        service.revoke("raw");
+        Optional<Long> owner = service.revoke("raw");
 
         assertThat(t.isRevoked()).isTrue();
         verify(repo).save(t);
+        // Cikista push aboneligini koparmak icin sahibi doner
+        assertThat(owner).contains(testUser.getId());
+    }
+
+    @Test
+    @DisplayName("revoke: zaten iptal edilmis token sahip dondurmez (cikis tekrarinda abonelik silinmez)")
+    void revoke_alreadyRevoked_returnsEmpty() {
+        RefreshToken t = RefreshToken.builder()
+                .user(testUser).tokenHash("h")
+                .expiresAt(LocalDateTime.now().plusDays(3))
+                .revoked(true).build();
+        when(repo.findByTokenHash(any())).thenReturn(Optional.of(t));
+
+        assertThat(service.revoke("raw")).isEmpty();
     }
 
     @Test

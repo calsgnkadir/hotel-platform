@@ -42,6 +42,7 @@ public class WebPushService {
     private final VapidService vapidService;
     private final PushSubscriptionRepository subscriptionRepository;
     private final ObjectMapper objectMapper;
+    private final PushEndpointPolicy endpointPolicy;
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
             .build();
@@ -58,6 +59,12 @@ public class WebPushService {
         byte[] payload = toJson(message);
         List<PushSubscription> subs = subscriptionRepository.findAllByUserId(userId);
         for (PushSubscription sub : subs) {
+            // Doğrulamadan önce kaydedilmiş adresler de istek atılmadan elenir (SSRF)
+            if (!endpointPolicy.isAllowed(sub.getEndpoint())) {
+                log.warn("Push adresi izinli servis degil, abonelik siliniyor: id={}", sub.getId());
+                subscriptionRepository.delete(sub);
+                continue;
+            }
             try {
                 int status = pushOne(sub, payload);
                 if (status == 404 || status == 410) {

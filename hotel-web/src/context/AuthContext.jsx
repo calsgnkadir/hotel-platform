@@ -4,7 +4,7 @@ import * as authApi from '../api/auth'
 import api from '../api/client'
 import { wsConnect, wsDisconnect } from '../lib/websocket'
 import { presenceInit, presenceSubscribe, presenceUnsubscribe } from '../lib/presence'
-import { syncPushSubscription, detachPushFromServer } from '../lib/webpush'
+import { syncPushSubscription, getPushEndpoint } from '../lib/webpush'
 
 const AuthContext = createContext(null)
 
@@ -53,11 +53,11 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
-    // Ortak cihazda bir sonraki kisiye bu kullanicinin bildirimi gitmesin
-    // (oturum hala acikken — istek yetki ister).
-    await detachPushFromServer()
-    // F0.2: Backend'i bilgilendir refresh token DB'de revoke + cookie sil
-    try { await api.post('/api/auth/logout') } catch { /* sessiz */ }
+    // F0.2: Backend'i bilgilendir refresh token DB'de revoke + cookie sil.
+    // Push adresi de gider: ortak cihazda bir sonraki kisiye bu kullanicinin
+    // bildirimi gitmesin (sunucu kullaniciyi refresh token'dan bulur).
+    const pushEndpoint = await getPushEndpoint()
+    try { await api.post('/api/auth/logout', pushEndpoint ? { pushEndpoint } : undefined) } catch { /* sessiz */ }
     presenceUnsubscribe()
     wsDisconnect()
     localStorage.removeItem('token')

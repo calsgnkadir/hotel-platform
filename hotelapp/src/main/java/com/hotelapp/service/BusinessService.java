@@ -98,14 +98,14 @@ public class BusinessService {
         Business business = businessRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("İşletme profili", ownerId));
 
-        // Eski logoyu sil
-        if (business.getLogoPath() != null) {
-            fileStorageService.delete(business.getLogoPath());
-        }
-
+        // Önce yeni logo yüklenir; eskisi ancak kayıt başarılı olunca silinir.
+        // Yükleme düşerse eski logo yerinde kalır.
+        String oldPath = business.getLogoPath();
         String path = fileStorageService.storeBusinessImage(file, business.getId(), "logo");
+        fileStorageService.deleteOnRollback(path);
         business.setLogoPath(path);
         businessRepository.save(business);
+        fileStorageService.deleteAfterCommit(oldPath);
         return toDto(business);
     }
 
@@ -115,7 +115,7 @@ public class BusinessService {
                 .orElseThrow(() -> new ResourceNotFoundException("İşletme profili", ownerId));
 
         if (business.getLogoPath() != null) {
-            fileStorageService.delete(business.getLogoPath());
+            fileStorageService.deleteAfterCommit(business.getLogoPath());
             business.setLogoPath(null);
             businessRepository.save(business);
         }
@@ -155,6 +155,7 @@ public class BusinessService {
         int nextOrder = businessPhotoRepository.findMaxDisplayOrder(business.getId()) + 1;
 
         String path = fileStorageService.storeBusinessImage(file, business.getId(), "gallery");
+        fileStorageService.deleteOnRollback(path);
         BusinessPhoto photo = BusinessPhoto.builder()
                 .business(business)
                 .filePath(path)
@@ -177,7 +178,7 @@ public class BusinessService {
         boolean wasCover = Boolean.TRUE.equals(photo.getIsCover());
         Long businessId = photo.getBusiness().getId();
 
-        fileStorageService.delete(photo.getFilePath());
+        fileStorageService.deleteAfterCommit(photo.getFilePath());
         businessPhotoRepository.delete(photo);
 
         // Kapağı sildiysek bir sonraki fotoyu kapak yap

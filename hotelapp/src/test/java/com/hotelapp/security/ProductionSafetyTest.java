@@ -11,7 +11,18 @@ class ProductionSafetyTest {
         return new ApplicationContextRunner()
                 .withUserConfiguration(ProductionSafetyConfiguration.class)
                 .withInitializer(ctx -> ctx.getEnvironment().setActiveProfiles(profiles))
-                .withPropertyValues("spring.datasource.username=kadrom_app", "spring.jpa.hibernate.ddl-auto=validate");
+                .withPropertyValues("spring.datasource.username=kadrom_app", "spring.jpa.hibernate.ddl-auto=validate",
+                        "app.push.vapid.public-key=test-public", "app.push.vapid.private-key=test-private");
+    }
+
+    @Test void productionRequiresPersistentVapidKeys() {
+        context("prod").withPropertyValues("app.push.vapid.private-key=")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("VAPID"));
+        context("prod").withPropertyValues("app.push.vapid.public-key=")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("VAPID"));
+        // Vitrin muaf: anahtar olmadan da acilir
+        context("prod", "showcase").withPropertyValues("app.push.vapid.public-key=", "app.push.vapid.private-key=")
+                .run(ctx -> assertThat(ctx).hasNotFailed());
     }
 
     @Test void isolatedProductionStarts() {
