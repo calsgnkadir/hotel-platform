@@ -95,8 +95,28 @@ class NotificationServiceTest {
                     eq("/queue/notifications"),
                     any());
 
-            // Web push cagrilmali
-            verify(webPushService).sendToUser(42L);
+            // Web push cagrilmali — icerikli
+            ArgumentCaptor<WebPushService.PushMessage> push = ArgumentCaptor.forClass(WebPushService.PushMessage.class);
+            verify(webPushService).sendToUser(eq(42L), push.capture());
+            assertThat(push.getValue().title()).isEqualTo("Basvurun kabul edildi");
+            assertThat(push.getValue().body()).isEqualTo("Detay");
+            assertThat(push.getValue().url()).isEqualTo("/apps/1");
+            assertThat(push.getValue().notificationId()).isEqualTo(1L);
+        }
+
+        @Test
+        @DisplayName("Push adresi: sekme adi alicinin paneline cevrilir, tam adres aynen kalir")
+        void pushUrl_resolvesTabsByRole() {
+            User candidate = new User();
+            candidate.setRole(com.hotelapp.enums.Role.CANDIDATE);
+            User owner = new User();
+            owner.setRole(com.hotelapp.enums.Role.BUSINESS_OWNER);
+
+            assertThat(NotificationService.pushUrl(candidate, "applications")).isEqualTo("/candidate?tab=applications");
+            assertThat(NotificationService.pushUrl(owner, "listings")).isEqualTo("/business?tab=listings");
+            assertThat(NotificationService.pushUrl(owner, "/listings/42")).isEqualTo("/listings/42");
+            assertThat(NotificationService.pushUrl(candidate, null)).isEqualTo("/candidate");
+            assertThat(NotificationService.pushUrl(new User(), "messages")).isEqualTo("/candidate?tab=messages");
         }
 
         @Test
@@ -110,7 +130,7 @@ class NotificationServiceTest {
             service.notify(42L, NotificationType.NEW_MESSAGE, "T", "M", null);
 
             // Web push yine de cagrilmali
-            verify(webPushService).sendToUser(42L);
+            verify(webPushService).sendToUser(eq(42L), any());
         }
 
         @Test
@@ -119,7 +139,7 @@ class NotificationServiceTest {
             when(userRepository.findById(42L)).thenReturn(Optional.of(user));
             when(notificationRepository.save(any(Notification.class))).thenAnswer(inv -> inv.getArgument(0));
             doThrow(new RuntimeException("VAPID key missing"))
-                    .when(webPushService).sendToUser(anyLong());
+                    .when(webPushService).sendToUser(anyLong(), any());
 
             // Crash olmamali
             service.notify(42L, NotificationType.GENERIC, "T", "M", null);

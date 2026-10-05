@@ -128,7 +128,7 @@ app:
       expiry-hours: ${PWD_RESET_EXPIRY_HOURS:1}
 
   # FAZ 2/#18 — Resilience4j Circuit Breaker config.
-  # 3 instance: cloudinary, resend (email), webpush (FCM)
+  # 2 instance: cloudinary, resend (email). Web push kendi thread'inde, hata yutulur.
   # Hata oranı %50 ası asarsa devre acilir, 30sn HALF-OPEN denemesi
   resilience4j:
     circuitbreaker:
@@ -148,9 +148,6 @@ app:
           baseConfig: default
         resend:
           baseConfig: default
-        webpush:
-          baseConfig: default
-          slowCallDurationThreshold: 8s  # push HTTP timeout 8s
     timelimiter:
       configs:
         default:

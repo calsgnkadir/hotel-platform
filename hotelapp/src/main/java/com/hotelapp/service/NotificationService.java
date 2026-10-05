@@ -86,15 +86,33 @@ public class NotificationService {
                 log.warn("WS notify push failed: {}", wsErr.getMessage());
             }
 
-            // FAZ 1/#23 — Web Push (async, tab kapali bile bildirim gelir)
+            // FAZ 1/#23 — Web Push (async, tab kapali bile bildirim gelir) — icerikli
             try {
-                webPushService.sendToUser(recipient.getId());
+                int count = n.getAggregateCount() == null ? 1 : n.getAggregateCount();
+                webPushService.sendToUser(recipient.getId(), new WebPushService.PushMessage(
+                        count > 1 ? title + " (" + count + ")" : title,
+                        message,
+                        pushUrl(recipient, link),
+                        n.getId()));
             } catch (Exception pushErr) {
                 log.warn("Web push send failed: {}", pushErr.getMessage());
             }
         } catch (Exception e) {
             log.warn("Bildirim oluşturulamadı: type={} recipient={} - {}", type, recipientId, e.getMessage());
         }
+    }
+
+    /**
+     * Bildirim link'i uygulamada iki bicimde: tam adres ("/listings/42") ya da
+     * panel sekmesi ("applications"). Telefon bildirimine dokununca acilacak tam adres.
+     */
+    static String pushUrl(User recipient, String link) {
+        if (link != null && link.startsWith("/")) return link;
+        var role = recipient.getRole();
+        String panel = role == com.hotelapp.enums.Role.BUSINESS_OWNER ? "/business"
+                : role == com.hotelapp.enums.Role.ADMIN ? "/admin"
+                : "/candidate";
+        return (link == null || link.isBlank()) ? panel : panel + "?tab=" + link;
     }
 
     @Transactional(readOnly = true)

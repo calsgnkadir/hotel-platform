@@ -93,8 +93,9 @@ self.addEventListener('fetch', (event) => {
 })
 
 self.addEventListener('push', (event) => {
-  // FAZ 1/#23 — Pure Java VAPID + payload-less push.
-  // Backend body göndermez (encryption tabaka atlandı), generic mesaj göster.
+  // Sunucu içeriği RFC 8291 ile şifreli gönderir ({ title, body, link, notificationId });
+  // tarayıcı çözüp event.data'ya koyar. Anahtarı olmayan eski abonelikte içerik
+  // gelmez → genel metin.
   let data = {}
   try { data = event.data ? event.data.json() : {} } catch { data = {} }
 
@@ -105,14 +106,17 @@ self.addEventListener('push', (event) => {
     badge: '/favicon.svg',
     data: { link: data.link || '/', notificationId: data.notificationId },
     tag: data.notificationId ? `notif-${data.notificationId}` : 'kadrom-generic',
-    renotify: false,
+    // Aynı bildirim güncellenirse ("Yeni başvuru (3)") telefon yeniden haber versin
+    renotify: !!data.notificationId,
   }
   event.waitUntil(self.registration.showNotification(title, options))
 })
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const link = event.notification.data?.link || '/'
+  // Sadece site içi yol aç (başka siteye yönlenemesin)
+  const raw = event.notification.data?.link || '/'
+  const link = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/'
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
