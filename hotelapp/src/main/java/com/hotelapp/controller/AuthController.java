@@ -35,6 +35,7 @@ public class AuthController {
     private final AuthService authService;
     private final EmailVerificationService emailVerificationService;
     private final com.hotelapp.repository.UserRepository userRepository;
+    private final com.hotelapp.security.oauth.OAuthProviders oAuthProviders;
 
     /** Cookie adı — frontend bilmek zorunda değil, tarayıcı otomatik gönderir */
     private static final String REFRESH_COOKIE = "refreshToken";
@@ -46,6 +47,12 @@ public class AuthController {
     /** F0.2 — SameSite politikası: Lax (cross-site cookie sızdırmaz) veya None (cross-origin için) */
     @Value("${app.security.cookie-samesite:Lax}")
     private String cookieSameSite;
+
+    @Operation(summary = "Açık giriş yöntemleri — frontend Google butonunu buna göre gösterir/gizler")
+    @GetMapping("/providers")
+    public Map<String, Boolean> providers() {
+        return Map.of("google", oAuthProviders.googleEnabled());
+    }
 
     @Operation(summary = "Kayıt ol")
     @ApiResponses({

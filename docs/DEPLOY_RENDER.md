@@ -112,6 +112,25 @@ hesapları gerçek olmayan adresler; mail atılırsa geri döner, alan adının 
 
 Anahtarı (`re_...`) repoya veya sohbete yapıştırma.
 
+### Google ile giriş (isteğe bağlı)
+
+Ayarlanmazsa **Google butonu otomatik gizlenir**, e-posta/şifre girişi normal çalışır
+(kırık buton gösterilmez). Açmak için:
+
+1. <https://console.cloud.google.com> → yeni proje: `Kadrom`.
+2. **APIs & Services → OAuth consent screen** → *External* → uygulama adı `Kadrom`,
+   destek e-postası, **Authorized domain**: `kadrom.me`; kapsamlar: `email`, `profile`.
+   Sonra **Publish app** (yayınlanmazsa yalnızca eklediğin test kullanıcıları girebilir).
+3. **Credentials → Create credentials → OAuth client ID** → *Web application*:
+   - **Authorized JavaScript origins**: `https://kadrom.me`
+   - **Authorized redirect URIs**: `https://api.kadrom.me/login/oauth2/code/google`
+4. Çıkan **Client ID** (`...apps.googleusercontent.com`) ve **Client secret**'ı
+   Render → `kadrom-api` → **Environment**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
+5. Yeniden başlatınca buton giriş/kayıt ekranlarında kendiliğinden görünür
+   (`GET /api/auth/providers` → `{"google": true}`).
+
+Client secret'ı repoya veya sohbete yapıştırma.
+
 ## 3. Domain — Namecheap DNS
 
 Render'da her serviste **Settings → Custom Domains** altında domain zaten

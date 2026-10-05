@@ -79,10 +79,9 @@ services:
       # Opsiyonel entegrasyonlar — sahte değerle ilgili özellik kapalı, uygulama açılır.
       - key: CLOUDINARY_URL
         value: cloudinary://test:test@test
-      - key: GOOGLE_CLIENT_ID
-        value: dummy-client-id
-      - key: GOOGLE_CLIENT_SECRET
-        value: dummy-client-secret
+      # Google ile giriş: vitrinde kapalı (GOOGLE_* yok → 'not-configured',
+      # buton otomatik gizlenir). Gerçek üründe GOOGLE_CLIENT_ID/SECRET girilince
+      # buton kendiliğinden görünür (docs/DEPLOY_RENDER.md → "Google ile giriş").
       # Vitrinde e-posta BİLEREK kapalı: demo hesapları gerçek olmayan adresler
       # (@test.com) — gerçek anahtarla her gün bunlara mail gider, geri döner ve
       # Resend alan adının itibarı düşer. Gerçek üründe (prod, showcase'siz)

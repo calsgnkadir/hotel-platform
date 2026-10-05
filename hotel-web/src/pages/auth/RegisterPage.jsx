@@ -8,6 +8,7 @@ import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../utils/validat
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 import BackButton from '../../components/BackButton'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
+import { useGoogleSignIn } from '../../lib/authProviders'
 
 /** RegisterPage — FAZ A.2 acik+teal yeniden yazim (DarkVeil ve tum altin
  *  gradientler kaldirildi; form logic + validasyon + step akisi aynen korundu). */
@@ -31,6 +32,7 @@ export default function RegisterPage() {
   const prefillEmail = location.state?.prefillEmail
   const [step, setStep] = useState(preselectedRole ? 2 : 1)
   const [selectedRole, setSelectedRole] = useState(preselectedRole || null)
+  const google = useGoogleSignIn()  // Google ayarlı değilse buton + ayraç gizli
 
   const {
     register, handleSubmit, watch, setValue,
@@ -107,15 +109,19 @@ export default function RegisterPage() {
             {/* ── STEP 1 ── */}
             {step === 1 && (
               <div className="space-y-3">
-                <GoogleSignInButton label="Google ile Aday Olarak Kayıt" />
-
-                <div className="flex items-center gap-3 py-1">
-                  <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
-                  <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>
-                    veya rol seç
-                  </span>
-                  <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
-                </div>
+                {/* Google + ayrac — yalnızca Google girişi gerçekten ayarlıysa */}
+                {google && (
+                  <>
+                    <GoogleSignInButton label="Google ile Aday Olarak Kayıt" />
+                    <div className="flex items-center gap-3 py-1">
+                      <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
+                      <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>
+                        veya rol seç
+                      </span>
+                      <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
+                    </div>
+                  </>
+                )}
 
                 {ROLE_OPTIONS.map((opt, i) => (
                   <button key={opt.value} type="button" onClick={() => goToStep2(opt.value)}

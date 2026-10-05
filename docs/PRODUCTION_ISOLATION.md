@@ -62,7 +62,10 @@ verisinde veri silmeden açılışın durmasını kontrol eder.
   (docs/DEPLOY_RENDER.md → "E-posta (Resend)"). `prod` bunlarsız açılmaz.
   Gönderim hataları artık yutulmuyor: outbox 5 kez dener, son hata admin
   Outbox panelinde görünür.
-- Google giriş ve ödeme ayarlarını yapılandırıp doğrula.
+- Google ile giriş isteğe bağlı: ayarlanmazsa buton otomatik gizlenir; açmak için
+  docs/DEPLOY_RENDER.md → "Google ile giriş". (GOOGLE_* artık boş bırakılabilir —
+  eskiden boş değer sunucuyu "Client id must not be empty" ile çökertiyordu.)
+- Ödeme (iyzico) ayarlarını yapılandırıp doğrula.
 - Kalıcı VAPID anahtar çiftini üret ve gir (docs/DEPLOY_RENDER.md → "Bildirim
   anahtarları"). `prod` profili anahtarsız açılmaz; özel anahtar loglanmaz.
   Push adresleri yalnızca tarayıcı push servislerine (FCM, Mozilla, Apple, WNS)

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
+import { useGoogleSignIn } from '../../lib/authProviders'
 
 /**
  * LoginPage — FAZ A.2 acik+teal yeniden yazim.
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm()
+  const google = useGoogleSignIn()  // Google ayarlı değilse buton + ayraç gizli
   const [showPwd, setShowPwd] = useState(false)
 
   async function onSubmit(data) {
@@ -65,16 +67,19 @@ export default function LoginPage() {
           </div>
 
           <div className="card">
-            {/* Google */}
-            <GoogleSignInButton label="Google ile devam et" />
-
-            <div className="flex items-center gap-3 my-6">
-              <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
-              <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>
-                veya
-              </span>
-              <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
-            </div>
+            {/* Google + ayrac — yalnızca Google girişi gerçekten ayarlıysa */}
+            {google && (
+              <>
+                <GoogleSignInButton label="Google ile devam et" />
+                <div className="flex items-center gap-3 my-6">
+                  <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
+                  <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>
+                    veya
+                  </span>
+                  <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
+                </div>
+              </>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>

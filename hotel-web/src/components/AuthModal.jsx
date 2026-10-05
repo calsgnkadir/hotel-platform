@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GoogleSignInButton from './GoogleSignInButton'
+import { useGoogleSignIn } from '../lib/authProviders'
 
 /**
  * AuthModal — Landing CTA'larindan acilan tek-ekran auth secici.
@@ -16,6 +17,7 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
   const [role, setRole] = useState(defaultRole)
   const [email, setEmail] = useState('')
   const dialogRef = useRef(null)
+  const google = useGoogleSignIn()  // Google ayarlı değilse buton + ayraç gizli
 
   useEffect(() => { if (open) setRole(defaultRole) }, [open, defaultRole])
 
@@ -98,15 +100,17 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
                       title="İşletme" subtitle="Eleman arıyorum" />
           </div>
 
-          {/* Google */}
-          <GoogleSignInButton label="Google ile devam et" />
-
-          {/* Ayrac */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
-            <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>veya</span>
-            <div className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
-          </div>
+          {/* Google + ayrac — yalnızca Google girişi gerçekten ayarlıysa */}
+          {google && (
+            <>
+              <GoogleSignInButton label="Google ile devam et" />
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
+                <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>veya</span>
+                <div className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
+              </div>
+            </>
+          )}
 
           {/* Email */}
           <form onSubmit={handleEmailContinue} className="space-y-3">
