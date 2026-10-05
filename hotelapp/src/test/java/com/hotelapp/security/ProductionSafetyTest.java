@@ -12,7 +12,21 @@ class ProductionSafetyTest {
                 .withUserConfiguration(ProductionSafetyConfiguration.class)
                 .withInitializer(ctx -> ctx.getEnvironment().setActiveProfiles(profiles))
                 .withPropertyValues("spring.datasource.username=kadrom_app", "spring.jpa.hibernate.ddl-auto=validate",
-                        "app.push.vapid.public-key=test-public", "app.push.vapid.private-key=test-private");
+                        "app.push.vapid.public-key=test-public", "app.push.vapid.private-key=test-private",
+                        "app.email.resend.api-key=re_test_only", "app.email.resend.from=bildirim@kadrom.me");
+    }
+
+    @Test void productionRequiresRealEmailSetup() {
+        context("prod").withPropertyValues("app.email.resend.api-key=test-key")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("RESEND_API_KEY"));
+        context("prod").withPropertyValues("app.email.resend.api-key=")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("RESEND_API_KEY"));
+        context("prod").withPropertyValues("app.email.resend.from=onboarding@resend.dev")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("RESEND_FROM"));
+        // Vitrin muaf: demo hesaplarına (gerçek olmayan adresler) mail gitmesin
+        context("prod", "showcase").withPropertyValues("app.email.resend.api-key=test-key",
+                        "app.email.resend.from=onboarding@resend.dev")
+                .run(ctx -> assertThat(ctx).hasNotFailed());
     }
 
     @Test void productionRequiresPersistentVapidKeys() {

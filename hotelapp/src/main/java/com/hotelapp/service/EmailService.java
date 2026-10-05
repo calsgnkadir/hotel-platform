@@ -14,9 +14,12 @@ import java.util.Map;
 /**
  * #80: Resend ile email gönderim servisi.
  *
- * RestTemplate ile HTTPS POST → https://api.resend.com/emails
+ * RestTemplate ile HTTPS POST → {base-url}/emails (varsayılan https://api.resend.com)
  * Header: Authorization: Bearer {RESEND_API_KEY}
  * Body:   { from, to, subject, html }
+ *
+ * Gönderici (RESEND_FROM) Resend'de DOĞRULANMIŞ alan adından olmalı (ör.
+ * bildirim@kadrom.me). onboarding@resend.dev yalnızca hesap sahibine gönderir.
  *
  * Dev fallback: API key yoksa email içeriği log'a yazılır (test için).
  */
@@ -24,8 +27,7 @@ import java.util.Map;
 @Slf4j
 public class EmailService {
 
-    private static final String RESEND_API_URL = "https://api.resend.com/emails";
-
+    private final String apiUrl;
     private final String apiKey;
     private final String fromEmail;
     private final String fromName;
@@ -36,11 +38,13 @@ public class EmailService {
             @Value("${app.email.resend.api-key:}")     String apiKey,
             @Value("${app.email.resend.from:onboarding@resend.dev}") String fromEmail,
             @Value("${app.email.resend.from-name:Kadrom}")       String fromName,
+            @Value("${app.email.resend.base-url:https://api.resend.com}") String baseUrl,
             org.springframework.beans.factory.ObjectProvider<OutboxService> outboxProvider
     ) {
         this.apiKey   = apiKey;
         this.fromEmail = fromEmail;
         this.fromName  = fromName;
+        this.apiUrl    = baseUrl.replaceAll("/+$", "") + "/emails";
         this.outboxProvider = outboxProvider;
     }
 
@@ -62,11 +66,16 @@ public class EmailService {
     }
 
     /**
-     * Email gönderir. Asenkron değil — controller thread'inde çalışır.
-     * FAZ 2/#18: Resend down/yavaslarsa devre acilir, fallback log atip sessiz kalir
-     * (kullanici reset isteyebilir, login akisi blok olmaz).
+     * Email gönderir — OutboxRelay çağırır (kullanıcı isteğini bloklamaz).
+     *
+     * Hata YUTULMAZ, çağırana fırlatılır: outbox satırı başarısız işaretlenir,
+     * tekrar denenir (max 5), sonra son hatayla admin Outbox panelinde görünür.
+     * (Eskiden circuit breaker fallback'i hatayı yutuyor, outbox maili "teslim
+     * edildi" sanıyordu — yanlış anahtar / doğrulanmamış alan adında mailler
+     * sessizce kayboluyordu.) Devre açıkken de CallNotPermittedException fırlar
+     * → outbox sonra tekrar dener.
      */
-    @CircuitBreaker(name = "resend", fallbackMethod = "sendFallback")
+    @CircuitBreaker(name = "resend")
     public void send(String toEmail, String subject, String htmlBody) {
         // Dev fallback: API key yoksa log'a yaz
         if (apiKey == null || apiKey.isBlank()) {
@@ -90,7 +99,7 @@ public class EmailService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(RESEND_API_URL, request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
             log.info("[EMAIL] Gönderildi: to={} subject={} status={}",
                     toEmail, subject, response.getStatusCode());
         } catch (RestClientException e) {
@@ -124,7 +133,7 @@ public class EmailService {
                 "filename", fileName,
                 "content",  java.util.Base64.getEncoder().encodeToString(content))));
         try {
-            restTemplate.postForEntity(RESEND_API_URL, new HttpEntity<>(body, headers), String.class);
+            restTemplate.postForEntity(apiUrl, new HttpEntity<>(body, headers), String.class);
             log.info("[EMAIL] Ekli gönderildi: to={} subject={} ek={}", toEmail, subject, fileName);
         } catch (RestClientException e) {
             log.error("[EMAIL] Ekli gönderim hatası: to={} hata={}", toEmail, e.getMessage());
@@ -137,14 +146,6 @@ public class EmailService {
                                            String fileName, byte[] content, Throwable t) {
         log.warn("[EMAIL][CB-FALLBACK] ekli email atlandı - to={} subject={} sebep={}",
                 toEmail, subject, t.getMessage());
-    }
-
-    /** FAZ 2/#18 - Circuit breaker fallback: Resend down ise sessiz log */
-    @SuppressWarnings("unused")
-    private void sendFallback(String toEmail, String subject, String htmlBody, Throwable t) {
-        log.warn("[EMAIL][CB-FALLBACK] Resend devre disi/timeout - to={} subject={} sebep={}",
-                toEmail, subject, t.getMessage());
-        // Email yutuldu - kullanici tekrar deneyebilir. Login akisini bloklamiyoruz.
     }
 
     /**

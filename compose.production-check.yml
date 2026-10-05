@@ -36,7 +36,9 @@ services:
       CLOUDINARY_URL: cloudinary://test:test@test
       GOOGLE_CLIENT_ID: test-client
       GOOGLE_CLIENT_SECRET: test-secret
-      RESEND_API_KEY: test-key
+      # Test-only, format-valid Resend values (prod requires 're_' key + own-domain sender).
+      RESEND_API_KEY: re_production_check_only
+      RESEND_FROM: bildirim@kadrom.test
       # Test-only VAPID pair (prod requires persistent keys). Never reuse in a real deployment.
       VAPID_PUBLIC_KEY: BH5m6FeQco4u9Zfcx1v5Un31BDd0h8pzfWTJyvZ6q4kz9vDE-Db83CbLORnl6XWiAGd5H4ii7KaE0iDRPc6WsPI
       VAPID_PRIVATE_KEY: ZqTKTeydogRsBWYXUPhDKBtt0FpAwNUfkJfCdArFIrM

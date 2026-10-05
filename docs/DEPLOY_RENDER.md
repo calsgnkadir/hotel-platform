@@ -84,6 +84,34 @@ hep aynı kalır; değişirse herkesin bildirim kaydı geçersiz olur.
 Vitrinde (`prod,showcase`) boş bırakılırsa uygulama açılır ama her yeniden
 başlatmada abonelikler bozulur. Gerçek üründe (`prod`) boşsa sunucu **açılmaz**.
 
+### E-posta (Resend)
+
+Şifre sıfırlama, e-posta doğrulama, başvuru sonucu ve ekip listesi (Excel) e-postayla
+gider. **Gerçek üründe zorunlu** — `RESEND_API_KEY` (`re_` ile başlar) ve kendi alan
+adından bir `RESEND_FROM` yoksa sunucu açılmaz. Vitrinde bilerek kapalı (demo
+hesapları gerçek olmayan adresler; mail atılırsa geri döner, alan adının itibarı düşer).
+
+1. <https://resend.com> → kaydol (ücretsiz: günde 100, ayda 3.000 mail).
+2. **Domains → Add Domain** → `kadrom.me`, bölge **Ireland (eu-west-1)**.
+3. Resend 3-4 DNS kaydı gösterir (MX + SPF TXT `send` alt alan adında, DKIM TXT
+   `resend._domainkey`, isteğe bağlı DMARC `_dmarc`). Namecheap → kadrom.me →
+   **Advanced DNS**'e **birebir** gir:
+   - **Host** kutusuna sadece alt kısmı yaz: `send`, `resend._domainkey`, `_dmarc`
+     (sonuna `.kadrom.me` ekleme — Namecheap ekler).
+   - MX kaydı eklemek için önce **Mail Settings → Custom MX** seçili olmalı.
+4. Resend'de **Verify DNS Records** → hepsi "Verified" olana kadar bekle
+   (genelde dakikalar, en çok birkaç saat).
+5. **API Keys → Create API Key** → izin: *Sending access*, alan adı: `kadrom.me`.
+   Anahtar **bir kez** gösterilir; kopyala.
+6. Gerçek ürünün `kadrom-api` → **Environment**:
+   - `RESEND_API_KEY` = az önce kopyaladığın `re_...`
+   - `RESEND_FROM` = `bildirim@kadrom.me` (doğrulanmış alan adından herhangi bir ad)
+7. Kontrol: uygulamada "Şifremi unuttum" → kendi adresine mail gelmeli. Gelmezse
+   admin paneli → **Outbox**'ta e-posta satırının son hatası yazar
+   (ör. `403 ... domain is not verified`).
+
+Anahtarı (`re_...`) repoya veya sohbete yapıştırma.
+
 ## 3. Domain — Namecheap DNS
 
 Render'da her serviste **Settings → Custom Domains** altında domain zaten

@@ -83,6 +83,11 @@ services:
         value: dummy-client-id
       - key: GOOGLE_CLIENT_SECRET
         value: dummy-client-secret
+      # Vitrinde e-posta BİLEREK kapalı: demo hesapları gerçek olmayan adresler
+      # (@test.com) — gerçek anahtarla her gün bunlara mail gider, geri döner ve
+      # Resend alan adının itibarı düşer. Gerçek üründe (prod, showcase'siz)
+      # RESEND_API_KEY + RESEND_FROM zorunlu; yoksa sunucu açılmaz
+      # (docs/DEPLOY_RENDER.md → "E-posta (Resend)").
       - key: RESEND_API_KEY
         value: test-key
       # Push bildirimleri: kalici anahtar cifti (docs/DEPLOY_RENDER.md → "Bildirim anahtarlari").

@@ -31,6 +31,19 @@ public class ProductionSafetyConfiguration {
                         || env.getProperty("app.push.vapid.private-key", "").isBlank())) {
                 throw new IllegalStateException("PROD-SAFETY: set a persistent VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY pair; otherwise every restart invalidates all push subscriptions.");
             }
+            // E-posta olmadan şifre sıfırlama, e-posta doğrulama ve ekip listesi çalışmaz.
+            // Resend anahtarları 're_' ile başlar; onboarding@resend.dev yalnızca hesap
+            // sahibine gönderir. Vitrin (showcase) demo hesaplarına mail atmasın diye muaf.
+            if (!env.acceptsProfiles(Profiles.of("showcase"))) {
+                String resendKey = env.getProperty("app.email.resend.api-key", "").trim();
+                String resendFrom = env.getProperty("app.email.resend.from", "").trim().toLowerCase();
+                if (!resendKey.startsWith("re_")) {
+                    throw new IllegalStateException("PROD-SAFETY: set a real RESEND_API_KEY (starts with 're_'); without email, password reset and email verification do not work.");
+                }
+                if (resendFrom.isEmpty() || resendFrom.endsWith("@resend.dev")) {
+                    throw new IllegalStateException("PROD-SAFETY: set RESEND_FROM to an address on your verified domain (e.g. bildirim@kadrom.me); @resend.dev only delivers to the account owner.");
+                }
+            }
         };
     }
 }

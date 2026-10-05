@@ -55,13 +55,17 @@ verisinde veri silmeden açılışın durmasını kontrol eder.
 
 ## Kalan yayın öncesi kontroller
 
-- Önceki herkese açık Cloudinary belgelerini sağlayıcı üzerinde envanterle ve
-  erişimlerini kaldır/taşı; yeni özel sohbet akışını gerçek hesapla doğrula.
-- E-posta, Google giriş ve ödeme ayarlarını yapılandırıp doğrula.
+- Cloudinary hesabı (`dgkkolquy`) kontrol edildi: uygulamadan hiç dosya
+  yüklenmemiş, `kadrom/documents` yok — temizlenecek eski belge yok.
+  Gerçek üründe `CLOUDINARY_URL`'yi gir; yeni özel sohbet akışını gerçek hesapla doğrula.
+- E-posta (Resend): alan adını doğrula, `RESEND_API_KEY` + `RESEND_FROM` gir
+  (docs/DEPLOY_RENDER.md → "E-posta (Resend)"). `prod` bunlarsız açılmaz.
+  Gönderim hataları artık yutulmuyor: outbox 5 kez dener, son hata admin
+  Outbox panelinde görünür.
+- Google giriş ve ödeme ayarlarını yapılandırıp doğrula.
 - Kalıcı VAPID anahtar çiftini üret ve gir (docs/DEPLOY_RENDER.md → "Bildirim
   anahtarları"). `prod` profili anahtarsız açılmaz; özel anahtar loglanmaz.
   Push adresleri yalnızca tarayıcı push servislerine (FCM, Mozilla, Apple, WNS)
   izinlidir; çıkışta cihazın aboneliği sunucuda koparılır.
-- Güncel kayıt, başvuru ve sohbet ekranlarının tarayıcı testlerini CI'a ekle.
 - Yerel MySQL 8.4 açılışı başarılı; mevcut Flyway sürümü 8.0 üstü için uyumluluk
   uyarısı veriyor. Sürüm yükseltme/sabitleme ayrı olarak doğrulanmalı.
