@@ -93,12 +93,20 @@ hesapları gerçek olmayan adresler; mail atılırsa geri döner, alan adının 
 
 1. <https://resend.com> → kaydol (ücretsiz: günde 100, ayda 3.000 mail).
 2. **Domains → Add Domain** → `kadrom.me`, bölge **Ireland (eu-west-1)**.
-3. Resend 3-4 DNS kaydı gösterir (MX + SPF TXT `send` alt alan adında, DKIM TXT
-   `resend._domainkey`, isteğe bağlı DMARC `_dmarc`). Namecheap → kadrom.me →
-   **Advanced DNS**'e **birebir** gir:
-   - **Host** kutusuna sadece alt kısmı yaz: `send`, `resend._domainkey`, `_dmarc`
-     (sonuna `.kadrom.me` ekleme — Namecheap ekler).
-   - MX kaydı eklemek için önce **Mail Settings → Custom MX** seçili olmalı.
+3. Resend 4 DNS kaydı gösterir. Namecheap → kadrom.me → **Advanced DNS** →
+   **ADD NEW RECORD** ile **birebir** gir (kadrom.me'de 2026-10 itibarıyla girildi):
+
+   | Type | Host | Value |
+   |---|---|---|
+   | TXT | `resend._domainkey` | `p=MIGfMA...` (DKIM — Resend'de değere tıklayıp kopyala) |
+   | CNAME | `rsend` | `rsend-euw1.forge.rmta.net` |
+   | CNAME | `send` | `send.forge.rmta.net` |
+   | TXT | `_dmarc` | `v=DMARC1; p=none;` |
+
+   - **Host** kutusuna sadece alt kısmı yaz (sonuna `.kadrom.me` ekleme).
+   - Değerleri ekrandaki `[...]` kısaltmasından değil, tıklayıp kopyalayarak al.
+   - DKIM değeri `p=` ile, DMARC değeri `v=DMARC1` ile başlar — karıştırma.
+   - MX kaydı gerekmez (Resend gönderim için CNAME kullanıyor).
 4. Resend'de **Verify DNS Records** → hepsi "Verified" olana kadar bekle
    (genelde dakikalar, en çok birkaç saat).
 5. **API Keys → Create API Key** → izin: *Sending access*, alan adı: `kadrom.me`.
