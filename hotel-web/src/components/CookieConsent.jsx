@@ -32,7 +32,7 @@ export default function CookieConsent() {
 
   return (
     <div role="region" aria-label="Çerez bilgilendirmesi"
-         className="fixed left-3 right-3 bottom-3 z-[60] mx-auto max-w-2xl rounded-xl border px-4 py-3
+         className="floating-notice fixed left-3 right-3 bottom-3 z-[60] mx-auto max-w-2xl rounded-xl border px-4 py-3
                     flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4"
          style={{
            background: 'var(--ah-card)', borderColor: 'var(--ah-line-2)',

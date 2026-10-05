@@ -11,6 +11,7 @@ import { useConfirm } from '../../../lib/useConfirm'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
 import PhoneVerifyCard from '../../../components/PhoneVerifyCard'
 import GdprCard from '../../../components/GdprCard'
+import NotificationSettings from '../../../components/NotificationSettings'
 import { SkeletonForm } from '../../../components/Skeleton'
 import { Alert } from '../../../components/ui/Alert'
 import AvailabilityBlocksEditor from '../../../components/AvailabilityBlocksEditor'
@@ -238,7 +239,7 @@ export default function ProfileTab() {
         <div className="space-y-4 min-w-0">
           {/* Ic sekme cubugu */}
           <div className="flex gap-5 border-b overflow-x-auto no-scrollbar" style={{ borderColor: 'var(--ah-line)' }}>
-            {[['bilgiler', 'Bilgilerim'], ['guvenlik', 'Güvenlik']].map(([k, l]) => (
+            {[['bilgiler', 'Bilgilerim'], ['guvenlik', 'Ayarlar']].map(([k, l]) => (
               <button key={k} type="button" onClick={() => setPtab(k)}
                 className="text-[13.5px] font-semibold pb-2.5 -mb-px whitespace-nowrap transition-colors"
                 style={ptab === k
@@ -355,6 +356,7 @@ export default function ProfileTab() {
           {/* ===== GÜVENLİK ===== */}
           {ptab === 'guvenlik' && (
             <div className="space-y-4">
+              <NotificationSettings />
               <PhoneVerifyCard />
               <div className="grid lg:grid-cols-2 gap-4 items-start">
                 <ChangePasswordCard />

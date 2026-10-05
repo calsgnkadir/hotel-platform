@@ -4,6 +4,7 @@ import * as authApi from '../api/auth'
 import api from '../api/client'
 import { wsConnect, wsDisconnect } from '../lib/websocket'
 import { presenceInit, presenceSubscribe, presenceUnsubscribe } from '../lib/presence'
+import { syncPushSubscription, detachPushFromServer } from '../lib/webpush'
 
 const AuthContext = createContext(null)
 
@@ -21,6 +22,7 @@ export function AuthProvider({ children }) {
         // FAZ 1/#60 — Online presence init + sub
         presenceInit()
         presenceSubscribe()
+        syncPushSubscription()  // izin varsa aboneligi bu kullaniciya bagla (sessiz)
       } catch {
         localStorage.removeItem('user')
       }
@@ -51,6 +53,9 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
+    // Ortak cihazda bir sonraki kisiye bu kullanicinin bildirimi gitmesin
+    // (oturum hala acikken — istek yetki ister).
+    await detachPushFromServer()
     // F0.2: Backend'i bilgilendir refresh token DB'de revoke + cookie sil
     try { await api.post('/api/auth/logout') } catch { /* sessiz */ }
     presenceUnsubscribe()
@@ -71,6 +76,7 @@ export function AuthProvider({ children }) {
     wsConnect()
     // FAZ 1/#60 — Presence (WS bağlandıktan sonra init/sub)
     setTimeout(() => { presenceInit(); presenceSubscribe() }, 800)
+    syncPushSubscription()
   }
 
   /** #92: Google OAuth callback'inden gelen veriyi persist eder. */

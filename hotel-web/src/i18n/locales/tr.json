@@ -58,12 +58,15 @@
     "ctaBusiness": "İşletme Olarak Başla"
   },
   "push": {
-    "promptTitle": "Anlık bildirimler",
-    "promptBody": "Tarayıcı kapalıyken bile yeni mesaj ve başvuru bildirimlerini al.",
-    "enable": "Etkinleştir",
+    "appliedTitle": "Başvurun kabul edilince haber verelim mi?",
+    "appliedBody": "Kabul, vardiya değişikliği ve yeni mesajlar telefonuna bildirim olarak gelsin — uygulama kapalıyken bile.",
+    "listingTitle": "Yeni başvuru gelince haber verelim mi?",
+    "listingBody": "Başvurular ve yeni mesajlar telefonuna bildirim olarak gelsin — uygulama kapalıyken bile.",
+    "enable": "Bildirimleri aç",
     "later": "Şimdi değil",
-    "enabled": "Bildirimler etkin — tarayıcı kapalı bile bildirim alırsın",
-    "denied": "Bildirim izni reddedildi"
+    "enabled": "Bildirimler açık — uygulama kapalıyken de haber vereceğiz",
+    "denied": "Bildirim izni verilmedi. İstersen sonra profilinden açabilirsin.",
+    "failed": "Bildirimler şu an açılamadı. Profilindeki Bildirimler bölümünden tekrar deneyebilirsin."
   },
   "listings": {
     "title": "İş İlanları",

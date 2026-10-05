@@ -5,6 +5,7 @@ import { extractErrorMessage } from '../../../api/client'
 import ChangePasswordCard from '../../../components/ChangePasswordCard'
 import PhoneVerifyCard from '../../../components/PhoneVerifyCard'
 import GdprCard from '../../../components/GdprCard'
+import NotificationSettings from '../../../components/NotificationSettings'
 import { SkeletonForm } from '../../../components/Skeleton'
 import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../../utils/validation'
 import { useConfirm } from '../../../lib/useConfirm'
@@ -320,6 +321,7 @@ export default function ProfileTab() {
     {/* === SAG KOLON: Canli Onizleme + Sifre + KVKK (alt alta) === */}
     <aside className="xl:sticky xl:top-4 xl:self-start space-y-4">
       <BusinessPreviewCard form={form} logoUrl={logoUrl} />
+      <NotificationSettings />
       <PhoneVerifyCard />
       <ChangePasswordCard />
       <GdprCard />

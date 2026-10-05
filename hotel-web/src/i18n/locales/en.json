@@ -58,12 +58,15 @@
     "ctaBusiness": "Get Started as Business"
   },
   "push": {
-    "promptTitle": "Instant notifications",
-    "promptBody": "Get new message and application notifications even when your browser is closed.",
-    "enable": "Enable",
+    "appliedTitle": "Want us to tell you when you're accepted?",
+    "appliedBody": "Get acceptances, shift changes and new messages as notifications — even when the app is closed.",
+    "listingTitle": "Want us to tell you when someone applies?",
+    "listingBody": "Get new applications and messages as notifications — even when the app is closed.",
+    "enable": "Turn on notifications",
     "later": "Not now",
-    "enabled": "Notifications enabled — you'll receive alerts even when browser is closed",
-    "denied": "Notification permission denied"
+    "enabled": "Notifications are on — we'll let you know even when the app is closed",
+    "denied": "Notification permission was not given. You can turn it on later from your profile.",
+    "failed": "Couldn't turn on notifications right now. You can try again under Notifications in your profile."
   },
   "listings": {
     "title": "Job Listings",

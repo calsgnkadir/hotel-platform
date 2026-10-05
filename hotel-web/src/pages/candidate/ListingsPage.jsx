@@ -26,6 +26,7 @@ import { SkeletonListingGrid } from '../../components/Skeleton'
 import SavedSearchManager from '../../components/SavedSearchManager'
 // ListingsMapView kaldirildi (kullanici istegi)
 import { formatSalary, formatPayment } from '../../lib/salary'  // FAZ 2/#25
+import { requestPushMoment } from '../../lib/webpush'
 import { useMyLocation } from '../../lib/useMyLocation'                    // FAZ B.3
 import { distanceKm, formatDistance } from '../../lib/distance'            // FAZ B.3
 import { shiftDuration } from '../../lib/shiftTime'                        // FAZ B.5.5
@@ -123,6 +124,8 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
       setSuccessResp({ conversationId: convId, applicationId: appResp.id })
       setSubmitState('success')
       onSuccess?.()
+      // Bildirim izni için doğru an: kart, onay penceresi kapanınca çıkar
+      requestPushMoment('applied')
     } catch (err) {
       toast.error(extractErrorMessage(err))
       setSubmitState('idle')

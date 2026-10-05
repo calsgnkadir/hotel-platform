@@ -40,30 +40,49 @@ public class PushController {
         if (currentUser == null) {
             return ResponseEntity.badRequest().build();
         }
+        // Ayni tarayici baska bir hesapla girerse kayit yeni kullaniciya gecer
+        // (ortak cihazda bildirim eski kullaniciya gitmesin).
         PushSubscription sub = repo.findByEndpoint(body.endpoint)
                 .orElseGet(() -> PushSubscription.builder()
                         .endpoint(body.endpoint)
                         .build());
         sub.setUser(currentUser.getUser());
-        sub.setP256dh(body.p256dh);
-        sub.setAuthSecret(body.auth);
+        sub.setP256dh(body.p256dhKey());
+        sub.setAuthSecret(body.authKey());
         repo.save(sub);
         return ResponseEntity.ok().build();
     }
 
-    /** Aboneligi sil (kullanici browser bildirim izinini kaldirinca). */
-    @DeleteMapping("/subscribe")
+    /**
+     * Aboneligi sil: kullanici bildirimi kapatinca veya cikis yapinca.
+     * Sadece kendi kaydini silebilir.
+     */
+    @PostMapping("/unsubscribe")
     @Transactional
-    public ResponseEntity<Void> unsubscribe(@Valid @RequestBody SubscriptionDto body) {
-        repo.deleteByEndpoint(body.endpoint);
+    public ResponseEntity<Void> unsubscribe(@AuthenticationPrincipal UserPrincipal currentUser,
+                                            @Valid @RequestBody SubscriptionDto body) {
+        if (currentUser == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        repo.findByEndpoint(body.endpoint)
+                .filter(s -> s.getUser().getId().equals(currentUser.getId()))
+                .ifPresent(repo::delete);
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Tarayicinin PushSubscription.toJSON() bicimi: { endpoint, keys: { p256dh, auth } }.
+     * Eski duz bicim (p256dh, auth) de kabul edilir.
+     */
     @Data
     public static class SubscriptionDto {
         @NotBlank
         private String endpoint;
         private String p256dh;
         private String auth;
+        private Map<String, String> keys;
+
+        String p256dhKey() { return p256dh != null ? p256dh : (keys != null ? keys.get("p256dh") : null); }
+        String authKey()   { return auth != null ? auth : (keys != null ? keys.get("auth") : null); }
     }
 }

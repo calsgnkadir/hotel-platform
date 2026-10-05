@@ -716,6 +716,11 @@ code, pre, kbd, samp {
   box-shadow: 0 0 0 4px rgba(185, 185, 185, 0.10) !important;
 }
 
+/* Alttaki yüzen kartlar (çerez, bildirim izni, uygulamayı yükle) açık bir pencerenin
+   butonlarını kapatmasın: pencere .page-enter katmanının içinde açıldığı için z-index'le
+   üste çıkamıyor; pencere açıkken kartlar gizlenir, kapanınca geri gelir. */
+body:has(.modal-overlay, [aria-modal="true"]) .floating-notice { display: none; }
+
 /* FAZ D4 — Mobilde modal'lar bottom sheet gibi davransin (Slack/iOS native pattern).
    Tum mevcut modal'lari (ApplyModal, DetailModal, ListingFormModal, ReviewModal,
    ReportModal, AvatarCropModal, AdminPage modals) tek noktada uretmis oluyoruz. */

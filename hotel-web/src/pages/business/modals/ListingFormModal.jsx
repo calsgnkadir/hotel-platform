@@ -5,6 +5,7 @@ import { extractErrorMessage } from '../../../api/client'
 import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_LABELS } from '../lib/constants'
 import useFocusTrap from '../../../lib/useFocusTrap'
 import { PAYMENT_PERIOD_OPTIONS, PAYMENT_METHOD_OPTIONS } from '../../../lib/salary'
+import { requestPushMoment } from '../../../lib/webpush'
 import {
   DndContext,
   PointerSensor,
@@ -228,6 +229,7 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
       } else {
         await hotelApi.createListing(payload)
         toast.success('İlan oluşturuldu!')
+        requestPushMoment('listing')  // kart, form kapanınca çıkar
       }
       onSuccess()
       onClose()

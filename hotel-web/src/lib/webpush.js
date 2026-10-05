@@ -6,9 +6,41 @@
  *  2. fetchVapidKey(): backend'den public key al
  *  3. requestPermission(): browser izin sor
  *  4. subscribe(): pushManager.subscribe + backend POST
- *  5. unsubscribe(): pushManager.unsubscribe + backend DELETE
+ *  5. unsubscribe(): pushManager.unsubscribe + backend POST /unsubscribe
+ *
+ * Izin sadece giris yapmis kullaniciya, anlamli bir anda sorulur
+ * (requestPushMoment — ilk basvuru / ilk ilan). Girişte izin zaten varsa
+ * abonelik sessizce bu kullaniciya baglanir (syncPushSubscription); cikista
+ * sunucudan koparilir (detachPushFromServer) ki ortak cihazda baskasinin
+ * bildirimi gelmesin.
  */
 import api from '../api/client'
+
+const OFF_KEY = 'kadrom.push.off'              // kullanici ayarlardan kapatti
+const SNOOZE_KEY = 'kadrom.push.snooze-until'  // "Şimdi değil" → 7 gün sonra tekrar
+const SNOOZE_DAYS = 7
+export const PUSH_MOMENT_EVENT = 'kadrom:push-moment'
+
+function readLS(key) { try { return localStorage.getItem(key) } catch { return null } }
+function writeLS(key, value) {
+  try { value == null ? localStorage.removeItem(key) : localStorage.setItem(key, value) } catch { /* yok say */ }
+}
+
+export function isPushOptedOut() { return readLS(OFF_KEY) === '1' }
+
+export function isPushSnoozed(now = Date.now()) {
+  const until = Number(readLS(SNOOZE_KEY))
+  return Number.isFinite(until) && until > now
+}
+
+export function snoozePush(now = Date.now()) {
+  writeLS(SNOOZE_KEY, String(now + SNOOZE_DAYS * 24 * 60 * 60 * 1000))
+}
+
+/** Uygulamanin bir yerinde "bildirim tam simdi ise yarar" ani olunca cagrilir. */
+export function requestPushMoment(reason) {
+  window.dispatchEvent(new CustomEvent(PUSH_MOMENT_EVENT, { detail: { reason } }))
+}
 
 const SUPPORTED = typeof window !== 'undefined'
   && 'serviceWorker' in navigator
@@ -68,10 +100,13 @@ export async function subscribeUser() {
 
   const payload = sub.toJSON()  // { endpoint, keys: { p256dh, auth } }
   await api.post('/api/push/subscribe', payload)
+  writeLS(OFF_KEY, null)
   return sub
 }
 
+/** Ayarlardan kapatma: tarayici aboneligi + sunucu kaydi silinir, bir daha sorulmaz. */
 export async function unsubscribeUser() {
+  writeLS(OFF_KEY, '1')
   if (!SUPPORTED) return
   const reg = await navigator.serviceWorker.getRegistration('/service-worker.js')
   if (!reg) return
@@ -81,6 +116,31 @@ export async function unsubscribeUser() {
     await api.post('/api/push/unsubscribe', { endpoint: sub.endpoint })
   } catch { /* sessiz */ }
   await sub.unsubscribe()
+}
+
+/**
+ * Giriste / sayfa yenilemede: izin zaten verilmisse aboneligi bu kullaniciya
+ * sessizce bagla. Eski surumde izin verip kaydi yarim kalanlar da boylece duzelir.
+ */
+export async function syncPushSubscription() {
+  if (!SUPPORTED || getPermission() !== 'granted' || isPushOptedOut()) return false
+  try {
+    await subscribeUser()
+    return true
+  } catch (e) {
+    console.warn('[Push] sync failed:', e?.message)
+    return false
+  }
+}
+
+/** Cikista: tarayici aboneligi kalir, sadece sunucudaki bu kullanici kaydi silinir. */
+export async function detachPushFromServer() {
+  if (!SUPPORTED) return
+  try {
+    const reg = await navigator.serviceWorker.getRegistration('/service-worker.js')
+    const sub = await reg?.pushManager.getSubscription()
+    if (sub) await api.post('/api/push/unsubscribe', { endpoint: sub.endpoint })
+  } catch { /* sessiz: cikisi engellemesin */ }
 }
 
 export async function isSubscribed() {
