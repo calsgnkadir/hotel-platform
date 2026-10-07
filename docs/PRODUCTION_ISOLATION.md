@@ -40,14 +40,23 @@ kullanıcı oluşturmaz veya root parolasını değiştirmez.
 
 ## Yerel üretim açılış testi
 
+Önce repoya alınmayan yerel VAPID anahtar dosyasını oluştur:
+
 ```bash
-docker compose -p hotel-prod-check -f compose.production-check.yml up -d --build
-curl http://localhost:8082/actuator/health
-docker compose -p hotel-prod-check -f compose.production-check.yml logs backend
-docker compose -p hotel-prod-check -f compose.production-check.yml down
+node -e "const fs=require('fs'),c=require('crypto');const k=c.generateKeyPairSync('ec',{namedCurve:'prime256v1'}),p=k.publicKey.export({format:'jwk'}),s=k.privateKey.export({format:'jwk'}),b=x=>Buffer.from(x,'base64url');fs.writeFileSync('.env.production-check','VAPID_PUBLIC_KEY='+Buffer.concat([Buffer.from([4]),b(p.x),b(p.y)]).toString('base64url')+'\nVAPID_PRIVATE_KEY='+s.d+'\n',{mode:0o600})"
 ```
 
-Bu test ayrı MySQL `tmpfs`, yalnızca loopback portu ve bilinen test anahtarları kullanır.
+Bu dosya `.gitignore` kapsamındadır. İçeriğini terminal çıktısına, sohbete veya
+GitHub'a yapıştırma. Ardından testi çalıştır:
+
+```bash
+docker compose --env-file .env.production-check -p hotel-prod-check -f compose.production-check.yml up -d --build
+curl http://localhost:8082/actuator/health
+docker compose --env-file .env.production-check -p hotel-prod-check -f compose.production-check.yml logs backend
+docker compose --env-file .env.production-check -p hotel-prod-check -f compose.production-check.yml down
+```
+
+Bu test ayrı MySQL `tmpfs`, yalnızca loopback portu ve yerelde üretilen geçici anahtarları kullanır.
 Verisi geçicidir; canlıya taşınmaz. Gerçek HTTPS, Cloudinary, e-posta ve ödeme
 entegrasyonlarını doğrulamaz. `ProductionSafetyTest` yanlış profilleri, root/DDL
 ayarlarını, kalıcı VAPID anahtarı olmadan açılışın durmasını ve mevcut demo

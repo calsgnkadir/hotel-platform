@@ -50,6 +50,7 @@ hotelapp/uploads/
 **/.env.local
 **/.env.*.local
 **/.env.prod
+.env.production-check
 !**/.env.example
 !**/.env.prod.example
 
