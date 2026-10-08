@@ -196,9 +196,13 @@ app:
     plan:          ${BILLING_PLAN:STANDARD_MONTHLY}
   # iyzico SANDBOX (varsayilan public sandbox anahtarlari — gercek para YOK).
   # Canliya gecis: IYZICO_* env + gercek merchant hesabi + ticari/yasal onay.
+  # iyzico — kodda varsayilan anahtar YOK. Bos birakilirsa odeme KAPALI
+  # (abonelik baslatilamaz, ilan kotasi uygulanmaz → platform ucretsiz/sinirsiz).
+  # Yerel/demo test icin kendi sandbox anahtarlarini env ile ver (IYZICO_API_KEY/SECRET_KEY).
+  # Canli (prod, showcase'siz): sandbox ayari ve localhost callback reddedilir.
   iyzico:
-    api-key:      ${IYZICO_API_KEY:sandbox-afXhZPW0MQlE4dCUUlHcEopnMBgXnAZI}
-    secret-key:   ${IYZICO_SECRET_KEY:sandbox-wbwpzKIiplZxI3hh5ALI4FJyfFYWnobP}
+    api-key:      ${IYZICO_API_KEY:}
+    secret-key:   ${IYZICO_SECRET_KEY:}
     base-url:     ${IYZICO_BASE_URL:https://sandbox-api.iyzipay.com}
     callback-url: ${IYZICO_CALLBACK_URL:http://localhost:8080/api/billing/callback}
 

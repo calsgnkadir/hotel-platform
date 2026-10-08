@@ -27,6 +27,8 @@ import java.time.LocalDateTime;
  * token atar → doğrulanır → ACTIVE → sınırsız ilan.
  *
  * enforce=false iken hiçbir şey kısıtlanmaz (demo/dev akış bozulmaz).
+ * Ödeme yapılandırılmamışsa (iyzico anahtarı yok) da kota uygulanmaz: ücret
+ * alınamayan bir şey kısıtlanmaz — platform ücretsiz/sınırsız çalışır.
  */
 @Service
 @RequiredArgsConstructor
@@ -45,10 +47,20 @@ public class BillingService {
     @Value("${app.billing.plan:STANDARD_MONTHLY}")  private String planName;
     @Value("${app.base-url:http://localhost:5173}") private String appBaseUrl;
 
+    /**
+     * paymentsAvailable: abonelik satın alınabilir mi (iyzico ayarlı).
+     * sandbox: test ödeme ortamı — ekran test kartını yalnızca o zaman gösterir.
+     */
     public record BillingStatus(SubscriptionStatus status, String plan, LocalDateTime trialEndsAt,
                                 LocalDateTime currentPeriodEnd, boolean active, boolean enforced,
                                 BigDecimal monthlyPrice,
-                                int freeListings, long usedListings, long freeRemaining) {}
+                                int freeListings, long usedListings, long freeRemaining,
+                                boolean paymentsAvailable, boolean sandbox) {}
+
+    /** Kota yalnızca açıkça istenmişse VE ödeme gerçekten alınabiliyorsa uygulanır. */
+    private boolean enforced() {
+        return enforce && iyzico.isConfigured();
+    }
 
     @Transactional
     public BillingStatus statusForOwner(Long ownerId) {
@@ -111,7 +123,7 @@ public class BillingService {
      */
     @Transactional(readOnly = true)
     public boolean canCreateListingByBusiness(Long businessId) {
-        if (!enforce) return true;
+        if (!enforced()) return true;
         Subscription s = subscriptionRepository.findByBusinessId(businessId).orElse(null);
         if (s != null && isPaid(s)) return true;                 // abonelik → sınırsız
         long used = jobListingRepository.countByBusiness_IdAndStatusNot(businessId, ListingStatus.CLOSED);
@@ -148,7 +160,8 @@ public class BillingService {
                 s.getBusiness().getId(), ListingStatus.CLOSED);
         long remaining = Math.max(0, (long) freeListings - used);
         return new BillingStatus(s.getStatus(), s.getPlan(), s.getTrialEndsAt(),
-                s.getCurrentPeriodEnd(), isPaid(s), enforce, monthlyPrice,
-                freeListings, used, remaining);
+                s.getCurrentPeriodEnd(), isPaid(s), enforced(), monthlyPrice,
+                freeListings, used, remaining,
+                iyzico.isConfigured(), iyzico.isConfigured() && iyzico.isSandbox());
     }
 }

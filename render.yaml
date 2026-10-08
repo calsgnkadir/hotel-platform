@@ -74,6 +74,9 @@ services:
         value: "true"
       - key: COOKIE_SAMESITE
         value: Lax
+      # iyzico: IYZICO_API_KEY/SECRET_KEY yoksa ödeme kapalı, ilan sınırsız.
+      # Vitrinde ödeme denemek için kendi sandbox anahtarlarını Render panelinde
+      # Environment'a ekle (repoya yazma). Gerçek ödeme: docs/DEPLOY_RENDER.md.
       - key: IYZICO_CALLBACK_URL
         value: https://api.kadrom.me/api/billing/callback
       # Opsiyonel entegrasyonlar — sahte değerle ilgili özellik kapalı, uygulama açılır.

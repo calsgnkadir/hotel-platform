@@ -39,6 +39,37 @@ class ProductionSafetyTest {
                 .run(ctx -> assertThat(ctx).hasNotFailed());
     }
 
+    @Test void productionRejectsSandboxOrHalfConfiguredPayments() {
+        String live = "app.iyzico.api-key=live-test-placeholder";
+        String liveSecret = "app.iyzico.secret-key=live-secret-placeholder";
+        String liveUrl = "app.iyzico.base-url=https://api.iyzipay.com";
+        String httpsCallback = "app.iyzico.callback-url=https://api.kadrom.me/api/billing/callback";
+        // Anahtar yok = ödeme kapalı → izinli
+        context("prod").withPropertyValues("app.iyzico.api-key=", "app.iyzico.secret-key=")
+                .run(ctx -> assertThat(ctx).hasNotFailed());
+        // Canlı anahtar + canlı adres + https callback → izinli
+        context("prod").withPropertyValues(live, liveSecret, liveUrl, httpsCallback)
+                .run(ctx -> assertThat(ctx).hasNotFailed());
+        // Sandbox adresi
+        context("prod").withPropertyValues(live, liveSecret, httpsCallback,
+                        "app.iyzico.base-url=https://sandbox-api.iyzipay.com")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("SANDBOX"));
+        // Sandbox anahtarı
+        context("prod").withPropertyValues("app.iyzico.api-key=sandbox-placeholder", liveSecret, liveUrl, httpsCallback)
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("SANDBOX"));
+        // Yarım ayar
+        context("prod").withPropertyValues(live, "app.iyzico.secret-key=", liveUrl, httpsCallback)
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("IYZICO_SECRET_KEY"));
+        // localhost / http callback
+        context("prod").withPropertyValues(live, liveSecret, liveUrl,
+                        "app.iyzico.callback-url=http://localhost:8080/api/billing/callback")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("IYZICO_CALLBACK_URL"));
+        // Vitrin muaf: demo'da sandbox ödeme denenebilir
+        context("prod", "showcase").withPropertyValues("app.iyzico.api-key=sandbox-placeholder", liveSecret,
+                        "app.iyzico.base-url=https://sandbox-api.iyzipay.com", httpsCallback)
+                .run(ctx -> assertThat(ctx).hasNotFailed());
+    }
+
     @Test void isolatedProductionStarts() {
         context("prod").run(ctx -> assertThat(ctx).hasNotFailed());
     }

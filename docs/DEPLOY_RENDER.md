@@ -139,6 +139,27 @@ Ayarlanmazsa **Google butonu otomatik gizlenir**, e-posta/şifre girişi normal 
 
 Client secret'ı repoya veya sohbete yapıştırma.
 
+### Ödeme (iyzico, isteğe bağlı)
+
+Kodda varsayılan iyzico anahtarı **yok**. `IYZICO_API_KEY` / `IYZICO_SECRET_KEY`
+verilmezse ödeme kapalıdır: abonelik ekranında satın alma butonu çıkmaz, ilan kotası
+uygulanmaz — işletmeler ücretsiz ve sınırsız ilan açar. Açılış için gerekmez.
+
+- **Vitrin (`prod,showcase`)**: ödeme akışını göstermek istersen kendi iyzico
+  *sandbox* hesabının anahtarlarını Environment'a gir. Ekranda test kartı yalnızca
+  sandbox'ta görünür; gerçek para hareket etmez.
+- **Gerçek ödeme (`prod`, vitrinsiz)**: önce kayıtlı şirket + onaylı iyzico üye işyeri
+  hesabı gerekir. Sonra:
+  - `IYZICO_API_KEY`, `IYZICO_SECRET_KEY` → canlı anahtarlar
+  - `IYZICO_BASE_URL` = `https://api.iyzipay.com`
+  - `IYZICO_CALLBACK_URL` = `https://api.kadrom.me/api/billing/callback`
+
+  Prod'da sandbox adresi/anahtarı, tek anahtar ya da `https` olmayan callback
+  verilirse uygulama **açılmaz** (ProductionSafetyConfiguration) — sandbox'ta herkese
+  açık test kartıyla bedava abonelik alınabilirdi.
+
+Anahtarları repoya veya sohbete yapıştırma.
+
 ## 3. Domain — Namecheap DNS
 
 Render'da her serviste **Settings → Custom Domains** altında domain zaten

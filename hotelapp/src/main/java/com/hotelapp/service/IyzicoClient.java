@@ -14,12 +14,16 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * iyzico Checkout Form (hosted ödeme sayfası) — SANDBOX.
+ * iyzico Checkout Form (hosted ödeme sayfası).
  *
  * Kart bilgisini biz TUTMAYIZ: iyzico'nun barındırdığı forma yönlendiririz,
  * o da callback'e token döner. Canlıya geçiş = env key değişimi (kod aynı).
- * Varsayılan anahtarlar iyzico'nun herkese açık sandbox anahtarlarıdır —
- * gerçek para hareket etmez.
+ *
+ * Kodda varsayılan anahtar YOK (IYZICO_API_KEY / IYZICO_SECRET_KEY). Anahtar
+ * verilmezse ödeme kapalıdır: iyzico hiç çağrılmaz, abonelik başlatılamaz ve
+ * ilan kotası uygulanmaz (BillingService). Eskiden boşken sandbox anahtarlarına
+ * düşülüyordu — canlıda iyzico'nun herkese açık test kartıyla bedava abonelik
+ * alınabiliyordu. Canlıda sandbox ayarı ProductionSafetyConfiguration'da reddedilir.
  */
 @Component
 @Slf4j
@@ -27,10 +31,12 @@ public class IyzicoClient {
 
     private final Options options;
     private final String callbackUrl;
+    private final boolean configured;
+    private final boolean sandbox;
 
     public IyzicoClient(
-            @Value("${app.iyzico.api-key:sandbox-afXhZPW0MQlE4dCUUlHcEopnMBgXnAZI}") String apiKey,
-            @Value("${app.iyzico.secret-key:sandbox-wbwpzKIiplZxI3hh5ALI4FJyfFYWnobP}") String secretKey,
+            @Value("${app.iyzico.api-key:}") String apiKey,
+            @Value("${app.iyzico.secret-key:}") String secretKey,
             @Value("${app.iyzico.base-url:https://sandbox-api.iyzipay.com}") String baseUrl,
             @Value("${app.iyzico.callback-url:http://localhost:8080/api/billing/callback}") String callbackUrl) {
         this.options = new Options();
@@ -38,7 +44,27 @@ public class IyzicoClient {
         this.options.setSecretKey(secretKey);
         this.options.setBaseUrl(baseUrl);
         this.callbackUrl = callbackUrl;
+        this.configured = !isBlank(apiKey) && !isBlank(secretKey);
+        this.sandbox = isSandbox(baseUrl, apiKey);
+        if (!configured) {
+            log.info("[IYZICO] Anahtar yok — ödeme kapalı (abonelik başlatılamaz, ilan kotası uygulanmaz).");
+        } else if (sandbox) {
+            log.info("[IYZICO] SANDBOX modunda — gerçek para hareket etmez.");
+        }
     }
+
+    /** API anahtarı + gizli anahtar verilmiş mi (ödeme alınabilir mi). */
+    public boolean isConfigured() { return configured; }
+
+    /** Test (sandbox) ortamı mı — adres ya da anahtar 'sandbox' içeriyor. */
+    public boolean isSandbox() { return sandbox; }
+
+    static boolean isSandbox(String baseUrl, String apiKey) {
+        return (baseUrl != null && baseUrl.toLowerCase().contains("sandbox"))
+                || (apiKey != null && apiKey.trim().startsWith("sandbox-"));
+    }
+
+    private static boolean isBlank(String s) { return s == null || s.isBlank(); }
 
     public record CheckoutInit(boolean ok, String token, String paymentPageUrl,
                                String checkoutFormContent, String error) {}
@@ -47,6 +73,9 @@ public class IyzicoClient {
     /** Abonelik ödemesi için hosted checkout başlatır. */
     public CheckoutInit startCheckout(Business business, User owner, BigDecimal price,
                                       String planName, String conversationId) {
+        if (!configured) {
+            return new CheckoutInit(false, null, null, null, "Ödeme sistemi henüz aktif değil.");
+        }
         try {
             CreateCheckoutFormInitializeRequest req = new CreateCheckoutFormInitializeRequest();
             req.setLocale(Locale.TR.getValue());
@@ -103,6 +132,9 @@ public class IyzicoClient {
 
     /** Callback'te gelen token ile ödeme sonucunu doğrular. */
     public CheckoutResult retrieve(String token) {
+        if (!configured) {
+            return new CheckoutResult(false, null, null, "Ödeme sistemi aktif değil");
+        }
         try {
             RetrieveCheckoutFormRequest req = new RetrieveCheckoutFormRequest();
             req.setToken(token);

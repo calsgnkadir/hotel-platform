@@ -1,5 +1,7 @@
-// Faz 1 — İşletme aboneliği (iyzico SANDBOX). İşçi tarafı her zaman ücretsiz.
-// MODEL: ilk 3 ilan ücretsiz; sonrası aylık abonelik (sınırsız ilan).
+// İşletme aboneliği (iyzico). İşçi tarafı her zaman ücretsiz.
+// MODEL: ilk {freeListings} ilan ücretsiz; sonrası aylık abonelik (sınırsız ilan).
+// paymentsAvailable=false (iyzico anahtarı yok) → kota yok, satın alma butonu yok.
+// sandbox=true → test kartı kutusu gösterilir (yalnız test ortamında).
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -70,7 +72,7 @@ export default function BillingTab() {
     mutationFn: hotelApi.startBillingCheckout,
     onSuccess: (init) => {
       if (init?.ok && init.paymentPageUrl) {
-        window.location.href = init.paymentPageUrl   // iyzico hosted ödeme sayfası (sandbox)
+        window.location.href = init.paymentPageUrl   // iyzico hosted ödeme sayfası
       } else {
         toast.error(init?.error || 'Ödeme başlatılamadı.')
       }
@@ -89,10 +91,12 @@ export default function BillingTab() {
   }
 
   const paid       = b.active
+  const payments   = !!b.paymentsAvailable   // abonelik satın alınabilir mi
+  const limited    = !!b.enforced            // ücretsiz ilan kotası uygulanıyor mu
   const free       = Number(b.freeListings ?? 5)
   const used       = Number(b.usedListings ?? 0)
   const remaining  = Number(b.freeRemaining ?? Math.max(0, free - used))
-  const canPost    = paid || remaining > 0
+  const canPost    = paid || !limited || remaining > 0
   const usagePct   = free > 0 ? Math.min(100, Math.round((used / free) * 100)) : 0
   const price      = Number(b.monthlyPrice || 0).toLocaleString('tr-TR')
   const primaryLabel = paid ? 'Aboneliği Yenile / Uzat' : 'Aboneliğe Geç'
@@ -100,8 +104,13 @@ export default function BillingTab() {
   return (
     <div className="mt-2">
       <p className="text-[13.5px] mb-5" style={{ color: 'var(--ah-ink-3)', maxWidth: 680 }}>
-        Adaylar için her zaman ücretsiz. İlk <b>{free}</b> ilan işletmeler için de ücretsiz;
-        daha fazlası için tek, düşük aylık ücret — komisyon yok.
+        {limited ? (
+          <>Adaylar için her zaman ücretsiz. İlk <b>{free}</b> ilan işletmeler için de ücretsiz;
+          daha fazlası için tek, düşük aylık ücret — komisyon yok.</>
+        ) : (
+          <>Adaylar için her zaman ücretsiz. İlan yayınlama şimdilik işletmeler için de
+          <b> ücretsiz ve sınırsız</b> — komisyon yok.</>
+        )}
       </p>
 
       {/* === SATIR 1 — durum + kullanım (tam genişlik) === */}
@@ -119,12 +128,14 @@ export default function BillingTab() {
               {paid ? 'Aktif abonelik' : 'Ücretsiz plan'}
             </div>
             <div className="text-[13px] mt-1" style={{ color: 'var(--ah-ink-3)' }}>
-              {paid ? `Plan: ${b.plan}` : `${free} ilana kadar ücretsiz`}
+              {paid ? `Plan: ${b.plan}` : limited ? `${free} ilana kadar ücretsiz` : 'Sınırsız ilan, ücretsiz'}
             </div>
           </div>
           <div className="text-right flex-shrink-0">
             <div className="font-display font-black tabular-nums leading-none" style={{ color: 'var(--ah-ink)', fontSize: 34 }}>{price} ₺</div>
-            <div className="text-[11px] uppercase tracking-widest mt-1.5" style={{ color: 'var(--ah-ink-4)' }}>aylık · sınırsız ilan</div>
+            <div className="text-[11px] uppercase tracking-widest mt-1.5" style={{ color: 'var(--ah-ink-4)' }}>
+              {payments ? 'aylık · sınırsız ilan' : 'aylık · yakında'}
+            </div>
           </div>
         </div>
 
@@ -134,6 +145,11 @@ export default function BillingTab() {
             <div className="text-[13.5px]" style={{ color: 'var(--ah-ink-2)' }}>
               <b>Sınırsız ilan yayınlama açık.</b>
               {b.currentPeriodEnd && <> · <span style={{ color: 'var(--ah-ink-3)' }}>Bir sonraki yenileme:</span> <b>{fmtDate(b.currentPeriodEnd)}</b></>}
+            </div>
+          ) : !limited ? (
+            <div className="text-[13.5px]" style={{ color: 'var(--ah-ink-2)' }}>
+              <b>İlan yayınlama şimdilik ücretsiz ve sınırsız.</b>
+              {!payments && <> <span style={{ color: 'var(--ah-ink-3)' }}>Ücretli abonelik henüz aktif değil.</span></>}
             </div>
           ) : (
             <>
@@ -153,13 +169,16 @@ export default function BillingTab() {
           )}
         </div>
 
-        {/* Aksiyonlar */}
+        {/* Aksiyonlar — ödeme sistemi kapalıysa satın alma butonu yok */}
+        {(payments || paid) && (
         <div className="flex items-center gap-2.5 mt-5 flex-wrap">
+          {payments && (
           <button onClick={() => checkout.mutate()} disabled={checkout.isPending}
             className="px-5 py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5 text-white"
             style={{ background: 'var(--ah-brand-gradient)', boxShadow: 'var(--elev-1)' }}>
             {checkout.isPending ? 'Yönlendiriliyor…' : primaryLabel}
           </button>
+          )}
           {paid && (
             <button onClick={() => cancel.mutate()} disabled={cancel.isPending}
               className="px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors"
@@ -168,6 +187,7 @@ export default function BillingTab() {
             </button>
           )}
         </div>
+        )}
       </div>
 
       {/* === SATIR 2 — plana dahil + nasıl çalışır === */}
@@ -187,29 +207,32 @@ export default function BillingTab() {
         <div className="card p-6">
           <div className="text-[10px] uppercase tracking-widest font-bold mb-3.5" style={{ color: 'var(--ah-ink-3)' }}>Nasıl çalışır</div>
           <ol className="space-y-3.5">
-            <Step n={1} title={`İlk ${free} ilan ücretsiz`}>Kart bilgisi istemeden hemen ilan yayınla.</Step>
-            <Step n={2} title={`Sonrası ${price} ₺ / ay`}>Aboneliğe geçince sınırsız ilan; istediğin zaman iptal.</Step>
+            {limited ? (
+              <>
+                <Step n={1} title={`İlk ${free} ilan ücretsiz`}>Kart bilgisi istemeden hemen ilan yayınla.</Step>
+                <Step n={2} title={`Sonrası ${price} ₺ / ay`}>Aboneliğe geçince sınırsız ilan; istediğin zaman iptal.</Step>
+              </>
+            ) : (
+              <>
+                <Step n={1} title="Şimdilik sınırsız ve ücretsiz">Kart bilgisi istemeden dilediğin kadar ilan yayınla.</Step>
+                <Step n={2} title="Ücretli plan sonra">Abonelik başladığında yayındaki ilanların kapanmaz.</Step>
+              </>
+            )}
             <Step n={3} title="Adaylar hep ücretsiz">İşçi tarafından hiçbir komisyon/kesinti alınmaz.</Step>
           </ol>
         </div>
       </div>
 
-      {/* enforce kapalıysa (BILLING_ENFORCE=false) bilgi notu */}
-      {!b.enforced && (
-        <div className="rounded-xl p-4 text-[13px] mt-4" style={{ background: 'var(--ah-band)', border: '1px dashed var(--ah-line-2)', color: 'var(--ah-ink-2)' }}>
-          <b>Serbest mod.</b> Şu an ilan yayınlama abonelikle kısıtlanmıyor
-          (<code>billing.enforce=false</code>). Kotayı açmak için canlıda <code>true</code> yap.
+      {/* Test kartı — yalnız test (sandbox) ödeme ortamında; canlıda asla görünmez */}
+      {payments && b.sandbox && (
+        <div className="card p-5 mt-4">
+          <div className="text-[10px] uppercase tracking-widest font-bold mb-2" style={{ color: 'var(--ah-ink-3)' }}>Test ödeme ortamı — test kartı</div>
+          <div className="text-[13px] space-y-1" style={{ color: 'var(--ah-ink-2)' }}>
+            <p>Kart: <b className="font-mono">5528 7900 0000 0008</b> · SKT <b>12/30</b> · CVC <b>123</b> · 3D şifre <b>283126</b></p>
+            <p style={{ color: 'var(--ah-ink-3)' }}>Bu bir deneme ortamıdır; gerçek para hareket etmez.</p>
+          </div>
         </div>
       )}
-
-      {/* Sandbox test kartı bilgisi */}
-      <div className="card p-5 mt-4">
-        <div className="text-[10px] uppercase tracking-widest font-bold mb-2" style={{ color: 'var(--ah-ink-3)' }}>iyzico Sandbox — test kartı</div>
-        <div className="text-[13px] space-y-1" style={{ color: 'var(--ah-ink-2)' }}>
-          <p>Kart: <b className="font-mono">5528 7900 0000 0008</b> · SKT <b>12/30</b> · CVC <b>123</b> · 3D şifre <b>283126</b></p>
-          <p style={{ color: 'var(--ah-ink-3)' }}>Gerçek para hareket etmez. Canlıya geçiş yalnızca gerçek iyzico anahtarları + ticari/yasal onay ile.</p>
-        </div>
-      </div>
     </div>
   )
 }
