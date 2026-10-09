@@ -1,13 +1,14 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const getBilling = vi.fn()
+const cancelBilling = vi.fn()
 vi.mock('../../../../api/hotel', () => ({
   getBilling: (...a) => getBilling(...a),
   startBillingCheckout: vi.fn(),
-  cancelBilling: vi.fn(),
+  cancelBilling: (...a) => cancelBilling(...a),
 }))
 vi.mock('../../../../api/client', () => ({ extractErrorMessage: () => '' }))
 
@@ -107,5 +108,49 @@ describe('BillingTab abonelik bitişi / iptal', () => {
     )
     expect(await screen.findByText('Abonelik bilgisi yüklenemedi.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tekrar dene' })).toBeInTheDocument()
+  })
+})
+
+/**
+ * UI Paket 3 — "İptal et" artık onaysız çalışmaz: önce onay penceresi açılır,
+ * yalnız onaylanınca cancelBilling çağrılır.
+ */
+describe('BillingTab abonelik iptali onayı', () => {
+  beforeEach(() => { getBilling.mockReset(); cancelBilling.mockReset(); cancelBilling.mockResolvedValue({}) })
+
+  const PERIOD_END = '2026-11-15T12:00:00Z'
+  const PERIOD_END_TR = new Date(PERIOD_END).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+  const ACTIVE = { status: 'ACTIVE', active: true, enforced: true, paymentsAvailable: true, currentPeriodEnd: PERIOD_END }
+
+  it('"İptal et" onay penceresini açar, cancelBilling çağrılmaz', async () => {
+    renderTab(ACTIVE)
+    fireEvent.click(await screen.findByRole('button', { name: 'İptal et' }))
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveTextContent('Aboneliği iptal et')
+    expect(dialog).toHaveTextContent(`Aboneliğin ${PERIOD_END_TR} tarihine kadar geçerli kalır; sonra ücretsiz plana geçersin. Otomatik yenileme zaten yok.`)
+    expect(cancelBilling).not.toHaveBeenCalled()
+  })
+
+  it('onaylayınca cancelBilling çağrılır', async () => {
+    renderTab(ACTIVE)
+    fireEvent.click(await screen.findByRole('button', { name: 'İptal et' }))
+    const dialog = screen.getByRole('dialog')
+    const confirmBtn = Array.from(dialog.querySelectorAll('button')).find(b => b.textContent === 'İptal et')
+    fireEvent.click(confirmBtn)
+    await waitFor(() => expect(cancelBilling).toHaveBeenCalledTimes(1))
+  })
+
+  it('"Vazgeç" pencereyi kapatır, cancelBilling çağrılmaz', async () => {
+    renderTab(ACTIVE)
+    fireEvent.click(await screen.findByRole('button', { name: 'İptal et' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Vazgeç' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(cancelBilling).not.toHaveBeenCalled()
+  })
+
+  it('bitiş tarihi yoksa metin tarihsiz', async () => {
+    renderTab({ ...ACTIVE, currentPeriodEnd: null })
+    fireEvent.click(await screen.findByRole('button', { name: 'İptal et' }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Aboneliğin dönem sonuna kadar geçerli kalır; sonra ücretsiz plana geçersin.')
   })
 })

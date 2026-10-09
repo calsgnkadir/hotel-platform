@@ -1,20 +1,24 @@
 /**
- * shadcn/ui AlertDialog proje uyarlamasi
- * - Radix UI yerine: native HTML <dialog> uzerine compose + Escape/backdrop kapatma
- * - TypeScript yerine JS
- * - Esc, backdrop click ile kapatma
- * - Confirm/Cancel butonlari ile destructive akış (hesap sil vs.)
+ * Onay penceresi (shadcn AlertDialog uyarlaması, JS).
  *
- * Kullanim:
- *   const [open, setOpen] = useState(false)
+ * UI Paket 3 — açık tema: beyaz kart (--ah-card + 1px --ah-line + --elev-3, radius 12),
+ * başlık .type-card (büyük harf YOK), metin .type-body; butonlar ortak .btn-* sınıfları:
+ * vazgeç .btn-secondary, onay .btn-destructive (destructive) / .btn-primary.
+ * Karartma .modal-overlay ile aynı (rgba(17,24,39,.5) + 2px blur, z-index 1000).
+ *
+ * Erişilebilirlik: role="dialog" + aria-modal + aria-labelledby/-describedby;
+ * açılışta odak güvenli butona (Vazgeç), Tab pencere içinde döner, Esc kapatır,
+ * kapanınca odak açan öğeye geri döner.
+ *
+ * Kullanim (props API değişmedi):
  *   <ConfirmDialog open={open} onClose={() => setOpen(false)}
- *     title="Hesabini sil"
- *     description="Bu islem geri alinamaz. Tum verileriniz anonimlestirilecek."
+ *     title="Hesabını sil"
+ *     description="Bu işlem geri alınamaz."
  *     confirmLabel="Evet, sil"
  *     destructive
  *     onConfirm={() => deleteAccount()} />
  */
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 
 export function ConfirmDialog({
   open,
@@ -22,19 +26,31 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel = 'Onayla',
-  cancelLabel = 'Vazgec',
+  cancelLabel = 'Vazgeç',
   destructive = false,
   loading = false,
   onConfirm,
 }) {
-  const ref = useRef(null)
+  const cancelRef = useRef(null)
+  const panelRef = useRef(null)
+  const uid = useId()
+  const titleId = `confirm-title-${uid}`
+  const descId = `confirm-desc-${uid}`
 
-  // Escape ile kapat
+  // Escape ile kapat + Tab odağı pencere içinde tut
   useEffect(() => {
+    if (!open) return
     function onKey(e) {
-      if (e.key === 'Escape' && open && !loading) onClose?.()
+      if (e.key === 'Escape' && !loading) { onClose?.(); return }
+      if (e.key === 'Tab' && panelRef.current) {
+        const items = [...panelRef.current.querySelectorAll('button:not([disabled])')]
+        if (!items.length) return
+        const first = items[0], last = items[items.length - 1]
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
     }
-    if (open) document.addEventListener('keydown', onKey)
+    document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [open, loading, onClose])
 
@@ -47,10 +63,14 @@ export function ConfirmDialog({
     }
   }, [open])
 
-  // Initial focus -> cancel butonu (destructive icin guvenli default)
+  // Açılışta odak -> Vazgeç (yıkıcı aksiyonda güvenli varsayılan); kapanınca geri ver
   useEffect(() => {
-    if (open && ref.current) {
-      setTimeout(() => ref.current?.focus(), 50)
+    if (!open) return
+    const opener = document.activeElement
+    const t = setTimeout(() => cancelRef.current?.focus(), 50)
+    return () => {
+      clearTimeout(t)
+      if (opener && typeof opener.focus === 'function' && document.contains(opener)) opener.focus()
     }
   }, [open])
 
@@ -58,31 +78,36 @@ export function ConfirmDialog({
 
   return (
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-dialog-title"
-      className="fixed inset-0 z-50 grid place-items-center p-4"
-      style={{ background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(4px)' }}
+      className="confirm-overlay fixed inset-0 grid place-items-center p-4"
+      style={{
+        background: 'rgba(17, 24, 39, 0.5)',
+        backdropFilter: 'blur(2px)',
+        WebkitBackdropFilter: 'blur(2px)',
+        zIndex: 1000,
+      }}
       onClick={() => !loading && onClose?.()}
     >
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={description ? descId : undefined}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border p-6 space-y-4"
+        className="w-full max-w-md p-5 sm:p-6 space-y-5"
         style={{
-          background: 'linear-gradient(145deg, rgba(19, 17, 15, 0.94) 0%, rgba(13, 11, 9, 1) 100%)',
-          borderColor: destructive ? 'rgba(107, 117, 116, 0.30)' : 'rgba(31, 41, 55, 0.22)',
-          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+          background: 'var(--ah-card)',
+          border: '1px solid var(--ah-line)',
+          borderRadius: 12,
+          boxShadow: 'var(--elev-3)',
         }}
       >
-        {/* Header */}
         <div className="flex items-start gap-3">
           {destructive && (
             <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                 style={{
-                   background: 'rgba(107, 117, 116, 0.12)',
-                   border: '1px solid rgba(107, 117, 116, 0.30)',
-                 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7574"
+                 data-testid="confirm-danger-icon"
+                 style={{ background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                 <line x1="12" y1="9" x2="12" y2="13" />
@@ -91,33 +116,24 @@ export function ConfirmDialog({
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h2 id="confirm-dialog-title"
-                className="text-xl tracking-wider uppercase"
-                style={{ color: destructive ? '#6b7574' : '#1f2937' }}>
+            <h2 id={titleId} className="type-card" style={{ color: 'var(--ah-ink)' }}>
               {title}
             </h2>
             {description && (
-              <p className="text-[13px] mt-1.5 leading-relaxed"
-                 style={{ color: 'var(--ah-ink-3)' }}>
+              <p id={descId} className="type-body mt-1.5" style={{ color: 'var(--ah-ink-2)' }}>
                 {description}
               </p>
             )}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
           <button
-            ref={ref}
+            ref={cancelRef}
             type="button"
             disabled={loading}
             onClick={() => onClose?.()}
-            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] rounded-full transition-all disabled:opacity-50 hover:-translate-y-0.5"
-            style={{
-              background: 'transparent',
-              color: 'var(--ah-ink-3)',
-              border: '1px solid rgba(31, 41, 55, 0.14)',
-            }}
+            className="btn-secondary w-full sm:w-auto"
           >
             {cancelLabel}
           </button>
@@ -125,24 +141,7 @@ export function ConfirmDialog({
             type="button"
             disabled={loading}
             onClick={() => onConfirm?.()}
-            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
-            style={
-              destructive
-                ? {
-                    background: 'var(--ah-danger)',   // muted kiremit — yikici aksiyon sinyali
-                    color: '#ffffff',
-                    border: '1px solid var(--ah-danger)',
-                    boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-                  }
-                : {
-                    background: 'var(--ah-brand-gradient)',
-                    // Eskiden '#1a1208' (koyu kahve) idi — altin butondan kalma.
-                    // Teal gradient uzerinde ~2.6:1 kontrast veriyordu.
-                    color: '#ffffff',
-                    border: '1px solid rgba(31, 41, 55, 0.55)',
-                    boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-                  }
-            }
+            className={`${destructive ? 'btn-destructive' : 'btn-primary'} w-full sm:!w-auto`}
           >
             {loading ? 'İşleniyor…' : confirmLabel}
           </button>

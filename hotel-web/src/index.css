@@ -644,6 +644,73 @@ body:has(.modal-overlay, [aria-modal="true"]) .floating-notice { display: none; 
   }
 }
 
+/* UI Paket 3 — Sabit başlık + kayan gövde + sabit alt bar penceresi (ApplyModal).
+   .modal-content kendisi kaymaz; yalniz __body kayar, __foot (Iptal / Basvur) her
+   zaman gorunur. Ozgulluk (0,2,0) mobil .modal-content { overflow-y:auto } kuralini ezer. */
+.modal-content.modal-sheet {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+.modal-sheet__head {
+  flex-shrink: 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--ah-line);
+}
+.modal-sheet__form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.modal-sheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem;
+}
+.modal-sheet__foot {
+  flex-shrink: 0;
+  padding: 0.75rem 1.25rem calc(0.75rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--ah-line);
+  background: var(--ah-card);
+}
+.ah-logo.ah-logo--sm { width: 40px; height: 40px; font-size: 16px; border-radius: 8px; }
+
+/* Vardiya secim satiri — dokunma hedefi >=52px; secili: grafit cerceve + soft zemin */
+.ah-slot-option {
+  display: flex; align-items: center; gap: 0.75rem;
+  min-height: 52px; padding: 0.625rem 0.875rem;
+  border: 1px solid var(--ah-line); border-radius: var(--ah-r);
+  background: var(--ah-card); cursor: pointer;
+  transition: border-color .15s, background-color .15s;
+}
+.ah-slot-option[data-state="idle"]:hover { border-color: var(--ah-line-2); }
+.ah-slot-option[data-state="selected"] { border-color: var(--ah-brand); background: var(--ah-brand-soft); }
+.ah-slot-option[data-state="disabled"] { background: var(--ah-band); cursor: not-allowed; opacity: .65; }
+
+/* UI Paket 3 — Ilan detayi mobil sabit alt bar (lg altinda): [ucret /gun] [Basvur].
+   Sayfa kokune .has-mobile-apply-bar verilir; icerik barin altinda kalmasin. */
+.mobile-apply-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  background: var(--ah-card);
+  border-top: 1px solid var(--ah-line);
+  box-shadow: var(--elev-2);
+}
+.has-mobile-apply-bar { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) {
+  .mobile-apply-bar { display: none; }
+  .has-mobile-apply-bar { padding-bottom: 0; }
+}
+/* Yuzen kartlar (cerez, bildirim izni, uygulamayi yukle) alt barin USTUNDE dursun;
+   "Basvur" dugmesini kapatmasin. */
+@media (max-width: 1023px) {
+  body:has(.mobile-apply-bar) .floating-notice {
+    bottom: calc(5.25rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }

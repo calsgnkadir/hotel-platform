@@ -4,7 +4,7 @@ export default function StatusBadge({ status }) {
   const map = {
     PENDING:   { cls: 'badge-pending',   icon: '', label: 'Mesajlaşma açık' },
     REVIEWING: { cls: 'badge-reviewing', icon: '', label: 'İnceleniyor' },
-    HELD:      { cls: 'badge-reviewing', icon: '', label: 'HOLD — Cevap Bekleniyor' },
+    HELD:      { cls: 'badge-reviewing', icon: '', label: 'Beklemede — yanıtın bekleniyor' },
     STANDBY:   { cls: 'badge-reviewing', icon: '', label: 'Yedek' },
     ACCEPTED:  { cls: 'badge-accepted',  icon: '', label: 'Kabul' },
     REJECTED:  { cls: 'badge-rejected',  icon: '', label: 'Red' },
@@ -15,12 +15,12 @@ export default function StatusBadge({ status }) {
   return <span className={`badge ${s.cls}`}>{s.label}</span>
 }
 
-// Aday basvuru status filtre secenekleri
+// Aday basvuru status filtre secenekleri. value = API enum (degismez), label = gorunen Turkce metin
 export const CAND_STATUS_FILTERS = [
   { value: '',          label: 'Tümü' },
   { value: 'PENDING',   label: 'Bekleyen' },
   { value: 'REVIEWING', label: 'İnceleniyor' },
-  { value: 'HELD',      label: 'HOLD' },
+  { value: 'HELD',      label: 'Beklemede' },
   { value: 'STANDBY',   label: 'Yedek' },
   { value: 'ACCEPTED',  label: 'Kabul' },
   { value: 'REJECTED',  label: 'Red' },

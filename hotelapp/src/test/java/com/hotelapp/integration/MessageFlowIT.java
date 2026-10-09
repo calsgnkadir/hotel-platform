@@ -146,6 +146,25 @@ class MessageFlowIT {
     }
 
     @Test
+    void business_cannot_start_conversation_with_candidate_who_never_applied() throws Exception {
+        Auth biz  = registerAndGetAuth(business("biz.msg5@test.com"));
+        Auth cand = registerAndGetAuth(candidate("cand.msg5@test.com"));
+
+        StartConversationRequest start = new StartConversationRequest();
+        start.setOtherPartyId(cand.userId);
+        mvc.perform(post("/api/messages/conversations")
+                .header("Authorization", "Bearer " + biz.token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json.writeValueAsString(start)))
+            .andExpect(status().isUnprocessableEntity());
+
+        mvc.perform(get("/api/messages/conversations")
+                .header("Authorization", "Bearer " + biz.token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content.length()").value(0));
+    }
+
+    @Test
     void unauthenticated_cannot_send_message() throws Exception {
         // Iki kullaniciyla sohbet ac, sonra token'siz mesaj atmayi dene
         Auth biz  = registerAndGetAuth(business("biz.msg4@test.com"));

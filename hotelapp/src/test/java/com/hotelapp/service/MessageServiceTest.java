@@ -6,6 +6,7 @@ import com.hotelapp.entity.Conversation;
 import com.hotelapp.entity.Message;
 import com.hotelapp.entity.User;
 import com.hotelapp.enums.Role;
+import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.BusinessBlockRepository;
@@ -42,6 +43,7 @@ class MessageServiceTest {
     private NotificationService notifications;
     private FileStorageService storage;
     private BusinessBlockRepository blocks;
+    private ApplicationRepository applications;
     private MessageService service;
     private User candidate;
     private User owner;
@@ -64,8 +66,9 @@ class MessageServiceTest {
         notifications = mock(NotificationService.class);
         storage = mock(FileStorageService.class);
         blocks = mock(BusinessBlockRepository.class);
+        applications = mock(ApplicationRepository.class);
         service = new MessageService(conversations, messages, mock(MessageReactionRepository.class), users,
-                mock(ApplicationRepository.class), notifications, storage, mock(SimpMessagingTemplate.class), blocks);
+                applications, notifications, storage, mock(SimpMessagingTemplate.class), blocks);
 
         candidate = user(CANDIDATE, Role.CANDIDATE);
         owner = user(OWNER, Role.BUSINESS_OWNER);
@@ -132,5 +135,63 @@ class MessageServiceTest {
         assertThat(service.startConversation(OWNER, startWith(CANDIDATE)).getId()).isEqualTo(CONV);
         assertThat(service.sendMessage(CONV, OWNER, text("merhaba")).getContent()).isEqualTo("merhaba");
         verify(messages).save(any());
+    }
+
+    // ---- Yeni sohbet icin basvuru iliskisi ----
+
+    private void noExistingConversation() {
+        when(conversations.findByCandidateIdAndBusinessOwnerId(CANDIDATE, OWNER)).thenReturn(Optional.empty());
+    }
+
+    private void applied(boolean value) {
+        when(applications.existsByCandidateIdAndJobListingBusinessOwnerId(CANDIDATE, OWNER)).thenReturn(value);
+    }
+
+    @Test
+    void businessCannotOpenNewConversationWithCandidateWhoNeverApplied() {
+        blocked(false);
+        noExistingConversation();
+        applied(false);
+        assertThatThrownBy(() -> service.startConversation(OWNER, startWith(CANDIDATE)))
+                .isInstanceOf(BusinessRuleException.class);
+        verify(conversations, never()).save(any());
+    }
+
+    @Test
+    void businessCanOpenNewConversationWithApplicant() {
+        blocked(false);
+        noExistingConversation();
+        applied(true);
+        service.startConversation(OWNER, startWith(CANDIDATE));
+        verify(conversations).save(argThat(c ->
+                c.getCandidate() == candidate && c.getBusinessOwner() == owner));
+    }
+
+    @Test
+    void blockCheckRunsBeforeRelationCheck() {
+        blocked(true);
+        noExistingConversation();
+        applied(true);
+        assertThatThrownBy(() -> service.startConversation(OWNER, startWith(CANDIDATE)))
+                .isInstanceOf(UnauthorizedException.class);
+        verify(applications, never()).existsByCandidateIdAndJobListingBusinessOwnerId(anyLong(), anyLong());
+        verify(conversations, never()).save(any());
+    }
+
+    @Test
+    void existingConversationStillReturnedWithoutRelation() {
+        blocked(false);
+        applied(false);
+        assertThat(service.startConversation(OWNER, startWith(CANDIDATE)).getId()).isEqualTo(CONV);
+        verify(conversations, never()).save(any());
+    }
+
+    @Test
+    void candidateCanStillOpenNewConversationWithoutApplication() {
+        noExistingConversation();
+        applied(false);
+        service.startConversation(CANDIDATE, startWith(OWNER));
+        verify(conversations).save(any());
+        verify(applications, never()).existsByCandidateIdAndJobListingBusinessOwnerId(anyLong(), anyLong());
     }
 }

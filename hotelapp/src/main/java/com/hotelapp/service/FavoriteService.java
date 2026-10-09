@@ -3,9 +3,11 @@ package com.hotelapp.service;
 import com.hotelapp.entity.Business;
 import com.hotelapp.entity.BusinessFavorite;
 import com.hotelapp.entity.User;
+import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.enums.Role;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
+import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.BusinessFavoriteRepository;
 import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.UserRepository;
@@ -30,6 +32,7 @@ public class FavoriteService {
     private final BusinessFavoriteRepository favoriteRepository;
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
+    private final ApplicationRepository applicationRepository;
 
     /** Isletme sahibinin Business'ini bul (yoksa exception) */
     private Business getBusinessForOwner(Long ownerId) {
@@ -41,14 +44,17 @@ public class FavoriteService {
     @Transactional
     public FavoriteDto addFavorite(Long ownerId, Long candidateId, String note) {
         Business business = getBusinessForOwner(ownerId);
+        // Aday profili kurali ile ayni iliski: isletme yalnizca kendisine (herhangi
+        // bir ilanina, herhangi statude) basvurmus adayi favoriye ekleyebilir.
+        // Hedef yok / aday degil / iliski yok -> hepsi ayni 404 (varlik ifsa edilmez).
         User candidate = userRepository.findById(candidateId)
+                .filter(u -> u.getRole() == Role.CANDIDATE)
+                .filter(u -> applicationRepository
+                        .existsByCandidateIdAndJobListingBusinessOwnerId(candidateId, ownerId))
                 .orElseThrow(() -> new ResourceNotFoundException("Aday", candidateId));
-        if (candidate.getRole() != Role.CANDIDATE) {
-            throw BusinessRuleException.keyed("error.favorite.candidateOnly");
-        }
         // Toggle: zaten varsa exception yerine return existing (idempotent)
         return favoriteRepository.findByBusinessIdAndCandidateId(business.getId(), candidateId)
-                .map(this::toDto)
+                .map(f -> toDto(f, ownerId))
                 .orElseGet(() -> {
                     BusinessFavorite fav = BusinessFavorite.builder()
                             .business(business)
@@ -56,7 +62,7 @@ public class FavoriteService {
                             .note(note)
                             .createdAt(LocalDateTime.now())
                             .build();
-                    return toDto(favoriteRepository.save(fav));
+                    return toDto(favoriteRepository.save(fav), ownerId);
                 });
     }
 
@@ -71,7 +77,7 @@ public class FavoriteService {
     public List<FavoriteDto> listFavorites(Long ownerId) {
         Business business = getBusinessForOwner(ownerId);
         return favoriteRepository.findByBusinessIdOrderByCreatedAtDesc(business.getId())
-                .stream().map(this::toDto).toList();
+                .stream().map(f -> toDto(f, ownerId)).toList();
     }
 
     @Transactional(readOnly = true)
@@ -87,13 +93,21 @@ public class FavoriteService {
         return favoriteRepository.countByCandidateId(candidateId);
     }
 
-    private FavoriteDto toDto(BusinessFavorite f) {
+    /**
+     * E-posta hassas alandir: CandidateProfileService ile ayni politika — yalnizca
+     * bu isletmeyle ACCEPTED basvurusu varsa doldurulur, aksi halde null. Iliskisi
+     * kalmamis (basvurusu silinmis) eski favoriler listede e-postasiz gorunur.
+     */
+    private FavoriteDto toDto(BusinessFavorite f, Long ownerId) {
         User c = f.getCandidate();
+        boolean canSeeSensitive = applicationRepository
+                .existsByCandidateIdAndJobListingBusinessOwnerIdAndStatus(
+                        c.getId(), ownerId, ApplicationStatus.ACCEPTED);
         return FavoriteDto.builder()
                 .id(f.getId())
                 .candidateId(c.getId())
                 .candidateName(c.getFullName())
-                .candidateEmail(c.getEmail())
+                .candidateEmail(canSeeSensitive ? c.getEmail() : null)
                 .candidateAvatarUrl(c.getAvatarPath())  // raw, frontend buildUrl gerek
                 .candidateDistrict(c.getDistrict())
                 .note(f.getNote())
@@ -106,7 +120,7 @@ public class FavoriteService {
         private Long id;
         private Long candidateId;
         private String candidateName;
-        private String candidateEmail;
+        private String candidateEmail;  // yalnizca ACCEPTED iliskide dolu, aksi null
         private String candidateAvatarUrl;
         private String candidateDistrict;
         private String note;

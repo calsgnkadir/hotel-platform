@@ -78,15 +78,15 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
 
   async function handleHold() {
     const ok = await confirm({
-      title: 'Adayı 24 saat HOLD\'a al',
+      title: 'Adayı 24 saat beklemeye al',
       description: 'Aday 24 saat içinde Onayla/Reddet seçmezse başvuru otomatik düşecek. Bu, adayın gerçek niyetini test eden bir adımdır.',
-      confirmLabel: 'Evet, HOLD\'a al',
+      confirmLabel: 'Evet, beklemeye al',
     })
     if (!ok) return
     setActionLoading(true)
     try {
       const updated = await hotelApi.holdApplication(app.id)
-      toast.success('Aday HOLD\'a alındı — 24 saat bekleniyor')
+      toast.success('Aday beklemeye alındı — 24 saat yanıtı bekleniyor')
       onChanged?.(updated)
       onRefresh?.()
     } catch (err) { toast.error(extractErrorMessage(err)) }
@@ -326,8 +326,8 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
           <div className="border-t border-hairline pt-4 space-y-3">
             <h3 className="type-overline">Karar</h3>
             {app.status === 'HELD' ? (
-              <p className="type-caption font-medium" style={{ color: '#bababa' }}>
-                HOLD aktif — aday {app.holdDeadline ? new Date(app.holdDeadline).toLocaleString('tr-TR') : 'belirsiz'} 'a kadar cevap vermeli
+              <p className="type-caption font-medium" style={{ color: 'var(--ah-warn)' }}>
+                Beklemede — aday {app.holdDeadline ? `${new Date(app.holdDeadline).toLocaleString('tr-TR')} tarihine kadar` : 'belirlenen süre içinde'} yanıt vermeli
               </p>
             ) : (
               <p className="type-caption">
@@ -350,7 +350,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                     background: 'linear-gradient(135deg, #6b7574 0%, #7a7a7a 100%)',
                     boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
                   }}>
-                  HOLD 24sa
+                  24 sa beklet
                 </button>
               )}
               <button onClick={() => handleDecide('REJECTED')} disabled={actionLoading}

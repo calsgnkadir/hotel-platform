@@ -126,7 +126,9 @@ export default function FavoritesTab({ onOpenMessages }) {
             <div className="font-semibold text-ink-800 dark:text-ink-900 truncate">
               {f.candidateName}
             </div>
-            <div className="text-xs text-ink-500 truncate">{f.candidateEmail}</div>
+            {f.candidateEmail && (
+              <div className="text-xs text-ink-500 truncate">{f.candidateEmail}</div>
+            )}
             <div className="text-[11px] text-ink-400 mt-0.5">
               {f.candidateDistrict ? `${f.candidateDistrict} · ` : ''}
               {new Date(f.createdAt).toLocaleDateString('tr-TR')} tarihinde eklendi

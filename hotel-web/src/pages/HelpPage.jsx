@@ -19,8 +19,8 @@ const FAQS = [
     a: 'Hayır. Profilinde veya başvuru sırasında belge yüklemen gerekmez. İşletme bir belge isterse ilgili sohbette Dosya / Foto ekle düğmesiyle paylaşabilirsin.' },
   { cat: 'Aday', q: 'Başvurumu iptal edebilir miyim?',
     a: 'Evet, sadece "Beklemede" veya "İncelemede" durumdaki başvurular iptal edilebilir. Kabul edilmiş bir başvuruyu iptal edemezsin (no-show olarak işaretlenir).' },
-  { cat: 'Aday', q: 'İşletme beni "HOLD"a aldı, ne demek?',
-    a: 'İşletme seninle ilgileniyor ve 24 saat içinde cevap vermeni bekliyor. Onaylarsan başvurun ACCEPTED olur, reddedersen diğer başvurulara devam edersin.' },
+  { cat: 'Aday', q: 'Başvurum "Beklemede" görünüyor, ne demek?',
+    a: 'İşletme seninle ilgileniyor ve 24 saat içinde cevap vermeni bekliyor. Onaylarsan başvurun "Kabul" durumuna geçer, reddedersen diğer başvurulara devam edersin.' },
   { cat: 'Aday', q: 'No-show ne demek? Cezalandırılır mıyım?',
     a: 'Kabul ettiğin vardiyaya gitmediğin durumdur. İşletme no-show işaretlediğinde 1 "strike" alırsın. 3 strike sonrası hesabın 30 gün askıya alınır.' },
 

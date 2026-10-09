@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
@@ -74,6 +74,11 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   const [successResp, setSuccessResp] = useState(null)  // { conversationId, applicationId }
 
   const [selectedSlotIds, setSelectedSlotIds] = useState([])
+  // Ön yazı varsayılan kapalı; kullanıcı "Not ekle"ye basınca açılır ve o an odaklanır
+  // (açılışta autoFocus yok — mobilde klavye kendiliğinden açılmasın).
+  const [showNote, setShowNote] = useState(false)
+  const noteRef = useRef(null)
+  useEffect(() => { if (showNote) noteRef.current?.focus() }, [showNote])
 
   const allSlots = [...(listing.shiftSlots || [])].sort((a, b) => {
     const c = (a.date || '').localeCompare(b.date || '')
@@ -219,151 +224,164 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
     )
   }
 
+  // UI Paket 3 — mobil öncelikli akış: vardiya (zorunlu) → ödeme/kıyafet özeti → isteğe bağlı not.
+  const selectedCount = selectedSlotIds.length
+  const needsSlot = hasSlots && hasFutureSlots && selectedCount === 0
+  const submitDisabled = loading || !hasFutureSlots || needsSlot
+  const submitLabel = loading
+    ? 'Gönderiliyor…'
+    : !hasFutureSlots
+      ? 'Süresi doldu'
+      : selectedCount > 0 ? `${selectedCount} vardiyaya başvur` : 'Başvur'
+  const paymentText = formatPayment(listing.paymentPeriod, listing.paymentMethod)
+  const dressText = listing.dressCode ? String(listing.dressCode).split('\n')[0].trim() : ''
+  const initial = (listing.businessName || '').trim().charAt(0).toLocaleUpperCase('tr-TR')
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="p-6 border-b border-hairline sticky top-0 z-10" style={{ background: 'var(--surface-raised)' }}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                 style={{ background: 'rgba(31, 41, 55, 0.10)', border: '1px solid rgba(31, 41, 55, 0.32)', color: 'var(--accent-action)' }}>
-              {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
-            </div>
-            <div>
-              <h2 className="type-heading">{listing.title}</h2>
-              <p className="type-caption">{listing.businessName} · {listing.businessDistrict}</p>
+      <div className="modal-content modal-sheet" role="dialog" aria-modal="true" aria-labelledby="apply-modal-title"
+           onClick={e => e.stopPropagation()}>
+        {/* Header — işletme logosu / baş harfi + pozisyon */}
+        <div className="modal-sheet__head">
+          <div className="flex items-center gap-3 min-w-0">
+            {listing.businessLogoUrl ? (
+              <img src={cldImg(listing.businessLogoUrl, { w: ImgSize.avatarMd })} alt=""
+                   className="ah-logo ah-logo--sm" style={{ objectFit: 'cover' }} />
+            ) : initial ? (
+              <span className="ah-logo ah-logo--sm" aria-hidden="true"
+                    style={{ background: logoColor(listing.businessName) }}>{initial}</span>
+            ) : null}
+            <div className="min-w-0">
+              <h2 id="apply-modal-title" className="type-card truncate">{listing.title}</h2>
+              <p className="type-meta truncate">
+                {[listing.businessName, listing.businessDistrict].filter(Boolean).join(' · ')}
+              </p>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* V16 — Başvurmadan önce: ödeme + kıyafet netliği */}
-          {(formatPayment(listing.paymentPeriod, listing.paymentMethod) || listing.dressCode || listing.meetingPoint) && (
-            <div className="rounded-lg p-3 text-sm space-y-1.5"
-                 style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)' }}>
-              {formatPayment(listing.paymentPeriod, listing.paymentMethod) && (
-                <p style={{ color: 'var(--ah-ink-2)' }}>
-                  <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Ödeme: </span>
-                  {formatPayment(listing.paymentPeriod, listing.paymentMethod)}
-                  {listing.paymentNote && ` — ${listing.paymentNote}`}
-                </p>
-              )}
-              {listing.meetingPoint && (
-                <p className="whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
-                  <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Toplanma: </span>
-                  {listing.meetingPoint}
-                  {listing.meetingMinutesBefore ? ` (${listing.meetingMinutesBefore} dk önce)` : ''}
-                </p>
-              )}
-              {listing.dressCode && (
-                <p className="whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
-                  <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Kıyafet: </span>
-                  {listing.dressCode}
-                </p>
-              )}
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="modal-sheet__form">
+          <div className="modal-sheet__body space-y-5">
+            {/* 1) Vardiya seçimi (zorunlu — min 1) */}
+            {hasSlots ? (
+              <fieldset>
+                <legend className="type-label mb-2" style={{ color: 'var(--ah-ink)' }}>
+                  Vardiya seçimi *
+                  <span className="type-caption ml-1" style={{ color: 'var(--ah-ink-3)' }}>çalışabileceğin günleri işaretle</span>
+                </legend>
+                <div className="space-y-2">
+                  {allSlots.map(s => {
+                    const full = s.full || (s.slotsFilled >= s.slotsNeeded)
+                    const past = isPastSlot(s)
+                    const disabled = full || past
+                    const selected = selectedSlotIds.includes(s.id)
+                    const dateLabel = new Date(s.date).toLocaleDateString('tr-TR', {
+                      day: 'numeric', month: 'short', weekday: 'short',
+                    })
+                    const timeLabel = `${(s.startTime || '').slice(0, 5)}–${(s.endTime || '').slice(0, 5)}`
+                    const openCount = (s.slotsNeeded || 0) - (s.slotsFilled || 0)
+                    return (
+                      <label key={s.id} className="ah-slot-option"
+                             data-state={disabled ? 'disabled' : selected ? 'selected' : 'idle'}>
+                        <input type="checkbox" checked={selected} disabled={disabled}
+                          onChange={() => toggleSlot(s.id, full, past)}
+                          className="w-5 h-5 flex-shrink-0" style={{ accentColor: 'var(--ah-brand)' }} />
+                        <span className="flex-1 min-w-0">
+                          <span className="type-subhead type-num block" style={{ color: 'var(--ah-ink)' }}>
+                            {dateLabel} · {timeLabel}
+                          </span>
+                          <span className="type-caption block mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
+                            {past
+                              ? 'Geçti — başvurulamaz'
+                              : full
+                                ? 'Doldu'
+                                : `${openCount} kişi aranıyor`}
+                          </span>
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </fieldset>
+            ) : (
+              <div className="rounded-lg bg-amber-50 px-3 py-2.5 type-meta text-amber-700">
+                Bu ilana henüz vardiya eklenmemiş — başvuru alınamaz.
+              </div>
+            )}
 
-          {/* Ön Yazı */}
-          <div>
-            <label className="label">Ön yazı <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-            <textarea
-              value={coverLetter}
-              onChange={e => setCoverLetter(e.target.value)}
-              className="input resize-none h-24 text-sm leading-relaxed"
-              placeholder="Kendinizi kısaca tanıtın, neden bu pozisyonda çalışmak istediğinizi anlatın..."
-              autoFocus
-            />
+            {/* 2) Ödeme / kıyafet — kısa tek satır özet */}
+            {(paymentText || dressText) && (
+              <p className="type-meta" style={{ color: 'var(--ah-ink-2)' }} data-testid="apply-terms">
+                {paymentText && (
+                  <><span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Ödeme:</span> {paymentText}</>
+                )}
+                {paymentText && dressText && <span aria-hidden="true" style={{ color: 'var(--ah-ink-4)' }}> · </span>}
+                {dressText && (
+                  <><span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Kıyafet:</span> {dressText}</>
+                )}
+              </p>
+            )}
+
+            {/* 3) Ön yazı — varsayılan kapalı; mobilde klavye kendiliğinden açılmasın */}
+            {showNote ? (
+              <div>
+                <label htmlFor="apply-cover-letter" className="label">
+                  Not <span className="font-normal" style={{ color: 'var(--ah-ink-3)' }}>(isteğe bağlı)</span>
+                </label>
+                <textarea
+                  id="apply-cover-letter"
+                  ref={noteRef}
+                  value={coverLetter}
+                  onChange={e => setCoverLetter(e.target.value)}
+                  className="input resize-none h-24 type-body"
+                  placeholder="Kendini kısaca tanıt; bu işte neden iyi olacağını yaz."
+                />
+              </div>
+            ) : (
+              <button type="button" onClick={() => setShowNote(true)} className="btn-ghost !w-auto !px-2 -ml-2 gap-1.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                     strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                Not ekle (isteğe bağlı)
+              </button>
+            )}
+
+            <p className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>
+              Belge yüklemen gerekmez. İşletme isterse sohbetten paylaşabilirsin.
+            </p>
           </div>
 
-          {/* Faz E3: Slot seçimi (zorunlu — min 1) */}
-          {hasSlots ? (
-            <div>
-              <label className="label">
-                Vardiya seçimi *
-                <span className="text-ink-400 font-normal ml-1">(çalışabileceğin günleri işaretle)</span>
-              </label>
-              <div className="space-y-1.5">
-                {allSlots.map(s => {
-                  const full = s.full || (s.slotsFilled >= s.slotsNeeded)
-                  const past = isPastSlot(s)
-                  const disabled = full || past
-                  const selected = selectedSlotIds.includes(s.id)
-                  const dateLabel = new Date(s.date).toLocaleDateString('tr-TR', {
-                    day: 'numeric', month: 'short', weekday: 'short',
-                  })
-                  const timeLabel = `${(s.startTime || '').slice(0, 5)}–${(s.endTime || '').slice(0, 5)}`
-                  return (
-                    <label key={s.id}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all
-                        ${disabled
-                          ? 'border-cream-300 bg-cream-50 cursor-not-allowed opacity-60'
-                          : selected
-                            ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 dark:border-brand-500 cursor-pointer shadow-sm'
-                            : 'border-cream-300 dark:border-ink-700 bg-white dark:bg-ink-800 cursor-pointer hover:border-brand-400 dark:hover:border-brand-500'}`}>
-                      <input type="checkbox" checked={selected} disabled={disabled}
-                        onChange={() => toggleSlot(s.id, full, past)}
-                        className="w-4 h-4 accent-brand-700" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-ink-800 flex items-center gap-1.5">
-                          {dateLabel} · {timeLabel}
-                          {past && (
-                            <span className="type-badge px-1.5 py-0.5 rounded bg-cream-200 text-ink-600">
-                              Geçti
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-ink-500 mt-0.5">
-                          {past
-                            ? 'Bu vardiya geçmişte — başvurulamaz'
-                            : full
-                              ? 'Bu vardiya doldu'
-                              : `${s.slotsFilled || 0}/${s.slotsNeeded} dolu — ${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
-                        </div>
-                      </div>
-                    </label>
-                  )
-                })}
-              </div>
-              {selectedSlotIds.length > 0 && (
-                <p className="text-xs text-brand-700 dark:text-brand-700 font-medium mt-2">
-                  {selectedSlotIds.length} vardiya seçtin
-                </p>
-              )}
+          {/* Alt bar — bottom sheet'te sabit; gövde kayar */}
+          <div className="modal-sheet__foot">
+            {needsSlot && (
+              <p id="apply-submit-hint" className="type-caption mb-2" style={{ color: 'var(--ah-ink-3)' }}>
+                Önce en az bir vardiya seç
+              </p>
+            )}
+            <div className="flex gap-3">
+              <button type="button" onClick={onClose} className="btn-secondary flex-1">
+                İptal
+              </button>
+              <button type="submit" disabled={submitDisabled}
+                aria-describedby={needsSlot ? 'apply-submit-hint' : undefined}
+                className="btn-primary relative overflow-hidden flex-1">
+                {loading && (
+                  <span aria-hidden className="absolute bottom-0 left-0 h-[2px]"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.6)',
+                          opacity: 0.55,
+                          animation: 'submit-progress 1400ms ease-in-out infinite',
+                        }} />
+                )}
+                {submitLabel}
+                <style>{`
+                  @keyframes submit-progress {
+                    0% { width: 0%; left: 0%; }
+                    50% { width: 60%; left: 20%; }
+                    100% { width: 0%; left: 100%; }
+                  }
+                `}</style>
+              </button>
             </div>
-          ) : (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-700">
-              Bu ilana henüz vardiya eklenmemiş — başvuru alınamaz.
-            </div>
-          )}
-
-          <p className="text-sm text-ink-500">Başvuru için belge yüklemen gerekmez. İşletme isterse belgelerini sohbetten dosya olarak paylaşabilirsin.</p>
-
-          {/* Footer — filled amber CTA (modal-icinde tek accent) */}
-          <div className="flex gap-3 pt-2 sticky bottom-0 py-3 -mx-6 px-6 border-t border-hairline"
-               style={{ background: 'var(--surface-raised)' }}>
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">
-              İptal
-            </button>
-            <button type="submit" disabled={loading || !hasFutureSlots}
-              className="btn-primary relative overflow-hidden flex-1">
-              {loading && (
-                <span aria-hidden className="absolute bottom-0 left-0 h-[2px]"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.6)',
-                        opacity: 0.55,
-                        animation: 'submit-progress 1400ms ease-in-out infinite',
-                      }} />
-              )}
-              {loading ? 'Gönderiliyor…' : !hasFutureSlots ? 'Süresi doldu' : 'Başvur'}
-              <style>{`
-                @keyframes submit-progress {
-                  0% { width: 0%; left: 0%; }
-                  50% { width: 60%; left: 20%; }
-                  100% { width: 0%; left: 100%; }
-                }
-              `}</style>
-            </button>
           </div>
         </form>
       </div>

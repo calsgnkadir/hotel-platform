@@ -3,6 +3,7 @@ export function StatusBadge({ status }) {
   const map = {
     PENDING:   { cls: 'badge-pending',   label: 'Bekliyor' },
     REVIEWING: { cls: 'badge-reviewing', label: 'İnceleniyor' },
+    HELD:      { cls: 'badge-pending',   label: 'Beklemede' },   // aday 24 sa içinde yanıt verecek (API: HELD)
     STANDBY:   { cls: 'badge-reviewing', label: 'Yedek' },
     ACCEPTED:  { cls: 'badge-accepted',  label: 'Kabul Edildi' },
     REJECTED:  { cls: 'badge-rejected',  label: 'Reddedildi' },

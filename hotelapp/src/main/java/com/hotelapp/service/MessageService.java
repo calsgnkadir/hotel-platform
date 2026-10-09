@@ -106,6 +106,16 @@ public class MessageService {
         Conversation conv = conversationRepository
                 .findByCandidateIdAndBusinessOwnerId(candidate.getId(), businessOwner.getId())
                 .orElseGet(() -> {
+                    // Isletme yalnizca kendisine (herhangi bir ilanina, herhangi
+                    // statude) basvurmus adayla YENI sohbet acabilir. Mevcut sohbet
+                    // (yukarida bulunan) iliski kalmasa da donmeye devam eder.
+                    // Sira: engel kontrolu (yukarida) -> iliski kontrolu.
+                    if (initiator == businessOwner
+                            && !applicationRepository.existsByCandidateIdAndJobListingBusinessOwnerId(
+                                    candidate.getId(), businessOwner.getId())) {
+                        throw new BusinessRuleException(
+                                "Bu adayla henüz bir başvuru ilişkiniz yok; sohbet başlatılamaz.");
+                    }
                     Application application = null;
                     if (req.getApplicationId() != null) {
                         application = applicationRepository.findById(req.getApplicationId())

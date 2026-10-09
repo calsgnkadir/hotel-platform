@@ -56,6 +56,28 @@ Durum renkleri -soft zemin üstünde de AA (warn 5.0, info 5.6, danger 5.6).
   `will-change` veya `animation-fill-mode: both` eklemeyin: `position:fixed` çocuklar
   (modal karartması) için containing block oluşturur, karartma kayar.
 
+**Sabit alt barlı pencere (UI Paket 3, index.css):** `.modal-content.modal-sheet` +
+`__head` / `__form` / `__body` / `__foot`. Yalnız `__body` kayar; başlık ve alt bar
+(İptal / birincil) mobil bottom sheet'te de hep görünür. Uzun formlu pencerelerde bunu kullan.
+Açılışta metin alanına `autoFocus` VERME (mobilde klavye açılır); isteğe bağlı alanlar
+"Not ekle" gibi bir ghost butonla açılsın.
+
+**Onay penceresi (`components/ui/ConfirmDialog.jsx`, `useConfirm`):** karartma `.modal-overlay`
+ile aynı (`rgba(17,24,39,.5)` + 2px blur, z-1000); panel `--ah-card` + 1px `--ah-line` +
+`--elev-3`, radius 12, max 448px. Başlık `.type-card` (büyük harf yok), metin `.type-body` ink-2.
+Yıkıcıysa uyarı ikonu `--ah-danger-soft` zemin / `--ah-danger` çizgi. Butonlar: vazgeç
+`.btn-secondary` (varsayılan "Vazgeç", açılışta odak burada), onay `.btn-destructive`
+(yıkıcı) / `.btn-primary`. Mobilde butonlar alt alta tam genişlik (onay üstte), ≥44px.
+`role="dialog"` + `aria-modal` + `aria-labelledby/-describedby`; Esc kapatır, Tab içeride döner.
+Onaysız geri alınamaz işlem (abonelik iptali, hesap silme, red) YAPILMAZ.
+
+**Seçim satırı:** `.ah-slot-option` + `data-state="idle|selected|disabled"` — ≥52px dokunma
+hedefi, seçili: grafit çerçeve + `--ah-brand-soft` zemin.
+
+**Mobil sabit alt bar (sayfa):** `.mobile-apply-bar` (lg altında fixed, lg+ gizli) + sayfa
+köküne `.has-mobile-apply-bar` (içerik barın altında kalmasın). Açıkken `.floating-notice`
+kartları barın üstüne kayar.
+
 ## 3. Kart hiyerarşisi (3 kademe)
 
 CSS helper'ları tokens.css (`.tier-*`) + `.ah-surface` altında index.css'te. Inline `background/border/boxShadow` yerine bunları kullan.

@@ -5,7 +5,7 @@
  * confirmLabel/destructive props'lariyla surulur. Icin nasil surulecegi test edilir
  * (useConfirm.test.jsx integration'a benzer, ama burada saf render + click davranisi).
  */
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 
@@ -52,8 +52,10 @@ describe('ConfirmDialog', () => {
     render(
       <ConfirmDialog open title="X" onConfirm={() => {}} onClose={onClose} />
     )
-    // Backdrop = disardaki dialog wrapper — role="dialog"
+    // Backdrop = disardaki karartma; panel (role="dialog") tiklamasi kapatmaz
     fireEvent.click(screen.getByRole('dialog'))
+    expect(onClose).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('dialog').parentElement)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
@@ -100,25 +102,38 @@ describe('ConfirmDialog', () => {
     expect(triangle).not.toBeNull()
   })
 
-  it('destructive true -> title rengi gri (#6b7574)', () => {
-    render(
-      <ConfirmDialog open destructive title="Sil" onConfirm={() => {}} onClose={() => {}} />
-    )
+  it('açık tema: başlık type-card (büyük harf yok), beyaz kart, karartma z-1000', () => {
+    render(<ConfirmDialog open title="Sil" description="Açıklama" onConfirm={() => {}} onClose={() => {}} />)
+    const dialog = screen.getByRole('dialog')
     const h2 = screen.getByText('Sil')
-    // "Sadece gri ve siyah" kimligi: yikici baslik da gri (eski brick #d39481 birakildi)
-    const style = h2.getAttribute('style')
-    // Browser hex -> rgb normalize eder
-    expect(style).toContain('rgb(107, 117, 116)')   // #6b7574
+    expect(h2.className).toContain('type-card')
+    expect(h2.className).not.toMatch(/uppercase/)
+    expect(dialog.getAttribute('style')).toContain('var(--ah-card)')
+    expect(dialog.getAttribute('style')).not.toMatch(/linear-gradient/)
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(dialog).toHaveAccessibleName('Sil')
+    expect(dialog).toHaveAccessibleDescription('Açıklama')
+    expect(dialog.parentElement.style.zIndex).toBe('1000')
   })
 
-  it('destructive false -> title rengi marka (grafit #1f2937)', () => {
-    render(
-      <ConfirmDialog open title="Onay" onConfirm={() => {}} onClose={() => {}} />
-    )
-    const h2 = screen.getByText('Onay')
-    const style = h2.getAttribute('style')
-    // Marka rengi teal -> koyu grafit'e cevrildi (kullanici: az renk, teal degistir)
-    expect(style).toContain('rgb(31, 41, 55)')    // #1f2937
-    expect(style).not.toContain('rgb(107, 117, 116)')  // yikici baslik rengi degil
+  it('varsayılan vazgeç etiketi "Vazgeç" ve btn-secondary', () => {
+    render(<ConfirmDialog open title="X" onConfirm={() => {}} onClose={() => {}} />)
+    const cancel = screen.getByRole('button', { name: 'Vazgeç' })
+    expect(cancel.className).toContain('btn-secondary')
+  })
+
+  it('destructive -> onay btn-destructive; değilse btn-primary', () => {
+    const { rerender } = render(<ConfirmDialog open destructive title="X" confirmLabel="Sil" onConfirm={() => {}} onClose={() => {}} />)
+    expect(screen.getByRole('button', { name: 'Sil' }).className).toContain('btn-destructive')
+    rerender(<ConfirmDialog open title="X" confirmLabel="Sil" onConfirm={() => {}} onClose={() => {}} />)
+    const btn = screen.getByRole('button', { name: 'Sil' })
+    expect(btn.className).toContain('btn-primary')
+    expect(btn.className).not.toContain('btn-destructive')
+  })
+
+  it('açılışta odak Vazgeç butonuna gider', async () => {
+    render(<ConfirmDialog open title="X" onConfirm={() => {}} onClose={() => {}} />)
+    const cancel = screen.getByRole('button', { name: 'Vazgeç' })
+    await waitFor(() => expect(document.activeElement).toBe(cancel))
   })
 })

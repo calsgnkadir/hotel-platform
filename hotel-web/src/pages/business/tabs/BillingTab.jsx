@@ -4,12 +4,13 @@
 // Otomatik yenileme YOK: currentPeriodEnd aboneliğin bitiş tarihidir. İptal edilen
 // abonelik (status=CANCELED) ödenmiş dönem sonuna kadar active=true kalır.
 // sandbox=true → test kartı kutusu gösterilir (yalnız test ortamında).
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog'
 
 // Satış değeri — plana dahil olanlar
 const PLAN_FEATURES = [
@@ -82,10 +83,19 @@ export default function BillingTab() {
     onError: (e) => toast.error(extractErrorMessage(e) || 'Ödeme başlatılamadı.'),
   })
 
+  // İptal geri alınamaz bir karar: önce onay penceresi, onayda mutate.
+  const [confirmCancel, setConfirmCancel] = useState(false)
   const cancel = useMutation({
-    mutationFn: hotelApi.cancelBilling,
-    onSuccess: () => { toast.success('Abonelik iptal edildi; dönem sonuna kadar geçerli.'); qc.invalidateQueries({ queryKey: ['billing'] }) },
-    onError: (e) => toast.error(extractErrorMessage(e) || 'İptal edilemedi.'),
+    mutationFn: () => hotelApi.cancelBilling(),
+    onSuccess: () => {
+      setConfirmCancel(false)
+      toast.success('Abonelik iptal edildi; dönem sonuna kadar geçerli.')
+      qc.invalidateQueries({ queryKey: ['billing'] })
+    },
+    onError: (e) => {
+      setConfirmCancel(false)
+      toast.error(extractErrorMessage(e) || 'İptal edilemedi.')
+    },
   })
 
   if (isError) {
@@ -202,14 +212,28 @@ export default function BillingTab() {
           </button>
           )}
           {paid && !canceled && (
-            <button type="button" onClick={() => cancel.mutate()} disabled={cancel.isPending}
+            <button type="button" onClick={() => setConfirmCancel(true)} disabled={cancel.isPending}
               className="btn-danger">
-              {cancel.isPending ? '…' : 'İptal et'}
+              {cancel.isPending ? 'İptal ediliyor…' : 'İptal et'}
             </button>
           )}
         </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmCancel}
+        onClose={() => setConfirmCancel(false)}
+        title="Aboneliği iptal et"
+        description={b.currentPeriodEnd
+          ? `Aboneliğin ${fmtDate(b.currentPeriodEnd)} tarihine kadar geçerli kalır; sonra ücretsiz plana geçersin. Otomatik yenileme zaten yok.`
+          : 'Aboneliğin dönem sonuna kadar geçerli kalır; sonra ücretsiz plana geçersin. Otomatik yenileme zaten yok.'}
+        confirmLabel="İptal et"
+        cancelLabel="Vazgeç"
+        destructive
+        loading={cancel.isPending}
+        onConfirm={() => cancel.mutate()}
+      />
 
       {/* === SATIR 2 — plana dahil + nasıl çalışır === */}
       <div className="grid lg:grid-cols-2 gap-4 mt-4">

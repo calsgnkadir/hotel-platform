@@ -35,7 +35,7 @@ const COLUMNS = [
   },
   {
     id: 'HELD',
-    label: 'Hold',
+    label: 'Beklemede',
     sub: 'Aday onayı bekleniyor (24 sa)',
     color: '#6b7574',
     bg: 'rgba(107, 117, 116, 0.08)',
@@ -185,19 +185,19 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
       action = () => hotelApi.reviewApplication(app.id, 'REJECTED')
     } else if (targetCol === 'HELD') {
       if (from !== 'PENDING') {
-        toast.error('Sadece bekleyen başvurular hold\'a alınabilir.')
+        toast.error('Sadece bekleyen başvurular beklemeye alınabilir.')
         return
       }
       confirmOpts = {
-        title: `${candidateName} 24 saat HOLD'a alınsın`,
+        title: `${candidateName} 24 saat beklemeye alınsın`,
         description: 'Aday 24 saat içinde yanıt vermezse başvuru otomatik düşer.',
-        confirmLabel: 'Evet, HOLD\'a al',
+        confirmLabel: 'Evet, beklemeye al',
       }
       action = () => hotelApi.holdApplication(app.id)
     } else if (targetCol === 'STANDBY') {
       // FAZ C.1 — Yedek havuzuna al
       if (from !== 'PENDING' && from !== 'HELD') {
-        toast.error('Sadece bekleyen veya hold\'daki başvurular yedeğe alınabilir.')
+        toast.error('Sadece bekleyen veya beklemedeki başvurular yedeğe alınabilir.')
         return
       }
       confirmOpts = {

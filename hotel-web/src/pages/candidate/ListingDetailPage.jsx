@@ -4,9 +4,13 @@
  * Eskiden modal: ListingsPage içinde DetailModal pop-up.
  * Yeni: /listings/:id route — SEO friendly, paylaşılabilir, geri tuşuyla kapanır.
  *
- * FAZ 26 — Acik + teal sisteme gecirildi (kullanici istegi). Eski koyu grafit
- * + altin tema (glow blob'lar, sampanya renkler) birakildi. Kok .ah-surface
- * ile sarildi (bu sayfa DashboardLayout disinda oldugu icin otomatik almiyordu).
+ * UI Paket 3 — mobil öncelikli:
+ *  - Dev harfli kapak kaldırıldı; yerine başlık bloğu (logo/baş harf + pozisyon +
+ *    işletme · ilçe + ücret). İlçe/pozisyon/ücret yalnız başlıkta.
+ *  - Galeri kartı yalnız fotoğraf varsa render edilir.
+ *  - Bölüm sırası: Vardiyalar → Ödeme ve kıyafet → Açıklama → Konum → İşletme hakkında.
+ *  - lg altında sabit alt bar: [ücret /gün] [Başvur] — sayfa açılır açılmaz görünür.
+ *  - lg+ yan panel: vardiya özeti + başvuru eylemi + işletme kısa bilgisi.
  */
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -19,26 +23,33 @@ import { SkeletonDetail } from '../../components/Skeleton'
 import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
 import { ApplyModal } from './ListingsPage'
-import { formatSalary, formatPayment } from '../../lib/salary'  // FAZ 2/#25
+import { formatSalary, formatPayment, salaryTypeShort } from '../../lib/salary'  // FAZ 2/#25
+import { logoColor } from '../../lib/logoColor'
+import cldImg, { ImgSize } from '../../lib/cldImg'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
   RECEPTION: 'Resepsiyon', KITCHEN_STAFF: 'Mutfak Personeli', BELLBOY: 'Bellboy', SECURITY: 'Güvenlik',
 }
 const JOB_TYPE_LABELS = { PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı' }
-const BUSINESS_TYPE_LETTER = { HOTEL: 'H', RESTAURANT: 'R', CAFE: 'C', BAR: 'B', CLUB: 'K' }
-const SHIFT_INFO = {
-  MORNING: { label: 'Sabah', icon: '', time: '08:00–16:00' },
-  EVENING: { label: 'Akşam', icon: '', time: '16:00–24:00' },
-  NIGHT:   { label: 'Gece',  icon: '', time: '22:00–08:00' },
-  FLEXIBLE:{ label: 'Esnek', icon: '', time: 'Esnek saatler' },
+
+/** Ücreti tutar + birim olarak ayırır: { amount: '800 – 1.200 ₺', unit: 'gün' }. */
+function salaryParts(l) {
+  if (l.salaryType === 'NEGOTIABLE') return { amount: 'Görüşülecek', unit: '' }
+  if (!l.salaryMin && !l.salaryMax) return null
+  // min == max ise "1.500 – 1.500 ₺" yerine tek tutar
+  const max = Number(l.salaryMax) === Number(l.salaryMin) ? null : l.salaryMax
+  return { amount: formatSalary(l.salaryMin, max, null, false), unit: salaryTypeShort(l.salaryType) }
+}
+
+function fmtDay(date) {
+  return new Date(date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', weekday: 'short' })
 }
 
 export default function ListingDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [applying] = useState(false)
   const [applyOpen, setApplyOpen] = useState(false)  // ApplyModal state
 
   const { data: listing, isLoading, error } = useQuery({
@@ -67,6 +78,14 @@ export default function ListingDetailPage() {
     staleTime: 5 * 60_000,
   })
 
+  // Galeri burada çekilir: fotoğraf yoksa kart hiç render edilmez (boş kutu kalmasın)
+  const { data: gallery = [] } = useQuery({
+    queryKey: ['business-gallery', listing?.businessId],
+    queryFn: () => hotelApi.getBusinessGallery(listing.businessId),
+    enabled: !!listing?.businessId,
+    staleTime: 5 * 60_000,
+  })
+
   if (isLoading) {
     return (
       <div className="min-h-screen ah-surface relative z-10" style={{ background: 'var(--ah-page)' }}>
@@ -77,32 +96,39 @@ export default function ListingDetailPage() {
 
   if (error || !listing) {
     return (
-      <div className="min-h-screen ah-surface relative z-10 flex items-center justify-center"
+      <div className="min-h-screen ah-surface relative z-10 flex items-center justify-center p-4"
            style={{ background: 'var(--ah-page)', color: 'var(--ah-ink-2)' }}>
         <div className="card max-w-md text-center p-8">
-          <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--ah-ink)' }}>İlan bulunamadı</h2>
-          <p className="text-sm mb-4" style={{ color: 'var(--ah-ink-3)' }}>Bu ilan kaldırılmış veya yayında değil olabilir.</p>
-          <button onClick={() => navigate(-1)}
-            className="px-5 py-2.5 rounded-xl font-semibold transition-opacity hover:opacity-90"
-            style={{ background: '#1f2937', color: '#ffffff' }}>
-            Geri Dön
+          <h1 className="type-section mb-2" style={{ color: 'var(--ah-ink)' }}>İlan bulunamadı</h1>
+          <p className="type-body mb-4" style={{ color: 'var(--ah-ink-3)' }}>Bu ilan kaldırılmış veya yayında değil olabilir.</p>
+          <button type="button" onClick={() => navigate(-1)} className="btn-primary !w-auto">
+            Geri dön
           </button>
         </div>
       </div>
     )
   }
 
-  const shift = null  // legacy shift kategorisi gosterilmiyor — slot saatleri yeterli
-  const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
-  const hasDates = listing.startDate || listing.endDate
+  const positionLabel = POSITION_LABELS[listing.position] || listing.position || 'Personel'
+  const sal = salaryParts(listing)
   const payment = formatPayment(listing.paymentPeriod, listing.paymentMethod)
+  const hasDates = listing.startDate || listing.endDate
+  const photos = Array.isArray(gallery) ? gallery : []
   const slots = [...(listing.shiftSlots || [])].sort((a, b) => {
     const c = (a.date || '').localeCompare(b.date || '')
     return c !== 0 ? c : (a.startTime || '').localeCompare(b.startTime || '')
   })
+  const isFull = (s) => s.full || (s.slotsFilled >= s.slotsNeeded)
   const todayStr = new Date().toISOString().slice(0, 10)
-  const hasFuture = slots.some(s => (s.date || '') >= todayStr)
-  const businessLetter = BUSINESS_TYPE_LETTER[listing.businessType] || listing.businessName?.charAt(0) || '?'
+  const futureSlots = slots.filter(s => (s.date || '') >= todayStr)
+  const hasFuture = futureSlots.length > 0
+  const openSlots = futureSlots.filter(s => !isFull(s))
+  const openPeople = openSlots.reduce((n, s) => n + Math.max(0, (s.slotsNeeded || 0) - (s.slotsFilled || 0)), 0)
+  const canApply = hasFuture && openSlots.length > 0
+  // Mevcut duruma uygun pasif metin (başvurulmuş durumu ilan verisinde yok; backend reddeder)
+  const applyLabel = !hasFuture ? 'Süresi doldu' : openSlots.length === 0 ? 'Kontenjan doldu' : 'Başvur'
+  const initial = (listing.businessName || '').trim().charAt(0).toLocaleUpperCase('tr-TR')
+  const metaParts = [listing.businessName, listing.businessDistrict, JOB_TYPE_LABELS[listing.jobType]].filter(Boolean)
 
   function handleBack() {
     // Eğer geçmiş varsa geri, yoksa ilanlar sayfasına
@@ -123,294 +149,247 @@ export default function ListingDetailPage() {
     setApplyOpen(true)  // ApplyModal direkt aç
   }
 
-  const SEC_HEAD = { fontSize: '13px', fontWeight: 600, letterSpacing: '0.02em', color: 'var(--ah-ink)' }
-  const LABEL = { fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, color: 'var(--ah-ink-4)' }
+  const businessFacts = (
+    <BusinessFacts listing={listing} />
+  )
 
   return (
-    <div className="min-h-screen ah-surface relative z-10" style={{ background: 'var(--ah-page)', color: 'var(--ah-ink-2)' }}>
+    <div className="min-h-screen ah-surface relative z-10 has-mobile-apply-bar"
+         style={{ background: 'var(--ah-page)', color: 'var(--ah-ink-2)' }}>
       {/* Top bar — geri butonu + breadcrumb */}
-      <header className="px-4 lg:px-6 py-3 sticky top-0 z-20 border-b"
+      <header className="px-4 lg:px-6 py-2 sticky top-0 z-20 border-b"
               style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
-        <div className="flex items-center gap-3">
-          <button onClick={handleBack}
-            className="p-2 rounded-lg transition-colors"
-            style={{ color: 'var(--ah-ink-3)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--ah-page)'; e.currentTarget.style.color = 'var(--ah-ink)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ah-ink-3)' }}
-            title="Geri">
+        <div className="flex items-center gap-2 min-w-0">
+          <button type="button" onClick={handleBack} aria-label="Geri"
+            className="btn-ghost !w-auto !px-2 flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                 strokeWidth={2} stroke="currentColor" className="w-5 h-5" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
           </button>
-          <div className="text-xs truncate" style={{ color: 'var(--ah-ink-3)' }}>
-            <Link to="/candidate" className="transition-colors hover:underline" style={{ color: 'var(--ah-brand)' }}>İlanlar</Link>
+          <nav className="type-meta truncate min-w-0" aria-label="Konum">
+            <Link to="/candidate" className="hover:underline" style={{ color: 'var(--ah-brand)' }}>İlanlar</Link>
             <span className="mx-1.5" style={{ color: 'var(--ah-ink-4)' }}>/</span>
-            <span className="font-medium" style={{ color: 'var(--ah-ink)' }}>{listing.title}</span>
-          </div>
+            <span style={{ color: 'var(--ah-ink)' }}>{listing.title}</span>
+          </nav>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
-        <div className="xl:grid xl:grid-cols-[1fr_340px] xl:gap-5 space-y-5 xl:space-y-0">
-        <div className="space-y-5 min-w-0">
-        {/* HERO — sade acik band + teal monogram */}
-        <div className="card !p-0 overflow-hidden">
-          <div className="relative h-48 w-full flex items-center justify-center"
-               style={{ background: 'var(--ah-brand-soft)', borderBottom: '1px solid var(--ah-line)' }}>
-            <div className="relative z-10"
-                 style={{ fontSize: '6rem', fontWeight: 700, color: 'var(--ah-brand)', letterSpacing: '-0.04em', lineHeight: 1 }}>
-              {businessLetter}
-            </div>
-            <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-[0.06em] px-3 py-1.5 rounded-full"
-                  style={{ background: 'var(--ah-card)', color: 'var(--ah-brand)', border: '1px solid var(--ah-line)' }}>
-              {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
-            </span>
-          </div>
+      <main className="max-w-6xl mx-auto px-4 lg:px-6 py-4 lg:py-6">
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 space-y-4 lg:space-y-0">
+        <div className="space-y-4 min-w-0">
 
-          <div className="p-6">
-            {/* FAZ B.1 — pozisyon birincil baslik; serbest metin ilan basligi ikincil */}
-            <h1 className="text-2xl sm:text-[28px] font-semibold leading-tight"
-                style={{ color: 'var(--ah-ink)', letterSpacing: '-0.025em' }}>
-              {POSITION_LABELS[listing.position] || listing.position || 'Personel'}
-            </h1>
-            {listing.title && (
-              <p className="text-[14px] mt-1" style={{ color: 'var(--ah-ink-3)' }}>{listing.title}</p>
-            )}
-            <div className="flex items-center gap-2 flex-wrap mt-2">
-              <p className="text-base font-medium" style={{ color: 'var(--ah-ink-2)' }}>{listing.businessName}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* İşletme galerisi */}
-        {listing.businessId && (
-          <div className="card !p-3 overflow-hidden">
-            <GalleryCarousel businessId={listing.businessId} height="h-56" />
-          </div>
-        )}
-
-        {/* Quick facts */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {[
-            { label: 'İlçe', value: listing.businessDistrict || '—' },
-            { label: 'Pozisyon', value: POSITION_LABELS[listing.position] || listing.position },
-            ...(shift ? [{ label: 'Vardiya', value: `${shift.icon} ${shift.label}`, sub: shift.time }] : []),
-            ...(salary ? [{ label: 'Ücret', value: salary }] : []),
-          ].map(s => (
-            <div key={s.label} className="card !p-3 text-center">
-              <div style={LABEL}>{s.label}</div>
-              <div className="text-sm font-semibold mt-1" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.005em' }}>{s.value}</div>
-              {s.sub && <div className="text-[10px] mt-0.5" style={{ color: 'var(--ah-ink-4)' }}>{s.sub}</div>}
-            </div>
-          ))}
-        </div>
-
-        {/* Dalga 4 / Ozellik 6 — Maas benchmark chip (Glassdoor pattern) */}
-        {benchmark && benchmark.count > 0 && benchmark.avgMin && (
-          <div className="card !p-4 flex items-center gap-3">
-            <div className="flex-1 min-w-0">
-              <div className="mb-1" style={LABEL}>
-                İstanbul {POSITION_LABELS[listing.position] || listing.position} ortalaması
-              </div>
-              <div className="text-base font-semibold tabular-nums"
-                   style={{ color: 'var(--ah-brand)', letterSpacing: '-0.01em' }}>
-                {Number(benchmark.avgMin).toLocaleString('tr-TR')}₺
-                {benchmark.avgMax && Number(benchmark.avgMax) !== Number(benchmark.avgMin) &&
-                  ` – ${Number(benchmark.avgMax).toLocaleString('tr-TR')}₺`}
-              </div>
-              <div className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
-                {benchmark.count} aktif ilan baz alındı
-                {listing.salaryMin && benchmark.avgMin &&
-                  ` · Bu ilan ${Number(listing.salaryMin) >= Number(benchmark.avgMin) ? 'ortalamanın üzerinde' : 'ortalamanın altında'}`}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Açıklama */}
-        <div className="card p-6">
-          <h3 className="mb-3" style={SEC_HEAD}>Açıklama</h3>
-          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
-            {listing.description || 'Açıklama eklenmemiş.'}
-          </p>
-        </div>
-
-        {/* V16 — İş günü + ödeme netliği: başvurmadan önce görünsün */}
-        {(payment || listing.paymentNote || listing.dressCode || listing.meetingPoint) && (
-          <div className="card p-6 space-y-4">
-            {(payment || listing.paymentNote) && (
-              <div>
-                <h3 className="mb-1.5" style={SEC_HEAD}>Ödeme</h3>
-                {payment && (
-                  <p className="text-sm font-semibold" style={{ color: 'var(--ah-ink)' }}>{payment}</p>
-                )}
-                {listing.paymentNote && (
-                  <p className="text-sm mt-0.5" style={{ color: 'var(--ah-ink-2)' }}>{listing.paymentNote}</p>
-                )}
-              </div>
-            )}
-            {listing.meetingPoint && (
-              <div>
-                <h3 className="mb-1.5" style={SEC_HEAD}>Toplanma yeri</h3>
-                <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
-                  {listing.meetingPoint}
-                  {listing.meetingMinutesBefore ? ` — vardiyadan ${listing.meetingMinutesBefore} dk önce` : ''}
-                </p>
-                <p className="text-[11px] mt-1" style={{ color: 'var(--ah-ink-4)' }}>
-                  Vardınca oradaki QR kodu telefonunla okut, girişin kaydedilir.
-                </p>
-              </div>
-            )}
-            {listing.dressCode && (
-              <div>
-                <h3 className="mb-1.5" style={SEC_HEAD}>Kıyafet ve getirilecekler</h3>
-                <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
-                  {listing.dressCode}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {listing.requirements && (
-          <div className="card p-6">
-            <h3 className="mb-3" style={SEC_HEAD}>Gereksinimler</h3>
-            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
-              {listing.requirements}
-            </p>
-          </div>
-        )}
-
-        {hasDates && (
-          <div className="card p-6">
-            <h3 className="mb-3" style={SEC_HEAD}>Kontrat Dönemi</h3>
-            <p className="text-sm" style={{ color: 'var(--ah-ink-2)' }}>
-              {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
-              {listing.startDate && listing.endDate && ' — '}
-              {listing.endDate && new Date(listing.endDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
-          </div>
-        )}
-
-        {/* Vardiyalar */}
-        {slots.length > 0 && (
-          <div className="card p-6">
-            <h3 className="mb-3" style={SEC_HEAD}>
-              Vardiyalar ({slots.length})
-            </h3>
-            <div className="space-y-1.5">
-              {slots.map(s => {
-                const full = s.full || (s.slotsFilled >= s.slotsNeeded)
-                const dateLabel = new Date(s.date).toLocaleDateString('tr-TR', {
-                  day: 'numeric', month: 'short', weekday: 'short',
-                })
-                return (
-                  <div key={s.id}
-                    className="flex items-center justify-between rounded-xl px-3 py-2.5"
-                    style={{
-                      background: full ? 'var(--ah-page)' : 'var(--ah-brand-soft)',
-                      border: '1px solid var(--ah-line)',
-                      opacity: full ? 0.7 : 1,
-                    }}>
-                    <div className="text-sm">
-                      <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>{dateLabel}</span>
-                      <span className="ml-2 tabular-nums" style={{ color: 'var(--ah-brand)' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
-                    </div>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.06em] px-2 py-0.5 rounded-full"
-                          style={full
-                            ? { background: 'rgba(107, 117, 116, 0.10)', color: 'var(--ah-danger)', border: '1px solid rgba(107, 117, 116, 0.28)' }
-                            : { background: 'rgba(107, 117, 116, 0.10)', color: 'var(--ah-ok)', border: '1px solid rgba(107, 117, 116, 0.28)' }}>
-                      {full ? 'DOLU' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        </div>  {/* SOL kolon kapanis */}
-
-        {/* === SAG KOLON: Basvur Card + Konum + Isletme bilgileri === */}
-        <aside className="space-y-4">
-          {/* Başvur Card */}
-          <div className="card p-6">
-            <div className="mb-2" style={LABEL}>ÜCRET</div>
-            <div className="mb-4 tabular-nums"
-                 style={{ color: 'var(--ah-ink)', fontSize: '30px', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-              {salary || '—'}
-            </div>
-
-            <div className="space-y-2 mb-5 pb-5" style={{ borderBottom: '1px solid var(--ah-line)' }}>
-              <DetailRow label="Pozisyon" value={POSITION_LABELS[listing.position] || listing.position} />
-              <DetailRow label="İlçe"     value={listing.businessDistrict || '—'} />
-              {shift && <DetailRow label="Vardiya" value={shift.label} sub={shift.time} />}
-              <DetailRow label="Tür" value={JOB_TYPE_LABELS[listing.jobType] || listing.jobType} />
-            </div>
-
-            <button
-              onClick={handleApply}
-              disabled={!hasFuture || applying}
-              className="w-full py-3.5 text-[14px] font-semibold rounded-xl transition-all disabled:cursor-not-allowed hover:opacity-90"
-              style={hasFuture
-                ? { background: '#1f2937', color: '#ffffff' }
-                : { background: 'var(--ah-page)', color: 'var(--ah-ink-4)', border: '1px solid var(--ah-line)' }}>
-              {hasFuture ? 'Bu İlana Başvur' : 'Süresi Doldu'}
-            </button>
-
-            {hasFuture && (
-              <p className="text-[11px] text-center mt-3" style={{ color: 'var(--ah-ink-4)' }}>
-                Başvurmak 30 saniye sürer
-              </p>
-            )}
-          </div>
-
-          {/* Konum + Harita */}
-          {listing.businessDistrict && (
-            <div className="card p-4">
-              <h3 className="mb-3" style={SEC_HEAD}>Konum</h3>
-              <MapView
-                position={listing.businessLatitude != null && listing.businessLongitude != null
-                  ? [Number(listing.businessLatitude), Number(listing.businessLongitude)]
-                  : null}
-                district={listing.businessDistrict}
-                neighborhood={listing.businessNeighborhood}
-                title={listing.businessName}
-                height="240px"
-              />
-              {listing.businessAddress && (
-                <p className="text-[12px] mt-3" style={{ color: 'var(--ah-ink-3)' }}>{listing.businessAddress}</p>
+        {/* BAŞLIK BLOĞU — logo/baş harf + pozisyon + işletme · ilçe + ücret */}
+        <section className="card p-5 sm:p-6" aria-labelledby="listing-title">
+          <div className="flex items-start gap-4">
+            {listing.businessLogoUrl ? (
+              <img src={cldImg(listing.businessLogoUrl, { w: ImgSize.avatarMd })} alt=""
+                   className="ah-logo" style={{ objectFit: 'cover' }} />
+            ) : initial ? (
+              <span className="ah-logo" aria-hidden="true" style={{ background: logoColor(listing.businessName) }}>{initial}</span>
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <h1 id="listing-title" className="type-page" style={{ color: 'var(--ah-ink)' }}>{positionLabel}</h1>
+              {listing.title && listing.title !== positionLabel && (
+                <p className="type-body mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{listing.title}</p>
               )}
-              {listing.businessLatitude == null && (
-                <p className="text-[11px] mt-1 italic" style={{ color: 'var(--ah-warn)' }}>
-                  Yaklaşık konum — işletme tam adresi haritada işaretlememiş.
+              <p className="type-meta mt-1" style={{ color: 'var(--ah-ink-3)' }}>{metaParts.join(' · ')}</p>
+            </div>
+          </div>
+          {sal && (
+            <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--ah-line)' }}>
+              <p className="type-section type-num" style={{ color: 'var(--ah-ok)' }} data-testid="listing-salary">
+                {sal.amount}
+                {sal.unit && <span className="type-meta ml-1" style={{ color: 'var(--ah-ink-3)' }}>/{sal.unit}</span>}
+                {listing.tipsIncluded && <span className="type-meta ml-1" style={{ color: 'var(--ah-ink-3)' }}>+ bahşiş</span>}
+              </p>
+              {benchmark && benchmark.count > 0 && benchmark.avgMin && (
+                <p className="type-caption mt-1" style={{ color: 'var(--ah-ink-3)' }}>
+                  İstanbul {positionLabel} ortalaması{' '}
+                  <span className="type-num">
+                    {Number(benchmark.avgMin).toLocaleString('tr-TR')} ₺
+                    {benchmark.avgMax && Number(benchmark.avgMax) !== Number(benchmark.avgMin) &&
+                      ` – ${Number(benchmark.avgMax).toLocaleString('tr-TR')} ₺`}
+                  </span>
+                  {' '}({benchmark.count} aktif ilan)
                 </p>
               )}
             </div>
           )}
+        </section>
 
-          {/* Bu isletme hakkinda (trust signals) */}
-          <div className="card p-4">
-            <div className="mb-3" style={LABEL}>Bu işletme hakkında</div>
-            <div className="grid grid-cols-1 gap-3">
-              {listing.businessCreatedAt && (
-                <TrustSignal label="Üyelik" value={memberSince(listing.businessCreatedAt)} />
+        {/* İşletme galerisi — yalnız fotoğraf varsa */}
+        {photos.length > 0 && (
+          <div className="card !p-3 overflow-hidden" data-testid="listing-gallery">
+            <GalleryCarousel photos={photos} height="h-56" />
+          </div>
+        )}
+
+        {/* 1) Vardiyalar */}
+        {slots.length > 0 && (
+          <section className="card p-5 sm:p-6">
+            <h2 className="type-card mb-3" style={{ color: 'var(--ah-ink)' }}>
+              Vardiyalar <span className="type-meta" style={{ color: 'var(--ah-ink-3)' }}>({slots.length})</span>
+            </h2>
+            <ul className="space-y-2">
+              {slots.map(s => {
+                const full = isFull(s)
+                return (
+                  <li key={s.id}
+                    className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
+                    style={{ background: full ? 'var(--ah-band)' : 'var(--ah-card)', border: '1px solid var(--ah-line)' }}>
+                    <span className="type-body min-w-0">
+                      <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>{fmtDay(s.date)}</span>
+                      <span className="ml-2 type-num" style={{ color: 'var(--ah-ink-2)' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
+                    </span>
+                    <span className="type-badge px-2 py-0.5 rounded-full flex-shrink-0"
+                          style={full
+                            ? { background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)' }
+                            : { background: 'var(--ah-ok-soft)', color: 'var(--ah-ok)' }}>
+                      {full ? 'Dolu' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+            {hasDates && (
+              <p className="type-meta mt-3" style={{ color: 'var(--ah-ink-3)' }}>
+                Dönem:{' '}
+                {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {listing.startDate && listing.endDate && ' — '}
+                {listing.endDate && new Date(listing.endDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            )}
+          </section>
+        )}
+
+        {/* 2) Ödeme ve kıyafet — başvurmadan önce net görünsün */}
+        {(payment || listing.paymentNote || listing.dressCode || listing.meetingPoint) && (
+          <section className="card p-5 sm:p-6 space-y-4">
+            <h2 className="type-card" style={{ color: 'var(--ah-ink)' }}>Ödeme ve kıyafet</h2>
+            {(payment || listing.paymentNote) && (
+              <div>
+                <h3 className="type-label mb-1" style={{ color: 'var(--ah-ink-3)' }}>Ödeme</h3>
+                {payment && <p className="type-subhead" style={{ color: 'var(--ah-ink)' }}>{payment}</p>}
+                {listing.paymentNote && (
+                  <p className="type-body mt-0.5" style={{ color: 'var(--ah-ink-2)' }}>{listing.paymentNote}</p>
+                )}
+              </div>
+            )}
+            {listing.dressCode && (
+              <div>
+                <h3 className="type-label mb-1" style={{ color: 'var(--ah-ink-3)' }}>Kıyafet ve getirilecekler</h3>
+                <p className="type-body whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>{listing.dressCode}</p>
+              </div>
+            )}
+            {listing.meetingPoint && (
+              <div>
+                <h3 className="type-label mb-1" style={{ color: 'var(--ah-ink-3)' }}>Toplanma yeri</h3>
+                <p className="type-body whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
+                  {listing.meetingPoint}
+                  {listing.meetingMinutesBefore ? ` — vardiyadan ${listing.meetingMinutesBefore} dk önce` : ''}
+                </p>
+                <p className="type-caption mt-1" style={{ color: 'var(--ah-ink-3)' }}>
+                  Vardınca oradaki QR kodu telefonunla okut, girişin kaydedilir.
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* 3) Açıklama (+ gereksinimler) */}
+        <section className="card p-5 sm:p-6">
+          <h2 className="type-card mb-2" style={{ color: 'var(--ah-ink)' }}>Açıklama</h2>
+          <p className="type-body whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>
+            {listing.description || 'Açıklama eklenmemiş.'}
+          </p>
+          {listing.requirements && (
+            <>
+              <h3 className="type-subhead mt-4 mb-1" style={{ color: 'var(--ah-ink)' }}>Gereksinimler</h3>
+              <p className="type-body whitespace-pre-line" style={{ color: 'var(--ah-ink-2)' }}>{listing.requirements}</p>
+            </>
+          )}
+        </section>
+
+        {/* 4) Konum + Harita */}
+        {listing.businessDistrict && (
+          <section className="card p-4 sm:p-5">
+            <h2 className="type-card mb-3" style={{ color: 'var(--ah-ink)' }}>Konum</h2>
+            <MapView
+              position={listing.businessLatitude != null && listing.businessLongitude != null
+                ? [Number(listing.businessLatitude), Number(listing.businessLongitude)]
+                : null}
+              district={listing.businessDistrict}
+              neighborhood={listing.businessNeighborhood}
+              title={listing.businessName}
+              height="240px"
+            />
+            {listing.businessAddress && (
+              <p className="type-meta mt-3" style={{ color: 'var(--ah-ink-3)' }}>{listing.businessAddress}</p>
+            )}
+            {listing.businessLatitude == null && (
+              <p className="type-caption mt-1" style={{ color: 'var(--ah-warn)' }}>
+                Yaklaşık konum — işletme tam adresi haritada işaretlememiş.
+              </p>
+            )}
+          </section>
+        )}
+
+        {/* 5) İşletme hakkında — lg altında burada; lg+ yan panelde */}
+        <section className="card p-4 sm:p-5 lg:hidden">
+          {businessFacts}
+        </section>
+
+        </div>  {/* SOL kolon kapanis */}
+
+        {/* === SAĞ PANEL (lg+): vardiya özeti + başvuru eylemi + işletme kısa bilgisi === */}
+        <aside className="hidden lg:block">
+          <div className="lg:sticky lg:top-20 space-y-4">
+            <div className="card p-5">
+              <h2 className="type-card" style={{ color: 'var(--ah-ink)' }}>Başvuru</h2>
+              <ShiftSummary hasFuture={hasFuture} openSlots={openSlots} openPeople={openPeople} />
+              <button type="button" onClick={handleApply} disabled={!canApply} className="btn-primary mt-4">
+                {applyLabel}
+              </button>
+              {canApply && (
+                <p className="type-caption text-center mt-2" style={{ color: 'var(--ah-ink-3)' }}>
+                  Başvurmak 30 saniye sürer
+                </p>
               )}
-              {typeof listing.businessWorkerCount === 'number' && (
-                <TrustSignal label="Tamamlanan iş" value={`${listing.businessWorkerCount}+`} sub="kabul + çalışma" />
-              )}
-              {typeof listing.viewCount === 'number' && (
-                <TrustSignal label="Görüntülenme" value={listing.viewCount.toLocaleString('tr-TR')} sub="bu ilan" />
-              )}
+            </div>
+            <div className="card p-5">
+              {businessFacts}
             </div>
           </div>
         </aside>
-        </div>  {/* xl:grid kapanis */}
+        </div>  {/* grid kapanis */}
 
         {/* FAZ 16 — Benzer İlanlar (content-based) */}
         <SimilarListings listingId={id} onNavigate={(lid) => navigate(`/listings/${lid}`)} />
       </main>
+
+      {/* MOBİL SABİT ALT BAR (lg altı): [ücret /birim] [Başvur] */}
+      <div className="mobile-apply-bar" data-testid="mobile-apply-bar">
+        <div className="min-w-0 flex-1">
+          {sal ? (
+            <p className="type-card type-num truncate" style={{ color: 'var(--ah-ok)' }}>
+              {sal.amount}
+              {sal.unit && <span className="type-meta ml-1" style={{ color: 'var(--ah-ink-3)' }}>/{sal.unit}</span>}
+            </p>
+          ) : (
+            <p className="type-meta truncate" style={{ color: 'var(--ah-ink-3)' }}>Ücret belirtilmemiş</p>
+          )}
+          <p className="type-caption truncate" style={{ color: 'var(--ah-ink-3)' }}>
+            {!hasFuture ? 'Vardiyaların tarihi geçti'
+              : openSlots.length === 0 ? 'Tüm vardiyalar dolu'
+              : `${openSlots.length} açık vardiya`}
+          </p>
+        </div>
+        <button type="button" onClick={handleApply} disabled={!canApply}
+          className="btn-primary !w-auto flex-shrink-0 min-w-[132px]">
+          {applyLabel}
+        </button>
+      </div>
 
       {/* ApplyModal - başvur butonuna basınca açılır */}
       {applyOpen && (
@@ -425,18 +404,54 @@ export default function ListingDetailPage() {
   )
 }
 
-/* Dalga 4 / Ozellik 4 — Guven sinyali kucuk kutu */
-function TrustSignal({ label, value, sub }) {
+/* Yan panel vardiya özeti: "3 açık vardiya · ilk: 12 Eki Pzt 09:00 · 5 kişi aranıyor" */
+function ShiftSummary({ hasFuture, openSlots, openPeople }) {
+  if (!hasFuture) {
+    return <p className="type-meta mt-1" style={{ color: 'var(--ah-ink-3)' }}>Bu ilanın vardiyalarının tarihi geçti.</p>
+  }
+  if (openSlots.length === 0) {
+    return <p className="type-meta mt-1" style={{ color: 'var(--ah-ink-3)' }}>Tüm vardiyalar doldu.</p>
+  }
+  const first = openSlots[0]
   return (
-    <div className="text-left">
-      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, color: 'var(--ah-ink-4)' }}>{label}</div>
-      <div className="text-base font-semibold mt-1 tabular-nums" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>{value}</div>
-      {sub && <div className="text-[10px] mt-0.5" style={{ color: 'var(--ah-ink-4)' }}>{sub}</div>}
+    <ul className="mt-2 space-y-1 type-meta" style={{ color: 'var(--ah-ink-2)' }}>
+      <li><span className="font-semibold type-num" style={{ color: 'var(--ah-ink)' }}>{openSlots.length}</span> açık vardiya</li>
+      <li>İlk: <span className="type-num">{fmtDay(first.date)} · {first.startTime?.slice(0, 5)}</span></li>
+      {openPeople > 0 && <li><span className="type-num">{openPeople}</span> kişi aranıyor</li>}
+    </ul>
+  )
+}
+
+/* İşletme kısa bilgisi (güven sinyalleri — puan/skor YOK) */
+function BusinessFacts({ listing }) {
+  const items = []
+  if (listing.businessCreatedAt) items.push({ label: 'Kadrom üyeliği', value: memberSince(listing.businessCreatedAt) })
+  if (typeof listing.businessWorkerCount === 'number') items.push({ label: 'Tamamlanan iş', value: `${listing.businessWorkerCount}+` })
+  if (typeof listing.viewCount === 'number') items.push({ label: 'Görüntülenme', value: listing.viewCount.toLocaleString('tr-TR') })
+  return (
+    <>
+      <h2 className="type-card" style={{ color: 'var(--ah-ink)' }}>İşletme hakkında</h2>
+      <p className="type-meta mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{listing.businessName}</p>
+      {items.length > 0 && (
+        <dl className="grid grid-cols-3 lg:grid-cols-1 gap-3 mt-3">
+          {items.map(it => <TrustSignal key={it.label} label={it.label} value={it.value} />)}
+        </dl>
+      )}
+    </>
+  )
+}
+
+/* Dalga 4 / Ozellik 4 — Guven sinyali kucuk kutu */
+function TrustSignal({ label, value }) {
+  return (
+    <div className="text-left min-w-0">
+      <dt className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>{label}</dt>
+      <dd className="type-subhead type-num mt-0.5" style={{ color: 'var(--ah-ink)' }}>{value}</dd>
     </div>
   )
 }
 
-/* "2 ay önce", "1 yıl önce" — uyelik suresi insan-okunabilir */
+/* "2 ay", "1 yıl" — uyelik suresi insan-okunabilir */
 function memberSince(iso) {
   const d = new Date(iso)
   const days = Math.floor((Date.now() - d.getTime()) / 86_400_000)
@@ -496,18 +511,5 @@ function SimilarListings({ listingId, onNavigate }) {
         })}
       </div>
     </section>
-  )
-}
-
-/* Sticky basvur kart icinde satir */
-function DetailRow({ label, value, sub }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3">
-      <span className="flex-shrink-0" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, color: 'var(--ah-ink-4)' }}>{label}</span>
-      <div className="text-right min-w-0">
-        <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{value}</div>
-        {sub && <div className="text-[10px]" style={{ color: 'var(--ah-ink-4)' }}>{sub}</div>}
-      </div>
-    </div>
   )
 }

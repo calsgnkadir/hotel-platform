@@ -25,10 +25,8 @@ const STATUS_CONFIG = {
   EXPIRED:   { label: 'Süresi Doldu', color: 'var(--ah-ink-4)',  soft: 'var(--ah-band)',        text: 'var(--ah-ink-4)' },  // soluk
 }
 
-/* Filtre etiketleri StatusBadge.CAND_STATUS_FILTERS'tan gelir; orada HELD hala
-   Ingilizce "HOLD" yaziyor (dosya bu paketin kapsami disinda). Kullaniciya gorunen
-   etiketi burada Turkcelestiriyoruz — API degeri (HELD) degismez. */
-const FILTER_LABEL_OVERRIDES = { HELD: 'Beklemede' }
+/* Filtre etiketleri StatusBadge.CAND_STATUS_FILTERS'tan gelir (Turkce kaynak;
+   API degeri HELD degismez, gorunen etiket "Beklemede"). */
 
 /* Kariyer.net tarzi satir listesi (FAZ 22) — gorece tarih.
    FAZ B.5.3 — logo rengi lib/logoColor'a tasindi (ListingsPage ile ayni
@@ -206,7 +204,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
             <button key={f.value} onClick={() => setStatusFilter(f.value)}
               className={`chip ${isActive ? 'is-active' : ''}`}>
               <span style={{ fontWeight: isActive ? 600 : 500 }}>
-                {FILTER_LABEL_OVERRIDES[f.value] || f.label}
+                {f.label}
               </span>
               <span className={`text-[12px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/25' : ''}`}
                     style={!isActive ? { background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' } : {}}>

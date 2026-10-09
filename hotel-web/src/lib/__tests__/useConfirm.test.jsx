@@ -92,32 +92,26 @@ describe('useConfirm', () => {
     expect(result).toHaveBeenCalledWith(false)
   })
 
-  it('destructive true -> muted danger confirm button (color check)', async () => {
+  it('destructive true -> btn-destructive onay butonu', async () => {
     renderWithProvider(
       <TestConsumer opts={{ title: 'Sil', confirmLabel: 'Evet', destructive: true }} onResult={() => {}} />
     )
     fireEvent.click(screen.getByText('trigger'))
     const btn = screen.getByText('Evet')
-    // Kisitli semantik renk: yikici onay --ah-danger (muted kiremit) token'ini
-    // tasir. Markanin gradient token'ini TASIMAMALI.
-    const style = btn.getAttribute('style')
-    expect(style).toContain('var(--ah-danger)')
-    expect(style).not.toContain('var(--ah-brand-gradient)')
+    // UI Paket 3 — ortak buton sinifi: yikici onay .btn-destructive (--ah-danger dolgu)
+    expect(btn.className).toContain('btn-destructive')
+    expect(btn.className).not.toContain('btn-primary')
   })
 
-  it('destructive false -> filled brand (teal) confirm button', async () => {
+  it('destructive false -> btn-primary onay butonu', async () => {
     renderWithProvider(
       <TestConsumer opts={{ title: 'Onay', confirmLabel: 'Evet' }} onResult={() => {}} />
     )
     fireEvent.click(screen.getByText('trigger'))
     const btn = screen.getByText('Evet')
-    // Marka gradienti artik --ah-brand-gradient token'i (tokens.css).
-    // Inline style'da ham hex yok; token adini dogruluyoruz. Token'in
-    // gercek degeri tokens.css'te tek yerde tanimli.
-    const style = btn.getAttribute('style')
-    expect(style).toContain('var(--ah-brand-gradient)')
-    // Yikici olmayan onay, danger rengini tasimamali
-    expect(style).not.toContain('var(--ah-danger)')
+    // UI Paket 3 — yikici olmayan onay ortak .btn-primary (dolu grafit)
+    expect(btn.className).toContain('btn-primary')
+    expect(btn.className).not.toContain('btn-destructive')
   })
 
   it('default label\'lar destructive-aware secilir (Evet, sil vs Onayla)', async () => {
