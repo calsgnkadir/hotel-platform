@@ -155,12 +155,7 @@ public class JobListingService {
 
         // Faz 1 — abonelik kapisi (girdi dogrulamasindan SONRA). enforce=false iken daima
         // gecer (demo/dev bozulmaz). Model: ilk N ilan ucretsiz, sonrasi aktif abonelik.
-        if (!billingService.canCreateListingByBusiness(business.getId())) {
-            throw new BusinessRuleException(String.format(
-                    "Ücretsiz %d ilan hakkını kullandın. Daha fazla ilan yayınlamak için " +
-                    "Abonelik sekmesinden aboneliğini başlat.",
-                    billingService.getFreeListings()));
-        }
+        requireListingQuota(business.getId());
 
         JobListing listing = JobListing.builder()
                 .business(business)
@@ -338,6 +333,16 @@ public class JobListingService {
         }
     }
 
+    /** Faz 1 abonelik kapisi — ilan acma ve kapali ilani yeniden acma icin ortak. */
+    private void requireListingQuota(Long businessId) {
+        if (!billingService.canCreateListingByBusiness(businessId)) {
+            throw new BusinessRuleException(String.format(
+                    "Ücretsiz %d ilan hakkını kullandın. Daha fazla ilan yayınlamak için " +
+                    "Abonelik sekmesinden aboneliğini başlat.",
+                    billingService.getFreeListings()));
+        }
+    }
+
     // ----------------------------------------------------------------
     // Business owner: update listing status
     // ----------------------------------------------------------------
@@ -345,6 +350,10 @@ public class JobListingService {
     public ListingResponse updateStatus(Long listingId, Long ownerId, ListingStatus status) {
         JobListing listing = getListingForOwner(listingId, ownerId);
         boolean closing = status == ListingStatus.CLOSED && listing.getStatus() != ListingStatus.CLOSED;
+        // Kapatilan ilan kotayi bosaltir; yeniden acmak yeni ilan acmakla ayni kotaya tabidir.
+        // CLOSED ilan sayima dahil olmadigi icin "used < free" siniri dogrudan gecerli.
+        boolean reopening = listing.getStatus() == ListingStatus.CLOSED && status != ListingStatus.CLOSED;
+        if (reopening) requireListingQuota(listing.getBusiness().getId());
         listing.setStatus(status);
         jobListingRepository.save(listing);
         // Kapanınca tüm günlerin ekip listesi işletmeye e-postayla (commit sonrası, async)

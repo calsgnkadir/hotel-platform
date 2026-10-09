@@ -147,6 +147,10 @@ class ApplicationFlowIT {
         req.setShift(Shift.MORNING);
         req.setTitle("Test Garson");
         req.setDescription("Test description");
+        // V16 sonrasi yeni ilanlarda zorunlu odeme netligi + kiyafet alanlari
+        req.setDressCode("Siyah pantolon, beyaz gomlek");
+        req.setPaymentPeriod(PaymentPeriod.SAME_DAY);
+        req.setPaymentMethod(PaymentMethod.CASH);
         req.setShiftSlots(List.of(slots));
 
         String resp = mvc.perform(post("/api/listings")

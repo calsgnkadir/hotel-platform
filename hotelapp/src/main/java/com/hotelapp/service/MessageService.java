@@ -16,6 +16,7 @@ import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
+import com.hotelapp.repository.BusinessBlockRepository;
 import com.hotelapp.repository.ConversationRepository;
 import com.hotelapp.repository.MessageReactionRepository;
 import com.hotelapp.repository.MessageRepository;
@@ -53,6 +54,7 @@ public class MessageService {
     private final NotificationService notificationService;
     private final FileStorageService fileStorageService;
     private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#12 — WS broadcast
+    private final BusinessBlockRepository businessBlockRepository;  // aday engeli
 
     /** FAZ 11.W3 — Reaction whitelist (UI'da SVG render, emoji yok) */
     private static final Set<String> ALLOWED_REACTIONS =
@@ -93,6 +95,11 @@ public class MessageService {
         } else {
             throw new BusinessRuleException(
                     "Sohbet yalnızca bir aday ile bir işletme sahibi arasında olabilir");
+        }
+
+        // Adayın engellediği işletme sohbet başlatamaz (aday tarafı serbest).
+        if (initiator == businessOwner) {
+            requireNotBlockedByCandidate(candidate.getId(), businessOwner.getId());
         }
 
         // Var mı?
@@ -151,6 +158,7 @@ public class MessageService {
     @Transactional
     public MessageDto sendMessage(Long conversationId, Long senderId, MessageRequest req) {
         Conversation conv = getConversationForUser(conversationId, senderId);
+        requireSenderNotBlocked(conv, senderId);
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", senderId));
 
@@ -224,6 +232,7 @@ public class MessageService {
     @Transactional
     public MessageDto sendAttachment(Long conversationId, Long senderId, MultipartFile file, String caption) {
         Conversation conv = getConversationForUser(conversationId, senderId);
+        requireSenderNotBlocked(conv, senderId);
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", senderId));
 
@@ -462,6 +471,19 @@ public class MessageService {
     // ----------------------------------------------------------------
 
     /** Sohbeti getir + bu kullanıcının sohbetin tarafı olduğunu doğrula. */
+    /** Gönderen işletme tarafıysa ve aday bu işletmeyi engellediyse reddet. */
+    private void requireSenderNotBlocked(Conversation conv, Long senderId) {
+        if (conv.getBusinessOwner().getId().equals(senderId)) {
+            requireNotBlockedByCandidate(conv.getCandidate().getId(), senderId);
+        }
+    }
+
+    private void requireNotBlockedByCandidate(Long candidateId, Long businessOwnerId) {
+        if (businessBlockRepository.existsByUserIdAndBusinessOwnerId(candidateId, businessOwnerId)) {
+            throw new UnauthorizedException("Bu aday seninle iletişimi kapattı.");
+        }
+    }
+
     private Conversation getConversationForUser(Long conversationId, Long userId) {
         Conversation conv = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sohbet", conversationId));

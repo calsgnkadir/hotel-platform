@@ -50,6 +50,7 @@ class JobListingServiceTest {
     @Mock private UserAvailabilityBlockRepository availabilityBlockRepository;
     @Mock private ApplicationRepository applicationRepository;
     @Mock private org.springframework.context.ApplicationEventPublisher eventPublisher;
+    @Mock private BillingService billingService;
 
     @InjectMocks
     private JobListingService service;
@@ -302,6 +303,59 @@ class JobListingServiceTest {
 
             service.updateStatus(42L, OWNER_ID, ListingStatus.PAUSED);
             verify(eventPublisher, never()).publishEvent(any(Object.class));
+        }
+        private JobListing closedListing() {
+            Business biz = businessOwnedBy(OWNER_ID);
+            biz.setType(com.hotelapp.enums.BusinessType.HOTEL);
+            JobListing l = JobListing.builder()
+                    .business(biz)
+                    .position(Position.WAITER)
+                    .jobType(JobType.DAILY)
+                    .title("Garson")
+                    .status(ListingStatus.CLOSED)
+                    .build();
+            l.setId(42L);
+            return l;
+        }
+
+        @Test
+        @DisplayName("Kapali ilani yeniden acmak kota doluyken reddedilir, ilan kapali kalir")
+        void reopening_closed_listing_without_quota_is_refused() {
+            JobListing l = closedListing();
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+            when(billingService.canCreateListingByBusiness(100L)).thenReturn(false);
+            when(billingService.getFreeListings()).thenReturn(5);
+
+            assertThatThrownBy(() -> service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("Ücretsiz 5 ilan hakkını kullandın");
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.CLOSED);
+            verify(jobListingRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Kapali ilani yeniden acmak kota varken serbest")
+        void reopening_closed_listing_with_quota_is_allowed() {
+            JobListing l = closedListing();
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+            when(billingService.canCreateListingByBusiness(100L)).thenReturn(true);
+
+            service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE);
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.ACTIVE);
+            verify(jobListingRepository).save(l);
+        }
+
+        @Test
+        @DisplayName("Acik ilani duraklatmak/kapatmak kota kontrolu yapmaz")
+        void non_reopening_transitions_skip_quota() {
+            JobListing l = closedListing();
+            l.setStatus(ListingStatus.ACTIVE);
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            service.updateStatus(42L, OWNER_ID, ListingStatus.PAUSED);
+            service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
+            service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
+            verify(billingService, never()).canCreateListingByBusiness(any());
         }
     }
 }

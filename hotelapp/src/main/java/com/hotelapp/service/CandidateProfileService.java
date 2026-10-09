@@ -158,7 +158,7 @@ public class CandidateProfileService {
     // ----------------------------------------------------------------
     // PUBLIC PROFILE — isletme adayin profilini gorebilsin (sadece ilan
     // basvurusu yapilmissa). Hassas alanlar (email/telefon/adres/dogum)
-    // ASLA DTO'da yok.
+    // yalniz KABUL edilmis basvuruda (veya aday/admin icin) doldurulur.
     // ----------------------------------------------------------------
     @Transactional(readOnly = true)
     public PublicCandidateProfileDto getPublicProfile(Long candidateId, Long viewerId) {
@@ -171,8 +171,18 @@ public class CandidateProfileService {
         User viewer = userRepository.findById(viewerId)
                 .orElseThrow(() -> new AccessDeniedException("Yetki yok"));
 
+        // Erisim: yalniz aday kendisi, ADMIN veya adayin (herhangi bir statude)
+        // basvurdugu isletmenin sahibi. Digerlerine 404 — adayin varligi ifsa edilmez.
+        boolean isSelf = viewer.getId().equals(candidateId);
+        boolean isAdmin = viewer.getRole() == Role.ADMIN;
+        boolean appliedToViewer = viewer.getRole() == Role.BUSINESS_OWNER
+                && applicationRepository.existsByCandidateIdAndJobListingBusinessOwnerId(candidateId, viewerId);
+        if (!isSelf && !isAdmin && !appliedToViewer) {
+            throw new ResourceNotFoundException("Aday", candidateId);
+        }
+
         // Dalga G2 — Politika
-        // - Temel bilgiler (ad/avatar/ilce/pozisyon/guvenilirlik) HERKESE acik
+        // - Temel bilgiler (ad/avatar/ilce/pozisyon) yukaridaki erisim kontrolunu gecenlere acik
         // - Hassas (email/phone/adres tam/dogum) sadece:
         //   a) Aday kendi profili icin (viewer == candidate)
         //   b) Isletme + aday bu isletmenin ilanina basvurmus

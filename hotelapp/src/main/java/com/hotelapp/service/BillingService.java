@@ -89,16 +89,30 @@ public class BillingService {
         String failUrl = appBaseUrl + "/business?tab=billing&sub=fail";
         if (token == null || token.isBlank()) return failUrl;
 
+        // Önce bizim başlattığımız bir ödeme mi? Değilse iyzico'ya hiç gitme ve
+        // saldırganın gönderdiği token'ı log'a yazma.
         Subscription s = subscriptionRepository.findByLastCheckoutToken(token).orElse(null);
-        IyzicoClient.CheckoutResult r = iyzico.retrieve(token);
         if (s == null) {
-            log.warn("[BILLING] callback token eslesmedi: {}", token);
+            log.warn("[BILLING] callback token eslesmedi");
             return failUrl;
         }
+        IyzicoClient.CheckoutResult r = iyzico.retrieve(token);
         if (r.paid()) {
+            // Aynı ödeme ikinci kez işlenmez: süre uzamaz, iptal edilmiş abonelik
+            // yeniden ACTIVE olmaz.
+            if (r.paymentId() != null && r.paymentId().equals(s.getLastPaymentId())) {
+                s.setLastCheckoutToken(null);
+                subscriptionRepository.save(s);
+                log.info("[BILLING] tekrar callback yok sayildi — business={}", s.getBusiness().getId());
+                return okUrl;
+            }
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime base = (s.getCurrentPeriodEnd() != null && s.getCurrentPeriodEnd().isAfter(now))
+                    ? s.getCurrentPeriodEnd() : now;      // erken yenileme kalan günleri korur
             s.setStatus(SubscriptionStatus.ACTIVE);
-            s.setCurrentPeriodEnd(LocalDateTime.now().plusMonths(1));
+            s.setCurrentPeriodEnd(base.plusMonths(1));
             s.setLastPaymentId(r.paymentId());
+            s.setLastCheckoutToken(null);                  // token tek kullanımlık
             subscriptionRepository.save(s);
             log.info("[BILLING] abonelik ACTIVE — business={} paymentId={}", s.getBusiness().getId(), r.paymentId());
             return okUrl;
@@ -148,9 +162,12 @@ public class BillingService {
         });
     }
 
-    /** Gerçekten ödenmiş ve dönemi geçmemiş abonelik. */
+    /**
+     * Gerçekten ödenmiş ve dönemi geçmemiş abonelik. İptal (CANCELED) yenilemeyi
+     * durdurur; ödenmiş dönem sonuna kadar abonelik geçerli kalır.
+     */
     private boolean isPaid(Subscription s) {
-        return s.getStatus() == SubscriptionStatus.ACTIVE
+        return (s.getStatus() == SubscriptionStatus.ACTIVE || s.getStatus() == SubscriptionStatus.CANCELED)
                 && s.getCurrentPeriodEnd() != null
                 && s.getCurrentPeriodEnd().isAfter(LocalDateTime.now());
     }

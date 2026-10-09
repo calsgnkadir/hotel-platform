@@ -212,6 +212,22 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- *IT entegrasyon testleri (H2, @ActiveProfiles("test")) `mvn verify`
+                 sirasinda failsafe ile kosar; basarisizlikta build kirilir.
+                 Surefire varsayilan olarak yalniz *Test/*Tests/Test* kosar, *IT'leri almaz.
+                 Surum Spring Boot parent'tan gelir. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

@@ -21,4 +21,7 @@ public interface BusinessBlockRepository extends JpaRepository<BusinessBlock, Lo
     Set<Long> findBusinessIdsByUserId(@Param("userId") Long userId);
 
     long countByUserId(Long userId);
+
+    /** Aday, sahibi ownerId olan isletmeyi engellemis mi (mesajlasma kapisi). */
+    boolean existsByUserIdAndBusinessOwnerId(Long userId, Long ownerId);
 }
