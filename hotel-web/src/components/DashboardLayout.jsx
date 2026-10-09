@@ -87,6 +87,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
   const EXTRA_TITLES = {
     messages: 'Mesajlar', profile: 'Profilim', relations: 'Takip Ettiklerim',
     history: 'Geçmiş İşlerim', workers: 'Bizde Çalışanlar',
+    favorites: 'Favori Adaylar',
   }
   const currentTitle = (() => {
     const item = navItems.find(n => n.id === activeTab)

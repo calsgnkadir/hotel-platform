@@ -4,6 +4,7 @@ import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import { useConfirm } from '../../lib/useConfirm'
+import { POSITION_LABELS } from '../../utils/labels'
 // Ayarlar + Yardım header'daki Ayarlar SettingsMenu'ye taşındı
 
 /* ── Inline SVG helper (Heroicons stroke stili) ── */
@@ -703,7 +704,7 @@ function ListingsTab() {
                   </span>
                 </div>
                 <div className="text-xs mt-1" style={{ color: '#6b7574' }}>
-                  {l.position} · {l.businessName} · {l.ownerEmail}
+                  {POSITION_LABELS[l.position] || l.position} · {l.businessName} · {l.ownerEmail}
                 </div>
                 <div className="text-[10px] mt-0.5" style={{ color: '#6b7574' }}>
                   {new Date(l.createdAt).toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}

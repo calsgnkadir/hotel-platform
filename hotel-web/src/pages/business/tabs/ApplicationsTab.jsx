@@ -7,6 +7,7 @@ import useFocusTrap from '../../../lib/useFocusTrap'
 import ApplicationsKanban from '../components/ApplicationsKanban'
 import ApplicationDetail from '../components/ApplicationDetail'
 import { BUSINESS_FILTER_LABELS } from '../../../lib/applicationStatus'
+import { POSITION_LABELS } from '../../../utils/labels'
 
 const VIEW_STORAGE_KEY = 'biz-applications-view'
 // Liste gorunumu 3x3 A4-dikey kart izgarasi — sayfa basi 9 kart (kullanici istegi).
@@ -358,7 +359,7 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
             {name}
           </div>
           <div className="text-[12.5px] truncate" style={{ color: 'var(--ah-ink-3)' }}>
-            {app.listing?.position || app.listing?.title || '—'}
+            {POSITION_LABELS[app.listing?.position] || app.listing?.position || app.listing?.title || '—'}
           </div>
         </div>
       </div>
