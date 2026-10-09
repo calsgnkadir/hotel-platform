@@ -53,20 +53,19 @@ export default class ErrorBoundary extends Component {
               <summary className="text-xs text-ink-400 cursor-pointer hover:text-ink-600">
                 Teknik detay
               </summary>
-              <pre className="text-[10px] bg-cream-50 dark:bg-ink-800 p-2 rounded mt-2 overflow-auto max-h-32">
+              <pre className="text-[12px] bg-cream-50 dark:bg-ink-800 p-2 rounded mt-2 overflow-auto max-h-32">
                 {String(this.state.error.message)}
               </pre>
             </details>
           )}
           <div className="flex gap-2">
-            <button onClick={this.handleReset}
-              className="btn-secondary flex-1 text-sm">
+            <button type="button" onClick={this.handleReset}
+              className="btn-secondary flex-1">
               Tekrar dene
             </button>
-            <button onClick={this.handleReload}
-              className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg"
-              style={{ background: 'linear-gradient(135deg, #1b1815, #111827)' }}>
-              Sayfayı Yenile
+            <button type="button" onClick={this.handleReload}
+              className="btn-primary flex-1">
+              Sayfayı yenile
             </button>
           </div>
         </div>

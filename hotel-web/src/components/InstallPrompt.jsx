@@ -80,8 +80,8 @@ export default function InstallPrompt() {
   if (iosMode) {
     return (
       <div className="floating-notice fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm z-[1000]">
-        <div className="rounded-2xl shadow-2xl overflow-hidden"
-             style={{ background: 'linear-gradient(135deg, #e5e5e5 0%, #dadada 100%)' }}>
+        <div className="rounded-xl overflow-hidden"
+             style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)', boxShadow: 'var(--elev-3)' }}>
           <div className="p-4">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
@@ -93,16 +93,15 @@ export default function InstallPrompt() {
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-sm" style={{ color: '#13110f' }}>
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--ah-ink)' }}>
                   Ana ekrana ekle
                 </h3>
-                <p className="text-xs mt-1" style={{ color: '#1b1815' }}>
+                <p className="type-meta mt-1">
                   Safari'de paylaş ikonuna bas, ardından
                   <span className="font-bold"> "Ana Ekrana Ekle"</span> seç.
                 </p>
-                <button onClick={handleLater}
-                  className="mt-3 text-xs font-semibold"
-                  style={{ color: '#111827' }}>
+                <button type="button" onClick={handleLater}
+                  className="btn-ghost mt-2 -ml-3">
                   Şimdi değil
                 </button>
               </div>
@@ -116,8 +115,8 @@ export default function InstallPrompt() {
   // Chrome — install prompt karti
   return (
     <div className="floating-notice fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm z-[1000]">
-      <div className="rounded-2xl shadow-2xl overflow-hidden"
-           style={{ background: 'linear-gradient(135deg, #e5e5e5 0%, #dadada 100%)' }}>
+      <div className="rounded-xl overflow-hidden"
+           style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)', boxShadow: 'var(--elev-3)' }}>
         <div className="p-4">
           <div className="flex items-start gap-3">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
@@ -130,21 +129,19 @@ export default function InstallPrompt() {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-sm" style={{ color: '#13110f' }}>
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--ah-ink)' }}>
                 Kadrom'u yükle
               </h3>
-              <p className="text-xs mb-3" style={{ color: '#1b1815' }}>
+              <p className="type-meta mb-3">
                 Ana ekrandan tek tıkla aç, native uygulama hissi yaşa.
               </p>
               <div className="flex gap-2">
-                <button onClick={handleInstall}
-                  className="flex-1 px-3 py-2 rounded-lg text-xs font-bold text-white shadow-sm"
-                  style={{ background: 'var(--ah-brand-gradient)' }}>
+                <button type="button" onClick={handleInstall}
+                  className="btn-primary flex-1">
                   Yükle
                 </button>
-                <button onClick={handleLater}
-                  className="px-3 py-2 rounded-lg text-xs font-semibold"
-                  style={{ background: 'rgba(255,255,255,0.50)', color: '#1b1815' }}>
+                <button type="button" onClick={handleLater}
+                  className="btn-secondary">
                   Sonra
                 </button>
               </div>

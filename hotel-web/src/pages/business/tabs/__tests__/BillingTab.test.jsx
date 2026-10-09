@@ -41,7 +41,7 @@ describe('BillingTab ödeme durumları', () => {
     renderTab({ enforced: false, paymentsAvailable: false, sandbox: false })
     expect(await screen.findByText('İlan yayınlama şimdilik ücretsiz ve sınırsız.')).toBeInTheDocument()
     expect(screen.getByText(/Ücretli abonelik henüz aktif değil/)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Aboneliğe Geç' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Aboneliğe geç' })).not.toBeInTheDocument()
     expect(screen.queryByText(/test kartı/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/kullanıldı/)).not.toBeInTheDocument()
     expect(screen.queryByText(/enforce/)).not.toBeInTheDocument()
@@ -49,7 +49,7 @@ describe('BillingTab ödeme durumları', () => {
 
   it('canlı ödeme açıkken: kota ve satın alma butonu var, test kartı yok', async () => {
     renderTab({ enforced: true, paymentsAvailable: true, sandbox: false })
-    expect(await screen.findByRole('button', { name: 'Aboneliğe Geç' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Aboneliğe geç' })).toBeInTheDocument()
     expect(screen.getByText(/kullanıldı/)).toBeInTheDocument()
     expect(screen.queryByText(/test kartı/i)).not.toBeInTheDocument()
   })
@@ -82,7 +82,7 @@ describe('BillingTab abonelik bitişi / iptal', () => {
     expect(screen.getByText(PERIOD_END_TR)).toBeInTheDocument()
     expect(screen.queryByText(/Bir sonraki yenileme/)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'İptal et' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Aboneliği Yenile / Uzat' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aboneliği yenile / uzat' })).toBeInTheDocument()
   })
 
   it('CANCELED + active: iptal metni ve bitiş tarihi görünür, iptal butonu yok', async () => {
@@ -94,7 +94,7 @@ describe('BillingTab abonelik bitişi / iptal', () => {
     expect(screen.queryByText('Aktif abonelik')).not.toBeInTheDocument()
     expect(screen.queryByText(/Bir sonraki yenileme/)).not.toBeInTheDocument()
     // Ödeme açıksa yeniden abone olunabilir
-    expect(screen.getByRole('button', { name: 'Aboneliği Yenile / Uzat' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aboneliği yenile / uzat' })).toBeInTheDocument()
   })
 
   it('sunucu hatasında hata durumu ve "Tekrar dene" gösterilir', async () => {

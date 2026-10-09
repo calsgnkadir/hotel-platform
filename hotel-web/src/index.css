@@ -115,8 +115,16 @@ code, pre, kbd, samp {
   box-shadow: 0 0 0 4px rgba(185, 185, 185, 0.10);
 }
 
+/* UI Paket 2 — type-label: 12/16 600, cumle duzeni, tracking 0
+   (eski: 11px BUYUK HARF 0.18em → "kucuk ve bagiran" etiket). */
 .label {
-  @apply block text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5;
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--ah-ink-3);
 }
 .dark .label {
@@ -124,40 +132,70 @@ code, pre, kbd, samp {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   BUTONLAR — Pill, sıcak hissiyat
+   BUTONLAR — UI Paket 2: 3 tur + tehlikeli
+     .btn-primary    dolu grafit (birincil; sayfa basina ideal 1)
+     .btn-secondary  beyaz + 1px cizgi (ikincil)
+     .btn-ghost      metin (ucuncul) — .btn-tertiary ayni
+     .btn-danger     kirmizi metin + cerceve (tehlikeli aksiyon)
+     .btn-destructive dolu kirmizi — YALNIZ onay penceresinde
+   Ortak: 14px/600, cumle duzeni (buyuk harf yok), tracking 0, radius 10px,
+   yukseklik 40px (masaustu) / 44px (mobil dokunma hedefi).
+   .btn-primary geriye uyum icin w-full kalir; satir icinde `!w-auto` ekleyin.
    ──────────────────────────────────────────────────────────────── */
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-tertiary,
+.btn-danger,
+.btn-destructive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+@media (max-width: 767px) {
+  .btn-primary, .btn-secondary, .btn-ghost, .btn-tertiary, .btn-danger, .btn-destructive {
+    min-height: 44px;
+  }
+}
+:is(.btn-primary, .btn-secondary, .btn-ghost, .btn-tertiary, .btn-danger, .btn-destructive):active:not(:disabled) {
+  transform: translateY(1px);
+}
+:is(.btn-primary, .btn-secondary, .btn-ghost, .btn-tertiary, .btn-danger, .btn-destructive):disabled,
+:is(.btn-primary, .btn-secondary, .btn-ghost, .btn-tertiary, .btn-danger, .btn-destructive)[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
 
-/* PRIMARY: teal (FAZ 26 ITEM 1 — altin gradient birakildi; auth/legacy koyu altinda kalir) */
+/* PRIMARY — dolu grafit */
 .btn-primary {
-  @apply w-full py-3 px-6 font-semibold text-sm rounded-2xl
-         transition-all duration-200 active:scale-[0.97]
-         disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
-         inline-flex items-center justify-center gap-2;
+  width: 100%;
   background: var(--ah-brand);
+  border-color: var(--ah-brand);
   color: #ffffff;
-  box-shadow: 0 1px 2px rgba(31, 41, 55, 0.20);
 }
-.btn-primary:hover {
-  background: var(--ah-brand-hover);
-  box-shadow: 0 2px 10px rgba(31, 41, 55, 0.25);
-  transform: translateY(-1px);
-}
+.btn-primary:hover:not(:disabled) { background: var(--ah-brand-hover); border-color: var(--ah-brand-hover); }
 
-/* SECONDARY: Champagne hairline outline (ikincil aksiyon) */
+/* SECONDARY — beyaz + 1px cizgi */
 .btn-secondary {
-  @apply py-3 px-6 font-semibold text-sm rounded-2xl
-         transition-all duration-200 active:scale-[0.97]
-         disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
-         inline-flex items-center justify-center gap-2;
   background: var(--ah-card);
-  border: 1px solid var(--ah-line-2);
-  color: var(--ah-ink-2);
-}
-.btn-secondary:hover {
-  background: #f2f5f5;
-  border-color: #bcc4c4;
+  border-color: var(--ah-line-2);
   color: var(--ah-ink);
 }
+.btn-secondary:hover:not(:disabled) { background: var(--ah-band); border-color: var(--ah-ink-4); }
 .dark .btn-secondary {
   background: transparent;
   border: 1px solid rgba(185, 185, 185, 0.30);
@@ -167,16 +205,15 @@ code, pre, kbd, samp {
   background: rgba(185, 185, 185, 0.06);
 }
 
-/* GHOST: Sadece text + hover bg */
-.btn-ghost {
-  @apply py-2 px-4 font-medium text-sm rounded-2xl
-         bg-transparent transition-colors;
-  color: var(--ah-ink-3);
+/* TERTIARY — metin buton */
+.btn-ghost,
+.btn-tertiary {
+  background: transparent;
+  color: var(--ah-ink-2);
+  padding: 0 12px;
 }
-.btn-ghost:hover {
-  background: #f2f5f5;
-  color: var(--ah-ink);
-}
+.btn-ghost:hover:not(:disabled),
+.btn-tertiary:hover:not(:disabled) { background: var(--ah-band); color: var(--ah-ink); }
 .dark .btn-ghost {
   color: #bebebe;
 }
@@ -185,17 +222,21 @@ code, pre, kbd, samp {
   color: #e5e5e5;
 }
 
-/* DESTRUCTIVE: Brick (muted) — never neon red */
+/* DANGER — kirmizi metin + cerceve (sayfa ici tehlikeli aksiyon) */
+.btn-danger {
+  background: var(--ah-card);
+  border-color: var(--ah-danger);
+  color: var(--ah-danger);
+}
+.btn-danger:hover:not(:disabled) { background: var(--ah-danger-soft); }
+
+/* DESTRUCTIVE — dolu kirmizi; yalniz onay penceresinin son adiminda */
 .btn-destructive {
-  @apply py-2.5 px-5 font-semibold text-sm rounded-2xl text-white
-         transition-all active:scale-[0.97];
   background: var(--ah-danger);
-  box-shadow: 0 1px 2px rgba(107, 117, 116, 0.20);
+  border-color: var(--ah-danger);
+  color: #ffffff;
 }
-.btn-destructive:hover {
-  background: #4a4a4a;
-  box-shadow: 0 2px 10px rgba(107, 117, 116, 0.28);
-}
+.btn-destructive:hover:not(:disabled) { filter: brightness(0.92); }
 
 /* ────────────────────────────────────────────────────────────────
    CARD — FAZ 5.UX4: Unified card token system
@@ -375,10 +416,11 @@ code, pre, kbd, samp {
 }
 .stat-card-label {
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: 10px;
+  font-size: 13px;          /* Paket 2 — eski 10px BUYUK HARF 0.22em → type-meta */
+  line-height: 18px;
   font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--ah-ink-3);
 }
 .stat-card .text-white {
@@ -394,10 +436,16 @@ code, pre, kbd, samp {
 /* ────────────────────────────────────────────────────────────────
    BADGE — FAZ 5.4: glass + thin border + glow accent
    ──────────────────────────────────────────────────────────────── */
+/* Durum rozeti — type-badge: 11/14 600, BUYUK HARF 0.04em (buyuk harfin
+   kaldigi TEK yer). Eski: 10px 0.18em + blur. */
 .badge {
-  @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.18em];
+  @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   border: 1px solid transparent;
-  backdrop-filter: blur(8px);
 }
 .badge-pending {
   background: var(--ah-warn-soft);
@@ -434,7 +482,9 @@ code, pre, kbd, samp {
    CHIP — filtre pill'i (acik zemin, aktif = grafit dolu)
    ──────────────────────────────────────────────────────────────── */
 .chip {
-  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all duration-200;
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium transition-all duration-200;
+  font-size: 13px;   /* Paket 2 — eski 11px */
+  line-height: 18px;
   background: var(--ah-card);
   border: 1px solid var(--ah-line-2);
   color: var(--ah-ink-2);
@@ -557,12 +607,6 @@ code, pre, kbd, samp {
    sayfa katmanina hapsediyordu; o duzeldi, gizleme UX olarak korunuyor.) */
 body:has(.modal-overlay, [aria-modal="true"]) .floating-notice { display: none; }
 
-/* Pencereyi iceren z-index'li ata (DashboardLayout <main class="relative z-10">)
-   kendi stacking context'ini olusturup karartmayi sticky ust menunun (z-30)
-   ALTINDA hapsediyordu. Pencere acikken bu atalar z-index'ini birakir; karartma
-   kok baglamda z-1000 ile ust menu dahil tum ekranin ustune cikar. */
-:is(.z-10, .z-20):has(.modal-overlay, [aria-modal="true"]) { z-index: auto; }
-
 /* FAZ D4 — Mobilde modal'lar bottom sheet gibi davransin (Slack/iOS native pattern).
    Tum mevcut modal'lari (ApplyModal, DetailModal, ListingFormModal, ReviewModal,
    ReportModal, AvatarCropModal, AdminPage modals) tek noktada uretmis oluyoruz. */
@@ -634,8 +678,8 @@ body:has(.modal-overlay, [aria-modal="true"]) .floating-notice { display: none; 
    ──────────────────────────────────────────────────────────────── */
 .spinner {
   width: 28px; height: 28px;
-  border: 3px solid rgba(185, 185, 185, 0.16);
-  border-top-color: #b9b9b9;
+  border: 3px solid var(--ah-line);       /* acik tema — eski sampanya #b9b9b9 */
+  border-top-color: var(--ah-brand);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -761,10 +805,13 @@ body:has(.modal-overlay, [aria-modal="true"]) .floating-notice { display: none; 
    icin "neredeyim" bilgisi yoktu (WCAG 2.4.7 fail).
    ════════════════════════════════════════════════════════════════ */
 
+/* UI Paket 2 — marka odak halkasi: 2px grafit dis halka (offset 2px) +
+   aradaki boslugu dolduran 2px beyaz ic halka. Koyu dolu butonda (grafit,
+   kirmizi) ve acik zeminde ayni halka gorunur kalir. */
 *:focus-visible {
-  outline: 2px solid rgba(185, 185, 185, 0.65);
+  outline: 2px solid var(--ah-brand);
   outline-offset: 2px;
-  border-radius: 4px;
+  box-shadow: 0 0 0 2px #ffffff;
 }
 a:focus-visible,
 button:focus-visible,
@@ -772,11 +819,11 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid rgba(185, 185, 185, 0.65);
+  outline: 2px solid var(--ah-brand);
   outline-offset: 2px;
 }
 /* Modal overlay focus alminca outline gosterme (sadece kendisi container) */
-.modal-overlay:focus-visible { outline: none; }
+.modal-overlay:focus-visible { outline: none; box-shadow: none; }
 
 /* ════════════════════════════════════════════════════════════════
    FAZ 3 — PRINT STYLESHEET
@@ -947,10 +994,7 @@ textarea:focus-visible {
 .ah-surface .input:disabled { background: #f4f6f6 !important; color: var(--ah-ink-3) !important; }
 .ah-surface .label { color: var(--ah-ink-2); }  /* form etiketleri daha okunur (ink-3 -> ink-2) */
 
-.ah-surface .btn-secondary { background: var(--ah-card); border: 1px solid var(--ah-line-2); color: var(--ah-ink-2); }
-.ah-surface .btn-secondary:hover { background: #f2f5f5; border-color: #bcc4c4; color: var(--ah-ink); }
-.ah-surface .btn-ghost { color: var(--ah-ink-3); }
-.ah-surface .btn-ghost:hover { background: #f2f5f5; color: var(--ah-ink); }
+/* Butonlar: .ah-surface altinda ayri override yok — taban .btn-* (Paket 2) gecerli. */
 
 .ah-surface .tier-ground { background: transparent; }
 .ah-surface .tier-raised { background: var(--ah-card); border: 1px solid var(--ah-line); box-shadow: var(--elev-1); }

@@ -50,7 +50,7 @@ export default function TodayWidget({ applications, onTabChange }) {
       hint: oldestHoursAgo > 24
         ? `En eskisi ${Math.floor(oldestHoursAgo / 24)} gün önce — Kanban'a geç`
         : `En eskisi ${oldestHoursAgo} saat önce`,
-      cta: 'Kanban\'a Git',
+      cta: 'Kanban\'a git',
       onCta: () => onTabChange?.('applications'),
     })
   }
@@ -72,7 +72,7 @@ export default function TodayWidget({ applications, onTabChange }) {
       key: 'urgent-held',
       color: 'var(--ah-danger)',
       soft: 'var(--ah-danger-soft)',
-      label: `${urgentHeld.length} HOLD'da aday — 24 saatten az`,
+      label: `${urgentHeld.length} aday beklemede — 24 saatten az kaldı`,
       hint: 'Aday yanıtlamazsa otomatik düşecek',
       cta: 'Detay',
       onCta: () => onTabChange?.('applications'),
@@ -93,28 +93,22 @@ export default function TodayWidget({ applications, onTabChange }) {
       <div>
         <div className="flex items-baseline justify-between mb-4 flex-wrap gap-y-2">
           <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
-            <h2
-              className="text-2xl sm:text-3xl tracking-wider uppercase"
-              style={{ color: 'var(--ah-ink)' }}
-            >
+            <h2 className="type-section" style={{ color: 'var(--ah-ink)' }}>
               Bugün
             </h2>
-            <span
-              className="text-[10px] uppercase tracking-[0.2em] font-bold"
-              style={{ color: 'var(--ah-ink-3)' }}
-            >
+            <span className="type-meta" style={{ color: 'var(--ah-ink-3)' }}>
               {new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}
             </span>
           </div>
           {!allClear && (
             <span
-              className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
+              className="type-badge px-2.5 py-1 rounded-full"
               style={{
                 background: 'var(--ah-warn-soft)',
                 color: 'var(--ah-warn)',
               }}
             >
-              {items.length} İŞ VAR
+              {items.length} iş var
             </span>
           )}
         </div>
@@ -126,32 +120,24 @@ export default function TodayWidget({ applications, onTabChange }) {
               style={{ background: 'var(--ah-ok)' }}
             />
             <div>
-              <div className="text-lg tracking-wider uppercase" style={{ color: 'var(--ah-ink)' }}>
+              <div className="type-card" style={{ color: 'var(--ah-ink)' }}>
                 Her şey yolunda
               </div>
-              <div className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
+              <div className="type-meta mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
                 Bugün acil karar bekleyen başvuru yok. Yeni ilan açabilir veya mevcutları gözden geçirebilirsin.
               </div>
               <div className="mt-3 flex gap-2">
                 <button
+                  type="button"
                   onClick={() => onTabChange?.('mylistings')}
-                  className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
-                  style={{
-                    background: 'var(--ah-brand-gradient)',
-                    color: '#ffffff',
-                    boxShadow: 'none',
-                  }}
+                  className="btn-primary !w-auto"
                 >
-                  Yeni İlan
+                  Yeni ilan
                 </button>
                 <button
+                  type="button"
                   onClick={() => onTabChange?.('workers')}
-                  className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                  style={{
-                    background: 'var(--ah-card)',
-                    color: 'var(--ah-ink-2)',
-                    border: '1px solid var(--ah-line-2)',
-                  }}
+                  className="btn-secondary"
                 >
                   Ekibim
                 </button>
@@ -171,29 +157,22 @@ export default function TodayWidget({ applications, onTabChange }) {
               >
                 <div className="flex items-start gap-3 min-w-0">
                   <span
-                    className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
+                    className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
                     style={{ background: it.color }}
                   />
                   <div className="min-w-0">
-                    <div
-                      className="text-sm tracking-wider uppercase"
-                      style={{ color: it.color }}
-                    >
+                    <div className="type-body font-semibold" style={{ color: 'var(--ah-ink)' }}>
                       {it.label}
                     </div>
-                    <div className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
+                    <div className="type-meta mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
                       {it.hint}
                     </div>
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={it.onCta}
-                  className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
-                  style={{
-                    background: it.soft,
-                    color: it.color,
-                    border: '1px solid transparent',
-                  }}
+                  className="btn-secondary flex-shrink-0"
                 >
                   {it.cta}
                 </button>

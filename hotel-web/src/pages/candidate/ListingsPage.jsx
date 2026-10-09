@@ -176,7 +176,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
               `}</style>
             </div>
 
-            <h2 className="type-display" style={{ fontSize: '22px' }}>Başvurun gönderildi</h2>
+            <h2 className="type-section">Başvurun gönderildi</h2>
             <p className="type-body mt-2" style={{ color: 'var(--text-secondary)' }}>
               <b>{listing.businessName}</b> · {listing.title}
             </p>
@@ -192,7 +192,6 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                         style={{
                           background: i === 0 ? '#1f2937' : 'rgba(31, 41, 55, 0.20)',
                           border: '1px solid rgba(31, 41, 55, 0.42)',
-                          boxShadow: i === 0 ? '0 0 12px rgba(31, 41, 55, 0.55)' : 'none',
                         }} />
                   <span className="type-overline mt-2"
                         style={{ color: i === 0 ? 'var(--accent-action)' : 'var(--text-faint)' }}>
@@ -203,19 +202,11 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             </div>
 
             <div className="flex gap-3 mt-8 w-full max-w-[320px]">
-              <button type="button" onClick={onClose}
-                      className="tier-raised tier-raised-hover flex-1 py-2.5 type-overline"
-                      style={{ color: 'var(--text-secondary)' }}>
+              <button type="button" onClick={onClose} className="btn-secondary flex-1">
                 Başka ilan bul
               </button>
-              <button type="button" onClick={handleOpenMessages}
-                      className="flex-1 py-2.5 type-overline rounded-2xl transition-all hover:-translate-y-0.5"
-                      style={{
-                        background: 'var(--ah-brand-gradient)',
-                        color: '#fff',
-                        boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-                      }}>
-                Mesajlaşmayı Aç
+              <button type="button" onClick={handleOpenMessages} className="btn-primary flex-1">
+                Mesajlaşmayı aç
               </button>
             </div>
 
@@ -275,7 +266,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
 
           {/* Ön Yazı */}
           <div>
-            <label className="label">Ön Yazı <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
+            <label className="label">Ön yazı <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
             <textarea
               value={coverLetter}
               onChange={e => setCoverLetter(e.target.value)}
@@ -289,7 +280,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
           {hasSlots ? (
             <div>
               <label className="label">
-                Vardiya Seçimi *
+                Vardiya seçimi *
                 <span className="text-ink-400 font-normal ml-1">(çalışabileceğin günleri işaretle)</span>
               </label>
               <div className="space-y-1.5">
@@ -317,8 +308,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                         <div className="text-sm font-medium text-ink-800 flex items-center gap-1.5">
                           {dateLabel} · {timeLabel}
                           {past && (
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded
-                                             bg-cream-200 text-ink-600">
+                            <span className="type-badge px-1.5 py-0.5 rounded bg-cream-200 text-ink-600">
                               Geçti
                             </span>
                           )}
@@ -352,19 +342,11 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
           {/* Footer — filled amber CTA (modal-icinde tek accent) */}
           <div className="flex gap-3 pt-2 sticky bottom-0 py-3 -mx-6 px-6 border-t border-hairline"
                style={{ background: 'var(--surface-raised)' }}>
-            <button type="button" onClick={onClose}
-                    className="tier-raised tier-raised-hover flex-1 py-2.5 type-overline"
-                    style={{ color: 'var(--text-secondary)' }}>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">
               İptal
             </button>
             <button type="submit" disabled={loading || !hasFutureSlots}
-              className="relative overflow-hidden flex-1 py-2.5 type-overline rounded-2xl transition-all disabled:opacity-60 hover:-translate-y-0.5"
-              style={{
-                background: 'var(--ah-brand-gradient)',
-                color: '#fff',
-                border: '1px solid rgba(31, 41, 55, 0.45)',
-                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-              }}>
+              className="btn-primary relative overflow-hidden flex-1">
               {loading && (
                 <span aria-hidden className="absolute bottom-0 left-0 h-[2px]"
                       style={{
@@ -373,7 +355,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                         animation: 'submit-progress 1400ms ease-in-out infinite',
                       }} />
               )}
-              {loading ? 'Gönderiliyor…' : !hasFutureSlots ? 'Süresi Doldu' : 'Başvur'}
+              {loading ? 'Gönderiliyor…' : !hasFutureSlots ? 'Süresi doldu' : 'Başvur'}
               <style>{`
                 @keyframes submit-progress {
                   0% { width: 0%; left: 0%; }
@@ -434,30 +416,30 @@ function DetailModal({ listing, onClose, onApply }) {
           {/* Quick facts grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="bg-cream-50 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-ink-500 uppercase tracking-wider">İlçe</div>
+              <div className="type-label">İlçe</div>
               <div className="text-sm font-semibold text-ink-700 mt-0.5">
                 {listing.businessDistrict || '—'}
               </div>
             </div>
             <div className="bg-cream-50 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-ink-500 uppercase tracking-wider">Pozisyon</div>
+              <div className="type-label">Pozisyon</div>
               <div className="text-sm font-semibold text-ink-700 mt-0.5">
                 {POSITION_LABELS[listing.position] || listing.position}
               </div>
             </div>
             {shift && (
               <div className="bg-cream-50 rounded-lg p-3 text-center">
-                <div className="text-[10px] text-ink-500 uppercase tracking-wider">Vardiya</div>
+                <div className="type-label">Vardiya</div>
                 <div className="text-sm font-semibold text-ink-700 mt-0.5">
                   {shift.icon} {shift.label}
                 </div>
-                <div className="text-[10px] text-ink-400 mt-0.5">{shift.time}</div>
+                <div className="type-caption mt-0.5">{shift.time}</div>
               </div>
             )}
             {salary && (
               <div className="bg-brand-50 rounded-lg p-3 text-center">
-                <div className="text-[10px] text-brand-700 uppercase tracking-wider">Ücret</div>
-                <div className="text-xs font-semibold text-brand-700 mt-0.5 leading-tight">{salary}</div>
+                <div className="type-label">Ücret</div>
+                <div className="text-sm font-semibold text-ink-800 mt-0.5 leading-tight type-num">{salary}</div>
               </div>
             )}
           </div>
@@ -465,7 +447,7 @@ function DetailModal({ listing, onClose, onApply }) {
           {/* #81 v2: Konum — tam koordinat varsa onu, yoksa ilçe merkezi fallback */}
           {listing.businessDistrict && (
             <div>
-              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Konum</h3>
+              <h3 className="type-subhead mb-2">Konum</h3>
               <MapView
                 position={listing.businessLatitude != null && listing.businessLongitude != null
                   ? [Number(listing.businessLatitude), Number(listing.businessLongitude)]
@@ -476,12 +458,12 @@ function DetailModal({ listing, onClose, onApply }) {
                 height="240px"
               />
               {listing.businessAddress && (
-                <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-2">
+                <p className="type-meta mt-2">
                   {listing.businessAddress}
                 </p>
               )}
               {listing.businessLatitude == null && (
-                <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 italic">
+                <p className="type-caption text-amber-600 mt-1">
                   Yaklaşık konum — işletme henüz tam adresi haritada işaretlemedi.
                 </p>
               )}
@@ -490,7 +472,7 @@ function DetailModal({ listing, onClose, onApply }) {
 
           {/* Description */}
           <div>
-            <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Açıklama</h3>
+            <h3 className="type-subhead mb-2">Açıklama</h3>
             <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-line">
               {listing.description}
             </p>
@@ -498,7 +480,7 @@ function DetailModal({ listing, onClose, onApply }) {
 
           {listing.requirements && (
             <div>
-              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Gereksinimler</h3>
+              <h3 className="type-subhead mb-2">Gereksinimler</h3>
               <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-line">
                 {listing.requirements}
               </p>
@@ -507,7 +489,7 @@ function DetailModal({ listing, onClose, onApply }) {
 
           {hasDates && (
             <div>
-              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Kontrat Dönemi</h3>
+              <h3 className="type-subhead mb-2">Kontrat Dönemi</h3>
               <p className="text-sm text-ink-700">
                 {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 {listing.startDate && listing.endDate && ' — '}
@@ -519,7 +501,7 @@ function DetailModal({ listing, onClose, onApply }) {
           {/* Faz E3: Vardiya listesi */}
           {slots.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">
+              <h3 className="type-subhead mb-2">
                 Vardiyalar ({slots.length})
               </h3>
               <div className="space-y-1.5">
@@ -536,9 +518,9 @@ function DetailModal({ listing, onClose, onApply }) {
                         <span className="font-medium text-ink-800">{dateLabel}</span>
                         <span className="text-ink-500 ml-2">{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
                       </div>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
-                        ${full ? 'bg-red-50 text-red-600' : 'bg-brand-50 text-brand-700'}`}>
-                        {full ? 'DOLU' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
+                      <span className={`px-2 py-0.5 rounded-full
+                        ${full ? 'type-badge bg-red-50 text-red-600' : 'type-label bg-brand-50 text-ink-800'}`}>
+                        {full ? 'Dolu' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
                       </span>
                     </div>
                   )
@@ -552,16 +534,15 @@ function DetailModal({ listing, onClose, onApply }) {
         <div className="flex gap-3 p-6 border-t border-cream-200 sticky bottom-0 bg-white dark:bg-ink-800 items-center">
           <button onClick={() => setShowReport(true)}
             title="Bu ilanı bildir"
-            className="text-sm px-3 py-2.5 rounded-lg text-ink-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0">
+            className="btn-ghost flex-shrink-0">
             Bildir
           </button>
-          <button onClick={onClose} className="btn-secondary flex-1 text-sm">Kapat</button>
+          <button type="button" onClick={onClose} className="btn-secondary flex-1">Kapat</button>
           <button
             onClick={() => { if (detailHasFuture) { onApply(listing); onClose() } }}
             disabled={!detailHasFuture}
-            className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
-            style={{ background: '#5d5d5d', boxShadow: '0 3px 12px rgba(93, 93, 93, 0.35)' }}>
-            {detailHasFuture ? 'Başvur' : 'Süresi Doldu'}
+            className="btn-primary flex-1">
+            {detailHasFuture ? 'Başvur' : 'Süresi doldu'}
           </button>
         </div>
       </div>
@@ -1078,7 +1059,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           </svg>
           Filtreler
           {activeFilterCount > 0 && (
-            <span className="tabular-nums rounded-full text-[11px] leading-none text-white"
+            <span className="tabular-nums rounded-full text-[12px] leading-none text-white"
                   style={{ background: 'var(--ah-brand)', padding: '3px 6px' }}>
               {activeFilterCount}
             </span>
@@ -1341,11 +1322,11 @@ function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
           <button key={c.key}
             type="button"
             onClick={() => onRemove(c.key)}
-            className="group flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all hover:-translate-y-0.5"
+            className="group flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors"
             style={{
-              background: 'rgba(31, 41, 55, 0.10)',
-              color: '#1f2937',
-              border: '1px solid rgba(31, 41, 55, 0.22)',
+              background: 'var(--ah-brand-soft)',
+              color: 'var(--ah-brand)',
+              border: '1px solid var(--ah-line-2)',
             }}>
             <span className="truncate max-w-[180px]">{c.text}</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1358,13 +1339,8 @@ function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
       </div>
       <button onClick={onClearAll}
         type="button"
-        className="text-[10px] font-semibold uppercase tracking-[0.06em] px-2.5 py-1.5 rounded-full flex-shrink-0 transition-all hover:-translate-y-0.5"
-        style={{
-          background: 'rgba(107, 117, 116, 0.10)',
-          color: '#6b7574',
-          border: '1px solid rgba(107, 117, 116, 0.28)',
-        }}>
-        Hepsini Temizle
+        className="btn-ghost flex-shrink-0">
+        Hepsini temizle
       </button>
     </div>
   )
@@ -1433,7 +1409,7 @@ function ListingsPageBtn({ children, active, disabled, onClick, ariaLabel }) {
 function FilterField({ label, children }) {
   return (
     <div className="flex flex-col gap-1 min-w-0">
-      <label className="text-[10px] font-semibold uppercase tracking-[0.04em]" style={{ color: 'var(--ah-ink-4)' }}>
+      <label className="type-label" style={{ color: 'var(--ah-ink-3)' }}>
         {label}
       </label>
       {children}
@@ -1446,7 +1422,7 @@ function FilterField({ label, children }) {
 function FilterRow({ label, children }) {
   return (
     <div className="flex flex-col gap-1.5 min-w-0">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.04em]" style={{ color: 'var(--ah-ink-4)' }}>
+      <span className="type-label" style={{ color: 'var(--ah-ink-3)' }}>
         {label}
       </span>
       <div className="flex items-center gap-1.5 overflow-x-auto -mx-1 px-1 py-0.5 lg:flex-wrap lg:overflow-visible

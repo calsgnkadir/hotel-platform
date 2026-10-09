@@ -163,23 +163,20 @@ body, .role-app-bg {
   line-height: 0.95;
 }
 
-/* Headline gradient — used only on Page H1, never on stat numerals */
-.headline-champagne {
-  background: linear-gradient(135deg, #e5e5e5 0%, #b9b9b9 60%, #a3a3a3 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+/* Eski sampanya gradient basligi — acik temada duz koyu ink (JSX'te kullanimi yok,
+   geriye uyumluluk icin isim duruyor). */
+.headline-champagne { color: var(--ah-ink); }
 
 /* ================== GLASS PANELS — used over AmbientBackdrop ================== */
+/* Acik tema: yari saydam beyaz (eski koyu rgba(19,17,15,.62) birakildi). */
 .glass-panel {
-  background: rgba(19, 17, 15, 0.62);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid var(--hairline);
 }
 .glass-panel-light {
-  background: rgba(239, 239, 239, 0.06);
+  background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--hairline);
@@ -228,61 +225,85 @@ body, .role-app-bg {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
- * FAZ 5.UX6 — Typography scale (Inter only). Uniform siniflandirma.
+ * UI Paket 2 — Tipografi olcegi (Inter). Kok sorun: 18 farkli text-[Npx],
+ * 10px alti onlarca etiket, her yerde BUYUK HARF + genis tracking ("kucuk ve
+ * bagiran" metin). Kural: 11px alti yok; buyuk harf YALNIZ durum rozetinde.
  *
- *   .type-display   32/40  600  -0.02em   H1 (page heading)
- *   .type-heading   20/28  600  -0.01em   H2 (card title)
- *   .type-subhead   15/22  500   0        H3 (subsection)
- *   .type-body      14/20  400   0        prose
- *   .type-caption   12/16  500   0.02em   meta (timestamps, hints)
- *   .type-overline  10/14  600   0.22em   uppercase eyebrow / label
+ *   .type-page     24/32  700  -0.015em  sayfa basligi (H1)
+ *   .type-section  18/26  600  -0.01em   bolum basligi (H2)
+ *   .type-card     16/22  600  -0.005em  kart / modal basligi (H3)
+ *   .type-body     14/20  400   0        govde metni
+ *   .type-meta     13/18  500   0        ikincil bilgi (ink-3)
+ *   .type-label    12/16  600   0        alan / kucuk etiket — buyuk harf YOK
+ *   .type-badge    11/14  600   0.04em   BUYUK HARF — yalniz durum rozetleri
+ *   .type-num      tabular-nums (ucret / sayac rakamlari)
+ *
+ * Eski isimler (display/heading/subhead/caption/overline) silinmedi; ayni
+ * olcege esitlendi. .type-overline artik buyuk harf DEGIL (64 kullanim cascade
+ * ile duzelir).
  * ═══════════════════════════════════════════════════════════════════════ */
-
-/* FAZ 26 ITEM 6 — Olcek referans ritmine (Kariyer.net/LinkedIn) cekildi.
-   Onceki olcek "editorial luxe" idi: 32px display, 20px heading ve en onemlisi
-   0.22em overline aralig. Genis harf araligi + buyuk basliklar "AI/luxe" tell'i.
-   Yeni ritim: 24 / 16 / 14 / 13.5 / 12 / 11, overline araligi 0.06em. */
-.type-display {
-  font-size: clamp(20px, 2.4vw, 24px);
-  line-height: 1.3;
+.type-page, .type-display {
+  font-size: 24px;
+  line-height: 32px;
   font-weight: 700;
   letter-spacing: -0.015em;
   color: var(--text-headline);
 }
-.type-heading {
-  font-size: 16px;
-  line-height: 1.4;
+.type-section {
+  font-size: 18px;
+  line-height: 26px;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text-headline);
 }
+.type-card, .type-heading {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--text-headline);
+}
 .type-subhead {
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 20px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 .type-body {
-  font-size: 13.5px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 400;
   color: var(--text-primary);
 }
+.type-meta {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--ah-ink-3);
+}
 .type-caption {
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 16px;
   font-weight: 500;
   letter-spacing: 0;
   color: var(--text-muted);
 }
-.type-overline {
-  font-size: 11px;
-  line-height: 1.4;
+.type-label, .type-overline {
+  font-size: 12px;
+  line-height: 16px;
   font-weight: 600;
-  letter-spacing: 0.06em;   /* eski 0.22em — "luxe" yayilma kaldirildi */
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;   /* eski: 11px uppercase 0.06em (once 0.22em) */
   color: var(--text-muted);
 }
+.type-badge {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.type-num { font-variant-numeric: tabular-nums; }
 
 /* ═══════════════════════════════════════════════════════════════════════
  * REDESIGN v3 — Açık + Teal sistem (LinkedIn/Kariyer.net register)
@@ -321,13 +342,19 @@ body, .role-app-bg {
 
 .ah-card { background: var(--ah-card); border: 1px solid var(--ah-line); border-radius: var(--ah-r); }
 
-.ah-btn { font-size: 13px; font-weight: 600; border-radius: var(--ah-rc); padding: 8px 15px;
+/* UI Paket 2 — .btn-* ile ayni olcek: 14px/600, cumle duzeni, 40px (mobil 44px). */
+.ah-btn { font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0; text-transform: none;
+  border-radius: var(--ah-rc); padding: 0 16px; min-height: 40px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   cursor: pointer; border: 1px solid transparent; font-family: inherit;
   transition: background .15s, border-color .15s; }
+@media (max-width: 767px) { .ah-btn { min-height: 44px; } }
+.ah-btn:disabled { cursor: not-allowed; }
 .ah-btn--p { background: var(--ah-brand); color: #fff; }
 .ah-btn--p:hover { background: var(--ah-brand-hover); }
-.ah-btn--o { background: var(--ah-card); color: var(--ah-ink-2); border-color: var(--ah-line-2); }
-.ah-btn--o:hover { border-color: #bcc4c4; }
+.ah-btn:active:not(:disabled) { transform: translateY(1px); }
+.ah-btn--o { background: var(--ah-card); color: var(--ah-ink); border-color: var(--ah-line-2); }
+.ah-btn--o:hover { border-color: var(--ah-ink-4); background: var(--ah-band); }
 .ah-btn--block { width: 100%; }
 /* FAZ B.5.1 — CTA oku: hover'da hafif ilerler (yon duygusu, dekorasyon degil) */
 .ah-btn--arrow { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
@@ -338,14 +365,15 @@ body, .role-app-bg {
   .ah-job:hover .ah-btn--arrow svg { transform: none; }
 }
 
-.ah-chip { font-size: 11.5px; font-weight: 600; color: var(--ah-ink-2); background: #f1f4f4;
+.ah-chip { font-size: 12px; font-weight: 600; color: var(--ah-ink-2); background: #f1f4f4;
   border-radius: 6px; padding: 4px 9px; display: inline-flex; align-items: center; gap: 5px; }
 .ah-chip--sal { color: var(--ah-ok); background: var(--ah-ok-soft); font-variant-numeric: tabular-nums; }
 .ah-chip--ver { color: var(--ah-brand); background: var(--ah-brand-soft); }
 .ah-chip--warn { color: var(--ah-warn); background: var(--ah-warn-soft); }
 /* FAZ C.2.2 — acil rozeti (kirmizi, en yuksek aciliyet sinyali) */
-.ah-chip--urgent { color: #3f4b4a; background: var(--ah-danger-soft); border: 1px solid var(--ah-danger);
-  gap: 4px; text-transform: uppercase; letter-spacing: .02em; }
+/* Durum rozeti: buyuk harf yalniz burada (type-badge ile ayni 0.04em) */
+.ah-chip--urgent { color: var(--ah-danger); background: var(--ah-danger-soft); border: 1px solid var(--ah-danger);
+  gap: 4px; font-size: 11px; line-height: 14px; text-transform: uppercase; letter-spacing: .04em; }
 
 /* İlan kartı (sektör: logo + bilgi + çip + CTA; dekoratif kapak yok) */
 .ah-job { background: var(--ah-card); border: 1px solid var(--ah-line); border-radius: var(--ah-r);
@@ -406,9 +434,10 @@ body, .role-app-bg {
 }
 .ah-job:hover .ah-job__band { border-color: #c3cccb; }
 .ah-job__when { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+/* Paket 2 — eski 9.5px BUYUK HARF ink-4 (band zemininde <4.5:1) → type-label */
 .ah-job__band-lbl {
-  font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--ah-ink-4);
+  font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0; text-transform: none;
+  color: var(--ah-ink-3);
 }
 .ah-job__when-day { font-size: 13.5px; font-weight: 600; color: var(--ah-ink); letter-spacing: -0.005em; }
 .ah-job__when-time { font-size: 12px; color: var(--ah-ink-3); font-variant-numeric: tabular-nums; }
@@ -419,7 +448,7 @@ body, .role-app-bg {
 /* Ucret kutunun icindeki tek buyuk deger — kart genelinde en guclu rakam,
    ama basliktan buyuk degil (B.1'deki "kocaman rakam" geri gelmesin). */
 .ah-job__wage-val { font-size: 17px; font-weight: 750; color: var(--ah-ink); letter-spacing: -0.015em; font-variant-numeric: tabular-nums; line-height: 1.15; }
-.ah-job__wage-unit { font-size: 11px; font-weight: 500; color: var(--ah-ink-3); }
+.ah-job__wage-unit { font-size: 12px; font-weight: 500; color: var(--ah-ink-3); }
 
 /* FAZ B.2 — Guven satiri: isletmenin sicilinin urun icinde gorunmesi.
    Rozet degil, sayisal kanit: puan, tamamlanan is, dogrulama. */
@@ -429,13 +458,13 @@ body, .role-app-bg {
 }
 .ah-trust-item {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 11.5px; font-weight: 600; color: var(--ah-ink-3);
+  font-size: 12px; font-weight: 600; color: var(--ah-ink-3);
 }
 .ah-trust-item svg { flex-shrink: 0; }
 /* Yesil yalniz isletme GERCEKTEN dogrulandiginda (JSX businessVerified ile ekler).
    Eskiden :first-child idi → dogrulanmamis isletmede "tamamlanan is" yesil gorunuyordu. */
 .ah-trust-item--ok { color: var(--ah-ok); }
-.ah-trust-sub { font-weight: 500; color: var(--ah-ink-4); font-size: 11px; }
+.ah-trust-sub { font-weight: 500; color: var(--ah-ink-3); font-size: 12px; }
 
 /* ═══════════════════════════════════════════════════════════════════════
  * FAZ 26 — ITEM 1: KOYU token seti (opt-in).

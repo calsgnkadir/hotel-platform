@@ -41,13 +41,13 @@ export default function AvatarCluster({
       ))}
       {overflow > 0 && (
         <div
-          className="flex items-center justify-center tracking-wider rounded-full"
+          className="flex items-center justify-center font-semibold rounded-full"
           style={{
             width: size,
             height: size,
             marginLeft: -overlapPx,
-            background: 'rgba(13, 11, 9, 0.85)',
-            border: '2px solid #221f1b',
+            background: 'var(--ah-brand-soft)',
+            border: '2px solid var(--ah-card)',
             color: '#1f2937',
             fontSize: Math.floor(size * 0.42),
             zIndex: 0,
@@ -75,14 +75,14 @@ function AvatarBubble({ item, size, showOnlineDot, style }) {
           loading="lazy"
           decoding="async"
           className="w-full h-full rounded-full object-cover"
-          style={{ border: '2px solid #221f1b' }}
+          style={{ border: '2px solid var(--ah-card)' }}
         />
       ) : (
         <div
           className="w-full h-full rounded-full flex items-center justify-center font-semibold"
           style={{
             background: 'rgba(31, 41, 55, 0.08)',
-            border: '2px solid #221f1b',
+            border: '2px solid var(--ah-card)',
             color: '#1f2937',
             fontSize: Math.floor(size * 0.45),
             lineHeight: 1,
@@ -99,8 +99,8 @@ function AvatarBubble({ item, size, showOnlineDot, style }) {
             right: 0,
             width: dotSize,
             height: dotSize,
-            background: '#6b7574',
-            border: '2px solid #221f1b',
+            background: 'var(--ah-ok)',
+            border: '2px solid var(--ah-card)',
             boxShadow: 'none',
           }}
           title="Çevrimiçi"

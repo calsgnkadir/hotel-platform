@@ -157,23 +157,23 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-      style={{ background: 'rgba(10, 6, 18, 0.85)', backdropFilter: 'blur(10px)' }}
+      style={{ background: 'rgba(17, 24, 39, 0.5)', backdropFilter: 'blur(2px)' }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-title"
     >
       <div
-        className="max-w-md w-full rounded-2xl overflow-hidden relative"
+        className="max-w-md w-full rounded-xl overflow-hidden relative"
         style={{
-          background: 'linear-gradient(135deg, rgba(19, 17, 15, 0.94), rgba(13, 11, 9, 0.95))',
-          border: '1px solid rgba(31, 41, 55, 0.18)',
-          boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
+          background: 'var(--ah-card)',
+          border: '1px solid var(--ah-line)',
+          boxShadow: 'var(--elev-3)',
         }}
       >
         {/* Hero alan — radial glow + ikon */}
         <div className="relative h-44 flex items-center justify-center overflow-hidden"
              style={{
-               background: 'linear-gradient(135deg, #221f1b 0%, #111827 50%, #1f2937 100%)',
+               background: 'var(--ah-brand-gradient)',
              }}>
           {/* Dekoratif daireler */}
           <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-25"
@@ -196,9 +196,9 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
 
           {/* Adım göstergesi */}
           <div
-            className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
+            className="absolute top-4 right-4 type-label tabular-nums px-2.5 py-1 rounded-full"
             style={{
-              background: 'rgba(13, 11, 9, 0.55)',
+              background: 'rgba(255, 255, 255, 0.12)',
               color: '#fff',
               border: '1px solid rgba(255, 255, 255, 0.25)',
             }}
@@ -211,12 +211,12 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
         <div className="p-6 sm:p-7 text-center">
           <h2
             id="onboarding-title"
-            className="text-3xl tracking-wider uppercase text-white mb-2.5"
-            style={{ textShadow: '0 0 16px rgba(31, 41, 55, 0.30)' }}
+            className="type-section mb-2.5"
+            style={{ color: 'var(--ah-ink)' }}
           >
             {step.title}
           </h2>
-          <p className="text-sm leading-relaxed mb-6" style={{ color: '#1f2937' }}>
+          <p className="type-body mb-6" style={{ color: 'var(--ah-ink-2)' }}>
             {step.description}
           </p>
 
@@ -228,8 +228,7 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
                 className="h-1.5 rounded-full transition-all duration-300"
                 style={{
                   width: i === stepIdx ? '28px' : '6px',
-                  background: i <= stepIdx ? '#1f2937' : 'rgba(31, 41, 55, 0.28)',
-                  boxShadow: i === stepIdx ? '0 0 10px rgba(31, 41, 55, 0.45)' : 'none',
+                  background: i <= stepIdx ? 'var(--ah-brand)' : 'var(--ah-line-2)',
                 }}
               />
             ))}
@@ -238,42 +237,16 @@ export default function OnboardingWizard({ user, onClose, onTabChange }) {
           {/* Butonlar */}
           <div className="flex flex-col gap-2">
             {step.cta && (
-              <button
-                onClick={handleCta}
-                className="w-full py-3 text-base tracking-wider uppercase text-white rounded-full transition-all hover:-translate-y-0.5"
-                style={{
-                  background: 'var(--ah-brand)',
-                  boxShadow: 'none',
-                }}
-              >
+              <button type="button" onClick={handleCta} className="btn-primary">
                 {step.cta}
               </button>
             )}
-            <button
-              onClick={handleNext}
-              className="w-full py-3 text-base tracking-wider uppercase rounded-full transition-all hover:-translate-y-0.5"
-              style={
-                step.cta
-                  ? {
-                      background: 'rgba(31, 41, 55, 0.10)',
-                      color: '#1f2937',
-                      border: '1px solid rgba(31, 41, 55, 0.22)',
-                    }
-                  : {
-                      background: 'var(--ah-brand)',
-                      color: '#fff',
-                      boxShadow: 'none',
-                    }
-              }
-            >
+            <button type="button" onClick={handleNext}
+              className={step.cta ? 'btn-secondary w-full' : 'btn-primary'}>
               {isLast ? 'Başlayalım' : 'İleri'}
             </button>
             {!isLast && (
-              <button
-                onClick={handleSkip}
-                className="w-full py-2 text-[11px] font-bold uppercase tracking-widest hover:underline transition-all"
-                style={{ color: '#888888' }}
-              >
+              <button type="button" onClick={handleSkip} className="btn-ghost w-full">
                 Şimdi atla
               </button>
             )}

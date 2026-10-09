@@ -80,15 +80,14 @@ export default function MyListingsTab({ applications = [] }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="type-caption tabular-nums">{listings.length} ilan</p>
+        <p className="type-meta tabular-nums">{listings.length} ilan</p>
         {/* '+ Yeni İlan' = sayfadaki tek filled-amber CTA (spec: max 1 accent element/page) */}
-        <button onClick={() => setFormTarget('new')}
-          className="type-overline px-5 py-2.5 rounded-2xl transition-all hover:-translate-y-0.5 cta-glow"
-          style={{
-            background: 'var(--ah-brand-gradient)',
-            color: '#ffffff',
-          }}>
-          + Yeni İlan
+        <button type="button" onClick={() => setFormTarget('new')} className="btn-primary !w-auto">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          Yeni ilan
         </button>
       </div>
 
@@ -125,10 +124,12 @@ export default function MyListingsTab({ applications = [] }) {
             const conversion = views > 0 ? Math.round((listingApplications / views) * 100) : null
             return (
             <div key={listing.id} className="tier-raised tier-raised-hover p-4">
-              <div className="flex items-start justify-between gap-3">
+              {/* Mobilde bilgi ustte, butonlar altta sarar (eskiden yan yana sikisip
+                  bilgi sutunu tek kelimelik satirlara eziliyordu). */}
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="type-heading" style={{ fontSize: '16px' }}>{listing.title}</h3>
+                    <h3 className="type-card">{listing.title}</h3>
                     <span className={`badge ${
                       listing.status === 'ACTIVE' ? 'badge-accepted' :
                       listing.status === 'PAUSED' ? 'badge-pending' :
@@ -137,7 +138,7 @@ export default function MyListingsTab({ applications = [] }) {
                     </span>
                     {/* FAZ C.2 — acil rozeti (suresi gecince backend urgent=false doner) */}
                     {listing.urgent && (
-                      <span className="inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                      <span className="type-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
                             title={listing.urgentUntil
                               ? `Acil · ${new Date(listing.urgentUntil).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}'a kadar`
                               : 'Acil ilan'}
@@ -184,42 +185,38 @@ export default function MyListingsTab({ applications = [] }) {
                     {new Date(listing.createdAt).toLocaleDateString('tr-TR')}
                   </p>
                 </div>
-                <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <div className="flex flex-col items-start sm:items-end gap-2 sm:flex-shrink-0 sm:max-w-[60%]">
                   {/* Son 8 hafta başvuru trendi */}
                   <div className="flex items-center gap-1.5"
                        title={`Son 8 hafta: ${last8wTotal} başvuru`}>
-                    <span className="type-overline tabular-nums">
+                    <span className="type-meta tabular-nums">
                       {last8wTotal}
                     </span>
                     <Sparkline data={trendData} color="#1f2937" width={56} height={20} />
                   </div>
-                  <div className="flex gap-2 flex-wrap justify-end">
+                  <div className="flex gap-2 flex-wrap sm:justify-end">
                   {/* QR yoklama — toplanma noktasında göster, adaylar okutsun */}
                   <button onClick={() => setAttendanceTarget(listing)}
                     title="Toplanma noktası için QR + canlı yoklama listesi"
-                    className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                    style={{ background: '#1f2937', color: '#ffffff', border: '1px solid #1f2937' }}>
+                    className="btn-secondary !px-3">
                     Yoklama
                   </button>
                   {/* Ekip listesi — sahada imza/yoklama çıktısı; her akşam 20:00'de e-postayla da gelir */}
                   <button onClick={() => handleRoster(listing.id)}
                     disabled={rosterBusyId === listing.id}
                     title="Kabul edilen adaylar, vardiya günlerine göre (Excel). Her akşam 20:00'de e-postana da gelir."
-                    className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                    style={{ background: 'rgba(31, 41, 55, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
+                    className="btn-secondary !px-3">
                     {rosterBusyId === listing.id ? 'Hazırlanıyor…' : 'Ekip listesi'}
                   </button>
                   {/* Tekrar aç (şablon): vardiyalar gelecek haftaya taşınmış kopya. Kapalı ilan için de. */}
                   <button onClick={() => setDupTarget(listing)}
                     title="Bu ilanı vardiyalar gelecek haftaya taşınmış olarak yeniden yayınla"
-                    className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                    style={{ background: 'rgba(31, 41, 55, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
+                    className="btn-secondary !px-3">
                     Tekrar aç
                   </button>
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => setFormTarget(listing)}
-                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(31, 41, 55, 0.08)', color: 'var(--accent-action)', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
+                      className="btn-secondary !px-3">
                       Düzenle
                     </button>
                   )}
@@ -230,34 +227,28 @@ export default function MyListingsTab({ applications = [] }) {
                       title={listing.urgent
                         ? 'Acil işaretini kaldır'
                         : 'Şu an müsait olan adaylara anında bildirim gönder'}
-                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5 disabled:opacity-60 inline-flex items-center gap-1"
-                      style={listing.urgent
-                        ? { background: 'var(--ah-danger)', color: '#fff', border: '1px solid var(--ah-danger)' }
-                        : { background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)', border: '1px solid transparent' }}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      className="btn-danger !px-3">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
                       </svg>
-                      {urgentBusyId === listing.id ? '...' : listing.urgent ? 'Acili Kaldır' : 'Acil'}
+                      {urgentBusyId === listing.id ? '...' : listing.urgent ? 'Acili kaldır' : 'Acil'}
                     </button>
                   )}
                   {listing.status === 'ACTIVE' && (
                     <button onClick={() => handleStatusChange(listing.id, 'PAUSED')}
-                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(107, 117, 116, 0.10)', color: '#bababa', border: '1px solid rgba(107, 117, 116, 0.28)' }}>
+                      className="btn-secondary !px-3">
                       Durdur
                     </button>
                   )}
                   {listing.status === 'PAUSED' && (
                     <button onClick={() => handleStatusChange(listing.id, 'ACTIVE')}
-                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(107, 117, 116, 0.12)', color: '#bfbfbf', border: '1px solid rgba(107, 117, 116, 0.30)' }}>
+                      className="btn-secondary !px-3">
                       Aktifleştir
                     </button>
                   )}
                   {listing.status !== 'CLOSED' && (
                     <button onClick={() => handleStatusChange(listing.id, 'CLOSED')}
-                      className="type-overline px-2.5 py-1.5 rounded-lg transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(107, 117, 116, 0.08)', color: '#6b7574', border: '1px solid rgba(107, 117, 116, 0.22)' }}>
+                      className="btn-secondary !px-3">
                       Kapat
                     </button>
                   )}

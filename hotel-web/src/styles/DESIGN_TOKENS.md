@@ -69,16 +69,45 @@ CSS helper'ları tokens.css (`.tier-*`) + `.ah-surface` altında index.css'te. I
 `.tier-raised-hover:hover` → border `--ah-line-2` (FEATURED'a dönüşmeden vurgular).
 Not: FEATURED border FAZ E'de düzeltildi — eskiden tanımsız `--ah-brand-line` yüzünden gri düşüyordu.
 
-## 4. Tipografi (Inter) — ITEM 6 sonrası gerçek ölçek
+## 4. Tipografi (Inter) — UI Paket 2 ölçeği
 
-| Class | Boyut/LH | Ağırlık | Tracking |
-|---|---|---|---|
-| `.type-display` | `clamp(20,2.4vw,24)`/1.3 | 700 | -0.015em |
-| `.type-heading` | 16/1.4 | 600 | -0.01em |
-| `.type-subhead` | 14/1.45 | 600 | 0 |
-| `.type-body` | 13.5/1.5 | 400 | 0 |
-| `.type-caption` | 12/1.4 | 500 | 0 |
-| `.type-overline` | 11/1.4 | 600 | 0.06em (eski 0.22em "luxe yayılma" kaldırıldı) |
+Kural: **11px altı yok**; **büyük harf yalnız durum rozetinde** (`.type-badge`, `.badge`,
+`.ah-chip--urgent`). Etiket/başlık/buton cümle düzeninde, tracking 0.
+
+| Class | Boyut/LH | Ağırlık | Tracking | Ne zaman |
+|---|---|---|---|---|
+| `.type-page` (= `.type-display`) | 24/32 | 700 | -0.015em | sayfa başlığı (H1) |
+| `.type-section` | 18/26 | 600 | -0.01em | bölüm başlığı (H2, "Bugün") |
+| `.type-card` (= `.type-heading`) | 16/22 | 600 | -0.005em | kart / modal başlığı |
+| `.type-subhead` | 14/20 | 600 | 0 | alt başlık |
+| `.type-body` | 14/20 | 400 | 0 | gövde |
+| `.type-meta` | 13/18 | 500 | 0 | ikincil bilgi (ink-3) |
+| `.type-caption` | 12/16 | 500 | 0 | küçük ek bilgi |
+| `.type-label` (= `.type-overline`, `.label`) | 12/16 | 600 | 0 | alan etiketi — büyük harf YOK |
+| `.type-badge` | 11/14 | 600 | 0.04em, BÜYÜK HARF | yalnız durum rozeti |
+| `.type-num` | — | — | — | `tabular-nums` (ücret, sayaç) |
+
+`.stat-card-label` 13px, `.ah-job__band-lbl` 12px ink-3, `.chip` 13px.
+
+## 4b. Butonlar (index.css)
+
+| Class | Görünüm | Ne zaman |
+|---|---|---|
+| `.btn-primary` | dolu grafit, beyaz metin | birincil (sayfa başına ideal 1). Geriye uyum için `width:100%`; satır içinde `!w-auto` |
+| `.btn-secondary` | beyaz + 1px `--ah-line-2` | ikincil |
+| `.btn-ghost` / `.btn-tertiary` | yalnız metin, hover `--ah-band` | üçüncül |
+| `.btn-danger` | kırmızı metin + kırmızı çerçeve | sayfa içi tehlikeli aksiyon |
+| `.btn-destructive` | dolu kırmızı | YALNIZ onay penceresinin son adımı |
+
+Ortak: 14px/600, cümle düzeni, tracking 0, radius 10px, yükseklik 40px (≤767px'de 44px).
+Durumlar: hover, `:active` 1px aşağı, `:disabled` opacity .5. `.ah-btn` aynı ölçekte.
+
+**Odak halkası** (global `*:focus-visible`): 2px `--ah-brand` outline, offset 2px +
+`box-shadow: 0 0 0 2px #fff` (aradaki boşluk beyaz) — koyu dolu butonda da görünür.
+
+**Katmanlar:** DashboardLayout `<main>` z-index/position TAŞIMAZ (eskiden `relative z-10`
+modal karartmasını üst menünün altına hapsediyordu). Üst menü `sticky z-40`; modal karartması
+z-1000, CommandPalette z-100, toast 9999 kök bağlamda.
 
 ## 5. Glow YOK (ITEM 5)
 

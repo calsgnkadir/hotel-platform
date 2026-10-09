@@ -27,7 +27,7 @@ const brandIcon = L.divIcon({
   html: `
     <div style="
       width: 32px; height: 32px;
-      background: linear-gradient(135deg, #1b1815, #111827);
+      background: #1f2937;
       border: 2px solid white;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
@@ -88,9 +88,9 @@ export default function MapView({
 
   if (!hasExact && !district && !editable) {
     return (
-      <div className="rounded-2xl border border-cream-300 bg-slate-900/40 flex items-center justify-center"
-           style={{ height }}>
-        <p className="text-xs text-ink-500 uppercase tracking-widest">Konum bilgisi yok</p>
+      <div className="rounded-2xl border border-cream-300 flex items-center justify-center"
+           style={{ height, background: 'var(--ah-band)' }}>
+        <p className="type-meta">Konum bilgisi yok</p>
       </div>
     )
   }
@@ -101,7 +101,7 @@ export default function MapView({
         center={coords}
         zoom={effectiveZoom}
         scrollWheelZoom={editable}
-        style={{ height: '100%', width: '100%', background: '#0a0f1c' }}
+        style={{ height: '100%', width: '100%', background: 'var(--ah-band)' }}
         attributionControl={false}
       >
         <TileLayer
@@ -117,12 +117,12 @@ export default function MapView({
                 {district}{neighborhood ? ` · ${neighborhood}` : ''}
               </div>
               {isApprox && (
-                <div className="text-[10px] text-amber-700 mt-1 italic">
+                <div className="text-[12px] mt-1" style={{ color: 'var(--ah-warn)' }}>
                   Yaklaşık konum — işletme henüz tam konum girmemiş
                 </div>
               )}
               {hasExact && (
-                <div className="text-[10px] text-brand-700 mt-1">
+                <div className="text-[12px] text-ink-700 mt-1 tabular-nums">
                   Tam konum: {coords[0].toFixed(5)}, {coords[1].toFixed(5)}
                 </div>
               )}
@@ -135,16 +135,16 @@ export default function MapView({
 
       {/* Düzenleme modunda kullanıcıya rehber */}
       {editable && (
-        <div className="absolute top-2 left-2 right-2 bg-cream-100/85 backdrop-blur-sm border border-emerald-500/30 text-brand-700 text-[11px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full text-center pointer-events-none">
+        <div className="absolute top-2 left-2 right-2 bg-cream-100/85 backdrop-blur-sm border border-emerald-500/30 text-ink-900 text-[12px] font-semibold px-3 py-1.5 rounded-full text-center pointer-events-none">
           Konumu seçmek için haritaya tıkla
         </div>
       )}
 
       {/* Sağ alt köşe — attribution (CartoDB + OSM zorunlu) */}
-      <div className="absolute bottom-1 right-1 text-[8px] text-ink-400/70 bg-cream-100/80 px-1.5 py-0.5 rounded backdrop-blur-sm">
-        © <a href="https://carto.com/attributions" target="_blank" rel="noreferrer" className="hover:text-white">CARTO</a>
+      <div className="absolute bottom-1 right-1 text-[11px] text-ink-700 bg-cream-100/80 px-1.5 py-0.5 rounded backdrop-blur-sm">
+        © <a href="https://carto.com/attributions" target="_blank" rel="noreferrer" className="hover:underline">CARTO</a>
         {' '}·{' '}
-        © <a href="https://openstreetmap.org/copyright" target="_blank" rel="noreferrer" className="hover:text-white">OSM</a>
+        © <a href="https://openstreetmap.org/copyright" target="_blank" rel="noreferrer" className="hover:underline">OSM</a>
       </div>
     </div>
   )

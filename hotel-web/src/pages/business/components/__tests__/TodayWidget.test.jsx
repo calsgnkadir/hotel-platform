@@ -5,8 +5,8 @@ import TodayWidget from '../TodayWidget'
 describe('TodayWidget (FAZ 0/#4d smoke)', () => {
   it('basvuru yokken yesil "her sey yolunda" branch', () => {
     render(<TodayWidget applications={[]} onTabChange={() => {}} />)
-    expect(screen.getByText(/HER ŞEY YOLUNDA/i)).toBeInTheDocument()
-    expect(screen.getByText(/Yeni İlan/i)).toBeInTheDocument()
+    expect(screen.getByText('Her şey yolunda')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Yeni ilan' })).toBeInTheDocument()
     expect(screen.getByText(/Ekibim/i)).toBeInTheDocument()
   })
 
@@ -43,6 +43,26 @@ describe('TodayWidget (FAZ 0/#4d smoke)', () => {
       id: i, status: 'ACCEPTED', createdAt: new Date().toISOString(),
     }))
     render(<TodayWidget applications={apps} onTabChange={() => {}} />)
-    expect(screen.getByText(/HER ŞEY YOLUNDA/i)).toBeInTheDocument()
+    expect(screen.getByText('Her şey yolunda')).toBeInTheDocument()
+  })
+
+  // UI Paket 2 — "BUGÜN" dev büyük harf başlık yerine cümle düzeni; butonlar ortak stil
+  it('başlık "Bugün" cümle düzeninde, BÜYÜK HARF sınıfı yok; CTA ortak buton', () => {
+    const apps = [{ id: 1, status: 'PENDING', createdAt: new Date().toISOString() }]
+    render(<TodayWidget applications={apps} onTabChange={() => {}} />)
+    const h = screen.getByRole('heading', { name: 'Bugün' })
+    expect(h.className).toContain('type-section')
+    expect(h.className).not.toMatch(/uppercase|tracking-wider/)
+    const cta = screen.getByRole('button', { name: "Kanban'a git" })
+    expect(cta.className).toContain('btn-secondary')
+    expect(screen.getByText('1 iş var')).toBeInTheDocument()
+  })
+
+  it('süresi yaklaşan bekleyen aday Türkçe etiketle gösterilir (HOLD yok)', () => {
+    const apps = [{ id: 1, status: 'HELD', createdAt: new Date().toISOString(),
+      holdDeadline: new Date(Date.now() + 3 * 3600e3).toISOString() }]
+    render(<TodayWidget applications={apps} onTabChange={() => {}} />)
+    expect(screen.getByText(/1 aday beklemede/)).toBeInTheDocument()
+    expect(screen.queryByText(/HOLD/)).not.toBeInTheDocument()
   })
 })

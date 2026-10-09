@@ -167,7 +167,7 @@ export default function CommandPalette() {
             className="flex-1 bg-transparent outline-none text-sm"
             style={{ color: 'var(--text-primary, #171513)' }}
           />
-          <kbd className="hidden sm:inline text-[10px] font-mono px-1.5 py-0.5 rounded border"
+          <kbd className="hidden sm:inline text-[11px] font-mono px-1.5 py-0.5 rounded border"
                style={{ color: 'var(--text-muted, #6d6d6d)', borderColor: 'var(--border-subtle, #e1e1e1)' }}>
             ESC
           </kbd>
@@ -182,8 +182,8 @@ export default function CommandPalette() {
           )}
           {grouped.map(([section, items]) => (
             <div key={section} className="mb-2 last:mb-0">
-              <div className="text-[10px] uppercase tracking-widest font-bold px-2 py-1.5"
-                   style={{ color: 'var(--text-muted, #6d6d6d)' }}>
+              <div className="type-label px-2 py-1.5"
+                   style={{ color: 'var(--ah-ink-3)' }}>
                 {section}
               </div>
               {items.map(a => {
@@ -195,13 +195,13 @@ export default function CommandPalette() {
                     onMouseEnter={() => setActiveIdx(a._idx)}
                     className="w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center justify-between gap-3 transition-colors"
                     style={{
-                      background: active ? 'var(--accent-action-soft, #e5e5e5)' : 'transparent',
-                      color: active ? 'var(--accent-action, #1b1815)' : 'var(--text-primary, #171513)',
+                      background: active ? 'var(--ah-brand-soft)' : 'transparent',
+                      color: active ? 'var(--ah-brand)' : 'var(--ah-ink-2)',
                     }}
                   >
                     <span className="font-medium">{a.label}</span>
                     {active && (
-                      <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                      <kbd className="text-[11px] font-mono px-1.5 py-0.5 rounded"
                            style={{ background: 'var(--bg-subtle, rgba(0,0,0,0.05))' }}>
                         Enter
                       </kbd>
@@ -214,11 +214,11 @@ export default function CommandPalette() {
         </div>
 
         {/* Footer hint */}
-        <div className="px-4 py-2 border-t text-[10px] flex items-center gap-4"
+        <div className="px-4 py-2 border-t text-[12px] flex items-center gap-4"
              style={{ borderColor: 'var(--border-subtle, #e1e1e1)', color: 'var(--text-muted, #6d6d6d)' }}>
           <span className="flex items-center gap-1.5">
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #e1e1e1)' }}>Yukari</kbd>
-            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #e1e1e1)' }}>Asagi</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #e1e1e1)' }}>Yukarı</kbd>
+            <kbd className="font-mono px-1.5 py-0.5 rounded border" style={{ borderColor: 'var(--border-subtle, #e1e1e1)' }}>Aşağı</kbd>
             <span>gezin</span>
           </span>
           <span className="flex items-center gap-1.5">

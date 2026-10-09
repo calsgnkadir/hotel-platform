@@ -94,9 +94,7 @@ export default function BillingTab() {
         <div className="card p-6" role="alert">
           <div className="text-[14px] font-semibold" style={{ color: 'var(--ah-ink)' }}>Abonelik bilgisi yüklenemedi.</div>
           <div className="text-[13px] mt-1" style={{ color: 'var(--ah-ink-3)' }}>Bağlantını kontrol edip tekrar dene.</div>
-          <button onClick={() => refetch()}
-            className="mt-4 px-4 py-2 text-sm font-semibold rounded-lg"
-            style={{ background: '#fff', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}>
+          <button type="button" onClick={() => refetch()} className="btn-secondary mt-4">
             Tekrar dene
           </button>
         </div>
@@ -118,7 +116,7 @@ export default function BillingTab() {
   const canPost    = paid || !limited || remaining > 0
   const usagePct   = free > 0 ? Math.min(100, Math.round((used / free) * 100)) : 0
   const price      = Number(b.monthlyPrice || 0).toLocaleString('tr-TR')
-  const primaryLabel = paid ? 'Aboneliği Yenile / Uzat' : 'Aboneliğe Geç'
+  const primaryLabel = paid ? 'Aboneliği yenile / uzat' : 'Aboneliğe geç'
 
   return (
     <div className="mt-2">
@@ -136,23 +134,23 @@ export default function BillingTab() {
       <div className="card p-6">
         <div className="flex items-start justify-between gap-6 flex-wrap">
           <div className="min-w-0">
-            <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full mb-3"
+            <span className="type-label inline-flex items-center gap-2 px-2.5 py-1 rounded-full mb-3"
                   style={canPost
                     ? { background: 'var(--ah-brand)', color: '#fff' }
                     : { background: 'var(--ah-band)', color: 'var(--ah-ink-3)', border: '1px solid var(--ah-line-2)' }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: canPost ? '#fff' : 'var(--ah-ink-4)' }} />
               {canPost ? 'İlan yayınlayabilirsin' : 'İlan hakkın doldu'}
             </span>
-            <div className="font-display text-[22px] font-semibold" style={{ color: 'var(--ah-ink)', letterSpacing: '-.02em' }}>
+            <h2 className="type-section" style={{ color: 'var(--ah-ink)' }}>
               {canceled ? 'İptal edildi (dönem sonuna kadar geçerli)' : paid ? 'Aktif abonelik' : 'Ücretsiz plan'}
-            </div>
-            <div className="text-[13px] mt-1" style={{ color: 'var(--ah-ink-3)' }}>
+            </h2>
+            <div className="type-meta mt-1">
               {paid ? `Plan: ${b.plan}` : limited ? `${free} ilana kadar ücretsiz` : 'Sınırsız ilan, ücretsiz'}
             </div>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="font-display font-black tabular-nums leading-none" style={{ color: 'var(--ah-ink)', fontSize: 34 }}>{price} ₺</div>
-            <div className="text-[11px] uppercase tracking-widest mt-1.5" style={{ color: 'var(--ah-ink-4)' }}>
+            <div className="type-num leading-none" style={{ color: 'var(--ah-ink)', fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em' }}>{price} ₺</div>
+            <div className="type-meta mt-1.5">
               {payments ? 'aylık · sınırsız ilan' : 'aylık · yakında'}
             </div>
           </div>
@@ -188,7 +186,7 @@ export default function BillingTab() {
               <div className="text-[12.5px] mt-2" style={{ color: remaining > 0 ? 'var(--ah-ink-3)' : 'var(--ah-ink-2)' }}>
                 {remaining > 0
                   ? <><b>{remaining}</b> ücretsiz ilan hakkın kaldı.</>
-                  : <>Ücretsiz hakkın doldu — yeni ilan için aboneliğe geç <span style={{ color: 'var(--ah-ink-4)' }}>(veya bir ilanı kapat, hak geri gelsin).</span></>}
+                  : <>Ücretsiz hakkın doldu — yeni ilan için aboneliğe geç <span style={{ color: 'var(--ah-ink-3)' }}>(veya bir ilanı kapat, hak geri gelsin).</span></>}
               </div>
             </>
           )}
@@ -198,16 +196,14 @@ export default function BillingTab() {
         {(payments || paid) && (
         <div className="flex items-center gap-2.5 mt-5 flex-wrap">
           {payments && (
-          <button onClick={() => checkout.mutate()} disabled={checkout.isPending}
-            className="px-5 py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5 text-white"
-            style={{ background: 'var(--ah-brand-gradient)', boxShadow: 'var(--elev-1)' }}>
+          <button type="button" onClick={() => checkout.mutate()} disabled={checkout.isPending}
+            className="btn-primary !w-auto">
             {checkout.isPending ? 'Yönlendiriliyor…' : primaryLabel}
           </button>
           )}
           {paid && !canceled && (
-            <button onClick={() => cancel.mutate()} disabled={cancel.isPending}
-              className="px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors"
-              style={{ background: '#fff', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}>
+            <button type="button" onClick={() => cancel.mutate()} disabled={cancel.isPending}
+              className="btn-danger">
               {cancel.isPending ? '…' : 'İptal et'}
             </button>
           )}
@@ -218,7 +214,7 @@ export default function BillingTab() {
       {/* === SATIR 2 — plana dahil + nasıl çalışır === */}
       <div className="grid lg:grid-cols-2 gap-4 mt-4">
         <div className="card p-6">
-          <div className="text-[10px] uppercase tracking-widest font-bold mb-3.5" style={{ color: 'var(--ah-ink-3)' }}>Plana dahil</div>
+          <h3 className="type-card mb-3.5">Plana dahil</h3>
           <ul className="space-y-2.5">
             {PLAN_FEATURES.map((f) => (
               <li key={f} className="flex items-start gap-2.5 text-[13.5px] leading-snug" style={{ color: 'var(--ah-ink-2)' }}>
@@ -230,7 +226,7 @@ export default function BillingTab() {
         </div>
 
         <div className="card p-6">
-          <div className="text-[10px] uppercase tracking-widest font-bold mb-3.5" style={{ color: 'var(--ah-ink-3)' }}>Nasıl çalışır</div>
+          <h3 className="type-card mb-3.5">Nasıl çalışır</h3>
           <ol className="space-y-3.5">
             {limited ? (
               <>
@@ -251,7 +247,7 @@ export default function BillingTab() {
       {/* Test kartı — yalnız test (sandbox) ödeme ortamında; canlıda asla görünmez */}
       {payments && b.sandbox && (
         <div className="card p-5 mt-4">
-          <div className="text-[10px] uppercase tracking-widest font-bold mb-2" style={{ color: 'var(--ah-ink-3)' }}>Test ödeme ortamı — test kartı</div>
+          <h3 className="type-card mb-2">Test ödeme ortamı — test kartı</h3>
           <div className="text-[13px] space-y-1" style={{ color: 'var(--ah-ink-2)' }}>
             <p>Kart: <b className="font-mono">5528 7900 0000 0008</b> · SKT <b>12/30</b> · CVC <b>123</b> · 3D şifre <b>283126</b></p>
             <p style={{ color: 'var(--ah-ink-3)' }}>Bu bir deneme ortamıdır; gerçek para hareket etmez.</p>

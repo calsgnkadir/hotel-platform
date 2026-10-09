@@ -17,13 +17,18 @@ import { PlatformRoleNotice } from '../../../components/LegalNotice'   // FAZ C.
 const STATUS_CONFIG = {
   PENDING:   { label: 'Bekliyor',     color: 'var(--ah-warn)',   soft: 'var(--ah-warn-soft)',   text: 'var(--ah-warn)' },   // amber
   REVIEWING: { label: 'İnceleniyor',  color: 'var(--ah-info)',   soft: 'var(--ah-info-soft)',   text: 'var(--ah-info)' },   // info mavi
-  HELD:      { label: 'Hold · 24sa',  color: 'var(--ah-warn)',   soft: 'var(--ah-warn-soft)',   text: 'var(--ah-warn)' },   // amber (bekleme)
+  HELD:      { label: 'Beklemede',    color: 'var(--ah-warn)',   soft: 'var(--ah-warn-soft)',   text: 'var(--ah-warn)' },   // amber (bekleme)
   STANDBY:   { label: 'Yedek',        color: 'var(--ah-info)',   soft: 'var(--ah-info-soft)',   text: 'var(--ah-info)' },   // info
   ACCEPTED:  { label: 'Kabul',        color: 'var(--ah-ok)',     soft: 'var(--ah-ok-soft)',     text: 'var(--ah-ok)' },     // yesil
   REJECTED:  { label: 'Red',          color: 'var(--ah-danger)', soft: 'var(--ah-danger-soft)', text: 'var(--ah-danger)' }, // kiremit
   WITHDRAWN: { label: 'İptal',        color: 'var(--ah-ink-4)',  soft: 'var(--ah-band)',        text: 'var(--ah-ink-3)' },  // notr
   EXPIRED:   { label: 'Süresi Doldu', color: 'var(--ah-ink-4)',  soft: 'var(--ah-band)',        text: 'var(--ah-ink-4)' },  // soluk
 }
+
+/* Filtre etiketleri StatusBadge.CAND_STATUS_FILTERS'tan gelir; orada HELD hala
+   Ingilizce "HOLD" yaziyor (dosya bu paketin kapsami disinda). Kullaniciya gorunen
+   etiketi burada Turkcelestiriyoruz — API degeri (HELD) degismez. */
+const FILTER_LABEL_OVERRIDES = { HELD: 'Beklemede' }
 
 /* Kariyer.net tarzi satir listesi (FAZ 22) — gorece tarih.
    FAZ B.5.3 — logo rengi lib/logoColor'a tasindi (ListingsPage ile ayni
@@ -149,7 +154,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           confirmLabel: 'Evet, onayla',
         }
       : {
-          title: 'HOLD\'u reddet',
+          title: 'Teklifi reddet',
           description: 'İşletme başka bir aday seçebilir. Emin misin?',
           confirmLabel: 'Evet, reddet',
           destructive: true,
@@ -158,7 +163,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     setHoldRespondingId(appId)
     try {
       await hotelApi.respondToHold(appId, accept)
-      toast.success(accept ? 'Onaylandi! Isletmeyle iletisime devam et.' : 'HOLD reddedildi.')
+      toast.success(accept ? 'Onaylandı! İşletmeyle iletişime devam et.' : 'Bekleyen teklif reddedildi.')
       onRefresh?.()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setHoldRespondingId(null) }
@@ -176,7 +181,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
             { label: 'Başvur',           hint: 'Hangi vardiyalara müsaitsen seç, ön yazı yaz' },
             { label: 'Mesajlaşmaya başla', hint: 'İşletme sana yazınca burada takip et' },
           ]}
-          ctaLabel="İlanları Keşfet"
+          ctaLabel="İlanları keşfet"
           onCta={() => onTabChange?.('listings')}
         />
       </div>
@@ -200,11 +205,10 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           return (
             <button key={f.value} onClick={() => setStatusFilter(f.value)}
               className={`chip ${isActive ? 'is-active' : ''}`}>
-              <span className="text-[13.5px]"
-                    style={{ fontWeight: isActive ? 600 : 500, letterSpacing: '-0.005em', textTransform: 'none' }}>
-                {f.label}
+              <span style={{ fontWeight: isActive ? 600 : 500 }}>
+                {FILTER_LABEL_OVERRIDES[f.value] || f.label}
               </span>
-              <span className={`text-[11px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/25' : ''}`}
+              <span className={`text-[12px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/25' : ''}`}
                     style={!isActive ? { background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' } : {}}>
                 {count}
               </span>
@@ -219,7 +223,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
             type="applications"
             title="Bu filtrede başvuru yok"
             description="Farklı bir durum seçerek diğer başvurularını görebilirsin."
-            ctaLabel="Tümünü Göster"
+            ctaLabel="Tümünü göster"
             onCta={() => setStatusFilter('')}
             compact
           />
@@ -264,12 +268,12 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                       </div>
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
                         <StatusPill cfg={sc} />
-                        <span className="text-[11px] tabular-nums" style={{ color: 'var(--ah-ink-4)' }}>{appRelative(app.createdAt)}</span>
+                        <span className="type-caption tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>{appRelative(app.createdAt)}</span>
                       </div>
                     </div>
 
                     {/* meta */}
-                    <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 mt-2 text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
+                    <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 mt-2 type-meta">
                       {app.listing?.businessDistrict && (
                         <span className="inline-flex items-center gap-1">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -317,7 +321,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                     {/* aksiyon barI */}
                     <div className="flex flex-wrap items-center gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
                       {app.status === 'STANDBY' && !app.standbyOfferActive && (
-                        <span className="inline-flex items-center gap-1.5 text-[11.5px] px-2 py-1 rounded-md"
+                        <span className="inline-flex items-center gap-1.5 text-[12px] px-2 py-1 rounded-md"
                               style={{ background: sc.soft, color: sc.text }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -330,7 +334,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                       {app.status === 'HELD' && (
                         <>
                           {app.holdDeadline && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md"
+                            <span className="inline-flex items-center gap-1 text-[12px] font-semibold tabular-nums px-2 py-1 rounded-md"
                                   style={{ background: sc.soft, color: sc.text }}>
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                               Son: {new Date(app.holdDeadline).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -379,7 +383,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
               {isExpanded && (
                 <div className="px-4 pb-1 flex justify-end" onClick={(e) => e.stopPropagation()}>
-                  <button type="button" onClick={() => setExpandedId(null)} className="type-overline" style={{ color: 'var(--ah-ink-3)' }}>Kapat ▲</button>
+                  <button type="button" onClick={() => setExpandedId(null)} className="type-label" style={{ color: 'var(--ah-ink-3)' }}>Kapat ▲</button>
                 </div>
               )}
 
@@ -419,7 +423,7 @@ const CARD = {
 
 function StatusPill({ cfg }) {
   return (
-    <span className="relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider"
+    <span className="type-badge relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
           style={{
             background: cfg.soft,
             border: `1px solid ${cfg.color}`,
@@ -431,49 +435,27 @@ function StatusPill({ cfg }) {
   )
 }
 
+/* UI Paket 2 — satir butonlari ortak .btn-* olcegini kullanir (14px/600, cumle
+   duzeni, 40px / mobil 44px). Onay/kabul = birincil grafit (yesil dolu CTA yok:
+   durum renkleri yalniz durum icin); reddet/iptal = kirmizi metin + cerceve
+   (dolu kirmizi yalniz onay penceresinde). */
+const SPRING_BTN_CLASS = {
+  primary:        'btn-primary !w-auto',
+  success:        'btn-primary !w-auto',
+  gold:           'btn-secondary',
+  danger:         'btn-danger',
+  'ghost-danger': 'btn-danger',
+}
 function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, small }) {
-  /* FAZ 5.UX3 — muted button variants. 'gold' kept bright (CTA exception). */
-  /* REDESIGN v3 — açık/teal. primary = dolu teal (ana aksiyon),
-     gold = teal outline, semantic (success/danger) korunur, ghost-danger koyulaştı. */
-  const styles = {
-    primary: {
-      background: 'var(--ah-brand)',
-      color: '#fff',
-      border: '1px solid var(--ah-brand)',
-    },
-    success: {
-      background: 'var(--ah-ok)',
-      color: '#fff',
-      border: '1px solid var(--ah-ok)',
-    },
-    danger: {
-      background: 'var(--ah-danger)',
-      color: '#fff',
-      border: '1px solid var(--ah-danger)',
-    },
-    gold: {
-      background: 'var(--ah-card)',
-      color: 'var(--ah-brand)',
-      border: '1px solid var(--ah-brand)',
-    },
-    'ghost-danger': {
-      background: 'var(--ah-card)',
-      color: 'var(--ah-danger)',
-      border: '1px solid var(--ah-line-2)',
-    },
-  }
-  const padding = small ? 'px-2.5 py-1' : 'px-3 py-1.5'
   return (
     <motion.button
+      type="button"
       onClick={onClick}
       disabled={disabled}
-      whileHover={{ y: -1, scale: 1.03 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-      className={`relative text-[11.5px] font-semibold rounded-lg ${padding} inline-flex items-center gap-1.5 disabled:opacity-50`}
-      style={styles[variant]}>
-      {icon && <span className="relative">{icon}</span>}
-      <span className="relative">{children}</span>
+      whileTap={disabled ? undefined : { scale: 0.98 }}
+      className={`${SPRING_BTN_CLASS[variant] || SPRING_BTN_CLASS.primary}${small ? ' !px-3' : ''}`}>
+      {icon && <span className="inline-flex">{icon}</span>}
+      <span>{children}</span>
     </motion.button>
   )
 }
@@ -488,7 +470,7 @@ function ClockControls({ app, session, busy, locLoading, onClock }) {
       : ''
     return (
       <>
-        <span className="inline-flex items-center gap-1.5 text-[11.5px] px-2 py-1 rounded-md"
+        <span className="inline-flex items-center gap-1.5 text-[12px] px-2 py-1 rounded-md"
               style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' }}>
           <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} aria-hidden="true" />
           Mesaidesin{t && ` · ${t}`}

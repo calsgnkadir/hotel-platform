@@ -104,15 +104,19 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
   return (
     <div className="min-h-screen relative ah-surface" style={{ background: 'var(--ah-page)' }}>
-      {/* === TOP NAV === */}
-      <header className="sticky top-0 z-30 border-b"
+      {/* === TOP NAV ===
+          z-40: <main> artik z-index'li degil (asagiya bkz.); icerikteki z-30'a
+          kadar katmanlar (ornegin mesaj surukle-birak ortusu) ust menunun altinda
+          kalir, z-50+ olan pencere/karartmalar (modal-overlay z-1000, ConfirmDialog
+          z-50, CommandPalette z-100) ust menunun ustune cikar. */}
+      <header className="sticky top-0 z-40 border-b"
               style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
         <div className="px-4 lg:px-8">
           {/* Ust satir: marka + (desktop) nav + sag aksiyonlar */}
           <div className="h-14 flex items-center gap-4">
             <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2 flex-shrink-0">
               <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '0.02em', color: 'var(--ah-ink)' }}>Kadrom</span>
-              <span className="hidden sm:inline" style={{ fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--ah-ink-4)' }}>istanbul</span>
+              <span className="hidden sm:inline" style={{ fontSize: 12, fontWeight: 500, color: 'var(--ah-ink-3)' }}>İstanbul</span>
             </Link>
 
             {/* Desktop nav — marka ile sag aksiyonlar arasi */}
@@ -140,17 +144,19 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
         </div>
       </header>
 
-      {/* === MAIN CONTENT === */}
-      <main className="fade-in relative z-10" style={{ color: 'var(--ah-ink-2)' }}>
+      {/* === MAIN CONTENT ===
+          Bilerek z-index / position YOK: eskiden "relative z-10" kendi stacking
+          context'ini olusturup icindeki modal karartmasini (z-1000) sticky ust
+          menunun ALTINA hapsediyordu (index.css'te gecici :has yamasi vardi).
+          fade-in yalniz opacity animasyonudur, kalici context birakmaz. */}
+      <main className="fade-in" style={{ color: 'var(--ah-ink-2)' }}>
         <EmailVerifyBanner />
 
         {/* Page heading — sade, koyu ink. Mobilde gizli: ustteki sekme satiri
             hangi sayfada oldugunu zaten gosteriyor; dikey yer icerige kalsin.
             (Ekran okuyucu icin baslik mobilde de var.) */}
         <div className="px-4 lg:px-8 pt-3 md:pt-6 lg:pt-8 md:pb-5">
-          <h1 className="sr-only md:not-sr-only"
-              style={{ fontSize: 'clamp(22px, 3vw, 28px)', lineHeight: 1.15, fontWeight: 700,
-                       letterSpacing: '-0.01em', color: 'var(--ah-ink)' }}>
+          <h1 className="sr-only md:not-sr-only type-page" style={{ color: 'var(--ah-ink)' }}>
             {currentTitle}
           </h1>
         </div>

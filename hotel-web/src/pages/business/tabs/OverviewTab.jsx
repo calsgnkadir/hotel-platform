@@ -19,10 +19,10 @@ export default function OverviewTab({ applications, onTabChange }) {
         {/* Stat strip — number → hairline → label hierarchy (UX4 spec) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
-            { label: 'Toplam',      value: applications.length, color: '#1f2937' },
-            { label: 'Bekleyen',    value: pending,             color: '#6b7574' },
-            { label: 'İnceleniyor', value: reviewing,           color: '#858585' },
-            { label: 'Kabul',       value: accepted,            color: '#6b7574' },
+            { label: 'Toplam',      value: applications.length, color: 'var(--ah-brand)' },
+            { label: 'Bekleyen',    value: pending,             color: 'var(--ah-warn)' },
+            { label: 'İnceleniyor', value: reviewing,           color: 'var(--ah-info)' },
+            { label: 'Kabul',       value: accepted,            color: 'var(--ah-ok)' },
           ].map(s => (
             <motion.div key={s.label}
               whileHover={{ y: -3 }}
@@ -49,20 +49,19 @@ export default function OverviewTab({ applications, onTabChange }) {
         <div className="tier-raised relative overflow-hidden">
           <div className="relative px-5 py-3.5 flex items-center justify-between border-b border-hairline">
             <div>
-              <h2 className="type-heading font-display" style={{ fontSize: '17px' }}>
-                Son Başvurular
+              <h2 className="type-card">
+                Son başvurular
               </h2>
-              <p className="type-caption mt-0.5">
+              <p className="type-meta mt-0.5">
                 En son {Math.min(5, applications.length)} başvuru
               </p>
             </div>
-            <motion.button
-              whileHover={{ x: 3 }}
+            <button
+              type="button"
               onClick={() => onTabChange('applications')}
-              className="type-caption text-champagne-300"
-              style={{ fontWeight: 500 }}>
-              Tümünü Gör
-            </motion.button>
+              className="btn-ghost">
+              Tümünü gör
+            </button>
           </div>
           {applications.length === 0 ? (
             <EmptyState
@@ -74,7 +73,7 @@ export default function OverviewTab({ applications, onTabChange }) {
                 { label: 'Yeni ilan oluştur',       hint: 'Pozisyon + vardiya slotu + ücret bilgisi' },
                 { label: 'Adaylar başvurunca',      hint: 'Gelen Başvurular > Kanban\'da sürükle-bırak ile yönet' },
               ]}
-              ctaLabel="İlanlarıma Git"
+              ctaLabel="İlanlarıma git"
               onCta={() => onTabChange('mylistings')}
               compact
             />
@@ -120,8 +119,8 @@ function TodayFeed({ applications, onTabChange }) {
   return (
     <div className="tier-raised p-4">
       <div className="flex items-center justify-between mb-3 pb-2 border-b border-hairline">
-        <h3 className="type-overline text-champagne-300 font-display" style={{ fontSize: '12px', letterSpacing: 0 }}>Bugünkü Akış</h3>
-        <span className="type-overline">{recent.length} olay</span>
+        <h3 className="type-card">Bugünkü akış</h3>
+        <span className="type-meta">{recent.length} olay</span>
       </div>
 
       {recent.length === 0 ? (
@@ -135,17 +134,16 @@ function TodayFeed({ applications, onTabChange }) {
               <button onClick={() => onTabChange('applications')}
                 className="w-full text-left flex items-start gap-2.5 group">
                 <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
-                      style={{ background: STATUS_DOT[app.status] || '#6b7574' }} />
+                      style={{ background: STATUS_DOT[app.status] || 'var(--ah-ink-4)' }} />
                 <div className="flex-1 min-w-0">
                   <p className="type-body font-medium truncate">
                     {app.candidate?.fullName || 'Aday'}
                   </p>
-                  <p className="type-caption truncate" style={{ color: 'var(--text-faint)' }}>
+                  <p className="type-meta truncate">
                     {app.listing?.title || 'İlan'} · {STATUS_LABEL[app.status] || app.status}
                   </p>
                 </div>
-                <span className="type-caption flex-shrink-0 mt-0.5"
-                      style={{ color: 'var(--text-faint)' }}>
+                <span className="type-meta flex-shrink-0 mt-0.5">
                   {relativeTime(app.createdAt)}
                 </span>
               </button>
@@ -159,7 +157,7 @@ function TodayFeed({ applications, onTabChange }) {
 
 /* Son başvurular satırı — accent rail + avatar gradient + hover lift (B teması) */
 function BizRecentRow({ app, last, onClick }) {
-  const accent = STATUS_DOT[app.status] || '#6b7574'
+  const accent = STATUS_DOT[app.status] || 'var(--ah-ink-4)'
   const days = Math.floor((Date.now() - new Date(app.createdAt).getTime()) / 86400_000)
   const relative = days === 0 ? 'bugün' : days === 1 ? 'dün' : `${days} gün önce`
   return (
@@ -187,7 +185,7 @@ function BizRecentRow({ app, last, onClick }) {
             {app.candidate?.fullName || 'Anonim'}
           </span>
         </div>
-        <div className="type-caption flex items-center gap-2 mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+        <div className="type-meta flex items-center gap-2 mt-0.5">
           <span className="truncate">{app.listing?.title || '—'}</span>
           <span style={{ color: 'var(--text-faint)' }}>·</span>
           <span className="flex-shrink-0">{relative}</span>
@@ -198,13 +196,14 @@ function BizRecentRow({ app, last, onClick }) {
   )
 }
 
+// Durum noktasi / sol serit — durum token'lari (Paket 1 eslemesiyle ayni)
 const STATUS_DOT = {
-  PENDING:   '#6b7574',
-  REVIEWING: '#858585',
-  HELD:      '#7f7f7f',
-  STANDBY:   '#6b7574',
-  ACCEPTED:  '#6b7574',
-  REJECTED:  '#6b7574',
+  PENDING:   'var(--ah-warn)',
+  REVIEWING: 'var(--ah-info)',
+  HELD:      'var(--ah-warn)',
+  STANDBY:   'var(--ah-info)',
+  ACCEPTED:  'var(--ah-ok)',
+  REJECTED:  'var(--ah-danger)',
 }
 const STATUS_LABEL = {
   PENDING: 'yeni başvuru', REVIEWING: 'inceleniyor', HELD: 'beklemede',

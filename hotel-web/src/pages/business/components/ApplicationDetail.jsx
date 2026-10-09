@@ -238,7 +238,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
 
         {app.coverLetter && (
           <div>
-            <h3 className="type-overline mb-2">Ön Yazı</h3>
+            <h3 className="type-overline mb-2">Ön yazı</h3>
             <div className="rounded-lg p-4 type-body leading-relaxed"
                  style={{ background: 'rgba(31, 41, 55, 0.05)', color: 'var(--text-secondary)' }}>
               {app.coverLetter}
