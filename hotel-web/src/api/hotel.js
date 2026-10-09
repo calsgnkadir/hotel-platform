@@ -221,6 +221,17 @@ export async function getMyBlockedBusinesses() {
   const { data } = await api.get('/api/business-relations/blocked')
   return data
 }
+// İşletmenin adayı engellemesi (yalnız BUSINESS_OWNER; idempotent)
+export async function blockCandidate(candidateId) {
+  await api.post(`/api/business/blocked-candidates/${candidateId}`)
+}
+export async function unblockCandidate(candidateId) {
+  await api.delete(`/api/business/blocked-candidates/${candidateId}`)
+}
+export async function getMyBlockedCandidates() {
+  const { data } = await api.get('/api/business/blocked-candidates')
+  return data  // [{ candidateId, candidateName, candidateAvatarUrl, blockedAt }]
+}
 export async function getBusinessRelationStats() {
   const { data } = await api.get('/api/business-relations/stats')
   return data

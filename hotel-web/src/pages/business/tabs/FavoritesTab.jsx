@@ -1,35 +1,186 @@
 /**
- * FAZ 2/#32 — Talent Pool / Favori Adaylar sekmesi.
+ * FAZ 2/#32 — Talent Pool / Favori Adaylar sekmesi + Engellenen adaylar.
  *
- * Isletmenin favorilerine ekledigi adaylari listeler.
- * - Avatar (varsa) veya initials
- * - Ad, email, ilce, eklendigi tarih
- * - "Mesajlasma" + "Favoriden Kaldir" butonlari
+ * Üstte "Favoriler / Engellenenler" sayaçlı segment (aday tarafı RelationsTab düzeni).
+ * Favoriler: avatar/baş harf, ad, e-posta, ilçe, eklenme tarihi; Mesajla + Kaldır.
+ * Engellenenler: avatar/baş harf, ad, engellenme tarihi; Engeli kaldır.
+ *   (Engellenenler listesi e-posta/telefon göstermez.)
  */
 import { useEffect, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import EmptyState from '../../../components/EmptyState'
+import { SkeletonList } from '../../../components/Skeleton'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { useConfirm } from '../../../lib/useConfirm'
 
+// ApplicationDetail'deki "Adayı engelle" de bu anahtarı invalidate eder.
+const BLOCKED_CANDIDATES_KEY = ['my-blocked-candidates']
+
+function CandidateAvatar({ url, name }) {
+  if (url) {
+    return (
+      <img src={cldImg(url, { w: ImgSize.avatarSm })} alt={name}
+        loading="lazy" decoding="async"
+        className="w-12 h-12 rounded-full object-cover border border-cream-300 flex-shrink-0" />
+    )
+  }
+  return (
+    <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg flex-shrink-0"
+         aria-hidden="true"
+         style={{
+           background: 'rgba(31, 41, 55, 0.08)',
+           border: '1px solid rgba(31, 41, 55, 0.22)',
+           color: '#1f2937',
+         }}>
+      {name?.charAt(0) || '?'}
+    </div>
+  )
+}
+
+function formatDate(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('tr-TR')
+}
+
 export default function FavoritesTab({ onOpenMessages }) {
+  const [segment, setSegment] = useState('favorites')
+  const [favCount, setFavCount] = useState(0)
+
+  const blockedQuery = useQuery({
+    queryKey: BLOCKED_CANDIDATES_KEY,
+    queryFn: () => hotelApi.getMyBlockedCandidates(),
+  })
+  const blockedCount = Array.isArray(blockedQuery.data) ? blockedQuery.data.length : 0
+
+  const segments = [
+    { id: 'favorites', label: 'Favoriler',     count: favCount },
+    { id: 'blocked',   label: 'Engellenenler', count: blockedCount },
+  ]
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2" role="tablist" aria-label="Aday listeleri">
+        {segments.map(t => {
+          const active = segment === t.id
+          return (
+            <button key={t.id} type="button" role="tab" aria-selected={active}
+              onClick={() => setSegment(t.id)}
+              className="inline-flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors"
+              style={{
+                background: active ? 'rgba(31, 41, 55, 0.14)' : 'var(--ah-card)',
+                color: active ? '#1f2937' : 'var(--ah-ink-3)',
+                border: `1px solid ${active ? 'rgba(31, 41, 55, 0.42)' : 'var(--ah-line)'}`,
+              }}>
+              {t.label}
+              {t.count > 0 && (
+                <span className="text-[11px] font-semibold tabular-nums opacity-80">{t.count > 99 ? '99+' : t.count}</span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {segment === 'favorites'
+        ? <FavoritesList onOpenMessages={onOpenMessages} onCount={setFavCount} />
+        : <BlockedList query={blockedQuery} />}
+    </div>
+  )
+}
+
+function BlockedList({ query }) {
+  const confirm = useConfirm()
+  const queryClient = useQueryClient()
+  const [unblockingId, setUnblockingId] = useState(null)
+  const { data, isLoading, isError, refetch } = query
+  const blocked = Array.isArray(data) ? data : []
+
+  async function handleUnblock(candidateId, name) {
+    const ok = await confirm({
+      title: 'Engeli kaldır',
+      description: `"${name || 'Aday'}" yeniden ilanlarına başvurabilecek ve sana mesaj gönderebilecek. Daha önce reddedilen başvurular geri gelmez.`,
+      confirmLabel: 'Evet, engeli kaldır',
+    })
+    if (!ok) return
+    setUnblockingId(candidateId)
+    try {
+      await hotelApi.unblockCandidate(candidateId)
+      toast.success('Engel kaldırıldı.')
+      await queryClient.invalidateQueries({ queryKey: BLOCKED_CANDIDATES_KEY })
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setUnblockingId(null) }
+  }
+
+  if (isLoading) return <SkeletonList count={3} />
+
+  if (isError) {
+    return (
+      <div className="card p-6 text-center space-y-3" role="alert">
+        <p className="type-body">Engellenen adaylar yüklenemedi.</p>
+        <button type="button" onClick={() => refetch()} className="btn-secondary">Tekrar dene</button>
+      </div>
+    )
+  }
+
+  if (blocked.length === 0) {
+    return (
+      <div className="card">
+        <EmptyState
+          compact
+          title="Engellediğin aday yok."
+          description="Bir adayı başvuru detayındaki “Adayı engelle” düğmesiyle engelleyebilirsin."
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {blocked.map(b => (
+        <div key={b.candidateId} className="card p-4 flex items-center gap-3">
+          <CandidateAvatar url={b.candidateAvatarUrl} name={b.candidateName} />
+          <div className="flex-1 min-w-0">
+            <div className="type-body font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
+              {b.candidateName}
+            </div>
+            {formatDate(b.blockedAt) && (
+              <div className="type-caption mt-0.5">{formatDate(b.blockedAt)} tarihinde engellendi</div>
+            )}
+          </div>
+          <button type="button"
+            onClick={() => handleUnblock(b.candidateId, b.candidateName)}
+            disabled={unblockingId === b.candidateId}
+            className="btn-secondary flex-shrink-0 !px-3 !text-[13px]">
+            {unblockingId === b.candidateId ? 'Kaldırılıyor...' : 'Engeli kaldır'}
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function FavoritesList({ onOpenMessages, onCount }) {
   const confirm = useConfirm()
   const [favorites, setFavorites] = useState([])
   const [loading, setLoading] = useState(true)
   const [removingId, setRemovingId] = useState(null)
   const [openingChatId, setOpeningChatId] = useState(null)
+  const [loadError, setLoadError] = useState(false)
 
   async function load() {
     setLoading(true)
     try {
       const data = await hotelApi.listFavorites()
       setFavorites(data || [])
-    } catch { setFavorites([]) }
+      setLoadError(false)
+    } catch { setFavorites([]); setLoadError(true) }
     finally { setLoading(false) }
   }
   useEffect(() => { load() }, [])
+  useEffect(() => { onCount?.(favorites.length) }, [favorites.length, onCount])
 
   async function handleRemove(candidateId, name) {
     const ok = await confirm({
@@ -60,8 +211,15 @@ export default function FavoritesTab({ onOpenMessages }) {
     }
   }
 
-  if (loading) {
-    return <div className="card p-8 text-center text-ink-500">Favoriler yukleniyor...</div>
+  if (loading) return <SkeletonList count={3} />
+
+  if (loadError) {
+    return (
+      <div className="card p-6 text-center space-y-3" role="alert">
+        <p className="type-body">Favoriler yüklenemedi.</p>
+        <button type="button" onClick={load} className="btn-secondary">Tekrar dene</button>
+      </div>
+    )
   }
 
   if (favorites.length === 0) {

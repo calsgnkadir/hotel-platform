@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
+// App'teki QueryClientProvider ile ayni ornek; bilesen provider'siz da render edilebilir
+import { queryClient, keys } from '../../../lib/queryClient'
 import { StatusBadge } from './Badges'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'
@@ -25,6 +27,7 @@ import { SgkNotice } from '../../../components/LegalNotice'   // FAZ C.3
 export default function ApplicationDetail({ app, variant = 'panel', onClose, onRefresh, onOpenMessages, onChanged }) {
   const confirm = useConfirm()
   const [actionLoading, setActionLoading] = useState(false)
+  const [blockLoading, setBlockLoading] = useState(false)
   // Favori durumu
   const [isFavorited, setIsFavorited] = useState(false)
   const [favLoading, setFavLoading] = useState(false)
@@ -143,6 +146,28 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
       onRefresh?.()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionLoading(false) }
+  }
+
+  // Adayı engelle: süren başvurular backend'de reddedilir, ACCEPTED korunur.
+  async function handleBlockCandidate() {
+    const candidateId = app?.candidate?.id
+    if (!candidateId) return
+    const ok = await confirm({
+      title: 'Adayı engelle',
+      description: 'Bu aday işletmenin ilanlarına başvuramaz ve sana mesaj gönderemez. Süren başvuruları reddedilir; kabul edilmiş vardiyalar etkilenmez. Aday bilgilendirilmez.',
+      confirmLabel: 'Evet, engelle',
+      destructive: true,
+    })
+    if (!ok) return
+    setBlockLoading(true)
+    try {
+      await hotelApi.blockCandidate(candidateId)
+      toast.success('Aday engellendi.')
+      queryClient.invalidateQueries({ queryKey: keys.applications.business() })
+      queryClient.invalidateQueries({ queryKey: ['my-blocked-candidates'] })
+      onRefresh?.()
+    } catch (err) { toast.error(extractErrorMessage(err)) }
+    finally { setBlockLoading(false) }
   }
 
   async function handleStartConversation() {
@@ -454,6 +479,19 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Adayı engelle — ikincil/tehlikeli eylem, birincil eylemlerden ayrı */}
+        {app.candidate?.id && (
+          <div className="no-print border-t border-hairline pt-4 flex flex-col items-start gap-1.5">
+            <button type="button" onClick={handleBlockCandidate} disabled={blockLoading}
+              className="btn-danger md:!min-h-[34px] !px-3 !text-[13px]">
+              {blockLoading ? 'Engelleniyor...' : 'Adayı engelle'}
+            </button>
+            <p className="type-caption">
+              Engellenen aday ilanlarına başvuramaz ve sana mesaj gönderemez.
+            </p>
           </div>
         )}
       </div>
