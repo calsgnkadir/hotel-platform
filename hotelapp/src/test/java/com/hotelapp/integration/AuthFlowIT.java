@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hotelapp.dto.LoginRequest;
 import com.hotelapp.dto.RegisterRequest;
 import com.hotelapp.enums.Role;
+import com.hotelapp.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +14,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import jakarta.servlet.http.Cookie;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -24,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *  - Aday ve isletme register basarili
  *  - Duplicate email registry reddedilir
  *  - Zayif sifre (rakam yok) reddedilir
+ *  - role=ADMIN ile kendi kendine kayit reddedilir, kullanici yazilmaz (guvenlik regresyonu)
  *  - Login dogru sifre ile token doner
  *  - Login yanlis sifre ile 401
  *  - Refresh cookie ile yeni access token doner
@@ -35,6 +39,7 @@ class AuthFlowIT {
 
     @Autowired private MockMvc mvc;
     @Autowired private ObjectMapper json;
+    @Autowired private UserRepository userRepository;
 
     /* ───────────────────────── REGISTER ───────────────────────── */
 
@@ -105,6 +110,41 @@ class AuthFlowIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(req)))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void register_with_admin_role_is_rejected_and_not_persisted() throws Exception {
+        RegisterRequest req = candidate("admin.deneme@test.com");
+        req.setRole(Role.ADMIN);
+
+        String body = mvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json.writeValueAsString(req)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.token").doesNotExist())
+            .andExpect(cookie().doesNotExist("refreshToken"))
+            .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+
+        // Hata yaniti ADMIN rolunun varligini ifsa etmemeli
+        assertThat(body).doesNotContain("ADMIN").contains("Geçersiz rol seçimi");
+        assertThat(userRepository.existsByEmail("admin.deneme@test.com")).isFalse();
+    }
+
+    @Test
+    void register_with_admin_role_raw_json_is_rejected_and_not_persisted() throws Exception {
+        // Saldirganin elle yazdigi ham JSON (DTO serilestirmesinden bagimsiz)
+        String raw = """
+            {"fullName":"Saldirgan","email":"admin.raw@test.com","password":"Test1234",
+             "role":"ADMIN","phone":"0555 123 45 67","roleAllowedForSelfRegistration":true}
+            """;
+
+        mvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(raw))
+            .andExpect(status().is4xxClientError())
+            .andExpect(jsonPath("$.token").doesNotExist());
+
+        assertThat(userRepository.existsByEmail("admin.raw@test.com")).isFalse();
     }
 
     /* ───────────────────────── LOGIN ───────────────────────── */

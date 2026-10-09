@@ -44,6 +44,14 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        // Guvenlik (ikinci katman): DTO dogrulamasi atlansa bile ADMIN vb. roller
+        // kendi kendine kayitla atanamaz. Kayittan once reddedilir; mesaj genel.
+        if (request.getRole() == null
+                || !RegisterRequest.SELF_REGISTRATION_ROLES.contains(request.getRole())) {
+            log.warn("[REGISTER] Izin verilmeyen rol ile kayit denemesi reddedildi");
+            throw new BusinessRuleException("Geçersiz rol seçimi");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessRuleException("Bu email adresi zaten kayıtlı: " + request.getEmail());
         }

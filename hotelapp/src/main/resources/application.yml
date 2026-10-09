@@ -194,8 +194,6 @@ app:
     trial-days:    ${BILLING_TRIAL_DAYS:14}
     monthly-price: ${BILLING_MONTHLY_PRICE:499.00}
     plan:          ${BILLING_PLAN:STANDARD_MONTHLY}
-  # iyzico SANDBOX (varsayilan public sandbox anahtarlari — gercek para YOK).
-  # Canliya gecis: IYZICO_* env + gercek merchant hesabi + ticari/yasal onay.
   # iyzico — kodda varsayilan anahtar YOK. Bos birakilirsa odeme KAPALI
   # (abonelik baslatilamaz, ilan kotasi uygulanmaz → platform ucretsiz/sinirsiz).
   # Yerel/demo test icin kendi sandbox anahtarlarini env ile ver (IYZICO_API_KEY/SECRET_KEY).

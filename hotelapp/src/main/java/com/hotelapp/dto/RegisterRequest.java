@@ -1,14 +1,19 @@
 package com.hotelapp.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelapp.enums.BusinessType;
 import com.hotelapp.enums.Role;
 import com.hotelapp.validation.TurkeyPhone;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 @Data
 public class RegisterRequest {
@@ -56,4 +61,19 @@ public class RegisterRequest {
 
     private String website;
     private String description;
+
+    /** Kendi kendine kayitta secilebilecek roller. ADMIN asla buradan atanmaz. */
+    public static final Set<Role> SELF_REGISTRATION_ROLES =
+            Set.copyOf(EnumSet.of(Role.CANDIDATE, Role.BUSINESS_OWNER));
+
+    /**
+     * Guvenlik: istemci "role":"ADMIN" gonderse bile kayit reddedilir.
+     * null durumu @NotNull'a birakilir (cift mesaj olmasin).
+     * Mesaj genel tutulur; hangi rollerin var oldugu ifsa edilmez.
+     */
+    @JsonIgnore
+    @AssertTrue(message = "Geçersiz rol seçimi")
+    public boolean isRoleAllowedForSelfRegistration() {
+        return role == null || SELF_REGISTRATION_ROLES.contains(role);
+    }
 }
