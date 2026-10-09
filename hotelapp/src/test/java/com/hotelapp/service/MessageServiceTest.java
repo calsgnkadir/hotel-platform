@@ -10,6 +10,7 @@ import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.BusinessBlockRepository;
+import com.hotelapp.repository.CandidateBlockRepository;
 import com.hotelapp.repository.ConversationRepository;
 import com.hotelapp.repository.MessageReactionRepository;
 import com.hotelapp.repository.MessageRepository;
@@ -43,6 +44,7 @@ class MessageServiceTest {
     private NotificationService notifications;
     private FileStorageService storage;
     private BusinessBlockRepository blocks;
+    private CandidateBlockRepository candidateBlocks;
     private ApplicationRepository applications;
     private MessageService service;
     private User candidate;
@@ -67,8 +69,10 @@ class MessageServiceTest {
         storage = mock(FileStorageService.class);
         blocks = mock(BusinessBlockRepository.class);
         applications = mock(ApplicationRepository.class);
+        candidateBlocks = mock(CandidateBlockRepository.class);
         service = new MessageService(conversations, messages, mock(MessageReactionRepository.class), users,
-                applications, notifications, storage, mock(SimpMessagingTemplate.class), blocks);
+                applications, notifications, storage, mock(SimpMessagingTemplate.class), blocks,
+                candidateBlocks);
 
         candidate = user(CANDIDATE, Role.CANDIDATE);
         owner = user(OWNER, Role.BUSINESS_OWNER);
@@ -193,5 +197,61 @@ class MessageServiceTest {
         service.startConversation(CANDIDATE, startWith(OWNER));
         verify(conversations).save(any());
         verify(applications, never()).existsByCandidateIdAndJobListingBusinessOwnerId(anyLong(), anyLong());
+    }
+
+    // ---- Isletme adayi engelledi ----
+
+    private void businessBlocked(boolean value) {
+        when(candidateBlocks.existsByBusinessOwnerIdAndCandidateId(OWNER, CANDIDATE)).thenReturn(value);
+    }
+
+    @Test
+    void candidateBlockedByBusinessCannotStartConversation() {
+        businessBlocked(true);
+        assertThatThrownBy(() -> service.startConversation(CANDIDATE, startWith(OWNER)))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage("Bu işletmeyle iletişim kapalı.");
+        noExistingConversation();
+        assertThatThrownBy(() -> service.startConversation(CANDIDATE, startWith(OWNER)))
+                .isInstanceOf(UnauthorizedException.class);
+        verify(conversations, never()).save(any());
+    }
+
+    @Test
+    void candidateBlockedByBusinessCannotSendMessageOrAttachment() {
+        businessBlocked(true);
+        assertThatThrownBy(() -> service.sendMessage(CONV, CANDIDATE, text("merhaba")))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage("Bu işletmeyle iletişim kapalı.");
+        assertThatThrownBy(() -> service.sendAttachment(CONV, CANDIDATE,
+                new MockMultipartFile("file", "a.pdf", "application/pdf", new byte[]{1}), null))
+                .isInstanceOf(UnauthorizedException.class);
+        verify(messages, never()).save(any());
+        verify(notifications, never()).notify(anyLong(), any(), any(), any(), any());
+        verifyNoInteractions(storage);
+    }
+
+    @Test
+    void businessCannotWriteToCandidateItBlocked() {
+        businessBlocked(true);
+        assertThatThrownBy(() -> service.startConversation(OWNER, startWith(CANDIDATE)))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Önce engeli kaldır.");
+        assertThatThrownBy(() -> service.sendMessage(CONV, OWNER, text("merhaba")))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Önce engeli kaldır.");
+        assertThatThrownBy(() -> service.sendAttachment(CONV, OWNER,
+                new MockMultipartFile("file", "a.pdf", "application/pdf", new byte[]{1}), null))
+                .isInstanceOf(BusinessRuleException.class);
+        verify(messages, never()).save(any());
+        verifyNoInteractions(storage);
+    }
+
+    @Test
+    void withoutBusinessBlockBothSidesCanWrite() {
+        businessBlocked(false);
+        assertThat(service.sendMessage(CONV, CANDIDATE, text("tekrar merhaba")).getContent())
+                .isEqualTo("tekrar merhaba");
+        assertThat(service.sendMessage(CONV, OWNER, text("selam")).getContent()).isEqualTo("selam");
     }
 }

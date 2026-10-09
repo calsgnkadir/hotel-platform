@@ -434,49 +434,40 @@ code, pre, kbd, samp {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   BADGE — FAZ 5.4: glass + thin border + glow accent
+   BADGE — durum rozeti (Durum dili paketi)
+   12/16 600, cumle duzeni, tracking 0. Cerceve YOK, nokta YOK: yalniz
+   yumusak zemin + koyu metin. En fazla 4 ton (bkz DESIGN_TOKENS.md §4c):
+     neutral   = bilgi (ink-2 / band, 8:1)
+     attention = YALNIZ "senin bir sey yapman gerekiyor" (warn)
+     positive  = olumlu sonuc (ok)
+     negative  = yalniz "Ise gelmedi" ve "Acil" (danger)
+   info tonu rozette kullanilmaz. Etiket/ton kaynagi: lib/applicationStatus.js
    ──────────────────────────────────────────────────────────────── */
-/* Durum rozeti — type-badge: 11/14 600, BUYUK HARF 0.04em (buyuk harfin
-   kaldigi TEK yer). Eski: 10px 0.18em + blur. */
 .badge {
-  @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full;
-  font-size: 11px;
-  line-height: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 16px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  border: 1px solid transparent;
+  letter-spacing: 0;
+  text-transform: none;
+  border: 0;
+  white-space: nowrap;
 }
-.badge-pending {
-  background: var(--ah-warn-soft);
-  color: var(--ah-warn);
-  border-color: transparent;
-}
-.badge-reviewing {
-  background: var(--ah-info-soft);
-  color: var(--ah-info);
-  border-color: transparent;
-}
-.badge-accepted {
-  background: var(--ah-ok-soft);
-  color: var(--ah-ok);
-  border-color: transparent;
-}
-.badge-rejected {
-  background: var(--ah-danger-soft);
-  color: var(--ah-danger);
-  border-color: transparent;
-}
-.badge-expired {
-  background: var(--ah-band);
-  color: var(--ah-ink-4);
-  border-color: transparent;
-}
-.dark .badge-pending,
-.dark .badge-reviewing,
-.dark .badge-accepted,
-.dark .badge-rejected,
-.dark .badge-expired { /* light/dark farki yok */ }
+.badge-neutral   { background: var(--ah-band);      color: var(--ah-ink-2); }
+.badge-attention { background: var(--ah-warn-soft); color: var(--ah-warn); }
+.badge-positive  { background: var(--ah-ok-soft);   color: var(--ah-ok); }
+.badge-negative  { background: var(--ah-danger-soft); color: var(--ah-danger); }
+/* Eski siniflar — takma ad (yeni kod ton siniflarini kullansin).
+   reviewing/expired notr'e indi (info tonu rozette yok; ink-4 band ustunde 4.5 altindaydi). */
+.badge-pending   { background: var(--ah-warn-soft); color: var(--ah-warn); }
+.badge-reviewing { background: var(--ah-band);      color: var(--ah-ink-2); }
+.badge-accepted  { background: var(--ah-ok-soft);   color: var(--ah-ok); }
+.badge-rejected  { background: var(--ah-danger-soft); color: var(--ah-danger); }
+.badge-expired   { background: var(--ah-band);      color: var(--ah-ink-2); }
 
 /* ────────────────────────────────────────────────────────────────
    CHIP — filtre pill'i (acik zemin, aktif = grafit dolu)
@@ -504,6 +495,10 @@ code, pre, kbd, samp {
 .chip.is-active:hover {
   background: var(--ah-brand-hover);
   color: #ffffff;
+}
+/* Durum dili paketi — aday Basvurularim filtre cipleri: mobilde >=44px dokunma alani */
+@media (max-width: 767px) {
+  .cand-filter-chip { min-height: 44px; padding-left: 14px; padding-right: 14px; }
 }
 
 /* ────────────────────────────────────────────────────────────────

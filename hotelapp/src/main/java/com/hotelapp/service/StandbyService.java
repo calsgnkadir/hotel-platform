@@ -10,6 +10,7 @@ import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
+import com.hotelapp.repository.CandidateBlockRepository;
 import com.hotelapp.repository.ShiftSlotRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,7 @@ public class StandbyService {
     private final OutboxService outboxService;
     private final ApplicationMapper applicationMapper;
     private final SmsService smsService;   // yedek kanal (push'a EK) — acil aktivasyonda
+    private final CandidateBlockRepository candidateBlockRepository;   // isletme adayi engeller
 
     // ================================================================
     // BUSINESS OWNER — yedek isaretle / geri al
@@ -214,6 +216,11 @@ public class StandbyService {
         String listingTitle = app.getJobListing().getTitle();
 
         if (accept) {
+            // Engel aninda STANDBY basvurular REJECTED olur; bu kontrol yaris durumuna karsi yedek.
+            if (candidateBlockRepository.existsByBusinessIdAndCandidateId(
+                    app.getJobListing().getBusiness().getId(), candidateId)) {
+                throw new BusinessRuleException("Bu işletmeye başvuru yapamazsın.");
+            }
             // Slot kapasitesini yeniden doldur
             if (app.getRequestedSlots() != null) {
                 for (ShiftSlot slot : app.getRequestedSlots()) {

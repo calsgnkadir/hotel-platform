@@ -144,19 +144,25 @@ export default function BillingTab() {
       <div className="card p-6">
         <div className="flex items-start justify-between gap-6 flex-wrap">
           <div className="min-w-0">
-            <span className="type-label inline-flex items-center gap-2 px-2.5 py-1 rounded-full mb-3"
-                  style={canPost
-                    ? { background: 'var(--ah-brand)', color: '#fff' }
-                    : { background: 'var(--ah-band)', color: 'var(--ah-ink-3)', border: '1px solid var(--ah-line-2)' }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: canPost ? '#fff' : 'var(--ah-ink-4)' }} />
-              {canPost ? 'İlan yayınlayabilirsin' : 'İlan hakkın doldu'}
-            </span>
             <h2 className="type-section" style={{ color: 'var(--ah-ink)' }}>
               {canceled ? 'İptal edildi (dönem sonuna kadar geçerli)' : paid ? 'Aktif abonelik' : 'Ücretsiz plan'}
             </h2>
             <div className="type-meta mt-1">
               {paid ? `Plan: ${b.plan}` : limited ? `${free} ilana kadar ücretsiz` : 'Sınırsız ilan, ücretsiz'}
             </div>
+            {/* Durum dili paketi — grafit hap yerine ikon + düz metin; hak dolduysa
+                uyarı tonu (işletmenin eylemi gerekiyor). */}
+            <p className="type-meta inline-flex items-center gap-1.5 mt-2" data-testid="billing-post-state"
+               style={{ color: canPost ? 'var(--ah-ink-2)' : 'var(--ah-warn)', fontWeight: 600 }}>
+              {canPost ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"
+                     strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"
+                     strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>
+              )}
+              {canPost ? 'İlan yayınlayabilirsin' : 'İlan hakkın doldu'}
+            </p>
           </div>
           <div className="text-right flex-shrink-0">
             <div className="type-num leading-none" style={{ color: 'var(--ah-ink)', fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em' }}>{price} ₺</div>

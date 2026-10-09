@@ -17,6 +17,7 @@ import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.BusinessBlockRepository;
+import com.hotelapp.repository.CandidateBlockRepository;
 import com.hotelapp.repository.ConversationRepository;
 import com.hotelapp.repository.MessageReactionRepository;
 import com.hotelapp.repository.MessageRepository;
@@ -55,6 +56,7 @@ public class MessageService {
     private final FileStorageService fileStorageService;
     private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#12 — WS broadcast
     private final BusinessBlockRepository businessBlockRepository;  // aday engeli
+    private final CandidateBlockRepository candidateBlockRepository;  // isletme engeli
 
     /** FAZ 11.W3 — Reaction whitelist (UI'da SVG render, emoji yok) */
     private static final Set<String> ALLOWED_REACTIONS =
@@ -101,6 +103,8 @@ public class MessageService {
         if (initiator == businessOwner) {
             requireNotBlockedByCandidate(candidate.getId(), businessOwner.getId());
         }
+        // İşletme ↔ engellediği aday: iki yönde de yazışma kapalı.
+        requireNotBlockedByBusiness(candidate.getId(), businessOwner.getId(), initiator == candidate);
 
         // Var mı?
         Conversation conv = conversationRepository
@@ -483,8 +487,23 @@ public class MessageService {
     /** Sohbeti getir + bu kullanıcının sohbetin tarafı olduğunu doğrula. */
     /** Gönderen işletme tarafıysa ve aday bu işletmeyi engellediyse reddet. */
     private void requireSenderNotBlocked(Conversation conv, Long senderId) {
-        if (conv.getBusinessOwner().getId().equals(senderId)) {
+        boolean senderIsOwner = conv.getBusinessOwner().getId().equals(senderId);
+        if (senderIsOwner) {
             requireNotBlockedByCandidate(conv.getCandidate().getId(), senderId);
+        }
+        requireNotBlockedByBusiness(conv.getCandidate().getId(), conv.getBusinessOwner().getId(), !senderIsOwner);
+    }
+
+    /**
+     * İşletme adayı engellediyse: aday yazamaz (403, engel ayrıca ifşa edilmez),
+     * işletme de engeli kaldırmadan yazamaz (422).
+     */
+    private void requireNotBlockedByBusiness(Long candidateId, Long businessOwnerId, boolean senderIsCandidate) {
+        if (candidateBlockRepository.existsByBusinessOwnerIdAndCandidateId(businessOwnerId, candidateId)) {
+            if (senderIsCandidate) {
+                throw new UnauthorizedException("Bu işletmeyle iletişim kapalı.");
+            }
+            throw new BusinessRuleException("Önce engeli kaldır.");
         }
     }
 

@@ -32,6 +32,7 @@ public class ApplicationService {
     private final UserRepository userRepository;
     private final JobListingRepository jobListingRepository;
     private final ShiftSlotRepository shiftSlotRepository;
+    private final CandidateBlockRepository candidateBlockRepository; // isletme adayi engeller
     // FAZ 18 — Audit: AuditLogService DOGRUDAN cagrilmaz; outbox uzerinden
     // (at-least-once + retry). Eskiden burada kullanilmayan bir AuditLogService
     // injection'i duruyordu — basvuru kararlari hic audit'lenmiyordu.
@@ -61,6 +62,9 @@ public class ApplicationService {
         if (listing.getStatus() != ListingStatus.ACTIVE) {
             throw new BusinessRuleException("Bu ilan şu anda aktif değil");
         }
+
+        // Isletme bu adayi engellediyse basvuru kaydi olusmaz (ilan gorunur kalir).
+        requireNotBlockedByBusiness(listing.getBusiness().getId(), candidateId);
 
         // Bu ilana zaten PENDING/REVIEWING/ACCEPTED başvurusu var mı?
         // - PENDING/REVIEWING: süreç henüz tamamlanmadı
@@ -330,6 +334,8 @@ public class ApplicationService {
         }
 
         if (accept) {
+            // Engel aninda HELD basvurular REJECTED olur; bu kontrol yaris durumuna karsi yedek.
+            requireNotBlockedByBusiness(app.getJobListing().getBusiness().getId(), candidateId);
             // ACCEPTED'e gec + slot kapasiteleri guncelle
             if (app.getRequestedSlots() != null) {
                 for (ShiftSlot slot : app.getRequestedSlots()) {
@@ -507,6 +513,13 @@ public class ApplicationService {
         private Integer candidateStrikesRemaining;
         private Boolean autoBanned;
         private LocalDateTime bannedUntil;
+    }
+
+    /** Isletme bu adayi engellediyse 422 (engel ayrica ifsa edilmez). */
+    private void requireNotBlockedByBusiness(Long businessId, Long candidateId) {
+        if (candidateBlockRepository.existsByBusinessIdAndCandidateId(businessId, candidateId)) {
+            throw new BusinessRuleException("Bu işletmeye başvuru yapamazsın.");
+        }
     }
 
     // ----------------------------------------------------------------

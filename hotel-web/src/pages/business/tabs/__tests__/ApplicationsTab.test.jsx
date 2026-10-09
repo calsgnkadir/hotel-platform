@@ -87,24 +87,24 @@ describe('ApplicationsTab URL status filtresi (FAZ 19)', () => {
   it('filtre degisince secili basvuru detayi kapanir (?id dusrulur)', () => {
     renderTab('/business?tab=applications&id=2')
 
-    fireEvent.click(screen.getByRole('button', { name: /^Bekleyen/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^Yeni/ }))
     expect(lastSearch).not.toContain('id=')
   })
 
   it('EXPIRED chip i: o durumda basvuru yoksa gorunmez', () => {
     renderTab('/business?tab=applications')
-    expect(screen.queryByRole('button', { name: /Süresi Doldu/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Süresi doldu/ })).toBeNull()
   })
 
   it('EXPIRED chip i: o durumda basvuru varsa gorunur (donut drill-down hedefi)', () => {
     renderTab('/business?tab=applications', [...APPS, app(5, 'EXPIRED', 'Eren')])
-    expect(screen.getByRole('button', { name: /Süresi Doldu/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Süresi doldu/ })).toBeInTheDocument()
   })
 
   it('EXPIRED chip i: veri olmasa bile filtre aktifse gorunur', () => {
     // Drill-down sonrasi veri degisirse chip kaybolup "neye gore filtreliyim?"
     // durumu olusmamali.
     renderTab('/business?tab=applications&status=EXPIRED')
-    expect(screen.getByRole('button', { name: /Süresi Doldu/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Süresi doldu/ })).toBeInTheDocument()
   })
 })

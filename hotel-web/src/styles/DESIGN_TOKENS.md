@@ -27,9 +27,9 @@ scoped override'ları. Bu dosya onları AÇIKLAR, tanımlamaz — çelişki olur
 | `--ah-ink-3` | `#5c6564` | ikincil metin (6.0:1) |
 | `--ah-ink-4` | `#6b7574` | soluk / placeholder (4.75:1) |
 | `--ah-ok` / `-soft` | `#2f6b4f` / `#e7f1eb` | başarı — sadece durum |
-| `--ah-warn` / `-soft` | `#8a5a16` / `#f5ecda` | uyarı / bekleyen — sadece durum |
+| `--ah-warn` / `-soft` | `#8a5a16` / `#f5ecda` | dikkat — YALNIZ "senin eylemin gerekiyor" |
 | `--ah-danger` / `-soft` | `#9c3b30` / `#f6e6e3` | hata / acil / tehlikeli aksiyon — sadece durum |
-| `--ah-info` / `-soft` | `#3a627e` / `#e8eef4` | bilgi / inceleniyor — sadece durum |
+| `--ah-info` / `-soft` | `#3a627e` / `#e8eef4` | bilgi kutusu — rozette KULLANILMAZ |
 | `--ah-r` / `--ah-rc` | `10px` / `8px` | kart / kontrol radius |
 
 Durum renkleri -soft zemin üstünde de AA (warn 5.0, info 5.6, danger 5.6).
@@ -38,7 +38,7 @@ Durum renkleri -soft zemin üstünde de AA (warn 5.0, info 5.6, danger 5.6).
 
 - **grafit (`--ah-brand`)** = birincil CTA + aktif/seçili. Sayfa başına ideal ≤1 dolu-grafit vurgu.
 - **beyaz/kırık-beyaz (`--ah-card`/`--ah-page`)** = pasif kartlar, konteynerler, ikincil butonlar.
-- **`--ah-ok/warn/danger/info`** = yalnızca DURUM (rozet/şerit/metin). Kart zemini veya ana vurgu olarak KULLANMA.
+- **`--ah-ok/warn/danger/info`** = yalnızca DURUM (rozet/metin; sol renk şeridi kullanılmaz). Kart zemini veya ana vurgu olarak KULLANMA.
 - `.card`, `.modal-content`, `.auth-card` içindeki Tailwind `text-red/amber/emerald/blue-*`
   ve `bg-*-50` sınıfları bu token'lara eşlenir (index.css "SEMANTIK DURUM RENKLERI").
   Eskiden hepsi `!important` ile griye eziliyordu; artık eklemeyin.
@@ -93,8 +93,8 @@ Not: FEATURED border FAZ E'de düzeltildi — eskiden tanımsız `--ah-brand-lin
 
 ## 4. Tipografi (Inter) — UI Paket 2 ölçeği
 
-Kural: **11px altı yok**; **büyük harf yalnız durum rozetinde** (`.type-badge`, `.badge`,
-`.ah-chip--urgent`). Etiket/başlık/buton cümle düzeninde, tracking 0.
+Kural: **11px altı yok**; **büyük harf hiçbir yerde yok** (rozet dahil; tek istisna dil
+seçicideki dil kodu "TR/EN"). Etiket/başlık/buton/rozet cümle düzeninde, tracking 0.
 
 | Class | Boyut/LH | Ağırlık | Tracking | Ne zaman |
 |---|---|---|---|---|
@@ -106,10 +106,40 @@ Kural: **11px altı yok**; **büyük harf yalnız durum rozetinde** (`.type-badg
 | `.type-meta` | 13/18 | 500 | 0 | ikincil bilgi (ink-3) |
 | `.type-caption` | 12/16 | 500 | 0 | küçük ek bilgi |
 | `.type-label` (= `.type-overline`, `.label`) | 12/16 | 600 | 0 | alan etiketi — büyük harf YOK |
-| `.type-badge` | 11/14 | 600 | 0.04em, BÜYÜK HARF | yalnız durum rozeti |
+| `.type-badge` | 12/16 | 600 | 0 | küçük vurgulu metin (büyük harf YOK) |
 | `.type-num` | — | — | — | `tabular-nums` (ücret, sayaç) |
 
 `.stat-card-label` 13px, `.ah-job__band-lbl` 12px ink-3, `.chip` 13px.
+
+## 4c. Durum rozeti ve durum dili (Durum dili paketi)
+
+**Tek kaynak:** `src/lib/applicationStatus.js` — her başvuru enum'u için
+`{ candidate: {label, tone, hint?}, business: {label, tone, hint?} }`, ayrıca
+`STANDBY_OFFER`, `NO_SHOW`, aday filtre grupları (`CAND_FILTER_GROUPS`) ve işletme filtre
+etiketleri (`BUSINESS_FILTER_LABELS`). Rozet bileşeni: `components/candidate/StatusBadge.jsx`
+(`view="candidate"|"business"`); işletme `pages/business/components/Badges.jsx` aynı
+kaynağı sarar. Ekranda durum metni elle yazılmaz.
+
+**`.badge`:** 12/16, 600, cümle düzeni, tracking 0, padding 2px 8px, radius 999.
+Çerçeve YOK, nokta YOK, sol renk şeridi YOK — yalnız yumuşak zemin + koyu metin.
+
+| Ton sınıfı | Renk | Ne zaman |
+|---|---|---|
+| `.badge-neutral` | `--ah-band` / `--ah-ink-2` | bilgi (varsayılan) |
+| `.badge-attention` | `--ah-warn-soft` / `--ah-warn` | YALNIZ "senin bir şey yapman gerekiyor" |
+| `.badge-positive` | `--ah-ok-soft` / `--ah-ok` | olumlu sonuç (Kabul edildi, Aktif) |
+| `.badge-negative` | `--ah-danger-soft` / `--ah-danger` | yalnız "İşe gelmedi" ve "Acil" |
+
+Ton bakış açısına göre değişir: aday için HELD "Yanıtın bekleniyor" = dikkat; işletme için
+aynı durum "Aday onayında" = nötr (işletmenin yapacağı bir şey yok). Eski
+`badge-pending/accepted/rejected` takma ad; `badge-reviewing/expired` nötre indi (info tonu
+rozette yok; ink-4 band üstünde 4.5:1 altındaydı).
+
+**Kurallar:** etiket 1-2 kelime; satır başına en fazla 1 durum rozeti ("İşe gelmedi" ikinci
+olabilir). **Rozet ≠ bilgi metni:** sayı, son tarih, kontenjan ("3 kişi aranıyor", "Doldu",
+"Son: 12 Eki 18:00", "2 iş") rozet değil düz metindir (`.type-meta`/`.type-caption`,
+ink-2/ink-3/ink-4); hap/zemin almaz. Kontenjan dolu = ink-4 metin, kırmızı DEĞİL.
+Filtre çipleri `aria-pressed` taşır; mobilde ≥44px.
 
 ## 4b. Butonlar (index.css)
 

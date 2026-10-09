@@ -6,6 +6,7 @@ import cldImg, { ImgSize } from '../../../lib/cldImg'
 import useFocusTrap from '../../../lib/useFocusTrap'
 import ApplicationsKanban from '../components/ApplicationsKanban'
 import ApplicationDetail from '../components/ApplicationDetail'
+import { BUSINESS_FILTER_LABELS } from '../../../lib/applicationStatus'
 
 const VIEW_STORAGE_KEY = 'biz-applications-view'
 // Liste gorunumu 3x3 A4-dikey kart izgarasi — sayfa basi 9 kart (kullanici istegi).
@@ -16,11 +17,9 @@ const BASE_FILTERS = ['ALL', 'PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED']
 // Nadir durumlar: sadece o durumda basvuru VARSA chip cikar. Derin link
 // (?status=EXPIRED) ile gelinebildigi icin chip'siz birakilirsa liste
 // filtreli ama aktif filtre gorunmez olurdu.
-const RARE_FILTERS = ['STANDBY', 'EXPIRED', 'WITHDRAWN']   // FAZ C.1 — STANDBY eklendi
-const FILTER_LABELS = {
-  ALL: 'Tümü', PENDING: 'Bekleyen', REVIEWING: 'İnceleniyor', STANDBY: 'Yedek',
-  ACCEPTED: 'Kabul', REJECTED: 'Red', EXPIRED: 'Süresi Doldu', WITHDRAWN: 'İptal',
-}
+// Durum dili paketi — HELD ("Aday onayında") eklendi; etiketler sözlükten.
+const RARE_FILTERS = ['HELD', 'STANDBY', 'EXPIRED', 'WITHDRAWN']   // FAZ C.1 — STANDBY eklendi
+const FILTER_LABELS = BUSINESS_FILTER_LABELS
 
 /**
  * FAZ 11.W2.1 — Split master-detail.
@@ -138,10 +137,10 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             const count = f === 'ALL' ? applications.length : applications.filter(a => a.status === f).length
             return (
               /* Aktif chip yazdirmada da gorunsun (bkz. index.css @media print) */
-              <button key={f} onClick={() => setFilter(f)}
+              <button key={f} type="button" onClick={() => setFilter(f)} aria-pressed={filter === f}
                 className={`chip ${filter === f ? 'is-active print-keep' : ''}`}>
                 {FILTER_LABELS[f]}
-                <span className="text-[10px] tabular-nums opacity-80 ml-1">({count})</span>
+                <span className="text-[12px] tabular-nums opacity-80 ml-1">({count})</span>
               </button>
             )
           })}
@@ -328,7 +327,7 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
     >
       {/* ── Ust: durum rozeti ── */}
       <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
-        <StatusBadge status={app.status} />
+        <StatusBadge status={app.status} standbyOfferActive={app.standbyOfferActive} />
         {app.noShow && <NoShowBadge />}
       </div>
 
@@ -452,7 +451,7 @@ function ApplicantRow({ app, active, onClick }) {
         <div className="text-[13.5px] font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{name}</div>
         <div className="text-[12px] truncate" style={{ color: 'var(--ah-ink-3)' }}>{app.listing?.title}</div>
       </div>
-      <StatusBadge status={app.status} />
+      <StatusBadge status={app.status} standbyOfferActive={app.standbyOfferActive} />
     </div>
   )
 }

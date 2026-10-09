@@ -242,11 +242,10 @@ export default function ListingDetailPage() {
                       <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>{fmtDay(s.date)}</span>
                       <span className="ml-2 type-num" style={{ color: 'var(--ah-ink-2)' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
                     </span>
-                    <span className="type-badge px-2 py-0.5 rounded-full flex-shrink-0"
-                          style={full
-                            ? { background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)' }
-                            : { background: 'var(--ah-ok-soft)', color: 'var(--ah-ok)' }}>
-                      {full ? 'Dolu' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
+                    {/* Durum dili paketi — rozet degil duz bilgi metni; dolu kirmizi DEGIL */}
+                    <span className="type-meta flex-shrink-0 tabular-nums"
+                          style={{ color: full ? 'var(--ah-ink-4)' : 'var(--ah-ink-2)' }}>
+                      {full ? 'Doldu' : `${(s.slotsNeeded - (s.slotsFilled || 0))} kişi aranıyor`}
                     </span>
                   </li>
                 )

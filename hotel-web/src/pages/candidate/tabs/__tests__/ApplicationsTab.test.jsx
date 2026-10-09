@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 /**
  * UI Paket 2 — aday "Başvurularım": kullanıcıya görünen durum adları Türkçe.
- * API değeri HELD aynen kalır; yalnız etiket "Beklemede" olur ("HOLD" görünmez).
+ * API değeri HELD aynen kalır; aday "Yanıtın bekleniyor" görür ("HOLD" görünmez).
  */
 const respondToHold = vi.fn()
 vi.mock('../../../../api/hotel', () => ({
@@ -45,14 +45,14 @@ const APPS = [
 describe('Aday ApplicationsTab — Türkçe durum etiketleri', () => {
   beforeEach(() => { respondToHold.mockReset(); toastSuccess.mockReset() })
 
-  it('HELD filtresi ve rozeti "Beklemede" yazar, İngilizce "HOLD" görünmez', () => {
+  it('HELD filtresi ve rozeti "Yanıtın bekleniyor" yazar, İngilizce "HOLD" görünmez', () => {
     render(<ApplicationsTab applications={APPS} onRefresh={vi.fn()} />)
     // Filtre çipi (sayaçla birlikte)
-    const chip = screen.getAllByRole('button').find(b => b.className.includes('chip') && /Beklemede/.test(b.textContent))
+    const chip = screen.getAllByRole('button').find(b => b.className.includes('chip') && /Yanıtın bekleniyor/.test(b.textContent))
     expect(chip).toBeTruthy()
     expect(within(chip).getByText('1')).toBeInTheDocument()
-    // Satır rozeti + çip = en az 2 "Beklemede"
-    expect(screen.getAllByText('Beklemede').length).toBeGreaterThanOrEqual(2)
+    // Satır rozeti + çip = en az 2 "Yanıtın bekleniyor"
+    expect(screen.getAllByText('Yanıtın bekleniyor').length).toBeGreaterThanOrEqual(2)
     expect(screen.queryByText(/HOLD/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Hold/)).not.toBeInTheDocument()
   })
@@ -62,7 +62,7 @@ describe('Aday ApplicationsTab — Türkçe durum etiketleri', () => {
     respondToHold.mockResolvedValue({})
     fireEvent.click(screen.getByRole('button', { name: 'Reddet' }))
     await waitFor(() => expect(respondToHold).toHaveBeenCalledWith(2, false))
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Bekleyen teklif reddedildi.'))
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Teklif reddedildi.'))
   })
 
   it('satır butonları cümle düzeninde ve ortak buton sınıfını kullanır; reddet kırmızı çerçeveli', () => {

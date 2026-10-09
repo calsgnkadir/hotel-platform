@@ -72,7 +72,7 @@ export default function TodayWidget({ applications, onTabChange }) {
       key: 'urgent-held',
       color: 'var(--ah-danger)',
       soft: 'var(--ah-danger-soft)',
-      label: `${urgentHeld.length} aday beklemede — 24 saatten az kaldı`,
+      label: `${urgentHeld.length} aday onayında — 24 saatten az kaldı`,
       hint: 'Aday yanıtlamazsa otomatik düşecek',
       cta: 'Detay',
       onCta: () => onTabChange?.('applications'),
@@ -101,14 +101,9 @@ export default function TodayWidget({ applications, onTabChange }) {
             </span>
           </div>
           {!allClear && (
-            <span
-              className="type-badge px-2.5 py-1 rounded-full"
-              style={{
-                background: 'var(--ah-warn-soft)',
-                color: 'var(--ah-warn)',
-              }}
-            >
-              {items.length} iş var
+            /* Durum dili paketi — hap yerine duz sayac (ink-3) */
+            <span className="type-meta tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>
+              {items.length} iş
             </span>
           )}
         </div>

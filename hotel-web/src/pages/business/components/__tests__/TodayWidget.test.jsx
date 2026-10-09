@@ -55,14 +55,14 @@ describe('TodayWidget (FAZ 0/#4d smoke)', () => {
     expect(h.className).not.toMatch(/uppercase|tracking-wider/)
     const cta = screen.getByRole('button', { name: "Kanban'a git" })
     expect(cta.className).toContain('btn-secondary')
-    expect(screen.getByText('1 iş var')).toBeInTheDocument()
+    expect(screen.getByText('1 iş')).toBeInTheDocument()
   })
 
   it('süresi yaklaşan bekleyen aday Türkçe etiketle gösterilir (HOLD yok)', () => {
     const apps = [{ id: 1, status: 'HELD', createdAt: new Date().toISOString(),
       holdDeadline: new Date(Date.now() + 3 * 3600e3).toISOString() }]
     render(<TodayWidget applications={apps} onTabChange={() => {}} />)
-    expect(screen.getByText(/1 aday beklemede/)).toBeInTheDocument()
+    expect(screen.getByText(/1 aday onayında/)).toBeInTheDocument()
     expect(screen.queryByText(/HOLD/)).not.toBeInTheDocument()
   })
 })

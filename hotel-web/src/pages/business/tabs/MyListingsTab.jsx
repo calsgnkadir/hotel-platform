@@ -130,20 +130,17 @@ export default function MyListingsTab({ applications = [] }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="type-card">{listing.title}</h3>
-                    <span className={`badge ${
-                      listing.status === 'ACTIVE' ? 'badge-accepted' :
-                      listing.status === 'PAUSED' ? 'badge-pending' :
-                      'badge-expired'}`}>
+                    {/* Durum dili: Aktif = olumlu; Durduruldu / Kapalı = nötr */}
+                    <span className={`badge ${listing.status === 'ACTIVE' ? 'badge-positive' : 'badge-neutral'}`}>
                       {STATUS_LABELS[listing.status]}
                     </span>
                     {/* FAZ C.2 — acil rozeti (suresi gecince backend urgent=false doner) */}
                     {listing.urgent && (
-                      <span className="type-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+                      <span className="badge badge-negative"
                             title={listing.urgentUntil
                               ? `Acil · ${new Date(listing.urgentUntil).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}'a kadar`
-                              : 'Acil ilan'}
-                            style={{ background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)', border: '1px solid var(--ah-danger)' }}>
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                              : 'Acil ilan'}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                           <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
                         </svg>
                         Acil

@@ -9,9 +9,17 @@ import StatusBadge, { CAND_STATUS_FILTERS } from '../StatusBadge'
 const STATUSES = ['PENDING', 'REVIEWING', 'HELD', 'STANDBY', 'ACCEPTED', 'REJECTED', 'EXPIRED', 'WITHDRAWN']
 
 describe('StatusBadge (aday)', () => {
-  it('HELD → "Beklemede…" rozeti', () => {
-    render(<StatusBadge status="HELD" />)
-    expect(screen.getByText(/^Beklemede/)).toBeInTheDocument()
+  it('HELD → aday "Yanıtın bekleniyor" (attention), işletme "Aday onayında" (nötr)', () => {
+    const { unmount } = render(<StatusBadge status="HELD" />)
+    expect(screen.getByText('Yanıtın bekleniyor')).toHaveAttribute('data-tone', 'attention')
+    unmount()
+    render(<StatusBadge status="HELD" view="business" />)
+    expect(screen.getByText('Aday onayında')).toHaveAttribute('data-tone', 'neutral')
+  })
+
+  it('STANDBY + aktif teklif → aday "Sıra sende"', () => {
+    render(<StatusBadge status="STANDBY" standbyOfferActive />)
+    expect(screen.getByText('Sıra sende')).toBeInTheDocument()
   })
 
   it.each(STATUSES)('%s rozetinde "HOLD" veya ham enum metni yok', (status) => {
@@ -20,9 +28,10 @@ describe('StatusBadge (aday)', () => {
     expect(container.textContent).not.toBe(status)
   })
 
-  it('filtre etiketleri Türkçe; HELD filtresi "Beklemede", enum değeri aynı', () => {
-    const held = CAND_STATUS_FILTERS.find(f => f.value === 'HELD')
-    expect(held.label).toBe('Beklemede')
+  it('filtre grupları Türkçe; HELD bekleyen eylem grubuna düşer', () => {
+    const action = CAND_STATUS_FILTERS.find(f => f.key === 'ACTION')
+    expect(action.label).toBe('Yanıtın bekleniyor')
+    expect(action.match({ status: 'HELD' })).toBe(true)
     for (const f of CAND_STATUS_FILTERS) {
       expect(f.label).not.toMatch(/HOLD|STANDBY|PENDING/)
     }

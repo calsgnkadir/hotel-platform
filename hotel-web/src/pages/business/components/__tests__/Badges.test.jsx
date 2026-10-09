@@ -6,10 +6,15 @@ import { StatusBadge } from '../Badges'
 const STATUSES = ['PENDING', 'REVIEWING', 'HELD', 'STANDBY', 'ACCEPTED', 'REJECTED', 'EXPIRED', 'WITHDRAWN']
 
 describe('İşletme StatusBadge', () => {
-  it('HELD → "Beklemede" (warn tonu)', () => {
+  it('HELD → "Aday onayında" (nötr ton; işletmeden eylem beklenmiyor)', () => {
     render(<StatusBadge status="HELD" />)
-    const b = screen.getByText('Beklemede')
-    expect(b.className).toContain('badge-pending')
+    const b = screen.getByText('Aday onayında')
+    expect(b.className).toContain('badge-neutral')
+  })
+
+  it('PENDING → "Yeni" (attention; işletmenin yanıtı bekleniyor)', () => {
+    render(<StatusBadge status="PENDING" />)
+    expect(screen.getByText('Yeni').className).toContain('badge-attention')
   })
 
   it.each(STATUSES)('%s ham enum / İngilizce metin göstermez', (status) => {

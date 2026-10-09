@@ -52,6 +52,7 @@ class ApplicationServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private JobListingRepository jobListingRepository;
     @Mock private com.hotelapp.repository.ShiftSlotRepository shiftSlotRepository;
+    @Mock private com.hotelapp.repository.CandidateBlockRepository candidateBlockRepository;
     @Mock private OutboxService outboxService;
     @Mock private NotificationService notificationService;
     @Mock private MessageService messageService;
@@ -59,6 +60,7 @@ class ApplicationServiceTest {
     @Mock private EmailTemplates emailTemplates;
     @Mock private ApplicationEventPublisher eventPublisher;
     @Mock private ApplicationMapper applicationMapper;
+    @Mock private org.springframework.beans.factory.ObjectProvider<com.hotelapp.metrics.AppMetrics> metricsProvider;
 
     @InjectMocks private ApplicationService service;
 
@@ -121,6 +123,37 @@ class ApplicationServiceTest {
             assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
                     .isInstanceOf(BusinessRuleException.class)
                     .hasMessageContaining("error.application.dupActive");
+        }
+
+        @Test
+        @DisplayName("İşletme adayı engellediyse 422 ve kayıt oluşmaz")
+        void blockedByBusiness_throwsAndNothingSaved() {
+            when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(activeListing()));
+            when(candidateBlockRepository.existsByBusinessIdAndCandidateId(1L, CANDIDATE_ID)).thenReturn(true);
+
+            assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessage("Bu işletmeye başvuru yapamazsın.");
+            verify(applicationRepository, never()).save(any());
+            verify(messageService, never()).openConversationForApplication(any(), any());
+        }
+
+        @Test
+        @DisplayName("Engel yoksa başvuru kaydedilir ve sohbet açılır")
+        void notBlocked_applicationSaved() {
+            when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(activeListing()));
+            when(candidateBlockRepository.existsByBusinessIdAndCandidateId(1L, CANDIDATE_ID)).thenReturn(false);
+            when(messageService.openConversationForApplication(any(), any()))
+                    .thenReturn(com.hotelapp.entity.Conversation.builder().id(5L).build());
+            when(applicationMapper.toResponse(any()))
+                    .thenReturn(com.hotelapp.dto.ApplicationResponse.builder().build());
+
+            var resp = service.createApplication(CANDIDATE_ID, req());
+
+            verify(applicationRepository).save(any(Application.class));
+            assertThat(resp.getConversationId()).isEqualTo(5L);
         }
 
         @Test
@@ -357,6 +390,29 @@ class ApplicationServiceTest {
             assertThatThrownBy(() -> service.reviewApplication(APP_ID, OWNER_ID, req))
                     .isInstanceOf(UnauthorizedException.class);
 
+            verify(outboxService, never()).appendAuditLog(any());
+        }
+    }
+
+    // ================================================================
+    // Isletme adayi engeller — HOLD onayi
+    // ================================================================
+    @Nested
+    @DisplayName("respondToHold + işletme engeli")
+    class HoldBlocked {
+
+        @Test
+        @DisplayName("Engelli aday HOLD'u onaylayamaz; durum HELD kalır, audit yok")
+        void blockedCandidateCannotAcceptHold() {
+            Application app = appWithStatus(ApplicationStatus.HELD);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(candidateBlockRepository.existsByBusinessIdAndCandidateId(1L, CANDIDATE_ID)).thenReturn(true);
+
+            assertThatThrownBy(() -> service.respondToHold(APP_ID, CANDIDATE_ID, true))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessage("Bu işletmeye başvuru yapamazsın.");
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.HELD);
+            verify(applicationRepository, never()).save(any());
             verify(outboxService, never()).appendAuditLog(any());
         }
     }

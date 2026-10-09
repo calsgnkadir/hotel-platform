@@ -227,7 +227,7 @@ body, .role-app-bg {
 /* ═══════════════════════════════════════════════════════════════════════
  * UI Paket 2 — Tipografi olcegi (Inter). Kok sorun: 18 farkli text-[Npx],
  * 10px alti onlarca etiket, her yerde BUYUK HARF + genis tracking ("kucuk ve
- * bagiran" metin). Kural: 11px alti yok; buyuk harf YALNIZ durum rozetinde.
+ * bagiran" metin). Kural: 11px alti yok; buyuk harf HICBIR YERDE yok (dil kodu haric).
  *
  *   .type-page     24/32  700  -0.015em  sayfa basligi (H1)
  *   .type-section  18/26  600  -0.01em   bolum basligi (H2)
@@ -235,7 +235,7 @@ body, .role-app-bg {
  *   .type-body     14/20  400   0        govde metni
  *   .type-meta     13/18  500   0        ikincil bilgi (ink-3)
  *   .type-label    12/16  600   0        alan / kucuk etiket — buyuk harf YOK
- *   .type-badge    11/14  600   0.04em   BUYUK HARF — yalniz durum rozetleri
+ *   .type-badge    12/16  600   0        cumle duzeni — kucuk bilgi/rozet metni
  *   .type-num      tabular-nums (ucret / sayac rakamlari)
  *
  * Eski isimler (display/heading/subhead/caption/overline) silinmedi; ayni
@@ -297,11 +297,11 @@ body, .role-app-bg {
   color: var(--text-muted);
 }
 .type-badge {
-  font-size: 11px;
-  line-height: 14px;
+  font-size: 12px;
+  line-height: 16px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;   /* eski: 11px BUYUK HARF 0.04em (Durum dili paketi) */
 }
 .type-num { font-variant-numeric: tabular-nums; }
 
@@ -370,10 +370,10 @@ body, .role-app-bg {
 .ah-chip--sal { color: var(--ah-ok); background: var(--ah-ok-soft); font-variant-numeric: tabular-nums; }
 .ah-chip--ver { color: var(--ah-brand); background: var(--ah-brand-soft); }
 .ah-chip--warn { color: var(--ah-warn); background: var(--ah-warn-soft); }
-/* FAZ C.2.2 — acil rozeti (kirmizi, en yuksek aciliyet sinyali) */
-/* Durum rozeti: buyuk harf yalniz burada (type-badge ile ayni 0.04em) */
-.ah-chip--urgent { color: var(--ah-danger); background: var(--ah-danger-soft); border: 1px solid var(--ah-danger);
-  gap: 4px; font-size: 11px; line-height: 14px; text-transform: uppercase; letter-spacing: .04em; }
+/* FAZ C.2.2 — acil rozeti (negatif ton). Durum dili paketi: cumle duzeni
+   "Acil", cerceve yok, simsek ikonu kalir. */
+.ah-chip--urgent { color: var(--ah-danger); background: var(--ah-danger-soft); gap: 4px;
+  text-transform: none; letter-spacing: 0; }
 
 /* İlan kartı (sektör: logo + bilgi + çip + CTA; dekoratif kapak yok) */
 .ah-job { background: var(--ah-card); border: 1px solid var(--ah-line); border-radius: var(--ah-r);

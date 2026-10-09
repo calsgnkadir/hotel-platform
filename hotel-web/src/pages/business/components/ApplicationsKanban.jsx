@@ -17,6 +17,7 @@ import { extractErrorMessage } from '../../../api/client'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
 import { useConfirm } from '../../../lib/useConfirm'
+import { APPLICATION_STATUS } from '../../../lib/applicationStatus'
 
 /*
  * FAZ 5.5a — Basvuru Kanban
@@ -24,48 +25,15 @@ import { useConfirm } from '../../../lib/useConfirm'
  * Drag-drop ile durum degisikligi confirm + backend call.
  */
 
+// Durum dili paketi — kolon adlari sozlukten (isletme bakisi), renksiz duz metin.
+const colLabel = (id) => APPLICATION_STATUS[id].business.label
 const COLUMNS = [
-  {
-    id: 'PENDING',
-    label: 'Bekleyen',
-    sub: 'Yeni başvurular + incelemede',
-    color: '#1f2937',
-    bg: 'rgba(31, 41, 55, 0.08)',
-    border: 'rgba(31, 41, 55, 0.18)',
-  },
-  {
-    id: 'HELD',
-    label: 'Beklemede',
-    sub: 'Aday onayı bekleniyor (24 sa)',
-    color: '#6b7574',
-    bg: 'rgba(107, 117, 116, 0.08)',
-    border: 'rgba(107, 117, 116, 0.25)',
-  },
-  {
-    id: 'ACCEPTED',
-    label: 'Kabul',
-    sub: 'Çalışmaya hazır',
-    color: '#6b7574',
-    bg: 'rgba(107, 117, 116, 0.08)',
-    border: 'rgba(107, 117, 116, 0.22)',
-  },
-  {
-    // FAZ C.1 — Yedek havuzu: asil aday gelmezse otomatik cagrilir
-    id: 'STANDBY',
-    label: 'Yedek',
-    sub: 'Gelmezse otomatik çağrılır',
-    color: '#6b7574',
-    bg: 'rgba(107, 117, 116, 0.07)',
-    border: 'rgba(107, 117, 116, 0.20)',
-  },
-  {
-    id: 'REJECTED',
-    label: 'Red',
-    sub: 'Süreç kapandı',
-    color: '#6b7574',
-    bg: 'rgba(107, 117, 116, 0.08)',
-    border: 'rgba(107, 117, 116, 0.22)',
-  },
+  { id: 'PENDING',  label: colLabel('PENDING'),  sub: 'İncelenenler dahil' },
+  { id: 'HELD',     label: colLabel('HELD'),     sub: 'Yanıt gelmezse düşer' },
+  { id: 'ACCEPTED', label: colLabel('ACCEPTED'), sub: 'Çalışmaya hazır' },
+  // FAZ C.1 — Yedek havuzu: asil aday gelmezse otomatik cagrilir
+  { id: 'STANDBY',  label: colLabel('STANDBY'),  sub: 'Gelmezse otomatik çağrılır' },
+  { id: 'REJECTED', label: colLabel('REJECTED'), sub: 'Süreç kapandı' },
 ]
 
 function statusBucket(s) {
@@ -94,7 +62,8 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
   // Dalga H4 — chip filtresine gore hangi kolonlar gosterilecek
   // ALL: tum kolonlar, digerleri: sadece eslesen kolon
   const FILTER_TO_COLUMN_ID = {
-    PENDING: 'PENDING', REVIEWING: 'REVIEWING', ACCEPTED: 'ACCEPTED', REJECTED: 'REJECTED',
+    // REVIEWING kanban'da PENDING kolonunda (statusBucket); HELD "Aday onayında" kolonu
+    PENDING: 'PENDING', REVIEWING: 'PENDING', HELD: 'HELD', ACCEPTED: 'ACCEPTED', REJECTED: 'REJECTED',
     STANDBY: 'STANDBY',   // FAZ C.1
   }
   const visibleColumns = statusFilter === 'ALL'
@@ -332,29 +301,19 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
 function Column({ col, count, children }) {
   const { setNodeRef, isOver } = useDroppable({ id: col.id })
 
-  // Column bg neutral (graphite.700) — status color yalniz header chip + drop-over rim'de.
-  // Boylece 4 kolon = 4 status renkli blok yerine 1 tier + accent rail hierarchy.
+  // Durum dili paketi — kolon basligi renksiz duz metin + sayi; birakma aninda
+  // yalniz tier-featured (grafit cerceve), renkli glow yok.
   return (
     <div
       ref={setNodeRef}
       className={`flex flex-col min-h-[480px] transition-all ${isOver ? 'tier-featured' : 'tier-raised'}`}
-      style={{
-        borderColor: isOver ? col.color : undefined,
-        boxShadow: isOver ? `0 0 24px ${col.color}55, inset 0 1px 0 rgba(31, 41, 55,0.12)` : undefined,
-      }}
     >
       <div className="px-4 py-3 flex items-center justify-between border-b border-hairline">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ background: col.color }} />
-            <span className="type-overline" style={{ color: col.color, fontSize: '11px' }}>
-              {col.label}
-            </span>
-            <span className="type-overline px-1.5 py-0.5 rounded-full tabular-nums"
-                  style={{ background: `${col.color}22`, color: col.color, minWidth: '22px', textAlign: 'center' }}>
-              {count}
-            </span>
-          </div>
+          <h3 className="flex items-baseline gap-2 type-subhead" style={{ color: 'var(--ah-ink)' }}>
+            <span>{col.label}</span>
+            <span className="type-meta tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>{count}</span>
+          </h3>
           <div className="type-caption mt-0.5">
             {col.sub}
           </div>

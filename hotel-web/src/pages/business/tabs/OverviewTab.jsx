@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
-import { StatusBadge } from '../components/Badges'
+import { StatusBadge, NoShowBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
 import TodayWidget from '../components/TodayWidget'  // FAZ 5.12
+import { getStatusMeta } from '../../../lib/applicationStatus'
 
 /* ── Overview Tab — Dalga C: 2-sutun (sol stat+tablo, sag canli akis) ── */
 export default function OverviewTab({ applications, onTabChange }) {
@@ -19,21 +20,18 @@ export default function OverviewTab({ applications, onTabChange }) {
         {/* Stat strip — number → hairline → label hierarchy (UX4 spec) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
-            { label: 'Toplam',      value: applications.length, color: 'var(--ah-brand)' },
-            { label: 'Bekleyen',    value: pending,             color: 'var(--ah-warn)' },
-            { label: 'İnceleniyor', value: reviewing,           color: 'var(--ah-info)' },
-            { label: 'Kabul',       value: accepted,            color: 'var(--ah-ok)' },
+            { label: 'Toplam',       value: applications.length },
+            { label: getStatusMeta('PENDING', 'business').label,   value: pending },
+            { label: getStatusMeta('REVIEWING', 'business').label, value: reviewing },
+            { label: getStatusMeta('ACCEPTED', 'business').label,  value: accepted },
           ].map(s => (
             <motion.div key={s.label}
               whileHover={{ y: -3 }}
               transition={{ type: 'spring', stiffness: 240, damping: 22 }}
               className="stat-card group cursor-default"
             >
-              {/* Sparkline'lar kaldirildi (kotu duruyordu, analitik de yok).
-                  Yerine sade bir ust aksan seridi: durum rengini tasir. */}
-              <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
-                    style={{ background: s.color }} />
-
+              {/* Durum dili paketi — ust renk seritleri kaldirildi: KPI karti durum
+                  degil sayi; renk yalniz eylem gerektiren rozette. */}
               {/* Number → hairline → label */}
               <div className="relative">
                 <div className="stat-card-number">
@@ -134,13 +132,13 @@ function TodayFeed({ applications, onTabChange }) {
               <button onClick={() => onTabChange('applications')}
                 className="w-full text-left flex items-start gap-2.5 group">
                 <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
-                      style={{ background: STATUS_DOT[app.status] || 'var(--ah-ink-4)' }} />
+                      style={{ background: 'var(--ah-line-2)' }} aria-hidden="true" />
                 <div className="flex-1 min-w-0">
                   <p className="type-body font-medium truncate">
                     {app.candidate?.fullName || 'Aday'}
                   </p>
                   <p className="type-meta truncate">
-                    {app.listing?.title || 'İlan'} · {STATUS_LABEL[app.status] || app.status}
+                    {app.listing?.title || 'İlan'} · {getStatusMeta(app.status, 'business', { standbyOfferActive: app.standbyOfferActive }).label}
                   </p>
                 </div>
                 <span className="type-meta flex-shrink-0 mt-0.5">
@@ -155,9 +153,8 @@ function TodayFeed({ applications, onTabChange }) {
   )
 }
 
-/* Son başvurular satırı — accent rail + avatar gradient + hover lift (B teması) */
+/* Son başvurular satırı — tek durum rozeti (sözlükten, işletme bakışı); sol şerit yok */
 function BizRecentRow({ app, last, onClick }) {
-  const accent = STATUS_DOT[app.status] || 'var(--ah-ink-4)'
   const days = Math.floor((Date.now() - new Date(app.createdAt).getTime()) / 86400_000)
   const relative = days === 0 ? 'bugün' : days === 1 ? 'dün' : `${days} gün önce`
   return (
@@ -166,11 +163,8 @@ function BizRecentRow({ app, last, onClick }) {
       transition={{ type: 'spring', stiffness: 320, damping: 24 }}
       role="button" tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
-      className="relative pl-6 pr-5 py-3 flex items-center gap-3 group cursor-pointer"
-      style={{ borderBottom: last ? 'none' : '1px solid rgba(31, 41, 55, 0.05)' }}>
-      {/* Sol accent bar — always visible per UX4 spec */}
-      <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
-            style={{ background: accent }} />
+      className="relative px-4 sm:px-5 py-3 flex items-center gap-3 group cursor-pointer"
+      style={{ borderBottom: last ? 'none' : '1px solid var(--ah-line)' }}>
       <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-semibold flex-shrink-0"
            style={{
              background: 'linear-gradient(135deg, rgba(31, 41, 55, 0.08), rgba(31, 41, 55, 0.06))',
@@ -191,21 +185,10 @@ function BizRecentRow({ app, last, onClick }) {
           <span className="flex-shrink-0">{relative}</span>
         </div>
       </div>
-      <StatusBadge status={app.status} />
+      <span className="flex items-center gap-1.5 flex-shrink-0">
+        <StatusBadge status={app.status} standbyOfferActive={app.standbyOfferActive} />
+        {app.noShow && <NoShowBadge />}
+      </span>
     </motion.div>
   )
-}
-
-// Durum noktasi / sol serit — durum token'lari (Paket 1 eslemesiyle ayni)
-const STATUS_DOT = {
-  PENDING:   'var(--ah-warn)',
-  REVIEWING: 'var(--ah-info)',
-  HELD:      'var(--ah-warn)',
-  STANDBY:   'var(--ah-info)',
-  ACCEPTED:  'var(--ah-ok)',
-  REJECTED:  'var(--ah-danger)',
-}
-const STATUS_LABEL = {
-  PENDING: 'yeni başvuru', REVIEWING: 'inceleniyor', HELD: 'beklemede',
-  STANDBY: 'yedek', ACCEPTED: 'kabul', REJECTED: 'red',
 }

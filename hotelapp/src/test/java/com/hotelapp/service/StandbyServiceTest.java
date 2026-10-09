@@ -43,6 +43,7 @@ class StandbyServiceTest {
     @Mock private OutboxService outboxService;
     @Mock private ApplicationMapper applicationMapper;
     @Mock private SmsService smsService;
+    @Mock private com.hotelapp.repository.CandidateBlockRepository candidateBlockRepository;
 
     private StandbyService service;
 
@@ -56,7 +57,8 @@ class StandbyServiceTest {
     private StandbyService svc() {
         if (service == null) {
             service = new StandbyService(applicationRepository, shiftSlotRepository,
-                    notificationService, outboxService, applicationMapper, smsService);
+                    notificationService, outboxService, applicationMapper, smsService,
+                    candidateBlockRepository);
             lenient().when(applicationMapper.toResponse(any()))
                     .thenReturn(ApplicationResponse.builder().build());
         }
@@ -254,6 +256,22 @@ class StandbyServiceTest {
             verify(shiftSlotRepository).save(slot);
             verify(notificationService).notify(eq(OWNER_ID),
                     eq(NotificationType.STANDBY_FILLED), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("İşletme adayı engellediyse kabul reddedilir, slot değişmez")
+        void accept_blockedByBusiness_throws() {
+            ShiftSlot slot = upcomingSlot(1, 0);
+            Application a = offeredStandby(slot);
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(candidateBlockRepository.existsByBusinessIdAndCandidateId(2L, CANDIDATE_ID)).thenReturn(true);
+
+            assertThatThrownBy(() -> svc().respondToOffer(77L, CANDIDATE_ID, true))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessage("Bu işletmeye başvuru yapamazsın.");
+            assertThat(a.getStatus()).isEqualTo(ApplicationStatus.STANDBY);
+            assertThat(slot.getSlotsFilled()).isZero();
+            verify(shiftSlotRepository, never()).save(any());
         }
 
         @Test

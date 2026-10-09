@@ -531,14 +531,15 @@ function DetailModal({ listing, onClose, onApply }) {
                   return (
                     <div key={s.id}
                       className={`flex items-center justify-between rounded-lg px-3 py-2 border
-                        ${full ? 'bg-cream-50 border-cream-300 opacity-60' : 'bg-brand-50/60 dark:bg-brand-900/20 border-brand-100 dark:border-brand-900/40'}`}>
+                        ${full ? 'bg-cream-50 border-cream-300' : 'bg-brand-50/60 dark:bg-brand-900/20 border-brand-100 dark:border-brand-900/40'}`}>
                       <div className="text-sm">
                         <span className="font-medium text-ink-800">{dateLabel}</span>
                         <span className="text-ink-500 ml-2">{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full
-                        ${full ? 'type-badge bg-red-50 text-red-600' : 'type-label bg-brand-50 text-ink-800'}`}>
-                        {full ? 'Dolu' : `${(s.slotsNeeded - (s.slotsFilled || 0))} açık`}
+                      {/* Durum dili paketi — rozet degil duz bilgi metni; dolu kirmizi DEGIL */}
+                      <span className="type-meta flex-shrink-0 tabular-nums"
+                            style={{ color: full ? 'var(--ah-ink-4)' : 'var(--ah-ink-2)' }}>
+                        {full ? 'Doldu' : `${(s.slotsNeeded - (s.slotsFilled || 0))} kişi aranıyor`}
                       </span>
                     </div>
                   )
@@ -737,7 +738,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
             </>
           ) : (
             <span className="ah-job__when-day" style={{ color: 'var(--ah-ink-3)' }}>
-              {allFull ? 'Dolu' : 'Belirtilmemiş'}
+              {allFull ? 'Doldu' : 'Belirtilmemiş'}
             </span>
           )}
         </div>

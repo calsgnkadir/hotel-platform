@@ -1,5 +1,5 @@
 // FAZ 5.2 — CandidateDashboard'dan ayrildi (god class refactor)
-// Redesign: glass cards + status accent rail + Geist + motion micro-interactions
+// Durum dili paketi: tek durum rozeti (sozluk: lib/applicationStatus), sol serit yok
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
@@ -7,26 +7,15 @@ import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import { useMyLocation } from '../../../lib/useMyLocation'
 import EmptyState from '../../../components/EmptyState'
-import { CAND_STATUS_FILTERS } from '../../../components/candidate/StatusBadge'
+import StatusBadge from '../../../components/candidate/StatusBadge'
+import { CAND_FILTER_GROUPS, candGroupForStatus, getStatusMeta } from '../../../lib/applicationStatus'
 import { useConfirm } from '../../../lib/useConfirm'
 import SlotChipGroup from '../../../components/SlotChipGroup'
 import { formatSalary } from '../../../lib/salary'
 import { PlatformRoleNotice } from '../../../components/LegalNotice'   // FAZ C.3
 
-/* REDESIGN v3 — açık zemin için durum renkleri (soft bg + koyu okunur metin) */
-const STATUS_CONFIG = {
-  PENDING:   { label: 'Bekliyor',     color: 'var(--ah-warn)',   soft: 'var(--ah-warn-soft)',   text: 'var(--ah-warn)' },   // amber
-  REVIEWING: { label: 'İnceleniyor',  color: 'var(--ah-info)',   soft: 'var(--ah-info-soft)',   text: 'var(--ah-info)' },   // info mavi
-  HELD:      { label: 'Beklemede',    color: 'var(--ah-warn)',   soft: 'var(--ah-warn-soft)',   text: 'var(--ah-warn)' },   // amber (bekleme)
-  STANDBY:   { label: 'Yedek',        color: 'var(--ah-info)',   soft: 'var(--ah-info-soft)',   text: 'var(--ah-info)' },   // info
-  ACCEPTED:  { label: 'Kabul',        color: 'var(--ah-ok)',     soft: 'var(--ah-ok-soft)',     text: 'var(--ah-ok)' },     // yesil
-  REJECTED:  { label: 'Red',          color: 'var(--ah-danger)', soft: 'var(--ah-danger-soft)', text: 'var(--ah-danger)' }, // kiremit
-  WITHDRAWN: { label: 'İptal',        color: 'var(--ah-ink-4)',  soft: 'var(--ah-band)',        text: 'var(--ah-ink-3)' },  // notr
-  EXPIRED:   { label: 'Süresi Doldu', color: 'var(--ah-ink-4)',  soft: 'var(--ah-band)',        text: 'var(--ah-ink-4)' },  // soluk
-}
-
-/* Filtre etiketleri StatusBadge.CAND_STATUS_FILTERS'tan gelir (Turkce kaynak;
-   API degeri HELD degismez, gorunen etiket "Beklemede"). */
+/* Durum etiketleri, tonlari ve filtre gruplari lib/applicationStatus.js'te
+   (tek kaynak). API degeri HELD degismez; aday "Yanitin bekleniyor" gorur. */
 
 /* Kariyer.net tarzi satir listesi (FAZ 22) — gorece tarih.
    FAZ B.5.3 — logo rengi lib/logoColor'a tasindi (ListingsPage ile ayni
@@ -51,7 +40,7 @@ function appRelative(iso) {
   return new Date(iso).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })
 }
 
-export default function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessages, onTabChange }) {
+export default function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessages, onTabChange, initialFilter }) {
   const confirm = useConfirm()
   // Suresi gecen + tamamlanmis isler "Basvurularim"da gorunmez (Gecmis Islerim'e gider)
   const applications = (rawApplications || []).filter(a => {
@@ -60,7 +49,9 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     return true
   })
 
-  const [statusFilter, setStatusFilter] = useState('')
+  // Filtre = grup anahtari (ALL/ACTION/ONGOING/ACCEPTED/CLOSED). Eski enum degeri
+  // (ör. derin linkten HELD) gelirse ilgili gruba eslenir.
+  const [statusFilter, setStatusFilter] = useState(() => candGroupForStatus(initialFilter))
   // FAZ 11.W1.1 — Rich card: anywhere-click expands detail inline.
   // Wave 2'de split-panel gelince bu state kaldirilir.
   const [expandedId, setExpandedId] = useState(null)
@@ -161,7 +152,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     setHoldRespondingId(appId)
     try {
       await hotelApi.respondToHold(appId, accept)
-      toast.success(accept ? 'Onaylandı! İşletmeyle iletişime devam et.' : 'Bekleyen teklif reddedildi.')
+      toast.success(accept ? 'Onaylandı! İşletmeyle iletişime devam et.' : 'Teklif reddedildi.')
       onRefresh?.()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setHoldRespondingId(null) }
@@ -186,9 +177,11 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     )
   }
 
-  const filtered = statusFilter
-    ? applications.filter(a => a.status === statusFilter)
-    : applications
+  const activeGroup = CAND_FILTER_GROUPS.find(g => g.key === statusFilter) || CAND_FILTER_GROUPS[0]
+  const filtered = applications.filter(activeGroup.match)
+  // "Yanitin bekleniyor" yalniz sayi > 0 ise (ya da o an seciliyse) gorunur
+  const groupCounts = Object.fromEntries(CAND_FILTER_GROUPS.map(g => [g.key, applications.filter(g.match).length]))
+  const visibleGroups = CAND_FILTER_GROUPS.filter(g => !g.hideWhenEmpty || groupCounts[g.key] > 0 || g.key === statusFilter)
 
   return (
     <motion.div className="ah-surface space-y-3"
@@ -196,13 +189,14 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
       variants={{ visible: { transition: { staggerChildren: 0.06 } } }}>
 
       {/* Status filtre chips */}
-      <motion.div variants={CHIP_GROUP} className="flex gap-2 flex-wrap">
-        {CAND_STATUS_FILTERS.map(f => {
-          const count = f.value ? applications.filter(a => a.status === f.value).length : applications.length
-          const isActive = statusFilter === f.value
+      <motion.div variants={CHIP_GROUP} className="flex gap-2 flex-wrap" role="group" aria-label="Duruma göre filtrele">
+        {visibleGroups.map(f => {
+          const count = groupCounts[f.key]
+          const isActive = statusFilter === f.key
           return (
-            <button key={f.value} onClick={() => setStatusFilter(f.value)}
-              className={`chip ${isActive ? 'is-active' : ''}`}>
+            <button key={f.key} type="button" onClick={() => setStatusFilter(f.key)}
+              aria-pressed={isActive}
+              className={`chip cand-filter-chip ${isActive ? 'is-active' : ''}`}>
               <span style={{ fontWeight: isActive ? 600 : 500 }}>
                 {f.label}
               </span>
@@ -222,7 +216,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
             title="Bu filtrede başvuru yok"
             description="Farklı bir durum seçerek diğer başvurularını görebilirsin."
             ctaLabel="Tümünü göster"
-            onCta={() => setStatusFilter('')}
+            onCta={() => setStatusFilter('ALL')}
             compact
           />
         </div>
@@ -230,7 +224,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
       /* FAZ 22 — Kariyer.net tarzi: tek beyaz kart, cizgiyle ayrilmis satirlar. */
       <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
         {filtered.map((app, idx) => {
-          const sc = STATUS_CONFIG[app.status] || STATUS_CONFIG.PENDING
+          const meta = getStatusMeta(app.status, 'candidate', { standbyOfferActive: app.standbyOfferActive })
           const isExpanded = expandedId === app.id
           const requestedSlots = app.requestedSlots || []
           const salaryStr = formatSalary(app.listing?.salaryMin, app.listing?.salaryMax, app.listing?.salaryType, app.listing?.tipsIncluded)
@@ -245,14 +239,11 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
           return (
             <div key={app.id} style={idx > 0 ? { borderTop: '1px solid var(--ah-line)' } : undefined}>
-              {/* SATIR — sol durum seridi + temiz duzen */}
+              {/* SATIR — tek durum rozeti; sol renk seridi yok (ayni bilgi 4 kez tekrar ediyordu) */}
               <div className="flex cursor-pointer transition-colors"
                    onClick={() => setExpandedId(isExpanded ? null : app.id)}
                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--ah-band)' }}
                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}>
-                {/* durum seridi */}
-                <span className="w-1 self-stretch flex-shrink-0" style={{ background: sc.color }} aria-hidden="true" />
-
                 <div className="flex gap-3.5 p-4 flex-1 min-w-0">
                   <span className="w-11 h-11 rounded-lg flex-shrink-0 grid place-items-center font-extrabold text-[16px]"
                         style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)', border: '1px solid var(--ah-line)' }}>{initial}</span>
@@ -265,7 +256,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                         <div className="text-[13px] truncate mt-0.5" style={{ color: 'var(--ah-ink-2)' }}>{app.listing?.businessName || ''}</div>
                       </div>
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <StatusPill cfg={sc} />
+                        <StatusBadge status={app.status} standbyOfferActive={app.standbyOfferActive} />
                         <span className="type-caption tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>{appRelative(app.createdAt)}</span>
                       </div>
                     </div>
@@ -318,22 +309,25 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
                     {/* aksiyon barI */}
                     <div className="flex flex-wrap items-center gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                      {app.status === 'PENDING' && meta.hint && (
+                        <span className="type-caption w-full" style={{ color: 'var(--ah-ink-3)' }}>{meta.hint}</span>
+                      )}
                       {app.status === 'STANDBY' && !app.standbyOfferActive && (
-                        <span className="inline-flex items-center gap-1.5 text-[12px] px-2 py-1 rounded-md"
-                              style={{ background: sc.soft, color: sc.text }}>
+                        <span className="inline-flex items-center gap-1.5 type-caption w-full"
+                              style={{ color: 'var(--ah-ink-2)' }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
                           </svg>
-                          {app.standbyRank ? `${app.standbyRank}. yedeksin` : 'Yedektesin'} — asıl aday gelmezse haber vereceğiz
+                          {app.standbyRank ? `${app.standbyRank}. sıradasın` : 'Yedektesin'} — asıl aday gelmezse haber vereceğiz
                         </span>
                       )}
 
                       {app.status === 'HELD' && (
                         <>
                           {app.holdDeadline && (
-                            <span className="inline-flex items-center gap-1 text-[12px] font-semibold tabular-nums px-2 py-1 rounded-md"
-                                  style={{ background: sc.soft, color: sc.text }}>
+                            <span className="inline-flex items-center gap-1 type-caption font-semibold tabular-nums w-full"
+                                  style={{ color: 'var(--ah-ink-2)' }}>
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                               Son: {new Date(app.holdDeadline).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                             </span>
@@ -369,19 +363,19 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
               {hasAttention && !isExpanded && (
                 <div className="px-4 pb-3 -mt-1 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                   {app.note && (
-                    <span className="inline-flex items-center gap-1.5 type-caption px-2 py-1 rounded-full"
-                          style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#3f4b4a' }}>
+                    <span className="inline-flex items-center gap-1.5 type-caption"
+                          style={{ color: 'var(--ah-ink-2)' }}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                       İşletme notu
                     </span>
                   )}
-                  <button type="button" onClick={() => setExpandedId(app.id)} className="type-caption ml-auto" style={{ fontWeight: 600, color: 'var(--ah-brand)' }}>Detay ▽</button>
+                  <button type="button" onClick={() => setExpandedId(app.id)} aria-expanded={false} className="type-caption ml-auto" style={{ fontWeight: 600, color: 'var(--ah-brand)' }}>Detay ▽</button>
                 </div>
               )}
 
               {isExpanded && (
                 <div className="px-4 pb-1 flex justify-end" onClick={(e) => e.stopPropagation()}>
-                  <button type="button" onClick={() => setExpandedId(null)} className="type-label" style={{ color: 'var(--ah-ink-3)' }}>Kapat ▲</button>
+                  <button type="button" onClick={() => setExpandedId(null)} aria-expanded={true} className="type-label" style={{ color: 'var(--ah-ink-3)' }}>Kapat ▲</button>
                 </div>
               )}
 
@@ -417,20 +411,6 @@ const CHIP_GROUP = {
 const CARD = {
   hidden:  { opacity: 0, y: 16, scale: 0.98 },
   visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 180, damping: 22 } },
-}
-
-function StatusPill({ cfg }) {
-  return (
-    <span className="type-badge relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-          style={{
-            background: cfg.soft,
-            border: `1px solid ${cfg.color}`,
-            color: cfg.text,
-          }}>
-      <span className="w-1.5 h-1.5 rounded-full" style={{ background: cfg.color }} />
-      {cfg.label}
-    </span>
-  )
 }
 
 /* UI Paket 2 — satir butonlari ortak .btn-* olcegini kullanir (14px/600, cumle

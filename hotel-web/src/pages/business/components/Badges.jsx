@@ -1,20 +1,13 @@
-/* ── Status Badge — başvuru durumu ── */
-export function StatusBadge({ status }) {
-  const map = {
-    PENDING:   { cls: 'badge-pending',   label: 'Bekliyor' },
-    REVIEWING: { cls: 'badge-reviewing', label: 'İnceleniyor' },
-    HELD:      { cls: 'badge-pending',   label: 'Beklemede' },   // aday 24 sa içinde yanıt verecek (API: HELD)
-    STANDBY:   { cls: 'badge-reviewing', label: 'Yedek' },
-    ACCEPTED:  { cls: 'badge-accepted',  label: 'Kabul Edildi' },
-    REJECTED:  { cls: 'badge-rejected',  label: 'Reddedildi' },
-    EXPIRED:   { cls: 'badge-expired',   label: 'Süresi Doldu' },
-    WITHDRAWN: { cls: 'badge-expired',   label: 'Aday İptal Etti' },
-  }
-  const s = map[status] || { cls: 'badge-pending', label: status }
-  return <span className={`badge ${s.cls}`}>{s.label}</span>
+// İşletme rozetleri — etiket/ton tek kaynaktan: lib/applicationStatus.js
+import BaseStatusBadge from '../../../components/candidate/StatusBadge'
+import { NO_SHOW, TONE_CLASS } from '../../../lib/applicationStatus'
+
+/* ── Status Badge — başvuru durumu (işletme bakış açısı) ── */
+export function StatusBadge({ status, standbyOfferActive = false }) {
+  return <BaseStatusBadge status={status} view="business" standbyOfferActive={standbyOfferActive} />
 }
 
-/* ── No-show Badge — işe gelmedi (brick signal, uniform badge scale) ── */
+/* ── No-show Badge — işe gelmedi (satırda ikinci rozet olabilen tek durum) ── */
 export function NoShowBadge() {
-  return <span className="badge badge-rejected">İşe Gelmedi</span>
+  return <span className={`badge ${TONE_CLASS[NO_SHOW.tone]}`} data-tone={NO_SHOW.tone}>{NO_SHOW.label}</span>
 }
