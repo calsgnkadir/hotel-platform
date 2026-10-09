@@ -758,7 +758,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
       {(listing.businessVerified || listing.businessWorkerCount > 0) && (
         <div className="ah-job__trust">
           {listing.businessVerified && (
-            <span className="ah-trust-item" title="İşletme doğrulandı">
+            <span className="ah-trust-item ah-trust-item--ok" title="İşletme doğrulandı">
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
                    strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M20 6 9 17l-5-5" />

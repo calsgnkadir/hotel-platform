@@ -1,51 +1,70 @@
-# Design Tokens — Açık + Teal (light-teal)
+# Design Tokens — Açık + Grafit
 
 Tek doğruluk kaynağı: `tokens.css` `:root` (`--ah-*`) + `index.css` `.ah-surface`
 scoped override'ları. Bu dosya onları AÇIKLAR, tanımlamaz — çelişki olursa CSS kazanır.
 
-> FAZ 26 pivotu: eski "Editorial Dark Luxe" (grafit + şampanya + ivory) BIRAKILDI.
-> Artık tek tema açık zemin + teal aksan. Eski isimler (`champagne/ink/cream/
-> brand/terra/neon`, `--text-*`, `graphite/ivory`) silinmedi — hepsi alias olarak
-> teal/açık değerlere remap edildi (geriye uyumluluk). Yeni kod `--ah-*` yazsın.
+> FAZ 26 pivotu: eski "Editorial Dark Luxe" (koyu kahve + şampanya + ivory) BIRAKILDI.
+> Tek tema: sıcak kırık-beyaz zemin, beyaz kart, grafit marka (`#1f2937`). Ara dönemdeki
+> teal aksan da bırakıldı. Eski isimler (`champagne/ink/cream/brand/terra/neon`,
+> `--text-*`, `graphite/ivory`) silinmedi — alias olarak açık/grafit değerlere remap
+> edildi (geriye uyumluluk). Yeni kod `--ah-*` yazsın.
 
 ## 1. Palet (`--ah-*`, tokens.css)
 
 | Token | Değer | Rol |
 |---|---|---|
-| `--ah-brand` | `#0f766e` | birincil aksan — CTA, aktif nav, seçili |
-| `--ah-brand-hover` | `#0b5d57` | brand hover |
-| `--ah-brand-soft` | `#e4f2f0` | teal-soft zemin (aktif pill, rozet dolgusu) |
-| `--ah-page` | `#eef1f2` | sayfa zemini |
-| `--ah-card` | `#ffffff` | kart/panel yüzeyi |
-| `--ah-band` | `#f5f7f7` | beyaz kart içinde ayrışan iç yüzey ("karar kutusu") |
-| `--ah-line` | `#e4e8e8` | hairline kenarlık |
-| `--ah-line-2` | `#d4dadb` | daha güçlü kenarlık / hover |
-| `--ah-ink` | `#12201f` | başlık metni |
-| `--ah-ink-2` | `#3f4b4a` | gövde metni |
-| `--ah-ink-3` | `#6b7574` | ikincil metin |
-| `--ah-ink-4` | `#98a1a0` | soluk / placeholder |
-| `--ah-ok` / `-soft` | `#0a7c42` / `#e9f5ee` | başarı — sadece durum |
-| `--ah-warn` / `-soft` | `#b7791f` / `#fbf1e0` | uyarı — sadece durum |
-| `--ah-danger` / `-soft` | `#c0392b` / `#fbeae7` | hata/acil — sadece durum |
-| `--ah-info` / `-soft` | `#1f57c3` / `#eaf1fd` | bilgi — sadece durum |
+| `--ah-brand` | `#1f2937` | marka grafit — birincil CTA, aktif filtre, seçili |
+| `--ah-brand-hover` | `#111827` | brand hover |
+| `--ah-brand-soft` | `#eef0f2` | grafit-soft zemin (aktif nav, rozet dolgusu) |
+| `--ah-brand-gradient` | `135deg brand → brand-hover` | CTA gradienti (tek kaynak) |
+| `--ah-page` | `#f2f0ea` | sayfa zemini (sıcak kırık-beyaz) |
+| `--ah-card` | `#ffffff` | kart / panel / modal yüzeyi |
+| `--ah-band` | `#f4f1ea` | beyaz kart içinde ayrışan iç yüzey, hover zemini |
+| `--ah-line` | `#e7e3db` | hairline kenarlık |
+| `--ah-line-2` | `#d9d3c8` | daha güçlü kenarlık / hover |
+| `--ah-ink` | `#12201f` | başlık metni (beyazda 16.8:1) |
+| `--ah-ink-2` | `#3f4b4a` | gövde metni (9.1:1) |
+| `--ah-ink-3` | `#5c6564` | ikincil metin (6.0:1) |
+| `--ah-ink-4` | `#6b7574` | soluk / placeholder (4.75:1) |
+| `--ah-ok` / `-soft` | `#2f6b4f` / `#e7f1eb` | başarı — sadece durum |
+| `--ah-warn` / `-soft` | `#8a5a16` / `#f5ecda` | uyarı / bekleyen — sadece durum |
+| `--ah-danger` / `-soft` | `#9c3b30` / `#f6e6e3` | hata / acil / tehlikeli aksiyon — sadece durum |
+| `--ah-info` / `-soft` | `#3a627e` / `#e8eef4` | bilgi / inceleniyor — sadece durum |
 | `--ah-r` / `--ah-rc` | `10px` / `8px` | kart / kontrol radius |
+
+Durum renkleri -soft zemin üstünde de AA (warn 5.0, info 5.6, danger 5.6).
 
 ## 2. Renk rolleri
 
-- **teal (`--ah-brand`)** = birincil CTA + aktif nav/seçili. Sayfa başına ideal ≤1 dolu-teal vurgu.
-- **beyaz/gri (`--ah-card`/`--ah-page`)** = pasif kartlar, konteynerler, ikincil butonlar.
-- **`--ah-ok/warn/danger/info`** = yalnızca DURUM (rozet/şerit). Kart zemini veya ana vurgu olarak KULLANMA.
-- Logo monogramları: `lib/logoColor.js` (8 canlı ton, marka teal'i hariç, beyaz metinle ≥4.5:1).
+- **grafit (`--ah-brand`)** = birincil CTA + aktif/seçili. Sayfa başına ideal ≤1 dolu-grafit vurgu.
+- **beyaz/kırık-beyaz (`--ah-card`/`--ah-page`)** = pasif kartlar, konteynerler, ikincil butonlar.
+- **`--ah-ok/warn/danger/info`** = yalnızca DURUM (rozet/şerit/metin). Kart zemini veya ana vurgu olarak KULLANMA.
+- `.card`, `.modal-content`, `.auth-card` içindeki Tailwind `text-red/amber/emerald/blue-*`
+  ve `bg-*-50` sınıfları bu token'lara eşlenir (index.css "SEMANTIK DURUM RENKLERI").
+  Eskiden hepsi `!important` ile griye eziliyordu; artık eklemeyin.
+- İşletme güven satırı: yeşil yalnız `.ah-trust-item--ok` ile (işletme gerçekten
+  doğrulanmışsa). Konuma bağlı `:first-child` boyaması yok.
+- Logo monogramları: `lib/logoColor.js` (beyaz metinle ≥4.5:1).
+
+## 2b. Modal
+
+- Karartma `.modal-overlay`: `rgba(17,24,39,.5)` + 2px blur, `z-index:1000`, viewport'u
+  (üst menü dahil) tamamen kaplar.
+- Gövde `.modal-content`: `--ah-card` beyaz, `1px --ah-line`, radius 12px (mobil bottom
+  sheet: üst köşeler 14px), gölge `--elev-3`. Başlık / gövde / alt bar aynı beyaz yüzey.
+- Sayfa geçişi `.page-enter` YALNIZ opacity animasyonu kullanır. `transform`, `filter`,
+  `will-change` veya `animation-fill-mode: both` eklemeyin: `position:fixed` çocuklar
+  (modal karartması) için containing block oluşturur, karartma kayar.
 
 ## 3. Kart hiyerarşisi (3 kademe)
 
-CSS helper'ları `.ah-surface` altında (index.css 1077-1080). Inline `background/border/boxShadow` yerine bunları kullan.
+CSS helper'ları tokens.css (`.tier-*`) + `.ah-surface` altında index.css'te. Inline `background/border/boxShadow` yerine bunları kullan.
 
 | Kademe | Class | BG | Border | Gölge | Ne zaman |
 |---|---|---|---|---|---|
 | GROUND | `.tier-ground` | şeffaf (page) | yok | yok | pasif sarmalayıcı |
 | RAISED | `.tier-raised` | `--ah-card` | `1px --ah-line` | yok/çok hafif | StatCard, liste satırı, mesaj balonu |
-| FEATURED | `.tier-featured` | `--ah-card` | `1px --ah-brand` (teal) | `0 4px 14px` hafif | seçili / aktif — **≤1/sayfa** |
+| FEATURED | `.tier-featured` | `--ah-card` | `1px --ah-brand` (grafit) | `0 4px 14px` hafif | seçili / aktif — **≤1/sayfa** |
 
 `.tier-raised-hover:hover` → border `--ah-line-2` (FEATURED'a dönüşmeden vurgular).
 Not: FEATURED border FAZ E'de düzeltildi — eskiden tanımsız `--ah-brand-line` yüzünden gri düşüyordu.
@@ -63,7 +82,7 @@ Not: FEATURED border FAZ E'de düzeltildi — eskiden tanımsız `--ah-brand-lin
 
 ## 5. Glow YOK (ITEM 5)
 
-Düz elevation ölçeği `--elev-1/2/3` (açık `rgba(18,32,31,.06/.08/.12)`). Renkli
+Düz elevation ölçeği `--elev-1/2/3` (nötr `rgba(57,57,57,…)` gölge; bkz tokens.css). Renkli
 `0 0 Npx` glow, `drop-shadow` halo, radial-blur blob KULLANMA — "AI/luxe" tell'i.
 
 ## 6. Kabul kuralları

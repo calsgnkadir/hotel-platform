@@ -35,7 +35,7 @@ function renderTab(billing) {
 }
 
 describe('BillingTab ödeme durumları', () => {
-  beforeEach(() => getBilling.mockReset())
+  beforeEach(() => { getBilling.mockReset() })  // süslü parantez: dönen fn teardown sayılmasın
 
   it('ödeme kapalıyken: satın alma yok, test kartı yok, sınırsız notu var', async () => {
     renderTab({ enforced: false, paymentsAvailable: false, sandbox: false })
@@ -62,5 +62,50 @@ describe('BillingTab ödeme durumları', () => {
   it('kota dolunca "İlan hakkın doldu" görünür', async () => {
     renderTab({ enforced: true, paymentsAvailable: true, sandbox: false, usedListings: 5, freeRemaining: 0 })
     expect(await screen.findByText('İlan hakkın doldu')).toBeInTheDocument()
+  })
+})
+
+/**
+ * Otomatik yenileme yok: currentPeriodEnd bitiş tarihidir. İptal edilen abonelik
+ * (CANCELED) ödenmiş dönem sonuna kadar active=true kalır.
+ */
+describe('BillingTab abonelik bitişi / iptal', () => {
+  beforeEach(() => { getBilling.mockReset() })  // süslü parantez: dönen fn teardown sayılmasın
+
+  const PERIOD_END = '2026-11-15T12:00:00Z'
+  const PERIOD_END_TR = new Date(PERIOD_END).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  it('ACTIVE: "Abonelik bitişi" tarihi görünür, "Bir sonraki yenileme" yok, iptal butonu var', async () => {
+    renderTab({ status: 'ACTIVE', active: true, enforced: true, paymentsAvailable: true, currentPeriodEnd: PERIOD_END })
+    expect(await screen.findByText('Aktif abonelik')).toBeInTheDocument()
+    expect(screen.getByText(/Abonelik bitişi:/)).toBeInTheDocument()
+    expect(screen.getByText(PERIOD_END_TR)).toBeInTheDocument()
+    expect(screen.queryByText(/Bir sonraki yenileme/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'İptal et' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aboneliği Yenile / Uzat' })).toBeInTheDocument()
+  })
+
+  it('CANCELED + active: iptal metni ve bitiş tarihi görünür, iptal butonu yok', async () => {
+    renderTab({ status: 'CANCELED', active: true, enforced: true, paymentsAvailable: true, currentPeriodEnd: PERIOD_END })
+    expect(await screen.findByText('İptal edildi (dönem sonuna kadar geçerli)')).toBeInTheDocument()
+    expect(screen.getByText(/Aboneliğin iptal edildi;/)).toHaveTextContent(
+      `Aboneliğin iptal edildi; ${PERIOD_END_TR} tarihine kadar sınırsız ilan açık.`)
+    expect(screen.queryByRole('button', { name: 'İptal et' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Aktif abonelik')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Bir sonraki yenileme/)).not.toBeInTheDocument()
+    // Ödeme açıksa yeniden abone olunabilir
+    expect(screen.getByRole('button', { name: 'Aboneliği Yenile / Uzat' })).toBeInTheDocument()
+  })
+
+  it('sunucu hatasında hata durumu ve "Tekrar dene" gösterilir', async () => {
+    getBilling.mockImplementation(async () => { throw new Error('500') })
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={qc}>
+        <MemoryRouter><BillingTab /></MemoryRouter>
+      </QueryClientProvider>
+    )
+    expect(await screen.findByText('Abonelik bilgisi yüklenemedi.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Tekrar dene' })).toBeInTheDocument()
   })
 })

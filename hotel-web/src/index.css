@@ -48,7 +48,7 @@ code, pre, kbd, samp {
    AUTH BG — Light + sıcak + warm spotlight
    ──────────────────────────────────────────────────────────────── */
 .auth-bg {
-  background: #13110f;
+  background: var(--surface-base);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -61,14 +61,14 @@ code, pre, kbd, samp {
 }
 
 .auth-card {
-  background: #1b1815;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--ah-card);
+  border: 1px solid var(--ah-line);
   border-radius: 12px;                                /* FAZ 26 ITEM 4 — tek olcek */
   padding: 2rem;
   width: 100%;
   max-width: 440px;
-  color: #e5e5e5;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.40);
+  color: var(--ah-ink-2);
+  box-shadow: var(--elev-2);
   animation: slideUp 0.4s ease-out;
 }
 .dark .auth-card {
@@ -78,80 +78,9 @@ code, pre, kbd, samp {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.40);
 }
 
-/* ────────────────────────────────────────────────────────────────
-   AUTH CARD — child Tailwind class cascade (Register/Forgot/Reset/AuthModal)
-   ──────────────────────────────────────────────────────────────── */
-.auth-card .text-ink-900,
-.auth-card .text-ink-800 { color: #efefef !important; }
-.auth-card .text-ink-700,
-.auth-card .text-ink-600 { color: #e5e5e5 !important; }
-.auth-card .text-ink-500,
-.auth-card .text-ink-400,
-.auth-card .text-ink-300 { color: #888888 !important; }
-.auth-card .text-white   { color: #efefef !important; }
-
-.auth-card .text-brand-700,
-.auth-card .text-brand-600,
-.auth-card .text-brand-800,
-.auth-card .text-brand-900 { color: #b9b9b9 !important; }
-.auth-card .text-brand-300,
-.auth-card .text-brand-400 { color: #b9b9b9 !important; }
-
-.auth-card .text-terra-500,
-.auth-card .text-terra-600 { color: #b9b9b9 !important; }
-
-.auth-card .text-red-500,
-.auth-card .text-red-600,
-.auth-card .text-red-700 { color: #6b7574 !important; }
-.auth-card .text-amber-600,
-.auth-card .text-amber-700,
-.auth-card .text-amber-400 { color: #6b7574 !important; }
-.auth-card .text-emerald-300,
-.auth-card .text-emerald-400,
-.auth-card .text-emerald-500,
-.auth-card .text-emerald-600 { color: #bfbfbf !important; }
-.auth-card .text-slate-400,
-.auth-card .text-slate-500,
-.auth-card .text-slate-600 { color: #888888 !important; }
-
-.auth-card .bg-white,
-.auth-card .bg-white\/40,
-.auth-card .bg-cream-50,
-.auth-card .bg-cream-100 { background: rgba(185, 185, 185, 0.06) !important; }
-.auth-card .bg-cream-200,
-.auth-card .bg-cream-300 { background: rgba(185, 185, 185, 0.10) !important; }
-.auth-card .bg-emerald-500 { background: #6b7574 !important; }
-.auth-card .bg-emerald-950\/40 { background: rgba(107, 117, 116, 0.12) !important; }
-.auth-card .bg-slate-700 { background: rgba(185, 185, 185, 0.08) !important; }
-.auth-card .bg-brand-50,
-.auth-card [class*="bg-brand-900"] { background: rgba(185, 185, 185, 0.06) !important; }
-
-.auth-card .border-cream-200,
-.auth-card .border-cream-300,
-.auth-card .border-slate-200,
-.auth-card .border-slate-700 { border-color: rgba(185, 185, 185, 0.10) !important; }
-.auth-card .border-brand-200,
-.auth-card .border-brand-600,
-.auth-card .border-brand-400,
-.auth-card [class*="hover\\:border-brand-"] { border-color: rgba(185, 185, 185, 0.32) !important; }
-.auth-card .border-emerald-900\/60 { border-color: rgba(107, 117, 116, 0.32) !important; }
-
-.auth-card input,
-.auth-card select,
-.auth-card textarea {
-  background: rgba(13, 11, 9, 0.55) !important;
-  border-color: rgba(185, 185, 185, 0.14) !important;
-  color: #e5e5e5 !important;
-}
-.auth-card input::placeholder,
-.auth-card textarea::placeholder { color: #888888 !important; }
-.auth-card input:focus,
-.auth-card select:focus,
-.auth-card textarea:focus {
-  border-color: rgba(185, 185, 185, 0.55) !important;
-  background: rgba(34, 31, 27, 0.85) !important;
-  box-shadow: 0 0 0 4px rgba(185, 185, 185, 0.10) !important;
-}
+/* AUTH CARD — eski koyu cocuk cascade'i (text/bg/border/input !important
+   override'lari) kaldirildi: kart artik acik; Tailwind siniflari ve
+   asagidaki .card/.modal-content semantik eslemesi dogal calisir. */
 
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }
@@ -306,48 +235,24 @@ code, pre, kbd, samp {
   transform: translateY(-1px);
 }
 
-/* ═══ FAZ 26 ITEM 1 — KOYU sayfalar (auth/landing/public) primitive'leri koyu kalir ═══ */
-.auth-bg .card, .legacy-dark .card,
-.auth-bg .card-metric, .legacy-dark .card-metric,
-.auth-bg .card-content, .legacy-dark .card-content {
-  background: #1b1815; color: #e5e5e5; border: 1px solid rgba(255, 255, 255, 0.05);
-}
-.auth-bg .card:hover, .legacy-dark .card:hover { border-color: rgba(185, 185, 185, 0.18); box-shadow: none; }
-.auth-bg .input, .legacy-dark .input {
-  background: rgba(27, 24, 21, 0.85); border: 1px solid rgba(185, 185, 185, 0.14); color: #e5e5e5;
-}
-.auth-bg .input::placeholder, .legacy-dark .input::placeholder { color: rgba(136, 136, 136, 0.85); }
-.auth-bg .input:focus, .legacy-dark .input:focus {
-  border-color: rgba(185, 185, 185, 0.55); box-shadow: 0 0 0 4px rgba(185, 185, 185, 0.10); background: rgba(34, 31, 27, 0.92);
-}
-.auth-bg .label, .legacy-dark .label { color: #bebebe; }
-.auth-bg .btn-primary, .legacy-dark .btn-primary {
-  background: linear-gradient(135deg, #6b7574 0%, #6b7574 100%); color: #1a1208;
-  box-shadow: 0 8px 24px rgba(171, 171, 171, 0.28), inset 0 1px 0 rgba(255,255,255,0.22);
-}
-.auth-bg .btn-secondary, .legacy-dark .btn-secondary {
-  background: transparent; border: 1px solid rgba(185, 185, 185, 0.30); color: #e5e5e5;
-}
-.auth-bg .btn-ghost, .legacy-dark .btn-ghost { color: #bebebe; }
-
 .card-row {
   @apply p-4 rounded-2xl relative transition-all duration-200;
   background: transparent;
   border: 1px solid transparent;
-  color: #e5e5e5;
+  color: var(--ah-ink-2);
 }
 .card-row:hover {
-  background: rgba(185, 185, 185, 0.04);
-  border-color: rgba(185, 185, 185, 0.10);
+  background: var(--ah-band);
+  border-color: var(--ah-line);
 }
 .card-row.is-active {
-  background: rgba(185, 185, 185, 0.08);
-  border-color: rgba(185, 185, 185, 0.18);
+  background: var(--ah-brand-soft);
+  border-color: var(--ah-line-2);
 }
 
 .card-header {
   @apply pb-4 mb-4;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--ah-line);
 }
 .dark .card-header {
   border-color: rgba(255, 255, 255, 0.05);
@@ -395,94 +300,63 @@ code, pre, kbd, samp {
 .card .text-ink-300 {
   color: var(--ah-ink-3) !important;
 }
-.card .text-white {
-  color: #efefef !important;
-}
-/* Brand mor referansları — koyu zeminde champagne */
-.card .text-brand-700,
-.card .text-brand-800,
-.card .text-brand-900 {
-  color: #b9b9b9 !important;          /* champagne */
-}
 
-/* Card icindeki bg-cream / bg-white nested kutucuklari — surface-floating */
+/* Card icindeki bg-cream / bg-white nested kutucuklari — hafif notr ic yuzey */
 .card .bg-white,
 .card .bg-cream-50,
 .card .bg-cream-100 {
   background: rgba(185, 185, 185, 0.04) !important;
-  border-color: rgba(185, 185, 185, 0.10) !important;
+  border-color: var(--ah-line) !important;
 }
 .card .bg-cream-200,
 .card .bg-cream-300 {
   background: rgba(185, 185, 185, 0.08) !important;
 }
-/* Card — amber → ochre (muted), red → brick, brand-50/100/900 → champagne tint */
-.card .text-amber-600,
-.card .text-amber-700,
-.card .text-amber-400 { color: #6b7574 !important; }
-.card .bg-amber-50    { background: rgba(107, 117, 116, 0.10) !important; }
-.card .hover\:bg-amber-100:hover { background: rgba(107, 117, 116, 0.18) !important; }
-.card .border-amber-200 { border-color: rgba(107, 117, 116, 0.28) !important; }
 
-.card .text-red-500,
-.card .text-red-600,
-.card .text-red-700 { color: #6b7574 !important; }
-.card .bg-red-50    { background: rgba(107, 117, 116, 0.10) !important; }
-.card .border-red-200 { border-color: rgba(107, 117, 116, 0.28) !important; }
+/* ────────────────────────────────────────────────────────────────
+   SEMANTIK DURUM RENKLERI — kart / modal / auth kart icinde.
+   ESKI: amber/red/emerald/slate Tailwind siniflari !important ile #6b7574
+   griye eziliyordu → hata/uyari/basari metinleri ayirt edilemiyordu.
+   YENI: --ah-ok/warn/danger/info token'larina eslenir (muted, acik zeminde
+   AA). !important YOK; secici ozgulugu Tailwind utility'sini zaten gecer.
+   ──────────────────────────────────────────────────────────────── */
+:is(.card, .modal-content, .auth-card) :is(.text-red-500, .text-red-600, .text-red-700) { color: var(--ah-danger); }
+:is(.card, .modal-content, .auth-card) .bg-red-50     { background: var(--ah-danger-soft); }
+:is(.card, .modal-content, .auth-card) :is(.text-amber-400, .text-amber-600, .text-amber-700) { color: var(--ah-warn); }
+:is(.card, .modal-content, .auth-card) .bg-amber-50   { background: var(--ah-warn-soft); }
+:is(.card, .modal-content, .auth-card) :is(.text-emerald-300, .text-emerald-400, .text-emerald-500, .text-emerald-600) { color: var(--ah-ok); }
+:is(.card, .modal-content, .auth-card) .bg-emerald-50 { background: var(--ah-ok-soft); }
+:is(.card, .modal-content, .auth-card) :is(.text-blue-500, .text-blue-600, .text-blue-700) { color: var(--ah-info); }
+:is(.card, .modal-content, .auth-card) .bg-blue-50    { background: var(--ah-info-soft); }
 
-.card .bg-brand-50,
-.card .bg-brand-100,
-.card [class*="bg-brand-900"],
-.card .hover\:bg-brand-100:hover,
-.card [class*="hover\\:bg-brand-900"]:hover { background: rgba(185, 185, 185, 0.08) !important; }
-.card .border-brand-200,
-.card [class*="hover\\:border-brand-"]:hover { border-color: rgba(185, 185, 185, 0.32) !important; }
-.card .accent-brand-700,
-.card .accent-brand-600 { accent-color: #b9b9b9 !important; }
+/* Brand aksan siniflari — acik zeminde grafit */
+:is(.card, .modal-content) :is(.bg-brand-50, .bg-brand-100, [class*="bg-brand-900"]) { background: var(--ah-brand-soft); }
+:is(.card, .modal-content) :is(.border-brand-200, .border-brand-300) { border-color: var(--ah-line-2); }
+:is(.card, .modal-content) :is(.accent-brand-600, .accent-brand-700) { accent-color: var(--ah-brand); }
 
-/* Card — emerald → sage */
-.card .text-emerald-300,
-.card .text-emerald-400,
-.card .text-emerald-500,
-.card .text-emerald-600 { color: #bfbfbf !important; }
-.card .bg-emerald-50 { background: rgba(107, 117, 116, 0.10) !important; }
-.card .border-emerald-200 { border-color: rgba(107, 117, 116, 0.28) !important; }
-
-/* Card — slate (cool gray) → muted ivory */
-.card .text-slate-400,
-.card .text-slate-500,
-.card .text-slate-600,
-.card .text-slate-700 { color: #888888 !important; }
-.card .bg-slate-100,
-.card .bg-slate-200,
-.card .bg-slate-700 { background: rgba(185, 185, 185, 0.06) !important; }
-.card .border-slate-100,
-.card .border-slate-200,
-.card .border-slate-700 { border-color: rgba(185, 185, 185, 0.10) !important; }
-/* divide-y border'lari da uyarla — hairline */
-.card .divide-cream-100 > * + *,
-.card .divide-cream-200 > * + *,
-.card .divide-brand-100 > * + *,
-.card .divide-slate-50 > * + *,
-.card .divide-ink-700 > * + * {
-  border-color: rgba(185, 185, 185, 0.08) !important;
+/* Slate (soguk gri) — acik zeminde okunur ink tonlari; koyu bg-slate-700 kalintisi acik ic yuzeye */
+:is(.card, .modal-content, .auth-card) :is(.text-slate-400, .text-slate-500) { color: var(--ah-ink-3); }
+:is(.card, .modal-content, .auth-card) :is(.text-slate-600, .text-slate-700) { color: var(--ah-ink-2); }
+:is(.card, .modal-content, .auth-card) .bg-slate-700 { background: var(--ah-band); }
+:is(.card, .modal-content, .auth-card) :is(.border-slate-100, .border-slate-200, .border-slate-700) { border-color: var(--ah-line); }
+/* divide-y border'lari — hairline */
+:is(.card, .modal-content) :is(.divide-cream-100, .divide-cream-200, .divide-brand-100, .divide-slate-50, .divide-ink-700) > * + * {
+  border-color: var(--ah-line);
 }
 
 /* ────────────────────────────────────────────────────────────────
-   STAT-CARD — FAZ 5.4: buyuk Bebas sayilar + glow
+   STAT-CARD — acik zeminde beyaz kart, koyu ink sayi (koyu "luxe" zemin,
+   radial glow ve text-shadow kaldirildi)
    ──────────────────────────────────────────────────────────────── */
 .stat-card {
   @apply p-6 rounded-2xl relative overflow-hidden transition-all duration-300;
-  background: #1b1815;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: none;
+  background: var(--ah-card);
+  border: 1px solid var(--ah-line);
+  box-shadow: var(--elev-1);
 }
 .stat-card:hover {
-  border-color: rgba(185, 185, 185, 0.18);
-  box-shadow:
-    inset 0 0 0 1px rgba(185, 185, 185, 0.12),
-    0 20px 44px rgba(0, 0, 0, 0.28);
-  transform: translateY(-2px);
+  border-color: var(--ah-line-2);
+  box-shadow: var(--elev-2);
 }
 /* Number → hairline → label hierarchy */
 .stat-card-number {
@@ -491,12 +365,12 @@ code, pre, kbd, samp {
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1;
-  color: #efefef;
+  color: var(--ah-ink);
   font-variant-numeric: tabular-nums;
 }
 .stat-card-divider {
   height: 1px;
-  background: rgba(185, 185, 185, 0.14);
+  background: var(--ah-line);
   margin: 12px 0;
 }
 .stat-card-label {
@@ -505,26 +379,16 @@ code, pre, kbd, samp {
   font-weight: 500;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #888888;
-}
-.stat-card::after {
-  content: '';
-  position: absolute;
-  top: -50%; right: -30%;
-  width: 60%; height: 200%;
-  background: radial-gradient(ellipse, rgba(185, 185, 185, 0.08) 0%, transparent 60%);
-  pointer-events: none;
+  color: var(--ah-ink-3);
 }
 .stat-card .text-white {
-  color: #efefef !important;
-  font-family: 'Inter', system-ui, sans-serif !important;
+  color: var(--ah-ink) !important;
   font-feature-settings: "tnum" 1, "lnum" 1;
   font-weight: 600;
   letter-spacing: -0.03em;
-  text-shadow: 0 0 18px rgba(185, 185, 185, 0.22);
 }
 .stat-card .text-ink-500 {
-  color: #bebebe !important;
+  color: var(--ah-ink-3) !important;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -567,29 +431,29 @@ code, pre, kbd, samp {
 .dark .badge-expired { /* light/dark farki yok */ }
 
 /* ────────────────────────────────────────────────────────────────
-   CHIP — FAZ 5.4: kucuk dark capsule (filter pill icin)
+   CHIP — filtre pill'i (acik zemin, aktif = grafit dolu)
    ──────────────────────────────────────────────────────────────── */
 .chip {
   @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all duration-200;
-  background: transparent;                              /* ghost inactive */
-  border: 1px solid rgba(185, 185, 185, 0.14);
-  color: #bebebe;
+  background: var(--ah-card);
+  border: 1px solid var(--ah-line-2);
+  color: var(--ah-ink-2);
   cursor: pointer;
 }
 .chip:hover {
-  border-color: rgba(185, 185, 185, 0.32);
-  color: #e5e5e5;
-  background: rgba(185, 185, 185, 0.04);
+  border-color: #bcc4c4;
+  color: var(--ah-ink);
+  background: var(--ah-band);
 }
 .chip.is-active {
-  background: linear-gradient(135deg, #6b7574 0%, #6b7574 100%);   /* filled amber CTA */
-  border-color: rgba(171, 171, 171, 0.55);
-  color: #1a1208;
-  box-shadow: var(--elev-1);   /* ITEM 5 — glow yerine duz */
+  background: var(--ah-brand);
+  border-color: var(--ah-brand);
+  color: #ffffff;
+  box-shadow: var(--elev-1);
 }
 .chip.is-active:hover {
-  background: linear-gradient(135deg, #bababa 0%, #a0a0a0 100%);
-  color: #1a1208;
+  background: var(--ah-brand-hover);
+  color: #ffffff;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -615,13 +479,18 @@ code, pre, kbd, samp {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   MODAL — Krem fond + beyaz card
+   MODAL — acik tema: grafit-tinted karartma + beyaz govde.
+   Baslik / govde / alt bar ayni beyaz yuzeyi paylasir (eskiden govde koyu
+   kahve, baslik/alt bar beyazdi → uc parcali gorunuyordu).
    ──────────────────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0;
-  background: rgba(13, 11, 9, 0.62);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* space-y-* ebeveyninin doğrudan çocuğu olunca Tailwind margin-top verir
+     (ozgulluk 0,3,0) ve fixed karartma 16px asagi kayar → ust serit acik kalir. */
+  margin: 0 !important;
+  background: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -630,13 +499,13 @@ code, pre, kbd, samp {
   animation: fadeIn 0.2s ease-out;
 }
 .modal-content {
-  background: #221f1b;
-  color: #e5e5e5;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--ah-card);
+  color: var(--ah-ink-2);
+  border: 1px solid var(--ah-line);
   border-radius: 12px;                                /* FAZ 26 ITEM 4 — tek olcek */
   width: 100%;
   max-width: 540px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.50);
+  box-shadow: var(--elev-3);
   animation: slideUp 0.3s ease-out;
 }
 .dark .modal-content {
@@ -644,82 +513,55 @@ code, pre, kbd, samp {
   color: #e5e5e5;
 }
 
-/* ────────────────────────────────────────────────────────────────
-   MODAL — text-ink-* + bg-cream-* / bg-white overrides (cascade)
-   .modal-content içindeki legacy Tailwind class'lar dark theme'e map'lenir.
-   ──────────────────────────────────────────────────────────────── */
+/* Modal icindeki text-ink-* — .card ile ayni acik ink skalasi.
+   ink-300/400 Tailwind degerleri beyaz zeminde ~2.6:1; ikincil metin ink-3'e. */
 .modal-content .text-ink-900,
-.modal-content .text-ink-800 { color: #efefef !important; }
+.modal-content .text-ink-800 { color: var(--ah-ink); }
 .modal-content .text-ink-700,
-.modal-content .text-ink-600 { color: #e5e5e5 !important; }
+.modal-content .text-ink-600 { color: var(--ah-ink-2); }
 .modal-content .text-ink-500,
 .modal-content .text-ink-400,
-.modal-content .text-ink-300 { color: #bebebe !important; }
-.modal-content .text-brand-700,
-.modal-content .text-brand-800,
-.modal-content .text-brand-900 { color: #b9b9b9 !important; }
-.modal-content .text-white { color: #efefef !important; }
+.modal-content .text-ink-300 { color: var(--ah-ink-3); }
 
-.modal-content .bg-white,
-.modal-content .bg-cream-50,
-.modal-content .bg-cream-100 {
-  background: rgba(185, 185, 185, 0.04) !important;
-}
+/* Nested ic kutular — hafif notr ic yuzey */
+.modal-content .bg-cream-100 { background: var(--ah-band); }
 .modal-content .bg-cream-200,
-.modal-content .bg-cream-300 {
-  background: rgba(185, 185, 185, 0.08) !important;
-}
+.modal-content .bg-cream-300 { background: var(--ah-band); }
 .modal-content .border-cream-200,
-.modal-content .border-cream-300 {
-  border-color: rgba(185, 185, 185, 0.10) !important;
-}
+.modal-content .border-cream-300 { border-color: var(--ah-line); }
 
-/* Modal — amber → ochre (muted), red → brick (muted) */
-.modal-content .text-amber-600,
-.modal-content .text-amber-700,
-.modal-content .text-amber-400 { color: #6b7574 !important; }
-.modal-content .bg-amber-50    { background: rgba(107, 117, 116, 0.10) !important; }
-.modal-content .border-amber-200 { border-color: rgba(107, 117, 116, 0.28) !important; }
+/* Tehlikeli aksiyon butonu — gri gradient yerine muted kiremit */
+.modal-content .bg-red-600 { background: var(--ah-danger); }
+.modal-content .hover\:bg-red-700:hover { background: var(--ah-danger); filter: brightness(0.9); }
 
-.modal-content .text-red-500,
-.modal-content .text-red-600,
-.modal-content .text-red-700 { color: #6b7574 !important; }
-.modal-content .bg-red-50    { background: rgba(107, 117, 116, 0.10) !important; }
-.modal-content .border-red-200 { border-color: rgba(107, 117, 116, 0.28) !important; }
-.modal-content .bg-red-600   { background: linear-gradient(135deg, #6b7574 0%, #5b5b5b 100%) !important; }
-.modal-content .hover\:bg-red-700:hover { background: linear-gradient(135deg, #888888 0%, #686868 100%) !important; }
-
-/* Modal — brand-50/100 (light cream) → graphite floating */
-.modal-content .bg-brand-50,
-.modal-content .bg-brand-100,
-.modal-content [class*="bg-brand-900"] { background: rgba(185, 185, 185, 0.06) !important; }
-.modal-content .border-brand-200,
-.modal-content .border-brand-300,
-.modal-content [class*="hover\\:border-brand-"] { border-color: rgba(185, 185, 185, 0.22) !important; }
-.modal-content .accent-brand-700,
-.modal-content .accent-brand-600 { accent-color: #b9b9b9 !important; }
-
-.modal-content input,
+/* Ham input/select/textarea (.input sinifi olmayanlar dahil) — acik form */
+.modal-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .modal-content select,
 .modal-content textarea {
-  background: rgba(13, 11, 9, 0.55) !important;
-  border-color: rgba(185, 185, 185, 0.14) !important;
-  color: #e5e5e5 !important;
+  background: var(--ah-card);
+  border-color: var(--ah-line-2);
+  color: var(--ah-ink);
 }
 .modal-content input::placeholder,
-.modal-content textarea::placeholder { color: #888888 !important; }
+.modal-content textarea::placeholder { color: var(--ah-ink-4); }
 .modal-content input:focus,
 .modal-content select:focus,
 .modal-content textarea:focus {
-  border-color: rgba(185, 185, 185, 0.55) !important;
-  background: rgba(34, 31, 27, 0.85) !important;
-  box-shadow: 0 0 0 4px rgba(185, 185, 185, 0.10) !important;
+  border-color: var(--ah-brand);
+  box-shadow: 0 0 0 3px var(--ah-brand-soft);
 }
 
-/* Alttaki yüzen kartlar (çerez, bildirim izni, uygulamayı yükle) açık bir pencerenin
-   butonlarını kapatmasın: pencere .page-enter katmanının içinde açıldığı için z-index'le
-   üste çıkamıyor; pencere açıkken kartlar gizlenir, kapanınca geri gelir. */
+/* Alttaki yuzen kartlar (cerez, bildirim izni, uygulamayi yukle) acik bir
+   pencerenin alt bar butonlarini kapatmasin: pencere acikken gizlenir,
+   kapaninca geri gelir. (Eskiden .page-enter'in transform/filter'i pencereyi
+   sayfa katmanina hapsediyordu; o duzeldi, gizleme UX olarak korunuyor.) */
 body:has(.modal-overlay, [aria-modal="true"]) .floating-notice { display: none; }
+
+/* Pencereyi iceren z-index'li ata (DashboardLayout <main class="relative z-10">)
+   kendi stacking context'ini olusturup karartmayi sticky ust menunun (z-30)
+   ALTINDA hapsediyordu. Pencere acikken bu atalar z-index'ini birakir; karartma
+   kok baglamda z-1000 ile ust menu dahil tum ekranin ustune cikar. */
+:is(.z-10, .z-20):has(.modal-overlay, [aria-modal="true"]) { z-index: auto; }
 
 /* FAZ D4 — Mobilde modal'lar bottom sheet gibi davransin (Slack/iOS native pattern).
    Tum mevcut modal'lari (ApplyModal, DetailModal, ListingFormModal, ReviewModal,
@@ -735,8 +577,8 @@ body:has(.modal-overlay, [aria-modal="true"]) .floating-notice { display: none; 
     max-height: 90vh;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    border-top-left-radius: 1.5rem;
-    border-top-right-radius: 1.5rem;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
     animation: sheet-up 0.32s cubic-bezier(0.2, 0.85, 0.3, 1);
     overflow-y: auto;
     /* iOS safe-area + buton dokunulabilirligi */
@@ -845,16 +687,16 @@ body:has(.modal-overlay, [aria-modal="true"]) .floating-notice { display: none; 
    ──────────────────────────────────────────────────────────────── */
 .nav-link {
   @apply rounded-xl flex items-center gap-2 transition-all duration-150;
-  color: #bebebe;
+  color: var(--ah-ink-3);
 }
 .nav-link:hover {
-  background: rgba(185, 185, 185, 0.06);
-  color: #e5e5e5;
+  background: var(--ah-band);
+  color: var(--ah-ink);
 }
 .nav-link.active {
   @apply font-semibold;
-  background: rgba(185, 185, 185, 0.10);
-  color: #efefef;
+  background: var(--ah-brand-soft);
+  color: var(--ah-ink);
 }
 .dark .nav-link        { color: #bebebe; }
 .dark .nav-link:hover  { background: rgba(185, 185, 185, 0.06); color: #e5e5e5; }
@@ -882,18 +724,19 @@ body:has(.modal-overlay, [aria-modal="true"]) .floating-notice { display: none; 
 }
 
 /* ────────────────────────────────────────────────────────────────
-   FAZ 3 — Page transition (route degisiminde sade fade-in)
-   App.jsx Routes'una key={location.pathname} verilen icerikte uygulanir.
+   FAZ 3 — Page transition (route/sekme degisiminde sade fade-in)
+   YALNIZ opacity. transform/filter/will-change ve fill-mode:both KULLANMA:
+   bunlar .page-enter'i position:fixed cocuklar (modal karartmasi, bottom
+   sheet) icin containing block yapiyordu → karartma viewport yerine sayfa
+   katmanina gore konumlaniyor, ust menu karartmanin disinda kaliyordu.
+   opacity containing block olusturmaz; animasyon bitince iz birakmaz.
    ──────────────────────────────────────────────────────────────── */
 @keyframes pageEnter {
-  from { opacity: 0; transform: translateY(28px) scale(0.97); filter: blur(6px); }
-  to   { opacity: 1; transform: translateY(0)    scale(1);    filter: blur(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 .page-enter {
-  /* FAZ 5.4 — daha belirgin tab transition (eski 4px/220ms zayifti) */
-  animation: pageEnter 420ms cubic-bezier(0.22, 1, 0.36, 1);
-  animation-fill-mode: both;
-  will-change: opacity, transform, filter;
+  animation: pageEnter 220ms ease-out;
 }
 
 /* ────────────────────────────────────────────────────────────────

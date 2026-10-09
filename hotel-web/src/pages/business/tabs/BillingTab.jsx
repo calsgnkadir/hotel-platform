@@ -1,6 +1,8 @@
 // İşletme aboneliği (iyzico). İşçi tarafı her zaman ücretsiz.
 // MODEL: ilk {freeListings} ilan ücretsiz; sonrası aylık abonelik (sınırsız ilan).
 // paymentsAvailable=false (iyzico anahtarı yok) → kota yok, satın alma butonu yok.
+// Otomatik yenileme YOK: currentPeriodEnd aboneliğin bitiş tarihidir. İptal edilen
+// abonelik (status=CANCELED) ödenmiş dönem sonuna kadar active=true kalır.
 // sandbox=true → test kartı kutusu gösterilir (yalnız test ortamında).
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -52,7 +54,7 @@ export default function BillingTab() {
   const qc = useQueryClient()
   const [params, setParams] = useSearchParams()
 
-  const { data: b, isLoading } = useQuery({
+  const { data: b, isLoading, isError, refetch } = useQuery({
     queryKey: ['billing'],
     queryFn: hotelApi.getBilling,
   })
@@ -82,15 +84,32 @@ export default function BillingTab() {
 
   const cancel = useMutation({
     mutationFn: hotelApi.cancelBilling,
-    onSuccess: () => { toast.success('Abonelik iptal edildi.'); qc.invalidateQueries({ queryKey: ['billing'] }) },
+    onSuccess: () => { toast.success('Abonelik iptal edildi; dönem sonuna kadar geçerli.'); qc.invalidateQueries({ queryKey: ['billing'] }) },
     onError: (e) => toast.error(extractErrorMessage(e) || 'İptal edilemedi.'),
   })
+
+  if (isError) {
+    return (
+      <div className="mt-2">
+        <div className="card p-6" role="alert">
+          <div className="text-[14px] font-semibold" style={{ color: 'var(--ah-ink)' }}>Abonelik bilgisi yüklenemedi.</div>
+          <div className="text-[13px] mt-1" style={{ color: 'var(--ah-ink-3)' }}>Bağlantını kontrol edip tekrar dene.</div>
+          <button onClick={() => refetch()}
+            className="mt-4 px-4 py-2 text-sm font-semibold rounded-lg"
+            style={{ background: '#fff', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}>
+            Tekrar dene
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading || !b) {
     return <div className="mt-2"><div className="card p-6" style={{ color: 'var(--ah-ink-3)' }}>Yükleniyor…</div></div>
   }
 
   const paid       = b.active
+  const canceled   = paid && b.status === 'CANCELED'   // iptal edildi, dönem sonuna kadar geçerli
   const payments   = !!b.paymentsAvailable   // abonelik satın alınabilir mi
   const limited    = !!b.enforced            // ücretsiz ilan kotası uygulanıyor mu
   const free       = Number(b.freeListings ?? 5)
@@ -125,7 +144,7 @@ export default function BillingTab() {
               {canPost ? 'İlan yayınlayabilirsin' : 'İlan hakkın doldu'}
             </span>
             <div className="font-display text-[22px] font-semibold" style={{ color: 'var(--ah-ink)', letterSpacing: '-.02em' }}>
-              {paid ? 'Aktif abonelik' : 'Ücretsiz plan'}
+              {canceled ? 'İptal edildi (dönem sonuna kadar geçerli)' : paid ? 'Aktif abonelik' : 'Ücretsiz plan'}
             </div>
             <div className="text-[13px] mt-1" style={{ color: 'var(--ah-ink-3)' }}>
               {paid ? `Plan: ${b.plan}` : limited ? `${free} ilana kadar ücretsiz` : 'Sınırsız ilan, ücretsiz'}
@@ -141,10 +160,16 @@ export default function BillingTab() {
 
         {/* Kullanım / sınırsız */}
         <div className="mt-5 pt-5" style={{ borderTop: '1px solid var(--ah-line)' }}>
-          {paid ? (
+          {canceled ? (
+            <div className="text-[13.5px]" style={{ color: 'var(--ah-ink-2)' }}>
+              {b.currentPeriodEnd
+                ? <>Aboneliğin iptal edildi; <b>{fmtDate(b.currentPeriodEnd)}</b> tarihine kadar sınırsız ilan açık.</>
+                : <>Aboneliğin iptal edildi; dönem sonuna kadar sınırsız ilan açık.</>}
+            </div>
+          ) : paid ? (
             <div className="text-[13.5px]" style={{ color: 'var(--ah-ink-2)' }}>
               <b>Sınırsız ilan yayınlama açık.</b>
-              {b.currentPeriodEnd && <> · <span style={{ color: 'var(--ah-ink-3)' }}>Bir sonraki yenileme:</span> <b>{fmtDate(b.currentPeriodEnd)}</b></>}
+              {b.currentPeriodEnd && <> · <span style={{ color: 'var(--ah-ink-3)' }}>Abonelik bitişi:</span> <b>{fmtDate(b.currentPeriodEnd)}</b></>}
             </div>
           ) : !limited ? (
             <div className="text-[13.5px]" style={{ color: 'var(--ah-ink-2)' }}>
@@ -179,7 +204,7 @@ export default function BillingTab() {
             {checkout.isPending ? 'Yönlendiriliyor…' : primaryLabel}
           </button>
           )}
-          {paid && (
+          {paid && !canceled && (
             <button onClick={() => cancel.mutate()} disabled={cancel.isPending}
               className="px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors"
               style={{ background: '#fff', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}>
