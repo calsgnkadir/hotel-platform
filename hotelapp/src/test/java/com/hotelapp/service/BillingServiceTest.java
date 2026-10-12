@@ -1,22 +1,28 @@
 package com.hotelapp.service;
 
 import com.hotelapp.entity.Business;
+import com.hotelapp.entity.PaymentCheckout;
 import com.hotelapp.entity.Subscription;
 import com.hotelapp.enums.ListingStatus;
+import com.hotelapp.enums.PaymentCheckoutStatus;
 import com.hotelapp.enums.SubscriptionStatus;
 import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.JobListingRepository;
+import com.hotelapp.repository.PaymentCheckoutRepository;
 import com.hotelapp.repository.SubscriptionRepository;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -28,16 +34,18 @@ class BillingServiceTest {
     private SubscriptionRepository subs;
     private BusinessRepository businesses;
     private JobListingRepository listings;
+    private PaymentCheckoutRepository checkouts;
 
     @BeforeEach
     void setUp() {
         subs = mock(SubscriptionRepository.class);
         businesses = mock(BusinessRepository.class);
         listings = mock(JobListingRepository.class);
+        checkouts = mock(PaymentCheckoutRepository.class);
     }
 
     private BillingService service(IyzicoClient iyzico) {
-        BillingService s = new BillingService(subs, businesses, listings, iyzico);
+        BillingService s = new BillingService(subs, businesses, listings, iyzico, checkouts);
         ReflectionTestUtils.setField(s, "enforce", true);
         ReflectionTestUtils.setField(s, "freeListings", 5);
         ReflectionTestUtils.setField(s, "trialDays", 14);
@@ -122,7 +130,7 @@ class BillingServiceTest {
         assertThat(IyzicoClient.isSandbox("https://api.iyzipay.com", "live-abc")).isFalse();
     }
 
-    // ── callback tekrar oynatma / iptal / yenileme ───────────────────
+    // ── callback: oturum tablosu, tekrar oynatma, doğrulama ─────────
 
     private IyzicoClient configuredMock() {
         IyzicoClient iyzico = mock(IyzicoClient.class);
@@ -130,19 +138,69 @@ class BillingServiceTest {
         return iyzico;
     }
 
-    private Subscription subWithToken(String token) {
+    private static final BigDecimal PRICE = new BigDecimal("499.00");
+
+    private Business biz() {
         Business b = new Business();
         b.setId(7L);
-        Subscription sub = Subscription.builder().business(b).status(SubscriptionStatus.TRIAL)
-                .plan("P").lastCheckoutToken(token).build();
-        when(subs.findByLastCheckoutToken(token)).thenReturn(Optional.of(sub));
+        return b;
+    }
+
+    /** iyzico'nun başarılı dönüşü — tutar/sepet/conversation bizim kayıtla eşleşir. */
+    private static IyzicoClient.CheckoutResult paid(String paymentId, String conversationId) {
+        return new IyzicoClient.CheckoutResult(true, paymentId, "SUCCESS", null,
+                PRICE, "SUB-7", conversationId);
+    }
+
+    private PaymentCheckout pending(String token, Subscription sub) {
+        PaymentCheckout pc = PaymentCheckout.builder().id(1L).business(sub.getBusiness()).token(token)
+                .conversationId("sub-7-conv-" + token).status(PaymentCheckoutStatus.PENDING)
+                .expectedPrice(PRICE).createdAt(LocalDateTime.now().minusMinutes(2)).build();
+        when(checkouts.findByTokenForUpdate(token)).thenReturn(Optional.of(pc));
+        when(checkouts.save(any())).thenAnswer(i -> i.getArgument(0));
+        return pc;
+    }
+
+    private Subscription sub() {
+        Subscription sub = Subscription.builder().business(biz()).status(SubscriptionStatus.TRIAL).plan("P").build();
+        when(subs.findByBusinessId(7L)).thenReturn(Optional.of(sub));
         when(subs.save(any())).thenAnswer(i -> i.getArgument(0));
         return sub;
     }
 
     @Test
+    void checkoutCreatesPendingSessionPerStart() {
+        IyzicoClient iyzico = configuredMock();
+        Business b = biz();
+        Subscription sub = Subscription.builder().business(b).status(SubscriptionStatus.TRIAL).plan("P").build();
+        when(businesses.findByOwnerId(1L)).thenReturn(Optional.of(b));
+        when(subs.findByBusinessId(7L)).thenReturn(Optional.of(sub));
+        when(iyzico.startCheckout(any(), any(), any(), any(), any()))
+                .thenReturn(new IyzicoClient.CheckoutInit(true, "tok-a", "url", null, null))
+                .thenReturn(new IyzicoClient.CheckoutInit(true, "tok-b", "url", null, null));
+        BillingService svc = service(iyzico);
+
+        svc.startCheckout(1L);
+        svc.startCheckout(1L);
+
+        // İkinci başlatma birincinin üzerine yazmaz: iki ayrı PENDING oturum.
+        ArgumentCaptor<PaymentCheckout> saved = ArgumentCaptor.forClass(PaymentCheckout.class);
+        verify(checkouts, times(2)).save(saved.capture());
+        assertThat(saved.getAllValues()).extracting(PaymentCheckout::getToken).containsExactly("tok-a", "tok-b");
+        assertThat(saved.getAllValues()).allSatisfy(pc -> {
+            assertThat(pc.getStatus()).isEqualTo(PaymentCheckoutStatus.PENDING);
+            assertThat(pc.getExpectedPrice()).isEqualByComparingTo(PRICE);
+            assertThat(pc.getConversationId()).startsWith("sub-7-").hasSizeLessThanOrEqualTo(64);
+        });
+        assertThat(saved.getAllValues().get(0).getConversationId())
+                .isNotEqualTo(saved.getAllValues().get(1).getConversationId());
+        assertThat(sub.getLastCheckoutToken()).isNull();
+    }
+
+    @Test
     void unknownCallbackTokenDoesNotCallIyzico() {
         IyzicoClient iyzico = configuredMock();
+        when(checkouts.findByTokenForUpdate("forged")).thenReturn(Optional.empty());
         when(subs.findByLastCheckoutToken("forged")).thenReturn(Optional.empty());
 
         assertThat(service(iyzico).handleCallback("forged")).endsWith("sub=fail");
@@ -150,51 +208,100 @@ class BillingServiceTest {
     }
 
     @Test
-    void successfulCallbackConsumesTokenAndReplayDoesNotExtend() {
+    void successfulCallbackActivatesAndReplayIsIdempotentOk() {
         IyzicoClient iyzico = configuredMock();
-        Subscription sub = subWithToken("tok-1");
-        when(iyzico.retrieve("tok-1")).thenReturn(new IyzicoClient.CheckoutResult(true, "pay-1", "SUCCESS", null));
+        Subscription sub = sub();
+        PaymentCheckout pc = pending("tok-1", sub);
+        when(iyzico.retrieve("tok-1")).thenReturn(paid("pay-1", pc.getConversationId()));
         BillingService svc = service(iyzico);
 
         assertThat(svc.handleCallback("tok-1")).endsWith("sub=ok");
         assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
-        assertThat(sub.getLastCheckoutToken()).isNull();
         assertThat(sub.getLastPaymentId()).isEqualTo("pay-1");
+        assertThat(pc.getStatus()).isEqualTo(PaymentCheckoutStatus.SUCCEEDED);
+        assertThat(pc.getPaidPrice()).isEqualByComparingTo(PRICE);
+        assertThat(pc.getCompletedAt()).isNotNull();
         LocalDateTime end = sub.getCurrentPeriodEnd();
         assertThat(end).isAfter(LocalDateTime.now().plusDays(27));
 
-        // Token tüketildi: ikinci çağrı abonelik bulamaz, iyzico'ya gitmez, süre uzamaz.
-        when(subs.findByLastCheckoutToken("tok-1")).thenReturn(Optional.empty());
-        assertThat(svc.handleCallback("tok-1")).endsWith("sub=fail");
+        // Tüketilmiş token tekrar gelir: okUrl, iyzico'ya gidilmez, süre uzamaz.
+        assertThat(svc.handleCallback("tok-1")).endsWith("sub=ok");
         assertThat(sub.getCurrentPeriodEnd()).isEqualTo(end);
         verify(iyzico, times(1)).retrieve("tok-1");
     }
 
     @Test
+    void olderCheckoutStillSettlesAfterNewerOneStarted() {
+        // Eskiden ikinci checkout lastCheckoutToken'ın üzerine yazıyordu; ödenen ilk
+        // oturumun callback'i eşleşmiyordu.
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        PaymentCheckout first = pending("tok-old", sub);
+        pending("tok-new", sub);
+        when(iyzico.retrieve("tok-old")).thenReturn(paid("pay-9", first.getConversationId()));
+
+        assertThat(service(iyzico).handleCallback("tok-old")).endsWith("sub=ok");
+        assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+    }
+
+    @Test
+    void paidPriceMismatchFailsAndDoesNotActivate() {
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        PaymentCheckout pc = pending("tok-p", sub);
+        when(iyzico.retrieve("tok-p")).thenReturn(new IyzicoClient.CheckoutResult(true, "pay-p", "SUCCESS", null,
+                new BigDecimal("1.00"), "SUB-7", pc.getConversationId()));
+
+        assertThat(service(iyzico).handleCallback("tok-p")).endsWith("sub=fail");
+        assertThat(pc.getStatus()).isEqualTo(PaymentCheckoutStatus.FAILED);
+        assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.TRIAL);
+        assertThat(sub.getCurrentPeriodEnd()).isNull();
+    }
+
+    @Test
+    void basketOrConversationMismatchFails() {
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        PaymentCheckout a = pending("tok-b1", sub);
+        when(iyzico.retrieve("tok-b1")).thenReturn(new IyzicoClient.CheckoutResult(true, "pay-b1", "SUCCESS", null,
+                PRICE, "SUB-8", a.getConversationId()));
+        assertThat(service(iyzico).handleCallback("tok-b1")).endsWith("sub=fail");
+        assertThat(a.getStatus()).isEqualTo(PaymentCheckoutStatus.FAILED);
+
+        PaymentCheckout b = pending("tok-b2", sub);
+        when(iyzico.retrieve("tok-b2")).thenReturn(paid("pay-b2", "sub-7-baska-oturum"));
+        assertThat(service(iyzico).handleCallback("tok-b2")).endsWith("sub=fail");
+        assertThat(b.getStatus()).isEqualTo(PaymentCheckoutStatus.FAILED);
+        assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.TRIAL);
+    }
+
+    @Test
     void samePaymentIdIsIdempotentAndDoesNotReactivateCanceled() {
         IyzicoClient iyzico = configuredMock();
-        Subscription sub = subWithToken("tok-2");
+        Subscription sub = sub();
         LocalDateTime end = LocalDateTime.now().plusDays(10);
         sub.setStatus(SubscriptionStatus.CANCELED);
         sub.setCurrentPeriodEnd(end);
         sub.setLastPaymentId("pay-2");
-        when(iyzico.retrieve("tok-2")).thenReturn(new IyzicoClient.CheckoutResult(true, "pay-2", "SUCCESS", null));
+        PaymentCheckout pc = pending("tok-2", sub);
+        when(iyzico.retrieve("tok-2")).thenReturn(paid("pay-2", pc.getConversationId()));
 
         assertThat(service(iyzico).handleCallback("tok-2")).endsWith("sub=ok");
         assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.CANCELED);
         assertThat(sub.getCurrentPeriodEnd()).isEqualTo(end);
-        assertThat(sub.getLastCheckoutToken()).isNull();
+        assertThat(pc.getStatus()).isEqualTo(PaymentCheckoutStatus.SUCCEEDED);
     }
 
     @Test
     void earlyRenewalKeepsRemainingDays() {
         IyzicoClient iyzico = configuredMock();
-        Subscription sub = subWithToken("tok-3");
+        Subscription sub = sub();
         LocalDateTime end = LocalDateTime.now().plusDays(10);
         sub.setStatus(SubscriptionStatus.ACTIVE);
         sub.setCurrentPeriodEnd(end);
         sub.setLastPaymentId("pay-old");
-        when(iyzico.retrieve("tok-3")).thenReturn(new IyzicoClient.CheckoutResult(true, "pay-new", "SUCCESS", null));
+        PaymentCheckout pc = pending("tok-3", sub);
+        when(iyzico.retrieve("tok-3")).thenReturn(paid("pay-new", pc.getConversationId()));
 
         service(iyzico).handleCallback("tok-3");
         assertThat(sub.getCurrentPeriodEnd()).isEqualTo(end.plusMonths(1));
@@ -204,10 +311,11 @@ class BillingServiceTest {
     @Test
     void lateRenewalStartsFromNow() {
         IyzicoClient iyzico = configuredMock();
-        Subscription sub = subWithToken("tok-4");
+        Subscription sub = sub();
         sub.setStatus(SubscriptionStatus.ACTIVE);
         sub.setCurrentPeriodEnd(LocalDateTime.now().minusDays(20));
-        when(iyzico.retrieve("tok-4")).thenReturn(new IyzicoClient.CheckoutResult(true, "pay-4", "SUCCESS", null));
+        PaymentCheckout pc = pending("tok-4", sub);
+        when(iyzico.retrieve("tok-4")).thenReturn(paid("pay-4", pc.getConversationId()));
 
         service(iyzico).handleCallback("tok-4");
         assertThat(sub.getCurrentPeriodEnd())
@@ -216,14 +324,156 @@ class BillingServiceTest {
     }
 
     @Test
-    void failedPaymentChangesNothing() {
+    void failedPaymentClosesSessionAndChangesNothing() {
         IyzicoClient iyzico = configuredMock();
-        Subscription sub = subWithToken("tok-5");
+        Subscription sub = sub();
+        PaymentCheckout pc = pending("tok-5", sub);
         when(iyzico.retrieve("tok-5")).thenReturn(new IyzicoClient.CheckoutResult(false, null, "FAILURE", "x"));
+        BillingService svc = service(iyzico);
 
-        assertThat(service(iyzico).handleCallback("tok-5")).endsWith("sub=fail");
+        assertThat(svc.handleCallback("tok-5")).endsWith("sub=fail");
+        assertThat(pc.getStatus()).isEqualTo(PaymentCheckoutStatus.FAILED);
         assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.TRIAL);
         assertThat(sub.getCurrentPeriodEnd()).isNull();
+        // Kapanmış oturum tekrar gelirse iyzico'ya gidilmez.
+        assertThat(svc.handleCallback("tok-5")).endsWith("sub=fail");
+        verify(iyzico, times(1)).retrieve("tok-5");
+    }
+
+    @Test
+    void networkErrorKeepsSessionPendingForReconciliation() {
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        PaymentCheckout pc = pending("tok-6", sub);
+        when(iyzico.retrieve("tok-6")).thenReturn(new IyzicoClient.CheckoutResult(false, null, null, "timeout"));
+
+        assertThat(service(iyzico).handleCallback("tok-6")).endsWith("sub=fail");
+        assertThat(pc.getStatus()).isEqualTo(PaymentCheckoutStatus.PENDING);
+    }
+
+    @Test
+    void legacyTokenFromSubscriptionIsAdoptedAndVerifiedByPrefix() {
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        sub.setLastCheckoutToken("tok-legacy");
+        when(checkouts.findByTokenForUpdate("tok-legacy")).thenReturn(Optional.empty());
+        when(subs.findByLastCheckoutToken("tok-legacy")).thenReturn(Optional.of(sub));
+        when(checkouts.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(iyzico.retrieve("tok-legacy")).thenReturn(paid("pay-l", "sub-7-1700000000000"));
+
+        assertThat(service(iyzico).handleCallback("tok-legacy")).endsWith("sub=ok");
+        assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(sub.getLastCheckoutToken()).isNull();
+    }
+
+    // ── mutabakat ───────────────────────────────────────────────────
+
+    @Test
+    void reconcileAppliesPaidPendingAndExpiresOldUnpaid() {
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        PaymentCheckout paidOne = pending("tok-r1", sub);
+        paidOne.setCreatedAt(LocalDateTime.now().minusMinutes(20));
+        PaymentCheckout stale = pending("tok-r2", sub);
+        stale.setCreatedAt(LocalDateTime.now().minusHours(25));
+        PaymentCheckout young = pending("tok-r3", sub);
+        young.setCreatedAt(LocalDateTime.now().minusHours(2));
+        when(checkouts.findTop50ByStatusAndCreatedAtBeforeOrderByCreatedAtAsc(eq(PaymentCheckoutStatus.PENDING), any()))
+                .thenReturn(List.of(stale, paidOne, young));
+        when(iyzico.retrieve("tok-r1")).thenReturn(paid("pay-r1", paidOne.getConversationId()));
+        when(iyzico.retrieve("tok-r2")).thenReturn(new IyzicoClient.CheckoutResult(false, null, null, "not found"));
+        when(iyzico.retrieve("tok-r3")).thenReturn(new IyzicoClient.CheckoutResult(false, null, null, "not found"));
+
+        int changed = service(iyzico).reconcilePendingCheckouts();
+
+        assertThat(changed).isEqualTo(2);
+        assertThat(paidOne.getStatus()).isEqualTo(PaymentCheckoutStatus.SUCCEEDED);
+        assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(stale.getStatus()).isEqualTo(PaymentCheckoutStatus.EXPIRED);
+        assertThat(young.getStatus()).isEqualTo(PaymentCheckoutStatus.PENDING);
+
+        // 15 dakika eşiği sorguya gider
+        ArgumentCaptor<LocalDateTime> before = ArgumentCaptor.forClass(LocalDateTime.class);
+        verify(checkouts).findTop50ByStatusAndCreatedAtBeforeOrderByCreatedAtAsc(eq(PaymentCheckoutStatus.PENDING), before.capture());
+        assertThat(before.getValue()).isBetween(LocalDateTime.now().minusMinutes(16), LocalDateTime.now().minusMinutes(14));
+    }
+
+    /** Gerçek TransactionTemplate mantığıyla kayıt başına transaction'ı sayan sahte yönetici. */
+    static final class CountingTxManager implements org.springframework.transaction.PlatformTransactionManager {
+        int begun, committed, rolledBack;
+        final List<Integer> propagations = new java.util.ArrayList<>();
+        @Override public org.springframework.transaction.TransactionStatus getTransaction(
+                org.springframework.transaction.TransactionDefinition def) {
+            begun++;
+            propagations.add(def.getPropagationBehavior());
+            return new org.springframework.transaction.support.SimpleTransactionStatus();
+        }
+        @Override public void commit(org.springframework.transaction.TransactionStatus st) { committed++; }
+        @Override public void rollback(org.springframework.transaction.TransactionStatus st) { rolledBack++; }
+    }
+
+    @Test
+    void reconcileIsolatesFailurePerCheckoutTransaction() {
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        PaymentCheckout broken = pending("tok-e1", sub);
+        broken.setCreatedAt(LocalDateTime.now().minusMinutes(30));
+        PaymentCheckout paidOne = pending("tok-e2", sub);
+        paidOne.setCreatedAt(LocalDateTime.now().minusMinutes(20));
+        PaymentCheckout stale = pending("tok-e3", sub);
+        stale.setCreatedAt(LocalDateTime.now().minusHours(25));
+        when(checkouts.findTop50ByStatusAndCreatedAtBeforeOrderByCreatedAtAsc(eq(PaymentCheckoutStatus.PENDING), any()))
+                .thenReturn(List.of(broken, paidOne, stale));
+        when(iyzico.retrieve("tok-e1")).thenThrow(new IllegalStateException("iyzico zaman asimi"));
+        when(iyzico.retrieve("tok-e2")).thenReturn(paid("pay-e2", paidOne.getConversationId()));
+        when(iyzico.retrieve("tok-e3")).thenReturn(new IyzicoClient.CheckoutResult(false, null, null, "not found"));
+        CountingTxManager tx = new CountingTxManager();
+        BillingService svc = service(iyzico);
+        svc.setTransactionManager(tx);
+
+        int changed = svc.reconcilePendingCheckouts();
+
+        // İlk kaydın hatası diğerlerini durdurmaz ve geri almaz
+        assertThat(changed).isEqualTo(2);
+        assertThat(broken.getStatus()).isEqualTo(PaymentCheckoutStatus.PENDING);
+        assertThat(paidOne.getStatus()).isEqualTo(PaymentCheckoutStatus.SUCCEEDED);
+        assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(stale.getStatus()).isEqualTo(PaymentCheckoutStatus.EXPIRED);
+        // Kayıt başına ayrı REQUIRES_NEW transaction: 3 açıldı, 2 commit, 1 rollback
+        assertThat(tx.begun).isEqualTo(3);
+        assertThat(tx.committed).isEqualTo(2);
+        assertThat(tx.rolledBack).isEqualTo(1);
+        assertThat(tx.propagations).containsOnly(
+                org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    }
+
+    @Test
+    void reconcileMethodHasNoOuterTransaction() throws Exception {
+        // Dış transaction olsaydı kayıtlar tek birimde kalır, bayat kilitli okuma riski olurdu.
+        assertThat(BillingService.class.getMethod("reconcilePendingCheckouts")
+                .isAnnotationPresent(org.springframework.transaction.annotation.Transactional.class)).isFalse();
+    }
+
+    @Test
+    void reconcileSkipsSessionAlreadySettledByCallback() {
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        PaymentCheckout listed = pending("tok-s", sub);
+        PaymentCheckout locked = PaymentCheckout.builder().id(1L).business(sub.getBusiness()).token("tok-s")
+                .conversationId(listed.getConversationId()).status(PaymentCheckoutStatus.SUCCEEDED)
+                .expectedPrice(PRICE).build();
+        when(checkouts.findTop50ByStatusAndCreatedAtBeforeOrderByCreatedAtAsc(any(), any())).thenReturn(List.of(listed));
+        when(checkouts.findByTokenForUpdate("tok-s")).thenReturn(Optional.of(locked));
+
+        assertThat(service(iyzico).reconcilePendingCheckouts()).isZero();
+        verify(iyzico, never()).retrieve(any());
+    }
+
+    @Test
+    void reconcileDoesNothingWithoutPaymentKeys() {
+        IyzicoClient iyzico = client("", "", "https://sandbox-api.iyzipay.com");
+        assertThat(service(iyzico).reconcilePendingCheckouts()).isZero();
+        verifyNoInteractions(checkouts);
     }
 
     @Test

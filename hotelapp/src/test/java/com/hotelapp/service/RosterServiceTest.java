@@ -118,6 +118,45 @@ class RosterServiceTest {
     }
 
     @Test
+    void legacy_no_show_without_v25_rows_keeps_old_rule() {
+        // V25 oncesi kayit: noShow=true, satir yok -> baslamis + girissiz vardiya "Gelmedi"
+        // (no_show_is_marked ile ayni kural; burada gelecek vardiya Bekleniyor kalir).
+        LocalDate future = LocalDate.now().plusDays(5);
+        ShiftSlot later = ShiftSlot.builder().id(9L).date(future)
+                .startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(16, 0)).build();
+        Application a = app(1, "Ayşe", ApplicationStatus.ACCEPTED, s1, later);
+        a.setNoShow(true);
+        when(applicationRepository.findAllByJobListingId(10L)).thenReturn(List.of(a));
+        when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(1L)).thenReturn(List.of());
+
+        Map<LocalDate, List<RosterRow>> rows = service.collectRows(listing(), null);
+
+        assertThat(rows.get(D1).get(0).status()).isEqualTo("Gelmedi");
+        assertThat(rows.get(future).get(0).status()).isEqualTo("Bekleniyor");
+    }
+
+    @Test
+    void v25_no_show_row_only_marks_that_slot_and_stays_visible() {
+        // QA regresyonu: QR kullanmayan isletme (hic giris kaydi yok). 2. gun isaretlendi;
+        // 1. gun calisilmis vardiya "Gelmedi" olarak TURETILMEZ, isaretli satir yoklamada gorunur.
+        Application a = app(1, "Ayşe", ApplicationStatus.ACCEPTED, s1, s2);
+        a.setNoShow(true);
+        a.getNoShowSlots().add(com.hotelapp.entity.ApplicationNoShowSlot.builder()
+                .application(a).shiftSlot(s2).build());
+        when(applicationRepository.findAllByJobListingId(10L)).thenReturn(List.of(a));
+        when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(1L)).thenReturn(List.of());
+
+        Map<LocalDate, List<RosterRow>> rows = service.collectRows(listing(), null);
+
+        assertThat(rows.get(D1)).singleElement().satisfies(r -> assertThat(r.status()).isNotEqualTo("Gelmedi"));
+        assertThat(rows.get(D2)).singleElement().satisfies(r -> {
+            assertThat(r.status()).isEqualTo("Gelmedi");
+            assertThat(r.shiftSlotId()).isEqualTo(2L);
+            assertThat(r.canCheckIn()).isFalse();
+        });
+    }
+
+    @Test
     void other_owner_cannot_download() {
         when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing()));
 

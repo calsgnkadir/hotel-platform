@@ -25,6 +25,15 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Iyimser kilit (V22: applications.version BIGINT NOT NULL DEFAULT 0).
+     * Ayni basvuruya eszamanli iki durum gecisi (or. kabul + red, HOLD onayi +
+     * isletme karari) yarisirsa ikincisi 409 alir.
+     */
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "candidate_id", nullable = false)
     private User candidate;
@@ -110,6 +119,14 @@ public class Application {
     @BatchSize(size = 50)
     @Builder.Default
     private Set<ShiftSlot> requestedSlots = new HashSet<>();
+
+    // V25 — vardiya bazinda "gelmedi" isaretleri. Salt okunur ters taraf: satir
+    // ApplicationNoShowSlotRepository ile yazilir (cascade yok). Isaretlenen slot
+    // requestedSlots'ta KALIR; tuketiciler (giris, kart, kazanc, yoklama) bu seti kullanir.
+    @OneToMany(mappedBy = "application", fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
+    @Builder.Default
+    private Set<ApplicationNoShowSlot> noShowSlots = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {

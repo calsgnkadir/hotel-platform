@@ -86,8 +86,46 @@ class EarningsServiceTest {
         @Test void nullTimes_zero() {
             assertThat(EarningsService.plannedHours(slot(null, null))).isEqualTo(0.0);
         }
-        @Test void endBeforeStart_zero() {
-            assertThat(EarningsService.plannedHours(slot(LocalTime.of(17, 0), LocalTime.of(9, 0)))).isEqualTo(0.0);
+        // Eskiden 0 donuyordu; bitis < baslangic artik gece vardiyasi (ertesi gun biter).
+        @Test void overnight_countsUntilNextMorning() {
+            assertThat(EarningsService.plannedHours(slot(LocalTime.of(17, 0), LocalTime.of(9, 0)))).isEqualTo(16.0);
+            assertThat(EarningsService.plannedHours(slot(LocalTime.of(22, 0), LocalTime.of(6, 0)))).isEqualTo(8.0);
+        }
+    }
+
+    @Nested @DisplayName("getMyEarnings — vardiya bazında gelmedi (V25)")
+    class NoShowPerShift {
+
+        private ShiftSlot day(long id, int daysAgo) {
+            return ShiftSlot.builder().id(id).date(java.time.LocalDate.now().minusDays(daysAgo))
+                    .startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(16, 0)).build();
+        }
+
+        @Test
+        @DisplayName("QA regresyonu: 3 günlük başvuruda 3. gün gelmedi → ilk iki günün kazancı kalır (1600 TL)")
+        void noShow_keepsEarningsOfEarlierShifts() {
+            var apps = org.mockito.Mockito.mock(com.hotelapp.repository.ApplicationRepository.class);
+            var sessions = org.mockito.Mockito.mock(com.hotelapp.repository.WorkSessionRepository.class);
+            ShiftSlot d1 = day(1L, 3), d2 = day(2L, 2), d3 = day(3L, 1);
+            var listing = com.hotelapp.entity.JobListing.builder().id(10L).title("Banket")
+                    .salaryType(SalaryType.DAILY).salaryMin(new BigDecimal("800")).salaryMax(new BigDecimal("800"))
+                    .business(com.hotelapp.entity.Business.builder().id(3L).name("Grand Otel").build())
+                    .build();
+            var app = com.hotelapp.entity.Application.builder().id(5L)
+                    .status(com.hotelapp.enums.ApplicationStatus.ACCEPTED).noShow(true)
+                    .jobListing(listing)
+                    .requestedSlots(new java.util.HashSet<>(java.util.Set.of(d1, d2, d3))).build();
+            app.getNoShowSlots().add(com.hotelapp.entity.ApplicationNoShowSlot.builder()
+                    .application(app).shiftSlot(d3).build());
+            org.mockito.Mockito.when(apps.findAllByCandidateId(7L)).thenReturn(java.util.List.of(app));
+            org.mockito.Mockito.when(sessions.findByApplicationIdOrderByClockInAtDesc(5L)).thenReturn(java.util.List.of());
+
+            var res = new EarningsService(apps, sessions).getMyEarnings(7L);
+
+            assertThat(res.getTotalGross()).isEqualByComparingTo("1600.00");
+            assertThat(res.getShiftCount()).isEqualTo(2);
+            assertThat(res.getEntries()).extracting(e -> e.getDate())
+                    .containsExactlyInAnyOrder(d1.getDate(), d2.getDate());
         }
     }
 }

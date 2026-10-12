@@ -24,7 +24,7 @@ public class BusinessRuleException extends RuntimeException implements Localized
         this.messageArgs = null;
     }
 
-    private BusinessRuleException(String key, Object[] args) {
+    protected BusinessRuleException(String key, Object[] args) {
         super(key);  // fallback = key (MessageSource cozemezse gorulur)
         this.messageKey = key;
         this.messageArgs = args;

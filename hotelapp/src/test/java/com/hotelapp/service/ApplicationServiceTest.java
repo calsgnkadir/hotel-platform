@@ -61,6 +61,9 @@ class ApplicationServiceTest {
     @Mock private ApplicationEventPublisher eventPublisher;
     @Mock private ApplicationMapper applicationMapper;
     @Mock private org.springframework.beans.factory.ObjectProvider<com.hotelapp.metrics.AppMetrics> metricsProvider;
+    @Mock private StandbyService standbyService;
+    @Mock private com.hotelapp.repository.WorkSessionRepository workSessionRepository;
+    @Mock private com.hotelapp.repository.ApplicationNoShowSlotRepository noShowSlotRepository;
 
     @InjectMocks private ApplicationService service;
 
@@ -249,7 +252,7 @@ class ApplicationServiceTest {
         @Test
         @DisplayName("PENDING başvuru: 'sadece kabul edilmiş' hatası")
         void notAccepted_throws() {
-            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(appWithStatus(ApplicationStatus.PENDING)));
+            when(applicationRepository.findByIdForCheckIn(APP_ID)).thenReturn(Optional.of(appWithStatus(ApplicationStatus.PENDING)));
 
             assertThatThrownBy(() -> service.markNoShow(APP_ID, OWNER_ID))
                     .isInstanceOf(BusinessRuleException.class)
@@ -261,7 +264,7 @@ class ApplicationServiceTest {
         void alreadyMarked_throws() {
             Application app = appWithStatus(ApplicationStatus.ACCEPTED);
             app.setNoShow(true);
-            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(applicationRepository.findByIdForCheckIn(APP_ID)).thenReturn(Optional.of(app));
 
             assertThatThrownBy(() -> service.markNoShow(APP_ID, OWNER_ID))
                     .isInstanceOf(BusinessRuleException.class)
@@ -273,7 +276,7 @@ class ApplicationServiceTest {
         void normalStrike_decrementsOnly() {
             Application app = appWithStatus(ApplicationStatus.ACCEPTED);
             app.getCandidate().setStrikesRemaining(2);
-            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(applicationRepository.findByIdForCheckIn(APP_ID)).thenReturn(Optional.of(app));
 
             var result = service.markNoShow(APP_ID, OWNER_ID);
 
@@ -290,7 +293,7 @@ class ApplicationServiceTest {
         void lastStrike_triggersAutoBan() {
             Application app = appWithStatus(ApplicationStatus.ACCEPTED);
             app.getCandidate().setStrikesRemaining(1);
-            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(applicationRepository.findByIdForCheckIn(APP_ID)).thenReturn(Optional.of(app));
 
             var result = service.markNoShow(APP_ID, OWNER_ID);
 
@@ -310,7 +313,7 @@ class ApplicationServiceTest {
         void differentOwner_throwsNoEvent() {
             Application app = appWithStatus(ApplicationStatus.ACCEPTED);
             app.getJobListing().getBusiness().getOwner().setId(99L);
-            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(applicationRepository.findByIdForCheckIn(APP_ID)).thenReturn(Optional.of(app));
 
             assertThatThrownBy(() -> service.markNoShow(APP_ID, OWNER_ID))
                     .isInstanceOf(UnauthorizedException.class);

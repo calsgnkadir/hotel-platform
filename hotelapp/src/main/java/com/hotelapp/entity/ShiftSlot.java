@@ -14,6 +14,9 @@ import java.time.LocalTime;
  */
 @Entity
 @Table(name = "shift_slots")
+// slotsFilled yalniz kosullu atomik UPDATE ile degisir (ShiftSlotRepository);
+// slot duzenlemesi (tarih/saat/ihtiyac) bayat slotsFilled'i geri yazmasin.
+@org.hibernate.annotations.DynamicUpdate
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor

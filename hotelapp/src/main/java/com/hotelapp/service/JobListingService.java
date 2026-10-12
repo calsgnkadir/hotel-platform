@@ -263,7 +263,8 @@ public class JobListingService {
     // ----------------------------------------------------------------
     // Slot validasyonu (Faz E1)
     // - En az 1 slot zorunlu
-    // - Her slot: tarih >= bugün, endTime > startTime, slotsNeeded >= 1
+    // - Her slot: tarih >= bugün, endTime != startTime (endTime < startTime = gece
+    //   vardiyasi, ertesi gun biter), sure <= 16 saat, slotsNeeded >= 1
     // ----------------------------------------------------------------
     private void validateSlots(List<ShiftSlotCreate> slots) {
         if (slots == null || slots.isEmpty()) {
@@ -284,8 +285,11 @@ public class JobListingService {
             if (s.getDate().equals(today) && !s.getStartTime().isAfter(nowTime)) {
                 throw new BusinessRuleException("Slot " + n + ": bugün için başlangıç saati şu andan sonra olmalı");
             }
-            if (!s.getEndTime().isAfter(s.getStartTime())) {
-                throw new BusinessRuleException("Slot " + n + ": bitiş saati başlangıçtan sonra olmalı");
+            // Gece vardiyasi: bitis < baslangic → ertesi gun biter (22:00–06:00). Esit saat ve
+            // 16 saati asan sure reddedilir (ShiftWindow).
+            String timeError = ShiftWindow.validate(s.getStartTime(), s.getEndTime());
+            if (timeError != null) {
+                throw new BusinessRuleException("Slot " + n + ": " + timeError);
             }
             if (s.getSlotsNeeded() != null && s.getSlotsNeeded() < 1) {
                 throw new BusinessRuleException("Slot " + n + ": ihtiyaç sayısı en az 1 olmalı");
@@ -667,6 +671,15 @@ public class JobListingService {
             var slotDow = slot.getDate().getDayOfWeek();
             for (var b : blocks) {
                 if (b.getDayOfWeek() != slotDow) continue;
+                if (ShiftWindow.isOvernight(slot)) {
+                    // Gece vardiyasi gun icindeki bloga tam sigmaz: baslangictan gece
+                    // yarisina kadar musaitse uyumlu say (23:59 = gun sonu).
+                    if (!b.getStartTime().isAfter(slot.getStartTime())
+                            && !b.getEndTime().isBefore(java.time.LocalTime.of(23, 59))) {
+                        return true;
+                    }
+                    continue;
+                }
                 if (!b.getStartTime().isAfter(slot.getStartTime())
                         && !slot.getEndTime().isAfter(b.getEndTime())) {
                     return true;  // bu slot bu bloğa tamamen uyuyor

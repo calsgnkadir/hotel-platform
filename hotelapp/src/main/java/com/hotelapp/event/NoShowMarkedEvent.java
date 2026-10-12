@@ -18,5 +18,7 @@ public record NoShowMarkedEvent(
         String listingTitle,
         int candidateStrikesRemaining,
         boolean autoBanned,
-        LocalDateTime bannedUntil
+        LocalDateTime bannedUntil,
+        /** Bosaltilan vardiya slotlari — yedek eslesmesi bunlarla kesisen talep uzerinden. */
+        java.util.List<Long> vacatedSlotIds
 ) {}

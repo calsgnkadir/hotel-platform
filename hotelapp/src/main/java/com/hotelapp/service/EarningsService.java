@@ -73,6 +73,9 @@ public class EarningsService {
             for (ShiftSlot slot : slots) {
                 if (slot.getDate() == null) continue;
                 if (!slot.getDate().isBefore(today)) continue;  // sadece gecmis (tamamlanmis) vardiyalar
+                // Gelmedi isaretli vardiya kazanca girmez; ayni basvurunun calisilmis diger
+                // vardiyalari kalir (V25 satiri; eski kayit onceki gibi sayilir).
+                if (NoShowSlots.isMarked(app, slot)) continue;
 
                 // Gercek clocked saat var mi (ayni gunde clock-out'lu session)?
                 Double clockedHours = clockedHoursForDate(sessions, slot.getDate());
@@ -159,7 +162,8 @@ public class EarningsService {
     /** Slot planlanan suresi (saat), start/end'ten. */
     static double plannedHours(ShiftSlot slot) {
         if (slot.getStartTime() == null || slot.getEndTime() == null) return 0;
-        double h = Duration.between(slot.getStartTime(), slot.getEndTime()).toMinutes() / 60.0;
+        // Gece vardiyasi (22:00–06:00) ertesi gun biter: 8 saat, 0 degil.
+        double h = ShiftWindow.duration(slot).toMinutes() / 60.0;
         return h > 0 ? h : 0;
     }
 

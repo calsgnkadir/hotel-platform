@@ -62,6 +62,7 @@ public class ApplicationMapper {
                 .createdAt(app.getCreatedAt())
                 .note(app.getNote())
                 .noShow(app.isNoShow())
+                .noShowSlotIds(app.isNoShow() ? NoShowSlots.ids(app).stream().sorted().toList() : List.of())
                 .holdDeadline(app.getHoldDeadline())  // FAZ 2/#28
                 // FAZ C.1 — yedek aday alanlari
                 .standbyRank(app.getStandbyRank())

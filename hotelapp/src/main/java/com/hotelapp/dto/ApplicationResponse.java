@@ -21,6 +21,11 @@ public class ApplicationResponse {
     private LocalDateTime createdAt;
     private String note;
     private boolean noShow;
+    /**
+     * V25: gelmedi işaretli vardiya id'leri (requestedSlots içinde kalırlar).
+     * Boş + noShow=true → V25 öncesi (başvuru bazlı) eski işaret.
+     */
+    private List<Long> noShowSlotIds;
     /** FAZ 2/#28: HOLD durumundaysa aday cevap deadline'i (24h) */
     private LocalDateTime holdDeadline;
 

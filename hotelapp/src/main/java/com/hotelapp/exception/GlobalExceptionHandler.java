@@ -145,6 +145,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleOptimisticLock(
             org.springframework.dao.OptimisticLockingFailureException ex) {
         log.info("Optimistic lock catch: {}", ex.getMessage());
+        // V22 — Basvuru durum yarisi (or. kabul + red, HOLD onayi + isletme karari)
+        if (ex instanceof org.springframework.orm.ObjectOptimisticLockingFailureException o
+                && com.hotelapp.entity.Application.class.getName().equals(o.getPersistentClassName())) {
+            return build(HttpStatus.CONFLICT,
+                    "Başvuru bu sırada güncellendi, sayfayı yenileyip tekrar dene.");
+        }
         return build(HttpStatus.CONFLICT,
                 "Bu kayıt aynı anda başka biri tarafından güncellendi. " +
                 "Lütfen sayfayı yenileyip tekrar deneyin.");

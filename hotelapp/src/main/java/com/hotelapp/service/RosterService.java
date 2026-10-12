@@ -113,11 +113,17 @@ public class RosterService {
                 }
                 continue;
             }
+            LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul"));
             for (ShiftSlot s : slots) {
                 if (onlyDate != null && !onlyDate.equals(s.getDate())) continue;
                 WorkSession ws = ShiftAttendance.sessionFor(a, s, sessions).orElse(null);
+                // Gece vardiyasi: tarih = baslangic gunu, bitis ertesi gun (ShiftWindow);
+                // satir baslangic gununun sayfasinda kalir.
                 String shift = T.format(s.getStartTime()) + " – " + T.format(s.getEndTime());
-                byDate.computeIfAbsent(s.getDate(), k -> new ArrayList<>()).add(row(a, shift, ws, a.isNoShow(), s));
+                // "Gelmedi" vardiya bazinda: yalniz isletmenin isaretledigi vardiya (V25 satiri).
+                // Eski kayit (noShow=true, satir yok): baslamis + girissiz vardiyalar (onceki davranis).
+                boolean noShow = NoShowSlots.showsAsNoShow(a, s, ws != null, now);
+                byDate.computeIfAbsent(s.getDate(), k -> new ArrayList<>()).add(row(a, shift, ws, noShow, s));
             }
         }
         return byDate;

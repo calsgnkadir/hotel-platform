@@ -173,16 +173,37 @@ class JobListingServiceTest {
         }
 
         @Test
-        @DisplayName("Slot endTime <= startTime -> BusinessRuleException")
+        @DisplayName("Slot endTime == startTime -> BusinessRuleException")
         void slotInvalidTimes_throws() {
+            // Eskiden 18:00-10:00 de reddediliyordu; artik gece vardiyasi (ertesi gun biter).
             when(businessRepository.findByOwnerId(OWNER_ID))
                     .thenReturn(Optional.of(businessOwnedBy(OWNER_ID)));
             ListingRequest r = validRequest();
-            r.setShiftSlots(List.of(slot(LocalDate.now().plusDays(3), "18:00", "10:00", 1)));
+            r.setShiftSlots(List.of(slot(LocalDate.now().plusDays(3), "18:00", "18:00", 1)));
 
             assertThatThrownBy(() -> service.createListing(OWNER_ID, r))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("bitiş saati başlangıçtan sonra olmalı");
+                    .hasMessageContaining("bitiş saati başlangıç saatiyle aynı olamaz");
+        }
+
+        @Test
+        @DisplayName("Gece vardiyası 22:00-06:00 geçerli (ertesi gün biter)")
+        void overnightSlot_isValid() {
+            org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "validateSlots",
+                    List.of(slot(LocalDate.now().plusDays(3), "22:00", "06:00", 2)));
+        }
+
+        @Test
+        @DisplayName("16 saati aşan vardiya (gündüz ya da gece) reddedilir")
+        void tooLongSlot_throws() {
+            assertThatThrownBy(() -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "validateSlots", List.of(slot(LocalDate.now().plusDays(3), "20:00", "13:00", 1))))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("en fazla 16 saat");
+            assertThatThrownBy(() -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "validateSlots", List.of(slot(LocalDate.now().plusDays(3), "06:00", "23:00", 1))))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("en fazla 16 saat");
         }
 
         @Test

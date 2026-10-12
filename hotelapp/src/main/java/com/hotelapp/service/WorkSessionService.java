@@ -78,6 +78,11 @@ public class WorkSessionService {
 
         LocalDateTime now = LocalDateTime.now(clock);
         ShiftSlot slot = ShiftAttendance.inferSlot(app.getRequestedSlots(), now).orElse(null);
+        // Gelmedi isaretli vardiyada (V25 satiri) giris yok. Eski kayit (satir yok):
+        // o saatte eslesen vardiya da yoksa giris yok (onceki davranis).
+        if (NoShowSlots.isMarked(app, slot) || (slot == null && NoShowSlots.isLegacy(app))) {
+            throw new BusinessRuleException(CheckInService.NO_SHOW_ENTRY);
+        }
         if (slot != null && ShiftAttendance.sessionFor(app, slot,
                 workSessionRepository.findByApplicationIdOrderByClockInAtDesc(applicationId)).isPresent()) {
             throw new BusinessRuleException("Bu vardiya için giriş zaten kayıtlı");

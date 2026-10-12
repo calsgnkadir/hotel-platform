@@ -68,7 +68,21 @@ public class IyzicoClient {
 
     public record CheckoutInit(boolean ok, String token, String paymentPageUrl,
                                String checkoutFormContent, String error) {}
-    public record CheckoutResult(boolean paid, String paymentId, String paymentStatus, String error) {}
+    /**
+     * retrieve sonucu. paidPrice/basketId/conversationId iyzico'nun döndürdüğü
+     * değerlerdir; BillingService bunları kendi kaydıyla karşılaştırır.
+     */
+    public record CheckoutResult(boolean paid, String paymentId, String paymentStatus, String error,
+                                 BigDecimal paidPrice, String basketId, String conversationId) {
+        public CheckoutResult(boolean paid, String paymentId, String paymentStatus, String error) {
+            this(paid, paymentId, paymentStatus, error, null, null, null);
+        }
+    }
+
+    /** Abonelik sepet kimliği — checkout başlatırken gönderilir, dönüşte doğrulanır. */
+    public static String basketIdFor(Long businessId) {
+        return "SUB-" + businessId;
+    }
 
     /** Abonelik ödemesi için hosted checkout başlatır. */
     public CheckoutInit startCheckout(Business business, User owner, BigDecimal price,
@@ -83,7 +97,7 @@ public class IyzicoClient {
             req.setPrice(price);
             req.setPaidPrice(price);
             req.setCurrency(Currency.TRY.name());
-            req.setBasketId("SUB-" + business.getId());
+            req.setBasketId(basketIdFor(business.getId()));
             req.setPaymentGroup(PaymentGroup.SUBSCRIPTION.name());
             req.setCallbackUrl(callbackUrl);
             req.setEnabledInstallments(List.of(1));
@@ -141,7 +155,8 @@ public class IyzicoClient {
             CheckoutForm form = CheckoutForm.retrieve(req, options);
             boolean paid = "success".equalsIgnoreCase(form.getStatus())
                     && "SUCCESS".equalsIgnoreCase(form.getPaymentStatus());
-            return new CheckoutResult(paid, form.getPaymentId(), form.getPaymentStatus(), form.getErrorMessage());
+            return new CheckoutResult(paid, form.getPaymentId(), form.getPaymentStatus(), form.getErrorMessage(),
+                    form.getPaidPrice(), form.getBasketId(), form.getConversationId());
         } catch (Exception e) {
             log.error("[IYZICO] retrieve hata", e);
             return new CheckoutResult(false, null, null, e.getMessage());

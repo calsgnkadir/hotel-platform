@@ -55,6 +55,7 @@ public class CheckInService {
 
     private static final ZoneId TR = ZoneId.of("Europe/Istanbul");
     private static final DateTimeFormatter T = DateTimeFormatter.ofPattern("HH:mm");
+    static final String NO_SHOW_ENTRY = "Bu vardiya için gelmedi olarak işaretlendi; giriş kaydedilemez.";
 
     private final JobListingRepository jobListingRepository;
     private final ApplicationRepository applicationRepository;
@@ -124,6 +125,10 @@ public class CheckInService {
 
     // ── Çalışan: bugünkü giriş kartlarım ───────────────────────────────
 
+    /**
+     * Bugünkü (ve gece vardiyasında ertesi sabaha kadar süren) giriş kartları.
+     * Gelmedi işaretli vardiya (V25 satırı) için kart üretilmez.
+     */
     @Transactional(readOnly = true)
     public List<PassDto> myPasses(Long candidateId) {
         LocalDateTime now = LocalDateTime.now(clock);
@@ -131,6 +136,7 @@ public class CheckInService {
                 .filter(a -> a.getStatus() == ApplicationStatus.ACCEPTED)
                 .flatMap(a -> a.getRequestedSlots().stream()
                         .filter(s -> ShiftAttendance.isCurrent(s, now))
+                        .filter(s -> !NoShowSlots.isMarked(a, s))
                         .map(s -> toPass(a, s)))
                 .sorted(Comparator.comparing(PassDto::getShiftDate).thenComparing(PassDto::getShift))
                 .toList();
@@ -182,6 +188,10 @@ public class CheckInService {
         // The application lock and unique (application, shift) constraint protect all entry paths.
         WorkSession ws = sessionOn(app, slot).orElse(null);
         boolean alreadyUsed = ws != null;
+        // Gelmedi isaretli vardiyada kart gecersiz (koltuk bosaltildi, yedege gitmis olabilir).
+        if (NoShowSlots.isMarked(app, slot)) {
+            throw new BusinessRuleException(NO_SHOW_ENTRY);
+        }
         if (ws == null) {
             ws = workSessionRepository.save(WorkSession.builder()
                     .application(app).shiftSlotId(slot.getId()).clockInAt(now).build());
@@ -205,7 +215,22 @@ public class CheckInService {
     public AttendanceDto attendance(Long listingId, Long ownerId, LocalDate date) {
         JobListing l = ownedListing(listingId, ownerId);
         LocalDate d = date != null ? date : LocalDate.now(clock);
-        List<RosterRow> rows = rosterService.collectRows(l, d).getOrDefault(d, List.of());
+        List<RosterRow> rows = new java.util.ArrayList<>(rosterService.collectRows(l, d).getOrDefault(d, List.of()));
+        if (date == null) {
+            // Gece vardiyasi (dun 22:00 – bugun 06:00) hala suruyorsa bugunun yoklamasinda da gorunsun.
+            LocalDateTime now = LocalDateTime.now(clock);
+            java.util.Set<Long> ongoing = l.getShiftSlots() == null ? java.util.Set.of() : l.getShiftSlots().stream()
+                    .filter(ShiftWindow::hasTimes)
+                    .filter(s -> s.getDate().equals(d.minusDays(1)) && ShiftWindow.isOvernight(s))
+                    .filter(s -> !ShiftWindow.hasEnded(s, now))
+                    .map(ShiftSlot::getId)
+                    .collect(java.util.stream.Collectors.toSet());
+            if (!ongoing.isEmpty()) {
+                rosterService.collectRows(l, d.minusDays(1)).getOrDefault(d.minusDays(1), List.of()).stream()
+                        .filter(r -> r.shiftSlotId() != null && ongoing.contains(r.shiftSlotId()))
+                        .forEach(rows::add);
+            }
+        }
         long arrived = rows.stream().filter(r -> !r.clockIn().isEmpty()).count();
         return AttendanceDto.builder()
                 .listingId(l.getId())
@@ -239,6 +264,9 @@ public class CheckInService {
             throw new BusinessRuleException("Geçerli tek bir vardiya seçmelisin");
         }
         ShiftSlot slot = matching.get(0);
+        if (NoShowSlots.isMarked(app, slot)) {
+            throw new BusinessRuleException(NO_SHOW_ENTRY);
+        }
         if (sessionOn(app, slot).isEmpty()) {
             workSessionRepository.save(WorkSession.builder()
                     .application(app).shiftSlotId(slot.getId()).clockInAt(now).build());

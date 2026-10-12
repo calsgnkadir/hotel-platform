@@ -44,9 +44,23 @@ public class ApplicationService {
     private final org.springframework.context.ApplicationEventPublisher eventPublisher; // FAZ 4.11 - no-show async
     private final ApplicationMapper applicationMapper; // FAZ 4.5 - god class temizligi (toResponse + buildCandidateSummary)
     private final org.springframework.beans.factory.ObjectProvider<com.hotelapp.metrics.AppMetrics> metricsProvider; // FAZ D.4
+    private final StandbyService standbyService;              // aktif yedek teklifi bozulursa zincir devam etsin
+    private final WorkSessionRepository workSessionRepository; // no-show: girisi olan vardiya isaretlenemez
+    private final ApplicationNoShowSlotRepository noShowSlotRepository; // V25: vardiya bazinda gelmedi isaretleri
+
+    /** No-show zaman kontrolu icin (testte sabitlenebilir). Slot saatleri Turkiye yerel saati. */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
 
     @org.springframework.beans.factory.annotation.Value("${app.base-url:http://localhost:5173}")
     private String baseUrl;
+
+    /** Ayni ilana ikinci basvuruyu engelleyen (henuz sonuclanmamis ya da kabul) durumlar. */
+    static final List<ApplicationStatus> ACTIVE_FOR_DUPLICATE = List.of(
+            ApplicationStatus.PENDING,
+            ApplicationStatus.REVIEWING,
+            ApplicationStatus.HELD,
+            ApplicationStatus.STANDBY,
+            ApplicationStatus.ACCEPTED);
 
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
@@ -66,21 +80,20 @@ public class ApplicationService {
         // Isletme bu adayi engellediyse basvuru kaydi olusmaz (ilan gorunur kalir).
         requireNotBlockedByBusiness(listing.getBusiness().getId(), candidateId);
 
-        // Bu ilana zaten PENDING/REVIEWING/ACCEPTED başvurusu var mı?
-        // - PENDING/REVIEWING: süreç henüz tamamlanmadı
+        // Bu ilana zaten aktif başvurusu var mı?
+        // - PENDING/REVIEWING/HELD/STANDBY: süreç henüz tamamlanmadı
         // - ACCEPTED: aday zaten kabul edildi, tekrar başvurmasına gerek yok
-        // - REJECTED/EXPIRED: ikinci şans verilebilir (engellemiyoruz)
+        // - REJECTED/EXPIRED/WITHDRAWN: ikinci şans verilebilir (engellemiyoruz)
         applicationRepository.findFirstByCandidateIdAndJobListingIdAndStatusIn(
                 candidateId,
                 request.getJobListingId(),
-                java.util.List.of(
-                        ApplicationStatus.PENDING,
-                        ApplicationStatus.REVIEWING,
-                        ApplicationStatus.ACCEPTED))
+                ACTIVE_FOR_DUPLICATE)
             .ifPresent(existing -> {
                 String key = switch (existing.getStatus()) {
                     case ACCEPTED  -> "error.application.dupAccepted";
                     case REVIEWING -> "error.application.dupReviewing";
+                    case HELD      -> "error.application.dupHeld";
+                    case STANDBY   -> "error.application.dupStandby";
                     default        -> "error.application.dupActive";
                 };
                 throw BusinessRuleException.keyed(key);
@@ -125,7 +138,7 @@ public class ApplicationService {
                 // F0/bugfix: Slot başlama anı geçmişse engellenir (tarih + saat birlikte)
                 // ESKİ: sadece tarih kontrolü → bugün başlamış ama henüz bitmemiş vardiyaya başvuru kabul oluyordu.
                 if (slot.getDate() != null && slot.getStartTime() != null) {
-                    java.time.LocalDateTime slotStart = java.time.LocalDateTime.of(slot.getDate(), slot.getStartTime());
+                    java.time.LocalDateTime slotStart = ShiftWindow.startAt(slot.getDate(), slot.getStartTime());
                     if (slotStart.isBefore(java.time.LocalDateTime.now())) {
                         throw new BusinessRuleException(
                                 "Bu vardiya başladı/geçti: " + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
@@ -203,20 +216,9 @@ public class ApplicationService {
             throw BusinessRuleException.keyed("error.application.decisionInvalid");
         }
 
-        // Faz E1: ACCEPTED ise slot kapasitelerini güncelle
-        if (request.getDecision() == ApplicationStatus.ACCEPTED
-                && application.getRequestedSlots() != null
-                && !application.getRequestedSlots().isEmpty()) {
-            for (ShiftSlot slot : application.getRequestedSlots()) {
-                if (slot.isFull()) {
-                    throw new BusinessRuleException(
-                            "Slot kapasitesi dolduğu için kabul edilemez: "
-                            + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
-                }
-                slot.setSlotsFilled(slot.getSlotsFilled() + 1);
-                shiftSlotRepository.save(slot);
-            }
-        }
+        // Aktif yedek teklifi olan aday reddedilirse acik kapanmadan kalmasin.
+        Long cascadeFor = request.getDecision() == ApplicationStatus.REJECTED
+                ? StandbyService.activeOfferReplaces(application) : null;
 
         application.setStatus(request.getDecision());
         application.setNote(request.getNote());
@@ -228,7 +230,17 @@ public class ApplicationService {
             application.setStandbyDeadline(null);
             application.setStandbyReplacesApplicationId(null);
         }
-        applicationRepository.save(application);
+        // Once basvuru (iyimser kilit, V22): ayni anda baska bir gecis olduysa 409.
+        applicationRepository.saveAndFlush(application);
+
+        // Faz E1 + K1: ACCEPTED ise koltuklar kosullu atomik UPDATE ile alinir;
+        // biri doluysa 422 ve tum transaction (basvuru durumu dahil) geri alinir.
+        if (request.getDecision() == ApplicationStatus.ACCEPTED) {
+            SlotSeats.claimAll(shiftSlotRepository, application.getRequestedSlots());
+        }
+        if (cascadeFor != null) {
+            standbyService.offerAfterNoShow(cascadeFor);
+        }
 
         // FAZ 18 — Audit: baglayici karar, kim/ne zaman izlenebilmeli
         outboxService.appendAuditLog(com.hotelapp.event.AuditLoggedEvent.user(
@@ -316,7 +328,7 @@ public class ApplicationService {
     // ----------------------------------------------------------------
     // FAZ 2/#28 — CANDIDATE: HELD durumuna cevap ver (Onayla/Reddet)
     // ----------------------------------------------------------------
-    @Transactional
+    @Transactional(noRollbackFor = com.hotelapp.exception.OfferExpiredException.class)
     public ApplicationResponse respondToHold(Long applicationId, Long candidateId, boolean accept) {
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
@@ -327,32 +339,23 @@ public class ApplicationService {
             throw BusinessRuleException.keyed("error.application.holdRespondOnly", app.getStatus());
         }
         if (app.getHoldDeadline() != null && LocalDateTime.now().isAfter(app.getHoldDeadline())) {
-            // Suresi gecmis - scheduler EXPIRED yapacak ama burada da tutarli olalim
+            // Suresi gecmis: EXPIRED kalici olur (noRollbackFor), sonra 422.
             app.setStatus(ApplicationStatus.EXPIRED);
             applicationRepository.save(app);
-            throw BusinessRuleException.keyed("error.application.holdExpired");
+            throw com.hotelapp.exception.OfferExpiredException.keyed("error.application.holdExpired");
         }
 
         if (accept) {
             // Engel aninda HELD basvurular REJECTED olur; bu kontrol yaris durumuna karsi yedek.
             requireNotBlockedByBusiness(app.getJobListing().getBusiness().getId(), candidateId);
-            // ACCEPTED'e gec + slot kapasiteleri guncelle
-            if (app.getRequestedSlots() != null) {
-                for (ShiftSlot slot : app.getRequestedSlots()) {
-                    if (slot.isFull()) {
-                        throw new BusinessRuleException(
-                                "Slot kapasitesi dolduğu için kabul edilemez: "
-                                + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
-                    }
-                    slot.setSlotsFilled(slot.getSlotsFilled() + 1);
-                    shiftSlotRepository.save(slot);
-                }
-            }
+            // ACCEPTED'e gec (iyimser kilit) + koltuklari atomik al (hepsi ya da hicbiri)
             app.setStatus(ApplicationStatus.ACCEPTED);
+            applicationRepository.saveAndFlush(app);
+            SlotSeats.claimAll(shiftSlotRepository, app.getRequestedSlots());
         } else {
             app.setStatus(ApplicationStatus.WITHDRAWN);
+            applicationRepository.save(app);
         }
-        applicationRepository.save(app);
 
         // FAZ 18 — Audit: adayin HOLD yaniti (baglayici kabul / vazgecme)
         outboxService.appendAuditLog(com.hotelapp.event.AuditLoggedEvent.user(
@@ -412,8 +415,19 @@ public class ApplicationService {
             throw new BusinessRuleException(msg);
         }
 
+        Long cascadeFor = StandbyService.activeOfferReplaces(application);
         application.setStatus(ApplicationStatus.WITHDRAWN);
+        if (current == ApplicationStatus.STANDBY) {
+            application.setStandbyRank(null);
+            application.setStandbyOfferedAt(null);
+            application.setStandbyDeadline(null);
+            application.setStandbyReplacesApplicationId(null);
+        }
         applicationRepository.save(application);
+        // Aktif teklifi olan yedek cekildi: siradaki yedege gec.
+        if (cascadeFor != null) {
+            standbyService.offerAfterNoShow(cascadeFor);
+        }
 
         // FAZ 18 — Audit
         outboxService.appendAuditLog(com.hotelapp.event.AuditLoggedEvent.user(
@@ -433,40 +447,68 @@ public class ApplicationService {
     }
 
     // ----------------------------------------------------------------
-    // BUSINESS OWNER: Mark accepted candidate as no-show (D2)
+    // BUSINESS OWNER: Mark accepted candidate as no-show (D2) — vardiya bazinda (V25)
     // - Sadece ACCEPTED başvuru işaretlenebilir
-    // - Bir başvuru sadece BİR KEZ işaretlenebilir
-    // - Adayın strikesRemaining'i 1 düşer
+    // - Vardiya başlangıcı + 30 dk geçmeden işaretlenemez
+    // - Giriş kaydı (QR / elle / GPS) olan vardiya işaretlenemez
+    // - Her çağrı TEK vardiya işaretler: slotId verilirse o vardiya; verilmezse şu an
+    //   devam eden ya da en son başlamış vardiya (eski, bitmiş vardiyalar otomatik seçilmez)
+    // - İşaretlenen vardiya başvurudan ÇIKMAZ (çalışılmış diğer vardiyalar ve kazanç
+    //   korunur); application_no_show_slots'a satır eklenir, koltuk atomik boşalır
+    // - Ceza vardiya başına: her yeni işaret strikesRemaining'i 1 düşürür
     // - 0'a düşerse 30 gün otomatik ban + strike 3'e reset
     // ----------------------------------------------------------------
     @Transactional
     public NoShowResult markNoShow(Long applicationId, Long ownerId) {
-        Application application = getApplicationForBusinessOwner(applicationId, ownerId);
+        return markNoShow(applicationId, ownerId, null);
+    }
+
+    static final String NO_SHOW_ALREADY_MARKED = "Bu vardiya zaten gelmedi olarak işaretlendi.";
+
+    @Transactional
+    public NoShowResult markNoShow(Long applicationId, Long ownerId, Long slotId) {
+        // Giris yollariyla (QR/elle/GPS) ayni satir kilidi: "giris var mi" ve "zaten
+        // isaretli mi" kontrolleri yarissiz (ayni basvuruya iki isaret sirayla islenir).
+        Application application = applicationRepository.findByIdForCheckIn(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
+        if (!application.getJobListing().getBusiness().getOwner().getId().equals(ownerId)) {
+            throw UnauthorizedException.keyed("error.application.notOwner");
+        }
 
         if (application.getStatus() != ApplicationStatus.ACCEPTED) {
             throw new BusinessRuleException(
                     "Sadece KABUL EDİLMİŞ başvurular no-show olarak işaretlenebilir. Mevcut durum: "
                     + application.getStatus());
         }
-        if (application.isNoShow()) {
+        // V25 oncesi isaret (ya da slotsuz basvuru): eski akista tum koltuklar zaten
+        // bosaltildi; yeni vardiya isareti cift bosaltma olurdu.
+        if (NoShowSlots.isLegacy(application)) {
             throw new BusinessRuleException("Bu başvuru zaten no-show olarak işaretlenmiş.");
         }
 
-        // Başvuruyu işaretle
+        ShiftSlot slot = selectNoShowSlot(application, slotId);
+        List<Long> vacatedIds = List.of();
+        if (slot != null) {
+            // Once satir (unique application+slot), sonra koltuk: ihlalde bosaltma olmaz.
+            ApplicationNoShowSlot mark;
+            try {
+                mark = noShowSlotRepository.saveAndFlush(ApplicationNoShowSlot.builder()
+                        .application(application)
+                        .shiftSlot(slot)
+                        .markedAt(LocalDateTime.now(clock))
+                        .build());
+            } catch (org.springframework.dao.DataIntegrityViolationException dup) {
+                throw new BusinessRuleException(NO_SHOW_ALREADY_MARKED);
+            }
+            application.getNoShowSlots().add(mark);
+            // FAZ C.1 — Aday gelmedi: koltuk atomik bosalir ki yedek doldurabilsin.
+            SlotSeats.release(shiftSlotRepository, slot);
+            vacatedIds = List.of(slot.getId());
+        }
+        // Geriye uyum: en az bir gelmedi isareti varsa basvuru bayragi true.
         application.setNoShow(true);
 
-        // FAZ C.1 — Aday gelmedi: tuttugu slot(lar) yeniden bosalir ki yedek doldurabilsin.
-        if (application.getRequestedSlots() != null) {
-            for (ShiftSlot slot : application.getRequestedSlots()) {
-                int filled = slot.getSlotsFilled() == null ? 0 : slot.getSlotsFilled();
-                if (filled > 0) {
-                    slot.setSlotsFilled(filled - 1);
-                    shiftSlotRepository.save(slot);
-                }
-            }
-        }
-
-        // Adayın strike'ını düş
+        // Ceza vardiya basina: her yeni isaret 1 strike.
         User candidate = application.getCandidate();
         int remaining = Math.max(0, candidate.getStrikesRemaining() - 1);
         candidate.setStrikesRemaining(remaining);
@@ -485,7 +527,7 @@ public class ApplicationService {
         userRepository.save(candidate);
         applicationRepository.save(application);
 
-        // FAZ 4.11 — Side effect'ler (audit log + bildirim) async + AFTER_COMMIT.
+        // FAZ 4.11 — Side effect'ler (audit log + bildirim + yedek zinciri) async + AFTER_COMMIT.
         // NoShowEventListener bu event'i ayri thread'de handle eder.
         eventPublisher.publishEvent(new com.hotelapp.event.NoShowMarkedEvent(
                 ownerId,
@@ -496,7 +538,8 @@ public class ApplicationService {
                 application.getJobListing().getTitle(),
                 candidate.getStrikesRemaining(),
                 autoBanned,
-                bannedUntil
+                bannedUntil,
+                vacatedIds
         ));
 
         return NoShowResult.builder()
@@ -513,6 +556,57 @@ public class ApplicationService {
         private Integer candidateStrikesRemaining;
         private Boolean autoBanned;
         private LocalDateTime bannedUntil;
+    }
+
+    /**
+     * Gelmedi isaretlenecek TEK vardiya. Slotsuz eski basvuruda null.
+     * Kurallar: baslangic + 30 dk gecmis olmali, giris kaydi olmamali, daha once
+     * isaretlenmemis olmali. slotId yoksa yalniz en son baslamis vardiya adaydir —
+     * o uygun degilse daha eski (bitmis) vardiyalara dusulmez.
+     */
+    private ShiftSlot selectNoShowSlot(Application application, Long slotId) {
+        Set<ShiftSlot> slots = application.getRequestedSlots();
+        if (slots == null || slots.isEmpty()) {
+            if (slotId != null) {
+                throw new BusinessRuleException("Bu vardiya bu başvuruya ait değil.");
+            }
+            return null;   // slotsuz eski akis
+        }
+        LocalDateTime now = LocalDateTime.now(clock);
+        Set<Long> marked = NoShowSlots.ids(application);
+        List<WorkSession> sessions = workSessionRepository.findByApplicationIdOrderByClockInAtDesc(application.getId());
+
+        ShiftSlot slot;
+        if (slotId != null) {
+            slot = slots.stream().filter(sl -> slotId.equals(sl.getId())).findFirst()
+                    .orElseThrow(() -> new BusinessRuleException("Bu vardiya bu başvuruya ait değil."));
+            if (marked.contains(slot.getId())) {
+                throw new BusinessRuleException(NO_SHOW_ALREADY_MARKED);
+            }
+            if (!ShiftWindow.hasTimes(slot) || !ShiftWindow.noShowAllowed(slot, now)) {
+                throw new BusinessRuleException(
+                        "Gelmedi işareti vardiya başladıktan 30 dakika sonra verilebilir ("
+                        + SlotSeats.label(slot) + ").");
+            }
+        } else {
+            // Devam eden vardiya varsa o (en gec baslayan), yoksa en son baslamis vardiya.
+            slot = slots.stream()
+                    .filter(ShiftWindow::hasTimes)
+                    .filter(sl -> ShiftWindow.noShowAllowed(sl, now))
+                    .max(java.util.Comparator.<ShiftSlot, LocalDateTime>comparing(ShiftWindow::startAt)
+                            .thenComparing(ShiftSlot::getId))
+                    .orElseThrow(() -> new BusinessRuleException(
+                            "Gelmedi işareti vardiya başladıktan 30 dakika sonra verilebilir."));
+            if (marked.contains(slot.getId())) {
+                throw new BusinessRuleException(NO_SHOW_ALREADY_MARKED);
+            }
+        }
+        if (ShiftAttendance.sessionFor(application, slot, sessions).isPresent()) {
+            throw new BusinessRuleException(
+                    "Bu vardiya için giriş kaydı var; gelmedi olarak işaretlenemez ("
+                    + SlotSeats.label(slot) + ").");
+        }
+        return slot;
     }
 
     /** Isletme bu adayi engellediyse 422 (engel ayrica ifsa edilmez). */

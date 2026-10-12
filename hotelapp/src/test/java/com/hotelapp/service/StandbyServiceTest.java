@@ -185,6 +185,8 @@ class StandbyServiceTest {
 
             when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
             when(applicationRepository.findAvailableStandbys(LISTING_ID)).thenReturn(List.of(standby));
+            // Bosalan koltuk: ilanin acik ve bitmemis slotu (zincir devami / ilk teklif ayni kural)
+            when(shiftSlotRepository.findAllByJobListingId(LISTING_ID)).thenReturn(List.of(upcomingSlot(1, 0)));
 
             Long offered = svc().offerAfterNoShow(APP_ID);
 
@@ -202,6 +204,7 @@ class StandbyServiceTest {
             Application noShow = app(APP_ID, ApplicationStatus.ACCEPTED, upcomingSlot(1, 0));
             when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
             when(applicationRepository.findAvailableStandbys(LISTING_ID)).thenReturn(List.of());
+            when(shiftSlotRepository.findAllByJobListingId(LISTING_ID)).thenReturn(List.of(upcomingSlot(1, 0)));
 
             assertThat(svc().offerAfterNoShow(APP_ID)).isNull();
 
@@ -243,17 +246,20 @@ class StandbyServiceTest {
         }
 
         @Test
-        @DisplayName("Kabul: ACCEPTED olur ve slot yeniden dolar")
+        @DisplayName("Kabul: ACCEPTED olur ve koltuk atomik olarak yeniden dolar")
         void accept_fillsSlot() {
             ShiftSlot slot = upcomingSlot(1, 0);
             Application a = offeredStandby(slot);
             when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(shiftSlotRepository.incrementFilledIfAvailable(500L)).thenReturn(1);
 
             svc().respondToOffer(77L, CANDIDATE_ID, true);
 
             assertThat(a.getStatus()).isEqualTo(ApplicationStatus.ACCEPTED);
-            assertThat(slot.getSlotsFilled()).isEqualTo(1);
-            verify(shiftSlotRepository).save(slot);
+            // Eskiden bellekteki sayac +1 yapilip save ediliyordu (yarisa acik);
+            // artik kosullu UPDATE (slotsFilled < slotsNeeded) kullaniliyor.
+            verify(shiftSlotRepository).incrementFilledIfAvailable(500L);
+            verify(applicationRepository).saveAndFlush(a);
             verify(notificationService).notify(eq(OWNER_ID),
                     eq(NotificationType.STANDBY_FILLED), any(), any(), any());
         }
@@ -271,7 +277,7 @@ class StandbyServiceTest {
                     .hasMessage("Bu işletmeye başvuru yapamazsın.");
             assertThat(a.getStatus()).isEqualTo(ApplicationStatus.STANDBY);
             assertThat(slot.getSlotsFilled()).isZero();
-            verify(shiftSlotRepository, never()).save(any());
+            verify(shiftSlotRepository, never()).incrementFilledIfAvailable(any());
         }
 
         @Test
@@ -295,6 +301,7 @@ class StandbyServiceTest {
             Application noShow = app(APP_ID, ApplicationStatus.ACCEPTED, upcomingSlot(1, 0));
             when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
             when(applicationRepository.findAvailableStandbys(LISTING_ID)).thenReturn(List.of());
+            when(shiftSlotRepository.findAllByJobListingId(LISTING_ID)).thenReturn(List.of(upcomingSlot(1, 0)));
 
             svc().respondToOffer(77L, CANDIDATE_ID, false);
 
@@ -375,6 +382,164 @@ class StandbyServiceTest {
 
             assertThat(svc().expireOverdueOffers()).isZero();
             verifyNoInteractions(notificationService);
+        }
+    }
+
+    // ================================================================
+    // 2. adım — yedek zinciri (Y3, Y4, Y5) ve kapasite (K1)
+    // ================================================================
+    @Nested
+    @DisplayName("yedek zinciri: boşalan slot eşleşmesi, kalıcı EXPIRED, çekilme/çıkarma")
+    class Chain {
+
+        private ShiftSlot slot(long id, int needed, int filled) {
+            return ShiftSlot.builder().id(id).date(LocalDate.now().plusDays(1))
+                    .startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(16, 0))
+                    .slotsNeeded(needed).slotsFilled(filled).build();
+        }
+
+        private Application standby(long id, int rank, ShiftSlot... slots) {
+            Application a = app(id, ApplicationStatus.STANDBY);
+            a.setRequestedSlots(new java.util.HashSet<>(Set.of(slots)));
+            a.setStandbyRank(rank);
+            return a;
+        }
+
+        @Test
+        @DisplayName("Y3: teklif yalnız boşalan slotu talep etmiş yedeğe gider (sıra 1 başka slotu istemiş)")
+        void offerMatchesVacatedSlot() {
+            ShiftSlot morning = slot(500L, 1, 1);
+            ShiftSlot evening = slot(501L, 1, 0);   // bosalan koltuk
+            Application noShow = app(APP_ID, ApplicationStatus.ACCEPTED);
+            Application first = standby(77L, 1, morning);
+            Application second = standby(78L, 2, evening);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
+            when(shiftSlotRepository.findAllById(List.of(501L))).thenReturn(List.of(evening));
+            when(applicationRepository.findAvailableStandbys(LISTING_ID)).thenReturn(List.of(first, second));
+
+            Long offered = svc().offerAfterNoShow(APP_ID, List.of(501L));
+
+            assertThat(offered).isEqualTo(78L);
+            assertThat(first.getStandbyOfferedAt()).isNull();
+            assertThat(second.getStandbyReplacesApplicationId()).isEqualTo(APP_ID);
+        }
+
+        @Test
+        @DisplayName("Y3: boşalan slot bu arada dolduysa teklif gönderilmez")
+        void vacatedSlotAlreadyRefilled_noOffer() {
+            Application noShow = app(APP_ID, ApplicationStatus.ACCEPTED);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
+            when(shiftSlotRepository.findAllById(List.of(501L))).thenReturn(List.of(slot(501L, 1, 1)));
+
+            assertThat(svc().offerAfterNoShow(APP_ID, List.of(501L))).isNull();
+            verify(applicationRepository, never()).findAvailableStandbys(any());
+        }
+
+        @Test
+        @DisplayName("Y4: süresi dolan teklif EXPIRED kalır (noRollbackFor), sıradakine geçilir, bildirim bir kez")
+        void expiredOffer_persistsAndCascades() throws Exception {
+            ShiftSlot open = slot(500L, 1, 0);
+            Application a = standby(77L, 1, open);
+            a.setStandbyOfferedAt(LocalDateTime.now().minusHours(4));
+            a.setStandbyDeadline(LocalDateTime.now().minusMinutes(1));
+            a.setStandbyReplacesApplicationId(APP_ID);
+            Application next = standby(78L, 2, open);
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app(APP_ID, ApplicationStatus.ACCEPTED)));
+            when(shiftSlotRepository.findAllByJobListingId(LISTING_ID)).thenReturn(List.of(open));
+            when(applicationRepository.findAvailableStandbys(LISTING_ID)).thenReturn(List.of(next));
+
+            assertThatThrownBy(() -> svc().respondToOffer(77L, CANDIDATE_ID, true))
+                    .isInstanceOf(com.hotelapp.exception.OfferExpiredException.class)
+                    .hasMessage("Yedek teklifinin süresi doldu.");
+
+            assertThat(a.getStatus()).isEqualTo(ApplicationStatus.EXPIRED);
+            assertThat(next.getStandbyOfferedAt()).isNotNull();
+            verify(notificationService, times(1)).notify(eq(CANDIDATE_ID),
+                    eq(NotificationType.STANDBY_OFFER_EXPIRED), any(), any(), any());
+            verify(shiftSlotRepository, never()).incrementFilledIfAvailable(any());
+
+            org.springframework.transaction.annotation.Transactional tx = StandbyService.class
+                    .getMethod("respondToOffer", Long.class, Long.class, boolean.class)
+                    .getAnnotation(org.springframework.transaction.annotation.Transactional.class);
+            assertThat(tx.noRollbackFor()).contains(com.hotelapp.exception.OfferExpiredException.class);
+        }
+
+        @Test
+        @DisplayName("Y4: scheduler zaten EXPIRED olanı tekrar işlemez (tekrar bildirim yok)")
+        void scheduler_skipsAlreadyExpired() {
+            Application a = app(77L, ApplicationStatus.EXPIRED);
+            when(applicationRepository.findByStatusAndStandbyDeadlineBefore(
+                    eq(ApplicationStatus.STANDBY), any())).thenReturn(List.of(a));
+
+            assertThat(svc().expireOverdueOffers()).isZero();
+            verifyNoInteractions(notificationService);
+        }
+
+        @Test
+        @DisplayName("Y5: aktif teklifi olan yedek işletmece çıkarılırsa sıradaki yedeğe geçilir")
+        void removeStandbyWithActiveOffer_cascades() {
+            ShiftSlot open = slot(500L, 1, 0);
+            Application a = standby(77L, 1, open);
+            a.setStandbyOfferedAt(LocalDateTime.now().minusMinutes(5));
+            a.setStandbyDeadline(LocalDateTime.now().plusHours(2));
+            a.setStandbyReplacesApplicationId(APP_ID);
+            Application next = standby(78L, 2, open);
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app(APP_ID, ApplicationStatus.ACCEPTED)));
+            when(shiftSlotRepository.findAllByJobListingId(LISTING_ID)).thenReturn(List.of(open));
+            when(applicationRepository.findAvailableStandbys(LISTING_ID)).thenReturn(List.of(next));
+
+            svc().removeStandby(77L, OWNER_ID);
+
+            assertThat(a.getStatus()).isEqualTo(ApplicationStatus.REVIEWING);
+            assertThat(next.getStandbyReplacesApplicationId()).isEqualTo(APP_ID);
+        }
+
+        @Test
+        @DisplayName("Y5: teklifi olmayan yedek çıkarılırsa zincir tetiklenmez")
+        void removeStandbyWithoutOffer_noCascade() {
+            Application a = standby(77L, 1, slot(500L, 1, 0));
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+
+            svc().removeStandby(77L, OWNER_ID);
+
+            verify(applicationRepository, never()).findAvailableStandbys(any());
+        }
+
+        @Test
+        @DisplayName("K1: yedek kabulünde yalnız alınabilen koltuk atanır; dolu slot başvurudan çıkar")
+        void accept_keepsOnlyClaimedSeats() {
+            ShiftSlot full = slot(500L, 1, 1);
+            ShiftSlot open = slot(501L, 1, 0);
+            Application a = standby(77L, 1, full, open);
+            a.setStandbyOfferedAt(LocalDateTime.now().minusMinutes(5));
+            a.setStandbyDeadline(LocalDateTime.now().plusHours(2));
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(shiftSlotRepository.incrementFilledIfAvailable(500L)).thenReturn(0);
+            when(shiftSlotRepository.incrementFilledIfAvailable(501L)).thenReturn(1);
+
+            svc().respondToOffer(77L, CANDIDATE_ID, true);
+
+            assertThat(a.getStatus()).isEqualTo(ApplicationStatus.ACCEPTED);
+            assertThat(a.getRequestedSlots()).containsExactly(open);
+            var order = inOrder(shiftSlotRepository);
+            order.verify(shiftSlotRepository).incrementFilledIfAvailable(500L);
+            order.verify(shiftSlotRepository).incrementFilledIfAvailable(501L);
+        }
+
+        @Test
+        @DisplayName("K1: yedek kabulünde hiç koltuk alınamazsa 422 'Bu vardiya doldu'")
+        void accept_noSeat_throws() {
+            Application a = standby(77L, 1, slot(500L, 1, 0));
+            a.setStandbyOfferedAt(LocalDateTime.now().minusMinutes(5));
+            a.setStandbyDeadline(LocalDateTime.now().plusHours(2));
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(shiftSlotRepository.incrementFilledIfAvailable(500L)).thenReturn(0);   // yaris kaybedildi
+
+            assertThatThrownBy(() -> svc().respondToOffer(77L, CANDIDATE_ID, true))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("Bu vardiya doldu");
         }
     }
 }

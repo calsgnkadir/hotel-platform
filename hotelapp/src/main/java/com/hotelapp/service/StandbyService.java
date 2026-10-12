@@ -7,6 +7,7 @@ import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.enums.NotificationType;
 import com.hotelapp.event.AuditLoggedEvent;
 import com.hotelapp.exception.BusinessRuleException;
+import com.hotelapp.exception.OfferExpiredException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
@@ -17,9 +18,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * FAZ C.1 — Yedek (standby) aday sistemi.
@@ -28,9 +32,11 @@ import java.util.List;
  * <ol>
  *   <li>Isletme bir basvuruyu STANDBY'a alir (yedek).</li>
  *   <li>Asil aday no-show isaretlenirse slot bosalir ve sistem <b>otomatik</b>
- *       olarak siradaki yedege acil teklif gonderir (in-app + WS + web push).</li>
+ *       olarak bosalan slotu talep etmis siradaki yedege acil teklif gonderir
+ *       (in-app + WS + web push + SMS).</li>
  *   <li>Yedek {@value #OFFER_WINDOW_HOURS} saat icinde kabul ederse ACCEPTED olur,
- *       slot yeniden dolar. Reddeder ya da suresi gecerse sıradaki yedege gecilir.</li>
+ *       bos koltuk atomik olarak dolar. Reddeder, suresi gecer, yedeklikten cekilir
+ *       ya da isletme onu cikarir/reddederse siradaki yedege gecilir.</li>
  * </ol>
  *
  * <p>Teklif penceresi kisa tutulur: vardiya bugun/yarin oldugu icin saatler onemli.
@@ -101,7 +107,10 @@ public class StandbyService {
         return applicationMapper.toResponse(app);
     }
 
-    /** Yedeklikten cikarir, basvuru yeniden degerlendirmeye (REVIEWING) doner. */
+    /**
+     * Yedeklikten cikarir, basvuru yeniden degerlendirmeye (REVIEWING) doner.
+     * Aktif teklifi olan yedek cikarilirsa sira bir sonraki yedege gecer.
+     */
     @Transactional
     public ApplicationResponse removeStandby(Long applicationId, Long ownerId) {
         Application app = getForOwner(applicationId, ownerId);
@@ -109,6 +118,7 @@ public class StandbyService {
         if (app.getStatus() != ApplicationStatus.STANDBY) {
             throw new BusinessRuleException("Bu başvuru yedek listesinde değil.");
         }
+        Long cascadeFor = activeOfferReplaces(app);
 
         app.setStatus(ApplicationStatus.REVIEWING);
         app.setStandbyRank(null);
@@ -122,6 +132,9 @@ public class StandbyService {
                 "İlan: " + app.getJobListing().getTitle()
                         + " · Aday: " + app.getCandidate().getEmail()));
 
+        if (cascadeFor != null) {
+            offerAfterNoShow(cascadeFor);
+        }
         return applicationMapper.toResponse(app);
     }
 
@@ -130,25 +143,55 @@ public class StandbyService {
     // ================================================================
 
     /**
-     * No-show isaretlenen basvurunun yerine siradaki yedege acil teklif gonderir.
-     * NoShowEventListener tarafindan AFTER_COMMIT + async cagrilir.
+     * Zincirin devami (yedek reddetti / suresi doldu / cekildi / cikarildi /
+     * engellendi): ilanin hala bos ve bitmemis slotlari uzerinden siradaki yedegi cagirir.
      *
      * @return teklif gonderilen basvuru id'si, yedek yoksa null
      */
     @Transactional
     public Long offerAfterNoShow(Long noShowApplicationId) {
+        return offerAfterNoShow(noShowApplicationId, null);
+    }
+
+    /**
+     * No-show isaretlenen basvurunun yerine siradaki yedege acil teklif gonderir.
+     * NoShowEventListener tarafindan AFTER_COMMIT + async cagrilir.
+     *
+     * <p>Eslesme bosalan slot(lar) uzerinden yapilir: yalniz requestedSlots'u bos ve
+     * bitmemis bu slotlarla kesisen yedek cagrilir. {@code vacatedSlotIds} null ise
+     * (zincir devami) ilanin hala bos ve bitmemis tum slotlari kullanilir.
+     *
+     * @return teklif gonderilen basvuru id'si, yedek yoksa null
+     */
+    @Transactional
+    public Long offerAfterNoShow(Long noShowApplicationId, Collection<Long> vacatedSlotIds) {
         Application noShowApp = applicationRepository.findById(noShowApplicationId).orElse(null);
         if (noShowApp == null) return null;
 
         Long listingId = noShowApp.getJobListing().getId();
+        LocalDateTime now = LocalDateTime.now();
 
-        // Vardiya tamamen gecmisse yedek cagirmanin anlami yok.
-        if (!hasUpcomingSlot(noShowApp)) {
-            log.info("[STANDBY] app={} vardiyasi gecmis, yedek teklifi atlandi", noShowApplicationId);
+        List<ShiftSlot> pool = vacatedSlotIds != null
+                ? shiftSlotRepository.findAllById(vacatedSlotIds)
+                : shiftSlotRepository.findAllByJobListingId(listingId);
+        boolean slotted = (pool != null && !pool.isEmpty())
+                || (noShowApp.getRequestedSlots() != null && !noShowApp.getRequestedSlots().isEmpty());
+        Set<Long> vacancy = pool == null ? Set.of() : pool.stream()
+                .filter(ShiftWindow::hasTimes)
+                .filter(sl -> !ShiftWindow.hasEnded(sl, now))
+                .filter(sl -> !sl.isFull())
+                .map(ShiftSlot::getId)
+                .collect(Collectors.toSet());
+
+        // Vardiya bitmisse ya da bos koltuk kalmadiysa yedek cagirmanin anlami yok.
+        if (slotted && vacancy.isEmpty()) {
+            log.info("[STANDBY] app={} icin bos ve bitmemis vardiya yok, yedek teklifi atlandi", noShowApplicationId);
             return null;
         }
 
-        List<Application> standbys = applicationRepository.findAvailableStandbys(listingId);
+        List<Application> standbys = applicationRepository.findAvailableStandbys(listingId).stream()
+                .filter(sb -> !slotted || matchesVacancy(sb, vacancy, now))
+                .toList();
         if (standbys.isEmpty()) {
             log.info("[STANDBY] listing={} icin musait yedek yok", listingId);
             // Isletmeye bilgi: yedek yok, acik kapanmadi
@@ -163,7 +206,6 @@ public class StandbyService {
         }
 
         Application next = standbys.get(0);
-        LocalDateTime now = LocalDateTime.now();
         next.setStandbyOfferedAt(now);
         next.setStandbyDeadline(now.plusHours(OFFER_WINDOW_HOURS));
         next.setStandbyReplacesApplicationId(noShowApplicationId);
@@ -195,8 +237,11 @@ public class StandbyService {
     // CANDIDATE — acil teklife cevap
     // ================================================================
 
-    /** Yedek aday acil teklifi kabul/ret eder. */
-    @Transactional
+    /**
+     * Yedek aday acil teklifi kabul/ret eder.
+     * Suresi gecmis teklif: EXPIRED + siradaki yedege gecis KALICI olur, sonra 422.
+     */
+    @Transactional(noRollbackFor = OfferExpiredException.class)
     public ApplicationResponse respondToOffer(Long applicationId, Long candidateId, boolean accept) {
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
@@ -209,7 +254,8 @@ public class StandbyService {
         }
         if (app.getStandbyDeadline() != null && LocalDateTime.now().isAfter(app.getStandbyDeadline())) {
             expireOffer(app, "Aday süresinde cevap vermedi");
-            throw new BusinessRuleException("Yedek teklifinin süresi doldu.");
+            cascadeToNextStandby(app);
+            throw new OfferExpiredException("Yedek teklifinin süresi doldu.");
         }
 
         Long ownerId = app.getJobListing().getBusiness().getOwner().getId();
@@ -221,21 +267,11 @@ public class StandbyService {
                     app.getJobListing().getBusiness().getId(), candidateId)) {
                 throw new BusinessRuleException("Bu işletmeye başvuru yapamazsın.");
             }
-            // Slot kapasitesini yeniden doldur
-            if (app.getRequestedSlots() != null) {
-                for (ShiftSlot slot : app.getRequestedSlots()) {
-                    if (slot.isFull()) {
-                        throw new BusinessRuleException(
-                                "Bu vardiya bu arada doldu: " + slot.getDate() + " "
-                                        + slot.getStartTime() + "-" + slot.getEndTime());
-                    }
-                    slot.setSlotsFilled(slot.getSlotsFilled() + 1);
-                    shiftSlotRepository.save(slot);
-                }
-            }
             app.setStatus(ApplicationStatus.ACCEPTED);
             app.setStandbyDeadline(null);
-            applicationRepository.save(app);
+            // Once basvuru (iyimser kilit): isletme ayni anda karar verdiyse 409.
+            applicationRepository.saveAndFlush(app);
+            claimOpenSeats(app);
 
             outboxService.appendAuditLog(AuditLoggedEvent.user(
                     candidateId, "STANDBY_ACCEPTED", "APPLICATION", applicationId,
@@ -282,11 +318,18 @@ public class StandbyService {
                 .findByStatusAndStandbyDeadlineBefore(ApplicationStatus.STANDBY, LocalDateTime.now());
         if (overdue.isEmpty()) return 0;
 
+        int n = 0;
         for (Application app : overdue) {
+            if (app.getStatus() != ApplicationStatus.STANDBY) continue;
             expireOffer(app, "Teklif süresi doldu");
-            cascadeToNextStandby(app);
+            n++;
+            try {
+                cascadeToNextStandby(app);
+            } catch (RuntimeException ex) {
+                log.warn("[STANDBY] app={} sonrasi siradaki yedege gecilemedi: {}", app.getId(), ex.getMessage());
+            }
         }
-        return overdue.size();
+        return n;
     }
 
     // ================================================================
@@ -323,17 +366,47 @@ public class StandbyService {
         offerAfterNoShow(replaces);
     }
 
-    /** Basvurunun vardiyalarindan en az biri henuz gecmemis mi? */
-    private boolean hasUpcomingSlot(Application app) {
-        if (app.getRequestedSlots() == null || app.getRequestedSlots().isEmpty()) {
-            return true;   // slotsuz eski akis — engellemeyelim
-        }
-        LocalDate today = LocalDate.now();
+    /**
+     * Yedegin kabulunde koltuk: talep ettigi, bitmemis slotlardan bos olanlar
+     * atomik olarak doldurulur (id sirasiyla). Hicbiri alinamazsa 422 ve tum
+     * transaction geri alinir. Alinamayan/bitmis slotlar basvurudan cikar ki
+     * ACCEPTED basvurunun her slotu tam bir koltuga karsilik gelsin.
+     */
+    private void claimOpenSeats(Application app) {
+        if (app.getRequestedSlots() == null || app.getRequestedSlots().isEmpty()) return; // slotsuz eski akis
         LocalDateTime now = LocalDateTime.now();
-        return app.getRequestedSlots().stream().anyMatch(s ->
-                s.getDate().isAfter(today)
-                        || (s.getDate().isEqual(today)
-                            && LocalDateTime.of(s.getDate(), s.getEndTime()).isAfter(now)));
+        Set<ShiftSlot> claimed = new HashSet<>();
+        for (ShiftSlot slot : SlotSeats.byId(app.getRequestedSlots())) {
+            if (!ShiftWindow.hasTimes(slot) || ShiftWindow.hasEnded(slot, now)) continue;
+            if (SlotSeats.tryClaim(shiftSlotRepository, slot)) claimed.add(slot);
+        }
+        if (claimed.isEmpty()) {
+            throw new BusinessRuleException(
+                    "Bu vardiya doldu: teklif edilen koltuk bu arada başka biriyle kapandı.");
+        }
+        if (claimed.size() != app.getRequestedSlots().size()) {
+            app.getRequestedSlots().removeIf(sl -> !claimed.contains(sl));
+        }
+    }
+
+    /** Yedegin talep ettigi slotlardan biri bos ve bitmemis koltuklarla kesisiyor mu? */
+    private static boolean matchesVacancy(Application standby, Set<Long> vacancy, LocalDateTime now) {
+        if (standby.getRequestedSlots() == null || standby.getRequestedSlots().isEmpty()) {
+            return false;
+        }
+        return standby.getRequestedSlots().stream()
+                .anyMatch(sl -> vacancy.contains(sl.getId())
+                        && ShiftWindow.hasTimes(sl) && !ShiftWindow.hasEnded(sl, now));
+    }
+
+    /**
+     * Aktif yedek teklifi varsa (no-show yerine cagrilmis) yerine gectigi basvuru id'si.
+     * Teklif cevaplanmadan basvuru cekilir/cikarilir/reddedilirse zincir devam etmeli.
+     */
+    public static Long activeOfferReplaces(Application app) {
+        return app.getStatus() == ApplicationStatus.STANDBY && app.getStandbyOfferedAt() != null
+                ? app.getStandbyReplacesApplicationId()
+                : null;
     }
 
     private Application getForOwner(Long applicationId, Long ownerId) {

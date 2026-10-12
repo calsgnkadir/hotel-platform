@@ -194,7 +194,9 @@ public class ApplicationController {
 
     @Operation(
             summary = "Kabul edilmiş başvuruyu NO-SHOW olarak işaretle — sadece BUSINESS_OWNER",
-            description = "Adayın strike hakkı 1 düşer. Hak sıfıra inerse aday 30 gün otomatik banlanır ve hakları 3'e resetlenir."
+            description = "Vardiya başlangıcından 30 dk sonra ve giriş kaydı yoksa işaretlenebilir. "
+                    + "slotId verilirse yalnız o vardiya boşalır. Adayın strike hakkı başvuru başına bir kez 1 düşer. "
+                    + "Hak sıfıra inerse aday 30 gün otomatik banlanır ve hakları 3'e resetlenir."
     )
     @PutMapping("/api/business/applications/{applicationId}/no-show")
     // FAZ 4.9 — Method-level: bu basvuru benim isletmeme mi ait?
@@ -202,8 +204,10 @@ public class ApplicationController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<NoShowResult> markNoShow(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
-            @PathVariable Long applicationId) {
+            @PathVariable Long applicationId,
+            // Opsiyonel: yalniz bu vardiya. Verilmezse baslamis ve girisi olmayan vardiyalar.
+            @RequestParam(name = "slotId", required = false) Long slotId) {
         return ResponseEntity.ok(
-                applicationService.markNoShow(applicationId, currentUser.getId()));
+                applicationService.markNoShow(applicationId, currentUser.getId(), slotId));
     }
 }

@@ -14,12 +14,12 @@ final class ShiftAttendance {
     private ShiftAttendance() {}
 
     static LocalDateTime start(ShiftSlot slot) {
-        return slot.getDate().atTime(slot.getStartTime());
+        return ShiftWindow.startAt(slot);
     }
 
+    /** Gece vardiyasi (bitis <= baslangic) ertesi gun biter — ShiftWindow kurali. */
     static LocalDateTime end(ShiftSlot slot) {
-        LocalDateTime end = slot.getDate().atTime(slot.getEndTime());
-        return slot.getEndTime().isAfter(slot.getStartTime()) ? end : end.plusDays(1);
+        return ShiftWindow.endAt(slot);
     }
 
     // Cards are available on the shift day, including early arrival, until its end.

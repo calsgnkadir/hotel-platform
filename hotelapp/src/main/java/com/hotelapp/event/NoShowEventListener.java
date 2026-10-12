@@ -70,7 +70,7 @@ public class NoShowEventListener {
         // FAZ C.1 — "Gelmezse yerine adam": siradaki yedege otomatik acil teklif.
         // Ana no-show islemi commit oldugu icin burada patlarsa strike/ban etkilenmez.
         try {
-            Long offeredTo = standbyService.offerAfterNoShow(e.applicationId());
+            Long offeredTo = standbyService.offerAfterNoShow(e.applicationId(), e.vacatedSlotIds());
             if (offeredTo != null) {
                 log.info("[NO-SHOW-ASYNC] yedek teklifi gonderildi: app={}", offeredTo);
             }

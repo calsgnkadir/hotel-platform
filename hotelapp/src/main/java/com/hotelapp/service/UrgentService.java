@@ -234,8 +234,8 @@ public class UrgentService {
         LocalDateTime now = LocalDateTime.now();
         return (listing.getShiftSlots() == null ? List.<ShiftSlot>of() : listing.getShiftSlots())
                 .stream()
-                .filter(s -> s.getDate() != null && s.getEndTime() != null)
-                .map(s -> LocalDateTime.of(s.getDate(), s.getEndTime()))
+                .filter(ShiftWindow::hasTimes)
+                .map(ShiftWindow::endAt)   // gece vardiyasi ertesi gun biter
                 .filter(dt -> dt.isAfter(now))
                 .min(LocalDateTime::compareTo)
                 .orElse(now.plusHours(DEFAULT_URGENT_HOURS));
