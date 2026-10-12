@@ -2,6 +2,17 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { QRCodeSVG } from 'qrcode.react'
 import * as hotelApi from '../../api/hotel'
+import { keys } from '../../lib/queryClient'
+import { annotateShiftText, localDateISO } from '../../lib/shiftTime'
+
+/** Başvurulardaki vardiya bazlı gelmedi işaretleri: "appId:slotId" kümesi. */
+function noShowKeys(applications) {
+  const set = new Set()
+  for (const a of applications || []) {
+    for (const id of a?.noShowSlotIds || []) set.add(`${a.id}:${id}`)
+  }
+  return set
+}
 
 const fmtTime = iso => new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
 
@@ -20,32 +31,66 @@ export default function EntryPasses() {
     retry: 0,
   })
 
+  // Aday panelindeki başvuru önbelleği (aynı anahtar/biçim); gelmedi işaretli
+  // vardiyanın kartı okutulmaz, bekleme metni yerine "Gelmedi" gösterilir.
+  const { data: applications = [] } = useQuery({
+    queryKey: keys.applications.candidate(),
+    queryFn: async () => {
+      const res = await hotelApi.getMyApplications()
+      return Array.isArray(res) ? res : (res?.content ?? [])
+    },
+    enabled: passes.length > 0,
+    retry: 0,
+  })
+  const noShows = noShowKeys(applications)
+  const isNoShow = p => !!p.noShow || noShows.has(`${p.applicationId}:${p.shiftSlotId}`)
+
   if (passes.length === 0) return null
-  const current = open && passes.find(p => p.passUrl === open)
+  const current = open && passes.find(p => p.passUrl === open && !isNoShow(p))
 
   return (
     <>
       <div className="space-y-2 mb-4">
-        {passes.map(p => (
-          <button key={p.passUrl} type="button" onClick={() => setOpen(p.passUrl)}
-                  className="card w-full !p-3 flex items-center gap-3 text-left transition-shadow hover:shadow-md">
-            <div className="p-1.5 rounded-lg bg-white shrink-0" style={{ border: '1px solid var(--ah-line)', opacity: p.usedAt ? 0.35 : 1 }}>
-              <QRCodeSVG value={p.passUrl} size={48} level="M" />
+        {passes.map(p => {
+          const noShow = isNoShow(p)
+          const body = (
+            <>
+              <div className="p-1.5 rounded-lg bg-white shrink-0" style={{ border: '1px solid var(--ah-line)', opacity: p.usedAt || noShow ? 0.35 : 1 }}>
+                <QRCodeSVG value={p.passUrl} size={48} level="M" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>
+                  {/* Gece vardiyası dün başlamış olabilir — "Bugünkü" yalnız bugün başlayana */}
+                  {!p.shiftDate || p.shiftDate === localDateISO() ? 'Bugünkü giriş kartın' : 'Giriş kartın'}
+                </div>
+                <div className="text-sm font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
+                  {p.businessName} · {annotateShiftText(p.shift, { short: true })}
+                </div>
+                <div className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>{p.shiftDate}</div>
+                {noShow ? (
+                  <div className="flex items-center gap-2 mt-0.5 text-xs" style={{ color: 'var(--ah-ink-3)' }}>
+                    <span className="badge badge-negative" data-tone="negative">Gelmedi</span>
+                    Bu vardiya için kart kullanılamaz
+                  </div>
+                ) : (
+                  <div className="text-xs" style={{ color: p.usedAt ? 'var(--ah-ok)' : 'var(--ah-ink-3)' }}>
+                    {p.usedAt ? `Giriş yapıldı · ${fmtTime(p.usedAt)}` : 'Kapıdaki görevliye okut — dokun, büyüsün'}
+                  </div>
+                )}
+              </div>
+            </>
+          )
+          return noShow ? (
+            <div key={p.passUrl} className="card w-full !p-3 flex items-center gap-3 text-left" data-testid="pass-no-show">
+              {body}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>
-                Bugünkü giriş kartın
-              </div>
-              <div className="text-sm font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
-                {p.businessName} · {p.shift}
-              </div>
-              <div className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>{p.shiftDate}</div>
-              <div className="text-xs" style={{ color: p.usedAt ? 'var(--ah-ok)' : 'var(--ah-ink-3)' }}>
-                {p.usedAt ? `Giriş yapıldı · ${fmtTime(p.usedAt)}` : 'Kapıdaki görevliye okut — dokun, büyüsün'}
-              </div>
-            </div>
-          </button>
-        ))}
+          ) : (
+            <button key={p.passUrl} type="button" onClick={() => setOpen(p.passUrl)}
+                    className="card w-full !p-3 flex items-center gap-3 text-left transition-shadow hover:shadow-md">
+              {body}
+            </button>
+          )
+        })}
       </div>
 
       {current && (
@@ -59,7 +104,7 @@ export default function EntryPasses() {
             </div>
             <div className="text-lg font-semibold mt-0.5" style={{ color: 'var(--ah-ink)' }}>{current.fullName}</div>
             <div className="text-sm" style={{ color: 'var(--ah-ink-3)' }}>
-              {current.businessName} · {current.shift}
+              {current.businessName} · {annotateShiftText(current.shift)}
             </div>
             <div className="text-xs" style={{ color: 'var(--ah-ink-3)' }}>{current.shiftDate}</div>
 

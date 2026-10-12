@@ -8,9 +8,10 @@ import { extractErrorMessage } from '../../../api/client'
 import { useMyLocation } from '../../../lib/useMyLocation'
 import EmptyState from '../../../components/EmptyState'
 import StatusBadge from '../../../components/candidate/StatusBadge'
-import { CAND_FILTER_GROUPS, candGroupForStatus, getStatusMeta } from '../../../lib/applicationStatus'
+import { CAND_FILTER_GROUPS, candGroupForStatus, getStatusMeta, NO_SHOW, TONE_CLASS } from '../../../lib/applicationStatus'
 import { useConfirm } from '../../../lib/useConfirm'
 import SlotChipGroup from '../../../components/SlotChipGroup'
+import { nearestShift, compareSlots, formatSlotShort } from '../../../lib/shiftTime'
 import { formatSalary } from '../../../lib/salary'
 import { PlatformRoleNotice } from '../../../components/LegalNotice'   // FAZ C.3
 import BusinessLogo from '../../../components/BusinessLogo'
@@ -229,11 +230,16 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           const isExpanded = expandedId === app.id
           const requestedSlots = app.requestedSlots || []
           const salaryStr = formatSalary(app.listing?.salaryMin, app.listing?.salaryMax, app.listing?.salaryType, app.listing?.tipsIncluded)
-          const slot0 = requestedSlots[0]
+          // Gelmedi işaretli vardiyalar listede kalır ama "sıradaki vardiya" sayılmaz
+          const noShowIds = new Set((app.noShowSlotIds || []).map(String))
+          const noShowSlots = requestedSlots.filter(s => s?.id != null && noShowIds.has(String(s.id))).sort(compareSlots)
+          // Bitmemiş en yakın vardiya; hepsi bittiyse ilki
+          const slot0 = nearestShift(requestedSlots, { mode: 'active', filter: s => !noShowIds.has(String(s.id)) })
+            || [...requestedSlots].sort(compareSlots)[0]
           const hasAttention = !!app.note
           const metaBits = [
             requestedSlots.length > 0 && `${requestedSlots.length} vardiya`,
-            slot0 && `${new Date(slot0.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${(slot0.startTime || '').slice(0, 5)}`,
+            slot0 && formatSlotShort(slot0),
             salaryStr,
           ].filter(Boolean)
 
@@ -270,6 +276,18 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                       )}
                       {metaBits.map((m, i) => <span key={i}>{m}</span>)}
                     </div>
+
+                    {/* Vardiya bazlı gelmedi: işletmenin işaretlediği vardiyalar */}
+                    {noShowSlots.length > 0 && (
+                      <ul className="mt-2 space-y-1" data-testid="candidate-no-show-slots">
+                        {noShowSlots.map(s => (
+                          <li key={s.id} className="flex items-center gap-2 type-caption" style={{ color: 'var(--ah-ink-2)' }}>
+                            <span className={`badge ${TONE_CLASS[NO_SHOW.tone]}`} data-tone={NO_SHOW.tone}>Gelmedi</span>
+                            <span className="tabular-nums">{formatSlotShort(s)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
 
                     {/* FAZ C.1 — Acil yedek teklifi: asil aday gelmedi, sira sende */}
                     {app.standbyOfferActive && (

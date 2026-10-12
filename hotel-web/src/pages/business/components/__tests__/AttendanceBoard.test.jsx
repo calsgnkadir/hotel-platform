@@ -13,4 +13,13 @@ describe('AttendanceBoard shift selection', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Geldi' }))
     await waitFor(() => expect(onMarkArrived).toHaveBeenCalledWith(1, 11))
   })
+
+  it('gece vardiyasını "+1" ile gösterir, gündüzü olduğu gibi', () => {
+    render(<AttendanceBoard onMarkArrived={vi.fn()} data={{ expected: 2, arrived: 0, rows: [
+      { applicationId: 1, shiftSlotId: 11, fullName: 'Ayşe', shift: '22:00 – 06:00', status: 'Bekleniyor', canCheckIn: false },
+      { applicationId: 2, shiftSlotId: 12, fullName: 'Mehmet', shift: '08:00 – 16:00', status: 'Bekleniyor', canCheckIn: false },
+    ] }} />)
+    expect(screen.getByText('22:00 – 06:00 +1')).toBeInTheDocument()
+    expect(screen.getByText('08:00 – 16:00')).toBeInTheDocument()
+  })
 })

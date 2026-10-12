@@ -125,3 +125,15 @@ describe('ApplyModal KVKK açıklaması', () => {
     expect(note.closest('.modal-sheet__foot')).toContainElement(screen.getByRole('button', { name: 'Başvur' }))
   })
 })
+
+describe('ApplyModal gece vardiyası', () => {
+  it('ertesi gün biten vardiya etiketi ve seçilebilirlik', () => {
+    const night = { ...LISTING, shiftSlots: [
+      { id: 21, date: day(1), startTime: '22:00:00', endTime: '06:00:00', slotsNeeded: 2, slotsFilled: 0 },
+    ] }
+    render(<ApplyModal listing={night} onClose={vi.fn()} />)
+    expect(screen.getByText(/22:00–06:00 \(ertesi gün\)/)).toBeInTheDocument()
+    expect(screen.getByRole('checkbox')).not.toBeDisabled()
+  })
+})
+

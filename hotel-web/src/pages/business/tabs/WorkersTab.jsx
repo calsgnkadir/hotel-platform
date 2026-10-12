@@ -1,7 +1,7 @@
 import * as hotelApi from '../../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
-import { shiftHoursBiz } from '../lib/helpers'
+import { shiftHours } from '../../../lib/shiftTime'
 import EmptyState from '../../../components/EmptyState'
 import AvatarCluster from '../../../components/AvatarCluster'  // FAZ 5.14
 import cldImg, { ImgSize } from '../../../lib/cldImg'
@@ -29,7 +29,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
     g.jobCount++
     g.apps.push(app)
     for (const s of app.requestedSlots || []) {
-      g.totalHours += shiftHoursBiz(s.startTime, s.endTime)
+      g.totalHours += shiftHours(s.startTime, s.endTime)
       if (s.date && (!g.lastDate || s.date > g.lastDate)) g.lastDate = s.date
     }
   }

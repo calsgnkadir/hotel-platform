@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import { StatusBadge } from '../Badges'
+import { StatusBadge, NoShowBadge } from '../Badges'
 
 /** UI Paket 3 — işletme rozetleri Türkçe; HELD artık ham "HELD" yazmaz. */
 const STATUSES = ['PENDING', 'REVIEWING', 'HELD', 'STANDBY', 'ACCEPTED', 'REJECTED', 'EXPIRED', 'WITHDRAWN']
@@ -21,5 +21,14 @@ describe('İşletme StatusBadge', () => {
     const { container } = render(<StatusBadge status={status} />)
     expect(container.textContent).not.toBe(status)
     expect(container.textContent).not.toMatch(/HOLD|HELD/i)
+  })
+})
+
+describe('İşletme NoShowBadge', () => {
+  it('varsayılan "İşe gelmedi", vardiya satırında kısa etiket; negatif ton', () => {
+    const { rerender } = render(<NoShowBadge />)
+    expect(screen.getByText('İşe gelmedi').className).toContain('badge-negative')
+    rerender(<NoShowBadge label="Gelmedi" />)
+    expect(screen.getByText('Gelmedi').className).toContain('badge-negative')
   })
 })

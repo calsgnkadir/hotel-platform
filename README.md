@@ -445,10 +445,38 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] **Kayıtlı Aramalar** — kullanıcı filtre setini kaydeder, yeni eşleşmede bildirim (scheduled matcher, 30 dk)
 - [x] **Akıllı sıralama** — aday tercihlerine göre weighted ranking (position +50, district +30, jobType +20, recency +10)
 - [x] **Sade açık arayüz** — grafit/gri marka (`#1f2937`) + muted semantik durum renkleri (yeşil/amber/kiremit/mavi, sadece durum sinyali), tek font (Inter), birleşik rounded kart sistemi, hairline ayraçlar
-- [x] **Test coverage** — 30 backend test dosyası (JUnit unit + integration), 11 frontend vitest, 4 Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
+- [x] **Test coverage** — backend 493 birim + 33 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 280 vitest (44 dosya), Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
 - [x] Landing "Vardiya Nabzı" canlı widget (WebSocket broadcast)
+- [x] **Engelleme** — aday işletmeyi, işletme adayı engelleyebilir; engel başvuru, yedek/HOLD teklifi, mesaj, tepki, "yazıyor" sinyali ve tüm bildirim/SMS yollarında uygulanır, karşı tarafa bildirilmez
+- [x] **Durum dili** — başvuru durumları tek sözlükten (`lib/applicationStatus.js`), aday ve işletme bakış açısına göre ayrı etiket
+- [x] **Güvenlik sertleştirme (Ekim 2026)** — proxy başlığıyla istek sınırı atlatma kapatıldı, e-posta başına giriş sınırı, STOMP CONNECT/SUBSCRIBE/SEND yetkisi, banlı/silinmiş hesapta oturum iptali, admin askısını işletme açamaz, actuator yalnız admin, loglarda kişisel veri yok
+- [x] **KVKK** — başvuruda paylaşılan veri başvuru ekranında ve aydınlatma metninde açıkça belirtilir; e-posta yalnız başvurulan işletmeye
+- [x] **Kapasite ve vardiya güvenliği** — atomik slot sayacı (son yere eşzamanlı kabul aşılamaz), başvuruda iyimser kilit, beklemede/yedekteyken mükerrer başvuru engeli, vardiya bazlı no-show (başlangıç + 30 dk, girişsiz slot; her vardiya ayrı kayıt ve ayrı ceza, çalışılan vardiyalar ve kazanç korunur), vardiya bazlı yedek zinciri
+- [x] **Gece vardiyası** — ertesi güne taşan slotlar (ör. 22:00–06:00) ilan, giriş kartı, yoklama, no-show ve kazanç hesaplarında
+- [x] **iyzico ödeme oturumları** — her checkout ayrı kayıt, tekrar gelen başarılı callback idempotent, tutar/sepet doğrulaması, 10 dk'da bir mutabakat
 
 ### Sıradaki
+
+**Altyapı ve ilan yaşam döngüsü**
+- [ ] İlan son vardiyası bitince otomatik kapanır; açık başvurular sonuçlandırılır
+- [ ] Bildirimler commit sonrası/asenkron (bağlantı havuzu baskısı ve geri alınan işlem bildirimi)
+- [ ] Outbox üstel bekleme, e-posta/SMS zaman aşımları, zamanlanmış işler için thread havuzu
+- [ ] İlan düzenleme kuralları (geçmiş slot, kapasite ≥ dolu yer), GPS girişinde vardiya eşleşmesi
+- [ ] Hesap silme/ban'da açık başvuru ve ilanların kapatılması, anonimleştirme kapsamı
+
+**Güvenlik (orta/düşük)**
+- [ ] Ön yüz güvenlik başlıkları (CSP, frame-ancestors, HSTS)
+- [ ] İşletme web sitesinde yalnız http(s), arama davetinde yalnız Jitsi adresi
+- [ ] Kilitli/kapalı hesap girişinde 401, OAuth sonrası token'ı URL'de taşımama, şifre sıfırlama kuralı
+- [ ] Swagger'ı prod'da kapatma, vitrin demo hesabını silme/şifre değişikliğine karşı koruma
+
+**Arayüz**
+- [ ] Admin paneli cilası (okunurluk, Türkçe etiketler, onay pencereleri, sekme URL'si)
+- [ ] Paket 2 kalıntıları (işletme sayfası, mesajlar, favoriler, takip/engellenenler, kısayollar), form etiketleri ve 44px dokunma hedefleri
+- [ ] Paket 4 — ilan listesi yoğunluğu ve filtreler (birimli ücret, vardiya saati, sıralama)
+- [ ] Paket 5 — tek navigasyon kaynağı, işletme ana ekranı, mobil alt sekme çubuğu
+
+**Önceki plandan**
 - [ ] Metrics dashboard (Grafana / Prometheus)
 - [ ] Public rate-limit ayrı tier (anonim read için, k6 baseline ~1 req/s)
 - [ ] Sanal liste (react-window) — 1000+ kayıt için

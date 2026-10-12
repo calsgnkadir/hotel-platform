@@ -11,6 +11,7 @@ import EmptyState from '../../../components/EmptyState'
 import { SkeletonList } from '../../../components/Skeleton'
 import { formatSalary } from '../../../lib/salary'  // FAZ 2/#25
 import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ D1
+import { nearestShift, formatSlotShort } from '../../../lib/shiftTime'
 
 const PAGE_SIZE = 6
 
@@ -164,12 +165,10 @@ export default function MyListingsTab({ applications = [] }) {
                   {/* Faz E2: slot özeti */}
                   {listing.shiftSlots?.length > 0 && (() => {
                     const total      = listing.shiftSlots.length
-                    const next       = listing.shiftSlots[0]
+                    const next       = nearestShift(listing.shiftSlots, { mode: 'active' })  // devam eden gece vardiyası dahil
                     const totalSeats = listing.shiftSlots.reduce((sum, s) => sum + (s.slotsNeeded || 0), 0)
                     const filled     = listing.shiftSlots.reduce((sum, s) => sum + (s.slotsFilled || 0), 0)
-                    const nextStr = next
-                      ? `${new Date(next.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${next.startTime?.slice(0, 5)}–${next.endTime?.slice(0, 5)}`
-                      : null
+                    const nextStr = next ? formatSlotShort(next) : null
                     return (
                       <p className="type-caption font-medium mt-0.5" style={{ color: 'var(--accent-action)' }}>
                         {total} vardiya

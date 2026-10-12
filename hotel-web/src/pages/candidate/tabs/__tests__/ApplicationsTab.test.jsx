@@ -87,3 +87,25 @@ describe('Aday ApplicationsTab — işletme logosu', () => {
     }
   })
 })
+
+describe('Aday ApplicationsTab — vardiya bazlı gelmedi', () => {
+  it('işaretlenen vardiya "Gelmedi" rozetiyle listelenir, diğeri listelenmez', () => {
+    const slots = [
+      { id: 31, date: '2026-10-10', startTime: '08:00:00', endTime: '16:00:00' },
+      { id: 32, date: '2099-10-11', startTime: '22:00:00', endTime: '06:00:00' },
+    ]
+    render(<ApplicationsTab applications={[app(5, 'ACCEPTED', { requestedSlots: slots, noShowSlotIds: [31] })]}
+                            onRefresh={vi.fn()} />)
+    const list = screen.getByTestId('candidate-no-show-slots')
+    expect(within(list).getByText('Gelmedi').className).toContain('badge-negative')
+    expect(list).toHaveTextContent('08:00–16:00')
+    expect(list).not.toHaveTextContent('22:00')
+  })
+
+  it('gelmedi işareti yoksa liste çizilmez', () => {
+    render(<ApplicationsTab applications={[app(6, 'ACCEPTED', {
+      requestedSlots: [{ id: 40, date: '2099-01-01', startTime: '09:00:00', endTime: '17:00:00' }],
+    })]} onRefresh={vi.fn()} />)
+    expect(screen.queryByTestId('candidate-no-show-slots')).not.toBeInTheDocument()
+  })
+})

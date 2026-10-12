@@ -26,15 +26,3 @@ export function parseWorkingHours(text) {
   }
 }
 
-/**
- * Vardiya saat farkını hesapla (örn 8.0 saat).
- * Gece vardiyası için 24+ ekler (22:00 → 06:00 = 8 saat).
- */
-export function shiftHoursBiz(startTime, endTime) {
-  if (!startTime || !endTime) return 0
-  const [sh, sm] = startTime.split(':').map(Number)
-  const [eh, em] = endTime.split(':').map(Number)
-  let mins = (eh * 60 + em) - (sh * 60 + sm)
-  if (mins < 0) mins += 24 * 60
-  return mins / 60
-}

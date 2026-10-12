@@ -124,6 +124,17 @@ describe('ListingDetailPage mobil öncelikli', () => {
     expect(within(bar).getByRole('button', { name: 'Süresi doldu' })).toBeDisabled()
   })
 
+  it('gece vardiyası "ertesi gün" etiketiyle listelenir; dün başlayan vardiya "Geçti"', async () => {
+    renderPage({ ...LISTING, shiftSlots: [
+      { id: 21, date: day(-2), startTime: '22:00:00', endTime: '06:00:00', slotsNeeded: 2, slotsFilled: 0 },
+      { id: 22, date: day(2), startTime: '22:00:00', endTime: '06:00:00', slotsNeeded: 2, slotsFilled: 0 },
+    ] })
+    expect(await screen.findAllByText('22:00–06:00 (ertesi gün)')).toHaveLength(2)
+    expect(screen.getByText('Geçti')).toBeInTheDocument()
+    const bar = screen.getByTestId('mobile-apply-bar')
+    expect(within(bar).getByRole('button', { name: 'Başvur' })).not.toBeDisabled()
+  })
+
   it('açık vardiya yoksa "Kontenjan doldu" ve pasif', async () => {
     renderPage({ ...LISTING, shiftSlots: [{ ...LISTING.shiftSlots[0], slotsFilled: 3 }] })
     const bar = await screen.findByTestId('mobile-apply-bar')

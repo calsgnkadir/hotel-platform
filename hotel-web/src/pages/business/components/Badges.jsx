@@ -7,7 +7,8 @@ export function StatusBadge({ status, standbyOfferActive = false }) {
   return <BaseStatusBadge status={status} view="business" standbyOfferActive={standbyOfferActive} />
 }
 
-/* ── No-show Badge — işe gelmedi (satırda ikinci rozet olabilen tek durum) ── */
-export function NoShowBadge() {
-  return <span className={`badge ${TONE_CLASS[NO_SHOW.tone]}`} data-tone={NO_SHOW.tone}>{NO_SHOW.label}</span>
+/* ── No-show Badge — işe gelmedi (satırda ikinci rozet olabilen tek durum).
+   Vardiya satırında kısa etiket için label="Gelmedi" verilir. ── */
+export function NoShowBadge({ label = NO_SHOW.label }) {
+  return <span className={`badge ${TONE_CLASS[NO_SHOW.tone]}`} data-tone={NO_SHOW.tone}>{label}</span>
 }

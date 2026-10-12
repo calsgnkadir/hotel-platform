@@ -26,6 +26,7 @@ import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
 import { ApplyModal } from './ListingsPage'
 import { formatSalary, formatPayment, salaryTypeShort } from '../../lib/salary'  // FAZ 2/#25
+import { compareSlots, formatShiftRange, isShiftStarted, isShiftOngoing, isShiftPast } from '../../lib/shiftTime'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -47,7 +48,8 @@ function salaryParts(l) {
 const ACTIVE_APPLICATION_STATUSES = ['PENDING', 'REVIEWING', 'HELD', 'STANDBY', 'ACCEPTED']
 
 function fmtDay(date) {
-  return new Date(date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', weekday: 'short' })
+  // 'YYYY-MM-DD' yerel gün olarak okunur (UTC kayması yok)
+  return new Date(`${date}T00:00:00`).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', weekday: 'short' })
 }
 
 export default function ListingDetailPage() {
@@ -132,13 +134,10 @@ export default function ListingDetailPage() {
   const payment = formatPayment(listing.paymentPeriod, listing.paymentMethod)
   const hasDates = listing.startDate || listing.endDate
   const photos = Array.isArray(gallery) ? gallery : []
-  const slots = [...(listing.shiftSlots || [])].sort((a, b) => {
-    const c = (a.date || '').localeCompare(b.date || '')
-    return c !== 0 ? c : (a.startTime || '').localeCompare(b.startTime || '')
-  })
+  const slots = [...(listing.shiftSlots || [])].sort(compareSlots)
   const isFull = (s) => s.full || (s.slotsFilled >= s.slotsNeeded)
-  const todayStr = new Date().toISOString().slice(0, 10)
-  const futureSlots = slots.filter(s => (s.date || '') >= todayStr)
+  // Başvurulabilir = henüz başlamamış (yerel saat; gece vardiyası başladığı güne ait)
+  const futureSlots = slots.filter(s => s.date && !isShiftStarted(s))
   const hasFuture = futureSlots.length > 0
   const openSlots = futureSlots.filter(s => !isFull(s))
   const openPeople = openSlots.reduce((n, s) => n + Math.max(0, (s.slotsNeeded || 0) - (s.slotsFilled || 0)), 0)
@@ -274,18 +273,25 @@ export default function ListingDetailPage() {
             <ul className="space-y-2">
               {slots.map(s => {
                 const full = isFull(s)
+                const ongoing = isShiftOngoing(s)
+                const past = !ongoing && isShiftPast(s)
+                const statusText = past ? 'Geçti'
+                  : ongoing ? 'Devam ediyor'
+                  : full ? 'Doldu'
+                  : `${(s.slotsNeeded - (s.slotsFilled || 0))} kişi aranıyor`
+                const muted = full || past || ongoing
                 return (
                   <li key={s.id}
                     className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
-                    style={{ background: full ? 'var(--ah-band)' : 'var(--ah-card)', border: '1px solid var(--ah-line)' }}>
+                    style={{ background: (full || past) ? 'var(--ah-band)' : 'var(--ah-card)', border: '1px solid var(--ah-line)' }}>
                     <span className="type-body min-w-0">
                       <span className="font-semibold" style={{ color: 'var(--ah-ink)' }}>{fmtDay(s.date)}</span>
-                      <span className="ml-2 type-num" style={{ color: 'var(--ah-ink-2)' }}>{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
+                      <span className="ml-2 type-num" style={{ color: 'var(--ah-ink-2)' }}>{formatShiftRange(s.startTime, s.endTime)}</span>
                     </span>
                     {/* Durum dili paketi — rozet degil duz bilgi metni; dolu kirmizi DEGIL */}
                     <span className="type-meta flex-shrink-0 tabular-nums"
-                          style={{ color: full ? 'var(--ah-ink-4)' : 'var(--ah-ink-2)' }}>
-                      {full ? 'Doldu' : `${(s.slotsNeeded - (s.slotsFilled || 0))} kişi aranıyor`}
+                          style={{ color: muted ? 'var(--ah-ink-4)' : 'var(--ah-ink-2)' }}>
+                      {statusText}
                     </span>
                   </li>
                 )
@@ -494,7 +500,7 @@ function ShiftSummary({ hasFuture, openSlots, openPeople }) {
   return (
     <ul className="mt-2 space-y-1 type-meta" style={{ color: 'var(--ah-ink-2)' }}>
       <li><span className="font-semibold type-num" style={{ color: 'var(--ah-ink)' }}>{openSlots.length}</span> açık vardiya</li>
-      <li>İlk: <span className="type-num">{fmtDay(first.date)} · {first.startTime?.slice(0, 5)}</span></li>
+      <li>İlk: <span className="type-num">{fmtDay(first.date)} · {formatShiftRange(first.startTime, first.endTime, { short: true })}</span></li>
       {openPeople > 0 && <li><span className="type-num">{openPeople}</span> kişi aranıyor</li>}
     </ul>
   )

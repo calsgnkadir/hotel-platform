@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
+import { annotateShiftText } from '../../../lib/shiftTime'
 
 const STATUS_STYLE = {
   'Tamamladı':  { bg: 'var(--ah-ok-soft)',     fg: 'var(--ah-ok)' },
@@ -75,7 +76,7 @@ export default function AttendanceBoard({ data, onMarkArrived, onDownload }) {
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate" style={{ color: 'var(--ah-ink)' }}>{r.fullName}</div>
                     <div className="text-[11px]" style={{ color: 'var(--ah-ink-4)' }}>
-                      {r.shift}{r.phone ? ` · ${r.phone}` : ''}{r.clockIn ? ` · giriş ${r.clockIn}` : ''}
+                      {annotateShiftText(r.shift, { short: true })}{r.phone ? ` · ${r.phone}` : ''}{r.clockIn ? ` · giriş ${r.clockIn}` : ''}
                     </div>
                   </div>
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"

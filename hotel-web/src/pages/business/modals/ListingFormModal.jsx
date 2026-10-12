@@ -6,6 +6,7 @@ import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_LABELS } from '../lib/constants
 import useFocusTrap from '../../../lib/useFocusTrap'
 import { PAYMENT_PERIOD_OPTIONS, PAYMENT_METHOD_OPTIONS } from '../../../lib/salary'
 import { requestPushMoment } from '../../../lib/webpush'
+import { localDateISO, shiftDuration, isOvernight, validateShiftTimes } from '../../../lib/shiftTime'
 import {
   DndContext,
   PointerSensor,
@@ -51,7 +52,7 @@ function shiftSlotsToNextWeek(slots) {
   return slots.map(s => {
     if (!s.date) return s
     const nd = new Date(parse(s.date).getTime() + deltaMs)
-    return { ...s, date: nd.toISOString().slice(0, 10) }
+    return { ...s, date: localDateISO(nd) }
   })
 }
 
@@ -167,7 +168,7 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
       return toast.error('Max. ücret min. ücretten küçük olamaz')
     }
 
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateISO()
     if (form.startDate && form.startDate < today) {
       return toast.error('Başlangıç tarihi geçmişte olamaz')
     }
@@ -188,7 +189,9 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
       if (!s.startTime) return toast.error(`Slot ${n}: başlangıç saati zorunlu`)
       if (!s.endTime)   return toast.error(`Slot ${n}: bitiş saati zorunlu`)
       if (s.date < today) return toast.error(`Slot ${n}: geçmiş tarih olamaz`)
-      if (s.endTime <= s.startTime) return toast.error(`Slot ${n}: bitiş saati başlangıçtan sonra olmalı`)
+      // Gece vardiyası: bitiş < başlangıç ise ertesi gün biter (geçerli)
+      const timeErr = validateShiftTimes(s.startTime, s.endTime)
+      if (timeErr) return toast.error(`Slot ${n}: ${timeErr}`)
       if (!s.slotsNeeded || s.slotsNeeded < 1) return toast.error(`Slot ${n}: ihtiyaç sayısı en az 1`)
     }
 
@@ -421,7 +424,7 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
 
           {/* Faz E2: Vardiya slotları */}
           {(() => {
-            const todayStr = new Date().toISOString().split('T')[0]
+            const todayStr = localDateISO()
             return (
               <div className="border-2 border-brand-100 dark:border-brand-900/40 rounded-xl p-4 bg-brand-50/40 dark:bg-brand-900/20 space-y-3">
                 <div className="flex items-center justify-between">
@@ -469,10 +472,10 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
             </label>
             <div className="grid grid-cols-2 gap-3">
               <input type="date" name="startDate" value={form.startDate}
-                onChange={handleChange} min={new Date().toISOString().split('T')[0]}
+                onChange={handleChange} min={localDateISO()}
                 className="input" placeholder="Başlangıç" />
               <input type="date" name="endDate" value={form.endDate}
-                onChange={handleChange} min={form.startDate || new Date().toISOString().split('T')[0]}
+                onChange={handleChange} min={form.startDate || localDateISO()}
                 className="input" placeholder="Bitiş" />
             </div>
             <p className="text-xs text-ink-400 mt-1">
@@ -593,6 +596,8 @@ function SortableSlot({ slot, index, totalCount, todayStr, onUpdate, onDuplicate
         </div>
       </div>
 
+      <SlotTimeHint startTime={slot.startTime} endTime={slot.endTime} />
+
       <div>
         <label className="text-xs text-ink-500">İhtiyaç sayısı (kaç aday)</label>
         <input type="number" min="1" max="50" value={slot.slotsNeeded}
@@ -600,5 +605,29 @@ function SortableSlot({ slot, index, totalCount, todayStr, onUpdate, onDuplicate
           className="input text-sm !py-1.5 w-24" required />
       </div>
     </div>
+  )
+}
+
+/**
+ * Slot satırı altındaki saat bilgisi: süre, gece vardiyası notu veya hata.
+ * Yalnız yardımcı geri bildirim — asıl kural backend'de.
+ */
+function SlotTimeHint({ startTime, endTime }) {
+  if (!startTime || !endTime) return null
+  const err = validateShiftTimes(startTime, endTime)
+  if (err) {
+    return (
+      <p className="type-meta" role="alert" data-testid="slot-time-error" style={{ color: 'var(--ah-danger)' }}>
+        {err}
+      </p>
+    )
+  }
+  const dur = shiftDuration(startTime, endTime)
+  const overnight = isOvernight(startTime, endTime)
+  return (
+    <p className="type-meta" data-testid="slot-time-hint" style={{ color: 'var(--ah-ink-3)' }}>
+      {dur && <>Süre: <span className="type-num">{dur}</span></>}
+      {overnight && <>{dur ? ' · ' : ''}<span style={{ color: 'var(--ah-ink-2)' }}>Ertesi gün biter</span></>}
+    </p>
   )
 }

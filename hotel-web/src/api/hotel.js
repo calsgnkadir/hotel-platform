@@ -443,8 +443,11 @@ export async function getActiveSessionsBatch(applicationIds) {
   } catch { return {} }
 }
 
-export async function markNoShow(applicationId) {
-  const { data } = await api.put(`/api/business/applications/${applicationId}/no-show`)
+// Vardiya bazlı "Gelmedi": slotId hangi vardiyanın işaretlendiğini belirtir
+export async function markNoShow(applicationId, slotId) {
+  const { data } = await api.put(`/api/business/applications/${applicationId}/no-show`, null, {
+    params: slotId != null ? { slotId } : {},
+  })
   return data  // { application, candidateStrikesRemaining, autoBanned, bannedUntil }
 }
 

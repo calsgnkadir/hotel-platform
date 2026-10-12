@@ -6,6 +6,7 @@ import { MemoryRouter, Route, Routes, Link } from 'react-router-dom'
 
 vi.mock('../../../api/hotel', () => ({
   getMyPasses: vi.fn(),
+  getMyApplications: vi.fn(async () => []),
   scanPass: vi.fn(),
 }))
 import * as hotelApi from '../../../api/hotel'
@@ -55,6 +56,41 @@ describe('EntryPasses (çalışan giriş kartı)', () => {
     fireEvent.click(await screen.findByText(/Grand Otel · 16:00 – 23:00/))
     expect(screen.getByRole('dialog')).toHaveTextContent('16:00 – 23:00')
     expect(screen.getByRole('dialog')).not.toHaveTextContent('08:00 – 16:00')
+  })
+
+  it('gece vardiyası kartı "+1", büyük kartta "(ertesi gün)" gösterir; dün başlayan "Bugünkü" denmez', async () => {
+    const d = new Date(); d.setDate(d.getDate() - 1)
+    const yesterday = d.toLocaleDateString('en-CA')
+    hotelApi.getMyPasses.mockResolvedValue([{ ...pass, shift: '22:00 – 06:00', shiftDate: yesterday }])
+    wrap(<EntryPasses />)
+    fireEvent.click(await screen.findByText('Grand Otel · 22:00 – 06:00 +1'))
+    expect(screen.getByText('Giriş kartın')).toBeInTheDocument()
+    expect(screen.queryByText('Bugünkü giriş kartın')).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toHaveTextContent('22:00 – 06:00 (ertesi gün)')
+  })
+
+  it('gelmedi işaretli vardiyanın kartı "Gelmedi" gösterir, bekleme metni çıkmaz ve açılmaz', async () => {
+    hotelApi.getMyPasses.mockResolvedValue([
+      { ...pass, shiftSlotId: 31 },
+      { ...pass, shiftSlotId: 32, shift: '16:00 – 23:00', passUrl: 'https://kadrom.me/giris/second' },
+    ])
+    hotelApi.getMyApplications.mockResolvedValue([{ id: 1, noShowSlotIds: [31] }])
+    wrap(<EntryPasses />)
+    const card = await screen.findByTestId('pass-no-show')
+    expect(card).toHaveTextContent('Gelmedi')
+    expect(card).toHaveTextContent('08:00 – 16:00')
+    expect(card).not.toHaveTextContent('Kapıdaki görevliye okut')
+    expect(card.tagName).not.toBe('BUTTON')
+    fireEvent.click(card)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // Diğer vardiyanın kartı normal
+    expect(screen.getAllByText(/Kapıdaki görevliye okut/)).toHaveLength(1)
+  })
+
+  it('backend kartta noShow alanı gönderirse de "Gelmedi" gösterilir', async () => {
+    hotelApi.getMyPasses.mockResolvedValue([{ ...pass, shiftSlotId: 31, noShow: true }])
+    wrap(<EntryPasses />)
+    expect(await screen.findByTestId('pass-no-show')).toHaveTextContent('Gelmedi')
   })
 })
 

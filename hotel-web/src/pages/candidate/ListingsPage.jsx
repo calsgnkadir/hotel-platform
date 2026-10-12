@@ -24,7 +24,10 @@ import { formatSalary, formatPayment } from '../../lib/salary'  // FAZ 2/#25
 import { requestPushMoment } from '../../lib/webpush'
 import { useMyLocation } from '../../lib/useMyLocation'                    // FAZ B.3
 import { distanceKm, formatDistance } from '../../lib/distance'            // FAZ B.3
-import { shiftDuration } from '../../lib/shiftTime'                        // FAZ B.5.5
+import {
+  shiftDuration, formatShiftRange, compareSlots, isShiftStarted, nearestShift,
+  relativeDayLabel, localDateISO,
+} from '../../lib/shiftTime'                                                  // FAZ B.5.5 + gece vardiyası
 import BusinessLogo from '../../components/BusinessLogo'
 
 const POSITION_LABELS = {
@@ -59,25 +62,13 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   const noteRef = useRef(null)
   useEffect(() => { if (showNote) noteRef.current?.focus() }, [showNote])
 
-  const allSlots = [...(listing.shiftSlots || [])].sort((a, b) => {
-    const c = (a.date || '').localeCompare(b.date || '')
-    return c !== 0 ? c : (a.startTime || '').localeCompare(b.startTime || '')
-  })
+  const allSlots = [...(listing.shiftSlots || [])].sort(compareSlots)
   const hasSlots = allSlots.length > 0
 
-  // Chat-v2 bugfix: bugünden önceki tarihler "geçti" sayılır
-  const todayStr = new Date().toISOString().slice(0, 10)
-  // F0/bugfix: TARİH değil, başlangıç DateTime'a göre kontrol.
-  // Bugün başlayan ama saat geçmiş vardiyaya başvuru engellenir.
+  // F0/bugfix: TARİH değil, yerel başlangıç anına göre kontrol.
+  // Başlamış vardiyaya (gece vardiyası dahil) başvuru engellenir.
   function isPastSlot(s) {
-    if (!s.date) return false
-    if (s.date < todayStr) return true                  // dünden eski geçmiş
-    if (s.date > todayStr) return false                 // yarın+ gelecek
-    // Bugünse saat karşılaştır
-    if (!s.startTime) return false                      // saat yoksa kabul
-    const startHHMM = String(s.startTime).slice(0, 5)   // 14:00:00 14:00
-    const nowHHMM = new Date().toTimeString().slice(0, 5)
-    return startHHMM <= nowHHMM
+    return isShiftStarted(s)
   }
   const futureSlots = allSlots.filter(s => !isPastSlot(s))
   const hasFutureSlots = futureSlots.length > 0
@@ -134,7 +125,7 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
   if (submitState === 'success') {
     const firstSlot = allSlots.find(s => selectedSlotIds.includes(s.id))
     const firstSlotStr = firstSlot
-      ? `${new Date(firstSlot.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })} · ${(firstSlot.startTime || '').slice(0, 5)}`
+      ? `${new Date(`${firstSlot.date}T00:00:00`).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })} · ${formatShiftRange(firstSlot.startTime, firstSlot.endTime, { short: true })}`
       : null
     return (
       <div className="modal-overlay" onClick={onClose}>
@@ -249,10 +240,10 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                     const past = isPastSlot(s)
                     const disabled = full || past
                     const selected = selectedSlotIds.includes(s.id)
-                    const dateLabel = new Date(s.date).toLocaleDateString('tr-TR', {
+                    const dateLabel = new Date(`${s.date}T00:00:00`).toLocaleDateString('tr-TR', {
                       day: 'numeric', month: 'short', weekday: 'short',
                     })
-                    const timeLabel = `${(s.startTime || '').slice(0, 5)}–${(s.endTime || '').slice(0, 5)}`
+                    const timeLabel = formatShiftRange(s.startTime, s.endTime)
                     const openCount = (s.slotsNeeded || 0) - (s.slotsFilled || 0)
                     return (
                       <label key={s.id} className="ah-slot-option"
@@ -376,26 +367,20 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
 const TR_MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
 const TR_DAYS   = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
 
-function nextShiftLabel(slots) {
+const isSlotFull = (s) => !!(s.full || s.slotsFilled >= s.slotsNeeded)
+
+// Başvurulabilir = henüz başlamamış + dolu değil. Gece vardiyası başladığı
+// güne aittir ("Bugün 22:00–06:00 +1").
+export function nextShiftLabel(slots, now = new Date()) {
   if (!slots?.length) return null
-  const today = new Date().toLocaleDateString('en-CA')  // YYYY-MM-DD (local)
-  const future = slots
-    .filter(s => s.date && s.date >= today && !(s.full || s.slotsFilled >= s.slotsNeeded))
-    .sort((a, b) => (a.date === b.date
-      ? (a.startTime || '').localeCompare(b.startTime || '')
-      : a.date.localeCompare(b.date)))
-  const s = future[0]
+  const s = nearestShift(slots, { now, filter: s => !isSlotFull(s) })
   if (!s) return null
+  const more = slots.filter(x => x !== s && x.date && !isShiftStarted(x, now) && !isSlotFull(x)).length
   const d = new Date(`${s.date}T00:00:00`)
-  const t0 = new Date(); t0.setHours(0, 0, 0, 0)
-  const diff = Math.round((d - t0) / 86400000)
-  const day = diff === 0 ? 'Bugün'
-    : diff === 1 ? 'Yarın'
-    : `${TR_DAYS[d.getDay()]} ${d.getDate()} ${TR_MONTHS[d.getMonth()]}`
-  const time = s.startTime
-    ? `${s.startTime.slice(0, 5)}${s.endTime ? '–' + s.endTime.slice(0, 5) : ''}`
-    : ''
-  return { day, time, dur: shiftDuration(s.startTime, s.endTime), more: future.length - 1 }
+  const day = relativeDayLabel(s.date, now)
+    || `${TR_DAYS[d.getDay()]} ${d.getDate()} ${TR_MONTHS[d.getMonth()]}`
+  const time = formatShiftRange(s.startTime, s.endTime, { short: true })
+  return { day, time, dur: shiftDuration(s.startTime, s.endTime), more }
 }
 
 /* ── İlan kartı — REDESIGN v3 (açık + teal, sektör düzeni).
@@ -416,7 +401,8 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
 
   const shift = nextShiftLabel(listing.shiftSlots)
   const totalSlots = listing.shiftSlots?.length || 0
-  const allFull = totalSlots > 0 && !shift
+  // Doldu = başlamamış vardiya var ama hepsi dolu; hiç başlamamış yoksa süresi dolmuş
+  const allFull = totalSlots > 0 && !shift && !!nearestShift(listing.shiftSlots)
 
   return (
     <div className={`ah-job ${listing.urgent ? 'ah-job--urgent' : ''}`} onClick={() => onDetail(listing)}
@@ -475,7 +461,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
             </>
           ) : (
             <span className="ah-job__when-day" style={{ color: 'var(--ah-ink-3)' }}>
-              {allFull ? 'Doldu' : 'Belirtilmemiş'}
+              {allFull ? 'Doldu' : totalSlots === 0 ? 'Belirtilmemiş' : 'Geçti'}
             </span>
           )}
         </div>
@@ -624,7 +610,7 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   // Preset dateFrom/dateTo (YYYY-MM-DD)
   const dateRange = (() => {
     const today = new Date()
-    const fmt = (d) => d.toISOString().split('T')[0]
+    const fmt = (d) => localDateISO(d)   // yerel gün (UTC kayması yok)
     const addDays = (d, n) => { const c = new Date(d); c.setDate(c.getDate() + n); return c }
     switch (datePreset) {
       case 'TODAY':    return { dateFrom: fmt(today),                dateTo: fmt(today) }
@@ -920,11 +906,11 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
           <div className="grid grid-cols-2 gap-3 mt-3 max-w-md">
             <FilterField label="Başlangıç">
               <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
-                min={new Date().toISOString().split('T')[0]} className="input text-sm" />
+                min={localDateISO()} className="input text-sm" />
             </FilterField>
             <FilterField label="Bitiş">
               <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
-                min={customFrom || new Date().toISOString().split('T')[0]} className="input text-sm" />
+                min={customFrom || localDateISO()} className="input text-sm" />
             </FilterField>
           </div>
         )}

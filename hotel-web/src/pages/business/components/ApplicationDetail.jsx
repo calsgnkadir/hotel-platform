@@ -4,12 +4,13 @@ import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 // App'teki QueryClientProvider ile ayni ornek; bilesen provider'siz da render edilebilir
 import { queryClient, keys } from '../../../lib/queryClient'
-import { StatusBadge } from './Badges'
+import { StatusBadge, NoShowBadge } from './Badges'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'
 import { useConfirm } from '../../../lib/useConfirm'
 import { SgkNotice } from '../../../components/LegalNotice'   // FAZ C.3
 import { WEEKDAYS } from '../lib/constants'
+import { compareSlots, formatSlotShort, isNoShowAllowed } from '../../../lib/shiftTime'
 
 const DAY_LABEL = Object.fromEntries(WEEKDAYS.map(d => [d.key, d.label]))
 
@@ -31,6 +32,8 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
   const confirm = useConfirm()
   const [actionLoading, setActionLoading] = useState(false)
   const [blockLoading, setBlockLoading] = useState(false)
+  // Gelmedi: birden fazla uygun vardiya varsa seçim listesi açılır
+  const [pickingNoShow, setPickingNoShow] = useState(false)
   // Favori durumu
   const [isFavorited, setIsFavorited] = useState(false)
   const [favLoading, setFavLoading] = useState(false)
@@ -42,6 +45,13 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
   }, [app?.candidate?.id])
 
   if (!app) return null
+
+  // Vardiya bazlı gelmedi: işaretlenen slot requestedSlots'ta kalır, noShowSlotIds'te listelenir
+  const noShowIds = new Set((app.noShowSlotIds || []).map(String))
+  const isSlotNoShow = (slot) => slot?.id != null && noShowIds.has(String(slot.id))
+  const sortedSlots = [...(app.requestedSlots || [])].sort(compareSlots)
+  // Seçilebilir: başlangıç + 30 dk geçmiş (gece vardiyası dahil) ve henüz işaretlenmemiş
+  const noShowCandidates = sortedSlots.filter(s => s?.id != null && !isSlotNoShow(s) && isNoShowAllowed(s))
 
   async function handleToggleFavorite() {
     if (!app?.candidate?.id) return
@@ -128,24 +138,31 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
     finally { setActionLoading(false) }
   }
 
-  async function handleNoShow() {
+  function startNoShow() {
+    if (noShowCandidates.length === 1) { handleNoShow(noShowCandidates[0]); return }
+    setPickingNoShow(true)
+  }
+
+  async function handleNoShow(slot) {
     const ok = await confirm({
-      title: 'NO-SHOW olarak işaretle',
-      description: 'Bu işlem geri alınamaz. Adayın strike hakkı 1 düşecek, sıfıra inerse 30 gün otomatik banlanacak.',
+      title: 'Gelmedi olarak işaretle',
+      description: `${formatSlotShort(slot)} vardiyası gelmedi olarak işaretlenecek. Bu vardiya için adaya 1 ceza puanı düşer. Bu işlem geri alınamaz.`,
       confirmLabel: 'Evet, işaretle',
       destructive: true,
     })
     if (!ok) return
     setActionLoading(true)
     try {
-      const result = await hotelApi.markNoShow(app.id)
-      if (result.autoBanned) {
+      const result = await hotelApi.markNoShow(app.id, slot.id)
+      if (result?.autoBanned) {
         const banDate = new Date(result.bannedUntil).toLocaleDateString('tr-TR')
-        toast.success(`No-show işaretlendi. Aday otomatik olarak ${banDate} tarihine kadar banlandı.`, { duration: 5000 })
+        toast.success(`Gelmedi olarak işaretlendi. Aday ${banDate} tarihine kadar otomatik olarak askıya alındı.`, { duration: 5000 })
       } else {
-        toast.success(`No-show işaretlendi. Adayın kalan strike hakkı: ${result.candidateStrikesRemaining}`)
+        toast.success(`Gelmedi olarak işaretlendi. Adayın kalan ceza hakkı: ${result?.candidateStrikesRemaining ?? '-'}`)
       }
-      onChanged?.(result.application)
+      setPickingNoShow(false)
+      if (result?.application) onChanged?.(result.application)
+      queryClient.invalidateQueries({ queryKey: keys.applications.business() })
       onRefresh?.()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionLoading(false) }
@@ -273,6 +290,21 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                  style={{ background: 'rgba(31, 41, 55, 0.05)', color: 'var(--text-secondary)' }}>
               {app.coverLetter}
             </div>
+          </div>
+        )}
+
+        {sortedSlots.length > 0 && (
+          <div>
+            <h3 className="type-overline mb-2">Vardiyalar</h3>
+            <ul className="space-y-1.5" data-testid="application-slots">
+              {sortedSlots.map((slot, i) => (
+                <li key={slot.id ?? i} className="flex items-center justify-between gap-2 type-body"
+                    style={{ color: 'var(--ah-ink-2)' }}>
+                  <span className="tabular-nums">{formatSlotShort(slot)}</span>
+                  {isSlotNoShow(slot) && <NoShowBadge label="Gelmedi" />}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -428,35 +460,52 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
         </div>
 
         {/* FAZ C.3 — Kabul edilen aday: SGK ise giris bildirgesi hatirlatmasi */}
-        {app.status === 'ACCEPTED' && !app.noShow && (
+        {app.status === 'ACCEPTED' && (
           <div className="border-t border-hairline pt-4">
             <SgkNotice />
           </div>
         )}
 
-        {/* No-show işaretleme */}
-        {app.status === 'ACCEPTED' && !app.noShow && (
-          <div className="border-t border-hairline pt-4 space-y-2">
-            <h3 className="type-overline">İşe Gelme Durumu</h3>
+        {/* Gelmedi işaretleme — vardiya bazlı */}
+        {app.status === 'ACCEPTED' && sortedSlots.length > 0 && (
+          <div className="border-t border-hairline pt-4 space-y-2" data-testid="no-show-section">
+            <h3 className="type-overline">İşe gelme durumu</h3>
             <p className="type-caption">
-              Aday kabul edilen iş için işe gelmediyse aşağıdaki butonla işaretleyin.
-              Aday 3 kez işe gelmediğinde otomatik olarak 30 gün banlanır.
+              Aday kabul edilen bir vardiyaya gelmediyse o vardiyayı işaretleyin. Her işaret
+              adaya 1 ceza puanı düşürür; ceza hakkı biten aday 30 gün askıya alınır.
             </p>
-            <button onClick={handleNoShow}
-              disabled={actionLoading}
-              className="w-full py-3 rounded-2xl type-overline transition-all hover:-translate-y-0.5 disabled:opacity-60"
-              style={{
-                background: 'rgba(107, 117, 116, 0.10)',
-                color: '#6b7574',
-                border: '1px solid rgba(107, 117, 116, 0.30)',
-              }}>
-              Aday İşe Gelmedi (No-Show) Olarak İşaretle
-            </button>
+            {noShowCandidates.length === 0 ? (
+              <p className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>
+                Gelmedi işareti vardiya başladıktan 30 dakika sonra verilebilir.
+              </p>
+            ) : pickingNoShow && noShowCandidates.length > 1 ? (
+              <div className="space-y-2" role="group" aria-label="Gelmedi işaretlenecek vardiya">
+                <p className="type-caption font-medium" style={{ color: 'var(--ah-ink-2)' }}>
+                  Hangi vardiyaya gelmedi?
+                </p>
+                {noShowCandidates.map(slot => (
+                  <button key={slot.id} type="button" onClick={() => handleNoShow(slot)}
+                    disabled={actionLoading}
+                    className="btn-secondary w-full !justify-start tabular-nums">
+                    {formatSlotShort(slot)}
+                  </button>
+                ))}
+                <button type="button" onClick={() => setPickingNoShow(false)}
+                  className="type-caption font-semibold" style={{ color: 'var(--ah-ink-3)' }}>
+                  Vazgeç
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={startNoShow} disabled={actionLoading}
+                className="btn-secondary w-full">
+                Gelmedi olarak işaretle
+              </button>
+            )}
           </div>
         )}
 
-        {/* No-show banner */}
-        {app.noShow && (
+        {/* Bilgi bandı: en az bir vardiya gelmedi olarak işaretli */}
+        {(app.noShow || noShowIds.size > 0) && (
           <div className="pt-4 border-t border-hairline">
             <div className="rounded-lg px-4 py-3 flex items-start gap-2" data-testid="no-show-banner"
                  style={{
@@ -464,9 +513,11 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                    border: '1px solid var(--ah-warn)',
                  }}>
               <div>
-                <div className="type-body font-semibold" style={{ color: 'var(--ah-ink-2)' }}>No-show olarak işaretlendi</div>
+                <div className="type-body font-semibold" style={{ color: 'var(--ah-ink-2)' }}>
+                  {noShowIds.size > 1 ? `${noShowIds.size} vardiya gelmedi olarak işaretlendi` : 'Gelmedi olarak işaretlendi'}
+                </div>
                 <div className="type-caption mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
-                  Bu aday kabul edilen iş için işe gelmediğini bildirdiniz. Strike hakkı düşürüldü.
+                  İşaretlenen her vardiya için adaya 1 ceza puanı düştü.
                 </div>
               </div>
             </div>

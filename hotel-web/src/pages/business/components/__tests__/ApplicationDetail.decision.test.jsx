@@ -61,7 +61,7 @@ describe('ApplicationDetail karar düğmeleri ve metinler', () => {
     render(<ApplicationDetail app={{ ...APP, status: 'ACCEPTED', noShow: true }} />)
     const banner = screen.getByTestId('no-show-banner')
     expect(banner.style.background).toBe('var(--ah-warn-soft)')
-    expect(screen.getByText('No-show olarak işaretlendi').style.color).toBe('var(--ah-ink-2)')
+    expect(screen.getByText('Gelmedi olarak işaretlendi').style.color).toBe('var(--ah-ink-2)')
   })
 
   it('Türkçe karakterli metinler (ASCII değil)', () => {
