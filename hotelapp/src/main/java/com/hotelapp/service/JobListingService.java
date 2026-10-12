@@ -377,11 +377,102 @@ public class JobListingService {
                     "Abonelik sekmesinden aboneliğini başlat ya da başka bir ilanını kapat.",
                     billingService.getFreeListings()));
         }
-        listing.setStatus(status);
-        jobListingRepository.save(listing);
-        // Kapanınca tüm günlerin ekip listesi işletmeye e-postayla (commit sonrası, async)
-        if (closing) eventPublisher.publishEvent(new com.hotelapp.event.ListingClosedEvent(listing.getId()));
+        if (closing) {
+            closeListing(listing, false);
+        } else {
+            listing.setStatus(status);
+            jobListingRepository.save(listing);
+        }
         return toResponse(listing);
+    }
+
+    // ----------------------------------------------------------------
+    // İlan kapanışı — manuel (updateStatus) ve otomatik (son vardiya bitti) ortak yol
+    // ----------------------------------------------------------------
+
+    /** Kapanışta sonuçlandırılan açık başvuru durumları. ACCEPTED'e dokunulmaz. */
+    static final java.util.Set<com.hotelapp.enums.ApplicationStatus> OPEN_ON_CLOSE = java.util.EnumSet.of(
+            com.hotelapp.enums.ApplicationStatus.PENDING,
+            com.hotelapp.enums.ApplicationStatus.REVIEWING,
+            com.hotelapp.enums.ApplicationStatus.HELD,
+            com.hotelapp.enums.ApplicationStatus.STANDBY);
+
+    /**
+     * Otomatik kapanış: ilan ACTIVE/PAUSED ise ve son vardiyası {@code now} itibarıyla
+     * bittiyse (gece vardiyasında bitiş ertesi gün; {@link ShiftWindow#lastEnd}) kapatır.
+     * Kendi transaction'ında çalışır (zamanlayıcı her ilanı ayrı çağırır). Zaten kapalıysa,
+     * vardiyası yoksa ya da henüz bitmediyse hiçbir şey yapmaz — tekrar çağrı güvenlidir.
+     *
+     * @return ilan bu çağrıda kapatıldıysa true
+     */
+    @Transactional
+    public boolean autoCloseIfEnded(Long listingId, LocalDateTime now) {
+        JobListing listing = jobListingRepository.findById(listingId).orElse(null);
+        if (listing == null) return false;
+        if (listing.getStatus() != ListingStatus.ACTIVE && listing.getStatus() != ListingStatus.PAUSED) {
+            return false;
+        }
+        java.util.Optional<LocalDateTime> lastEnd = ShiftWindow.lastEnd(listing.getShiftSlots());
+        if (lastEnd.isEmpty() || now.isBefore(lastEnd.get())) return false;
+        // adminSuspended bayrağı korunur (yalnız durum CLOSED olur).
+        closeListing(listing, true);
+        log.info("[AUTO-CLOSE] İlan {} son vardiyası ({}) bittiği için kapatıldı", listing.getId(), lastEnd.get());
+        return true;
+    }
+
+    /**
+     * İlanı CLOSED yapar; açık başvuruları (PENDING/REVIEWING/HELD/STANDBY) EXPIRED'a
+     * çeker, ekip listesi olayını yayınlar ve etkilenen adaylara (aday başına) tek
+     * bildirim gönderir. Koltuk sayaçları değişmez: yalnız ACCEPTED koltuk tutar.
+     * Çağıran, ilanın zaten kapalı olmadığını garanti eder.
+     */
+    /**
+     * Admin moderasyonu ile kapanış: manuel kapanışla aynı yan etkiler (açık başvurular
+     * EXPIRED, ekip listesi olayı, aday bildirimi). Zaten kapalıysa bir şey yapmaz.
+     */
+    @Transactional
+    public void closeAsModeration(JobListing listing) {
+        if (listing.getStatus() == ListingStatus.CLOSED) return;
+        closeListing(listing, false);
+    }
+
+    private void closeListing(JobListing listing, boolean expired) {
+        listing.setStatus(ListingStatus.CLOSED);
+        jobListingRepository.save(listing);
+
+        List<com.hotelapp.entity.Application> open =
+                applicationRepository.findAllByJobListingIdAndStatusIn(listing.getId(), OPEN_ON_CLOSE);
+        java.util.Set<Long> candidateIds = new java.util.LinkedHashSet<>();
+        if (open != null && !open.isEmpty()) {
+            for (com.hotelapp.entity.Application a : open) {
+                a.setStatus(com.hotelapp.enums.ApplicationStatus.EXPIRED);
+                a.setHoldDeadline(null);
+                a.setStandbyRank(null);
+                a.setStandbyOfferedAt(null);
+                a.setStandbyDeadline(null);
+                a.setStandbyReplacesApplicationId(null);
+                if (a.getCandidate() != null && a.getCandidate().getId() != null) {
+                    candidateIds.add(a.getCandidate().getId());
+                }
+            }
+            applicationRepository.saveAll(open);
+        }
+
+        // Kapanınca tüm günlerin ekip listesi işletmeye e-postayla (commit sonrası, async)
+        eventPublisher.publishEvent(new com.hotelapp.event.ListingClosedEvent(listing.getId()));
+
+        if (!candidateIds.isEmpty()) {
+            String title = expired ? "İlan süresi doldu" : "İlan kapatıldı";
+            String message = (expired ? "İlan süresi doldu: " : "İlan kapatıldı: ")
+                    + listing.getTitle() + ". Başvurun sonuçlanmadan kapandı.";
+            // Aday başına tek bildirim. Gönderim zamanlaması NotificationService'in işidir
+            // (commit sonrasına erteleme orada). Burada ayrıca afterCommit'e sarılmaz:
+            // afterCommit içinde kaydedilen yeni senkronizasyon Spring'de hiç çalışmaz.
+            for (Long candidateId : candidateIds) {
+                notificationService.notify(candidateId, com.hotelapp.enums.NotificationType.LISTING_CLOSED,
+                        title, message, "applications");
+            }
+        }
     }
 
     // ----------------------------------------------------------------

@@ -445,7 +445,7 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] **Kayıtlı Aramalar** — kullanıcı filtre setini kaydeder, yeni eşleşmede bildirim (scheduled matcher, 30 dk)
 - [x] **Akıllı sıralama** — aday tercihlerine göre weighted ranking (position +50, district +30, jobType +20, recency +10)
 - [x] **Sade açık arayüz** — grafit/gri marka (`#1f2937`) + muted semantik durum renkleri (yeşil/amber/kiremit/mavi, sadece durum sinyali), tek font (Inter), birleşik rounded kart sistemi, hairline ayraçlar
-- [x] **Test coverage** — backend 503 birim + 33 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 306 vitest (47 dosya), Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
+- [x] **Test coverage** — backend 544 birim + 35 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 306 vitest (47 dosya), Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
 - [x] Landing "Vardiya Nabzı" canlı widget (WebSocket broadcast)
 - [x] **Engelleme** — aday işletmeyi, işletme adayı engelleyebilir; engel başvuru, yedek/HOLD teklifi, mesaj, tepki, "yazıyor" sinyali ve tüm bildirim/SMS yollarında uygulanır, karşı tarafa bildirilmez
 - [x] **Durum dili** — başvuru durumları tek sözlükten (`lib/applicationStatus.js`), aday ve işletme bakış açısına göre ayrı etiket
@@ -455,13 +455,12 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] **Gece vardiyası** — ertesi güne taşan slotlar (ör. 22:00–06:00) ilan, giriş kartı, yoklama, no-show ve kazanç hesaplarında
 - [x] **iyzico ödeme oturumları** — her checkout ayrı kayıt, tekrar gelen başarılı callback idempotent, tutar/sepet doğrulaması, 10 dk'da bir mutabakat
 - [x] **Gece müsaitliği** — aday ertesi güne taşan müsaitlik bloğu girebilir (ör. 22:00–06:00); eşleştirme gün kaydırmasını ve hafta sonu sarmasını hesaplar
+- [x] **İlan yaşam döngüsü** — ilan son vardiyası bitince otomatik kapanır (gece vardiyasında ertesi gün); manuel, admin ve otomatik kapanışta açık başvurular "süresi doldu" olur, adaya tek bildirim gider
+- [x] **Altyapı** — bildirim, WS mesaj yayını ve SMS commit sonrası ve sınırlı havuzda asenkron; outbox üstel bekleme (30 sn → 1 sa, 10 deneme), devre açıkken deneme sayılmaz; e-posta/SMS HTTP zaman aşımları; zamanlanmış işler için 4 thread'lik ayrı havuz
 
 ### Sıradaki
 
 **Altyapı ve ilan yaşam döngüsü**
-- [ ] İlan son vardiyası bitince otomatik kapanır; açık başvurular sonuçlandırılır
-- [ ] Bildirimler commit sonrası/asenkron (bağlantı havuzu baskısı ve geri alınan işlem bildirimi)
-- [ ] Outbox üstel bekleme, e-posta/SMS zaman aşımları, zamanlanmış işler için thread havuzu
 - [ ] İlan düzenleme kuralları (geçmiş slot, kapasite ≥ dolu yer), GPS girişinde vardiya eşleşmesi
 - [ ] Hesap silme/ban'da açık başvuru ve ilanların kapatılması, anonimleştirme kapsamı
 

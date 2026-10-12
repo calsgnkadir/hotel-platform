@@ -40,6 +40,22 @@ public interface JobListingRepository
     /** Faz 1 — Abonelik kotasi: bir isletmenin CLOSED olmayan (yer isgal eden) ilan sayisi. */
     long countByBusiness_IdAndStatusNot(Long businessId, com.hotelapp.enums.ListingStatus status);
 
+    /**
+     * Otomatik kapanış adayları: verilen durumlarda, en az bir slotu olan ve hiçbir
+     * slotu {@code today}'den sonra başlamayan ilanlar. Kesin karar (gece vardiyası
+     * bitişi ertesi gün) Java'da {@code ShiftWindow.lastEnd} ile verilir.
+     */
+    @Query("""
+        SELECT j.id FROM JobListing j
+        WHERE j.status IN :statuses
+          AND EXISTS (SELECT 1 FROM ShiftSlot s WHERE s.jobListing = j)
+          AND NOT EXISTS (SELECT 1 FROM ShiftSlot s2 WHERE s2.jobListing = j AND s2.date > :today)
+        ORDER BY j.id
+    """)
+    List<Long> findAutoCloseCandidateIds(
+            @Param("statuses") java.util.Collection<com.hotelapp.enums.ListingStatus> statuses,
+            @Param("today") java.time.LocalDate today);
+
     /** FAZ G.8 — Platform geneli aktif ilan sayisi. */
     long countByStatus(com.hotelapp.enums.ListingStatus status);
 

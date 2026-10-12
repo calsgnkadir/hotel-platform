@@ -1,10 +1,16 @@
 package com.hotelapp.service;
 
+import com.hotelapp.config.AfterCommit;
+import com.hotelapp.config.AsyncConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.concurrent.Executor;
 
 /**
  * Yedek bildirim kanalı — SMS. Acil ilan ve yedek (standby) aktivasyonu gibi
@@ -16,6 +22,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * <p>Best-effort: hiçbir durumda çağıranı patlatmaz — birincil bildirim in-app +
  * web push; SMS onların yanında bir emniyet ağıdır.
+ *
+ * <p>Asenkron: {@link #send} cagirani bloklamaz. Dis transaction varsa commit
+ * SONRASINA ertelenir (geri alinan islemin SMS'i gitmez), sonra {@code smsExecutor}
+ * kuyruguna verilir; HTTP cagrisi orada, zaman asimli RestTemplate ile yapilir.
+ * Toplu cagiranlar (acil havuz bildirimi) istek icinde saglayiciyi beklemez.
  *
  * <p>WhatsApp: aynı arayüzle ileride provider olarak eklenebilir (BSP hesabı gerekir).
  */
@@ -29,15 +40,29 @@ public class SmsService {
     private final String netgsmPassword;
     private final String netgsmHeader;
     private final String netgsmUrl;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+    private final Executor executor;
 
+    /** Test/elle kurulum: senkron calisir, varsayilan zaman asimlari. */
+    public SmsService(boolean enabled, String provider, String netgsmUsercode, String netgsmPassword,
+                      String netgsmHeader, String netgsmUrl) {
+        this(enabled, provider, netgsmUsercode, netgsmPassword, netgsmHeader, netgsmUrl,
+                Runnable::run, 5000, 10000);
+    }
+
+    @Autowired
     public SmsService(
             @Value("${app.sms.enabled:false}")        boolean enabled,
             @Value("${app.sms.provider:netgsm}")      String provider,
             @Value("${app.sms.netgsm.usercode:}")     String netgsmUsercode,
             @Value("${app.sms.netgsm.password:}")     String netgsmPassword,
             @Value("${app.sms.netgsm.header:}")       String netgsmHeader,
-            @Value("${app.sms.netgsm.url:https://api.netgsm.com.tr/sms/send/get}") String netgsmUrl) {
+            @Value("${app.sms.netgsm.url:https://api.netgsm.com.tr/sms/send/get}") String netgsmUrl,
+            @Qualifier("smsExecutor") Executor executor,
+            @Value("${app.http.connect-timeout-ms:5000}") int connectTimeoutMs,
+            @Value("${app.http.read-timeout-ms:10000}")   int readTimeoutMs) {
+        this.restTemplate = new RestTemplate(AsyncConfig.httpRequestFactory(connectTimeoutMs, readTimeoutMs));
+        this.executor = executor;
         this.enabled = enabled;
         this.provider = provider;
         this.netgsmUsercode = netgsmUsercode;
@@ -47,10 +72,25 @@ public class SmsService {
     }
 
     /**
-     * Best-effort SMS gönderir. Sağlayıcı kapalı/kimlik yoksa DEV MODE'da log'a
-     * düşer (gerçek SMS gitmez). İstisnalar yutulur — çağıranı bloklamaz.
+     * Best-effort SMS gönderir: commit sonrası, smsExecutor'da. Kuyruk doluysa SMS
+     * atlanır (log). İstisnalar yutulur — çağıranı bloklamaz.
      */
     public void send(String toPhone, String message) {
+        try {
+            AfterCommit.run(() -> {
+                try {
+                    executor.execute(() -> sendNow(toPhone, message));
+                } catch (Exception e) {
+                    log.warn("[SMS] kuyruga alinamadi to={}: {}", mask(toPhone), e.getClass().getSimpleName());
+                }
+            });
+        } catch (Exception e) {
+            log.warn("[SMS] planlanamadi to={}: {}", mask(toPhone), e.getClass().getSimpleName());
+        }
+    }
+
+    /** Teslim — executor thread'inde. Sağlayıcı kapalı/kimlik yoksa DEV MODE'da log'a düşer. */
+    void sendNow(String toPhone, String message) {
         String phone = normalize(toPhone);
         if (!enabled || phone == null || netgsmUsercode.isBlank() || netgsmPassword.isBlank()) {
             // KVKK: numara maskeli, mesaj icerigi (OTP kodu olabilir) ASLA loglanmaz.

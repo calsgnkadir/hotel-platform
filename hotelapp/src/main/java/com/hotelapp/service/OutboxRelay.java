@@ -17,8 +17,10 @@ import java.util.List;
 /**
  * FAZ C.2 — Outbox relay scheduler.
  *
- * Her 5 sn pending event'leri okur, eventType'a gore handler cagirir.
- * Basarili = processed_at NOW, basarisiz = attempts++ + last_error.
+ * Her 5 sn zamani gelmis pending event'leri okur, eventType'a gore handler cagirir.
+ * Basarili = processed_at NOW, basarisiz = attempts++ + last_error + next_attempt_at
+ * (V26 ustel bekleme: 30sn, 1, 2, 4, 8, 16, 32 dk, 1 sa, 1 sa — MAX_ATTEMPTS=10 deneme
+ * ~3 saate yayilir, sonra DLQ). Devre kesici acikken deneme sayilmaz, yalniz ertelenir.
  *
  * BATCH_SIZE: tek tick'te isleyecek max event sayisi. Backlog buyurse
  * sonraki tick'ler kaldigi yerden devam eder.
@@ -35,7 +37,11 @@ public class OutboxRelay {
 
     private static final int BATCH_SIZE = 20;
     /** Public: hem repository query'sinde hem de OutboxStatusWriter'da magic 5 tekrar etmesin. */
-    public static final int MAX_ATTEMPTS = 5;
+    public static final int MAX_ATTEMPTS = 10;
+    static final java.time.Duration BASE_BACKOFF = java.time.Duration.ofSeconds(30);
+    static final java.time.Duration MAX_BACKOFF = java.time.Duration.ofHours(1);
+    /** Devre acikken erteleme — resilience4j waitDurationInOpenState (30 sn) ile ayni. */
+    static final java.time.Duration CIRCUIT_OPEN_DELAY = java.time.Duration.ofSeconds(30);
 
     private final OutboxEventRepository outboxRepository;
     private final ObjectMapper objectMapper;
@@ -46,8 +52,8 @@ public class OutboxRelay {
 
     @Scheduled(fixedDelayString = "${app.outbox.relayDelayMs:5000}")
     public void relay() {
-        List<OutboxEvent> pending = outboxRepository.findUnprocessed(
-                MAX_ATTEMPTS, PageRequest.of(0, BATCH_SIZE));
+        List<OutboxEvent> pending = outboxRepository.findDue(
+                MAX_ATTEMPTS, java.time.LocalDateTime.now(), PageRequest.of(0, BATCH_SIZE));
         if (pending.isEmpty()) return;
 
         log.debug("[OUTBOX-RELAY] {} pending event islenecek", pending.size());
@@ -58,10 +64,32 @@ public class OutboxRelay {
                 statusWriter.markProcessed(row.getId());
                 if (m != null) m.outboxPublished.increment();
             } catch (Exception ex) {
-                statusWriter.markFailed(row.getId(), ex, MAX_ATTEMPTS);
-                if (m != null) m.outboxFailed.increment();
+                if (isCircuitOpen(ex)) {
+                    statusWriter.markDeferred(row.getId(), CIRCUIT_OPEN_DELAY, ex);
+                } else {
+                    statusWriter.markFailed(row.getId(), ex, MAX_ATTEMPTS);
+                    if (m != null) m.outboxFailed.increment();
+                }
             }
         }
+    }
+
+    /**
+     * n. basarisiz denemeden sonra bekleme: 30 sn * 2^(n-1), ust sinir 1 saat.
+     * n=1→30sn, 2→1dk, 3→2dk, 4→4dk, 5→8dk, 6→16dk, 7→32dk, 8+→1sa.
+     */
+    public static java.time.Duration backoffAfter(int failedAttempts) {
+        int exp = Math.max(0, Math.min(failedAttempts - 1, 20));
+        java.time.Duration d = BASE_BACKOFF.multipliedBy(1L << exp);
+        return d.compareTo(MAX_BACKOFF) > 0 ? MAX_BACKOFF : d;
+    }
+
+    static boolean isCircuitOpen(Throwable ex) {
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            if (t instanceof io.github.resilience4j.circuitbreaker.CallNotPermittedException) return true;
+            if (t.getCause() == t) break;
+        }
+        return false;
     }
 
     private void handle(OutboxEvent row) throws Exception {

@@ -21,9 +21,9 @@ import java.util.List;
  * Filter:
  *  - "all"      : tum event'ler (delivered dahil)
  *  - "pending"  : processedAt NULL (sirada veya retry)
- *  - "dead"     : attempts >= 5 ve hala teslim edilmemis (DLQ)
+ *  - "dead"     : attempts >= OutboxRelay.MAX_ATTEMPTS ve hala teslim edilmemis (DLQ)
  *
- * Retry: attempts=0, lastError=null. Sonraki relay tick'inde tekrar islenir.
+ * Retry: attempts=0, lastError=null, nextAttemptAt=null. Sonraki relay tick'inde tekrar islenir.
  */
 @Service
 @RequiredArgsConstructor
@@ -62,6 +62,7 @@ public class OutboxAdminService {
         }
         e.setAttempts(0);
         e.setLastError(null);
+        e.setNextAttemptAt(null);   // V26 — ustel bekleme beklenmeden hemen denensin
         outboxRepository.save(e);
         log.info("[OUTBOX-ADMIN] event id={} manuel retry'a alindi (type={})", id, e.getEventType());
     }
@@ -79,6 +80,7 @@ public class OutboxAdminService {
                 .processedAt(e.getProcessedAt())
                 .attempts(e.getAttempts())
                 .lastError(e.getLastError())
+                .nextAttemptAt(e.getNextAttemptAt())
                 .status(status)
                 .payloadPreview(preview(e.getPayload()))
                 .build();
@@ -97,6 +99,8 @@ public class OutboxAdminService {
         private LocalDateTime processedAt;
         private Integer attempts;
         private String lastError;
+        /** V26 — PENDING ise bir sonraki deneme zamani (null = hemen). */
+        private LocalDateTime nextAttemptAt;
         private String status; // DELIVERED / PENDING / DEAD
         private String payloadPreview;
     }

@@ -126,6 +126,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findAllByJobListingId(Long jobListingId);
 
+    /** İlan kapanışı — ilanın verilen durumlardaki (açık) başvuruları. */
+    List<Application> findAllByJobListingIdAndStatusIn(Long jobListingId,
+                                                       java.util.Collection<ApplicationStatus> statuses);
+
     @Query("SELECT a FROM Application a WHERE a.status = 'PENDING' AND a.deadline < :now")
     List<Application> findExpiredApplications(LocalDateTime now);
 

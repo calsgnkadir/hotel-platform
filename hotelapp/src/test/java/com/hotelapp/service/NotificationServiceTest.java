@@ -11,10 +11,16 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executor;
 
 import java.util.Optional;
 
@@ -27,7 +33,8 @@ import static org.mockito.Mockito.*;
  *
  * Kritik kontrat:
  *  - notify(...) recipient bulunamazsa sessizce cikar (crash yok)
- *  - notify(...) exception firlatirsa caller etkilenmez (REQUIRES_NEW + try-catch)
+ *  - notify(...) exception firlatirsa caller etkilenmez (ayri executor + kendi tx + try-catch)
+ *  - dis transaction varsa yalniz commit SONRASI teslim edilir; rollback'te hic gitmez
  *  - markRead sadece kendi bildirimini isaretler (ownership check)
  *  - list limit'i 50 ile clamp eder
  */
@@ -39,13 +46,22 @@ class NotificationServiceTest {
     @Mock private SimpMessagingTemplate messagingTemplate;
     @Mock private WebPushService webPushService;
 
-    @InjectMocks
+    @Mock private PlatformTransactionManager txManager;
+
     private NotificationService service;
+    /** Executor'a verilen isler — testte elle (ya da hemen) calistirilir. */
+    private final List<Runnable> queued = new ArrayList<>();
+    private boolean runInline = true;
 
     private User user;
 
     @BeforeEach
     void setUp() {
+        // Bildirim artik notificationExecutor'da teslim ediliyor. Mevcut testler icin
+        // executor senkron (Runnable::run) — davranis kontrati ayni kalir.
+        Executor executor = job -> { if (runInline) job.run(); else queued.add(job); };
+        service = new NotificationService(notificationRepository, userRepository,
+                messagingTemplate, webPushService, executor, txManager);
         user = new User();
         user.setId(42L);
         user.setEmail("test@example.com");
@@ -145,6 +161,92 @@ class NotificationServiceTest {
             service.notify(42L, NotificationType.GENERIC, "T", "M", null);
 
             verify(notificationRepository).save(any(Notification.class));
+        }
+    }
+
+    @Nested @DisplayName("notify() commit sonrasi + asenkron")
+    class NotifyAfterCommit {
+
+        @org.junit.jupiter.api.AfterEach
+        void clearSync() {
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.clearSynchronization();
+            }
+        }
+
+        private void stubHappy() {
+            when(userRepository.findById(42L)).thenReturn(Optional.of(user));
+            when(notificationRepository.save(any(Notification.class))).thenAnswer(inv -> inv.getArgument(0));
+        }
+
+        @Test
+        @DisplayName("Dis transaction icinde: commit'e kadar hicbir sey yazilmaz/gonderilmez")
+        void deferredUntilCommit() {
+            TransactionSynchronizationManager.initSynchronization();
+
+            service.notify(42L, NotificationType.NEW_MESSAGE, "T", "M", null);
+
+            // dis islem hala acik: DB'ye dokunulmadi (ikinci baglanti yok), push yok
+            verifyNoInteractions(userRepository, notificationRepository, messagingTemplate, webPushService, txManager);
+
+            stubHappy();
+            TransactionSynchronizationManager.getSynchronizations().forEach(s -> s.afterCompletion(TransactionSynchronization.STATUS_COMMITTED));
+
+            verify(notificationRepository).save(any(Notification.class));
+            verify(messagingTemplate).convertAndSendToUser(eq("test@example.com"), eq("/queue/notifications"), any());
+            verify(webPushService).sendToUser(eq(42L), any());
+        }
+
+        @Test
+        @DisplayName("Dis transaction geri alinirsa bildirim hic yazilmaz/gonderilmez")
+        void rollback_nothingSent() {
+            TransactionSynchronizationManager.initSynchronization();
+
+            service.notify(42L, NotificationType.NEW_MESSAGE, "T", "M", null);
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(s -> s.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+
+            verifyNoInteractions(userRepository, notificationRepository, messagingTemplate, webPushService);
+        }
+
+        @Test
+        @DisplayName("Toplu bildirim cagirani bloklamaz: isler executor kuyruguna gider")
+        void bulk_doesNotBlockCaller() {
+            runInline = false;
+
+            for (long i = 0; i < 200; i++) {
+                service.notify(42L, NotificationType.URGENT_LISTING, "Acil", "M", null);
+            }
+
+            assertThat(queued).hasSize(200);
+            verifyNoInteractions(userRepository, notificationRepository, messagingTemplate, webPushService);
+
+            stubHappy();
+            queued.get(0).run();
+            verify(notificationRepository).save(any(Notification.class));
+        }
+
+        @Test
+        @DisplayName("Kayit kendi transaction'inda yapilir (txManager uzerinden)")
+        void persistsInOwnTransaction() {
+            stubHappy();
+
+            service.notify(42L, NotificationType.GENERIC, "T", "M", null);
+
+            verify(txManager).getTransaction(any());
+            verify(txManager).commit(any());
+        }
+
+        @Test
+        @DisplayName("Executor reddederse cagiran patlamaz")
+        void executorRejects_callerSafe() {
+            service = new NotificationService(notificationRepository, userRepository, messagingTemplate,
+                    webPushService, job -> { throw new java.util.concurrent.RejectedExecutionException("dolu"); },
+                    txManager);
+
+            service.notify(42L, NotificationType.GENERIC, "T", "M", null);
+
+            verifyNoInteractions(notificationRepository);
         }
     }
 

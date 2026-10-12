@@ -50,7 +50,7 @@ class OutboxRelayTest {
     private static <T> org.springframework.beans.factory.ObjectProvider<T> emptyProvider() {
         org.springframework.beans.factory.ObjectProvider p =
                 mock(org.springframework.beans.factory.ObjectProvider.class);
-        when(p.getIfAvailable()).thenReturn(null);
+        org.mockito.Mockito.lenient().when(p.getIfAvailable()).thenReturn(null);   // bos-batch/backoff testleri metrige ulasmaz
         return (org.springframework.beans.factory.ObjectProvider<T>) p;
     }
 
@@ -65,7 +65,7 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(0)
                 .build();
-        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+        when(outboxRepository.findDue(eq(OutboxRelay.MAX_ATTEMPTS), any(), any()))
                 .thenReturn(List.of(row));
 
         relay.relay();
@@ -86,7 +86,7 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(0)
                 .build();
-        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+        when(outboxRepository.findDue(eq(OutboxRelay.MAX_ATTEMPTS), any(), any()))
                 .thenReturn(List.of(row));
 
         relay.relay();
@@ -107,7 +107,7 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(2)
                 .build();
-        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+        when(outboxRepository.findDue(eq(OutboxRelay.MAX_ATTEMPTS), any(), any()))
                 .thenReturn(List.of(row));
         doThrow(new RuntimeException("DB down"))
                 .when(auditLogService).log(any(), anyString(), anyString(), any(), anyString());
@@ -130,7 +130,7 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(0)
                 .build();
-        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+        when(outboxRepository.findDue(eq(OutboxRelay.MAX_ATTEMPTS), any(), any()))
                 .thenReturn(List.of(row));
 
         relay.relay();
@@ -150,7 +150,7 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(0)
                 .build();
-        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+        when(outboxRepository.findDue(eq(OutboxRelay.MAX_ATTEMPTS), any(), any()))
                 .thenReturn(List.of(row));
 
         relay.relay();
@@ -170,7 +170,7 @@ class OutboxRelayTest {
                 .createdAt(LocalDateTime.now())
                 .attempts(0)
                 .build();
-        when(outboxRepository.findUnprocessed(eq(OutboxRelay.MAX_ATTEMPTS), any()))
+        when(outboxRepository.findDue(eq(OutboxRelay.MAX_ATTEMPTS), any(), any()))
                 .thenReturn(List.of(row));
         doThrow(new RuntimeException("Resend 500"))
                 .when(emailService).send(anyString(), anyString(), anyString());
@@ -179,5 +179,59 @@ class OutboxRelayTest {
 
         verify(statusWriter).markFailed(eq(11L), any(RuntimeException.class),
                 eq(OutboxRelay.MAX_ATTEMPTS));
+    }
+
+    @Test
+    @DisplayName("relay: devre acik (CallNotPermittedException) -> deneme sayilmaz, yalniz ertelenir")
+    void relay_circuitOpen_deferredNotCounted() throws Exception {
+        EmailMessage msg = new EmailMessage("to@x.com", "Konu", "<p>body</p>");
+        OutboxEvent row = OutboxEvent.builder()
+                .id(12L)
+                .eventType(OutboxService.TYPE_EMAIL)
+                .payload(objectMapper.writeValueAsString(msg))
+                .createdAt(LocalDateTime.now())
+                .attempts(3)
+                .build();
+        when(outboxRepository.findDue(eq(OutboxRelay.MAX_ATTEMPTS), any(), any()))
+                .thenReturn(List.of(row));
+        var cb = io.github.resilience4j.circuitbreaker.CircuitBreaker.ofDefaults("resend");
+        cb.transitionToOpenState();
+        doThrow(io.github.resilience4j.circuitbreaker.CallNotPermittedException.createCallNotPermittedException(cb))
+                .when(emailService).send(anyString(), anyString(), anyString());
+
+        relay.relay();
+
+        verify(statusWriter).markDeferred(eq(12L), eq(OutboxRelay.CIRCUIT_OPEN_DELAY), any());
+        verify(statusWriter, never()).markFailed(any(), any(), anyInt());
+        verify(statusWriter, never()).markProcessed(any());
+    }
+
+    @Test
+    @DisplayName("relay: yalniz zamani gelmis kayitlar istenir (now parametresi gecilir)")
+    void relay_queriesWithNow() {
+        when(outboxRepository.findDue(eq(OutboxRelay.MAX_ATTEMPTS), any(), any())).thenReturn(List.of());
+        LocalDateTime before = LocalDateTime.now();
+
+        relay.relay();
+
+        ArgumentCaptor<LocalDateTime> now = ArgumentCaptor.forClass(LocalDateTime.class);
+        verify(outboxRepository).findDue(eq(OutboxRelay.MAX_ATTEMPTS), now.capture(), any());
+        assertThat(now.getValue()).isAfterOrEqualTo(before).isBeforeOrEqualTo(LocalDateTime.now());
+    }
+
+    @Test
+    @DisplayName("backoff: 30sn, 1, 2, 4, 8, 16, 32 dk, sonra 1 saat ust sinir")
+    void backoffTable() {
+        assertThat(OutboxRelay.backoffAfter(1)).isEqualTo(java.time.Duration.ofSeconds(30));
+        assertThat(OutboxRelay.backoffAfter(2)).isEqualTo(java.time.Duration.ofMinutes(1));
+        assertThat(OutboxRelay.backoffAfter(3)).isEqualTo(java.time.Duration.ofMinutes(2));
+        assertThat(OutboxRelay.backoffAfter(4)).isEqualTo(java.time.Duration.ofMinutes(4));
+        assertThat(OutboxRelay.backoffAfter(5)).isEqualTo(java.time.Duration.ofMinutes(8));
+        assertThat(OutboxRelay.backoffAfter(6)).isEqualTo(java.time.Duration.ofMinutes(16));
+        assertThat(OutboxRelay.backoffAfter(7)).isEqualTo(java.time.Duration.ofMinutes(32));
+        assertThat(OutboxRelay.backoffAfter(8)).isEqualTo(java.time.Duration.ofHours(1));
+        assertThat(OutboxRelay.backoffAfter(9)).isEqualTo(java.time.Duration.ofHours(1));
+        assertThat(OutboxRelay.backoffAfter(1000)).isEqualTo(java.time.Duration.ofHours(1));
+        assertThat(OutboxRelay.MAX_ATTEMPTS).isEqualTo(10);
     }
 }

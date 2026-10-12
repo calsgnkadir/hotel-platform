@@ -28,6 +28,7 @@ public class AdminService {
     private final JobListingRepository jobListingRepository;
     private final ApplicationRepository applicationRepository;
     private final RefreshTokenService refreshTokenService;
+    private final JobListingService jobListingService;   // admin kapanışı ortak kapanış yolundan
 
     // ================================================================
     // Listing & detail
@@ -247,7 +248,12 @@ public class AdminService {
     public AdminListingDto setListingStatus(Long listingId, com.hotelapp.enums.ListingStatus status) {
         var listing = jobListingRepository.findById(listingId)
             .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
-        listing.setStatus(status);
+        if (status == com.hotelapp.enums.ListingStatus.CLOSED) {
+            // Açık başvurular askıda kalmasın: manuel/otomatik kapanışla aynı yol
+            jobListingService.closeAsModeration(listing);
+        } else {
+            listing.setStatus(status);
+        }
         // Admin'in PAUSED/CLOSED yaptigi ilan askida isaretlenir (isletme ACTIVE yapamaz);
         // admin ACTIVE yapinca bayrak kalkar.
         listing.setAdminSuspended(status != com.hotelapp.enums.ListingStatus.ACTIVE);

@@ -90,6 +90,13 @@ spring:
 app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+  # DB havuzu 5 baglanti: bildirim thread'leri en fazla 2 baglanti tutsun
+  # (kuyruk 500 tasarsa CallerRuns — eski senkron davranis). Zamanlayici havuzu (4)
+  # ve HTTP zaman asimlari application.yml'den gelir.
+  notifications:
+    executor:
+      core-size: ${NOTIFY_EXECUTOR_CORE:2}
+      max-size:  ${NOTIFY_EXECUTOR_MAX:2}
 
 # ════════════════════════════════════════════════════════════════
 # STORAGE

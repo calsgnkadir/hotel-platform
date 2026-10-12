@@ -31,7 +31,7 @@ public class EmailService {
     private final String apiKey;
     private final String fromEmail;
     private final String fromName;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final org.springframework.beans.factory.ObjectProvider<OutboxService> outboxProvider; // FAZ D.9
 
     public EmailService(
@@ -39,8 +39,14 @@ public class EmailService {
             @Value("${app.email.resend.from:onboarding@resend.dev}") String fromEmail,
             @Value("${app.email.resend.from-name:Kadrom}")       String fromName,
             @Value("${app.email.resend.base-url:https://api.resend.com}") String baseUrl,
-            org.springframework.beans.factory.ObjectProvider<OutboxService> outboxProvider
+            org.springframework.beans.factory.ObjectProvider<OutboxService> outboxProvider,
+            // Zaman asimsiz RestTemplate Resend TCP'de asilirsa OutboxRelay'i (ve ayni
+            // zamanlayicidaki tum isleri) suresiz bloklardi.
+            @Value("${app.http.connect-timeout-ms:5000}") int connectTimeoutMs,
+            @Value("${app.http.read-timeout-ms:10000}")   int readTimeoutMs
     ) {
+        this.restTemplate = new RestTemplate(
+                com.hotelapp.config.AsyncConfig.httpRequestFactory(connectTimeoutMs, readTimeoutMs));
         this.apiKey   = apiKey;
         this.fromEmail = fromEmail;
         this.fromName  = fromName;
@@ -51,7 +57,7 @@ public class EmailService {
     /**
      * FAZ D.9 — Domain service'ler bunu cagirir. Email outbox'a yazilir,
      * OutboxRelay scheduler async deliver eder. Resend down olsa bile
-     * mesaj kayipsiz: bir sonraki tick'te tekrar denenir (max 5 deneme).
+     * mesaj kayipsiz: ustel beklemeyle tekrar denenir (max 10 deneme, ~3 saat).
      *
      * outboxProvider null ise (test/dev erken yukleme), inline send fallback.
      */
@@ -69,7 +75,7 @@ public class EmailService {
      * Email gönderir — OutboxRelay çağırır (kullanıcı isteğini bloklamaz).
      *
      * Hata YUTULMAZ, çağırana fırlatılır: outbox satırı başarısız işaretlenir,
-     * tekrar denenir (max 5), sonra son hatayla admin Outbox panelinde görünür.
+     * ustel beklemeyle tekrar denenir (max 10), sonra son hatayla admin Outbox panelinde görünür.
      * (Eskiden circuit breaker fallback'i hatayı yutuyor, outbox maili "teslim
      * edildi" sanıyordu — yanlış anahtar / doğrulanmamış alan adında mailler
      * sessizce kayboluyordu.) Devre açıkken de CallNotPermittedException fırlar

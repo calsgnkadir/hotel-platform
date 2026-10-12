@@ -394,16 +394,27 @@ public class MessageService {
             User sender    = conv.getCandidate().getId().equals(senderId) ? conv.getCandidate() : conv.getBusinessOwner();
             User recipient = conv.getCandidate().getId().equals(recipientId) ? conv.getCandidate() : conv.getBusinessOwner();
 
-            messagingTemplate.convertAndSendToUser(
-                    sender.getEmail(),
-                    "/queue/messages",
-                    new WsMessagePayload(conv.getId(), forSender)
-            );
-            messagingTemplate.convertAndSendToUser(
-                    recipient.getEmail(),
-                    "/queue/messages",
-                    new WsMessagePayload(conv.getId(), forRecipient)
-            );
+            // DTO'lar transaction icinde (lazy iliskiler acikken) hazirlanir; gonderim
+            // commit SONRASI — mesaj kaydi geri alinirsa yayin yapilmaz.
+            String senderEmail = sender.getEmail();
+            String recipientEmail = recipient.getEmail();
+            Long convId = conv.getId();
+            com.hotelapp.config.AfterCommit.run(() -> {
+                try {
+                    messagingTemplate.convertAndSendToUser(
+                            senderEmail,
+                            "/queue/messages",
+                            new WsMessagePayload(convId, forSender)
+                    );
+                    messagingTemplate.convertAndSendToUser(
+                            recipientEmail,
+                            "/queue/messages",
+                            new WsMessagePayload(convId, forRecipient)
+                    );
+                } catch (Exception e) {
+                    log.warn("WS broadcast failed for conv={}: {}", convId, e.getMessage());
+                }
+            });
         } catch (Exception e) {
             log.warn("WS broadcast failed for conv={}: {}", conv.getId(), e.getMessage());
         }

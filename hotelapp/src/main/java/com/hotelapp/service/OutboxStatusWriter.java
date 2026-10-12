@@ -35,19 +35,48 @@ public class OutboxStatusWriter {
         });
     }
 
+    /**
+     * Basarisiz deneme: attempts++, son hata, V26 ustel bekleme ile nextAttemptAt ileri.
+     * attempts maxAttempts'e ulasirsa DLQ (relay artik almaz; admin "yeniden dene" ile doner).
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markFailed(Long id, Exception ex, int maxAttempts) {
         outboxRepository.findById(id).ifPresent(e -> {
             e.setAttempts(e.getAttempts() + 1);
-            String msg = ex.getClass().getSimpleName() + ": " + ex.getMessage();
-            e.setLastError(msg.length() > 500 ? msg.substring(0, 500) : msg);
-            outboxRepository.save(e);
+            String msg = errorText(ex);
+            e.setLastError(msg);
             if (e.getAttempts() >= maxAttempts) {
-                log.error("[OUTBOX-RELAY] event id={} max attempt ({}) asti, son hata: {}",
+                e.setNextAttemptAt(null);
+                outboxRepository.save(e);
+                log.error("[OUTBOX-RELAY] event id={} max attempt ({}) asti, DLQ. Son hata: {}",
                         id, maxAttempts, msg);
             } else {
-                log.warn("[OUTBOX-RELAY] event id={} fail (attempt {}): {}", id, e.getAttempts(), msg);
+                var delay = OutboxRelay.backoffAfter(e.getAttempts());
+                e.setNextAttemptAt(LocalDateTime.now().plus(delay));
+                outboxRepository.save(e);
+                log.warn("[OUTBOX-RELAY] event id={} fail (attempt {}), sonraki deneme {} sn sonra: {}",
+                        id, e.getAttempts(), delay.toSeconds(), msg);
             }
         });
+    }
+
+    /**
+     * Devre kesici acik (CallNotPermittedException): deneme sayilmaz, yalniz ertelenir.
+     * Saglayiciya hic istek gitmedi; DLQ'ya "dokunmadan" dusmesin.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void markDeferred(Long id, java.time.Duration delay, Exception ex) {
+        outboxRepository.findById(id).ifPresent(e -> {
+            e.setNextAttemptAt(LocalDateTime.now().plus(delay));
+            e.setLastError(errorText(ex));
+            outboxRepository.save(e);
+            log.info("[OUTBOX-RELAY] event id={} devre acik, {} sn ertelendi (deneme sayilmadi)",
+                    id, delay.toSeconds());
+        });
+    }
+
+    private static String errorText(Exception ex) {
+        String msg = ex.getClass().getSimpleName() + ": " + ex.getMessage();
+        return msg.length() > 500 ? msg.substring(0, 500) : msg;
     }
 }

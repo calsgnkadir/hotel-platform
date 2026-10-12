@@ -25,6 +25,7 @@ class AdminServiceTest {
     private UserRepository users;
     private JobListingRepository listings;
     private RefreshTokenService refreshTokens;
+    private JobListingService jobListingService;
     private AdminService service;
 
     @BeforeEach
@@ -32,8 +33,12 @@ class AdminServiceTest {
         users = mock(UserRepository.class);
         listings = mock(JobListingRepository.class);
         refreshTokens = mock(RefreshTokenService.class);
+        jobListingService = mock(JobListingService.class);
+        // Gercek kapanis yolunu taklit et: durumu CLOSED yapar (yan etkiler JobListingServiceTest'te)
+        org.mockito.Mockito.doAnswer(i -> { ((JobListing) i.getArgument(0)).setStatus(ListingStatus.CLOSED); return null; })
+                .when(jobListingService).closeAsModeration(org.mockito.ArgumentMatchers.any(JobListing.class));
         service = new AdminService(users, mock(BusinessRepository.class), listings,
-                mock(ApplicationRepository.class), refreshTokens);
+                mock(ApplicationRepository.class), refreshTokens, jobListingService);
     }
 
     @Test
@@ -62,6 +67,9 @@ class AdminServiceTest {
 
         service.setListingStatus(9L, ListingStatus.CLOSED);
         assertThat(l.isAdminSuspended()).isTrue();
+        // Admin kapanisi ortak kapanis yolunu kullanir (acik basvurular askida kalmaz)
+        verify(jobListingService).closeAsModeration(l);
+        assertThat(l.getStatus()).isEqualTo(ListingStatus.CLOSED);
 
         dto = service.setListingStatus(9L, ListingStatus.ACTIVE);
         assertThat(l.isAdminSuspended()).isFalse();

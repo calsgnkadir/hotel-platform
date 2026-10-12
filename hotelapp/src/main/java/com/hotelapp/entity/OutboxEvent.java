@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "outbox_events", indexes = {
-        @Index(name = "idx_outbox_pending", columnList = "processed_at, created_at")
+        @Index(name = "idx_outbox_pending", columnList = "processed_at, created_at"),
+        @Index(name = "idx_outbox_due", columnList = "processed_at, next_attempt_at")
 })
 @Data
 @Builder
@@ -49,4 +50,8 @@ public class OutboxEvent {
 
     @Column(name = "last_error", length = 500)
     private String lastError;
+
+    /** V26 — Ustel bekleme: bu zamandan once relay almaz. null = hemen alinabilir. */
+    @Column(name = "next_attempt_at")
+    private LocalDateTime nextAttemptAt;
 }

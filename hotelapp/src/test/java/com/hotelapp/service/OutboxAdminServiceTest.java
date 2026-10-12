@@ -48,7 +48,7 @@ class OutboxAdminServiceTest {
         Page<OutboxEvent> page = new PageImpl<>(List.of(
                 ev(1L, 0, LocalDateTime.now()),   // DELIVERED
                 ev(2L, 2, null),                   // PENDING
-                ev(3L, 5, null)                    // DEAD
+                ev(3L, OutboxRelay.MAX_ATTEMPTS, null)  // DEAD (MAX_ATTEMPTS 5 -> 10, V26)
         ));
         when(outboxRepository.findAllByOrderByCreatedAtDesc(any(Pageable.class))).thenReturn(page);
 
@@ -87,8 +87,9 @@ class OutboxAdminServiceTest {
     @Test
     @DisplayName("retry: attempts=0, lastError=null, processedAt=null")
     void retry_resetsFields() {
-        OutboxEvent e = ev(7L, 5, null);
+        OutboxEvent e = ev(7L, OutboxRelay.MAX_ATTEMPTS, null);
         e.setLastError("boom");
+        e.setNextAttemptAt(LocalDateTime.now().plusHours(1));   // V26 — bekleme de sifirlanir
         when(outboxRepository.findById(7L)).thenReturn(Optional.of(e));
 
         service.retry(7L);
@@ -98,6 +99,7 @@ class OutboxAdminServiceTest {
         assertThat(cap.getValue().getAttempts()).isZero();
         assertThat(cap.getValue().getLastError()).isNull();
         assertThat(cap.getValue().getProcessedAt()).isNull();
+        assertThat(cap.getValue().getNextAttemptAt()).isNull();
     }
 
     @Test

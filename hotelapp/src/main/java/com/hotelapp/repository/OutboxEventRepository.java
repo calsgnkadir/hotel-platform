@@ -10,16 +10,19 @@ import java.util.List;
 
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> {
 
-    /** Pending event'leri eski-once sirayla — batch limit Pageable ile.
-     *  FAZ F.4: maxAttempts parametre — magic 5 tekrar etmesin (OutboxRelay.MAX_ATTEMPTS). */
+    /** Zamani gelmis pending event'ler eski-once sirayla — batch limit Pageable ile.
+     *  maxAttempts: OutboxRelay.MAX_ATTEMPTS. V26: nextAttemptAt gelecekteyse (ustel
+     *  bekleme / devre acik) alinmaz. */
     @Query("""
         SELECT e FROM OutboxEvent e
         WHERE e.processedAt IS NULL
           AND e.attempts < :maxAttempts
+          AND (e.nextAttemptAt IS NULL OR e.nextAttemptAt <= :now)
         ORDER BY e.createdAt ASC
     """)
-    List<OutboxEvent> findUnprocessed(
+    List<OutboxEvent> findDue(
             @org.springframework.data.repository.query.Param("maxAttempts") int maxAttempts,
+            @org.springframework.data.repository.query.Param("now") java.time.LocalDateTime now,
             Pageable pageable);
 
     /** FAZ D.4 — Prometheus gauge için pending count. */

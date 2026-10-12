@@ -509,4 +509,181 @@ class JobListingServiceTest {
             assertThat(fits(day, MON.plusDays(1), "10:00", "16:00")).isFalse();
         }
     }
+
+    // ============================================================
+    @Nested
+    @DisplayName("Kapanış — son vardiya bitince otomatik + manuel ortak yol")
+    class Closing {
+
+        private final LocalDate today = LocalDate.of(2026, 10, 24);
+
+        private JobListing listingWithSlot(ListingStatus st, LocalDate date, String start, String end) {
+            Business biz = businessOwnedBy(OWNER_ID);
+            biz.setType(com.hotelapp.enums.BusinessType.HOTEL);
+            JobListing l = JobListing.builder()
+                    .business(biz)
+                    .position(Position.WAITER)
+                    .jobType(JobType.DAILY)
+                    .title("Garson")
+                    .status(st)
+                    .build();
+            l.setId(42L);
+            l.setShiftSlots(new java.util.ArrayList<>());
+            if (date != null) {
+                l.getShiftSlots().add(ShiftSlot.builder().id(7L).jobListing(l).date(date)
+                        .startTime(LocalTime.parse(start)).endTime(LocalTime.parse(end))
+                        .slotsNeeded(1).slotsFilled(0).build());
+            }
+            return l;
+        }
+
+        private com.hotelapp.entity.Application app(long id, long candidateId,
+                                                    com.hotelapp.enums.ApplicationStatus st) {
+            User c = new User();
+            c.setId(candidateId);
+            com.hotelapp.entity.Application a = new com.hotelapp.entity.Application();
+            a.setId(id);
+            a.setCandidate(c);
+            a.setStatus(st);
+            return a;
+        }
+
+        @Test
+        @DisplayName("Son vardiyası dün biten ilan kapanır; açık başvurular EXPIRED, aday başına tek bildirim, olay yayınlanır")
+        void endedYesterday_closes_and_expires_open_applications() {
+            JobListing l = listingWithSlot(ListingStatus.ACTIVE, today.minusDays(1), "09:00", "17:00");
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+            var held = app(1, 501, com.hotelapp.enums.ApplicationStatus.HELD);
+            held.setHoldDeadline(java.time.LocalDateTime.of(2026, 10, 25, 9, 0));
+            var standby = app(2, 502, com.hotelapp.enums.ApplicationStatus.STANDBY);
+            standby.setStandbyRank(1);
+            standby.setStandbyOfferedAt(java.time.LocalDateTime.of(2026, 10, 23, 9, 0));
+            standby.setStandbyDeadline(java.time.LocalDateTime.of(2026, 10, 23, 10, 0));
+            standby.setStandbyReplacesApplicationId(99L);
+            var pending = app(3, 501, com.hotelapp.enums.ApplicationStatus.PENDING);   // ayni aday, ikinci basvuru
+            when(applicationRepository.findAllByJobListingIdAndStatusIn(42L, JobListingService.OPEN_ON_CLOSE))
+                    .thenReturn(List.of(held, standby, pending));
+
+            boolean closed = service.autoCloseIfEnded(42L, today.atTime(0, 1));
+
+            assertThat(closed).isTrue();
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.CLOSED);
+            assertThat(List.of(held, standby, pending)).allSatisfy(a ->
+                    assertThat(a.getStatus()).isEqualTo(com.hotelapp.enums.ApplicationStatus.EXPIRED));
+            assertThat(held.getHoldDeadline()).isNull();
+            assertThat(standby.getStandbyRank()).isNull();
+            assertThat(standby.getStandbyOfferedAt()).isNull();
+            assertThat(standby.getStandbyDeadline()).isNull();
+            assertThat(standby.getStandbyReplacesApplicationId()).isNull();
+            verify(applicationRepository).saveAll(List.of(held, standby, pending));
+            verify(eventPublisher).publishEvent(new com.hotelapp.event.ListingClosedEvent(42L));
+            verify(notificationService, org.mockito.Mockito.times(1)).notify(org.mockito.ArgumentMatchers.eq(501L),
+                    org.mockito.ArgumentMatchers.eq(com.hotelapp.enums.NotificationType.LISTING_CLOSED),
+                    org.mockito.ArgumentMatchers.eq("İlan süresi doldu"),
+                    org.mockito.ArgumentMatchers.eq("İlan süresi doldu: Garson. Başvurun sonuçlanmadan kapandı."),
+                    org.mockito.ArgumentMatchers.eq("applications"));
+            verify(notificationService, org.mockito.Mockito.times(1)).notify(org.mockito.ArgumentMatchers.eq(502L),
+                    any(), any(), any(), any());
+            org.mockito.Mockito.verifyNoMoreInteractions(notificationService);
+        }
+
+        @Test
+        @DisplayName("Kapanışta sonuçlandırılan durumlar PENDING/REVIEWING/HELD/STANDBY; ACCEPTED dahil değil")
+        void open_statuses_exclude_accepted() {
+            assertThat(JobListingService.OPEN_ON_CLOSE).containsExactlyInAnyOrder(
+                    com.hotelapp.enums.ApplicationStatus.PENDING,
+                    com.hotelapp.enums.ApplicationStatus.REVIEWING,
+                    com.hotelapp.enums.ApplicationStatus.HELD,
+                    com.hotelapp.enums.ApplicationStatus.STANDBY);
+        }
+
+        @Test
+        @DisplayName("Gece vardiyası (dün 22:00 – bugün 06:00): 05:59 kapanmaz, 06:00 kapanır")
+        void overnight_closes_only_after_end_next_day() {
+            JobListing l = listingWithSlot(ListingStatus.ACTIVE, today.minusDays(1), "22:00", "06:00");
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            assertThat(service.autoCloseIfEnded(42L, today.atTime(5, 59))).isFalse();
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.ACTIVE);
+            verify(jobListingRepository, never()).save(any());
+
+            assertThat(service.autoCloseIfEnded(42L, today.atTime(6, 0))).isTrue();
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.CLOSED);
+        }
+
+        @Test
+        @DisplayName("Gelecekte vardiyası olan ilan kapanmaz")
+        void future_shift_does_not_close() {
+            JobListing l = listingWithSlot(ListingStatus.ACTIVE, today.minusDays(3), "09:00", "17:00");
+            l.getShiftSlots().add(ShiftSlot.builder().id(8L).jobListing(l).date(today.plusDays(1))
+                    .startTime(LocalTime.parse("09:00")).endTime(LocalTime.parse("17:00")).build());
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            assertThat(service.autoCloseIfEnded(42L, today.atTime(12, 0))).isFalse();
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.ACTIVE);
+            verify(eventPublisher, never()).publishEvent(any(Object.class));
+        }
+
+        @Test
+        @DisplayName("Vardiyası olmayan ilana dokunulmaz")
+        void no_slots_untouched() {
+            JobListing l = listingWithSlot(ListingStatus.ACTIVE, null, null, null);
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            assertThat(service.autoCloseIfEnded(42L, today.atTime(12, 0))).isFalse();
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("Admin askısındaki PAUSED ilan da kapanır; bayrak korunur")
+        void paused_admin_suspended_closes_flag_kept() {
+            JobListing l = listingWithSlot(ListingStatus.PAUSED, today.minusDays(1), "09:00", "17:00");
+            l.setAdminSuspended(true);
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            assertThat(service.autoCloseIfEnded(42L, today.atTime(12, 0))).isTrue();
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.CLOSED);
+            assertThat(l.isAdminSuspended()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Zaten kapalı ilan: ikinci koşu idempotent (olay/bildirim/kayıt yok)")
+        void already_closed_is_noop() {
+            JobListing l = listingWithSlot(ListingStatus.CLOSED, today.minusDays(1), "09:00", "17:00");
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            assertThat(service.autoCloseIfEnded(42L, today.atTime(12, 0))).isFalse();
+            verify(jobListingRepository, never()).save(any());
+            verify(eventPublisher, never()).publishEvent(any(Object.class));
+            org.mockito.Mockito.verifyNoInteractions(notificationService, applicationRepository);
+        }
+
+        @Test
+        @DisplayName("Manuel kapanış da açık başvuruları EXPIRED yapar, olayı yayınlar, adaya bildirir")
+        void manual_close_expires_open_applications() {
+            JobListing l = listingWithSlot(ListingStatus.ACTIVE, today.plusDays(3), "09:00", "17:00");
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+            var reviewing = app(4, 503, com.hotelapp.enums.ApplicationStatus.REVIEWING);
+            when(applicationRepository.findAllByJobListingIdAndStatusIn(42L, JobListingService.OPEN_ON_CLOSE))
+                    .thenReturn(List.of(reviewing));
+
+            service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
+
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.CLOSED);
+            assertThat(reviewing.getStatus()).isEqualTo(com.hotelapp.enums.ApplicationStatus.EXPIRED);
+            verify(eventPublisher).publishEvent(new com.hotelapp.event.ListingClosedEvent(42L));
+            verify(notificationService).notify(503L, com.hotelapp.enums.NotificationType.LISTING_CLOSED,
+                    "İlan kapatıldı", "İlan kapatıldı: Garson. Başvurun sonuçlanmadan kapandı.", "applications");
+        }
+
+        @Test
+        @DisplayName("Duraklatma başvurulara dokunmaz")
+        void pausing_does_not_touch_applications() {
+            JobListing l = listingWithSlot(ListingStatus.ACTIVE, today.plusDays(3), "09:00", "17:00");
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            service.updateStatus(42L, OWNER_ID, ListingStatus.PAUSED);
+            org.mockito.Mockito.verifyNoInteractions(applicationRepository, notificationService);
+        }
+    }
 }

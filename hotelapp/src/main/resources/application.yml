@@ -68,6 +68,16 @@ spring:
         jdbc:
           time_zone: Europe/Istanbul
 
+  # @Scheduled isleri (outbox relay, HOLD/yedek suresi, GDPR, kayitli arama, SGK,
+  # odeme mutabakati). Varsayilan 1 thread'de tek asili is hepsini durduruyordu.
+  # Bean: config/AsyncConfig#taskScheduler (WebSocket'in messageBrokerTaskScheduler'i
+  # Boot'un otomatik zamanlayicisini devre disi biraktigi icin acikca tanimli).
+  task:
+    scheduling:
+      pool:
+        size: ${SCHEDULER_POOL_SIZE:4}
+      thread-name-prefix: kadrom-sched-
+
   servlet:
     multipart:
       enabled: true
@@ -178,6 +188,19 @@ app:
       password: ${NETGSM_PASSWORD:}
       header:   ${NETGSM_HEADER:}
       url:      ${NETGSM_URL:https://api.netgsm.com.tr/sms/send/get}
+
+  # Dis HTTP cagrilari (Resend, SMS saglayici) — zaman asimsiz istek zamanlayiciyi kilitler.
+  http:
+    connect-timeout-ms: ${HTTP_CONNECT_TIMEOUT_MS:5000}
+    read-timeout-ms:    ${HTTP_READ_TIMEOUT_MS:10000}
+
+  # Bildirimler commit sonrasi bu havuzda yazilir/gonderilir (AsyncConfig#notificationExecutor).
+  # Her aktif thread kisa sure 1 DB baglantisi kullanir — max-size'i DB_POOL_MAX'in altinda tut.
+  notifications:
+    executor:
+      core-size:      ${NOTIFY_EXECUTOR_CORE:2}
+      max-size:       ${NOTIFY_EXECUTOR_MAX:4}
+      queue-capacity: ${NOTIFY_EXECUTOR_QUEUE:500}
 
   # FAZ H.4 — Field-level encryption (KVKK m.12)
   # 256-bit AES key, base64 encoded. Bos -> encryption DEVRE DISI (dev OK, prod KVKK risk).
