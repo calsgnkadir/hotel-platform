@@ -122,4 +122,13 @@ describe('ApplicationDetail — vardiya bazlı gelmedi', () => {
     // Kalan uygun vardiya (gece) hâlâ işaretlenebilir
     expect(screen.getByRole('button', { name: 'Gelmedi olarak işaretle' })).toBeInTheDocument()
   })
+
+  it('müsaitlik listesinde gece bloğu "(ertesi gün)" ile gösterilir', () => {
+    render(<ApplicationDetail app={{ ...BASE, requestedSlots: [], availabilities: [
+      { dayOfWeek: 'FRIDAY', startTime: '22:00:00', endTime: '06:00:00' },
+      { dayOfWeek: 'MONDAY', startTime: '09:00:00', endTime: '17:00:00' },
+    ] }} />)
+    expect(screen.getByText(/22:00–06:00 \(ertesi gün\)/)).toBeInTheDocument()
+    expect(screen.getByText(/09:00–17:00$/)).toBeInTheDocument()
+  })
 })

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { StatusBadge, NoShowBadge } from '../components/Badges'
+import { StatusBadge, NoShowSummaryBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import useFocusTrap from '../../../lib/useFocusTrap'
@@ -8,6 +8,7 @@ import ApplicationsKanban from '../components/ApplicationsKanban'
 import ApplicationDetail from '../components/ApplicationDetail'
 import { BUSINESS_FILTER_LABELS } from '../../../lib/applicationStatus'
 import { POSITION_LABELS } from '../../../utils/labels'
+import { isFullyNoShow } from '../../../lib/shiftTime'
 
 const VIEW_STORAGE_KEY = 'biz-applications-view'
 // Liste gorunumu 3x3 A4-dikey kart izgarasi — sayfa basi 9 kart (kullanici istegi).
@@ -111,6 +112,8 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
   // #84: status filtresi + aday adı araması (debounced)
   const filtered = applications.filter(a => {
     if (filter !== 'ALL' && a.status !== filter) return false
+    // Tum vardiyalarina gelmeyen aday "Kabul edildi" filtresinde yer almaz
+    if (filter === 'ACCEPTED' && isFullyNoShow(a)) return false
     if (debouncedSearch.trim()) {
       const name = (a.candidate?.fullName || '').toLowerCase()
       if (!name.includes(debouncedSearch.trim().toLowerCase())) return false
@@ -135,7 +138,7 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="flex gap-2 flex-wrap">
           {visibleFilters.map(f => {
-            const count = f === 'ALL' ? applications.length : applications.filter(a => a.status === f).length
+            const count = f === 'ALL' ? applications.length : applications.filter(a => a.status === f && !(f === 'ACCEPTED' && isFullyNoShow(a))).length
             return (
               /* Aktif chip yazdirmada da gorunsun (bkz. index.css @media print) */
               <button key={f} type="button" onClick={() => setFilter(f)} aria-pressed={filter === f}
@@ -329,7 +332,7 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
       {/* ── Ust: durum rozeti ── */}
       <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
         <StatusBadge status={app.status} standbyOfferActive={app.standbyOfferActive} />
-        {app.noShow && <NoShowBadge />}
+        <NoShowSummaryBadge app={app} />
       </div>
 
       {/* ── Kimlik: avatar + ad YAN YANA ── */}

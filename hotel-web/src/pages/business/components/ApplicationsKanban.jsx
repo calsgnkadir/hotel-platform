@@ -18,6 +18,7 @@ import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'  // FAZ 5.11
 import { useConfirm } from '../../../lib/useConfirm'
 import { APPLICATION_STATUS } from '../../../lib/applicationStatus'
+import { isFullyNoShow } from '../../../lib/shiftTime'
 
 /*
  * FAZ 5.5a — Basvuru Kanban
@@ -117,6 +118,8 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
     const map = Object.fromEntries(COLUMNS.map(c => [c.id, []]))
     applications.forEach(a => {
       const b = statusBucket(a.status)
+      // Tum vardiyalarina gelmeyen aday kadroda sayilmaz; kabul kolonunda gosterilmez
+      if (b === 'ACCEPTED' && isFullyNoShow(a)) return
       if (b && map[b]) map[b].push(a)
     })
     return map

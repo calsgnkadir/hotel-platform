@@ -6,11 +6,17 @@ import { extractErrorMessage } from '../../../api/client'
 import EmptyState from '../../../components/EmptyState'
 import { totalHoursForApplication } from '../../../utils/shifts'
 import { POSITION_LABELS } from '../../../utils/labels'
+import { rosterSlots } from '../../../lib/shiftTime'
 
 export default function HistoryTab({ applications, onOpenMessages }) {
-  // Sadece kabul edilmis + calisma tamamlanmis basvurular
+  // Sadece kabul edilmis + calisma tamamlanmis basvurular. Gelmedi isaretli
+  // vardiyalar saat ve tarihten duser (backend "tamamlanan is" kurali ile ayni):
+  // tum vardiyalari isaretli ya da eski (vardiyasiz) gelmedi kaydi listelenmez.
   const completed = applications
     .filter(a => a.status === 'ACCEPTED' && a.workCompleted)
+    .filter(a => !(a.noShow && !(a.noShowSlotIds?.length)))
+    .map(a => ({ ...a, requestedSlots: rosterSlots(a) }))
+    .filter(a => !(a.noShowSlotIds?.length) || a.requestedSlots.length > 0)
     .sort((a, b) => {
       const ad = (a.requestedSlots?.[0]?.date) || a.createdAt
       const bd = (b.requestedSlots?.[0]?.date) || b.createdAt

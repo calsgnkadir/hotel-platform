@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../api/hotel'
 import { extractErrorMessage } from '../api/client'
+import { validateShiftTimes, isOvernight, shiftDuration, MAX_AVAILABILITY_HOURS } from '../lib/shiftTime'
 
 /**
- * Faz B/#10 — Aday haftalık müsaitlik blokları editörü.
+ * Aday haftalık müsaitlik blokları editörü.
  *
- * Cal.com tarzı: aday "Pzt 09-17", "Cuma 14-22" gibi tekrarlayan haftalık
- * dilimler tanımlar. PUT atomik (tüm liste replace).
+ * Aday "Pzt 09:00–17:00", "Cuma 22:00–06:00" gibi tekrarlayan haftalık dilimler
+ * tanımlar. Bitiş başlangıçtan önceyse blok ertesi gün biter (gece müsaitliği);
+ * yalnız eşit saat geçersizdir (backend aynı kuralı 422 ile uygular). Müsaitlik
+ * bloğu vardiya değildir: 16 saat sınırı yok, 24 saate kadar (ör. 00:00–23:59).
+ * PUT atomik (tüm liste replace).
  */
 
 const DAY_LABELS = {
@@ -21,45 +25,58 @@ const DAY_LABELS = {
 }
 const DAY_ORDER = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY']
 
+let keySeq = 0
+const nextKey = () => `blk-${++keySeq}`
+
+/** Satır doğrulaması: geçerliyse null, değilse Türkçe mesaj. */
+export function validateAvailabilityBlock(b) {
+  if (!b.dayOfWeek || !b.startTime || !b.endTime) return 'Gün, başlangıç ve bitiş zorunlu'
+  return validateShiftTimes(b.startTime, b.endTime, { subject: 'Müsaitlik bloğu', maxHours: MAX_AVAILABILITY_HOURS })
+}
+
 export default function AvailabilityBlocksEditor() {
   const [blocks, setBlocks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [saving, setSaving] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const [showErrors, setShowErrors] = useState(false)
+  const mounted = useRef(true)
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true)
+    setLoadError(false)
     hotelApi.getMyAvailabilityBlocks()
-      .then(data => setBlocks(data.map(b => ({
-        // backend HH:mm:ss formatında dönebilir; HH:mm'e indirgenir
-        ...b, startTime: trimSeconds(b.startTime), endTime: trimSeconds(b.endTime),
-      }))))
-      .catch(() => toast.error('Müsaitlik blokları yüklenemedi'))
-      .finally(() => setLoading(false))
+      .then(data => { if (mounted.current) setBlocks(normalize(data)) })
+      .catch(() => { if (mounted.current) setLoadError(true) })
+      .finally(() => { if (mounted.current) setLoading(false) })
   }, [])
 
+  useEffect(() => {
+    mounted.current = true
+    load()
+    return () => { mounted.current = false }
+  }, [load])
+
   function addBlock() {
-    setBlocks(prev => [...prev, { id: null, dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '17:00' }])
+    setBlocks(prev => [...prev, { _k: nextKey(), id: null, dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '17:00' }])
     setDirty(true)
   }
-  function updateBlock(idx, patch) {
-    setBlocks(prev => prev.map((b, i) => i === idx ? { ...b, ...patch } : b))
+  function updateBlock(key, patch) {
+    setBlocks(prev => prev.map(b => b._k === key ? { ...b, ...patch } : b))
     setDirty(true)
   }
-  function removeBlock(idx) {
-    setBlocks(prev => prev.filter((_, i) => i !== idx))
+  function removeBlock(key) {
+    setBlocks(prev => prev.filter(b => b._k !== key))
     setDirty(true)
   }
 
   async function save() {
-    for (const b of blocks) {
-      if (!b.dayOfWeek || !b.startTime || !b.endTime) {
-        toast.error('Her satırda gün, başlangıç ve bitiş zorunlu')
-        return
-      }
-      if (b.startTime >= b.endTime) {
-        toast.error(`${DAY_LABELS[b.dayOfWeek]}: başlangıç bitişten önce olmalı`)
-        return
-      }
+    const firstInvalid = blocks.find(b => validateAvailabilityBlock(b))
+    if (firstInvalid) {
+      setShowErrors(true)
+      toast.error(`${DAY_LABELS[firstInvalid.dayOfWeek] || 'Blok'}: ${validateAvailabilityBlock(firstInvalid)}`)
+      return
     }
     setSaving(true)
     try {
@@ -68,12 +85,12 @@ export default function AvailabilityBlocksEditor() {
         startTime: ensureSeconds(b.startTime),
         endTime: ensureSeconds(b.endTime),
       })))
-      setBlocks(fresh.map(b => ({
-        ...b, startTime: trimSeconds(b.startTime), endTime: trimSeconds(b.endTime),
-      })))
+      setBlocks(normalize(fresh))
       setDirty(false)
+      setShowErrors(false)
       toast.success('Müsaitlik kaydedildi')
     } catch (err) {
+      // Backend 422 mesajı (eşit saat vb.) olduğu gibi gösterilir
       toast.error(extractErrorMessage(err))
     } finally {
       setSaving(false)
@@ -82,116 +99,95 @@ export default function AvailabilityBlocksEditor() {
 
   const sorted = [...blocks].sort((a, b) => {
     const d = DAY_ORDER.indexOf(a.dayOfWeek) - DAY_ORDER.indexOf(b.dayOfWeek)
-    return d !== 0 ? d : a.startTime.localeCompare(b.startTime)
+    return d !== 0 ? d : (a.startTime || '').localeCompare(b.startTime || '')
   })
 
   return (
-    <div className="card p-5"
-         style={{
-           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85))',
-           border: '1px solid rgba(31, 41, 55, 0.14)',
-         }}>
+    <div className="card p-5">
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div>
-          <h3 className="text-base tracking-[0.2em] uppercase pb-1"
-              style={{ color: '#1f2937' }}>
-            Haftalık Müsaitlik
-          </h3>
-          <p className="text-[11px] max-w-md" style={{ color: '#6b7574' }}>
+          <h3 className="type-card" style={{ color: 'var(--ah-ink)' }}>Haftalık müsaitlik</h3>
+          <p className="type-caption max-w-md mt-1" style={{ color: 'var(--ah-ink-3)' }}>
             Hangi gün ve saatlerde çalışabilirsin? İşletmeler ilan açtığında bu bloklara
-            göre eşleştirme yapılır.
+            göre eşleştirme yapılır. Gece bloklarında bitiş saati ertesi güne geçebilir (ör. 22:00–06:00).
           </p>
         </div>
-        <button type="button" onClick={addBlock}
-          className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-          style={{
-            background: 'rgba(31, 41, 55, 0.10)',
-            border: '1px solid rgba(31, 41, 55, 0.28)',
-            color: '#1f2937',
-          }}>
-          + Blok Ekle
-        </button>
+        {!loading && !loadError && (
+          <button type="button" onClick={addBlock} className="btn-secondary">
+            Blok ekle
+          </button>
+        )}
       </div>
 
-      {loading && <p className="text-xs" style={{ color: '#6b7574' }}>Yükleniyor...</p>}
+      {loading && <p className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>Yükleniyor...</p>}
 
-      {!loading && sorted.length === 0 && (
+      {!loading && loadError && (
+        <div className="text-center py-6 rounded-lg" role="alert"
+             style={{ background: 'var(--ah-danger-soft)', border: '1px solid var(--ah-line)' }}>
+          <p className="type-body" style={{ color: 'var(--ah-danger)' }}>Müsaitlik blokları yüklenemedi.</p>
+          <button type="button" onClick={load} className="btn-secondary mt-3">Tekrar dene</button>
+        </div>
+      )}
+
+      {!loading && !loadError && sorted.length === 0 && (
         <div className="text-center py-6 rounded-lg"
-             style={{ background: 'rgba(31, 41, 55, 0.05)', border: '1px dashed rgba(31, 41, 55, 0.18)' }}>
-          <p className="text-xs" style={{ color: '#1f2937' }}>
-            Henüz blok tanımlanmamış. <b>+ Blok Ekle</b> ile başla.
+             style={{ background: 'var(--ah-band)', border: '1px dashed var(--ah-line-2)' }}>
+          <p className="type-body" style={{ color: 'var(--ah-ink-2)' }}>
+            Henüz blok tanımlanmamış. <b>Blok ekle</b> ile başla.
           </p>
         </div>
       )}
 
-      {!loading && sorted.length > 0 && (
-        <div className="space-y-2">
-          {sorted.map((b, sortedIdx) => {
-            // İşlemleri kaynak (sıralanmamış) listede yapmak için orijinal index'i bul
-            const realIdx = blocks.findIndex(x => x === b || (x.id === b.id && x.dayOfWeek === b.dayOfWeek && x.startTime === b.startTime))
+      {!loading && !loadError && sorted.length > 0 && (
+        <ul className="space-y-2" data-testid="availability-blocks">
+          {sorted.map(b => {
+            const error = validateAvailabilityBlock(b)
+            const overnight = !error && isOvernight(b.startTime, b.endTime)
+            const duration = !error ? shiftDuration(b.startTime, b.endTime) : null
+            const dayLabel = DAY_LABELS[b.dayOfWeek] || b.dayOfWeek
             return (
-              <div key={b.id ?? `new-${sortedIdx}`}
-                   className="flex flex-wrap items-center gap-2 rounded-lg p-2"
-                   style={{ background: 'rgba(31, 41, 55, 0.05)', border: '1px solid rgba(31, 41, 55, 0.10)' }}>
-                <select value={b.dayOfWeek}
-                        onChange={e => updateBlock(realIdx, { dayOfWeek: e.target.value })}
-                        className="text-sm rounded-md px-2 py-1.5 min-w-[110px]"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.85)',
-                          color: '#3f4b4a',
-                          border: '1px solid rgba(31, 41, 55, 0.22)',
-                        }}>
-                  {DAY_ORDER.map(d => <option key={d} value={d}>{DAY_LABELS[d]}</option>)}
-                </select>
-                <input type="time" value={b.startTime}
-                       onChange={e => updateBlock(realIdx, { startTime: e.target.value })}
-                       className="text-sm rounded-md px-2 py-1.5"
-                       style={{
-                         background: 'rgba(255, 255, 255, 0.85)',
-                         color: '#3f4b4a',
-                         border: '1px solid rgba(31, 41, 55, 0.22)',
-                         colorScheme: 'dark',
-                       }} />
-                <span style={{ color: '#6b7574' }}>—</span>
-                <input type="time" value={b.endTime}
-                       onChange={e => updateBlock(realIdx, { endTime: e.target.value })}
-                       className="text-sm rounded-md px-2 py-1.5"
-                       style={{
-                         background: 'rgba(255, 255, 255, 0.85)',
-                         color: '#3f4b4a',
-                         border: '1px solid rgba(31, 41, 55, 0.22)',
-                         colorScheme: 'dark',
-                       }} />
-                <button type="button" onClick={() => removeBlock(realIdx)}
-                  title="Bu bloğu sil"
-                  className="ml-auto w-7 h-7 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5"
-                  style={{
-                    background: 'rgba(107, 117, 116, 0.12)',
-                    color: '#6b7574',
-                    border: '1px solid rgba(107, 117, 116, 0.28)',
-                  }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                       stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+              <li key={b._k} className="rounded-lg p-2"
+                  style={{ background: 'var(--ah-band)', border: '1px solid var(--ah-line)' }}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select value={b.dayOfWeek} aria-label="Gün"
+                          onChange={e => updateBlock(b._k, { dayOfWeek: e.target.value })}
+                          className="input w-auto min-w-[120px]">
+                    {DAY_ORDER.map(d => <option key={d} value={d}>{DAY_LABELS[d]}</option>)}
+                  </select>
+                  <input type="time" value={b.startTime} aria-label={`${dayLabel} başlangıç`}
+                         onChange={e => updateBlock(b._k, { startTime: e.target.value })}
+                         className="input w-auto" />
+                  <span aria-hidden="true" style={{ color: 'var(--ah-ink-3)' }}>–</span>
+                  <input type="time" value={b.endTime} aria-label={`${dayLabel} bitiş`}
+                         onChange={e => updateBlock(b._k, { endTime: e.target.value })}
+                         className="input w-auto" />
+                  {duration && (
+                    <span className="type-caption tabular-nums" style={{ color: 'var(--ah-ink-2)' }}>
+                      {duration}
+                    </span>
+                  )}
+                  {overnight && <span className="badge badge-neutral">Ertesi gün biter</span>}
+                  <button type="button" onClick={() => removeBlock(b._k)}
+                    aria-label={`${dayLabel} bloğunu sil`} title="Bu bloğu sil"
+                    className="btn-ghost ml-auto">
+                    Sil
+                  </button>
+                </div>
+                {error && (showErrors || isTimeError(b)) && (
+                  <p className="type-caption mt-1.5" role="alert" style={{ color: 'var(--ah-danger)' }}>
+                    {error}
+                  </p>
+                )}
+              </li>
             )
           })}
-        </div>
+        </ul>
       )}
 
-      {!loading && (
+      {!loading && !loadError && (
         <div className="flex justify-end mt-4">
-          <button type="button" onClick={save} disabled={!dirty || saving}
-            className="px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] rounded-full transition-all hover:-translate-y-0.5 disabled:opacity-40"
-            style={{
-              background: 'var(--ah-brand-gradient)',
-              color: '#ffffff',
-              border: '1px solid rgba(31, 41, 55, 0.55)',
-              boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-            }}>
-            {saving ? 'Kaydediliyor...' : 'Müsaitliği Kaydet'}
+          <button type="button" onClick={save} disabled={!dirty || saving} className="btn-primary">
+            {saving ? 'Kaydediliyor...' : 'Müsaitliği kaydet'}
           </button>
         </div>
       )}
@@ -199,7 +195,21 @@ export default function AvailabilityBlocksEditor() {
   )
 }
 
-// Backend LocalTime "HH:mm:ss" döner; <input type="time"> "HH:mm" bekler
+/** Saatler dolu ama kural ihlali (eşit saat) — anında gösterilir. */
+function isTimeError(b) {
+  return !!(b.startTime && b.endTime)
+}
+
+function normalize(list) {
+  return (list || []).map(b => ({
+    ...b,
+    _k: nextKey(),
+    // backend HH:mm:ss formatında dönebilir; <input type="time"> HH:mm bekler
+    startTime: trimSeconds(b.startTime),
+    endTime: trimSeconds(b.endTime),
+  }))
+}
+
 function trimSeconds(t) {
   if (!t) return ''
   return t.length > 5 ? t.slice(0, 5) : t

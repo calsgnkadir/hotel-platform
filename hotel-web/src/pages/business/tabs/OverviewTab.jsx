@@ -1,14 +1,15 @@
 import { motion } from 'framer-motion'
-import { StatusBadge, NoShowBadge } from '../components/Badges'
+import { StatusBadge, NoShowSummaryBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
 import TodayWidget from '../components/TodayWidget'  // FAZ 5.12
 import { getStatusMeta } from '../../../lib/applicationStatus'
+import { isFullyNoShow } from '../../../lib/shiftTime'
 
 /* ── Overview Tab — Dalga C: 2-sutun (sol stat+tablo, sag canli akis) ── */
 export default function OverviewTab({ applications, onTabChange }) {
   const pending   = applications.filter(a => a.status === 'PENDING').length
   const reviewing = applications.filter(a => a.status === 'REVIEWING').length
-  const accepted  = applications.filter(a => a.status === 'ACCEPTED').length
+  const accepted  = applications.filter(a => a.status === 'ACCEPTED' && !isFullyNoShow(a)).length
 
   return (
     <div className="grid xl:grid-cols-[1fr_340px] gap-4 items-start">
@@ -187,7 +188,7 @@ function BizRecentRow({ app, last, onClick }) {
       </div>
       <span className="flex items-center gap-1.5 flex-shrink-0">
         <StatusBadge status={app.status} standbyOfferActive={app.standbyOfferActive} />
-        {app.noShow && <NoShowBadge />}
+        <NoShowSummaryBadge app={app} />
       </span>
     </motion.div>
   )

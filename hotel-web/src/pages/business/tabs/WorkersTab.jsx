@@ -1,7 +1,7 @@
 import * as hotelApi from '../../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
-import { shiftHours } from '../../../lib/shiftTime'
+import { shiftHours, rosterSlots } from '../../../lib/shiftTime'
 import EmptyState from '../../../components/EmptyState'
 import AvatarCluster from '../../../components/AvatarCluster'  // FAZ 5.14
 import cldImg, { ImgSize } from '../../../lib/cldImg'
@@ -10,10 +10,15 @@ import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ D
 /* ── Workers Tab (#78) — Bizde çalışan adaylar ── */
 export default function WorkersTab({ applications, onOpenMessages }) {
   // Aday başına grupla: { candidateId -> { candidate, totalHours, jobCount, lastDate, applications[] } }
-  const completed = applications.filter(a => a.status === 'ACCEPTED' && a.workCompleted)
+  // Gelmedi işaretli vardiyalar kadrodan düşer; tüm vardiyaları gelmedi olan
+  // başvuru "bizde çalıştı" sayılmaz (yoklama ve başvuru detayı bu kuraldan muaf).
+  const completed = applications
+    .filter(a => a.status === 'ACCEPTED' && a.workCompleted)
+    .map(a => ({ app: a, slots: rosterSlots(a) }))
+    .filter(({ app, slots }) => !((app.requestedSlots || []).length > 0 && slots.length === 0))
 
   const grouped = {}
-  for (const app of completed) {
+  for (const { app, slots } of completed) {
     const cid = app.candidate?.id
     if (!cid) continue
     if (!grouped[cid]) {
@@ -28,7 +33,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
     const g = grouped[cid]
     g.jobCount++
     g.apps.push(app)
-    for (const s of app.requestedSlots || []) {
+    for (const s of slots) {
       g.totalHours += shiftHours(s.startTime, s.endTime)
       if (s.date && (!g.lastDate || s.date > g.lastDate)) g.lastDate = s.date
     }

@@ -445,7 +445,7 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] **Kayıtlı Aramalar** — kullanıcı filtre setini kaydeder, yeni eşleşmede bildirim (scheduled matcher, 30 dk)
 - [x] **Akıllı sıralama** — aday tercihlerine göre weighted ranking (position +50, district +30, jobType +20, recency +10)
 - [x] **Sade açık arayüz** — grafit/gri marka (`#1f2937`) + muted semantik durum renkleri (yeşil/amber/kiremit/mavi, sadece durum sinyali), tek font (Inter), birleşik rounded kart sistemi, hairline ayraçlar
-- [x] **Test coverage** — backend 493 birim + 33 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 280 vitest (44 dosya), Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
+- [x] **Test coverage** — backend 503 birim + 33 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 306 vitest (47 dosya), Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
 - [x] Landing "Vardiya Nabzı" canlı widget (WebSocket broadcast)
 - [x] **Engelleme** — aday işletmeyi, işletme adayı engelleyebilir; engel başvuru, yedek/HOLD teklifi, mesaj, tepki, "yazıyor" sinyali ve tüm bildirim/SMS yollarında uygulanır, karşı tarafa bildirilmez
 - [x] **Durum dili** — başvuru durumları tek sözlükten (`lib/applicationStatus.js`), aday ve işletme bakış açısına göre ayrı etiket
@@ -454,6 +454,7 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] **Kapasite ve vardiya güvenliği** — atomik slot sayacı (son yere eşzamanlı kabul aşılamaz), başvuruda iyimser kilit, beklemede/yedekteyken mükerrer başvuru engeli, vardiya bazlı no-show (başlangıç + 30 dk, girişsiz slot; her vardiya ayrı kayıt ve ayrı ceza, çalışılan vardiyalar ve kazanç korunur), vardiya bazlı yedek zinciri
 - [x] **Gece vardiyası** — ertesi güne taşan slotlar (ör. 22:00–06:00) ilan, giriş kartı, yoklama, no-show ve kazanç hesaplarında
 - [x] **iyzico ödeme oturumları** — her checkout ayrı kayıt, tekrar gelen başarılı callback idempotent, tutar/sepet doğrulaması, 10 dk'da bir mutabakat
+- [x] **Gece müsaitliği** — aday ertesi güne taşan müsaitlik bloğu girebilir (ör. 22:00–06:00); eşleştirme gün kaydırmasını ve hafta sonu sarmasını hesaplar
 
 ### Sıradaki
 

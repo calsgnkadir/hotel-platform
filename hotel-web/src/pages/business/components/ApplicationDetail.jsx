@@ -10,7 +10,7 @@ import { celebrate } from '../../../lib/confetti'
 import { useConfirm } from '../../../lib/useConfirm'
 import { SgkNotice } from '../../../components/LegalNotice'   // FAZ C.3
 import { WEEKDAYS } from '../lib/constants'
-import { compareSlots, formatSlotShort, isNoShowAllowed } from '../../../lib/shiftTime'
+import { compareSlots, formatSlotShort, formatShiftRange, isNoShowAllowed } from '../../../lib/shiftTime'
 
 const DAY_LABEL = Object.fromEntries(WEEKDAYS.map(d => [d.key, d.label]))
 
@@ -319,7 +319,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                         border: '1px solid rgba(31, 41, 55, 0.22)',
                         color: 'var(--accent-action)',
                       }}>
-                  {DAY_LABEL[av.dayOfWeek] || av.dayOfWeek} · {String(av.startTime || '').slice(0, 5)}–{String(av.endTime || '').slice(0, 5)}
+                  {DAY_LABEL[av.dayOfWeek] || av.dayOfWeek} · {formatShiftRange(av.startTime, av.endTime)}
                 </span>
               ))}
             </div>

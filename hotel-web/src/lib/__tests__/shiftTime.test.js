@@ -48,7 +48,7 @@ import {
   shiftMinutes, shiftHours, isOvernight, formatShiftRange, annotateShiftText,
   localDateISO, addDaysISO, shiftStartDate, shiftEndDate, isShiftStarted,
   isShiftOngoing, isShiftPast, nearestShift, relativeDayLabel, validateShiftTimes,
-  formatSlotShort, compareSlots, isNoShowAllowed,
+  formatSlotShort, compareSlots, isNoShowAllowed, MAX_SHIFT_HOURS, MAX_AVAILABILITY_HOURS,
 } from '../shiftTime'
 
 // Sabit yerel an: 12 Ekim 2026 23:00
@@ -178,5 +178,72 @@ describe('gelmedi işareti zamanı', () => {
     expect(isNoShowAllowed({ startTime: '09:00' }, NOW)).toBe(false)
     expect(isNoShowAllowed({ date: '2026-10-12' }, NOW)).toBe(false)
     expect(isNoShowAllowed(null, NOW)).toBe(false)
+  })
+})
+
+describe('müsaitlik doğrulaması (maxHours)', () => {
+  const opts = { subject: 'Müsaitlik bloğu', maxHours: MAX_AVAILABILITY_HOURS }
+  it('24 saate kadar geçerli; 16 saat sınırı uygulanmaz', () => {
+    expect(validateShiftTimes('00:00', '23:59', opts)).toBeNull()
+    expect(validateShiftTimes('06:00', '23:59', opts)).toBeNull()
+    expect(validateShiftTimes('06:00', '23:00', opts)).toBeNull()
+    expect(validateShiftTimes('22:00', '06:00', opts)).toBeNull()
+    expect(validateShiftTimes('09:00', '08:00', opts)).toBeNull()   // 23 saat, gece
+  })
+  it('eşit saat müsaitlikte de geçersiz', () => {
+    expect(validateShiftTimes('08:00', '08:00', opts)).toBe('Başlangıç ve bitiş saati aynı olamaz')
+  })
+  it('vardiya (varsayılan) 16 saat sınırı değişmedi', () => {
+    expect(MAX_SHIFT_HOURS).toBe(16)
+    expect(validateShiftTimes('06:00', '23:59')).toBe('Vardiya en fazla 16 saat olabilir')
+    expect(validateShiftTimes('00:00', '23:59')).toBe('Vardiya en fazla 16 saat olabilir')
+  })
+  it('süre metninde ",0" kalmaz', () => {
+    expect(shiftDuration('00:00', '23:59')).toBe('24 saat')
+    expect(shiftDuration('06:00', '23:59')).toBe('18 saat')
+    expect(shiftDuration('09:00', '16:30')).toBe('7,5 saat')
+  })
+  it('konu etiketi verilen maxHours ile yazılır', () => {
+    expect(validateShiftTimes('06:00', '23:00', { subject: 'Blok', maxHours: 12 }))
+      .toBe('Blok en fazla 12 saat olabilir')
+  })
+})
+
+import { rosterSlots, noShowSummaryLabel } from '../shiftTime'
+
+describe('vardiya bazlı gelmedi: kadro ve özet', () => {
+  const A = { id: 1, date: '2026-10-10', startTime: '09:00:00', endTime: '17:00:00' }
+  const B = { id: 2, date: '2026-10-11', startTime: '22:00:00', endTime: '06:00:00' }
+
+  it('rosterSlots gelmedi işaretli vardiyayı düşürür (id türünden bağımsız)', () => {
+    expect(rosterSlots({ requestedSlots: [A, B], noShowSlotIds: ['2'] })).toEqual([A])
+    expect(rosterSlots({ requestedSlots: [A, B] })).toEqual([A, B])
+    expect(rosterSlots({ requestedSlots: [A, B], noShowSlotIds: [1, 2] })).toEqual([])
+    expect(rosterSlots(null)).toEqual([])
+  })
+
+  it('noShowSummaryLabel: işaret yok -> null, kısmi -> "N vardiya gelmedi", tümü -> "İşe gelmedi"', () => {
+    expect(noShowSummaryLabel({ requestedSlots: [A, B] })).toBeNull()
+    expect(noShowSummaryLabel({ noShow: true, requestedSlots: [A, B], noShowSlotIds: [2] })).toBe('1 vardiya gelmedi')
+    expect(noShowSummaryLabel({ requestedSlots: [A, B], noShowSlotIds: [1, 2] })).toBe('İşe gelmedi')
+    expect(noShowSummaryLabel({ noShow: true, requestedSlots: [A, B] })).toBe('İşe gelmedi')  // eski kayıt
+    expect(noShowSummaryLabel({ noShow: true })).toBe('İşe gelmedi')
+  })
+})
+
+describe('isFullyNoShow — kabul sayımından düşme', () => {
+  const slots = [{ id: 1 }, { id: 2 }]
+  it('işaret yoksa false', async () => {
+    const { isFullyNoShow } = await import('../shiftTime')
+    expect(isFullyNoShow({ noShow: false, noShowSlotIds: [], requestedSlots: slots })).toBe(false)
+  })
+  it('vardiyaların bir kısmı işaretliyse false', async () => {
+    const { isFullyNoShow } = await import('../shiftTime')
+    expect(isFullyNoShow({ noShow: true, noShowSlotIds: [1], requestedSlots: slots })).toBe(false)
+  })
+  it('tüm vardiyalar işaretliyse ya da eski vardiyasız kayıtsa true', async () => {
+    const { isFullyNoShow } = await import('../shiftTime')
+    expect(isFullyNoShow({ noShow: true, noShowSlotIds: [1, 2], requestedSlots: slots })).toBe(true)
+    expect(isFullyNoShow({ noShow: true, noShowSlotIds: [], requestedSlots: slots })).toBe(true)
   })
 })

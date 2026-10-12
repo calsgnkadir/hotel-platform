@@ -6,13 +6,16 @@
  *  - endTime <= startTime -> vardiya ertesi gun biter (22:00–06:00).
  *  - endTime == startTime -> yeni kayitta gecersiz (backend 422); eski kayitta
  *    backend ile ayni yorum: 24 saatlik gece vardiyasi (ShiftWindow.endAt).
- *  - Sure en fazla 16 saat.
+ *  - Is vardiyasi suresi en fazla 16 saat. Musaitlik blogu vardiya degildir:
+ *    24 saate kadar (yalniz esit saat gecersiz).
  *
  * Saf fonksiyonlar; DOM/React bagimliligi yok. "Bugun" daima YEREL tarihle
  * hesaplanir (UTC toISOString() gece yarisi civarinda bir gun kaydirir).
  */
 
 export const MAX_SHIFT_HOURS = 16
+/** Musaitlik blogu ust siniri (vardiya degil; esit saat zaten gecersiz). */
+export const MAX_AVAILABILITY_HOURS = 24
 const DAY_MIN = 24 * 60
 
 /** "HH:mm" | "HH:mm:ss" -> gun icindeki dakika; bozuksa null. */
@@ -61,10 +64,10 @@ export function shiftDuration(startTime, endTime) {
   const mins = shiftMinutes(startTime, endTime)
   if (mins == null) return null
   if (mins < 60) return `${mins} dk`
-  const hours = mins / 60
+  const hours = Math.round(mins / 6) / 10           // bir ondalik; 23:59 -> 24 (",0" yok)
   return Number.isInteger(hours)
     ? `${hours} saat`
-    : `${hours.toFixed(1).replace('.', ',')} saat`   // TR ondalik: 7,5 saat
+    : `${String(hours).replace('.', ',')} saat`      // TR ondalik: 7,5 saat
 }
 
 /**
@@ -203,16 +206,59 @@ export function relativeDayLabel(dateISO, now = new Date()) {
 }
 
 /**
- * Ilan formu dogrulamasi (yardimci; asil kural backend'de).
+ * Saat araligi dogrulamasi (yardimci; asil kural backend'de).
  * Gecerliyse null, degilse Turkce mesaj.
+ *  maxHours: sure ust siniri; varsayilan is vardiyasi siniri (16). Musaitlik
+ *            bloklari MAX_AVAILABILITY_HOURS (24) verir.
  */
-export function validateShiftTimes(startTime, endTime) {
+export function validateShiftTimes(startTime, endTime, { subject = 'Vardiya', maxHours = MAX_SHIFT_HOURS } = {}) {
   const a = timeToMinutes(startTime), b = timeToMinutes(endTime)
   if (a == null || b == null) return null          // bos alanlari "zorunlu" kontrolu yakalar
   if (a === b) return 'Başlangıç ve bitiş saati aynı olamaz'
   const mins = shiftMinutes(startTime, endTime)
-  if (mins > MAX_SHIFT_HOURS * 60) return `Vardiya en fazla ${MAX_SHIFT_HOURS} saat olabilir`
+  if (mins > maxHours * 60) return `${subject} en fazla ${maxHours} saat olabilir`
   return null
+}
+
+/* ── Vardiya bazli "Gelmedi" (noShowSlotIds) ─────────────────── */
+
+/** Basvurunun gelmedi isaretli slot id'leri (String Set). */
+export function noShowSlotIdSet(app) {
+  return new Set((app?.noShowSlotIds || []).map(String))
+}
+
+/**
+ * Kadroda sayilan vardiyalar: requestedSlots eksi gelmedi isaretliler.
+ * Gelmeyen aday o vardiyanin kadro listelerinden duser (yoklama ve basvuru
+ * detayi haric — onlar requestedSlots'u dogrudan kullanir).
+ */
+export function rosterSlots(app) {
+  const ids = noShowSlotIdSet(app)
+  const slots = app?.requestedSlots || []
+  if (ids.size === 0) return slots
+  return slots.filter(s => s?.id == null || !ids.has(String(s.id)))
+}
+
+/**
+ * Basvuru duzeyindeki gelmedi rozet metni; isaret yoksa null.
+ *  - Tum vardiyalar (veya vardiya bilgisi yok) -> "İşe gelmedi"
+ *  - Bir kismi -> "N vardiya gelmedi"
+ */
+export function noShowSummaryLabel(app, fullLabel = 'İşe gelmedi') {
+  const ids = noShowSlotIdSet(app)
+  if (!app?.noShow && ids.size === 0) return null
+  const slotIds = (app?.requestedSlots || []).filter(s => s?.id != null).map(s => String(s.id))
+  const marked = slotIds.filter(id => ids.has(id)).length
+  if (marked === 0 || marked >= slotIds.length) return fullLabel
+  return `${marked} vardiya gelmedi`
+}
+
+/**
+ * Tum vardiyalari gelmedi isaretli (ya da eski, vardiyasiz gelmedi kaydi) mi?
+ * Boyle bir basvuru "kabul" sayilmaz (Kanban kabul kolonu, kabul sayilari).
+ */
+export function isFullyNoShow(app) {
+  return noShowSummaryLabel(app, '__full__') === '__full__'
 }
 
 /**

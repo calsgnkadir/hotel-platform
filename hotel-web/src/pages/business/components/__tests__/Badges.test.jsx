@@ -32,3 +32,21 @@ describe('İşletme NoShowBadge', () => {
     expect(screen.getByText('Gelmedi').className).toContain('badge-negative')
   })
 })
+
+import { NoShowSummaryBadge } from '../Badges'
+
+describe('İşletme NoShowSummaryBadge', () => {
+  const slots = [{ id: 1 }, { id: 2 }, { id: 3 }]
+  it('işaret yoksa hiçbir şey çizmez', () => {
+    const { container } = render(<NoShowSummaryBadge app={{ requestedSlots: slots }} />)
+    expect(container).toBeEmptyDOMElement()
+  })
+  it('bir kısım vardiya işaretliyse "N vardiya gelmedi"', () => {
+    render(<NoShowSummaryBadge app={{ noShow: true, requestedSlots: slots, noShowSlotIds: [1, 3] }} />)
+    expect(screen.getByText('2 vardiya gelmedi').className).toContain('badge-negative')
+  })
+  it('tüm vardiyalar işaretliyse "İşe gelmedi"', () => {
+    render(<NoShowSummaryBadge app={{ noShow: true, requestedSlots: slots, noShowSlotIds: [1, 2, 3] }} />)
+    expect(screen.getByText('İşe gelmedi')).toBeInTheDocument()
+  })
+})
