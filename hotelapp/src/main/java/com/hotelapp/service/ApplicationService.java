@@ -222,6 +222,9 @@ public class ApplicationService {
 
         application.setStatus(request.getDecision());
         application.setNote(request.getNote());
+        // Isletmenin karar ani: incelemeye alinmadan dogrudan karar verildiyse de dolsun
+        // (yanit suresi ve "bu isletmede tamamlanan is" sayimlari buna bakar).
+        if (application.getReviewedAt() == null) application.setReviewedAt(LocalDateTime.now());
         // FAZ C.1 — Yedekteki aday dogrudan sonuclandirildiysa yedek alanlari temizlenir;
         // aksi halde acik kalan teklif scheduler'i yaniltir.
         if (current == ApplicationStatus.STANDBY) {
@@ -306,6 +309,7 @@ public class ApplicationService {
         }
         app.setStatus(ApplicationStatus.HELD);
         app.setHoldDeadline(LocalDateTime.now().plusHours(24));
+        if (app.getReviewedAt() == null) app.setReviewedAt(LocalDateTime.now());
         applicationRepository.save(app);
 
         // FAZ 18 — Audit

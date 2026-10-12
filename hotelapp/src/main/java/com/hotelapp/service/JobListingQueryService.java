@@ -198,12 +198,10 @@ public class JobListingQueryService {
                 jobListingService.toResponses(page.getContent()), pageable, page.getTotalElements());
     }
 
-    /** Tek ilan detayı. */
+    /** Tek ilan detayı (işletmede tamamlanan iş sayısı dahil). */
     @Transactional(readOnly = true)
     public ListingResponse getListingById(Long id) {
-        JobListing listing = jobListingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("İlan", id));
-        return jobListingService.toResponse(listing);
+        return jobListingService.getListingById(id);
     }
 
     /**

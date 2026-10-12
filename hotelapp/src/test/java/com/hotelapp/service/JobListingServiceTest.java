@@ -437,4 +437,76 @@ class JobListingServiceTest {
             verify(billingService, never()).canCreateListingByBusiness(any());
         }
     }
+
+    // ============================================================
+    @Nested
+    @DisplayName("Müsaitlik eşleşmesi — gece bloğu ve gün kaydırması")
+    class AvailabilityFit {
+
+        // 2026-10-12 Pazartesi
+        private final LocalDate MON = LocalDate.of(2026, 10, 12);
+
+        private com.hotelapp.entity.UserAvailabilityBlock block(java.time.DayOfWeek d, String s, String e) {
+            return com.hotelapp.entity.UserAvailabilityBlock.builder()
+                    .dayOfWeek(d).startTime(LocalTime.parse(s)).endTime(LocalTime.parse(e)).build();
+        }
+
+        private boolean fits(List<com.hotelapp.entity.UserAvailabilityBlock> blocks,
+                             LocalDate date, String start, String end) {
+            when(availabilityBlockRepository.findByUserIdOrderByDayOfWeekAscStartTimeAsc(7L)).thenReturn(blocks);
+            JobListing l = JobListing.builder().id(1L).build();
+            l.setShiftSlots(new java.util.ArrayList<>(List.of(ShiftSlot.builder().id(1L).date(date)
+                    .startTime(LocalTime.parse(start)).endTime(LocalTime.parse(end)).build())));
+            return service.candidateFitsListingSlots(7L, l);
+        }
+
+        @Test
+        @DisplayName("Pzt 22:00–06:00 bloğu: aynı gece 23:00–05:00 ve ertesi sabah 04:00–06:00 vardiyasını kapsar")
+        void nightBlock_coversNightAndNextMorning() {
+            var night = List.of(block(java.time.DayOfWeek.MONDAY, "22:00", "06:00"));
+            assertThat(fits(night, MON, "23:00", "05:00")).isTrue();
+            assertThat(fits(night, MON.plusDays(1), "04:00", "06:00")).isTrue();
+            assertThat(fits(night, MON.plusDays(1), "00:00", "06:00")).isTrue();   // gün kaydırması
+            assertThat(fits(night, MON, "22:00", "06:00")).isTrue();
+        }
+
+        @Test
+        @DisplayName("Gece bloğu dışına taşan vardiya ve yanlış gün eşleşmez")
+        void nightBlock_rejectsOutside() {
+            var night = List.of(block(java.time.DayOfWeek.MONDAY, "22:00", "06:00"));
+            assertThat(fits(night, MON, "21:00", "05:00")).isFalse();
+            assertThat(fits(night, MON.plusDays(1), "05:00", "07:00")).isFalse();
+            assertThat(fits(night, MON.plusDays(1), "23:00", "05:00")).isFalse();  // Salı gecesi
+            assertThat(fits(night, MON.minusDays(1), "04:00", "06:00")).isFalse(); // Pazar sabahı
+        }
+
+        @Test
+        @DisplayName("Pazar gecesi bloğu haftayı sarar: Pazartesi 02:00–05:00'ı kapsar")
+        void sundayNightBlock_wrapsWeek() {
+            var sun = List.of(block(java.time.DayOfWeek.SUNDAY, "22:00", "06:00"));
+            assertThat(fits(sun, MON, "02:00", "05:00")).isTrue();
+            assertThat(fits(sun, MON.minusDays(1), "23:00", "05:00")).isTrue();
+        }
+
+        @Test
+        @DisplayName("Gündüz bloğu gece vardiyasını tek başına kapsamaz; bitişik bloklar birleşir")
+        void dayBlocks_adjacentMerge() {
+            var eveningOnly = List.of(block(java.time.DayOfWeek.MONDAY, "18:00", "23:59"));
+            assertThat(fits(eveningOnly, MON, "22:00", "06:00")).isFalse();
+            assertThat(fits(eveningOnly, MON, "20:00", "00:00")).isTrue();   // 23:59 = gün sonu
+
+            var joined = List.of(block(java.time.DayOfWeek.MONDAY, "18:00", "23:59"),
+                    block(java.time.DayOfWeek.TUESDAY, "00:00", "08:00"));
+            assertThat(fits(joined, MON, "22:00", "06:00")).isTrue();
+        }
+
+        @Test
+        @DisplayName("Gündüz bloğu gündüz vardiyası: eski davranış korunur")
+        void dayBlock_dayShift_unchanged() {
+            var day = List.of(block(java.time.DayOfWeek.MONDAY, "09:00", "17:00"));
+            assertThat(fits(day, MON, "10:00", "16:00")).isTrue();
+            assertThat(fits(day, MON, "08:00", "16:00")).isFalse();
+            assertThat(fits(day, MON.plusDays(1), "10:00", "16:00")).isFalse();
+        }
+    }
 }

@@ -186,6 +186,22 @@ class CheckInServiceTest {
     }
 
     @Test
+    void attendance_keeps_no_show_row_but_does_not_count_it_as_expected_staff() {
+        // Karar 2: gelmedi satırı yoklamada kayıt olarak görünür; yerine kabul edilen
+        // yedekle aynı koltuk için beklenen kişi sayısı 1 kalır.
+        when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing));
+        when(rosterService.collectRows(listing, TODAY)).thenReturn(Map.of(TODAY, List.of(
+                new RosterRow(1L, "Ayşe", "", "08:00 – 16:00", "", "", "Gelmedi", 11L, false),
+                new RosterRow(2L, "Mert", "", "08:00 – 16:00", "", "", "Bekleniyor", 11L, true))));
+
+        CheckInService.AttendanceDto a = service.attendance(10L, OWNER, null);
+
+        assertThat(a.getRows()).extracting(RosterRow::status).containsExactly("Gelmedi", "Bekleniyor");
+        assertThat(a.getExpected()).isEqualTo(1);
+        assertThat(a.getArrived()).isZero();
+    }
+
+    @Test
     void each_shift_has_its_own_card_and_usage() {
         ShiftSlot evening = ShiftSlot.builder().id(12L).date(TODAY)
                 .startTime(LocalTime.of(16, 0)).endTime(LocalTime.of(23, 0)).build();

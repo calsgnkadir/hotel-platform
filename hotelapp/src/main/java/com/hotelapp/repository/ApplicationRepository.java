@@ -41,14 +41,49 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             Long candidateId, Long jobListingId, Collection<ApplicationStatus> statuses);
 
     // ----------------------------------------------------------------
-    // Reliability score için yardımcı sayımlar
+    // Vardiya bazli tamamlanan is / gelmedi sayimlari (V25 sonrasi kural)
+    //  - Tamamlanan: ACCEPTED ve (gelmedi isareti yok YA DA en az bir vardiyasi
+    //    isaretsiz ve vardiya bazli isaret var). Tek vardiyalik gelmedi basvuruyu
+    //    dusurmez; tum vardiyalari isaretli basvuru duser.
+    //  - Eski kayit (V25 oncesi: noShow=true, application_no_show_slots'ta satir yok)
+    //    eskisi gibi duser.
+    //  - Gelmedi sayisi: isaretli vardiya satiri basina 1 + eski kayit basina 1.
     // ----------------------------------------------------------------
 
-    /** Adayın toplam no-show kaydı (her statüden). */
-    long countByCandidateIdAndNoShowTrue(Long candidateId);
+    /** Adayın tamamlanmış iş sayısı (vardiya bazlı kural; bkz. blok açıklaması). */
+    @Query("""
+        SELECT COUNT(a) FROM Application a
+        WHERE a.candidate.id = :candidateId
+          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
+          AND (a.noShow = false
+               OR (EXISTS (SELECT 1 FROM ApplicationNoShowSlot m WHERE m.application = a)
+                   AND EXISTS (SELECT 1 FROM Application a2 JOIN a2.requestedSlots s
+                               WHERE a2 = a
+                                 AND NOT EXISTS (SELECT 1 FROM ApplicationNoShowSlot m2
+                                                 WHERE m2.application = a AND m2.shiftSlot = s))))
+    """)
+    long countCompletedJobsForCandidate(@Param("candidateId") Long candidateId);
 
-    /** Adayın tamamlanmış (kabul + no-show degil) is sayisi — Dalga G public profil */
-    long countByCandidateIdAndStatusAndNoShowFalse(Long candidateId, ApplicationStatus status);
+    /** Adayın vardiya bazlı gelmedi satırı sayısı. */
+    @Query("""
+        SELECT COUNT(m) FROM ApplicationNoShowSlot m
+        WHERE m.application.candidate.id = :candidateId
+    """)
+    long countNoShowSlotsForCandidate(@Param("candidateId") Long candidateId);
+
+    /** Adayın eski (V25 öncesi, vardiya satırı olmayan) gelmedi başvuru sayısı. */
+    @Query("""
+        SELECT COUNT(a) FROM Application a
+        WHERE a.candidate.id = :candidateId
+          AND a.noShow = true
+          AND NOT EXISTS (SELECT 1 FROM ApplicationNoShowSlot m WHERE m.application = a)
+    """)
+    long countLegacyNoShowsForCandidate(@Param("candidateId") Long candidateId);
+
+    /** Adayın gelmedi sayısı: vardiya satırı başına 1 + eski kayıt başına 1. */
+    default long countNoShowsForCandidate(Long candidateId) {
+        return countNoShowSlotsForCandidate(candidateId) + countLegacyNoShowsForCandidate(candidateId);
+    }
 
     /** Aday bu isletmenin herhangi bir ilanina basvurmus mu — public profile yetki kontrolu (basit) */
     boolean existsByCandidateIdAndJobListingBusinessOwnerId(Long candidateId, Long ownerId);
@@ -62,78 +97,22 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             Long candidateId, Long ownerId, ApplicationStatus status);
 
     /**
-     * Adayın belirtilen tarihten itibaren tamamlanmış (ACCEPTED + reviewedAt set +
-     * no-show değil) başvuru sayısı. Reliability skorunda "son 90 gün tamamlanmış iş"
-     * bonusu için kullanılır.
-     */
-    @Query("""
-        SELECT COUNT(a) FROM Application a
-        WHERE a.candidate.id = :candidateId
-          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
-          AND a.noShow = false
-          AND a.reviewedAt IS NOT NULL
-          AND a.reviewedAt >= :since
-    """)
-    long countCompletedAcceptedSince(
-            @Param("candidateId") Long candidateId,
-            @Param("since") LocalDateTime since);
-
-    /** Tüm zaman tamamlanmış iş sayısı — reliability oranı penalty denominatörü için. */
-    @Query("""
-        SELECT COUNT(a) FROM Application a
-        WHERE a.candidate.id = :candidateId
-          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
-          AND a.noShow = false
-          AND a.reviewedAt IS NOT NULL
-    """)
-    long countCompletedAcceptedAllTime(@Param("candidateId") Long candidateId);
-
-    // ----------------------------------------------------------------
-    // Dalga 3 — Bulk reliability sayimlari (N+1 fix). Her metod tek
-    // GROUP BY query'si, candidateId basina tek satir.
-    // Sonuc: Object[] { candidateId, count }
-    // ----------------------------------------------------------------
-
-    @Query("""
-        SELECT a.candidate.id, COUNT(a) FROM Application a
-        WHERE a.candidate.id IN :ids AND a.noShow = true
-        GROUP BY a.candidate.id
-    """)
-    List<Object[]> bulkCountNoShow(@Param("ids") Collection<Long> ids);
-
-    @Query("""
-        SELECT a.candidate.id, COUNT(a) FROM Application a
-        WHERE a.candidate.id IN :ids
-          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
-          AND a.noShow = false
-          AND a.reviewedAt IS NOT NULL
-        GROUP BY a.candidate.id
-    """)
-    List<Object[]> bulkCountCompletedAllTime(@Param("ids") Collection<Long> ids);
-
-    @Query("""
-        SELECT a.candidate.id, COUNT(a) FROM Application a
-        WHERE a.candidate.id IN :ids
-          AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
-          AND a.noShow = false
-          AND a.reviewedAt IS NOT NULL
-          AND a.reviewedAt >= :since
-        GROUP BY a.candidate.id
-    """)
-    List<Object[]> bulkCountCompletedSince(
-            @Param("ids") Collection<Long> ids,
-            @Param("since") LocalDateTime since);
-
-    /**
      * Dalga 4 / Ozellik 4 — Bir isletmede tamamlanmis aday sayisi (guven sinyali).
-     * ACCEPTED + reviewedAt SET + noShow=false sayisi (unique aday degil — toplam tamamlanan).
+     * ACCEPTED ve tamamlanmis (unique aday degil — toplam tamamlanan). reviewedAt
+     * sarti yok: dogrudan kabul edilen eski kayitlarda reviewedAt bos kalmisti.
+     * Vardiya bazli kural: en az bir isaretsiz vardiyasi olan basvuru sayilir; tum
+     * vardiyalari gelmedi olan ya da eski kayit (noShow=true, satir yok) dusulur.
      */
     @Query("""
         SELECT COUNT(a) FROM Application a
         WHERE a.jobListing.business.owner.id = :ownerId
           AND a.status = com.hotelapp.enums.ApplicationStatus.ACCEPTED
-          AND a.noShow = false
-          AND a.reviewedAt IS NOT NULL
+          AND (a.noShow = false
+               OR (EXISTS (SELECT 1 FROM ApplicationNoShowSlot m WHERE m.application = a)
+                   AND EXISTS (SELECT 1 FROM Application a2 JOIN a2.requestedSlots s
+                               WHERE a2 = a
+                                 AND NOT EXISTS (SELECT 1 FROM ApplicationNoShowSlot m2
+                                                 WHERE m2.application = a AND m2.shiftSlot = s))))
     """)
     long countCompletedByBusinessOwner(@Param("ownerId") Long ownerId);
 

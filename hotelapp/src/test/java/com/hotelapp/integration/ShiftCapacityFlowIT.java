@@ -162,6 +162,12 @@ class ShiftCapacityFlowIT {
         Long appId = json.readTree(body).get("id").asLong();
         decide(biz, appId, ApplicationStatus.ACCEPTED).andExpect(status().isOk());
 
+        // Dogrudan kabul (incelemeye alinmadan) da ilan detayindaki "bu isletmede
+        // tamamlanan is" sayisina girer; gercek detay ucu sayiyi doldurur.
+        mvc.perform(get("/api/listings/" + listingId).header("Authorization", "Bearer " + cand))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.businessWorkerCount").value(1));
+
         // Zamani kaydir: s1 iki gun once calisildi, s2 iki saat once basladi (TR saati).
         LocalDateTime nowTr = LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul")).withSecond(0).withNano(0);
         moveSlot(s1, nowTr.minusDays(2).minusHours(2));

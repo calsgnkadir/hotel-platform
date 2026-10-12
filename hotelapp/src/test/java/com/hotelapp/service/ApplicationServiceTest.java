@@ -30,6 +30,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -239,6 +240,23 @@ class ApplicationServiceTest {
 
             assertThatThrownBy(() -> service.reviewApplication(APP_ID, OWNER_ID, req))
                     .isInstanceOf(UnauthorizedException.class);
+        }
+
+        @Test
+        @DisplayName("İncelemeye alınmadan doğrudan karar: reviewedAt dolar")
+        void directDecision_setsReviewedAt() {
+            Application app = appWithStatus(ApplicationStatus.PENDING);
+            app.setReviewedAt(null);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            lenient().when(applicationRepository.saveAndFlush(any(Application.class))).thenAnswer(i -> i.getArgument(0));
+            lenient().when(applicationRepository.save(any(Application.class))).thenAnswer(i -> i.getArgument(0));
+
+            ReviewRequest req = new ReviewRequest();
+            req.setDecision(ApplicationStatus.REJECTED);
+            service.reviewApplication(APP_ID, OWNER_ID, req);
+
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.REJECTED);
+            assertThat(app.getReviewedAt()).isNotNull();
         }
     }
 

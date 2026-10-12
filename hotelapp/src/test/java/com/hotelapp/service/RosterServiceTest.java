@@ -157,6 +157,52 @@ class RosterServiceTest {
     }
 
     @Test
+    void staff_list_drops_no_show_from_that_shift_only_and_standby_replaces_it() throws Exception {
+        // Karar 2: Ayşe 2. gün gelmedi; yedek Mert aynı vardiyaya kabul edildi.
+        // Ekip listesinde (Excel/e-posta) o vardiyada yalnız Mert; Ayşe 1. gün kadroda kalır.
+        // Yoklamada (collectRows) Ayşe'nin "Gelmedi" satırı kayıt olarak görünmeye devam eder.
+        Application ayse = app(1, "Ayşe", ApplicationStatus.ACCEPTED, s1, s2);
+        ayse.setNoShow(true);
+        ayse.getNoShowSlots().add(com.hotelapp.entity.ApplicationNoShowSlot.builder()
+                .application(ayse).shiftSlot(s2).build());
+        Application mert = app(2, "Mert", ApplicationStatus.ACCEPTED, s2);
+        when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing()));
+        when(applicationRepository.findAllByJobListingId(10L)).thenReturn(List.of(ayse, mert));
+        lenient().when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(anyLong())).thenReturn(List.of());
+
+        Map<LocalDate, List<RosterRow>> staff = service.collectStaffRows(listing(), null);
+        assertThat(staff.get(D1)).extracting(RosterRow::fullName).containsExactly("Ayşe");
+        assertThat(staff.get(D2)).extracting(RosterRow::fullName).containsExactly("Mert");
+        assertThat(staff.values().stream().flatMap(List::stream))
+                .noneMatch(r -> "Gelmedi".equals(r.status()));
+
+        Map<LocalDate, List<RosterRow>> attendance = service.collectRows(listing(), D2);
+        assertThat(attendance.get(D2)).extracting(RosterRow::fullName, RosterRow::status)
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("Ayşe", "Gelmedi"),
+                        org.assertj.core.groups.Tuple.tuple("Mert", "Bekleniyor"));
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(service.buildForOwner(10L, 7L, D2)))) {
+            Sheet sh = wb.getSheet("04.10.2026");
+            assertThat(sh.getRow(1).getCell(0).getStringCellValue()).contains("1 kişi");
+            assertThat(sh.getRow(4).getCell(1).getStringCellValue()).isEqualTo("Mert");
+            assertThat(sh.getRow(5)).isNull();
+        }
+    }
+
+    @Test
+    void staff_list_for_day_with_only_no_show_is_empty_so_no_email() {
+        Application ayse = app(1, "Ayşe", ApplicationStatus.ACCEPTED, s2);
+        ayse.setNoShow(true);
+        ayse.getNoShowSlots().add(com.hotelapp.entity.ApplicationNoShowSlot.builder()
+                .application(ayse).shiftSlot(s2).build());
+        when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing()));
+        when(applicationRepository.findAllByJobListingId(10L)).thenReturn(List.of(ayse));
+        when(workSessionRepository.findByApplicationIdOrderByClockInAtDesc(1L)).thenReturn(List.of());
+
+        assertThat(service.xlsxForDateOrNull(10L, D2)).isNull();
+    }
+
+    @Test
     void other_owner_cannot_download() {
         when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing()));
 

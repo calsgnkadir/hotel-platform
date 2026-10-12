@@ -48,6 +48,9 @@ import java.util.TreeMap;
 @RequiredArgsConstructor
 public class RosterService {
 
+    /** Yoklama satırı durumu: işletme bu vardiyayı gelmedi işaretledi. */
+    static final String NO_SHOW_STATUS = "Gelmedi";
+
     private static final DateTimeFormatter D  = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final DateTimeFormatter T  = DateTimeFormatter.ofPattern("HH:mm");
     private static final String[] HEADERS =
@@ -69,7 +72,7 @@ public class RosterService {
         if (!listing.getBusiness().getOwner().getId().equals(ownerId)) {
             throw new UnauthorizedException("Bu ilanın listesini indiremezsin");
         }
-        return toXlsx(listing, collectRows(listing, onlyDate));
+        return toXlsx(listing, collectStaffRows(listing, onlyDate));
     }
 
     /** İlan kapanınca: tüm günler; kabul edilen kimse yoksa null. */
@@ -77,7 +80,7 @@ public class RosterService {
     public byte[] xlsxAllOrNull(Long listingId) {
         JobListing listing = jobListingRepository.findById(listingId)
                 .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
-        Map<LocalDate, List<RosterRow>> rows = collectRows(listing, null);
+        Map<LocalDate, List<RosterRow>> rows = collectStaffRows(listing, null);
         return rows.isEmpty() ? null : toXlsx(listing, rows);
     }
 
@@ -86,12 +89,29 @@ public class RosterService {
     public byte[] xlsxForDateOrNull(Long listingId, LocalDate date) {
         JobListing listing = jobListingRepository.findById(listingId)
                 .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
-        Map<LocalDate, List<RosterRow>> rows = collectRows(listing, date);
+        Map<LocalDate, List<RosterRow>> rows = collectStaffRows(listing, date);
         return rows.isEmpty() ? null : toXlsx(listing, rows);
     }
 
-    /** Gün → satırlar (tarih sıralı). Vardiyası belli olmayan eski başvurular "Tarihsiz"e. */
+    /**
+     * Yoklama (/attendance) için: "Gelmedi" satırları kayıt olarak KALIR.
+     * Gün → satırlar (tarih sıralı). Vardiyası belli olmayan eski başvurular "Tarihsiz"e.
+     */
     Map<LocalDate, List<RosterRow>> collectRows(JobListing listing, LocalDate onlyDate) {
+        return collectRows(listing, onlyDate, true);
+    }
+
+    /**
+     * Ekip listesi (Excel indirme + e-posta eki) için kadro: gelmedi işaretli aday
+     * o vardiyanın kadrosundan düşer (yedek kabul edilince aynı koltukta iki kişi
+     * görünmez). Diğer vardiyalarında kadroda kalır. Eski kayıt (noShow=true,
+     * satır yok) için yoklamada "Gelmedi" görünen vardiyalar ve slotsuz satır düşer.
+     */
+    Map<LocalDate, List<RosterRow>> collectStaffRows(JobListing listing, LocalDate onlyDate) {
+        return collectRows(listing, onlyDate, false);
+    }
+
+    private Map<LocalDate, List<RosterRow>> collectRows(JobListing listing, LocalDate onlyDate, boolean includeNoShow) {
         List<Application> accepted = applicationRepository.findAllByJobListingId(listing.getId()).stream()
                 .filter(a -> a.getStatus() == ApplicationStatus.ACCEPTED)
                 .sorted(Comparator.comparing(a -> a.getCandidate().getFullName(),
@@ -108,7 +128,7 @@ public class RosterService {
                         .toList();
 
             if (slots.isEmpty()) {
-                if (onlyDate == null) {
+                if (onlyDate == null && (includeNoShow || !a.isNoShow())) {
                     byDate.computeIfAbsent(null, k -> new ArrayList<>()).add(row(a, "—", null, a.isNoShow(), null));
                 }
                 continue;
@@ -123,6 +143,7 @@ public class RosterService {
                 // "Gelmedi" vardiya bazinda: yalniz isletmenin isaretledigi vardiya (V25 satiri).
                 // Eski kayit (noShow=true, satir yok): baslamis + girissiz vardiyalar (onceki davranis).
                 boolean noShow = NoShowSlots.showsAsNoShow(a, s, ws != null, now);
+                if (noShow && !includeNoShow) continue;   // kadro: o vardiyada sayılmaz
                 byDate.computeIfAbsent(s.getDate(), k -> new ArrayList<>()).add(row(a, shift, ws, noShow, s));
             }
         }
@@ -132,7 +153,7 @@ public class RosterService {
     private RosterRow row(Application a, String shift, WorkSession ws, boolean noShow, ShiftSlot slot) {
         String in  = ws != null && ws.getClockInAt()  != null ? T.format(ws.getClockInAt())  : "";
         String out = ws != null && ws.getClockOutAt() != null ? T.format(ws.getClockOutAt()) : "";
-        String status = noShow ? "Gelmedi"
+        String status = noShow ? NO_SHOW_STATUS
                 : ws == null ? "Bekleniyor"
                 : ws.getClockOutAt() == null ? "İşte" : "Tamamladı";
         String phone = a.getCandidate().getPhone();

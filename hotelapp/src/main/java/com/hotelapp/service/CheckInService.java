@@ -232,6 +232,9 @@ public class CheckInService {
             }
         }
         long arrived = rows.stream().filter(r -> !r.clockIn().isEmpty()).count();
+        // "Gelmedi" satiri kayit olarak listede kalir ama o vardiyanin kadrosu sayilmaz:
+        // yedek kabul edilince beklenen kisi sayisi koltuk basina bir kalir.
+        long expected = rows.stream().filter(r -> !RosterService.NO_SHOW_STATUS.equals(r.status())).count();
         return AttendanceDto.builder()
                 .listingId(l.getId())
                 .listingTitle(l.getTitle())
@@ -239,7 +242,7 @@ public class CheckInService {
                 .date(d)
                 .meetingPoint(l.getMeetingPoint())
                 .meetingMinutesBefore(l.getMeetingMinutesBefore())
-                .expected(rows.size())
+                .expected((int) expected)
                 .arrived((int) arrived)
                 .rows(rows)
                 .build();

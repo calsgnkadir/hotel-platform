@@ -43,13 +43,16 @@ public class AvailabilityBlockService {
         if (blocks.size() > 20) {
             throw BusinessRuleException.keyed("error.availability.maxBlocks");
         }
-        // Her blok için from < to kontrolü
+        // Saat kuralı (ShiftWindow.validateBlock): bitiş < başlangıç = gece bloğu
+        // (ertesi gün biter, ör. 22:00–06:00); eşit saat geçersiz; en fazla 24 saat.
+        // 16 saat sınırı yalnız iş vardiyaları içindir; müsaitlik bloğu vardiya değildir.
         for (var b : blocks) {
             if (b.getStartTime() == null || b.getEndTime() == null) {
                 throw new BusinessRuleException("Başlangıç ve bitiş saati zorunlu");
             }
-            if (!b.getStartTime().isBefore(b.getEndTime())) {
-                throw new BusinessRuleException("Başlangıç saati bitiş saatinden önce olmalı");
+            String timeError = ShiftWindow.validateBlock(b.getStartTime(), b.getEndTime());
+            if (timeError != null) {
+                throw new BusinessRuleException(timeError);
             }
             if (b.getDayOfWeek() == null) {
                 throw BusinessRuleException.keyed("error.application.slotRequired");

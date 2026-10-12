@@ -109,17 +109,76 @@ class AvailabilityBlockServiceTest {
     }
 
     @Test
-    @DisplayName("Geçersiz aralık: start >= end → BusinessRuleException")
-    void replaceMyBlocks_startAfterEnd_throws() {
-        List<AvailabilityBlockDto> invalid = List.of(
-                dto(DayOfWeek.MONDAY, 17, 9)  // ters
-        );
+    @DisplayName("Gece bloğu: bitiş < başlangıç geçerli (22:00–06:00, ertesi gün biter) ve aynen kaydedilir")
+    void replaceMyBlocks_overnightBlock_isSaved() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser()));
+        when(blockRepository.findByUserIdOrderByDayOfWeekAscStartTimeAsc(USER_ID))
+                .thenReturn(List.of(block(10L, DayOfWeek.MONDAY, 22, 6)));
 
-        assertThatThrownBy(() -> service.replaceMyBlocks(USER_ID, invalid))
+        List<AvailabilityBlockDto> result = service.replaceMyBlocks(USER_ID, List.of(
+                dto(DayOfWeek.MONDAY, 22, 6),
+                dto(DayOfWeek.FRIDAY, 17, 9)));   // 16 saatlik gece bloğu
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<UserAvailabilityBlock>> captor = ArgumentCaptor.forClass(List.class);
+        verify(blockRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(2);
+        assertThat(captor.getValue().get(0).getStartTime()).isEqualTo(LocalTime.of(22, 0));
+        assertThat(captor.getValue().get(0).getEndTime()).isEqualTo(LocalTime.of(6, 0));
+        assertThat(result.get(0).getEndTime()).isEqualTo(LocalTime.of(6, 0));
+    }
+
+    @Test
+    @DisplayName("Eşit saat: BusinessRuleException (Türkçe mesaj), hiçbir şey silinmez")
+    void replaceMyBlocks_equalTimes_throws() {
+        assertThatThrownBy(() -> service.replaceMyBlocks(USER_ID, List.of(dto(DayOfWeek.MONDAY, 9, 9))))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("önce olmalı");
+                .hasMessage("Bitiş saati başlangıç saatiyle aynı olamaz");
 
         verify(blockRepository, never()).deleteAllByUserId(anyLong());
+    }
+
+    @Test
+    @DisplayName("16 saatten uzun blok geçerli (sınır yalnız vardiyalar için): 00:00–23:59, 06:00–23:59, 20:00–12:01, 17:00–10:00")
+    void replaceMyBlocks_longerThan16Hours_isSaved() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser()));
+        when(blockRepository.findByUserIdOrderByDayOfWeekAscStartTimeAsc(USER_ID)).thenReturn(List.of());
+
+        List<AvailabilityBlockDto> input = List.of(
+                dto(DayOfWeek.MONDAY, LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                dto(DayOfWeek.TUESDAY, LocalTime.of(6, 0), LocalTime.of(23, 59)),
+                dto(DayOfWeek.WEDNESDAY, LocalTime.of(20, 0), LocalTime.of(12, 1)),
+                dto(DayOfWeek.THURSDAY, 17, 10),
+                dto(DayOfWeek.FRIDAY, 6, 23));
+
+        service.replaceMyBlocks(USER_ID, input);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<UserAvailabilityBlock>> captor = ArgumentCaptor.forClass(List.class);
+        verify(blockRepository).deleteAllByUserId(USER_ID);
+        verify(blockRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(5);
+        assertThat(captor.getValue().get(0).getEndTime()).isEqualTo(LocalTime.of(23, 59));
+        assertThat(captor.getValue().get(2).getStartTime()).isEqualTo(LocalTime.of(20, 0));
+        assertThat(captor.getValue().get(2).getEndTime()).isEqualTo(LocalTime.of(12, 1));
+    }
+
+    @Test
+    @DisplayName("Müsaitlik 24 saat sınırı; vardiya 16 saat sınırı ayrı kalır")
+    void blockAndShiftLimits_areSeparate() {
+        assertThat(ShiftWindow.MAX_BLOCK_DURATION).isEqualTo(java.time.Duration.ofHours(24));
+        assertThat(ShiftWindow.MAX_DURATION).isEqualTo(java.time.Duration.ofHours(16));
+        // Müsaitlik: eşit saat dışında her blok geçerli.
+        assertThat(ShiftWindow.validateBlock(LocalTime.of(0, 0), LocalTime.of(23, 59))).isNull();
+        assertThat(ShiftWindow.validateBlock(LocalTime.of(0, 1), LocalTime.of(0, 0))).isNull();
+        assertThat(ShiftWindow.validateBlock(LocalTime.of(9, 0), LocalTime.of(9, 0)))
+                .isEqualTo("Bitiş saati başlangıç saatiyle aynı olamaz");
+        // Vardiya: 16 saat sınırı aynen.
+        assertThat(ShiftWindow.validate(LocalTime.of(17, 0), LocalTime.of(9, 0))).isNull();
+        assertThat(ShiftWindow.validate(LocalTime.of(6, 0), LocalTime.of(23, 0)))
+                .isEqualTo("vardiya en fazla 16 saat sürebilir");
+        assertThat(ShiftWindow.validate(LocalTime.of(20, 0), LocalTime.of(12, 1)))
+                .isEqualTo("vardiya en fazla 16 saat sürebilir");
     }
 
     @Test
@@ -179,6 +238,10 @@ class AvailabilityBlockServiceTest {
                 .startTime(LocalTime.of(startHour, 0))
                 .endTime(LocalTime.of(endHour, 0))
                 .build();
+    }
+
+    private static AvailabilityBlockDto dto(DayOfWeek day, LocalTime start, LocalTime end) {
+        return AvailabilityBlockDto.builder().dayOfWeek(day).startTime(start).endTime(end).build();
     }
 
     private static User testUser() {

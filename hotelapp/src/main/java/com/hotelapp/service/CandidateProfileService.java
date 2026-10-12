@@ -207,10 +207,11 @@ public class CandidateProfileService {
         // Dalga H3 — Goruntulenme audit (self-view sayilmaz, gunluk dedupe)
         profileViewService.record(candidateId, viewerId);
 
-        // Sayilar (tamamlanan is / no-show)
-        long completedJobs = applicationRepository
-                .countByCandidateIdAndStatusAndNoShowFalse(candidateId, ApplicationStatus.ACCEPTED);
-        long noShows = applicationRepository.countByCandidateIdAndNoShowTrue(candidateId);
+        // Sayilar vardiya bazinda: tek vardiyalik gelmedi tum basvuruyu dusurmez
+        // (en az bir isaretsiz vardiya = tamamlanan is); gelmedi = isaretli vardiya
+        // sayisi + eski (V25 oncesi) kayit basina 1.
+        long completedJobs = applicationRepository.countCompletedJobsForCandidate(candidateId);
+        long noShows = applicationRepository.countNoShowsForCandidate(candidateId);
 
         return PublicCandidateProfileDto.builder()
                 .id(candidate.getId())

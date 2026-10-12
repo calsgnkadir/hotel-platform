@@ -655,10 +655,12 @@ public class JobListingService {
      * FAZ J2 ext — Aday'ın haftalık müsaitlik bloklarıyla ilanın vardiya slot'larından
      * en az biri eşleşiyor mu? Aday hiç blok tanımlamamışsa true döner (opt-in mantık).
      *
-     * Eşleşme: slot tarihinin haftagünü aday'ın bloğuyla aynı + slot saat aralığı
-     * tamamen bloğun içine düşer (b.startTime <= s.startTime AND s.endTime <= b.endTime).
+     * Eşleşme: slotun gerçek zaman aralığı (gece vardiyası ertesi gün biter) adayın
+     * haftalık bloklarının içine tamamen düşer. Gece bloğu da ertesi güne taşar
+     * (Pzt 22:00–06:00 bloğu Sal 00:00–06:00'ı kapsar); bitişik bloklar birleşir.
+     * Kural tek kaynakta: {@link ShiftWindow#blocksCover}.
      */
-    private boolean candidateFitsListingSlots(Long candidateId, JobListing listing) {
+    boolean candidateFitsListingSlots(Long candidateId, JobListing listing) {
         var blocks = availabilityBlockRepository
                 .findByUserIdOrderByDayOfWeekAscStartTimeAsc(candidateId);
         if (blocks.isEmpty()) return true;  // tanımlamadıysa engelleme
@@ -666,25 +668,11 @@ public class JobListingService {
         var slots = listing.getShiftSlots();
         if (slots == null || slots.isEmpty()) return true;  // ilan slot kullanmıyorsa filtre yok
 
+        List<ShiftWindow.WeeklyBlock> weekly = blocks.stream()
+                .map(b -> new ShiftWindow.WeeklyBlock(b.getDayOfWeek(), b.getStartTime(), b.getEndTime()))
+                .toList();
         for (var slot : slots) {
-            if (slot.getDate() == null || slot.getStartTime() == null || slot.getEndTime() == null) continue;
-            var slotDow = slot.getDate().getDayOfWeek();
-            for (var b : blocks) {
-                if (b.getDayOfWeek() != slotDow) continue;
-                if (ShiftWindow.isOvernight(slot)) {
-                    // Gece vardiyasi gun icindeki bloga tam sigmaz: baslangictan gece
-                    // yarisina kadar musaitse uyumlu say (23:59 = gun sonu).
-                    if (!b.getStartTime().isAfter(slot.getStartTime())
-                            && !b.getEndTime().isBefore(java.time.LocalTime.of(23, 59))) {
-                        return true;
-                    }
-                    continue;
-                }
-                if (!b.getStartTime().isAfter(slot.getStartTime())
-                        && !slot.getEndTime().isAfter(b.getEndTime())) {
-                    return true;  // bu slot bu bloğa tamamen uyuyor
-                }
-            }
+            if (ShiftWindow.blocksCover(weekly, slot)) return true;  // en az bir vardiya uyuyor
         }
         return false;
     }
@@ -821,6 +809,6 @@ public class JobListingService {
         // (entity'deki ham bayrak degil) — kart rozeti bunu kullanir.
         private boolean urgent;
         private LocalDateTime urgentUntil;
-        private Integer businessWorkerCount;   // tamamlanmis aday sayisi (ACCEPTED + reviewedAt set)
+        private Integer businessWorkerCount;   // bu isletmede tamamlanan is sayisi (ACCEPTED, vardiya bazli gelmedi kurali)
     }
 }
