@@ -44,10 +44,19 @@ export default function CandidateDashboard() {
     }
   }, [params])
 
-  // activeTab kullanici sidebar/setting menusunden degisirse URL'e de yaz
-  function handleTabChange(t) {
+  // activeTab kullanici sidebar/setting menusunden degisirse URL'e de yaz.
+  // Gecersiz id (or. bildirimden gelen bilinmeyen sekme) reddedilir: bos ekran olmasin.
+  // extra: sekmeyle BIRLIKTE yazilacak query param'lar (or. sohbet derin linki ?c=).
+  function handleTabChange(t, extra) {
+    if (!VALID_TABS.includes(t)) return false
     _setActiveTab(t)
-    setParams({ tab: t }, { replace: true })
+    setParams({ tab: t, ...(extra || {}) }, { replace: true })
+    return true
+  }
+
+  // Sohbet derin linki: ?tab=messages&c={conversationId} — MessagesPage c'yi okuyup sohbeti secer
+  function openMessages(conversationId) {
+    handleTabChange('messages', conversationId ? { c: String(conversationId) } : undefined)
   }
 
   const { data, isLoading } = useQuery({
@@ -71,9 +80,9 @@ export default function CandidateDashboard() {
         <div key={activeTab} className="page-enter">
           {/* Vardiya günü: kapıda okutulacak kişisel giriş kartı (sohbet ekranı hariç) */}
           {activeTab !== 'messages' && <EntryPasses />}
-          {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={refetchApplications} onMessagesOpen={() => handleTabChange('messages')} />}
-          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => handleTabChange('messages')} onTabChange={handleTabChange} />}
-          {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={() => handleTabChange('messages')} />}
+          {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={refetchApplications} onMessagesOpen={openMessages} />}
+          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={openMessages} onTabChange={handleTabChange} />}
+          {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={openMessages} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
           {activeTab === 'saved'         && <SavedListingsTab onTabChange={handleTabChange} />}

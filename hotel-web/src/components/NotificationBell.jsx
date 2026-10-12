@@ -46,7 +46,7 @@ function timeAgo(dateStr) {
 
 /**
  * Header'da zil ikonu + okunmamış sayacı + dropdown.
- * @param {function} onNavigate - bildirime tıklanınca sekme değiştirir (link string)
+ * @param {function} onNavigate - bildirime tıklanınca çağrılır (link string: "/listings/42" tam adres ya da "applications" sekme id'si; ayrımı DashboardLayout yapar)
  */
 // Ayarlar sekmesinden gelen "mute" flag'ı
 function isMuted() {
@@ -121,7 +121,8 @@ export default function NotificationBell({ onNavigate }) {
       try {
         const data = await hotelApi.getNotifications(20)
         setItems(data)
-        fetchUnread()
+        // Rozet, açılan listeyle tutarlı olsun: sayacı sunucudan tazele
+        queryClient.invalidateQueries({ queryKey: keys.notifications.unreadCount() })
       } catch { /* sessiz */ }
       finally { setLoading(false) }
     }
@@ -132,7 +133,8 @@ export default function NotificationBell({ onNavigate }) {
       try {
         await hotelApi.markNotificationRead(n.id)
         setItems(prev => prev.map(x => x.id === n.id ? { ...x, isRead: true } : x))
-        setUnread(u => Math.max(0, u - 1))
+        // Rozet hemen azalsın (refetch beklemeden)
+        queryClient.setQueryData(keys.notifications.unreadCount(), u => Math.max(0, (Number(u) || 0) - 1))
       } catch { /* sessiz */ }
     }
     if (n.link && onNavigate) {
@@ -145,7 +147,7 @@ export default function NotificationBell({ onNavigate }) {
     try {
       await hotelApi.markAllNotificationsRead()
       setItems(prev => prev.map(x => ({ ...x, isRead: true })))
-      setUnread(0)
+      queryClient.setQueryData(keys.notifications.unreadCount(), 0)
     } catch { /* sessiz */ }
   }
 
@@ -167,7 +169,8 @@ export default function NotificationBell({ onNavigate }) {
           <path d="M5 5 L19 5 L21 13 L21 18 A1.5 1.5 0 0 1 19.5 19.5 L4.5 19.5 A1.5 1.5 0 0 1 3 18 L3 13 Z" />
         </svg>
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center ring-2 ring-ink-900 dark:ring-ink-900">
+          <span data-testid="notification-unread-badge"
+                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-none font-bold flex items-center justify-center ring-2 ring-ink-900 dark:ring-ink-900">
             {unread > 99 ? '99+' : unread}
           </span>
         )}

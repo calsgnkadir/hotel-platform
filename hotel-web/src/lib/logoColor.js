@@ -1,37 +1,25 @@
 /**
- * İşletme logo rengi (isimden deterministik).
+ * İşletme logo yedeği (gerçek logo yoksa baş harf kutusu) zemin rengi.
  *
- * Aynı fonksiyon iki yerde birebir kopyalanmıştı (ListingsPage'de `logoColor`,
- * ApplicationsTab'de `appLogoColor`); tek kaynağa alındı.
+ * Karar (Paket: kırık akışlar + logo kutusu): tüm logo yedekleri TEK renk —
+ * marka grafiti (--ah-brand, #1f2937). Eskiden isimden türetilen 6 soluk gri
+ * ton vardı; tonlar birbirine çok yakın olduğu için ayırt edicilik sağlamıyor,
+ * yan yana kartlarda "rastgele/soluk" bir görüntü veriyordu. Tek grafit kutu
+ * kurumsal ve tutarlı okunur; işletmeyi baş harf + ad zaten ayırt eder.
  *
- * Palet notu: arayüz "sadece gri ve siyah" kimliğine geçti — renkli paletler
- * (eski canlı çember, ondan önce koyu tema tonları) tamamen bırakıldı. Logo
- * zeminleri artık nötr gri tonlarında; işletmeler birbirinden ton farkıyla
- * (koyu → orta gri) ayrışıyor.
- *
- * Kısıtlar:
- *  - Hepsi beyaz metinle ≥4.5:1 kontrast (logo harfi 17px bold = WCAG'de
- *    normal metin, 3:1 yetmez). Ölçülen en düşük: #6a7178 → 4.95:1
+ * Beyaz harf ile kontrast ~14.7:1 (WCAG AA ≥ 4.5:1).
  */
-const LOGO_COLORS = [
-  '#2b2f33',  // grafit
-  '#3a3f44',  // koyu gri
-  '#494f55',  // gri
-  '#565c62',  // orta gri
-  '#616870',  // açık-orta gri
-  '#6a7178',  // açık gri (en açık — hâlâ ≥4.5:1)
-]
+
+/** Marka grafiti — tokens.css'teki --ah-brand ile aynı değer (kontrast testi için). */
+export const LOGO_FALLBACK_HEX = '#1f2937'
+
+/** Bileşenlerde kullanılacak değer: CSS değişkeni (inline hex yok). */
+export const LOGO_FALLBACK_BG = 'var(--ah-brand)'
 
 /**
- * İsimden sabit bir renk üretir — aynı işletme her yerde aynı rengi alır.
- * @param {string|null|undefined} name İşletme adı
- * @returns {string} hex renk
+ * Geriye uyum: eski çağrılar isim veriyordu; artık her isim aynı zemini alır.
+ * @returns {string} CSS renk değeri
  */
-export function logoColor(name) {
-  let h = 0
-  const s = name || '?'
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
-  return LOGO_COLORS[h % LOGO_COLORS.length]
+export function logoColor() {
+  return LOGO_FALLBACK_BG
 }
-
-export { LOGO_COLORS }

@@ -20,17 +20,23 @@ import ProfileTab from './tabs/ProfileTab'
 import BillingTab from './tabs/BillingTab'
 
 const VALID_TABS = ['overview','mylistings','applications','workers','favorites','billing','profile','messages']
+// Bildirim/push linklerinde gecen eski sekme adlari (backend "listings" gonderiyor)
+const TAB_ALIASES = { listings: 'mylistings' }
+const resolveTab = (t) => {
+  const r = TAB_ALIASES[t] || t
+  return VALID_TABS.includes(r) ? r : null
+}
 
 export default function BusinessDashboard() {
   const [params, setParams] = useSearchParams()
   // FAZ 5.3 — CommandPalette ?tab=… ile derin link
-  const initialTab = VALID_TABS.includes(params.get('tab')) ? params.get('tab') : 'overview'
+  const initialTab = resolveTab(params.get('tab')) || 'overview'
   const [activeTab, _setActiveTab] = useState(initialTab)
   const { user } = useAuth()
 
   useEffect(() => {
-    const t = params.get('tab')
-    if (t && VALID_TABS.includes(t) && t !== activeTab) _setActiveTab(t)
+    const t = resolveTab(params.get('tab'))
+    if (t && t !== activeTab) _setActiveTab(t)
   }, [params])
 
   /**
@@ -40,8 +46,17 @@ export default function BusinessDashboard() {
    * degistirip sonra status yazmak ilkini silerdi.
    */
   function setActiveTab(t, extra) {
-    _setActiveTab(t)
-    setParams({ tab: t, ...(extra || {}) }, { replace: true })
+    // Gecersiz id (or. bildirimden gelen bilinmeyen sekme) reddedilir: bos ekran olmasin
+    const tab = resolveTab(t)
+    if (!tab) return false
+    _setActiveTab(tab)
+    setParams({ tab, ...(extra || {}) }, { replace: true })
+    return true
+  }
+
+  // Sohbet derin linki: ?tab=messages&c={conversationId} — MessagesPage c'yi okuyup sohbeti secer
+  function openMessages(conversationId) {
+    setActiveTab('messages', conversationId ? { c: String(conversationId) } : undefined)
   }
 
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding(user?.id))
@@ -72,9 +87,9 @@ export default function BusinessDashboard() {
         <div key={activeTab} className="page-enter">
           {activeTab === 'overview'      && <OverviewTab applications={applications} onTabChange={setActiveTab} />}
           {activeTab === 'mylistings'    && <MyListingsTab applications={applications} />}
-          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={() => setActiveTab('messages')} />}
-          {activeTab === 'workers'       && <WorkersTab applications={applications} onOpenMessages={() => setActiveTab('messages')} />}
-          {activeTab === 'favorites'     && <FavoritesTab onOpenMessages={() => setActiveTab('messages')} />}
+          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={openMessages} />}
+          {activeTab === 'workers'       && <WorkersTab applications={applications} onOpenMessages={openMessages} />}
+          {activeTab === 'favorites'     && <FavoritesTab onOpenMessages={openMessages} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'billing'       && <BillingTab />}
           {activeTab === 'profile'       && <ProfileTab />}

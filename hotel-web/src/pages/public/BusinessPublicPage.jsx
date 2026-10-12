@@ -7,8 +7,9 @@ import { useAuth } from '../../context/AuthContext'
 import ReportModal from '../../components/ReportModal'
 import { keys } from '../../lib/queryClient'
 import { useConfirm } from '../../lib/useConfirm'
-import cldImg, { ImgSize } from '../../lib/cldImg'
+import cldImg from '../../lib/cldImg'
 import VerifiedBadge from '../../components/VerifiedBadge'
+import BusinessLogo from '../../components/BusinessLogo'
 
 const MapView = lazy(() => import('../../components/MapView'))
 
@@ -129,23 +130,30 @@ export default function BusinessPublicPage() {
       queryClient.invalidateQueries({ queryKey: ['my-blocked-businesses'] })
     } catch { toast.error('İşlem başarısız') }
   }
+  const [blockLoading, setBlockLoading] = useState(false)
   async function toggleBlock() {
-    try {
-      if (isBlocked) {
-        await hotelApi.unblockBusiness(id)
-      } else {
-        const ok = await confirm({
+    const ok = await confirm(isBlocked
+      ? {
+          title: 'Engeli kaldır',
+          description: 'Bu işletmenin ilanları ilan listende yeniden görünür.',
+          confirmLabel: 'Engeli kaldır',
+        }
+      : {
           title: 'İşletmeyi engelle',
-          description: 'İşletmenin ilanları feed\'inde bir daha görünmez. İstediğin zaman engeli kaldırabilirsin.',
+          description: 'Bu işletmenin ilanları ilan listende artık görünmez. İstediğin zaman engeli kaldırabilirsin.',
           confirmLabel: 'Evet, engelle',
           destructive: true,
         })
-        if (!ok) return
-        await hotelApi.blockBusiness(id)
-      }
+    if (!ok) return
+    setBlockLoading(true)
+    try {
+      if (isBlocked) await hotelApi.unblockBusiness(id)
+      else           await hotelApi.blockBusiness(id)
+      toast.success(isBlocked ? 'Engel kaldırıldı.' : 'İşletme engellendi.')
       queryClient.invalidateQueries({ queryKey: ['my-blocked-businesses'] })
       queryClient.invalidateQueries({ queryKey: ['my-following-businesses'] })
     } catch { toast.error('İşlem başarısız') }
+    finally { setBlockLoading(false) }
   }
 
   const { data: photos = [] } = useQuery({
@@ -204,7 +212,6 @@ export default function BusinessPublicPage() {
 
   const typeLabel = TYPE_LABELS[business.type] || business.type
   const fullLocation = [business.district, business.neighborhood].filter(Boolean).join(' · ')
-  const initial = (business.name?.charAt(0) || '?').toUpperCase()
   const activePhoto = photos[galleryIndex]
 
   // Schema.org JSON-LD (rich snippet)
@@ -272,17 +279,9 @@ export default function BusinessPublicPage() {
             <div className="px-5 lg:px-8 pb-6 -mt-14 relative">
               <div className="flex flex-col sm:flex-row items-start gap-5">
                 {/* Logo */}
-                {business.logoUrl ? (
-                  <img src={cldImg(business.logoUrl, { w: ImgSize.avatarMd })}
-                       alt={business.name}
-                       className="w-24 h-24 rounded-2xl object-cover flex-shrink-0"
-                       style={{ border: '3px solid var(--ah-card)', boxShadow: 'var(--elev-2)' }} />
-                ) : (
-                  <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-4xl font-semibold flex-shrink-0"
-                       style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)', border: '3px solid var(--ah-card)', boxShadow: 'var(--elev-2)' }}>
-                    {initial}
-                  </div>
-                )}
+                <BusinessLogo name={business.name} logoUrl={business.logoUrl} size="lg"
+                              alt={`${business.name} logosu`}
+                              style={{ border: '3px solid var(--ah-card)', boxShadow: 'var(--elev-2)' }} />
                 <div className="min-w-0 flex-1 sm:pt-14">
                   <div className="text-[10px] uppercase tracking-[0.25em] font-bold mb-1" style={{ color: 'var(--ah-ink-3)' }}>
                     {typeLabel}
@@ -296,27 +295,20 @@ export default function BusinessPublicPage() {
                   <div className="text-sm mt-1.5" style={{ color: 'var(--ah-ink-3)' }}>
                     {fullLocation || business.city || '—'}
                   </div>
-                  {/* Dalga I1 — Aday icin Takip Et + Kullaniciyi Bildir */}
+                  {/* Dalga I1 — Aday icin Takip et + Engelle + Bildir (ikincil, kucuk) */}
                   {isCandidate && (
                     <div className="mt-4 flex gap-2 flex-wrap">
-                      <button type="button" onClick={toggleFollow}
-                        className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
-                        style={{
-                          background: isFollowing ? 'var(--ah-brand)' : 'var(--ah-brand-soft)',
-                          color: isFollowing ? '#fff' : 'var(--ah-brand)',
-                          border: `1px solid ${isFollowing ? 'var(--ah-brand)' : 'var(--ah-line-2)'}`,
-                        }}>
-                        {isFollowing ? '✓ Takip Ediliyor' : '+ Takip Et'}
+                      <button type="button" onClick={toggleFollow} aria-pressed={isFollowing}
+                        className={`${isFollowing ? 'btn-primary' : 'btn-secondary'} !w-auto md:!min-h-[34px] !px-3 !text-[13px]`}>
+                        {isFollowing ? 'Takip ediliyor' : 'Takip et'}
+                      </button>
+                      <button type="button" onClick={toggleBlock} disabled={blockLoading}
+                        className={`${isBlocked ? 'btn-secondary' : 'btn-danger'} md:!min-h-[34px] !px-3 !text-[13px]`}>
+                        {isBlocked ? 'Engeli kaldır' : 'Engelle'}
                       </button>
                       <button type="button" onClick={() => setReportOpen(true)}
-                        className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
-                        style={{
-                          background: 'var(--ah-band)',
-                          color: 'var(--ah-ink-2)',
-                          border: '1px solid var(--ah-line)',
-                        }}>
-                        <span className="text-base">!</span>
-                        Kullanıcıyı Bildir
+                        className="btn-ghost md:!min-h-[34px] !px-3 !text-[13px]">
+                        İşletmeyi bildir
                       </button>
                     </div>
                   )}
@@ -530,10 +522,10 @@ export default function BusinessPublicPage() {
         </main>
       </div>
 
-      {/* Dalga I1 — Kullaniciyi Bildir modal'i (isletme owner'i hedef) */}
+      {/* Dalga I1 — Isletmeyi bildir: hedef ISLETME (ReportType.BUSINESS, isletme id'si) */}
       {reportOpen && business?.id && (
         <ReportModal
-          targetType="USER"
+          targetType="BUSINESS"
           targetId={business.id}
           targetLabel={business.name}
           onClose={() => setReportOpen(false)}

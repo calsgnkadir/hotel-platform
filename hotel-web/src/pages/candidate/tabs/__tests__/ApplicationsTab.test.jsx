@@ -75,3 +75,15 @@ describe('Aday ApplicationsTab — Türkçe durum etiketleri', () => {
     expect(screen.getByRole('button', { name: 'İptal et' })).toBeInTheDocument()
   })
 })
+
+describe('Aday ApplicationsTab — işletme logosu', () => {
+  it('her satırda ortak BusinessLogo baş harf kutusu', () => {
+    render(<ApplicationsTab applications={APPS} onRefresh={vi.fn()} />)
+    const boxes = screen.getAllByTestId('business-logo-initial')
+    expect(boxes).toHaveLength(2)
+    for (const b of boxes) {
+      expect(b).toHaveTextContent('D')
+      expect(b.style.background).toBe('var(--ah-brand)')
+    }
+  })
+})

@@ -228,7 +228,7 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
       {/* Toplu islem toolbar — .tier-featured: sayfada sadece secim varken beliriyor,
           FEATURED tier (calls action, deserves attention). */}
       {selectedIds.size > 0 && (
-        <div className="tier-featured mb-4 sticky top-0 z-10 px-4 py-3 flex items-center justify-between gap-3 backdrop-blur-md">
+        <div className="tier-featured mb-4 sticky top-0 z-10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 backdrop-blur-md">
           <div className="flex items-center gap-2">
             <span className="numeral-hero" style={{ fontSize: '22px', color: 'var(--ah-brand)' }}>
               {selectedIds.size}
@@ -239,17 +239,15 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
           </div>
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => handleBulkAction('ACCEPTED')}
-              className="type-overline px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
-              style={{ background: 'rgba(107, 117, 116, 0.18)', color: '#bfbfbf', border: '1px solid rgba(107, 117, 116, 0.40)' }}>
-              Toplu Kabul
+              className="btn-primary !w-auto md:!min-h-[34px] !px-3 !text-[13px]">
+              Toplu kabul
             </button>
             <button type="button" onClick={() => handleBulkAction('REJECTED')}
-              className="type-overline px-3 py-1.5 rounded-full hover:-translate-y-0.5 transition-all"
-              style={{ background: 'rgba(107, 117, 116, 0.18)', color: '#6b7574', border: '1px solid rgba(107, 117, 116, 0.40)' }}>
-              Toplu Red
+              className="btn-danger md:!min-h-[34px] !px-3 !text-[13px]">
+              Toplu red
             </button>
             <button type="button" onClick={() => setSelectedIds(new Set())}
-              className="type-overline px-2 py-1 rounded-full text-ivory-700 hover:text-ivory-400">
+              className="btn-ghost md:!min-h-[34px] !px-2 !text-[13px]">
               İptal
             </button>
           </div>

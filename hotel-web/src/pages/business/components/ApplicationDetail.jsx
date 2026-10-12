@@ -9,6 +9,9 @@ import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'
 import { useConfirm } from '../../../lib/useConfirm'
 import { SgkNotice } from '../../../components/LegalNotice'   // FAZ C.3
+import { WEEKDAYS } from '../lib/constants'
+
+const DAY_LABEL = Object.fromEntries(WEEKDAYS.map(d => [d.key, d.label]))
 
 /**
  * FAZ 11.W2.2 — Basvuru detayi, standalone panel.
@@ -47,11 +50,11 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
       if (isFavorited) {
         await hotelApi.removeFavorite(app.candidate.id)
         setIsFavorited(false)
-        toast.success('Favoriden kaldirildi')
+        toast.success('Favorilerden kaldırıldı')
       } else {
         await hotelApi.addFavorite(app.candidate.id, null)
         setIsFavorited(true)
-        toast.success('Favorilere eklendi — "Favori Adaylar" sekmesinden eris')
+        toast.success('Favorilere eklendi. "Favori Adaylar" sayfasından ulaşabilirsin.')
       }
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setFavLoading(false) }
@@ -172,12 +175,13 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
 
   async function handleStartConversation() {
     try {
-      await hotelApi.startConversation({
+      const conv = await hotelApi.startConversation({
         otherPartyId: app.candidate.id,
         applicationId: app.id,
       })
       onClose?.()
-      onOpenMessages?.()
+      // Derin link: açılan/var olan sohbet doğrudan seçilsin
+      onOpenMessages?.(conv?.id ?? app.conversationId)
     } catch (err) {
       toast.error(extractErrorMessage(err))
     }
@@ -215,7 +219,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <button onClick={() => window.print()}
-              title="Yazdir"
+              title="Yazdır" aria-label="Yazdır"
               className="no-print tier-raised tier-raised-hover w-8 h-8 flex items-center justify-center"
               style={{ borderRadius: '999px', color: 'var(--text-muted)' }}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
@@ -223,7 +227,8 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               </svg>
             </button>
             <button onClick={handleToggleFavorite} disabled={favLoading}
-              title={isFavorited ? 'Favoriden kaldir' : 'Favorilere ekle'}
+              title={isFavorited ? 'Favorilerden kaldır' : 'Favorilere ekle'}
+              aria-label={isFavorited ? 'Favorilerden kaldır' : 'Favorilere ekle'}
               className={`no-print w-8 h-8 rounded-full flex items-center justify-center transition-all hover:-translate-y-0.5 disabled:opacity-50 ${
                 isFavorited ? 'shadow-md' : 'tier-raised tier-raised-hover'
               }`}
@@ -282,7 +287,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                         border: '1px solid rgba(31, 41, 55, 0.22)',
                         color: 'var(--accent-action)',
                       }}>
-                  {av.dayOfWeek} · {av.startTime}–{av.endTime}
+                  {DAY_LABEL[av.dayOfWeek] || av.dayOfWeek} · {String(av.startTime || '').slice(0, 5)}–{String(av.endTime || '').slice(0, 5)}
                 </span>
               ))}
             </div>
@@ -292,11 +297,11 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
         {app.note && (
           <div>
             <h3 className="type-overline mb-2">Notunuz</h3>
-            <div className="rounded-2xl p-3 type-body"
+            <div className="rounded-lg p-3 type-body" data-testid="application-note"
                  style={{
-                   background: 'rgba(107, 117, 116, 0.10)',
-                   border: '1px solid rgba(107, 117, 116, 0.28)',
-                   color: '#bababa',
+                   background: 'var(--ah-band)',
+                   border: '1px solid var(--ah-line)',
+                   color: 'var(--ah-ink-2)',
                  }}>
               {app.note}
             </div>
@@ -333,14 +338,12 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
-                className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #6b7574 0%, #797979 100%)' }}>
-                Direkt Kabul
+                className="btn-primary !px-2">
+                Direkt kabul
               </button>
               <button onClick={handleRemoveStandby} disabled={actionLoading}
-                className="py-2.5 rounded-2xl type-overline transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                style={{ background: 'var(--ah-card)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}>
-                Yedeklikten Çıkar
+                className="btn-secondary !px-2">
+                Yedeklikten çıkar
               </button>
             </div>
           </div>
@@ -356,46 +359,34 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               </p>
             ) : (
               <p className="type-caption">
-                Belgeleri ve mesajlasmayi inceledikten sonra karar verin. Bu islem geri alinmaz.
+                Belgeleri ve mesajlaşmayı inceledikten sonra karar verin. Bu işlem geri alınmaz.
               </p>
             )}
+            {/* Karar düğmeleri: Kabul birincil, Beklet ikincil, Reddet tehlikeli */}
             <div className="grid grid-cols-3 gap-2">
               <button onClick={() => handleDecide('ACCEPTED')} disabled={actionLoading}
-                className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                style={{
-                  background: 'linear-gradient(135deg, #6b7574 0%, #797979 100%)',
-                  boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-                }}>
-                Kabul
+                className="btn-primary !px-2">
+                Kabul et
               </button>
               {app.status !== 'HELD' && (
                 <button onClick={handleHold} disabled={actionLoading}
-                  className="py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                  style={{
-                    background: 'linear-gradient(135deg, #6b7574 0%, #7a7a7a 100%)',
-                    boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-                  }}>
+                  className="btn-secondary !px-2">
                   24 sa beklet
                 </button>
               )}
               <button onClick={() => handleDecide('REJECTED')} disabled={actionLoading}
-                className={`py-2.5 rounded-2xl type-overline text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 ${app.status === 'HELD' ? 'col-span-2' : ''}`}
-                style={{
-                  background: 'linear-gradient(135deg, #6b7574 0%, #5b5b5b 100%)',
-                  boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-                }}>
+                className={`btn-danger !px-2 ${app.status === 'HELD' ? 'col-span-2' : ''}`}>
                 Reddet
               </button>
             </div>
             {/* FAZ C.1 — Yedeğe alma: kararı ertelemeden güvence oluştur */}
             <button onClick={handleStandby} disabled={actionLoading}
-              className="w-full py-2.5 rounded-2xl type-overline transition-all hover:-translate-y-0.5 disabled:opacity-60 inline-flex items-center justify-center gap-2"
-              style={{ background: '#eef0f2', color: '#3f4b4a', border: '1px solid #6b7574' }}>
+              className="btn-secondary w-full">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
               </svg>
-              Yedeğe Al
+              Yedeğe al
             </button>
             <p className="type-caption">
               Yedekteki aday, asıl aday gelmezse otomatik çağrılır — vardiyan boş kalmaz.
@@ -467,14 +458,14 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
         {/* No-show banner */}
         {app.noShow && (
           <div className="pt-4 border-t border-hairline">
-            <div className="rounded-2xl px-4 py-3 flex items-start gap-2"
+            <div className="rounded-lg px-4 py-3 flex items-start gap-2" data-testid="no-show-banner"
                  style={{
-                   background: 'rgba(107, 117, 116, 0.10)',
-                   border: '1px solid rgba(107, 117, 116, 0.28)',
+                   background: 'var(--ah-warn-soft)',
+                   border: '1px solid var(--ah-warn)',
                  }}>
               <div>
-                <div className="type-body font-semibold" style={{ color: '#b3b3b3' }}>No-show olarak işaretlendi</div>
-                <div className="type-caption mt-0.5" style={{ color: '#6b7574' }}>
+                <div className="type-body font-semibold" style={{ color: 'var(--ah-ink-2)' }}>No-show olarak işaretlendi</div>
+                <div className="type-caption mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
                   Bu aday kabul edilen iş için işe gelmediğini bildirdiniz. Strike hakkı düşürüldü.
                 </div>
               </div>

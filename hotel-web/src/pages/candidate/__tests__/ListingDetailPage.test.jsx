@@ -1,6 +1,6 @@
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 /**
@@ -9,13 +9,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
  */
 const getListing = vi.fn()
 const getBusinessGallery = vi.fn()
+const getMyApplications = vi.fn()
+const applyToListing = vi.fn()
 vi.mock('../../../api/hotel', () => ({
   getListing: (...a) => getListing(...a),
   getBusinessGallery: (...a) => getBusinessGallery(...a),
+  getMyApplications: (...a) => getMyApplications(...a),
   trackListingView: vi.fn(),
   getSalaryBenchmark: vi.fn(async () => null),
   getSimilarListings: vi.fn(async () => []),
-  applyToListing: vi.fn(),
+  applyToListing: (...a) => applyToListing(...a),
 }))
 vi.mock('../../../api/client', () => ({ extractErrorMessage: () => 'hata' }))
 vi.mock('../../../lib/webpush', () => ({ requestPushMoment: vi.fn() }))
@@ -25,7 +28,9 @@ vi.mock('../../../components/MapView', () => ({ default: () => null }))
 vi.mock('../../../components/GalleryCarousel', () => ({ default: ({ photos }) => <div>galeri {photos?.length}</div> }))
 vi.mock('../../../components/HoverPhotoCarousel', () => ({ default: () => null }))
 vi.mock('../../../components/SavedSearchManager', () => ({ default: () => null }))
-vi.mock('../../../components/ReportModal', () => ({ default: () => null }))
+vi.mock('../../../components/ReportModal', () => ({
+  default: ({ targetType, targetId }) => <div data-testid="report-modal">{targetType}:{targetId}</div>,
+}))
 vi.mock('react-hot-toast', () => ({ default: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }))
 
 import ListingDetailPage from '../ListingDetailPage'
@@ -41,20 +46,34 @@ const LISTING = {
   shiftSlots: [{ id: 11, date: day(2), startTime: '09:00:00', endTime: '17:00:00', slotsNeeded: 3, slotsFilled: 0 }],
 }
 
+function Where() {
+  const loc = useLocation()
+  return <div data-testid="where">{loc.pathname}{loc.search}</div>
+}
+
 function renderPage(listing = LISTING) {
   getListing.mockResolvedValue(listing)
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(
+  render(
     <QueryClientProvider client={qc}>
       <MemoryRouter initialEntries={['/listings/7']}>
-        <Routes><Route path="/listings/:id" element={<ListingDetailPage />} /></Routes>
+        <Routes>
+          <Route path="/listings/:id" element={<ListingDetailPage />} />
+          <Route path="/p/business/:id" element={<Where />} />
+          <Route path="/candidate" element={<Where />} />
+        </Routes>
       </MemoryRouter>
     </QueryClientProvider>
   )
+  return qc
 }
 
 describe('ListingDetailPage mobil öncelikli', () => {
-  beforeEach(() => { getListing.mockReset(); getBusinessGallery.mockReset(); getBusinessGallery.mockResolvedValue([]) })
+  beforeEach(() => {
+    getListing.mockReset(); getBusinessGallery.mockReset(); getBusinessGallery.mockResolvedValue([])
+    getMyApplications.mockReset(); getMyApplications.mockResolvedValue({ content: [] })
+    applyToListing.mockReset()
+  })
 
   it('mobil alt bar ücret (/gün) ve aktif "Başvur" ile render edilir; Başvur pencereyi açar', async () => {
     renderPage()
@@ -83,7 +102,7 @@ describe('ListingDetailPage mobil öncelikli', () => {
   it('başlık: pozisyon H1, işletme · ilçe, ücret; ilçe sayfada tekrar etmez', async () => {
     renderPage()
     expect(await screen.findByRole('heading', { level: 1, name: 'Garson' })).toBeInTheDocument()
-    expect(screen.getByText('Deniz Otel · Beşiktaş · Günlük')).toBeInTheDocument()
+    expect(screen.getByTestId('listing-meta')).toHaveTextContent('Deniz Otel · Beşiktaş · Günlük')
     expect(screen.getByTestId('listing-salary')).toHaveTextContent('1.200 ₺/gün')
     // Eski hızlı bilgi kutuları / yan panel "İlçe" satırı yok
     expect(screen.queryByText('İlçe')).not.toBeInTheDocument()
@@ -109,5 +128,71 @@ describe('ListingDetailPage mobil öncelikli', () => {
     renderPage({ ...LISTING, shiftSlots: [{ ...LISTING.shiftSlots[0], slotsFilled: 3 }] })
     const bar = await screen.findByTestId('mobile-apply-bar')
     expect(within(bar).getByRole('button', { name: 'Kontenjan doldu' })).toBeDisabled()
+  })
+})
+
+describe('ListingDetailPage başvuru, işletme bağlantısı ve bildirim', () => {
+  beforeEach(() => {
+    getListing.mockReset(); getBusinessGallery.mockReset(); getBusinessGallery.mockResolvedValue([])
+    getMyApplications.mockReset(); getMyApplications.mockResolvedValue({ content: [] })
+    applyToListing.mockReset()
+  })
+
+  it('işletme adı /p/business/:businessId bağlantısıdır', async () => {
+    renderPage()
+    const link = within(await screen.findByTestId('listing-meta')).getByRole('link', { name: 'Deniz Otel' })
+    expect(link).toHaveAttribute('href', '/p/business/3')
+    fireEvent.click(link)
+    expect(screen.getByTestId('where')).toHaveTextContent('/p/business/3')
+  })
+
+  it('"İlanı bildir" LISTING hedefiyle ilan kimliğini gönderir', async () => {
+    renderPage()
+    await screen.findByTestId('mobile-apply-bar')
+    fireEvent.click(screen.getAllByRole('button', { name: 'İlanı bildir' })[0])
+    expect(screen.getByTestId('report-modal')).toHaveTextContent('LISTING:7')
+  })
+
+  it('bu ilana süren başvuru varsa düğme "Başvurdun" ve pasif', async () => {
+    getMyApplications.mockResolvedValue({ content: [{ id: 50, status: 'PENDING', listing: { id: 7 } }] })
+    renderPage()
+    const bar = await screen.findByTestId('mobile-apply-bar')
+    const btn = await within(bar).findByRole('button', { name: 'Başvurdun' })
+    expect(btn).toBeDisabled()
+    expect(bar).toHaveTextContent('Bu ilana başvurun var')
+  })
+
+  it('reddedilmiş/geri çekilmiş başvuru tekrar başvuruyu engellemez', async () => {
+    getMyApplications.mockResolvedValue({ content: [
+      { id: 50, status: 'REJECTED', listing: { id: 7 } },
+      { id: 51, status: 'WITHDRAWN', listing: { id: 7 } },
+    ] })
+    renderPage()
+    const bar = await screen.findByTestId('mobile-apply-bar')
+    await waitFor(() => expect(getMyApplications).toHaveBeenCalled())
+    expect(within(bar).getByRole('button', { name: 'Başvur' })).toBeEnabled()
+  })
+
+  it('başvuru sonrası onay ekranı açık kalır, sorgular yenilenir, düğme "Başvurdun" olur; sohbete git kimliği taşır', async () => {
+    applyToListing.mockResolvedValue({ id: 50, conversationId: 5 })
+    const qc = renderPage()
+    const invalidate = vi.spyOn(qc, 'invalidateQueries')
+    const bar = await screen.findByTestId('mobile-apply-bar')
+    fireEvent.click(within(bar).getByRole('button', { name: 'Başvur' }))
+    const dialog = screen.getByRole('dialog', { name: 'Hafta sonu garson' })
+    fireEvent.click(within(dialog).getByRole('checkbox'))
+    // Sunucu artık bu başvuruyu döndürür
+    getMyApplications.mockResolvedValue({ content: [{ id: 50, status: 'PENDING', listing: { id: 7 } }] })
+    fireEvent.click(within(dialog).getByRole('button', { name: '1 vardiyaya başvur' }))
+
+    expect(await screen.findByText('Başvurun gönderildi')).toBeInTheDocument()
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['applications', 'candidate'] })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['listings', 'detail', '7'] })
+    await waitFor(() => expect(within(screen.getByTestId('mobile-apply-bar')).getByRole('button', { name: 'Başvurdun' })).toBeDisabled())
+    // Onay ekranı hâlâ açık
+    expect(screen.getByText('Başvurun gönderildi')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mesajlaşmayı aç' }))
+    expect(screen.getByTestId('where')).toHaveTextContent('/candidate?tab=messages&c=5')
   })
 })

@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { SkeletonListingGrid } from '../../../components/Skeleton'
 import EmptyState from '../../../components/EmptyState'
+import BusinessLogo from '../../../components/BusinessLogo'
 import { POSITION_LABELS } from '../../../utils/labels'
 import { formatSalary } from '../../../lib/salary'
 
@@ -104,7 +105,7 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
         {/* Unsave (dolu kalp) — brick */}
         <button type="button"
                 onClick={(e) => { e.stopPropagation(); onUnsave() }}
-                title="Kaydedilenlerden cikar"
+                title="Kaydedilenlerden çıkar" aria-label="Kaydedilenlerden çıkar"
                 className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110"
                 style={{
                   background: 'rgba(255, 255, 255, 0.78)',
@@ -120,13 +121,18 @@ function SavedCard({ listing, idx = 0, onOpen, onUnsave }) {
       </div>
 
       <div className="p-5">
-        <h3 className="font-semibold text-[15px] leading-snug line-clamp-2"
-            style={{ color: 'var(--ah-ink)', letterSpacing: '-0.015em' }}>
-          {listing.title}
-        </h3>
-        <p className="text-[13px] mt-1.5" style={{ color: 'var(--ah-brand)' }}>
-          {listing.businessName}
-        </p>
+        <div className="flex items-start gap-3">
+          <BusinessLogo name={listing.businessName} logoUrl={listing.businessLogoUrl} size="sm" />
+          <div className="min-w-0">
+            <h3 className="font-semibold text-[15px] leading-snug line-clamp-2"
+                style={{ color: 'var(--ah-ink)', letterSpacing: '-0.015em' }}>
+              {listing.title}
+            </h3>
+            <p className="text-[13px] mt-1 truncate" style={{ color: 'var(--ah-brand)' }}>
+              {listing.businessName}
+            </p>
+          </div>
+        </div>
         <div className="flex items-center gap-1.5 mt-2 text-[12px] flex-wrap"
              style={{ color: 'var(--ah-ink-3)' }}>
           <span>{listing.businessDistrict || 'İstanbul'}</span>

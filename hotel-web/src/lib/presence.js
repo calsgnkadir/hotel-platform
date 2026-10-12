@@ -3,7 +3,7 @@
  *
  * Global online users Set + listener pattern.
  *  - presenceInit(): GET /api/presence/online ile başlangıç
- *  - wsSubscribe('/topic/presence'): değişiklik event'leri
+ *  - wsSubscribe('/user/queue/presence'): değişiklik event'leri
  *  - usePresence(userId): React hook, true/false online state
  */
 import { useEffect, useState } from 'react'
@@ -31,7 +31,7 @@ export async function presenceInit() {
 let presenceSub = null
 export function presenceSubscribe() {
   if (presenceSub) return
-  presenceSub = wsSubscribe('/topic/presence', (payload) => {
+  presenceSub = wsSubscribe('/user/queue/presence', (payload) => {
     if (!payload || payload.userId == null) return
     const uid = Number(payload.userId)
     if (payload.online) onlineUsers.add(uid)

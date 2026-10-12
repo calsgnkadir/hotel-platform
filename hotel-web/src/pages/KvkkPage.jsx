@@ -35,7 +35,7 @@ export default function KvkkPage() {
           </h1>
           <p className="text-[10px] uppercase tracking-[0.08em] font-medium mt-3"
              style={{ color: 'var(--ah-ink-3)' }}>
-            Aydınlatma Metni · Son güncelleme: 22 Mayıs 2026
+            Aydınlatma Metni · Son güncelleme: 12 Ekim 2026
           </p>
         </div>
 
@@ -65,7 +65,7 @@ export default function KvkkPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li>Platform üyelik ve kimlik doğrulama</li>
               <li>İş ilanı oluşturma, başvuru alma ve süreç yönetimi</li>
-              <li>Aday ile işletme arasında bilgi paylaşımı (izninle)</li>
+              <li>Aday ile işletme arasında bilgi paylaşımı (başvurduğun işletmeyle, bkz. Veri Paylaşımı)</li>
               <li>Platform güvenliği ve kötüye kullanım önleme</li>
               <li>Yasal yükümlülükler çerçevesinde kayıt tutma</li>
             </ul>
@@ -80,8 +80,9 @@ export default function KvkkPage() {
 
           <Section title="5. Veri Paylaşımı">
             <p>
-              Başvurduğunda profil bilgilerin (ad, deneyim, tercihler) ilgili işletmeyle paylaşılır.
-              Telefon ve e-posta gibi iletişim bilgilerin yalnızca başvurunu <b>kabul eden</b> işletmeye açılır;
+              Bir ilana başvurduğunda <b>adın, e-posta adresin ve profil bilgilerin</b> (deneyim, tercihler)
+              ile başvuru verilerin (ön yazı, seçtiğin vardiyalar) o ilanı veren işletmeyle paylaşılır.
+              Telefon numaran, mahallen ve doğum tarihin gibi bilgiler yalnızca başvurunu <b>kabul eden</b> işletmeye açılır;
               kabul edildiğin vardiyalar için adın, telefonun ve giriş-çıkış saatlerin o işletmenin ekip listesinde yer alır.
             </p>
             <p className="mt-2">

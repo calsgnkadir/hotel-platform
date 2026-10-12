@@ -12,8 +12,8 @@
  * Tum sunum parcalari components/messages/ altinda; motion/polish isleri
  * artik ilgili component'e iner, markup'a degil.
  */
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../api/hotel'
 import { useAuth } from '../context/AuthContext'
@@ -75,7 +75,7 @@ export default function MessagesPage() {
 
   // F0.10 + FAZ 1/#12 — Conversations useQuery
   // WS aktifken push gelir; WS koparsa 60sn fallback polling.
-  const { data: convData, isLoading: loading } = useQuery({
+  const { data: convData, isLoading: loading, isFetching } = useQuery({
     queryKey: keys.conversations.list(),
     queryFn: () => hotelApi.getMyConversations({ size: 50 }),
     refetchInterval: wsOk ? false : 60000,
@@ -115,9 +115,38 @@ export default function MessagesPage() {
 
   const active = conversations.find(c => c.id === activeId) || null
 
+  // Derin link: ?tab=messages&c={conversationId} — panel (aday/isletme) bu
+  // parametreyle acar. Sohbet listede bulununca secilir; mobilde liste yerine
+  // dogrudan sohbet gorunumu acilir. Yeni acilmis sohbet onbellekteki listede
+  // yoksa liste bir kez tazelenir.
+  const [params, setParams] = useSearchParams()
+  const deepLinkId = Number(params.get('c')) || null
+  const handledDeepLink = useRef(null)
+  const refetchedFor = useRef(null)
+  useEffect(() => {
+    if (!deepLinkId || handledDeepLink.current === deepLinkId || loading) return
+    if (conversations.some(c => c.id === deepLinkId)) {
+      handledDeepLink.current = deepLinkId
+      setActiveId(deepLinkId)
+      setShowListMobile(false)
+    } else if (!isFetching && refetchedFor.current !== deepLinkId) {
+      refetchedFor.current = deepLinkId
+      queryClient.invalidateQueries({ queryKey: keys.conversations.list() })
+    }
+  }, [deepLinkId, conversations, loading, isFetching, queryClient])
+
   function selectConversation(c) {
     setActiveId(c.id)
     setShowListMobile(false)
+    // Secim URL'de de dursun (yenileyince ayni sohbet acilsin)
+    handledDeepLink.current = c.id
+    if (params.get('c') !== String(c.id)) {
+      setParams(prev => {
+        const next = new URLSearchParams(prev)
+        next.set('c', String(c.id))
+        return next
+      }, { replace: true })
+    }
   }
 
   return (

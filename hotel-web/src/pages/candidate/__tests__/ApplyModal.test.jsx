@@ -108,3 +108,20 @@ describe('ApplyModal mobil öncelikli akış', () => {
     expect(screen.queryByText('?')).not.toBeInTheDocument()
   })
 })
+
+/**
+ * KVKK — işletme başvuran adayın adını, e-postasını ve profilini görür;
+ * aday bunu gönder düğmesinin yanında açıkça okur.
+ */
+describe('ApplyModal KVKK açıklaması', () => {
+  it('gönder düğmesinin yanında paylaşım notu ve /kvkk bağlantısı var', () => {
+    render(<ApplyModal listing={LISTING} onClose={vi.fn()} />)
+    const note = screen.getByTestId('apply-privacy-note')
+    expect(note).toHaveTextContent('Başvurunla birlikte adın, e-postan ve profil bilgilerin bu işletmeyle paylaşılır.')
+    const link = screen.getByRole('link', { name: 'Aydınlatma metni' })
+    expect(link).toHaveAttribute('href', '/kvkk')
+    expect(link).toHaveAttribute('target', '_blank')
+    // Not, alt bardaki gönder düğmesiyle aynı blokta
+    expect(note.closest('.modal-sheet__foot')).toContainElement(screen.getByRole('button', { name: 'Başvur' }))
+  })
+})

@@ -202,8 +202,8 @@ function FavoritesList({ onOpenMessages, onCount }) {
   async function handleStartChat(candidateId) {
     setOpeningChatId(candidateId)
     try {
-      await hotelApi.startConversation({ otherPartyId: candidateId })
-      onOpenMessages?.()
+      const conv = await hotelApi.startConversation({ otherPartyId: candidateId })
+      onOpenMessages?.(conv?.id)
     } catch (err) {
       toast.error(extractErrorMessage(err))
     } finally {

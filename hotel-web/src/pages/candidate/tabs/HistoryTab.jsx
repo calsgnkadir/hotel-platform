@@ -96,11 +96,11 @@ export default function HistoryTab({ applications, onOpenMessages }) {
                     <button
                       onClick={async () => {
                         try {
-                          await hotelApi.startConversation({
+                          const conv = await hotelApi.startConversation({
                             otherPartyId: app.listing.businessOwnerId,
                             applicationId: app.id,
                           })
-                          onOpenMessages?.()
+                          onOpenMessages?.(conv?.id)
                         } catch (err) { toast.error(extractErrorMessage(err)) }
                       }}
                       className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium">

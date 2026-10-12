@@ -1,11 +1,13 @@
 /**
- * FAZ B.5.3 — logoColor birim testi.
+ * Logo yedeği rengi — karar: tüm baş harf kutuları tek renk, marka grafiti.
  *
- * Asil koruma kontrast testi: logo harfi beyaz basiliyor. Palete ileride
- * acik bir ton eklenirse harf okunmaz olur ve bu sessizce fark edilmez.
+ * Asıl koruma kontrast testi: logo harfi beyaz basılıyor. Zemin ileride açık
+ * bir tona çekilirse harf okunmaz olur ve bu sessizce fark edilmez.
  */
 import { describe, it, expect } from 'vitest'
-import { logoColor, LOGO_COLORS } from '../logoColor'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { logoColor, LOGO_FALLBACK_BG, LOGO_FALLBACK_HEX } from '../logoColor'
 
 /** WCAG rölatif luminans */
 function luminance(hex) {
@@ -21,35 +23,21 @@ function contrast(a, b) {
 }
 
 describe('logoColor', () => {
-  it('ayni isim her zaman ayni rengi verir (deterministik)', () => {
-    expect(logoColor('Grand Otel')).toBe(logoColor('Grand Otel'))
-    expect(logoColor('Hilton Bomonti')).toBe(logoColor('Hilton Bomonti'))
-  })
-
-  it('farkli isimler paletten renk alir', () => {
-    for (const name of ['Grand Otel', 'Kafe Nero', 'Mikla', 'Swissotel']) {
-      expect(LOGO_COLORS).toContain(logoColor(name))
+  it('her isim (boş/null dahil) aynı grafit zemini alır', () => {
+    for (const name of ['Grand Otel', 'Kafe Nero', 'Mikla', '', null, undefined]) {
+      expect(logoColor(name)).toBe(LOGO_FALLBACK_BG)
     }
+    expect(LOGO_FALLBACK_BG).toBe('var(--ah-brand)')
   })
 
-  it('bos/null isimde patlamaz, gecerli renk doner', () => {
-    expect(LOGO_COLORS).toContain(logoColor(null))
-    expect(LOGO_COLORS).toContain(logoColor(undefined))
-    expect(LOGO_COLORS).toContain(logoColor(''))
+  it('zemin, tokens.css --ah-brand ile aynı grafit değer', () => {
+    const css = readFileSync(resolve(__dirname, '../../styles/tokens.css'), 'utf8')
+    const m = css.match(/--ah-brand:\s*(#[0-9a-fA-F]{6})/)
+    expect(m?.[1].toLowerCase()).toBe(LOGO_FALLBACK_HEX)
+    expect(LOGO_FALLBACK_HEX).toBe('#1f2937')
   })
 
-  it('TUM palet beyaz metinle AA kontrasti saglar (>=4.5:1)', () => {
-    // Logo harfi 17px/800 — WCAG'de "buyuk metin" degil, 3:1 yetmez.
-    for (const c of LOGO_COLORS) {
-      expect(contrast(c, '#ffffff')).toBeGreaterThanOrEqual(4.5)
-    }
-  })
-
-  it('marka teal\'i palette YOK (logo marka ogeleriyle karismasin)', () => {
-    expect(LOGO_COLORS).not.toContain('#0f766e')
-  })
-
-  it('palette tekrar eden renk yok', () => {
-    expect(new Set(LOGO_COLORS).size).toBe(LOGO_COLORS.length)
+  it('beyaz harf ile AA kontrastı sağlar (>=4.5:1)', () => {
+    expect(contrast(LOGO_FALLBACK_HEX, '#ffffff')).toBeGreaterThanOrEqual(4.5)
   })
 })

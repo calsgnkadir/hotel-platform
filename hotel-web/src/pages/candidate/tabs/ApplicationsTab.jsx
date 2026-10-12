@@ -13,12 +13,13 @@ import { useConfirm } from '../../../lib/useConfirm'
 import SlotChipGroup from '../../../components/SlotChipGroup'
 import { formatSalary } from '../../../lib/salary'
 import { PlatformRoleNotice } from '../../../components/LegalNotice'   // FAZ C.3
+import BusinessLogo from '../../../components/BusinessLogo'
 
 /* Durum etiketleri, tonlari ve filtre gruplari lib/applicationStatus.js'te
    (tek kaynak). API degeri HELD degismez; aday "Yanitin bekleniyor" gorur. */
 
 /* Kariyer.net tarzi satir listesi (FAZ 22) — gorece tarih.
-   FAZ B.5.3 — logo rengi lib/logoColor'a tasindi (ListingsPage ile ayni
+   Logo: components/BusinessLogo (ilan karti ile ayni
    kaynak; ayni isletme her ekranda ayni rengi alsin). */
 /* FAZ C.1 — Yedek teklifi icin kalan sure ("2sa 14dk" / "38dk") */
 function standbyLeft(iso) {
@@ -229,7 +230,6 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
           const requestedSlots = app.requestedSlots || []
           const salaryStr = formatSalary(app.listing?.salaryMin, app.listing?.salaryMax, app.listing?.salaryType, app.listing?.tipsIncluded)
           const slot0 = requestedSlots[0]
-          const initial = (app.listing?.businessName || '?').trim().charAt(0).toUpperCase()
           const hasAttention = !!app.note
           const metaBits = [
             requestedSlots.length > 0 && `${requestedSlots.length} vardiya`,
@@ -245,8 +245,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--ah-band)' }}
                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}>
                 <div className="flex gap-3.5 p-4 flex-1 min-w-0">
-                  <span className="w-11 h-11 rounded-lg flex-shrink-0 grid place-items-center font-extrabold text-[16px]"
-                        style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)', border: '1px solid var(--ah-line)' }}>{initial}</span>
+                  <BusinessLogo name={app.listing?.businessName} logoUrl={app.listing?.businessLogoUrl} size="sm" />
 
                   <div className="flex-1 min-w-0">
                     {/* baslik satiri + durum rozeti */}

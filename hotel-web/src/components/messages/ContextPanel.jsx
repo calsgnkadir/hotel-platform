@@ -28,6 +28,11 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
 
   const initial = (c?.otherPartyName?.charAt(0) || '?').toUpperCase()
   const isBiz = c?.otherPartyRole === 'BUSINESS_OWNER'
+  // Profil adresi: isletme profili ISLETME id'si ile acilir (otherPartyId kullanici
+  // id'sidir, /p/business/ icin yanlis). Alan yoksa baglanti gosterilmez.
+  const profilePath = isBiz
+    ? (c?.otherPartyBusinessId ? `/p/business/${c.otherPartyBusinessId}` : null)
+    : (c?.otherPartyId ? `/p/candidate/${c.otherPartyId}` : null)
 
   return (
     <>
@@ -42,17 +47,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
         {/* Avatar + isim header (FAZ 25 — glow/gradyan sokuldu, duz teal) */}
         <div className="px-5 py-6 text-center border-b" style={{ borderColor: 'var(--ah-line)' }}>
           {/* Dalga G3 — avatar tiklayinca public profil yeni sekmede acilir */}
-          <a
-            href={c?.otherPartyId
-              ? (c.otherPartyRole === 'BUSINESS_OWNER'
-                  ? `/p/business/${c.otherPartyId}`
-                  : `/p/candidate/${c.otherPartyId}`)
-              : undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Profili gor"
-            className="inline-block mb-3 cursor-pointer hover:opacity-90 transition-opacity"
-          >
+          <ProfileAvatarLink href={profilePath}>
             {c.otherPartyAvatarUrl ? (
               <img
                 src={cldImg(c.otherPartyAvatarUrl, { w: ImgSize.avatarMd })}
@@ -69,7 +64,7 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
                 {initial}
               </div>
             )}
-          </a>
+          </ProfileAvatarLink>
           <h3 className="text-lg font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
             {c.otherPartyName}
           </h3>
@@ -143,16 +138,10 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
           <div className="text-[10px] tracking-[0.08em] uppercase mb-1" style={{ color: '#1f2937' }}>
             Hızlı İşlemler
           </div>
-          {/* Dalga G — Kullanici profilini gor (role'a gore /p/business/:id veya /p/candidate/:id) */}
+          {/* Dalga G — Profili gor (/p/business/:businessId veya /p/candidate/:userId); adres yoksa gizli */}
+          {profilePath && (
           <button
-            onClick={() => {
-              if (!c?.otherPartyId) return
-              const path = c.otherPartyRole === 'BUSINESS_OWNER'
-                ? `/p/business/${c.otherPartyId}`
-                : `/p/candidate/${c.otherPartyId}`
-              window.open(path, '_blank')
-            }}
-            disabled={!c?.otherPartyId}
+            onClick={() => window.open(profilePath, '_blank', 'noopener,noreferrer')}
             className="w-full text-left text-[12px] px-3 py-2.5 rounded-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               background: 'var(--ah-page)',
@@ -162,9 +151,10 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#1f2937" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
             <span className="font-semibold">
-              {c?.otherPartyRole === 'BUSINESS_OWNER' ? 'İşletme Profili' : 'Aday Profili'}
+              {isBiz ? 'İşletme Profili' : 'Aday Profili'}
             </span>
           </button>
+          )}
           <button
             onClick={() => {
               if (c.listingId) window.open(`/listings/${c.listingId}`, '_blank')
@@ -229,5 +219,16 @@ export default function ContextPanel({ conversation, userRole, navigate }) {
         />
       )}
     </>
+  )
+}
+
+/* Avatar: profil adresi varsa yeni sekmede acan baglanti, yoksa duz kutu */
+function ProfileAvatarLink({ href, children }) {
+  if (!href) return <div className="inline-block mb-3">{children}</div>
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" title="Profili gör"
+       className="inline-block mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+      {children}
+    </a>
   )
 }

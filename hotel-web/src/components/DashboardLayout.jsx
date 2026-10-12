@@ -83,6 +83,15 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
 
   function handleTabClick(id) { onTabChange?.(id) }
 
+  /* Bildirim linki iki biçimde gelir: tam adres ("/listings/42") ya da panel
+     sekme id'si ("applications"). Tam adres router ile açılır; sekme id'si
+     panelin sekme değiştiricisine gider (geçersiz id'yi panel reddeder). */
+  function handleNotificationLink(link) {
+    if (!link || typeof link !== 'string') return
+    if (link.startsWith('/')) { navigate(link); return }
+    onTabChange?.(link)
+  }
+
   // Nav'da olmayan (ayarlar menusu / mesaj ikonu) sekmeler icin baslik fallback'i
   const EXTRA_TITLES = {
     messages: 'Mesajlar', profile: 'Profilim', relations: 'Takip Ettiklerim',
@@ -133,7 +142,7 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                 <MessagesButton active={activeTab === 'messages'}
                                 onClick={() => handleTabClick('messages')} />
               )}
-              <NotificationBell onNavigate={(link) => onTabChange?.(link)} />
+              <NotificationBell onNavigate={handleNotificationLink} />
               <SettingsMenu onTabChange={onTabChange} />
             </div>
           </div>

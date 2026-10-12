@@ -13,19 +13,19 @@
  *  - lg+ yan panel: vardiya özeti + başvuru eylemi + işletme kısa bilgisi.
  */
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../../api/hotel'
 import { keys } from '../../lib/queryClient'
 import { useAuth } from '../../context/AuthContext'
 import GalleryCarousel from '../../components/GalleryCarousel'
 import MapView from '../../components/MapView'
+import ReportModal from '../../components/ReportModal'
+import BusinessLogo from '../../components/BusinessLogo'
 import { SkeletonDetail } from '../../components/Skeleton'
 import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
 import { ApplyModal } from './ListingsPage'
 import { formatSalary, formatPayment, salaryTypeShort } from '../../lib/salary'  // FAZ 2/#25
-import { logoColor } from '../../lib/logoColor'
-import cldImg, { ImgSize } from '../../lib/cldImg'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -42,6 +42,10 @@ function salaryParts(l) {
   return { amount: formatSalary(l.salaryMin, max, null, false), unit: salaryTypeShort(l.salaryType) }
 }
 
+/* Süren başvuru durumları — bu durumlardan biri varsa tekrar başvuru gösterilmez.
+   (Kesin kural backend'de; burada yalnız kullanıcıya doğru düğmeyi göstermek için.) */
+const ACTIVE_APPLICATION_STATUSES = ['PENDING', 'REVIEWING', 'HELD', 'STANDBY', 'ACCEPTED']
+
 function fmtDay(date) {
   return new Date(date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', weekday: 'short' })
 }
@@ -50,12 +54,26 @@ export default function ListingDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [applyOpen, setApplyOpen] = useState(false)  // ApplyModal state
+  const [reportOpen, setReportOpen] = useState(false)
+  const isCandidate = user?.role === 'CANDIDATE'
 
   const { data: listing, isLoading, error } = useQuery({
     queryKey: keys.listings.detail(id),
     queryFn: () => hotelApi.getListing(id),
     enabled: !!id,
+  })
+
+  // Adayın başvuruları — panelle aynı anahtar/biçim (tek önbellek). Bu ilana
+  // süren başvuru varsa "Başvur" yerine "Başvurdun" gösterilir.
+  const { data: myApplications = [] } = useQuery({
+    queryKey: keys.applications.candidate(),
+    queryFn: async () => {
+      const res = await hotelApi.getMyApplications()
+      return Array.isArray(res) ? res : (res?.content ?? [])
+    },
+    enabled: isCandidate,
   })
 
   // Dalga 4 / Teknik 5 — Goruntulenme sayaci (mount'ta 1 kez tetiklenir)
@@ -124,11 +142,16 @@ export default function ListingDetailPage() {
   const hasFuture = futureSlots.length > 0
   const openSlots = futureSlots.filter(s => !isFull(s))
   const openPeople = openSlots.reduce((n, s) => n + Math.max(0, (s.slotsNeeded || 0) - (s.slotsFilled || 0)), 0)
-  const canApply = hasFuture && openSlots.length > 0
-  // Mevcut duruma uygun pasif metin (başvurulmuş durumu ilan verisinde yok; backend reddeder)
-  const applyLabel = !hasFuture ? 'Süresi doldu' : openSlots.length === 0 ? 'Kontenjan doldu' : 'Başvur'
-  const initial = (listing.businessName || '').trim().charAt(0).toLocaleUpperCase('tr-TR')
-  const metaParts = [listing.businessName, listing.businessDistrict, JOB_TYPE_LABELS[listing.jobType]].filter(Boolean)
+  // Başvurulmuş durumu ilan verisinde yok; adayın başvurularından çıkarılır
+  const alreadyApplied = isCandidate && myApplications.some(a =>
+    String(a.listing?.id) === String(listing.id) && ACTIVE_APPLICATION_STATUSES.includes(a.status))
+  const canApply = hasFuture && openSlots.length > 0 && !alreadyApplied
+  const applyLabel = alreadyApplied ? 'Başvurdun'
+    : !hasFuture ? 'Süresi doldu'
+    : openSlots.length === 0 ? 'Kontenjan doldu'
+    : 'Başvur'
+  const metaParts = [listing.businessDistrict, JOB_TYPE_LABELS[listing.jobType]].filter(Boolean)
+  const businessPath = listing.businessId ? `/p/business/${listing.businessId}` : null
 
   function handleBack() {
     // Eğer geçmiş varsa geri, yoksa ilanlar sayfasına
@@ -146,11 +169,25 @@ export default function ListingDetailPage() {
       toast.error('Başvurabilmek için aday hesabı gerek')
       return
     }
+    if (alreadyApplied) return
     setApplyOpen(true)  // ApplyModal direkt aç
   }
 
+  // Başvuru gönderildi: onay ekranı açık kalır (modal kendi onClose'u ile kapanır);
+  // yalnız ilgili sorgular tazelenir → düğme "Başvurdun"a döner, doluluk güncellenir.
+  function handleApplied() {
+    queryClient.invalidateQueries({ queryKey: keys.applications.candidate() })
+    queryClient.invalidateQueries({ queryKey: keys.listings.detail(id) })
+  }
+
+  function openMessages(conversationId) {
+    navigate(conversationId
+      ? `/candidate?tab=messages&c=${encodeURIComponent(conversationId)}`
+      : '/candidate?tab=messages')
+  }
+
   const businessFacts = (
-    <BusinessFacts listing={listing} />
+    <BusinessFacts listing={listing} businessPath={businessPath} />
   )
 
   return (
@@ -182,18 +219,21 @@ export default function ListingDetailPage() {
         {/* BAŞLIK BLOĞU — logo/baş harf + pozisyon + işletme · ilçe + ücret */}
         <section className="card p-5 sm:p-6" aria-labelledby="listing-title">
           <div className="flex items-start gap-4">
-            {listing.businessLogoUrl ? (
-              <img src={cldImg(listing.businessLogoUrl, { w: ImgSize.avatarMd })} alt=""
-                   className="ah-logo" style={{ objectFit: 'cover' }} />
-            ) : initial ? (
-              <span className="ah-logo" aria-hidden="true" style={{ background: logoColor(listing.businessName) }}>{initial}</span>
-            ) : null}
+            <BusinessLogo name={listing.businessName} logoUrl={listing.businessLogoUrl} />
             <div className="min-w-0 flex-1">
               <h1 id="listing-title" className="type-page" style={{ color: 'var(--ah-ink)' }}>{positionLabel}</h1>
               {listing.title && listing.title !== positionLabel && (
                 <p className="type-body mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{listing.title}</p>
               )}
-              <p className="type-meta mt-1" style={{ color: 'var(--ah-ink-3)' }}>{metaParts.join(' · ')}</p>
+              <p className="type-meta mt-1" style={{ color: 'var(--ah-ink-3)' }} data-testid="listing-meta">
+                {listing.businessName && (businessPath ? (
+                  <Link to={businessPath} className="font-semibold hover:underline" style={{ color: 'var(--ah-ink-2)' }}>
+                    {listing.businessName}
+                  </Link>
+                ) : listing.businessName)}
+                {listing.businessName && metaParts.length > 0 && ' · '}
+                {metaParts.join(' · ')}
+              </p>
             </div>
           </div>
           {sal && (
@@ -339,6 +379,14 @@ export default function ListingDetailPage() {
           {businessFacts}
         </section>
 
+        {user && (
+          <div className="flex justify-center lg:hidden">
+            <button type="button" onClick={() => setReportOpen(true)} className="btn-ghost !w-auto">
+              İlanı bildir
+            </button>
+          </div>
+        )}
+
         </div>  {/* SOL kolon kapanis */}
 
         {/* === SAĞ PANEL (lg+): vardiya özeti + başvuru eylemi + işletme kısa bilgisi === */}
@@ -355,10 +403,18 @@ export default function ListingDetailPage() {
                   Başvurmak 30 saniye sürer
                 </p>
               )}
+              {alreadyApplied && <AppliedNote />}
             </div>
             <div className="card p-5">
               {businessFacts}
             </div>
+            {user && (
+              <div className="flex justify-center">
+                <button type="button" onClick={() => setReportOpen(true)} className="btn-ghost !w-auto">
+                  İlanı bildir
+                </button>
+              </div>
+            )}
           </div>
         </aside>
         </div>  {/* grid kapanis */}
@@ -379,7 +435,8 @@ export default function ListingDetailPage() {
             <p className="type-meta truncate" style={{ color: 'var(--ah-ink-3)' }}>Ücret belirtilmemiş</p>
           )}
           <p className="type-caption truncate" style={{ color: 'var(--ah-ink-3)' }}>
-            {!hasFuture ? 'Vardiyaların tarihi geçti'
+            {alreadyApplied ? 'Bu ilana başvurun var'
+              : !hasFuture ? 'Vardiyaların tarihi geçti'
               : openSlots.length === 0 ? 'Tüm vardiyalar dolu'
               : `${openSlots.length} açık vardiya`}
           </p>
@@ -395,11 +452,33 @@ export default function ListingDetailPage() {
         <ApplyModal
           listing={listing}
           onClose={() => setApplyOpen(false)}
-          onSuccess={() => setApplyOpen(false)}
-          onMessagesOpen={() => navigate('/candidate?tab=messages')}
+          onSuccess={handleApplied}
+          onMessagesOpen={openMessages}
+        />
+      )}
+
+      {/* İlanı bildir — hedef İLAN (ReportType.LISTING) */}
+      {reportOpen && (
+        <ReportModal
+          targetType="LISTING"
+          targetId={listing.id}
+          targetLabel={[listing.title, listing.businessName].filter(Boolean).join(' · ')}
+          onClose={() => setReportOpen(false)}
         />
       )}
     </div>
+  )
+}
+
+/* Başvurulmuş ilan: kısa bilgi + Başvurularım bağlantısı */
+function AppliedNote() {
+  return (
+    <p className="type-caption text-center mt-2" style={{ color: 'var(--ah-ink-3)' }}>
+      Bu ilana başvurun var.{' '}
+      <Link to="/candidate?tab=applications" className="underline" style={{ color: 'var(--ah-ink-2)' }}>
+        Başvurularım
+      </Link>
+    </p>
   )
 }
 
@@ -422,7 +501,7 @@ function ShiftSummary({ hasFuture, openSlots, openPeople }) {
 }
 
 /* İşletme kısa bilgisi (güven sinyalleri — puan/skor YOK) */
-function BusinessFacts({ listing }) {
+function BusinessFacts({ listing, businessPath }) {
   const items = []
   if (listing.businessCreatedAt) items.push({ label: 'Kadrom üyeliği', value: memberSince(listing.businessCreatedAt) })
   if (typeof listing.businessWorkerCount === 'number') items.push({ label: 'Tamamlanan iş', value: `${listing.businessWorkerCount}+` })
@@ -431,6 +510,11 @@ function BusinessFacts({ listing }) {
     <>
       <h2 className="type-card" style={{ color: 'var(--ah-ink)' }}>İşletme hakkında</h2>
       <p className="type-meta mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{listing.businessName}</p>
+      {businessPath && (
+        <Link to={businessPath} className="type-meta inline-block mt-1 underline" style={{ color: 'var(--ah-ink-2)' }}>
+          İşletme profilini gör
+        </Link>
+      )}
       {items.length > 0 && (
         <dl className="grid grid-cols-3 lg:grid-cols-1 gap-3 mt-3">
           {items.map(it => <TrustSignal key={it.label} label={it.label} value={it.value} />)}

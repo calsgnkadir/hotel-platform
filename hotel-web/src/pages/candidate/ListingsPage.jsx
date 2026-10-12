@@ -16,11 +16,6 @@ import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import { keys } from '../../lib/queryClient'
-import ReportModal from '../../components/ReportModal'
-import VerifiedBadge from '../../components/VerifiedBadge'
-import HoverPhotoCarousel from '../../components/HoverPhotoCarousel'  // FAZ D3
-import GalleryCarousel from '../../components/GalleryCarousel'
-import MapView from '../../components/MapView'
 import EmptyState from '../../components/EmptyState'
 import { SkeletonListingGrid } from '../../components/Skeleton'
 import SavedSearchManager from '../../components/SavedSearchManager'
@@ -30,8 +25,7 @@ import { requestPushMoment } from '../../lib/webpush'
 import { useMyLocation } from '../../lib/useMyLocation'                    // FAZ B.3
 import { distanceKm, formatDistance } from '../../lib/distance'            // FAZ B.3
 import { shiftDuration } from '../../lib/shiftTime'                        // FAZ B.5.5
-import { logoColor } from '../../lib/logoColor'                            // FAZ B.5.3
-import cldImg, { ImgSize } from '../../lib/cldImg'                         // FAZ E.6
+import BusinessLogo from '../../components/BusinessLogo'
 
 const POSITION_LABELS = {
   WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
@@ -40,21 +34,6 @@ const POSITION_LABELS = {
 const JOB_TYPE_LABELS = {
   PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı',
 }
-const BUSINESS_TYPE_LETTER = { HOTEL: 'O', RESTAURANT: 'R', CAFE: 'K' }
-const SHIFT_INFO = {
-  MORNING: { icon: '', label: 'Sabah', time: '08:00–16:00' },
-  EVENING: { icon: '', label: 'Akşam', time: '16:00–24:00' },
-  NIGHT:   { icon: '', label: 'Gece',  time: '22:00–08:00' },
-}
-const WEEKDAYS_SHORT = [
-  { key: 'MONDAY',    label: 'Pzt' },
-  { key: 'TUESDAY',   label: 'Sal' },
-  { key: 'WEDNESDAY', label: 'Çar' },
-  { key: 'THURSDAY',  label: 'Per' },
-  { key: 'FRIDAY',    label: 'Cum' },
-  { key: 'SATURDAY',  label: 'Cmt' },
-  { key: 'SUNDAY',    label: 'Paz' },
-]
 
 // FAZ 2/#25 — formatSalary ortak helper'a tasindi (lib/salary.js)
 
@@ -235,7 +214,6 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
       : selectedCount > 0 ? `${selectedCount} vardiyaya başvur` : 'Başvur'
   const paymentText = formatPayment(listing.paymentPeriod, listing.paymentMethod)
   const dressText = listing.dressCode ? String(listing.dressCode).split('\n')[0].trim() : ''
-  const initial = (listing.businessName || '').trim().charAt(0).toLocaleUpperCase('tr-TR')
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -244,13 +222,9 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
         {/* Header — işletme logosu / baş harfi + pozisyon */}
         <div className="modal-sheet__head">
           <div className="flex items-center gap-3 min-w-0">
-            {listing.businessLogoUrl ? (
-              <img src={cldImg(listing.businessLogoUrl, { w: ImgSize.avatarMd })} alt=""
-                   className="ah-logo ah-logo--sm" style={{ objectFit: 'cover' }} />
-            ) : initial ? (
-              <span className="ah-logo ah-logo--sm" aria-hidden="true"
-                    style={{ background: logoColor(listing.businessName) }}>{initial}</span>
-            ) : null}
+            {(listing.businessLogoUrl || listing.businessName) && (
+              <BusinessLogo name={listing.businessName} logoUrl={listing.businessLogoUrl} size="sm" />
+            )}
             <div className="min-w-0">
               <h2 id="apply-modal-title" className="type-card truncate">{listing.title}</h2>
               <p className="type-meta truncate">
@@ -357,6 +331,14 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
                 Önce en az bir vardiya seç
               </p>
             )}
+            {/* KVKK — işletme, başvuran adayın adını, e-postasını ve profilini görür */}
+            <p className="type-caption mb-2" style={{ color: 'var(--ah-ink-3)' }} data-testid="apply-privacy-note">
+              Başvurunla birlikte adın, e-postan ve profil bilgilerin bu işletmeyle paylaşılır.{' '}
+              <a href="/kvkk" target="_blank" rel="noopener noreferrer"
+                 className="underline" style={{ color: 'var(--ah-ink-2)' }}>
+                Aydınlatma metni
+              </a>
+            </p>
             <div className="flex gap-3">
               <button type="button" onClick={onClose} className="btn-secondary flex-1">
                 İptal
@@ -384,244 +366,6 @@ export function ApplyModal({ listing, onClose, onSuccess, onMessagesOpen }) {
             </div>
           </div>
         </form>
-      </div>
-    </div>
-  )
-}
-
-/* ── Detail Modal ── */
-function DetailModal({ listing, onClose, onApply }) {
-  const [showReport, setShowReport] = useState(false)
-  const shift = null  // legacy shift kategorisi kaldirildi
-  const salary = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
-  const hasDates = listing.startDate || listing.endDate
-  const slots = [...(listing.shiftSlots || [])].sort((a, b) => {
-    const c = (a.date || '').localeCompare(b.date || '')
-    return c !== 0 ? c : (a.startTime || '').localeCompare(b.startTime || '')
-  })
-  // Chat-v2: hiç gelecek slot yoksa "süresi doldu"
-  const detailTodayStr = new Date().toISOString().slice(0, 10)
-  const detailHasFuture = slots.some(s => (s.date || '') >= detailTodayStr)
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="p-6 border-b border-cream-200 sticky top-0 bg-white dark:bg-ink-800 z-10">
-          <div className="flex items-start gap-3">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl flex-shrink-0 shadow-sm"
-                 style={{ background: 'rgba(31, 41, 55, 0.10)', border: '1px solid rgba(31, 41, 55, 0.32)', color: '#1f2937' }}>
-              {BUSINESS_TYPE_LETTER[listing.businessType] || '?'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold text-ink-900 leading-tight">{listing.title}</h2>
-              <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                <p className="text-sm text-ink-500">{listing.businessName}</p>
-              </div>
-            </div>
-            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 flex-shrink-0">
-              {JOB_TYPE_LABELS[listing.jobType] || listing.jobType}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-6 space-y-5">
-          {/* #87: İşletme galerisi carousel — varsa göster */}
-          {listing.businessId && (
-            <GalleryCarousel businessId={listing.businessId} height="h-56" />
-          )}
-
-          {/* Quick facts grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="bg-cream-50 rounded-lg p-3 text-center">
-              <div className="type-label">İlçe</div>
-              <div className="text-sm font-semibold text-ink-700 mt-0.5">
-                {listing.businessDistrict || '—'}
-              </div>
-            </div>
-            <div className="bg-cream-50 rounded-lg p-3 text-center">
-              <div className="type-label">Pozisyon</div>
-              <div className="text-sm font-semibold text-ink-700 mt-0.5">
-                {POSITION_LABELS[listing.position] || listing.position}
-              </div>
-            </div>
-            {shift && (
-              <div className="bg-cream-50 rounded-lg p-3 text-center">
-                <div className="type-label">Vardiya</div>
-                <div className="text-sm font-semibold text-ink-700 mt-0.5">
-                  {shift.icon} {shift.label}
-                </div>
-                <div className="type-caption mt-0.5">{shift.time}</div>
-              </div>
-            )}
-            {salary && (
-              <div className="bg-brand-50 rounded-lg p-3 text-center">
-                <div className="type-label">Ücret</div>
-                <div className="text-sm font-semibold text-ink-800 mt-0.5 leading-tight type-num">{salary}</div>
-              </div>
-            )}
-          </div>
-
-          {/* #81 v2: Konum — tam koordinat varsa onu, yoksa ilçe merkezi fallback */}
-          {listing.businessDistrict && (
-            <div>
-              <h3 className="type-subhead mb-2">Konum</h3>
-              <MapView
-                position={listing.businessLatitude != null && listing.businessLongitude != null
-                  ? [Number(listing.businessLatitude), Number(listing.businessLongitude)]
-                  : null}
-                district={listing.businessDistrict}
-                neighborhood={listing.businessNeighborhood}
-                title={listing.businessName}
-                height="240px"
-              />
-              {listing.businessAddress && (
-                <p className="type-meta mt-2">
-                  {listing.businessAddress}
-                </p>
-              )}
-              {listing.businessLatitude == null && (
-                <p className="type-caption text-amber-600 mt-1">
-                  Yaklaşık konum — işletme henüz tam adresi haritada işaretlemedi.
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Description */}
-          <div>
-            <h3 className="type-subhead mb-2">Açıklama</h3>
-            <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-line">
-              {listing.description}
-            </p>
-          </div>
-
-          {listing.requirements && (
-            <div>
-              <h3 className="type-subhead mb-2">Gereksinimler</h3>
-              <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-line">
-                {listing.requirements}
-              </p>
-            </div>
-          )}
-
-          {hasDates && (
-            <div>
-              <h3 className="type-subhead mb-2">Kontrat Dönemi</h3>
-              <p className="text-sm text-ink-700">
-                {listing.startDate && new Date(listing.startDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                {listing.startDate && listing.endDate && ' — '}
-                {listing.endDate && new Date(listing.endDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
-            </div>
-          )}
-
-          {/* Faz E3: Vardiya listesi */}
-          {slots.length > 0 && (
-            <div>
-              <h3 className="type-subhead mb-2">
-                Vardiyalar ({slots.length})
-              </h3>
-              <div className="space-y-1.5">
-                {slots.map(s => {
-                  const full = s.full || (s.slotsFilled >= s.slotsNeeded)
-                  const dateLabel = new Date(s.date).toLocaleDateString('tr-TR', {
-                    day: 'numeric', month: 'short', weekday: 'short',
-                  })
-                  return (
-                    <div key={s.id}
-                      className={`flex items-center justify-between rounded-lg px-3 py-2 border
-                        ${full ? 'bg-cream-50 border-cream-300' : 'bg-brand-50/60 dark:bg-brand-900/20 border-brand-100 dark:border-brand-900/40'}`}>
-                      <div className="text-sm">
-                        <span className="font-medium text-ink-800">{dateLabel}</span>
-                        <span className="text-ink-500 ml-2">{s.startTime?.slice(0, 5)}–{s.endTime?.slice(0, 5)}</span>
-                      </div>
-                      {/* Durum dili paketi — rozet degil duz bilgi metni; dolu kirmizi DEGIL */}
-                      <span className="type-meta flex-shrink-0 tabular-nums"
-                            style={{ color: full ? 'var(--ah-ink-4)' : 'var(--ah-ink-2)' }}>
-                        {full ? 'Doldu' : `${(s.slotsNeeded - (s.slotsFilled || 0))} kişi aranıyor`}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-cream-200 sticky bottom-0 bg-white dark:bg-ink-800 items-center">
-          <button onClick={() => setShowReport(true)}
-            title="Bu ilanı bildir"
-            className="btn-ghost flex-shrink-0">
-            Bildir
-          </button>
-          <button type="button" onClick={onClose} className="btn-secondary flex-1">Kapat</button>
-          <button
-            onClick={() => { if (detailHasFuture) { onApply(listing); onClose() } }}
-            disabled={!detailHasFuture}
-            className="btn-primary flex-1">
-            {detailHasFuture ? 'Başvur' : 'Süresi doldu'}
-          </button>
-        </div>
-      </div>
-
-      {showReport && (
-        <ReportModal
-          targetType="LISTING"
-          targetId={listing.id}
-          targetLabel={`${listing.title} · ${listing.businessName}`}
-          onClose={() => setShowReport(false)}
-        />
-      )}
-    </div>
-  )
-}
-
-/* ── FAZ 14.5.2 — Dekoratif kapak: foto yoksa bos gri alan yerine
-   position-bazli kompozisyon (renk wash + dev outline ikon + cizgi dokusu).
-   Her pozisyonun kendi tonu + ikonu var — kartlar ayirt edilebilir. ── */
-const COVER_ART = {
-  WAITER:        { tint: '31, 41, 55', icon: <path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8v2M10 8h4" /> },                                         // servis kubbesi
-  DISHWASHER:    { tint: '107, 138, 163', icon: <><path d="M7 21c0-4 2-5 2-8a4 4 0 0 0-8 0" /><path d="M12 3c3 3 8 4 8 9a8 8 0 0 1-8 9" /><circle cx="16" cy="7" r="1.5" /></> },  // su
-  HOUSEKEEPING:  { tint: '107, 117, 116', icon: <><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6" /><path d="M3 18h18M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" /></> },        // yatak
-  RECEPTION:     { tint: '107, 117, 116',  icon: <><path d="M12 4v3" /><path d="M5 15a7 7 0 0 1 14 0" /><path d="M3 15h18v3H3z" /></> },            // resepsiyon cani
-  KITCHEN_STAFF: { tint: '107, 117, 116',  icon: <><path d="M7 8a4 4 0 0 1 3-6 4 4 0 0 1 4 0 4 4 0 0 1 3 6v3H7z" /><path d="M8 11v8M12 11v8M16 11v8M7 21h10" /></> },              // sef sapkasi
-  BELLBOY:       { tint: '31, 41, 55', icon: <><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M9 8V6a3 3 0 0 1 6 0v2M4 13h16" /></> },  // valiz
-  SECURITY:      { tint: '107, 138, 163', icon: <path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z" /> },                              // kalkan
-  DEFAULT:       { tint: '31, 41, 55', icon: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01" /></> },  // bina
-}
-
-function CoverArt({ position, businessName }) {
-  const art = COVER_ART[position] || COVER_ART.DEFAULT
-  const initial = (businessName || '?').trim().charAt(0).toUpperCase()
-  return (
-    <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
-      {/* Position renk wash — diagonal */}
-      <div className="absolute inset-0"
-           style={{ background: `linear-gradient(125deg, rgba(${art.tint}, 0.14) 0%, transparent 55%, rgba(${art.tint}, 0.05) 100%)` }} />
-      {/* Ince diagonal cizgi dokusu */}
-      <div className="absolute inset-0 opacity-[0.05]"
-           style={{
-             backgroundImage: `repeating-linear-gradient(115deg, rgba(${art.tint}, 1) 0px, rgba(${art.tint}, 1) 1px, transparent 1px, transparent 14px)`,
-           }} />
-      {/* Dev outline position ikonu — sag altta kirpilmis */}
-      <svg viewBox="0 0 24 24" fill="none"
-           stroke={`rgba(${art.tint}, 0.16)`} strokeWidth="0.9"
-           strokeLinecap="round" strokeLinejoin="round"
-           className="absolute -bottom-8 -right-6 w-44 h-44 rotate-[8deg] transition-transform duration-500 group-hover:rotate-[2deg] group-hover:scale-105">
-        {art.icon}
-      </svg>
-      {/* Isletme monogrami — sol merkez, editorial serif hissi */}
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 select-none"
-           style={{
-             fontSize: '72px',
-             fontWeight: 700,
-             lineHeight: 1,
-             letterSpacing: '-0.05em',
-             color: `rgba(${art.tint}, 0.10)`,
-           }}>
-        {initial}
       </div>
     </div>
   )
@@ -660,7 +404,6 @@ function nextShiftLabel(slots) {
 function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
   const salaryStr = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const isSaved = savedIds?.has(listing.id)
-  const initial = (listing.businessName || '?').trim().charAt(0).toUpperCase()
   const position = POSITION_LABELS[listing.position] || listing.position || 'Personel'
 
   // FAZ B.1 — ucret degeri + birim ayri (buyuk deger + kucuk birim)
@@ -682,13 +425,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
          onKeyDown={(e) => { if (e.key === 'Enter') onDetail(listing) }}>
       {/* Ust: logo + pozisyon (birincil) + isletme/ilce (baglam) + kaydet */}
       <div className="ah-job__top">
-        {listing.businessLogoUrl ? (
-          <img src={cldImg(listing.businessLogoUrl, { w: ImgSize.avatarMd })}
-               alt={listing.businessName || 'İşletme'} loading="lazy"
-               className="ah-logo" style={{ objectFit: 'cover' }} />
-        ) : (
-          <span className="ah-logo" style={{ background: logoColor(listing.businessName) }}>{initial}</span>
-        )}
+        <BusinessLogo name={listing.businessName} logoUrl={listing.businessLogoUrl} />
         <div className="ah-job__hd">
           <div className="ah-job__title">{position}</div>
           {/* FAZ B.5.4 — Tek meta satiri: isletme · ilce · mesafe.
