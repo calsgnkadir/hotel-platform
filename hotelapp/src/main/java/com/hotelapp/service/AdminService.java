@@ -27,6 +27,7 @@ public class AdminService {
     private final BusinessRepository businessRepository;
     private final JobListingRepository jobListingRepository;
     private final ApplicationRepository applicationRepository;
+    private final RefreshTokenService refreshTokenService;
 
     // ================================================================
     // Listing & detail
@@ -94,6 +95,9 @@ public class AdminService {
         }
         user.setBannedUntil(LocalDateTime.now().plusDays(days));
         userRepository.save(user);
+        // Acik oturumlar kapanir: refresh alinamaz; erisim token'i JwtAuthFilter'da
+        // isAccountNonLocked ile zaten reddedilir.
+        refreshTokenService.revokeAllForUser(user.getId());
         return toSummary(user);
     }
 
@@ -229,6 +233,7 @@ public class AdminService {
                 .title(l.getTitle())
                 .position(l.getPosition() != null ? l.getPosition().name() : null)
                 .status(l.getStatus().name())
+                .adminSuspended(l.isAdminSuspended())
                 .businessId(l.getBusiness() != null ? l.getBusiness().getId() : null)
                 .businessName(l.getBusiness() != null ? l.getBusiness().getName() : null)
                 .ownerEmail(l.getBusiness() != null && l.getBusiness().getOwner() != null
@@ -243,12 +248,16 @@ public class AdminService {
         var listing = jobListingRepository.findById(listingId)
             .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
         listing.setStatus(status);
+        // Admin'in PAUSED/CLOSED yaptigi ilan askida isaretlenir (isletme ACTIVE yapamaz);
+        // admin ACTIVE yapinca bayrak kalkar.
+        listing.setAdminSuspended(status != com.hotelapp.enums.ListingStatus.ACTIVE);
         jobListingRepository.save(listing);
         return AdminListingDto.builder()
             .id(listing.getId())
             .title(listing.getTitle())
             .position(listing.getPosition() != null ? listing.getPosition().name() : null)
             .status(listing.getStatus().name())
+            .adminSuspended(listing.isAdminSuspended())
             .businessId(listing.getBusiness() != null ? listing.getBusiness().getId() : null)
             .businessName(listing.getBusiness() != null ? listing.getBusiness().getName() : null)
             .ownerEmail(listing.getBusiness() != null && listing.getBusiness().getOwner() != null
@@ -263,6 +272,8 @@ public class AdminService {
         private String title;
         private String position;
         private String status;
+        /** Admin askiya aldi (isletme ACTIVE yapamaz). */
+        private boolean adminSuspended;
         private Long businessId;
         private String businessName;
         private String ownerEmail;

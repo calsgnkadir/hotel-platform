@@ -146,7 +146,7 @@ class UrgentServiceTest {
             JobListing l = listing(ListingStatus.ACTIVE,
                     slot(LocalDate.now(), LocalTime.of(16, 0), LocalTime.of(23, 0)));
             when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
-            when(userRepository.findAvailableNowCandidates(any(), eq(Position.WAITER)))
+            when(userRepository.findAvailableNowCandidates(any(), eq(Position.WAITER), any()))
                     .thenReturn(List.of(candidate(7L), candidate(8L)));
 
             var res = service().setUrgent(LISTING_ID, OWNER_ID, true);
@@ -170,7 +170,7 @@ class UrgentServiceTest {
                     slot(LocalDate.now().plusDays(3), LocalTime.of(8, 0), LocalTime.of(16, 0)),
                     slot(LocalDate.now().plusDays(1), LocalTime.of(16, 0), end));   // en yakin
             when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
-            when(userRepository.findAvailableNowCandidates(any(), any())).thenReturn(List.of());
+            when(userRepository.findAvailableNowCandidates(any(), any(), any())).thenReturn(List.of());
 
             service().setUrgent(LISTING_ID, OWNER_ID, true);
 
@@ -182,7 +182,7 @@ class UrgentServiceTest {
         void noSlots_defaults24h() {
             JobListing l = listing(ListingStatus.ACTIVE);
             when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
-            when(userRepository.findAvailableNowCandidates(any(), any())).thenReturn(List.of());
+            when(userRepository.findAvailableNowCandidates(any(), any(), any())).thenReturn(List.of());
 
             service().setUrgent(LISTING_ID, OWNER_ID, true);
 
@@ -268,7 +268,7 @@ class UrgentServiceTest {
         void emptyPool_stillUrgent() {
             JobListing l = listing(ListingStatus.ACTIVE);
             when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
-            when(userRepository.findAvailableNowCandidates(any(), any())).thenReturn(List.of());
+            when(userRepository.findAvailableNowCandidates(any(), any(), any())).thenReturn(List.of());
 
             var res = service().setUrgent(LISTING_ID, OWNER_ID, true);
 
@@ -281,7 +281,7 @@ class UrgentServiceTest {
         void notificationFailure_doesNotBreakUrgency() {
             JobListing l = listing(ListingStatus.ACTIVE);
             when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
-            when(userRepository.findAvailableNowCandidates(any(), any()))
+            when(userRepository.findAvailableNowCandidates(any(), any(), any()))
                     .thenThrow(new RuntimeException("DB down"));
 
             var res = service().setUrgent(LISTING_ID, OWNER_ID, true);
@@ -289,6 +289,54 @@ class UrgentServiceTest {
             assertThat(res.isUrgent()).isTrue();
             assertThat(l.isUrgentNow()).isTrue();
             assertThat(res.getNotifiedCount()).isZero();
+        }
+
+        @Test
+        @DisplayName("Basarili toplu bildirim zamani ilana yazilir; havuz sorgusu ilan isletmesiyle cagrilir")
+        void successfulPush_recordsNotifiedAt_andPassesBusinessId() {
+            JobListing l = listing(ListingStatus.ACTIVE);
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
+            when(userRepository.findAvailableNowCandidates(any(), eq(Position.WAITER), eq(l.getBusiness().getId())))
+                    .thenReturn(List.of(candidate(7L)));
+
+            var res = service().setUrgent(LISTING_ID, OWNER_ID, true);
+
+            assertThat(res.getNotifiedCount()).isEqualTo(1);
+            assertThat(res.isNotificationThrottled()).isFalse();
+            assertThat(l.getUrgentNotifiedAt()).isAfter(LocalDateTime.now().minusMinutes(1));
+        }
+
+        @Test
+        @DisplayName("Acil kapat-ac dongusu: 6 saat dolmadan yeni toplu bildirim gitmez, ilan yine acil olur")
+        void reMarkWithinCooldown_doesNotNotifyAgain() {
+            JobListing l = listing(ListingStatus.ACTIVE);
+            l.setUrgentNotifiedAt(LocalDateTime.now().minusHours(1));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
+
+            service().setUrgent(LISTING_ID, OWNER_ID, false);
+            var res = service().setUrgent(LISTING_ID, OWNER_ID, true);
+
+            assertThat(res.isUrgent()).isTrue();
+            assertThat(l.isUrgentNow()).isTrue();
+            assertThat(res.getNotifiedCount()).isZero();
+            assertThat(res.isNotificationThrottled()).isTrue();
+            verify(userRepository, never()).findAvailableNowCandidates(any(), any(), any());
+            verify(notificationService, never()).notify(anyLong(), any(), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Bekleme suresi dolduktan sonra yeniden acil isaretleme yeniden bildirir")
+        void reMarkAfterCooldown_notifiesAgain() {
+            JobListing l = listing(ListingStatus.ACTIVE);
+            l.setUrgentNotifiedAt(LocalDateTime.now().minusHours(7));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
+            when(userRepository.findAvailableNowCandidates(any(), any(), any()))
+                    .thenReturn(List.of(candidate(7L)));
+
+            var res = service().setUrgent(LISTING_ID, OWNER_ID, true);
+
+            assertThat(res.getNotifiedCount()).isEqualTo(1);
+            assertThat(res.isNotificationThrottled()).isFalse();
         }
     }
 }

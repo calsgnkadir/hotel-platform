@@ -18,6 +18,8 @@ public class ConversationDto {
     private String otherPartyAvatarUrl;
     /** Karşı taraf rolü — frontend ikon/etiket için (CANDIDATE / BUSINESS_OWNER) */
     private String otherPartyRole;
+    /** Karşı taraf işletme sahibiyse işletmesinin id'si (profil linki için), değilse null. */
+    private Long otherPartyBusinessId;
 
     /** Opsiyonel: sohbet bir başvuru bağlamında açıldıysa ilan başlığı. */
     private Long applicationId;

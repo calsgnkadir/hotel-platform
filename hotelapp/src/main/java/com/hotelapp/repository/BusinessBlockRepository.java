@@ -22,6 +22,14 @@ public interface BusinessBlockRepository extends JpaRepository<BusinessBlock, Lo
 
     long countByUserId(Long userId);
 
+    /** Sahibi ownerId olan isletmeyi engelleyen aday id'leri (presence filtresi). */
+    @Query("SELECT b.user.id FROM BusinessBlock b WHERE b.business.owner.id = :ownerId")
+    Set<Long> findUserIdsByBusinessOwnerId(@Param("ownerId") Long ownerId);
+
+    /** Adayin engelledigi isletmelerin sahip id'leri (presence filtresi). */
+    @Query("SELECT b.business.owner.id FROM BusinessBlock b WHERE b.user.id = :userId")
+    Set<Long> findBusinessOwnerIdsByUserId(@Param("userId") Long userId);
+
     /** Aday, sahibi ownerId olan isletmeyi engellemis mi (mesajlasma kapisi). */
     boolean existsByUserIdAndBusinessOwnerId(Long userId, Long ownerId);
 }

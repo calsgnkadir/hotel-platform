@@ -110,6 +110,15 @@ public class JobListing {
     @Builder.Default
     private ListingStatus status = ListingStatus.ACTIVE;
 
+    /**
+     * V21 — Admin moderasyonu: admin ilani PAUSED/CLOSED yaptiysa true. Isletme bu
+     * ilani ACTIVE yapamaz (JobListingService.updateStatus 422); yalniz admin ACTIVE
+     * yapinca bayrak kalkar.
+     */
+    @Column(name = "admin_suspended", nullable = false)
+    @Builder.Default
+    private boolean adminSuspended = false;
+
     // Faz E1: Bu ilana ait spesifik vardiya slotları (date+startTime+endTime+slotsNeeded)
     // FAZ 9.2 — N+1 fix: shiftSlots her listing icin ayri sorgu yerine
     // Hibernate 50 listing'in slot'larini tek IN(...) sorgusuyla toplar.
@@ -140,6 +149,14 @@ public class JobListing {
      * asili kalmaz, yoksa rozet enflasyona ugrar ve anlamsizlasir.
      */
     private LocalDateTime urgentUntil;
+
+    /**
+     * V21 — Son acil-havuz toplu bildirim zamani. Ayni ilan icin bekleme suresi
+     * dolmadan (UrgentService.NOTIFY_COOLDOWN) acil kapat-ac dongusu yeni toplu
+     * bildirim uretmez.
+     */
+    @Column(name = "urgent_notified_at")
+    private LocalDateTime urgentNotifiedAt;
 
     /** Aciliyet su an gecerli mi? */
     public boolean isUrgentNow() {

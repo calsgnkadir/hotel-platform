@@ -76,10 +76,13 @@ class CandidateProfileServiceTest {
 
     @Test
     void businessWithApplicationSeesProfileWithoutSensitiveUnlessAccepted() {
+        users.findById(CANDIDATE).orElseThrow().setPhone("05551112233");
         var dto = service.getPublicProfile(CANDIDATE, OWNER_APPLIED);
         assertThat(dto.getId()).isEqualTo(CANDIDATE);
         assertThat(dto.getSensitiveUnlocked()).isFalse();
-        assertThat(dto.getEmail()).isNull();
+        // E-posta basvuru listesiyle hizali (her statude); telefon vb. hala kabul bekler
+        assertThat(dto.getEmail()).isEqualTo("u" + CANDIDATE + "@test.local");
+        assertThat(dto.getPhone()).isNull();
         verify(views).record(CANDIDATE, OWNER_APPLIED);
 
         when(applications.existsByCandidateIdAndJobListingBusinessOwnerIdAndStatus(

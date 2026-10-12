@@ -15,16 +15,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,11 +29,14 @@ import java.util.concurrent.TimeUnit;
  * IP başına rate limiting — Bucket4j token bucket algoritması.
  *
  * F0.3 (FAZ 0) — Güvenlik & memory düzeltmeleri:
- *   1) X-Forwarded-For trusted proxy listesi
- *      ESKİ: saldırgan rastgele 'X-Forwarded-For: 8.8.8.8' yollasa kendini farklı
- *            IP gösterir → rate limit bypass.
- *      YENİ: Sadece TRUSTED_PROXIES listesinden gelen X-Forwarded-For kabul edilir.
- *            (Lokal: localhost; Prod: Railway gibi PaaS — env var TRUSTED_PROXIES ile ayar)
+ *   1) İstemci IP'si yalnız {@code request.getRemoteAddr()}'dan okunur.
+ *      X-Forwarded-For'a güven TEK yerde: prod'da Tomcat RemoteIpValve
+ *      ({@code server.forward-headers-strategy: native}). Valve XFF zincirini
+ *      sağdan okur, yalnız iç ağ proxy'lerinden (server.tomcat.remoteip.internal-proxies,
+ *      env: SERVER_TOMCAT_REMOTEIP_INTERNALPROXIES) gelen atlamaları geçer; istemcinin
+ *      soldan eklediği sahte değerler yeni kova açamaz. Bu filtre XFF'i ayrıca
+ *      yorumlamaz (eski 'framework' stratejisinde ForwardedHeaderFilter XFF'in en
+ *      solunu remoteAddr yapıyordu → sahte XFF ile kova atlatılıyordu).
  *
  *   2) Bucket eviction (memory leak fix)
  *      ESKİ: ConcurrentHashMap hiç temizlenmiyordu → uzun çalışan instance şişerdi.
@@ -114,16 +112,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 || "/robots.txt".equals(p);
     }
 
-    /**
-     * Trusted proxy IP'leri — bunlardan gelen X-Forwarded-For kabul edilir.
-     * application.yml: app.security.trusted-proxies=127.0.0.1,::1
-     * Prod (Railway): PaaS proxy IP aralığı eklenebilir.
-     */
-    @Value("${app.security.trusted-proxies:127.0.0.1,::1,0:0:0:0:0:0:0:1}")
-    private String trustedProxiesCsv;
-
-    private Set<String> trustedProxies;
-
     /** Bucket eviction zamanlayıcısı */
     private final ScheduledExecutorService evictor = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread t = new Thread(r, "rate-limit-evictor");
@@ -134,9 +122,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected void initFilterBean() {
-        trustedProxies = new HashSet<>(Arrays.asList(trustedProxiesCsv.split("\\s*,\\s*")));
-        log.info("RateLimitFilter — trusted proxies: {}", trustedProxies);
-
         // Her 5 dakikada bir 10 dk'dan eski bucket'ları sil
         evictor.scheduleAtFixedRate(this::evictIdleBuckets, 5, 5, TimeUnit.MINUTES);
     }
@@ -232,33 +217,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Gerçek client IP'sini çöz.
-     *
-     * F0.3 fix: Sadece TRUSTED proxy'den gelen X-Forwarded-For'a güven.
-     *           Aksi takdirde saldırgan kolayca limit bypass eder.
+     * İstemci IP'si. XFF burada OKUNMAZ: proxy arkasında gerçek adresi Tomcat
+     * RemoteIpValve çözüp remoteAddr'a yazar (bkz. sınıf açıklaması).
      */
-    private String extractIp(HttpServletRequest request) {
+    static String extractIp(HttpServletRequest request) {
         String remote = request.getRemoteAddr();
-
-        // Eğer istek trusted proxy'den geliyorsa X-Forwarded-For'un en sol değerini al
-        if (remote != null && trustedProxies.contains(remote)) {
-            String fwd = request.getHeader("X-Forwarded-For");
-            if (fwd != null && !fwd.isBlank()) {
-                // En sol IP gerçek client. (X-Forwarded-For: client, proxy1, proxy2)
-                String candidate = fwd.split(",")[0].trim();
-                if (isValidIp(candidate)) return candidate;
-            }
-        }
-        return remote != null ? remote : "unknown";
-    }
-
-    private boolean isValidIp(String s) {
-        try {
-            InetAddress.getByName(s);
-            return true;
-        } catch (UnknownHostException e) {
-            return false;
-        }
+        return remote != null && !remote.isBlank() ? remote : "unknown";
     }
 
     /** 10 dk'dan eski bucket'ları sil (memory leak prevention) */

@@ -48,6 +48,13 @@ public class UrgentService {
     /** Acil ilan bildiriminde tek seferde ulaşılacak azami aday (spam/gürültü freni). */
     private static final int MAX_PUSH_TARGETS = 200;
 
+    /**
+     * Aynı ilan için toplu "hemen müsait" bildirimi en fazla bu sıklıkta gider.
+     * Acil kapat-aç döngüsü havuzu tekrar tekrar rahatsız edemez; ilan acil
+     * işaretlenir ama bekleme süresi dolmadan yeni toplu bildirim üretilmez.
+     */
+    static final java.time.Duration NOTIFY_COOLDOWN = java.time.Duration.ofHours(6);
+
     /** Aciliyet varsayılan ömrü — vardiya tarihi yoksa bu kadar sürer. */
     private static final int DEFAULT_URGENT_HOURS = 24;
 
@@ -149,8 +156,22 @@ public class UrgentService {
                 ownerId, "LISTING_URGENT_ON", "JOB_LISTING", listingId,
                 listing.getTitle() + " · bitiş: " + until));
 
-        int notified = pushToAvailablePool(listing);
-        return UrgentResult.builder().urgent(true).urgentUntil(until).notifiedCount(notified).build();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastNotified = listing.getUrgentNotifiedAt();
+        boolean throttled = lastNotified != null && lastNotified.isAfter(now.minus(NOTIFY_COOLDOWN));
+        int notified = 0;
+        if (throttled) {
+            log.info("[URGENT] listing={} toplu bildirim bekleme suresinde (son: {}), atlandi",
+                    listingId, lastNotified);
+        } else {
+            notified = pushToAvailablePool(listing);
+            if (notified > 0) {
+                listing.setUrgentNotifiedAt(now);
+                jobListingRepository.save(listing);
+            }
+        }
+        return UrgentResult.builder().urgent(true).urgentUntil(until)
+                .notifiedCount(notified).notificationThrottled(throttled).build();
     }
 
     /**
@@ -161,8 +182,9 @@ public class UrgentService {
      */
     private int pushToAvailablePool(JobListing listing) {
         try {
+            // Sorgu devre disi/banli hesaplari ve bu isletmeyle iki yonlu engelli adaylari disarida birakir
             List<User> pool = userRepository.findAvailableNowCandidates(
-                    LocalDateTime.now(), listing.getPosition());
+                    LocalDateTime.now(), listing.getPosition(), listing.getBusiness().getId());
             if (pool.isEmpty()) {
                 log.info("[URGENT] listing={} icin musait aday yok", listing.getId());
                 return 0;
@@ -276,5 +298,7 @@ public class UrgentService {
         private boolean urgent;
         private LocalDateTime urgentUntil;
         private int notifiedCount;
+        /** true: ayni ilan icin bekleme suresi (6 saat) dolmadigindan toplu bildirim atlanmadi/gonderilmedi. */
+        private boolean notificationThrottled;
     }
 }

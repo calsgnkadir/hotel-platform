@@ -45,7 +45,7 @@ public class PulseService {
                 .activeListings(jobListingRepository.countByStatus(ListingStatus.ACTIVE))
                 .openShifts(shiftSlotRepository.countOpenSlots(today))
                 .applicationsLastHour(applicationRepository.countByCreatedAtAfter(hourAgo))
-                .onlineUsers(presenceService.getOnlineUserIds().size())
+                .onlineUsers(presenceService.onlineUserCount())
                 .generatedAt(LocalDateTime.now())
                 .build();
     }

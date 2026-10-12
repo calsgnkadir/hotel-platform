@@ -1,0 +1,71 @@
+package com.hotelapp.service;
+
+import com.hotelapp.entity.JobListing;
+import com.hotelapp.entity.User;
+import com.hotelapp.enums.ListingStatus;
+import com.hotelapp.enums.Role;
+import com.hotelapp.repository.ApplicationRepository;
+import com.hotelapp.repository.BusinessRepository;
+import com.hotelapp.repository.JobListingRepository;
+import com.hotelapp.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+/** Admin: ban oturumlari kapatir; ilan askisi isaretlenir ve yalniz admin ACTIVE ile kalkar. */
+class AdminServiceTest {
+
+    private UserRepository users;
+    private JobListingRepository listings;
+    private RefreshTokenService refreshTokens;
+    private AdminService service;
+
+    @BeforeEach
+    void setUp() {
+        users = mock(UserRepository.class);
+        listings = mock(JobListingRepository.class);
+        refreshTokens = mock(RefreshTokenService.class);
+        service = new AdminService(users, mock(BusinessRepository.class), listings,
+                mock(ApplicationRepository.class), refreshTokens);
+    }
+
+    @Test
+    @DisplayName("Ban: kullanicinin tum refresh token'lari iptal edilir")
+    void ban_revokesAllRefreshTokens() {
+        User u = new User();
+        u.setId(5L);
+        u.setRole(Role.CANDIDATE);
+        when(users.findById(5L)).thenReturn(Optional.of(u));
+
+        service.ban(5L, 7);
+
+        assertThat(u.getBannedUntil()).isNotNull();
+        verify(refreshTokens).revokeAllForUser(5L);
+    }
+
+    @Test
+    @DisplayName("Admin PAUSED/CLOSED -> adminSuspended=true; admin ACTIVE -> bayrak kalkar")
+    void listingStatus_setsAndClearsSuspension() {
+        JobListing l = JobListing.builder().id(9L).title("Garson").status(ListingStatus.ACTIVE).build();
+        when(listings.findById(9L)).thenReturn(Optional.of(l));
+
+        var dto = service.setListingStatus(9L, ListingStatus.PAUSED);
+        assertThat(l.isAdminSuspended()).isTrue();
+        assertThat(dto.isAdminSuspended()).isTrue();
+
+        service.setListingStatus(9L, ListingStatus.CLOSED);
+        assertThat(l.isAdminSuspended()).isTrue();
+
+        dto = service.setListingStatus(9L, ListingStatus.ACTIVE);
+        assertThat(l.isAdminSuspended()).isFalse();
+        assertThat(dto.isAdminSuspended()).isFalse();
+        assertThat(l.getStatus()).isEqualTo(ListingStatus.ACTIVE);
+    }
+}

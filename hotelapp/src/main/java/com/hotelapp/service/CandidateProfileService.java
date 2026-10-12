@@ -183,6 +183,8 @@ public class CandidateProfileService {
 
         // Dalga G2 — Politika
         // - Temel bilgiler (ad/avatar/ilce/pozisyon) yukaridaki erisim kontrolunu gecenlere acik
+        // - E-posta: basvuru listesiyle (ApplicationMapper) hizali — basvurulan isletme her
+        //   statude gorur (canSeeEmail). Diger hassas alanlar asagidaki kurala tabi.
         // - Hassas (email/phone/adres tam/dogum) sadece:
         //   a) Aday kendi profili icin (viewer == candidate)
         //   b) Isletme + aday bu isletmenin ilanina basvurmus
@@ -198,6 +200,9 @@ public class CandidateProfileService {
                     .existsByCandidateIdAndJobListingBusinessOwnerIdAndStatus(
                             candidateId, viewerId, ApplicationStatus.ACCEPTED);
         }
+
+        // Basvurulan isletme (appliedToViewer) e-postayi her basvuru statusunde gorur.
+        boolean canSeeEmail = canSeeSensitive || appliedToViewer;
 
         // Dalga H3 — Goruntulenme audit (self-view sayilmaz, gunluk dedupe)
         profileViewService.record(candidateId, viewerId);
@@ -228,7 +233,7 @@ public class CandidateProfileService {
                 .noShowCount(noShows)
                 .memberSince(candidate.getCreatedAt())
                 // Hassas alanlar — sadece yetkili viewer icin doldur, aksi takdirde null
-                .email(canSeeSensitive ? candidate.getEmail() : null)
+                .email(canSeeEmail ? candidate.getEmail() : null)
                 .phone(canSeeSensitive ? candidate.getPhone() : null)
                 .neighborhood(canSeeSensitive ? candidate.getNeighborhood() : null)
                 .birthDate(canSeeSensitive ? candidate.getBirthDate() : null)

@@ -87,6 +87,16 @@ public class RefreshTokenService {
             throw UnauthorizedException.keyed("error.auth.refreshExpired");
         }
 
+        // Yasakli (bannedUntil gelecekte) ya da devre disi (KVKK silme talebi) kullanici
+        // yeni oturum alamaz. Ban/silme aninda token'lar zaten iptal edilir; bu kontrol
+        // o anda kacmis (yaris) ya da eski kayitlar icin ikinci katman. Tum token'lar
+        // iptal edilir; yanit genel "gecersiz" (hesap durumu ifsa edilmez).
+        User owner = token.getUser();
+        if (!isActive(owner)) {
+            repo.revokeAllForUser(owner.getId());
+            throw UnauthorizedException.keyed("error.auth.refreshInvalid");
+        }
+
         // Eski token revoke + yeni token üret (rotation)
         token.setRevoked(true);
         token.setLastUsedAt(LocalDateTime.now());
@@ -126,6 +136,13 @@ public class RefreshTokenService {
     }
 
     // ─── Helpers ───────────────────────────────────────────────
+
+    /** JwtAuthFilter ile ayni kural: enabled + ban suresi dolmus/yok. */
+    static boolean isActive(User u) {
+        if (u == null || !u.isEnabled()) return false;
+        LocalDateTime ban = u.getBannedUntil();
+        return ban == null || ban.isBefore(LocalDateTime.now());
+    }
 
     private String generateRawToken() {
         byte[] bytes = new byte[32];   // 256-bit

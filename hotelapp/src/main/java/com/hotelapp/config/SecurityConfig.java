@@ -143,6 +143,10 @@ public class SecurityConfig {
                                 "/sitemap.xml",              // FAZ 11.W4.3 — SEO crawl
                                 "/robots.txt"                // FAZ 11.W4.3
                         ).permitAll()
+                        // metrics/prometheus/circuitbreakers/flyway vb. yalniz ADMIN
+                        // (health/info ozetleri yukarida public; detayli health
+                        // management.endpoint.health.roles=ADMIN ile yalniz admine).
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
                         .requestMatchers("/api/candidate/**").hasRole("CANDIDATE")
                         .requestMatchers("/api/business/**").hasRole("BUSINESS_OWNER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

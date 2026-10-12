@@ -64,6 +64,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, resolve(ex));
     }
 
+    // 429 — uygulama katmanı hız sınırı (ör. e-posta başına giriş denemesi)
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<Map<String, Object>> handleTooManyRequests(TooManyRequestsException ex) {
+        return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+    }
+
     // 403 — Spring Security rol kontrolü
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {

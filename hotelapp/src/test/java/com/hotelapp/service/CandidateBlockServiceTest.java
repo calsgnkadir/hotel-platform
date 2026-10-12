@@ -51,6 +51,7 @@ class CandidateBlockServiceTest {
     @Mock private StandbyService standbyService;
     @Mock private OutboxService outboxService;
     @Mock private FileStorageService fileStorageService;
+    @Mock private com.hotelapp.repository.ConversationRepository conversationRepository;
 
     private CandidateBlockService service;
     private Business business;
@@ -59,7 +60,8 @@ class CandidateBlockServiceTest {
     @BeforeEach
     void setUp() {
         service = new CandidateBlockService(blockRepository, businessRepository, userRepository,
-                applicationRepository, standbyService, outboxService, fileStorageService);
+                applicationRepository, standbyService, outboxService, fileStorageService,
+                conversationRepository);
         User owner = User.builder().id(OWNER_ID).role(Role.BUSINESS_OWNER).email("isletme@test.local").build();
         business = Business.builder().id(BUSINESS_ID).name("Test Otel").owner(owner).build();
         candidate = User.builder().id(CANDIDATE_ID).role(Role.CANDIDATE)
@@ -106,6 +108,17 @@ class CandidateBlockServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
         verify(blockRepository, never()).save(any());
         verify(applicationRepository, never()).save(any());
+    }
+
+    @Test
+    void blocksCandidateWithConversationButNoApplication() {
+        applied(false);
+        when(conversationRepository.existsByCandidateIdAndBusinessOwnerId(CANDIDATE_ID, OWNER_ID))
+                .thenReturn(true);
+
+        service.block(OWNER_ID, CANDIDATE_ID);
+
+        verify(blockRepository).save(any(CandidateBlock.class));
     }
 
     @Test

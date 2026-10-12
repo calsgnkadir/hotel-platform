@@ -144,6 +144,21 @@ public class BillingService {
         return used < freeListings;                              // ilk N ilan ücretsiz
     }
 
+    /**
+     * Kotada zaten sayılan (CLOSED olmayan, ör. PAUSED) ilanı yeniden yayına alma kapısı.
+     * Bu ilanın kendisi sayımda olduğu için koşul "bu ilan hariç kullanım < kota",
+     * yani used <= free. Abonelik bitince kota üstünde kalan duraklatılmış ilanlar
+     * ödeme ya da başka ilan kapatılmadan tekrar yayına alınamaz.
+     */
+    @Transactional(readOnly = true)
+    public boolean canActivateCountedListing(Long businessId) {
+        if (!enforced()) return true;
+        Subscription s = subscriptionRepository.findByBusinessId(businessId).orElse(null);
+        if (s != null && isPaid(s)) return true;
+        long used = jobListingRepository.countByBusiness_IdAndStatusNot(businessId, ListingStatus.CLOSED);
+        return used <= freeListings;
+    }
+
     /** Ücretsiz kota büyüklüğü — hata mesajı vb. için. */
     public int getFreeListings() { return freeListings; }
 

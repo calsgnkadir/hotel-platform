@@ -217,9 +217,13 @@ public class JobListingService {
                 return;
             }
 
-            // Iki opt-in kanali: (1) district+position tercihi (klasik), (2) musaitlik blogu tanimlamis
-            var prefMatched = userRepository.findCandidatesMatchingPreferences(district, listing.getPosition());
-            var availOptIn  = userRepository.findCandidatesWithAvailabilityBlocks();
+            // Iki opt-in kanali: (1) district+position tercihi (klasik), (2) musaitlik blogu tanimlamis.
+            // Sorgular devre disi/banli hesaplari ve bu isletmeyle iki yonlu engelli adaylari disarida birakir.
+            Long businessId = listing.getBusiness().getId();
+            LocalDateTime now = LocalDateTime.now();
+            var prefMatched = userRepository.findCandidatesMatchingPreferences(
+                    district, listing.getPosition(), businessId, now);
+            var availOptIn  = userRepository.findCandidatesWithAvailabilityBlocks(businessId, now);
             // Set ile birlestir (duplicate adayi onle)
             java.util.Map<Long, com.hotelapp.entity.User> matching = new java.util.LinkedHashMap<>();
             for (var u : prefMatched) matching.put(u.getId(), u);
@@ -239,8 +243,7 @@ public class JobListingService {
                     skippedNoFit++;
                     continue;
                 }
-                log.info("[MATCH]   -> Bildirim atılıyor: candidateId={}, email={}",
-                        aday.getId(), aday.getEmail());
+                log.debug("[MATCH]   -> Bildirim atılıyor: candidateId={}", aday.getId());
                 notificationService.notify(aday.getId(),
                         com.hotelapp.enums.NotificationType.MATCHING_LISTING,
                         "İlgini çekebilir",
@@ -349,11 +352,27 @@ public class JobListingService {
     @Transactional
     public ListingResponse updateStatus(Long listingId, Long ownerId, ListingStatus status) {
         JobListing listing = getListingForOwner(listingId, ownerId);
+        // Admin moderasyonu: admin'in askiya aldigi ilani isletme yayina alamaz.
+        // Kapatma/duraklatma serbest; bayragi yalniz admin (ACTIVE yaparak) kaldirir.
+        if (status == ListingStatus.ACTIVE && listing.isAdminSuspended()) {
+            throw new BusinessRuleException(
+                    "Bu ilan yönetici tarafından askıya alındı; yeniden yayına alınamaz. "
+                    + "Ayrıntı için destek ekibiyle iletişime geç.");
+        }
         boolean closing = status == ListingStatus.CLOSED && listing.getStatus() != ListingStatus.CLOSED;
         // Kapatilan ilan kotayi bosaltir; yeniden acmak yeni ilan acmakla ayni kotaya tabidir.
         // CLOSED ilan sayima dahil olmadigi icin "used < free" siniri dogrudan gecerli.
         boolean reopening = listing.getStatus() == ListingStatus.CLOSED && status != ListingStatus.CLOSED;
+        // PAUSED -> ACTIVE: ilan zaten sayimda; abonelik bittiyse kota ustundeki
+        // duraklatilmis ilan yayina alinamaz (bu ilan haric kullanim < kota).
+        boolean resuming = listing.getStatus() == ListingStatus.PAUSED && status == ListingStatus.ACTIVE;
         if (reopening) requireListingQuota(listing.getBusiness().getId());
+        else if (resuming && !billingService.canActivateCountedListing(listing.getBusiness().getId())) {
+            throw new BusinessRuleException(String.format(
+                    "Ücretsiz %d ilan hakkını aştın. Bu ilanı yeniden yayına almak için " +
+                    "Abonelik sekmesinden aboneliğini başlat ya da başka bir ilanını kapat.",
+                    billingService.getFreeListings()));
+        }
         listing.setStatus(status);
         jobListingRepository.save(listing);
         // Kapanınca tüm günlerin ekip listesi işletmeye e-postayla (commit sonrası, async)
@@ -601,6 +620,7 @@ public class JobListingService {
                 .shiftEnd(l.getShiftEnd())
                 .shift(l.getShift() != null ? l.getShift().name() : null)
                 .status(l.getStatus().name())
+                .adminSuspended(l.isAdminSuspended())
                 .businessId(l.getBusiness().getId())
                 .businessName(l.getBusiness().getName())
                 .businessType(l.getBusiness().getType().name())
@@ -755,6 +775,8 @@ public class JobListingService {
         private LocalTime shiftEnd;
         private String shift;
         private String status;
+        /** Admin askiya aldi: isletme ilani ACTIVE yapamaz (UI "yayina al" dugmesini gizleyebilir). */
+        private boolean adminSuspended;
         private Long businessId;
         private String businessName;
         private Boolean businessVerified; // FAZ G.3

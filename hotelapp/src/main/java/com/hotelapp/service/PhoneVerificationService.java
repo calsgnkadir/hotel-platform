@@ -63,7 +63,7 @@ public class PhoneVerificationService {
 
         smsService.send(u.getPhone(),
                 "Kadrom dogrulama kodun: " + code + " (" + CODE_TTL_MIN + " dk gecerli).");
-        log.info("[PHONE-OTP] kod gonderildi userId={} (SMS DEV MODE ise koda log'dan bak)", userId);
+        log.info("[PHONE-OTP] kod gonderildi userId={}", userId);
         return status(userId);
     }
 

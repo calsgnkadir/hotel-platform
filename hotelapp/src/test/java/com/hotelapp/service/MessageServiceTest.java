@@ -10,6 +10,7 @@ import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.BusinessBlockRepository;
+import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.CandidateBlockRepository;
 import com.hotelapp.repository.ConversationRepository;
 import com.hotelapp.repository.MessageReactionRepository;
@@ -46,6 +47,8 @@ class MessageServiceTest {
     private BusinessBlockRepository blocks;
     private CandidateBlockRepository candidateBlocks;
     private ApplicationRepository applications;
+    private BusinessRepository businesses;
+    private MessageReactionRepository reactions;
     private MessageService service;
     private User candidate;
     private User owner;
@@ -57,6 +60,7 @@ class MessageServiceTest {
         u.setRole(role);
         u.setFullName("Kullanici " + id);
         u.setEmail("u" + id + "@test.local");
+        u.setEnabled(true);
         return u;
     }
 
@@ -70,9 +74,11 @@ class MessageServiceTest {
         blocks = mock(BusinessBlockRepository.class);
         applications = mock(ApplicationRepository.class);
         candidateBlocks = mock(CandidateBlockRepository.class);
-        service = new MessageService(conversations, messages, mock(MessageReactionRepository.class), users,
+        businesses = mock(BusinessRepository.class);
+        reactions = mock(MessageReactionRepository.class);
+        service = new MessageService(conversations, messages, reactions, users,
                 applications, notifications, storage, mock(SimpMessagingTemplate.class), blocks,
-                candidateBlocks);
+                candidateBlocks, businesses);
 
         candidate = user(CANDIDATE, Role.CANDIDATE);
         owner = user(OWNER, Role.BUSINESS_OWNER);
@@ -172,13 +178,43 @@ class MessageServiceTest {
     }
 
     @Test
-    void blockCheckRunsBeforeRelationCheck() {
+    void blockStillAppliesToRelatedPairForNewConversation() {
         blocked(true);
         noExistingConversation();
         applied(true);
         assertThatThrownBy(() -> service.startConversation(OWNER, startWith(CANDIDATE)))
                 .isInstanceOf(UnauthorizedException.class);
-        verify(applications, never()).existsByCandidateIdAndJobListingBusinessOwnerId(anyLong(), anyLong());
+        verify(conversations, never()).save(any());
+    }
+
+    @Test
+    void unrelatedTargetGetsUniformErrorEvenIfBlocked() {
+        // Iliskisiz hedefte engel durumu ifsa edilmez: ayni tek tip 422
+        blocked(true);
+        noExistingConversation();
+        applied(false);
+        assertThatThrownBy(() -> service.startConversation(OWNER, startWith(CANDIDATE)))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageStartingWith("Bu kişiyle sohbet başlatılamaz");
+        verify(conversations, never()).save(any());
+    }
+
+    @Test
+    void unknownWrongRoleAndDisabledTargetsGetSameErrorAsUnrelated() {
+        when(users.findById(777L)).thenReturn(Optional.empty());
+        User otherCandidate = user(778L, Role.CANDIDATE);
+        when(users.findById(778L)).thenReturn(Optional.of(otherCandidate));
+        User disabledOwner = user(779L, Role.BUSINESS_OWNER);
+        disabledOwner.setEnabled(false);
+        when(users.findById(779L)).thenReturn(Optional.of(disabledOwner));
+
+        String expected = "Bu kişiyle sohbet başlatılamaz";
+        assertThatThrownBy(() -> service.startConversation(CANDIDATE, startWith(777L)))
+                .isInstanceOf(BusinessRuleException.class).hasMessageStartingWith(expected);
+        assertThatThrownBy(() -> service.startConversation(CANDIDATE, startWith(778L)))
+                .isInstanceOf(BusinessRuleException.class).hasMessageStartingWith(expected);
+        assertThatThrownBy(() -> service.startConversation(CANDIDATE, startWith(779L)))
+                .isInstanceOf(BusinessRuleException.class).hasMessageStartingWith(expected);
         verify(conversations, never()).save(any());
     }
 
@@ -191,12 +227,69 @@ class MessageServiceTest {
     }
 
     @Test
-    void candidateCanStillOpenNewConversationWithoutApplication() {
+    void candidateCannotOpenNewConversationWithoutApplication() {
         noExistingConversation();
         applied(false);
+        assertThatThrownBy(() -> service.startConversation(CANDIDATE, startWith(OWNER)))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageStartingWith("Bu kişiyle sohbet başlatılamaz");
+        verify(conversations, never()).save(any());
+    }
+
+    @Test
+    void candidateCanOpenNewConversationWithBusinessItAppliedTo() {
+        noExistingConversation();
+        applied(true);
         service.startConversation(CANDIDATE, startWith(OWNER));
-        verify(conversations).save(any());
-        verify(applications, never()).existsByCandidateIdAndJobListingBusinessOwnerId(anyLong(), anyLong());
+        verify(conversations).save(argThat(c ->
+                c.getCandidate() == candidate && c.getBusinessOwner() == owner));
+    }
+
+    @Test
+    void conversationDtoCarriesOtherPartyBusinessIdOnlyForBusinessSide() {
+        com.hotelapp.entity.Business biz = new com.hotelapp.entity.Business();
+        biz.setId(500L);
+        when(businesses.findByOwnerId(OWNER)).thenReturn(Optional.of(biz));
+
+        assertThat(service.startConversation(CANDIDATE, startWith(OWNER)).getOtherPartyBusinessId())
+                .isEqualTo(500L);
+        assertThat(service.startConversation(OWNER, startWith(CANDIDATE)).getOtherPartyBusinessId())
+                .isNull();
+    }
+
+    // ---- Reaksiyon: engel kurali ----
+
+    private void messageInConv() {
+        Message m = Message.builder().id(99L).conversation(conv).sender(candidate).content("x").build();
+        when(messages.findById(99L)).thenReturn(Optional.of(m));
+    }
+
+    @Test
+    void blockedBusinessCannotReact() {
+        blocked(true);
+        messageInConv();
+        assertThatThrownBy(() -> service.toggleReaction(CONV, 99L, OWNER, "heart"))
+                .isInstanceOf(UnauthorizedException.class);
+        verify(reactions, never()).save(any());
+    }
+
+    @Test
+    void candidateBlockedByBusinessCannotReact() {
+        businessBlocked(true);
+        messageInConv();
+        assertThatThrownBy(() -> service.toggleReaction(CONV, 99L, CANDIDATE, "heart"))
+                .isInstanceOf(UnauthorizedException.class);
+        assertThatThrownBy(() -> service.toggleReaction(CONV, 99L, OWNER, "heart"))
+                .isInstanceOf(BusinessRuleException.class);
+        verify(reactions, never()).save(any());
+    }
+
+    @Test
+    void unblockedPartiesCanReact() {
+        messageInConv();
+        when(reactions.findByMessageIdAndUserId(99L, OWNER)).thenReturn(Optional.empty());
+        service.toggleReaction(CONV, 99L, OWNER, "heart");
+        verify(reactions).save(any());
     }
 
     // ---- Isletme adayi engelledi ----
@@ -210,8 +303,9 @@ class MessageServiceTest {
         businessBlocked(true);
         assertThatThrownBy(() -> service.startConversation(CANDIDATE, startWith(OWNER)))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Bu işletmeyle iletişim kapalı.");
+                .hasMessage("Bu kişiyle şu anda mesajlaşılamıyor.");
         noExistingConversation();
+        applied(true);
         assertThatThrownBy(() -> service.startConversation(CANDIDATE, startWith(OWNER)))
                 .isInstanceOf(UnauthorizedException.class);
         verify(conversations, never()).save(any());
@@ -222,7 +316,7 @@ class MessageServiceTest {
         businessBlocked(true);
         assertThatThrownBy(() -> service.sendMessage(CONV, CANDIDATE, text("merhaba")))
                 .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Bu işletmeyle iletişim kapalı.");
+                .hasMessage("Bu kişiyle şu anda mesajlaşılamıyor.");
         assertThatThrownBy(() -> service.sendAttachment(CONV, CANDIDATE,
                 new MockMultipartFile("file", "a.pdf", "application/pdf", new byte[]{1}), null))
                 .isInstanceOf(UnauthorizedException.class);

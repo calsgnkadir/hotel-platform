@@ -41,6 +41,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;  // F0.2
     private final PushSubscriptionService pushSubscriptionService;
+    private final com.hotelapp.security.LoginAttemptLimiter loginAttemptLimiter;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -90,15 +91,15 @@ public class AuthService {
             String html = emailTemplates.welcome(user.getFullName(), user.getRole().name(), dashboardUrl);
             emailService.queue(user.getEmail(), "Kadrom'a Hoş Geldin", html);
         } catch (Exception ex) {
-            log.warn("[WELCOME-EMAIL] Gonderilemedi (yok sayildi): user={} sebep={}",
-                    user.getEmail(), ex.getMessage());
+            log.warn("[WELCOME-EMAIL] Gonderilemedi (yok sayildi): userId={} sebep={}",
+                    user.getId(), ex.getMessage());
         }
 
         // FAZ 4.4 — Email dogrulama token'i + mail (sessiz fail)
         try {
             emailVerificationService.sendVerification(user);
         } catch (Exception ex) {
-            log.warn("[EMAIL-VERIFY] Initial send failed user={} sebep={}", user.getEmail(), ex.getMessage());
+            log.warn("[EMAIL-VERIFY] Initial send failed userId={} sebep={}", user.getId(), ex.getMessage());
         }
 
         return AuthResponse.builder()
@@ -113,9 +114,15 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        // E-posta basina deneme siniri (IP'den bagimsiz; hesap var/yok fark etmez)
+        if (!loginAttemptLimiter.tryAcquire(request.getEmail())) {
+            throw new com.hotelapp.exception.TooManyRequestsException(
+                    "Bu hesap için çok fazla giriş denemesi yapıldı. Lütfen 15 dakika sonra tekrar deneyin.");
+        }
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
+        loginAttemptLimiter.reset(request.getEmail());
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", request.getEmail()));

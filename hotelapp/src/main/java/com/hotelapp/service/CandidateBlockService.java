@@ -12,6 +12,7 @@ import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.CandidateBlockRepository;
+import com.hotelapp.repository.ConversationRepository;
 import com.hotelapp.repository.UserRepository;
 import lombok.Builder;
 import lombok.Data;
@@ -28,8 +29,9 @@ import java.util.Set;
  * Isletme adayi engeller (BusinessRelationService'teki aday->isletme engelinin ters yonu).
  *
  * Kurallar:
- * - Yalnizca bu isletmeye (herhangi bir ilanina, herhangi statude) basvurmus aday
- *   engellenebilir; hedef yok / aday degil / iliski yok -> ayni 404 (varlik ifsa edilmez).
+ * - Yalnizca bu isletmeyle iliskisi olan aday engellenebilir: isletmenin herhangi
+ *   bir ilanina (herhangi statude) basvurmus YA DA isletmeyle sohbeti olan aday.
+ *   Hedef yok / aday degil / iliski yok -> ayni 404 (varlik ifsa edilmez).
  * - Engel/kaldirma idempotenttir.
  * - Engel aninda adayin bu isletmedeki AKTIF basvurulari (PENDING, REVIEWING, HELD,
  *   STANDBY) REJECTED olur. ACCEPTED'a dokunulmaz (kabul edilmis vardiya bozulmaz).
@@ -56,6 +58,7 @@ public class CandidateBlockService {
     private final StandbyService standbyService;
     private final OutboxService outboxService;
     private final FileStorageService fileStorageService;
+    private final ConversationRepository conversationRepository;
 
     private Business getBusinessForOwner(Long ownerId) {
         return businessRepository.findByOwnerId(ownerId)
@@ -72,7 +75,8 @@ public class CandidateBlockService {
             User candidate = userRepository.findById(candidateId)
                     .filter(u -> u.getRole() == Role.CANDIDATE)
                     .filter(u -> applicationRepository
-                            .existsByCandidateIdAndJobListingBusinessOwnerId(candidateId, ownerId))
+                            .existsByCandidateIdAndJobListingBusinessOwnerId(candidateId, ownerId)
+                            || conversationRepository.existsByCandidateIdAndBusinessOwnerId(candidateId, ownerId))
                     .orElseThrow(() -> new ResourceNotFoundException("Aday", candidateId));
             blockRepository.save(CandidateBlock.builder()
                     .business(business)

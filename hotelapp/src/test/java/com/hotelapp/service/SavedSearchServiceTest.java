@@ -55,6 +55,8 @@ class SavedSearchServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private JobListingQueryService listingQueryService;
     @Mock private NotificationService notificationService;
+    @Mock private com.hotelapp.repository.BusinessBlockRepository businessBlockRepository;
+    @Mock private com.hotelapp.repository.CandidateBlockRepository candidateBlockRepository;
 
     @InjectMocks
     private SavedSearchService service;
@@ -68,6 +70,7 @@ class SavedSearchServiceTest {
     void setUp() {
         owner = new User();
         owner.setId(USER_ID);
+        owner.setEnabled(true);
     }
 
     /* ── Yardimci factory ── */
@@ -409,6 +412,60 @@ class SavedSearchServiceTest {
                     any()
             );
             assertThat(shiftsCap.getValue()).isNull();
+        }
+
+        private JobListing listingOf(long id, String title, long businessId) {
+            JobListing l = listing(id, title);
+            com.hotelapp.entity.Business b = new com.hotelapp.entity.Business();
+            b.setId(businessId);
+            l.setBusiness(b);
+            return l;
+        }
+
+        @Test
+        @DisplayName("Iki yonlu engel: adayin engelledigi ve adayi engelleyen isletmelerin ilanlari bildirime girmez")
+        void blockedBusinessesAreExcluded() {
+            SavedSearch s = savedSearch("Test", true, LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1));
+            when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
+            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                    .thenReturn(List.of(
+                            listingOf(11L, "Aday engelledi", 1L),
+                            listingOf(22L, "Isletme engelledi", 2L),
+                            listingOf(33L, "Serbest", 3L)));
+            when(businessBlockRepository.findBusinessIdsByUserId(USER_ID)).thenReturn(Set.of(1L));
+            when(candidateBlockRepository.findBusinessIdsByCandidateId(USER_ID)).thenReturn(Set.of(2L));
+
+            int n = service.notifyNewMatches(SAVED_ID);
+
+            assertThat(n).isEqualTo(1);
+            verify(notificationService).notify(eq(USER_ID), eq(NotificationType.MATCHING_LISTING),
+                    any(), eq("Serbest"), eq("/listings/33"));
+        }
+
+        @Test
+        @DisplayName("Tum eslesmeler engelliyse bildirim yok, lastNotifiedAt dokunulmaz")
+        void allBlocked_noNotification() {
+            LocalDateTime last = LocalDateTime.now().minusHours(1);
+            SavedSearch s = savedSearch("Test", true, last, LocalDateTime.now().minusDays(1));
+            when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
+            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                    .thenReturn(List.of(listingOf(11L, "Engelli", 1L)));
+            when(businessBlockRepository.findBusinessIdsByUserId(USER_ID)).thenReturn(Set.of(1L));
+
+            assertThat(service.notifyNewMatches(SAVED_ID)).isZero();
+            verifyNoInteractions(notificationService);
+            assertThat(s.getLastNotifiedAt()).isEqualTo(last);
+        }
+
+        @Test
+        @DisplayName("Devre disi (silme talebi) kullaniciya kayitli arama bildirimi gitmez")
+        void disabledUser_noNotification() {
+            owner.setEnabled(false);
+            SavedSearch s = savedSearch("Test", true, null, LocalDateTime.now());
+            when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
+
+            assertThat(service.notifyNewMatches(SAVED_ID)).isZero();
+            verifyNoInteractions(notificationService, listingQueryService);
         }
     }
 }

@@ -9,6 +9,8 @@ import com.hotelapp.enums.Position;
 import com.hotelapp.enums.Shift;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
+import com.hotelapp.repository.BusinessBlockRepository;
+import com.hotelapp.repository.CandidateBlockRepository;
 import com.hotelapp.repository.SavedSearchRepository;
 import com.hotelapp.repository.UserRepository;
 import lombok.Builder;
@@ -46,6 +48,8 @@ public class SavedSearchService {
     private final UserRepository userRepository;
     private final JobListingQueryService listingQueryService;
     private final NotificationService notificationService;
+    private final BusinessBlockRepository businessBlockRepository;    // aday -> isletme engeli
+    private final CandidateBlockRepository candidateBlockRepository;  // isletme -> aday engeli
 
     @Transactional
     public SavedSearch create(Long userId, CreatePayload p) {
@@ -110,6 +114,9 @@ public class SavedSearchService {
     public int notifyNewMatches(Long savedSearchId) {
         SavedSearch s = repo.findById(savedSearchId).orElse(null);
         if (s == null || !s.isNotificationsEnabled()) return 0;
+        // Devre disi (silme talebi) hesaba bildirim gitmez
+        User owner = s.getUser();
+        if (owner == null || !owner.isEnabled()) return 0;
 
         LocalDateTime since = s.getLastNotifiedAt() != null
                 ? s.getLastNotifiedAt()
@@ -125,6 +132,18 @@ public class SavedSearchService {
                 s.getDistrict(), s.getMinSalary(), s.getKeyword(),
                 s.getDateFrom(), s.getDateTo()
         );
+
+        // Engel kurali iki yonlu: adayin engelledigi ya da adayi engelleyen isletmenin
+        // ilanlari bildirime girmez.
+        Set<Long> excludedBusinessIds = new HashSet<>(
+                businessBlockRepository.findBusinessIdsByUserId(owner.getId()));
+        excludedBusinessIds.addAll(candidateBlockRepository.findBusinessIdsByCandidateId(owner.getId()));
+        if (!excludedBusinessIds.isEmpty()) {
+            matches = matches.stream()
+                    .filter(l -> l.getBusiness() == null
+                            || !excludedBusinessIds.contains(l.getBusiness().getId()))
+                    .toList();
+        }
 
         if (matches.isEmpty()) {
             // Yine de lastNotifiedAt'ı ilerletmiyoruz; backfill alanı eşleşme çıkana kadar açık kalsın

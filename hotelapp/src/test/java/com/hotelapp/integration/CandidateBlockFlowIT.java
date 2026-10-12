@@ -88,7 +88,7 @@ class CandidateBlockFlowIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(text("merhaba"))))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").value("Bu işletmeyle iletişim kapalı."));
+                .andExpect(jsonPath("$.message").value("Bu kişiyle şu anda mesajlaşılamıyor."));
 
         // 7) Isletme engelledigi adaya yazamaz -> 422
         mvc.perform(post("/api/messages/conversations/" + convId + "/messages")

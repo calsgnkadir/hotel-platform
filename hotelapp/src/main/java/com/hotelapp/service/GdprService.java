@@ -46,6 +46,7 @@ public class GdprService {
     private final ApplicationRepository applicationRepository;
     private final NotificationRepository notificationRepository;
     private final OutboxService outboxService;
+    private final RefreshTokenService refreshTokenService;
 
     /**
      * Kullanicinin tum verisini map olarak doner. Controller bunu JSON
@@ -135,6 +136,8 @@ public class GdprService {
         u.setDeletionRequestedAt(now);
         u.setScheduledAnonymizeAt(now.plusDays(DELETION_GRACE_DAYS));
         userRepository.save(u);
+        // Silme talebiyle tum oturumlar kapanir (refresh token'lar iptal).
+        refreshTokenService.revokeAllForUser(userId);
 
         log.info("[GDPR] userId={} hesap silme istegi: anonymize date={}", userId, u.getScheduledAnonymizeAt());
 

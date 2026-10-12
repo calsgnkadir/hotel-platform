@@ -17,6 +17,7 @@ import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.exception.UnauthorizedException;
 import com.hotelapp.repository.ApplicationRepository;
 import com.hotelapp.repository.BusinessBlockRepository;
+import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.CandidateBlockRepository;
 import com.hotelapp.repository.ConversationRepository;
 import com.hotelapp.repository.MessageReactionRepository;
@@ -57,6 +58,7 @@ public class MessageService {
     private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#12 — WS broadcast
     private final BusinessBlockRepository businessBlockRepository;  // aday engeli
     private final CandidateBlockRepository candidateBlockRepository;  // isletme engeli
+    private final BusinessRepository businessRepository;  // sohbet DTO: otherPartyBusinessId
 
     /** FAZ 11.W3 — Reaction whitelist (UI'da SVG render, emoji yok) */
     private static final Set<String> ALLOWED_REACTIONS =
@@ -74,15 +76,25 @@ public class MessageService {
     // ----------------------------------------------------------------
     // Sohbet aç (yoksa oluştur, varsa mevcudu döndür)
     // ----------------------------------------------------------------
+    /**
+     * Iliski kurali: yeni sohbet yalniz basvuru iliskisi olan aday ve isletme sahibi
+     * arasinda acilir (aday bu isletmenin bir ilanina herhangi bir statude basvurmus).
+     * Mevcut sohbet iliski kalmasa da dondurulur. Hedef yok / devre disi / rol uyumsuz /
+     * iliski yok durumlarinin hepsi AYNI hatayi verir (kullanici, rol ve ad
+     * numaralandirmasi engellenir). Engel kontrolu iliski kontrolunden sonra gelir;
+     * boylece iliskisiz hedefin engel durumu da ifsa edilmez.
+     */
     @Transactional
     public ConversationDto startConversation(Long initiatorId, StartConversationRequest req) {
         User initiator = userRepository.findById(initiatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", initiatorId));
-        User other = userRepository.findById(req.getOtherPartyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", req.getOtherPartyId()));
-
-        if (initiator.getId().equals(other.getId())) {
+        Long otherId = req.getOtherPartyId();
+        if (initiator.getId().equals(otherId)) {
             throw BusinessRuleException.keyed("error.message.selfConversation");
+        }
+        User other = otherId == null ? null : userRepository.findById(otherId).orElse(null);
+        if (other == null || !other.isEnabled()) {
+            throw cannotStartConversation();
         }
 
         // (candidate, businessOwner) çiftini belirle — rollere göre
@@ -95,54 +107,55 @@ public class MessageService {
             candidate = other;
             businessOwner = initiator;
         } else {
-            throw new BusinessRuleException(
-                    "Sohbet yalnızca bir aday ile bir işletme sahibi arasında olabilir");
+            throw cannotStartConversation();
         }
 
-        // Adayın engellediği işletme sohbet başlatamaz (aday tarafı serbest).
+        Conversation existing = conversationRepository
+                .findByCandidateIdAndBusinessOwnerId(candidate.getId(), businessOwner.getId())
+                .orElse(null);
+        if (existing == null
+                && !applicationRepository.existsByCandidateIdAndJobListingBusinessOwnerId(
+                        candidate.getId(), businessOwner.getId())) {
+            throw cannotStartConversation();
+        }
+
+        // Adayın engellediği işletme sohbet başlatamaz.
         if (initiator == businessOwner) {
             requireNotBlockedByCandidate(candidate.getId(), businessOwner.getId());
         }
         // İşletme ↔ engellediği aday: iki yönde de yazışma kapalı.
         requireNotBlockedByBusiness(candidate.getId(), businessOwner.getId(), initiator == candidate);
 
-        // Var mı?
-        Conversation conv = conversationRepository
-                .findByCandidateIdAndBusinessOwnerId(candidate.getId(), businessOwner.getId())
-                .orElseGet(() -> {
-                    // Isletme yalnizca kendisine (herhangi bir ilanina, herhangi
-                    // statude) basvurmus adayla YENI sohbet acabilir. Mevcut sohbet
-                    // (yukarida bulunan) iliski kalmasa da donmeye devam eder.
-                    // Sira: engel kontrolu (yukarida) -> iliski kontrolu.
-                    if (initiator == businessOwner
-                            && !applicationRepository.existsByCandidateIdAndJobListingBusinessOwnerId(
-                                    candidate.getId(), businessOwner.getId())) {
-                        throw new BusinessRuleException(
-                                "Bu adayla henüz bir başvuru ilişkiniz yok; sohbet başlatılamaz.");
-                    }
-                    Application application = null;
-                    if (req.getApplicationId() != null) {
-                        application = applicationRepository.findById(req.getApplicationId())
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                        "Başvuru", req.getApplicationId()));
-                        // Güvenlik: başvuru gerçekten bu iki tarafa mı ait?
-                        Long appCandidateId = application.getCandidate().getId();
-                        Long appOwnerId = application.getJobListing().getBusiness().getOwner().getId();
-                        if (!appCandidateId.equals(candidate.getId())
-                                || !appOwnerId.equals(businessOwner.getId())) {
-                            throw new BusinessRuleException(
-                                    "Başvuru bu iki tarafa ait değil");
-                        }
-                    }
-                    Conversation c = Conversation.builder()
-                            .candidate(candidate)
-                            .businessOwner(businessOwner)
-                            .application(application)
-                            .build();
-                    return conversationRepository.save(c);
-                });
+        Conversation conv = existing;
+        if (conv == null) {
+            Application application = null;
+            if (req.getApplicationId() != null) {
+                application = applicationRepository.findById(req.getApplicationId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Başvuru", req.getApplicationId()));
+                // Güvenlik: başvuru gerçekten bu iki tarafa mı ait?
+                Long appCandidateId = application.getCandidate().getId();
+                Long appOwnerId = application.getJobListing().getBusiness().getOwner().getId();
+                if (!appCandidateId.equals(candidate.getId())
+                        || !appOwnerId.equals(businessOwner.getId())) {
+                    throw new BusinessRuleException(
+                            "Başvuru bu iki tarafa ait değil");
+                }
+            }
+            conv = conversationRepository.save(Conversation.builder()
+                    .candidate(candidate)
+                    .businessOwner(businessOwner)
+                    .application(application)
+                    .build());
+        }
 
         return toConversationDto(conv, initiatorId);
+    }
+
+    /** Tek tip "iliski yok" hatasi — hedefin varligi/rolu/engel durumu ayirt edilemez. */
+    private static BusinessRuleException cannotStartConversation() {
+        return new BusinessRuleException(
+                "Bu kişiyle sohbet başlatılamaz. Sohbet yalnızca başvuru ilişkisi olan aday ile işletme arasında açılabilir.");
     }
 
     // ----------------------------------------------------------------
@@ -417,6 +430,8 @@ public class MessageService {
             throw BusinessRuleException.keyed("error.message.reactionInvalid");
         }
         Conversation conv = getConversationForUser(conversationId, userId);
+        // Engel kurali reaksiyonda da gecerli (mesaj gonderimiyle ayni hata dili)
+        requireSenderNotBlocked(conv, userId);
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesaj", messageId));
         if (!msg.getConversation().getId().equals(conversationId)) {
@@ -501,15 +516,22 @@ public class MessageService {
     private void requireNotBlockedByBusiness(Long candidateId, Long businessOwnerId, boolean senderIsCandidate) {
         if (candidateBlockRepository.existsByBusinessOwnerIdAndCandidateId(businessOwnerId, candidateId)) {
             if (senderIsCandidate) {
-                throw new UnauthorizedException("Bu işletmeyle iletişim kapalı.");
+                throw new UnauthorizedException(BLOCKED_PEER_MESSAGE);
             }
             throw new BusinessRuleException("Önce engeli kaldır.");
         }
     }
 
+    /**
+     * Karşı taraf engellediğinde gösterilen tek tip mesaj. Engel karşı tarafa
+     * bildirilmez (ürün kararı): aday da işletme de "engellendim" bilgisini
+     * mesajdan çıkaramaz; iki yönde de aynı metin ve aynı kod (403).
+     */
+    static final String BLOCKED_PEER_MESSAGE = "Bu kişiyle şu anda mesajlaşılamıyor.";
+
     private void requireNotBlockedByCandidate(Long candidateId, Long businessOwnerId) {
         if (businessBlockRepository.existsByUserIdAndBusinessOwnerId(candidateId, businessOwnerId)) {
-            throw new UnauthorizedException("Bu aday seninle iletişimi kapattı.");
+            throw new UnauthorizedException(BLOCKED_PEER_MESSAGE);
         }
     }
 
@@ -543,6 +565,10 @@ public class MessageService {
                         ? fileStorageService.publicUrl(otherParty.getAvatarPath())
                         : null)
                 .otherPartyRole(otherParty.getRole().name())
+                .otherPartyBusinessId(otherParty.getRole() == Role.BUSINESS_OWNER
+                        ? businessRepository.findByOwnerId(otherParty.getId())
+                                .map(com.hotelapp.entity.Business::getId).orElse(null)
+                        : null)
                 .applicationId(c.getApplication() != null ? c.getApplication().getId() : null)
                 .listingTitle(c.getApplication() != null
                         ? c.getApplication().getJobListing().getTitle()

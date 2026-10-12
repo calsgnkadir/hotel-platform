@@ -196,4 +196,63 @@ class RefreshTokenServiceTest {
         verify(repo).save(cap.capture());
         return cap.getValue().getTokenHash();
     }
+
+    @Test
+    @DisplayName("validateAndRotate: banli kullanici refresh alamaz -> 401 + tum token'lar iptal, yeni token uretilmez")
+    void validateAndRotate_bannedUser_rejected() {
+        testUser.setEnabled(true);
+        testUser.setBannedUntil(LocalDateTime.now().plusDays(3));
+        RefreshToken stored = RefreshToken.builder()
+                .user(testUser).tokenHash("h").expiresAt(LocalDateTime.now().plusDays(5)).revoked(false).build();
+        when(repo.findByTokenHash(any())).thenReturn(Optional.of(stored));
+
+        assertThatThrownBy(() -> service.validateAndRotate("raw"))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessageContaining("error.auth.refreshInvalid");
+        verify(repo).revokeAllForUser(42L);
+        verify(repo, never()).save(any(RefreshToken.class));
+    }
+
+    @Test
+    @DisplayName("validateAndRotate: silme talebi (enabled=false) olan kullanici refresh alamaz")
+    void validateAndRotate_disabledUser_rejected() {
+        testUser.setEnabled(false);
+        RefreshToken stored = RefreshToken.builder()
+                .user(testUser).tokenHash("h").expiresAt(LocalDateTime.now().plusDays(5)).revoked(false).build();
+        when(repo.findByTokenHash(any())).thenReturn(Optional.of(stored));
+
+        assertThatThrownBy(() -> service.validateAndRotate("raw"))
+                .isInstanceOf(UnauthorizedException.class);
+        verify(repo).revokeAllForUser(42L);
+        verify(repo, never()).save(any(RefreshToken.class));
+    }
+
+    @Test
+    @DisplayName("validateAndRotate: ban suresi dolmus kullanici normal rotate eder")
+    void validateAndRotate_expiredBan_allowed() {
+        testUser.setEnabled(true);
+        testUser.setBannedUntil(LocalDateTime.now().minusMinutes(1));
+        RefreshToken stored = RefreshToken.builder()
+                .user(testUser).tokenHash("h").expiresAt(LocalDateTime.now().plusDays(5)).revoked(false).build();
+        when(repo.findByTokenHash(any())).thenReturn(Optional.of(stored));
+        when(repo.save(any(RefreshToken.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        assertThat(service.validateAndRotate("raw").newRawRefreshToken()).isNotBlank();
+        verify(repo, never()).revokeAllForUser(anyLong());
+    }
+
+    @Test
+    @DisplayName("Ban süresi dolunca hesap yeniden aktif sayılır (refresh/WS/giriş açılır)")
+    void expiredBan_userIsActiveAgain() {
+        User u = User.builder().id(7L).email("x@test.com").enabled(true)
+                .bannedUntil(LocalDateTime.now().minusMinutes(1)).build();
+        assertThat(RefreshTokenService.isActive(u)).isTrue();
+
+        u.setBannedUntil(LocalDateTime.now().plusDays(1));
+        assertThat(RefreshTokenService.isActive(u)).isFalse();
+
+        u.setBannedUntil(null);
+        u.setEnabled(false);
+        assertThat(RefreshTokenService.isActive(u)).isFalse();
+    }
 }

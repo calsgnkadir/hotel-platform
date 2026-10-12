@@ -55,7 +55,8 @@ public class PasswordResetService {
     public void requestReset(String email) {
         Optional<User> userOpt = userRepository.findByEmail(email.toLowerCase().trim());
         if (userOpt.isEmpty()) {
-            log.info("[PWD-RESET] Bilinmeyen email talebi: {} (sessiz başarı döndü)", email);
+            // KVKK: girilen e-posta loglanmaz (kayitli olmayan kisinin verisi de olabilir)
+            log.info("[PWD-RESET] Bilinmeyen e-posta talebi (sessiz başarı döndü)");
             return;  // sessiz başarı — saldırgan kullanıcı listesi çıkaramaz
         }
 

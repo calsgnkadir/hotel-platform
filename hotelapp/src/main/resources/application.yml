@@ -110,7 +110,8 @@ cloudinary:
 app:
   # F0.2 — Cookie & proxy güvenliği
   security:
-    trusted-proxies: ${TRUSTED_PROXIES:127.0.0.1,::1,0:0:0:0:0:0:0:1}
+    # İstemci IP'si: RateLimitFilter yalnız remoteAddr kullanır. Proxy arkasında
+    # (prod) XFF'i Tomcat RemoteIpValve çözer — bkz. application-prod.yml server bölümü.
     cookie-secure: ${COOKIE_SECURE:false}      # Prod'da true (HTTPS only)
     cookie-samesite: ${COOKIE_SAMESITE:Lax}    # Cross-origin için 'None' (Vercel+Railway)
 
@@ -213,7 +214,8 @@ management:
         include: health,info,circuitbreakers,flyway,prometheus   # FAZ D.4 — /actuator/prometheus scrape
   endpoint:
     health:
-      show-details: when-authorized   # detay sadece auth'a
+      show-details: when-authorized   # detay yalnız ADMIN rolüne
+      roles: ADMIN
   health:
     circuitbreakers:
       enabled: true

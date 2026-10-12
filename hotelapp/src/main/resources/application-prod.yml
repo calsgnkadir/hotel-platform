@@ -11,8 +11,17 @@
 # SERVER
 # ════════════════════════════════════════════════════════════════
 server:
-  # #92: Railway proxy arkasındaki HTTPS scheme'i tanı — OAuth redirect URI https:// olsun
-  forward-headers-strategy: framework
+  # Proxy başlıkları (X-Forwarded-For/-Proto) TEK yerde çözülür: Tomcat RemoteIpValve.
+  # 'framework' (ForwardedHeaderFilter) KULLANILMAZ: XFF'in en solunu (istemcinin
+  # yazabildiği değeri) remoteAddr yapıyor, IP başına istek sınırı atlatılıyordu.
+  # 'native': valve XFF zincirini SAĞDAN okur ve yalnız iç ağ proxy'lerinden gelen
+  # atlamaları geçer; https şeması da (OAuth redirect URI) yalnız bu proxy'lerden kabul edilir.
+  # Varsayılan internal-proxies: 10/8, 192.168/16, 169.254/16, 127/8, 100.64/10,
+  # 172.16/12, ::1, fc00::/7 (Render/Railway yük dengeleyicisi iç ağdan bağlanır).
+  # Farklı bir proxy zinciri gerekirse env ile: SERVER_TOMCAT_REMOTEIP_INTERNALPROXIES
+  # (regex) ve/veya SERVER_TOMCAT_REMOTEIP_TRUSTEDPROXIES (regex, ör. CDN aralıkları).
+  # Doğrulama: LOGGING_LEVEL_ORG_APACHE_CATALINA_VALVES_REMOTEIPVALVE=DEBUG geçici aç.
+  forward-headers-strategy: native
 
   # FAZ 4.2 — Graceful shutdown:
   # SIGTERM gelince yeni request kabul etmez, devam edenler 25 sn'de bitmeli.
@@ -95,7 +104,7 @@ cloudinary:
 # FAZ 4.2 — ACTUATOR (production-grade health + metrics)
 # ════════════════════════════════════════════════════════════════
 # - /actuator/health PUBLIC (Railway/Render healthcheck için)
-# - Diğer endpoint'ler authenticated (admin)
+# - Diğer endpoint'ler (metrics, prometheus, circuitbreakers) yalnız ADMIN (SecurityConfig)
 # - show-details: when-authorized → DB up/down bilgisi sadece auth'a
 management:
   endpoints:
@@ -104,8 +113,10 @@ management:
         include: health,info,metrics,prometheus,circuitbreakers
   endpoint:
     health:
+      # Özet {"status":"UP"} herkese açık (Render health check); bileşen/detay yalnız ADMIN.
       show-details:    when-authorized
       show-components: when-authorized
+      roles:           ADMIN
       probes:
         # Spring Boot 3.x — Kubernetes-style liveness + readiness ayrılır
         # /actuator/health/liveness  → app yaşıyor mu (JVM çökme)

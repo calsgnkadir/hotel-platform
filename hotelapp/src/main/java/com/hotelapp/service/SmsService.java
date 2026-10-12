@@ -53,8 +53,9 @@ public class SmsService {
     public void send(String toPhone, String message) {
         String phone = normalize(toPhone);
         if (!enabled || phone == null || netgsmUsercode.isBlank() || netgsmPassword.isBlank()) {
-            log.warn("[SMS DEV MODE] gonderilmedi — to={} msg={}", toPhone,
-                    message != null ? message.substring(0, Math.min(120, message.length())) : "");
+            // KVKK: numara maskeli, mesaj icerigi (OTP kodu olabilir) ASLA loglanmaz.
+            log.warn("[SMS DEV MODE] gonderilmedi — to={} ({} karakter)", mask(toPhone),
+                    message != null ? message.length() : 0);
             return;
         }
         try {
@@ -67,13 +68,22 @@ public class SmsService {
                         .queryParam("msgheader", netgsmHeader)
                         .toUriString();
                 String resp = restTemplate.getForObject(url, String.class);
-                log.info("[SMS] netgsm gonderildi to={} resp={}", phone, resp);
+                log.info("[SMS] netgsm gonderildi to={} resp={}", mask(phone), resp);
             } else {
-                log.warn("[SMS] bilinmeyen saglayici '{}' — gonderilmedi to={}", provider, phone);
+                log.warn("[SMS] bilinmeyen saglayici '{}' — gonderilmedi to={}", provider, mask(phone));
             }
         } catch (Exception ex) {
-            log.warn("[SMS] gonderim basarisiz to={}: {}", phone, ex.getMessage());
+            // ex.getMessage() istek URL'sini (kimlik bilgisi + mesaj) icerebilir: yalniz tip loglanir
+            log.warn("[SMS] gonderim basarisiz to={}: {}", mask(phone), ex.getClass().getSimpleName());
         }
+    }
+
+    /** Log icin maskeli numara: yalniz son 2 hane (ornek: "*********67"). */
+    static String mask(String raw) {
+        if (raw == null) return "-";
+        String digits = raw.replaceAll("[^0-9]", "");
+        if (digits.length() <= 2) return "**";
+        return "*".repeat(digits.length() - 2) + digits.substring(digits.length() - 2);
     }
 
     /** Kaba normalize: rakam dışını temizle; en az 10 hane değilse gönderme. */

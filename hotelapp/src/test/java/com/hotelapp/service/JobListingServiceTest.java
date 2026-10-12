@@ -357,5 +357,63 @@ class JobListingServiceTest {
             service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
             verify(billingService, never()).canCreateListingByBusiness(any());
         }
+
+        @Test
+        @DisplayName("Admin askiya aldigi ilani isletme ACTIVE yapamaz (422), ilan degismez")
+        void adminSuspended_listing_cannot_be_activated_by_owner() {
+            JobListing l = closedListing();
+            l.setStatus(ListingStatus.PAUSED);
+            l.setAdminSuspended(true);
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            assertThatThrownBy(() -> service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("yönetici tarafından askıya alındı");
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.PAUSED);
+            assertThat(l.isAdminSuspended()).isTrue();
+            verify(jobListingRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Admin askisindaki ilani isletme kapatabilir; bayrak kalir")
+        void adminSuspended_listing_can_be_closed_by_owner() {
+            JobListing l = closedListing();
+            l.setStatus(ListingStatus.PAUSED);
+            l.setAdminSuspended(true);
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.CLOSED);
+            assertThat(l.isAdminSuspended()).isTrue();
+        }
+
+        @Test
+        @DisplayName("PAUSED -> ACTIVE kota asiliyken reddedilir")
+        void resuming_paused_listing_over_quota_is_refused() {
+            JobListing l = closedListing();
+            l.setStatus(ListingStatus.PAUSED);
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+            when(billingService.canActivateCountedListing(100L)).thenReturn(false);
+            when(billingService.getFreeListings()).thenReturn(5);
+
+            assertThatThrownBy(() -> service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("Ücretsiz 5 ilan hakkını aştın");
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.PAUSED);
+            verify(jobListingRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("PAUSED -> ACTIVE kota icindeyken serbest (yeni-ilan kapisi kullanilmaz)")
+        void resuming_paused_listing_within_quota_is_allowed() {
+            JobListing l = closedListing();
+            l.setStatus(ListingStatus.PAUSED);
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+            when(billingService.canActivateCountedListing(100L)).thenReturn(true);
+
+            service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE);
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.ACTIVE);
+            verify(billingService, never()).canCreateListingByBusiness(any());
+        }
     }
 }

@@ -3,7 +3,6 @@ package com.hotelapp.service;
 import com.hotelapp.entity.Business;
 import com.hotelapp.entity.BusinessFavorite;
 import com.hotelapp.entity.User;
-import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.enums.Role;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
@@ -94,15 +93,14 @@ public class FavoriteService {
     }
 
     /**
-     * E-posta hassas alandir: CandidateProfileService ile ayni politika — yalnizca
-     * bu isletmeyle ACCEPTED basvurusu varsa doldurulur, aksi halde null. Iliskisi
-     * kalmamis (basvurusu silinmis) eski favoriler listede e-postasiz gorunur.
+     * E-posta: basvuru listesiyle (ApplicationMapper) ayni politika — aday bu isletmeye
+     * (herhangi bir ilanina, herhangi statude) basvurmussa doldurulur, aksi halde null.
+     * Iliskisi kalmamis (basvurusu silinmis) eski favoriler listede e-postasiz gorunur.
      */
     private FavoriteDto toDto(BusinessFavorite f, Long ownerId) {
         User c = f.getCandidate();
         boolean canSeeSensitive = applicationRepository
-                .existsByCandidateIdAndJobListingBusinessOwnerIdAndStatus(
-                        c.getId(), ownerId, ApplicationStatus.ACCEPTED);
+                .existsByCandidateIdAndJobListingBusinessOwnerId(c.getId(), ownerId);
         return FavoriteDto.builder()
                 .id(f.getId())
                 .candidateId(c.getId())
@@ -120,7 +118,7 @@ public class FavoriteService {
         private Long id;
         private Long candidateId;
         private String candidateName;
-        private String candidateEmail;  // yalnizca ACCEPTED iliskide dolu, aksi null
+        private String candidateEmail;  // aday bu isletmeye basvurmussa dolu, aksi null
         private String candidateAvatarUrl;
         private String candidateDistrict;
         private String note;

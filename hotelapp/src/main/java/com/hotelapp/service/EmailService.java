@@ -80,9 +80,9 @@ public class EmailService {
         // Dev fallback: API key yoksa log'a yaz
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("[EMAIL DEV MODE] API key yok — email gönderilmedi:");
-            log.warn("  To:      {}", toEmail);
+            log.warn("  To:      {}", maskEmail(toEmail));
             log.warn("  Subject: {}", subject);
-            log.warn("  HTML:    {}", htmlBody.substring(0, Math.min(500, htmlBody.length())));
+            log.warn("  HTML:    {} karakter (icerik loglanmaz — sifirlama/dogrulama baglantisi icerebilir)", htmlBody.length());
             return;
         }
 
@@ -101,9 +101,9 @@ public class EmailService {
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
             log.info("[EMAIL] Gönderildi: to={} subject={} status={}",
-                    toEmail, subject, response.getStatusCode());
+                    maskEmail(toEmail), subject, response.getStatusCode());
         } catch (RestClientException e) {
-            log.error("[EMAIL] Gönderim hatası: to={} hata={}", toEmail, e.getMessage());
+            log.error("[EMAIL] Gönderim hatası: to={} hata={}", maskEmail(toEmail), e.getMessage());
             throw new IllegalStateException("Email gönderilemedi: " + e.getMessage(), e);
         }
     }
@@ -117,7 +117,7 @@ public class EmailService {
                                    String fileName, byte[] content) {
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("[EMAIL DEV MODE] API key yok — ekli email gönderilmedi: to={} subject={} ek={} ({} bayt)",
-                    toEmail, subject, fileName, content.length);
+                    maskEmail(toEmail), subject, fileName, content.length);
             return;
         }
         HttpHeaders headers = new HttpHeaders();
@@ -134,9 +134,9 @@ public class EmailService {
                 "content",  java.util.Base64.getEncoder().encodeToString(content))));
         try {
             restTemplate.postForEntity(apiUrl, new HttpEntity<>(body, headers), String.class);
-            log.info("[EMAIL] Ekli gönderildi: to={} subject={} ek={}", toEmail, subject, fileName);
+            log.info("[EMAIL] Ekli gönderildi: to={} subject={} ek={}", maskEmail(toEmail), subject, fileName);
         } catch (RestClientException e) {
-            log.error("[EMAIL] Ekli gönderim hatası: to={} hata={}", toEmail, e.getMessage());
+            log.error("[EMAIL] Ekli gönderim hatası: to={} hata={}", maskEmail(toEmail), e.getMessage());
             throw new IllegalStateException("Email gönderilemedi: " + e.getMessage(), e);
         }
     }
@@ -145,7 +145,7 @@ public class EmailService {
     private void sendWithAttachmentFallback(String toEmail, String subject, String htmlBody,
                                            String fileName, byte[] content, Throwable t) {
         log.warn("[EMAIL][CB-FALLBACK] ekli email atlandı - to={} subject={} sebep={}",
-                toEmail, subject, t.getMessage());
+                maskEmail(toEmail), subject, t.getMessage());
     }
 
     /**
@@ -155,5 +155,13 @@ public class EmailService {
      */
     public String buildPasswordResetHtml(String userName, String resetLink) {
         return new EmailTemplates().passwordReset(userName, resetLink);
+    }
+
+    /** KVKK: loglarda tam e-posta yok — "a***@alan.com". */
+    static String maskEmail(String email) {
+        if (email == null) return null;
+        int at = email.indexOf('@');
+        if (at <= 0) return "***";
+        return email.charAt(0) + "***" + email.substring(at);
     }
 }

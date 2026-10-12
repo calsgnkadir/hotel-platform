@@ -27,7 +27,6 @@ class RateLimitFilterTest {
     void setUp() throws Exception {
         filter = new RateLimitFilter();
         // @Value field'lari manuel set + init
-        ReflectionTestUtils.setField(filter, "trustedProxiesCsv", "127.0.0.1,::1");
         ReflectionTestUtils.setField(filter, "rateLimitEnabled", true);
         filter.init(new MockFilterConfig());
         chain = mock(FilterChain.class);
@@ -133,5 +132,34 @@ class RateLimitFilterTest {
                     .as("15. PUT hala 200 olmali (genel bucket 60/dak)")
                     .isEqualTo(HttpStatus.OK.value());
         }
+    }
+
+    @Test
+    @DisplayName("Sahte X-Forwarded-For yeni kova acmaz: ayni soket adresi, her istekte farkli XFF -> 11. istek 429")
+    void spoofedForwardedFor_doesNotOpenNewBucket() throws Exception {
+        String path = "/api/auth/login";
+        for (int i = 0; i < 10; i++) {
+            MockHttpServletRequest req = new MockHttpServletRequest("POST", path);
+            req.setRemoteAddr("203.0.113.7");
+            req.addHeader("X-Forwarded-For", "198.51.100." + i);
+            MockHttpServletResponse res = new MockHttpServletResponse();
+            filter.doFilter(req, res, chain);
+            assertThat(res.getStatus()).isEqualTo(HttpStatus.OK.value());
+        }
+        MockHttpServletRequest req = new MockHttpServletRequest("POST", path);
+        req.setRemoteAddr("203.0.113.7");
+        req.addHeader("X-Forwarded-For", "198.51.100.200");
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        filter.doFilter(req, res, chain);
+        assertThat(res.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS.value());
+    }
+
+    @Test
+    @DisplayName("Loopback'ten gelen XFF de yorumlanmaz (dev proxy arkasinda bile tek kova)")
+    void forwardedFor_fromLoopback_isIgnored() {
+        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/listings");
+        req.setRemoteAddr("127.0.0.1");
+        req.addHeader("X-Forwarded-For", "8.8.8.8");
+        assertThat(RateLimitFilter.extractIp(req)).isEqualTo("127.0.0.1");
     }
 }

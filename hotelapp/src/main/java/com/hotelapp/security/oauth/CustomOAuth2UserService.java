@@ -48,7 +48,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Boolean verified = (Boolean) attrs.getOrDefault("email_verified", false);
 
         if (!Boolean.TRUE.equals(verified)) {
-            log.warn("[OAUTH] Google email doğrulanmamış: {}", email);
+            log.warn("[OAUTH] Google e-postası doğrulanmamış hesapla giriş reddedildi");
             throw new OAuth2AuthenticationException("Email Google'da doğrulanmamış.");
         }
 
@@ -57,6 +57,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if (existingOpt.isPresent()) {
             // Mevcut kullanıcı — provider güncelle (LOCAL'den geçtiyse)
             user = existingOpt.get();
+            // Yasakli / devre disi (silme talebi) hesap Google ile de oturum acamaz
+            // (form girisinde DaoAuthenticationProvider ayni kontrolu yapar).
+            if (!user.isEnabled() || (user.getBannedUntil() != null
+                    && user.getBannedUntil().isAfter(java.time.LocalDateTime.now()))) {
+                log.warn("[OAUTH] Kapalı/yasaklı hesapla Google girişi reddedildi: userId={}", user.getId());
+                throw new OAuth2AuthenticationException("Hesap kullanıma kapalı.");
+            }
             if (user.getProvider() != AuthProvider.GOOGLE) {
                 user.setProvider(AuthProvider.GOOGLE);
                 user.setProviderId(googleId);
@@ -80,7 +87,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .enabled(true)
                     .build();
             userRepository.save(user);
-            log.info("[OAUTH] Yeni Google kullanıcısı oluşturuldu: userId={} email={}", user.getId(), email);
+            log.info("[OAUTH] Yeni Google kullanıcısı oluşturuldu: userId={}", user.getId());
         }
 
         // SuccessHandler bu attribute'lardan userId'yi okuyacak

@@ -35,6 +35,7 @@ class GdprServiceTest {
     @Mock private ApplicationRepository applicationRepository;
     @Mock private NotificationRepository notificationRepository;
     @Mock private OutboxService outboxService;
+    @Mock private RefreshTokenService refreshTokenService;
     @InjectMocks private GdprService service;
 
     private User user(long id) {
@@ -65,6 +66,8 @@ class GdprServiceTest {
                 .isBefore(LocalDateTime.now().plusDays(GdprService.DELETION_GRACE_DAYS + 1));
         // Outbox audit log
         verify(outboxService).appendAuditLog(any());
+        // Silme talebiyle tum oturumlar kapanir
+        verify(refreshTokenService).revokeAllForUser(42L);
     }
 
     @Test
@@ -78,6 +81,7 @@ class GdprServiceTest {
 
         verify(userRepository, never()).save(any());
         verify(outboxService, never()).appendAuditLog(any());
+        verify(refreshTokenService, never()).revokeAllForUser(any());
     }
 
     @Test

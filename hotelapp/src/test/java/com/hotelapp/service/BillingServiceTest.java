@@ -80,6 +80,18 @@ class BillingServiceTest {
     }
 
     @Test
+    void resumingCountedListingAllowsUpToQuotaInclusive() {
+        IyzicoClient iyzico = client("live-placeholder", "secret-placeholder", "https://api.iyzipay.com");
+        when(subs.findByBusinessId(7L)).thenReturn(Optional.empty());
+        // 5 acik ilan (duraklatilan dahil): bu ilan haric 4 < 5 → yayina alinabilir
+        when(listings.countByBusiness_IdAndStatusNot(7L, ListingStatus.CLOSED)).thenReturn(5L);
+        assertThat(service(iyzico).canActivateCountedListing(7L)).isTrue();
+        // Abonelik bitmis, 6 acik ilan: kota ustu → reddedilir
+        when(listings.countByBusiness_IdAndStatusNot(7L, ListingStatus.CLOSED)).thenReturn(6L);
+        assertThat(service(iyzico).canActivateCountedListing(7L)).isFalse();
+    }
+
+    @Test
     void statusReportsPaymentAvailabilityAndSandbox() {
         Business b = new Business();
         b.setId(7L);

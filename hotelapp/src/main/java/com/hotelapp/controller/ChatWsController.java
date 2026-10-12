@@ -2,7 +2,8 @@ package com.hotelapp.controller;
 
 import com.hotelapp.entity.Conversation;
 import com.hotelapp.entity.User;
-import com.hotelapp.exception.UnauthorizedException;
+import com.hotelapp.repository.BusinessBlockRepository;
+import com.hotelapp.repository.CandidateBlockRepository;
 import com.hotelapp.repository.ConversationRepository;
 import com.hotelapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,14 +16,19 @@ import org.springframework.stereotype.Controller;
 import java.security.Principal;
 
 /**
- * FAZ 1/#60 — "Yazıyor..." göstergesi (typing indicator) + presence.
+ * FAZ 1/#60 — "Yazıyor..." göstergesi (typing indicator).
  *
  * Akış:
  *   Client (yazmaya başlar) → /app/chat.typing/{conversationId}
- *   Server: doğrula → /user/{otherPartyId}/queue/typing'e push
- *   Other client (sub'lı): "X yazıyor..." UI'da göster
+ *   Server: doğrula → /topic/typing.{conversationId}'ye yayın
+ *   Abonelik yalnız sohbet üyelerine açık (StompAuthorizationInterceptor).
  *
- * Persistent state YOK — sadece transient broadcast.
+ * Yayınlanmaz: gönderen sohbet üyesi değilse, hesabı kapalıysa ya da taraflar
+ * arasında herhangi bir yönde engel varsa (engel karşı tarafa ifşa edilmez —
+ * sinyal sessizce düşer).
+ *
+ * Persistent state YOK — sadece transient broadcast. Her tuşta gelebildiği için
+ * log DEBUG seviyesinde ve kişisel veri (e-posta) içermez.
  */
 @Controller
 @RequiredArgsConstructor
@@ -32,6 +38,8 @@ public class ChatWsController {
     private final ConversationRepository conversationRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final CandidateBlockRepository candidateBlockRepository;
+    private final BusinessBlockRepository businessBlockRepository;
 
     /**
      * Yazıyor sinyali.
@@ -39,29 +47,34 @@ public class ChatWsController {
      */
     @MessageMapping("/chat.typing/{conversationId}")
     public void onTyping(@DestinationVariable Long conversationId, Principal principal) {
-        log.info("[TYPING] received: conv={} principal={}", conversationId,
-                 principal == null ? "NULL" : principal.getName());
         if (principal == null) {
-            log.warn("[TYPING] principal NULL — STOMP CONNECT auth basarisiz olmus");
+            log.debug("[TYPING] principal yok, atlandi conv={}", conversationId);
             return;
         }
 
         User sender = userRepository.findByEmail(principal.getName()).orElse(null);
-        if (sender == null) {
-            log.warn("[TYPING] sender bulunamadi: {}", principal.getName());
+        if (sender == null || !sender.isEnabled()) {
+            log.debug("[TYPING] gonderen yok/kapali, atlandi conv={}", conversationId);
             return;
         }
 
         Conversation conv = conversationRepository.findById(conversationId).orElse(null);
         if (conv == null) {
-            log.warn("[TYPING] conversation bulunamadi: {}", conversationId);
+            log.debug("[TYPING] sohbet yok conv={}", conversationId);
             return;
         }
 
         Long candidateId = conv.getCandidate().getId();
         Long ownerId     = conv.getBusinessOwner().getId();
         if (!sender.getId().equals(candidateId) && !sender.getId().equals(ownerId)) {
-            log.warn("[TYPING] unauthorized: user={} conv={}", sender.getId(), conversationId);
+            log.debug("[TYPING] yetkisiz user={} conv={}", sender.getId(), conversationId);
+            return;
+        }
+
+        // Engel kurali (iki yon): mesaj gonderimi kapaliysa yaziyor sinyali de gitmez
+        if (candidateBlockRepository.existsByBusinessOwnerIdAndCandidateId(ownerId, candidateId)
+                || businessBlockRepository.existsByUserIdAndBusinessOwnerId(candidateId, ownerId)) {
+            log.debug("[TYPING] engel nedeniyle yayinlanmadi conv={}", conversationId);
             return;
         }
 
@@ -70,10 +83,8 @@ public class ChatWsController {
                 sender.getId(),
                 sender.getFullName()
         );
-        // BASIT COZUM: User-destination yerine TOPIC broadcast.
-        // /topic/typing.{conversationId} → her iki taraf da sub olur.
+        // /topic/typing.{conversationId} → yalniz sohbet uyeleri abone olabilir.
         // Frontend kendi senderId == myUserId ise gormezden gelir (sonsuz loop yok).
-        log.info("[TYPING] broadcast: from={} conv={}", sender.getId(), conversationId);
         messagingTemplate.convertAndSend(
                 "/topic/typing." + conversationId,
                 payload

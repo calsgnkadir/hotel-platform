@@ -19,6 +19,24 @@ public interface CandidateBlockRepository extends JpaRepository<CandidateBlock, 
 
     void deleteByBusinessIdAndCandidateId(Long businessId, Long candidateId);
 
+    /** Bu adayi engellemis isletmelerin id seti (toplu bildirim filtresi). */
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT b.business.id FROM CandidateBlock b WHERE b.candidate.id = :candidateId")
+    java.util.Set<Long> findBusinessIdsByCandidateId(
+            @org.springframework.data.repository.query.Param("candidateId") Long candidateId);
+
+    /** Sahibi ownerId olan isletmenin engelledigi aday id'leri (presence filtresi). */
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT b.candidate.id FROM CandidateBlock b WHERE b.business.owner.id = :ownerId")
+    java.util.Set<Long> findCandidateIdsByBusinessOwnerId(
+            @org.springframework.data.repository.query.Param("ownerId") Long ownerId);
+
+    /** Bu adayi engelleyen isletmelerin sahip id'leri (presence filtresi). */
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT b.business.owner.id FROM CandidateBlock b WHERE b.candidate.id = :candidateId")
+    java.util.Set<Long> findBusinessOwnerIdsByCandidateId(
+            @org.springframework.data.repository.query.Param("candidateId") Long candidateId);
+
     /** Isletmenin engelledigi adaylar, en yenisi ustte (aday tek sorguda gelir). */
     @EntityGraph(attributePaths = "candidate")
     List<CandidateBlock> findByBusinessIdOrderByCreatedAtDesc(Long businessId);

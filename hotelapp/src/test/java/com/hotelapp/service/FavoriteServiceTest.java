@@ -27,7 +27,8 @@ import static org.mockito.Mockito.*;
  * Favori (talent pool) yetki ve gizlilik kurallari:
  * - Isletme yalnizca kendisine basvurmus adayi ekleyebilir; aksi 404, kayit yok.
  * - Aday olmayan hedef de 404.
- * - E-posta yalnizca ACCEPTED iliskide DTO'da; iliskisi kalmamis favori e-postasiz listelenir.
+ * - E-posta basvuru iliskisinde (her statude) DTO'da — basvuru listesiyle hizali (kullanici
+ *   karari); iliskisi kalmamis favori e-postasiz listelenir.
  */
 class FavoriteServiceTest {
 
@@ -81,14 +82,15 @@ class FavoriteServiceTest {
     }
 
     @Test
-    void applicantCanBeFavorited_emailHiddenWithoutAcceptedApplication() {
+    void applicantCanBeFavorited_emailVisibleForAnyApplicationStatus() {
         applied(true);
         accepted(false);
         FavoriteDto dto = service.addFavorite(OWNER, CANDIDATE, "iyi aday");
         verify(favorites).save(any());
         assertThat(dto.getCandidateId()).isEqualTo(CANDIDATE);
         assertThat(dto.getNote()).isEqualTo("iyi aday");
-        assertThat(dto.getCandidateEmail()).isNull();
+        // Basvuru listesiyle hizali: kabul beklemeden e-posta gorunur
+        assertThat(dto.getCandidateEmail()).isEqualTo("u1@test.local");
     }
 
     @Test
