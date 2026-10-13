@@ -37,7 +37,7 @@ public class RosterEmailScheduler {
     @Value("${app.base-url:http://localhost:5173}")
     private String baseUrl;
 
-    @Scheduled(cron = "0 0 20 * * *", zone = "Europe/Istanbul")
+    @Scheduled(cron = "${app.scheduling.roster-email-cron:0 0 20 * * *}", zone = "Europe/Istanbul")
     public void sendTodaysRosters() {
         sendRostersFor(LocalDate.now(TR));
     }

@@ -195,7 +195,9 @@ public class ApplicationController {
     @Operation(
             summary = "Kabul edilmiş başvuruyu NO-SHOW olarak işaretle — sadece BUSINESS_OWNER",
             description = "Vardiya başlangıcından 30 dk sonra ve giriş kaydı yoksa işaretlenebilir. "
-                    + "slotId verilirse yalnız o vardiya boşalır. Adayın strike hakkı başvuru başına bir kez 1 düşer. "
+                    + "Her çağrı tek vardiya işaretler: slotId verilirse o vardiya, verilmezse devam eden ya da en son başlamış vardiya; "
+                    + "işaretlenen vardiyanın koltuğu boşalır. Her yeni vardiya işareti adayın strike hakkını 1 düşürür; "
+                    + "aynı vardiya ikinci kez işaretlenemez. "
                     + "Hak sıfıra inerse aday 30 gün otomatik banlanır ve hakları 3'e resetlenir."
     )
     @PutMapping("/api/business/applications/{applicationId}/no-show")

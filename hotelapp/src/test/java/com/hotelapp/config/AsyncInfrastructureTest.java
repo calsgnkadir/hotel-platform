@@ -17,6 +17,9 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.config.CronTask;
+import org.springframework.scheduling.config.FixedDelayTask;
+import org.springframework.scheduling.config.ScheduledTask;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.AopTestUtils;
@@ -25,6 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
+import java.time.Duration;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
@@ -169,8 +173,21 @@ class AsyncInfrastructureTest {
         assertThat(resolved).isSameAs(taskScheduler);
         assertThat(scheduledProcessor.getScheduledTasks()).isNotEmpty();
 
-        // Calisan @Scheduled isler (outbox relay her 5 sn) bu havuzun thread'lerinde
+        // Kayitli (gecikmeli de olsa) @Scheduled isler bu havuzun thread'lerini baslatir
         assertThat(Thread.getAllStackTraces().keySet()).anyMatch(t -> t.getName().startsWith("kadrom-sched-"));
+    }
+
+    @Test
+    @DisplayName("Test profili: zamanlanmis is kendiliginden tetiklenmez (cron kapali, fixed-delay ~1 yil gecikmeli)")
+    void scheduledJobsDoNotAutoFireInTestProfile() {
+        var tasks = scheduledProcessor.getScheduledTasks().stream().map(ScheduledTask::getTask).toList();
+        assertThat(tasks).noneMatch(t -> t instanceof CronTask);
+        assertThat(tasks).filteredOn(t -> t instanceof FixedDelayTask)
+                // LoginAttemptLimiter.evictIdle yalniz bellek ici temizlik; zamana bagli is kurali yok
+                .filteredOn(t -> !t.getRunnable().toString().contains("LoginAttemptLimiter"))
+                .isNotEmpty()
+                .allSatisfy(t -> assertThat(((FixedDelayTask) t).getInitialDelayDuration())
+                        .isGreaterThan(Duration.ofDays(30)));
     }
 
     @Test

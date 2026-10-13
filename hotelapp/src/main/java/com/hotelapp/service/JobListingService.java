@@ -421,12 +421,6 @@ public class JobListingService {
     }
 
     /**
-     * İlanı CLOSED yapar; açık başvuruları (PENDING/REVIEWING/HELD/STANDBY) EXPIRED'a
-     * çeker, ekip listesi olayını yayınlar ve etkilenen adaylara (aday başına) tek
-     * bildirim gönderir. Koltuk sayaçları değişmez: yalnız ACCEPTED koltuk tutar.
-     * Çağıran, ilanın zaten kapalı olmadığını garanti eder.
-     */
-    /**
      * Admin moderasyonu ile kapanış: manuel kapanışla aynı yan etkiler (açık başvurular
      * EXPIRED, ekip listesi olayı, aday bildirimi). Zaten kapalıysa bir şey yapmaz.
      */
@@ -436,6 +430,12 @@ public class JobListingService {
         closeListing(listing, false);
     }
 
+    /**
+     * İlanı CLOSED yapar; açık başvuruları (PENDING/REVIEWING/HELD/STANDBY) EXPIRED'a
+     * çeker, ekip listesi olayını yayınlar ve etkilenen adaylara (aday başına) tek
+     * bildirim gönderir. Koltuk sayaçları değişmez: yalnız ACCEPTED koltuk tutar.
+     * Çağıran, ilanın zaten kapalı olmadığını garanti eder.
+     */
     private void closeListing(JobListing listing, boolean expired) {
         listing.setStatus(ListingStatus.CLOSED);
         jobListingRepository.save(listing);

@@ -445,7 +445,7 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] **Kayıtlı Aramalar** — kullanıcı filtre setini kaydeder, yeni eşleşmede bildirim (scheduled matcher, 30 dk)
 - [x] **Akıllı sıralama** — aday tercihlerine göre weighted ranking (position +50, district +30, jobType +20, recency +10)
 - [x] **Sade açık arayüz** — grafit/gri marka (`#1f2937`) + muted semantik durum renkleri (yeşil/amber/kiremit/mavi, sadece durum sinyali), tek font (Inter), birleşik rounded kart sistemi, hairline ayraçlar
-- [x] **Test coverage** — backend 544 birim + 35 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 306 vitest (47 dosya), Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
+- [x] **Test coverage** — backend 553 birim + 35 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 306 vitest (47 dosya), Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
 - [x] Landing "Vardiya Nabzı" canlı widget (WebSocket broadcast)
 - [x] **Engelleme** — aday işletmeyi, işletme adayı engelleyebilir; engel başvuru, yedek/HOLD teklifi, mesaj, tepki, "yazıyor" sinyali ve tüm bildirim/SMS yollarında uygulanır, karşı tarafa bildirilmez
 - [x] **Durum dili** — başvuru durumları tek sözlükten (`lib/applicationStatus.js`), aday ve işletme bakış açısına göre ayrı etiket

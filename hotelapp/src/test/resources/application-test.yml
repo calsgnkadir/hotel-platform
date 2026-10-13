@@ -25,6 +25,28 @@ app:
   base-url: http://localhost:8080
   rate-limit:
     enabled: false   # test'te bypass — peş peşe register'da 429 yememek için
+  # @Scheduled isler testte kendiliginden tetiklenmesin (slotlar gecmise tasindigi icin
+  # zamana bagli kirilganlik). Testler isleri dogrudan cagirir. Cron "-" = devre disi;
+  # fixed-delay isler kayitli kalir (taskScheduler havuzu yine kurulur) ama ~1 yil sonra baslar.
+  scheduling:
+    expire-applications-cron: "-"
+    sgk-reminder-cron: "-"
+    gdpr-anonymize-cron: "-"
+    refresh-token-cleanup-cron: "-"
+    roster-email-cron: "-"
+    hold-expiry-initial-delay-ms: 31536000000
+    standby-expiry-initial-delay-ms: 31536000000
+    saved-search-initial-delay-ms: 31536000000
+    idempotency-evict-initial-delay-ms: 31536000000
+  listing:
+    auto-close-initial-delay-ms: 31536000000
+  billing:
+    reconcile-initial-delay-ms: 31536000000
+  outbox:
+    relayInitialDelayMs: 31536000000
+    cleanupCron: "-"
+  pulse:
+    initialDelayMs: 31536000000
 
 # OAuth2 client dummy — test'te kullanilmaz ama bean wiring icin gerekli
 spring.security.oauth2.client.registration.google:

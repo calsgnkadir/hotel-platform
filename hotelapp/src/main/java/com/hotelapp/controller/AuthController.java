@@ -76,8 +76,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response) {
-        AuthResponse auth = authService.login(request);
+        // Deneme siniri anahtari icin istemci IP'si (RateLimitFilter ile ayni kaynak)
+        AuthResponse auth = authService.login(request, httpRequest.getRemoteAddr());
         attachRefreshCookie(response, auth);
         return ResponseEntity.ok(auth);
     }

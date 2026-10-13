@@ -164,7 +164,7 @@ public class GdprService {
      *
      * Cron: 0 0 3 * * * (saniye dakika saat gunay haftaicigunu)
      */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "${app.scheduling.gdpr-anonymize-cron:0 0 3 * * *}")
     @Transactional
     public void anonymizeDueAccounts() {
         LocalDateTime now = LocalDateTime.now();

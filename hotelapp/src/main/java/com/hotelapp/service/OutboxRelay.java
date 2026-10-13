@@ -50,7 +50,8 @@ public class OutboxRelay {
     private final OutboxStatusWriter statusWriter; // FAZ F.4 — self-invocation fix
     private final org.springframework.beans.factory.ObjectProvider<AppMetrics> metrics; // optional
 
-    @Scheduled(fixedDelayString = "${app.outbox.relayDelayMs:5000}")
+    @Scheduled(fixedDelayString = "${app.outbox.relayDelayMs:5000}",
+               initialDelayString = "${app.outbox.relayInitialDelayMs:0}")
     public void relay() {
         List<OutboxEvent> pending = outboxRepository.findDue(
                 MAX_ATTEMPTS, java.time.LocalDateTime.now(), PageRequest.of(0, BATCH_SIZE));

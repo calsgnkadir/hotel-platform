@@ -54,7 +54,8 @@ public class IdempotencyService {
     }
 
     /** Her 10 dakikada bir expired entry'leri sil. */
-    @Scheduled(fixedDelay = 10 * 60 * 1000L)
+    @Scheduled(fixedDelayString = "${app.scheduling.idempotency-evict-delay-ms:600000}",
+               initialDelayString = "${app.scheduling.idempotency-evict-initial-delay-ms:0}")
     public void evictExpired() {
         Instant now = Instant.now();
         int before = cache.size();

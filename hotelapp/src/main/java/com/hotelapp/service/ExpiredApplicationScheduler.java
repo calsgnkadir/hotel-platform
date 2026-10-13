@@ -22,7 +22,7 @@ public class ExpiredApplicationScheduler {
     private final SgkReminderService sgkReminderService;   // FAZ C.3
 
     // Her gece 02:00'de çalışır
-    @Scheduled(cron = "0 0 2 * * *")
+    @Scheduled(cron = "${app.scheduling.expire-applications-cron:0 0 2 * * *}")
     @Transactional
     public void markExpiredApplications() {
         List<Application> expired = applicationRepository.findExpiredApplications(LocalDateTime.now());
@@ -37,7 +37,8 @@ public class ExpiredApplicationScheduler {
     }
 
     // FAZ 2/#28 — Her 5 dakikada bir suresi gecmis HOLD basvurularini EXPIRED yap
-    @Scheduled(fixedDelay = 5 * 60 * 1000)
+    @Scheduled(fixedDelayString = "${app.scheduling.hold-expiry-delay-ms:300000}",
+               initialDelayString = "${app.scheduling.hold-expiry-initial-delay-ms:0}")
     @Transactional
     public void expireOverdueHolds() {
         LocalDateTime now = LocalDateTime.now();
@@ -55,7 +56,8 @@ public class ExpiredApplicationScheduler {
      * FAZ C.1 — Suresi gecmis yedek tekliflerini kapat, siradaki yedege gec.
      * Acil akis oldugu icin HOLD ile ayni sikligi (5 dk) kullanir.
      */
-    @Scheduled(fixedDelay = 5 * 60 * 1000)
+    @Scheduled(fixedDelayString = "${app.scheduling.standby-expiry-delay-ms:300000}",
+               initialDelayString = "${app.scheduling.standby-expiry-initial-delay-ms:0}")
     public void expireOverdueStandbyOffers() {
         try {
             int n = standbyService.expireOverdueOffers();
@@ -71,7 +73,7 @@ public class ExpiredApplicationScheduler {
      * isletmeye tek sefer hatirlatma. Sabah calisir cunku isveren gun icinde
      * bildirgeyi verecek zamana sahip olsun.
      */
-    @Scheduled(cron = "0 0 9 * * *")
+    @Scheduled(cron = "${app.scheduling.sgk-reminder-cron:0 0 9 * * *}")
     public void sendSgkReminders() {
         try {
             int n = sgkReminderService.sendDueReminders();

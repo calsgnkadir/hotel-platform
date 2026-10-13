@@ -248,6 +248,20 @@ public class DemoSeeder implements CommandLineRunner {
                     requested.add(listingSlots.get(random.nextInt(listingSlots.size())));
                 }
 
+                // Kapasitenin tek kaynagi slotsFilled sayaci: ACCEPTED basvuru koltuk tutar.
+                // Sayac uygulamadaki gibi kosullu atomik UPDATE ile artar. Secilen slot
+                // doluysa ilanin bos koltuklu ilk slotuna (id sirasi) gecilir; hic bos
+                // koltuk yoksa basvuru REVIEWING kalir (asiri kabul yok). Ek random
+                // cagrisi yapilmaz: seed deterministik kalir.
+                if (status == ApplicationStatus.ACCEPTED) {
+                    ShiftSlot seat = reserveSeat(requested, listingSlots);
+                    if (seat == null) {
+                        status = ApplicationStatus.REVIEWING;
+                    } else {
+                        requested = new HashSet<>(Set.of(seat));
+                    }
+                }
+
                 Application app = Application.builder()
                         .candidate(cand)
                         .jobListing(l)
@@ -314,5 +328,18 @@ public class DemoSeeder implements CommandLineRunner {
                 allApps.size(), chatCount);
         log.info("[DEMO-SEED] Giriş: demo-aday1@test.com / demo-isletme1@test.com — şifre: {}",
                 DEMO_PASSWORD_RAW);
+    }
+
+    /** Once tercih edilen slotta, sonra id sirasiyla diger slotlarda koltuk ayirir; yoksa null. */
+    private ShiftSlot reserveSeat(Set<ShiftSlot> preferred, List<ShiftSlot> listingSlots) {
+        List<ShiftSlot> order = new ArrayList<>(preferred);
+        listingSlots.stream()
+                .filter(s -> !preferred.contains(s))
+                .sorted(Comparator.comparing(ShiftSlot::getId))
+                .forEach(order::add);
+        for (ShiftSlot s : order) {
+            if (shiftSlotRepository.incrementFilledIfAvailable(s.getId()) == 1) return s;
+        }
+        return null;
     }
 }

@@ -24,7 +24,8 @@ public class SavedSearchScheduler {
     private final SavedSearchRepository repo;
     private final SavedSearchService savedSearchService;
 
-    @Scheduled(fixedDelay = 30 * 60 * 1000, initialDelay = 60 * 1000)
+    @Scheduled(fixedDelayString = "${app.scheduling.saved-search-delay-ms:1800000}",
+               initialDelayString = "${app.scheduling.saved-search-initial-delay-ms:60000}")
     public void scan() {
         // Sadece ID'leri çek — her aramayı kendi tx'ında işle ki birinin hatası
         // diğerlerini bloklamasın (notifyNewMatches @Transactional).

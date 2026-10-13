@@ -54,7 +54,7 @@ public class PulseService {
      * Her 30 sn'de bir pulse hesapla ve yayınla. Subscriber yoksa Spring
      * STOMP broker no-op gerçekleştirir; sayım sorguları light, riski yok.
      */
-    @Scheduled(fixedDelayString = "${app.pulse.intervalMs:30000}", initialDelay = 10_000)
+    @Scheduled(fixedDelayString = "${app.pulse.intervalMs:30000}", initialDelayString = "${app.pulse.initialDelayMs:10000}")
     public void broadcast() {
         try {
             PulseDto p = snapshot();

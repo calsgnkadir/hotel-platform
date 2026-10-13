@@ -113,16 +113,28 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse login(LoginRequest request) {
-        // E-posta basina deneme siniri (IP'den bagimsiz; hesap var/yok fark etmez)
-        if (!loginAttemptLimiter.tryAcquire(request.getEmail())) {
+    /**
+     * @param clientIp istemci IP'si (request.getRemoteAddr(); RemoteIpValve gercek IP'yi cozer).
+     *                 Deneme siniri e-posta+IP anahtarli: saldirgan baska IP'deki gercek
+     *                 kullaniciyi kilitleyemez.
+     */
+    public AuthResponse login(LoginRequest request, String clientIp) {
+        // (e-posta + IP) basina deneme siniri; hesap var/yok fark etmez
+        if (!loginAttemptLimiter.tryAcquire(request.getEmail(), clientIp)) {
             throw new com.hotelapp.exception.TooManyRequestsException(
                     "Bu hesap için çok fazla giriş denemesi yapıldı. Lütfen 15 dakika sonra tekrar deneyin.");
         }
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-        loginAttemptLimiter.reset(request.getEmail());
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            // Dagitik deneme izleme (yalniz log; kilitlemez)
+            loginAttemptLimiter.recordFailure(request.getEmail());
+            throw ex;
+        }
+        // Basarili giris: tuketilen hak iade (yalniz basarisiz denemeler sayilir)
+        loginAttemptLimiter.reset(request.getEmail(), clientIp);
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", request.getEmail()));
