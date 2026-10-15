@@ -136,21 +136,33 @@ management:
       enabled: true
     readinessstate:
       enabled: true
+  # /actuator/info herkese açık (SecurityConfig) — yalnız uygulama adı + sürüm.
+  # JVM/işletim sistemi ayrıntısı (sürüm, mimari) saldırgana bilinen açık aramasında
+  # yardımcı olur; prod'da kapalı.
   info:
     env:
       enabled: true
     java:
-      enabled: true
+      enabled: false
     os:
-      enabled: true
+      enabled: false
 
 # Build/git info /actuator/info'da görünür (build sırasında doldurulur)
 info:
   app:
     name: Kadrom
     version: ${APP_VERSION:dev}
-  java:
-    version: ${java.version}
+
+# ════════════════════════════════════════════════════════════════
+# SWAGGER / OPENAPI — prod'da varsayılan KAPALI
+# ════════════════════════════════════════════════════════════════
+# Uç nokta haritası herkese açık olmasın. Geçici olarak açmak için: SWAGGER_ENABLED=true
+# (SecurityConfig izinli yolları bu ayarlara göre belirler).
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
 
 # ════════════════════════════════════════════════════════════════
 # LOGGING — prod'da gürültü azalt

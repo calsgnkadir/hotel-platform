@@ -58,6 +58,15 @@ public class CandidateProfileService {
 
         // Core editable
         user.setFullName(req.getFullName());
+        // Numara değişirse eski doğrulama yeni numaraya geçmez; eski numaraya gönderilmiş
+        // bekleyen kod da geçersiz olur (yoksa eski numaradaki kodla yenisi "doğrulanırdı").
+        // phoneOtpSentAt korunur: numara değiştirerek SMS bekleme süresi atlatılamaz.
+        if (!samePhone(user.getPhone(), req.getPhone())) {
+            user.setPhoneVerifiedAt(null);
+            user.setPhoneOtpCode(null);
+            user.setPhoneOtpExpiresAt(null);
+            user.setPhoneOtpAttempts(0);
+        }
         user.setPhone(req.getPhone());
 
         // Candidate profile fields
@@ -91,6 +100,22 @@ public class CandidateProfileService {
 
         userRepository.save(user);
         return toDto(user);
+    }
+
+    /**
+     * Biçim farkı (boşluk, 0 / +90 öneki) numara değişikliği sayılmaz:
+     * son 10 rakam karşılaştırılır.
+     */
+    static boolean samePhone(String a, String b) {
+        String da = phoneKey(a), db = phoneKey(b);
+        return da == null ? db == null : da.equals(db);
+    }
+
+    private static String phoneKey(String phone) {
+        if (phone == null) return null;
+        String digits = phone.replaceAll("\\D", "");
+        if (digits.isEmpty()) return null;
+        return digits.length() > 10 ? digits.substring(digits.length() - 10) : digits;
     }
 
     // ----------------------------------------------------------------

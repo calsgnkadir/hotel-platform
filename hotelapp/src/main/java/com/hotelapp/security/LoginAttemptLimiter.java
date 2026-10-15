@@ -10,7 +10,6 @@ import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Giris denemesi siniri: (e-posta + istemci IP) basina 15 dakikada 10 basarisiz deneme.
@@ -92,7 +91,9 @@ public class LoginAttemptLimiter {
         return true;
     }
 
-    @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
+    /** Bellek temizligi; test profilinde ilk calisma ~1 yil ertelenir (application-test.yml). */
+    @Scheduled(fixedDelayString = "${app.scheduling.login-attempt-evict-delay-ms:300000}",
+               initialDelayString = "${app.scheduling.login-attempt-evict-initial-delay-ms:300000}")
     void evictIdle() {
         long now = System.nanoTime();
         buckets.entrySet().removeIf(e -> now - e.getValue().lastAccessNanos > IDLE_NANOS);

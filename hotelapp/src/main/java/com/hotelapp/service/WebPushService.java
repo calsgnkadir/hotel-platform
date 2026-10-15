@@ -3,7 +3,7 @@ package com.hotelapp.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hotelapp.entity.PushSubscription;
 import com.hotelapp.repository.PushSubscriptionRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * Push gönderici.
@@ -31,7 +32,6 @@ import java.util.Map;
  *  - 429 Too Many Requests     => yutulur
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class WebPushService {
 
@@ -43,16 +43,39 @@ public class WebPushService {
     private final PushSubscriptionRepository subscriptionRepository;
     private final ObjectMapper objectMapper;
     private final PushEndpointPolicy endpointPolicy;
+    /** Sinirli havuz (AsyncConfig#pushExecutor); eskiden her bildirimde yeni Thread. */
+    private final Executor pushExecutor;
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
+    public WebPushService(VapidService vapidService,
+                          PushSubscriptionRepository subscriptionRepository,
+                          ObjectMapper objectMapper,
+                          PushEndpointPolicy endpointPolicy,
+                          @Qualifier("pushExecutor") Executor pushExecutor) {
+        this.vapidService = vapidService;
+        this.subscriptionRepository = subscriptionRepository;
+        this.objectMapper = objectMapper;
+        this.endpointPolicy = endpointPolicy;
+        this.pushExecutor = pushExecutor;
+    }
+
     /** Bildirim içeriği; url uygulama içi tam adres (ör. /candidate?tab=applications). */
     public record PushMessage(String title, String body, String url, Long notificationId) {}
 
-    /** Kullanıcının tüm aboneliklerine gönderir. Yeni thread'de, çağıranı bekletmez. */
+    /**
+     * Kullanıcının tüm aboneliklerine gönderir. Sınırlı push havuzunda, çağıranı
+     * bekletmez; havuz/kuyruk doluysa push atlanır (uygulama içi bildirim kayıtlı).
+     */
     public void sendToUser(Long userId, PushMessage message) {
-        new Thread(() -> doSend(userId, message), "push-send-" + userId).start();
+        pushExecutor.execute(() -> {
+            try {
+                doSend(userId, message);
+            } catch (Exception e) {
+                log.warn("Web push gonderimi basarisiz userId={}: {}", userId, e.getMessage());
+            }
+        });
     }
 
     void doSend(Long userId, PushMessage message) {

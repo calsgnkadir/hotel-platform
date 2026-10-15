@@ -55,6 +55,13 @@ public class AppConfig {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
+        // Hesap durumu (ban/kapalı) şifre doğrulandıktan SONRA denetlenir. Varsayılanda
+        // önce denetleniyordu: yanlış şifreyle bile "hesap kilitli" yanıtı hesabın
+        // varlığını ve ban durumunu ifşa ediyordu. Artık yanlış şifre → her zaman
+        // "E-posta veya şifre hatalı"; durum bilgisi yalnız doğru şifreyi bilene döner.
+        provider.setPreAuthenticationChecks(user -> { });
+        provider.setPostAuthenticationChecks(
+                new org.springframework.security.authentication.AccountStatusUserDetailsChecker());
         return provider;
     }
 

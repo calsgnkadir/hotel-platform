@@ -82,6 +82,33 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, messages.get("error.badCredentials"));
     }
 
+    // 401 — askıya alınmış (banlı) hesap. Eskiden genel handler'a düşüp 500 dönüyordu.
+    // Bu istisna yalnız şifre doğrulandıktan SONRA oluşur (AppConfig post-auth checks):
+    // hesabın varlığı/ban durumu yalnız şifreyi bilene söylenir.
+    @ExceptionHandler(org.springframework.security.authentication.LockedException.class)
+    public ResponseEntity<Map<String, Object>> handleLocked(
+            org.springframework.security.authentication.LockedException ex) {
+        if (ex instanceof AccountSuspendedException s && s.getUntil() != null) {
+            String until = s.getUntil().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+            return build(HttpStatus.UNAUTHORIZED, messages.get("error.auth.accountLockedUntil", until));
+        }
+        return build(HttpStatus.UNAUTHORIZED, messages.get("error.auth.accountLocked"));
+    }
+
+    // 401 — kapalı hesap (silme talebi vb.); yine yalnız doğru şifreden sonra
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<Map<String, Object>> handleDisabled(
+            org.springframework.security.authentication.DisabledException ex) {
+        return build(HttpStatus.UNAUTHORIZED, messages.get("error.auth.accountDisabled"));
+    }
+
+    // 401 — diğer kimlik doğrulama hataları (süresi dolmuş hesap/şifre vb.): genel mesaj
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthentication(
+            org.springframework.security.core.AuthenticationException ex) {
+        return build(HttpStatus.UNAUTHORIZED, messages.get("error.badCredentials"));
+    }
+
     // 400 — @Valid validation hatası, alan bazlı liste döner
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {

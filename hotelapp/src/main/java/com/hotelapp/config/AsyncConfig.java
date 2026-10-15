@@ -26,8 +26,15 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * kanal); kuyruk dolarsa gorev loglanip atilir — istek thread'i 15 sn'lik HTTP
  * cagrisina bloklanmasin.
  *
- * <p>Varsayilan {@code @Async} executor'u (adsiz) bu sinifta tanimlanmaz; mevcut
- * davranis degismez.
+ * <p><b>taskExecutor</b> — niteleyicisiz {@code @Async} (NoShowEventListener,
+ * RosterEmailScheduler#onListingClosed). Bu bean olmadan Spring birden fazla
+ * TaskExecutor gordugu icin {@code SimpleAsyncTaskExecutor}'a dusuyor ve her cagrida
+ * SINIRSIZ yeni thread aciyordu. Kuyruk dolarsa CallerRuns (olay kaybolmaz, cagiran
+ * yavaslar — eski senkron davranisa esdeger).
+ *
+ * <p><b>pushExecutor</b> — Web Push HTTP gonderimi (WebPushService). Eskiden her
+ * bildirimde {@code new Thread}. Push best-effort: uygulama ici bildirim zaten
+ * kayitli; kuyruk dolarsa push atlanir ve loglanir.
  */
 @Configuration
 @Slf4j
@@ -80,6 +87,46 @@ public class AsyncConfig {
         ex.setThreadNamePrefix("sms-");
         ex.setRejectedExecutionHandler((r, pool) ->
                 log.warn("[SMS] kuyruk dolu ya da executor kapali — SMS atlandi (best-effort)"));
+        ex.setWaitForTasksToCompleteOnShutdown(true);
+        ex.setAwaitTerminationSeconds(20);
+        return ex;
+    }
+
+    @Bean(name = "taskExecutor")
+    public ThreadPoolTaskExecutor taskExecutor(
+            @Value("${app.async.executor.core-size:2}") int core,
+            @Value("${app.async.executor.max-size:4}") int max,
+            @Value("${app.async.executor.queue-capacity:200}") int queue) {
+        ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+        ex.setCorePoolSize(core);
+        ex.setMaxPoolSize(max);
+        ex.setQueueCapacity(queue);
+        ex.setThreadNamePrefix("async-");
+        ex.setRejectedExecutionHandler((r, pool) -> {
+            if (pool.isShutdown()) {
+                log.warn("[ASYNC] executor kapali, gorev atlandi");
+                return;
+            }
+            log.warn("[ASYNC] kuyruk dolu ({}), gorev cagiran thread'de calisiyor", queue);
+            r.run();
+        });
+        ex.setWaitForTasksToCompleteOnShutdown(true);
+        ex.setAwaitTerminationSeconds(20);
+        return ex;
+    }
+
+    @Bean(name = "pushExecutor")
+    public ThreadPoolTaskExecutor pushExecutor(
+            @Value("${app.push.executor.core-size:2}") int core,
+            @Value("${app.push.executor.max-size:4}") int max,
+            @Value("${app.push.executor.queue-capacity:500}") int queue) {
+        ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+        ex.setCorePoolSize(core);
+        ex.setMaxPoolSize(max);
+        ex.setQueueCapacity(queue);
+        ex.setThreadNamePrefix("push-");
+        ex.setRejectedExecutionHandler((r, pool) ->
+                log.warn("[PUSH] kuyruk dolu ya da executor kapali — web push atlandi (best-effort)"));
         ex.setWaitForTasksToCompleteOnShutdown(true);
         ex.setAwaitTerminationSeconds(20);
         return ex;

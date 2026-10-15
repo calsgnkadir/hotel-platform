@@ -42,6 +42,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;  // F0.2
     private final PushSubscriptionService pushSubscriptionService;
     private final com.hotelapp.security.LoginAttemptLimiter loginAttemptLimiter;
+    private final com.hotelapp.security.oauth.OAuthLoginCodeStore oAuthLoginCodeStore;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -54,8 +55,18 @@ public class AuthService {
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessRuleException("Bu email adresi zaten kayıtlı: " + request.getEmail());
+            // Girilen e-posta yanıtta/logda yansıtılmaz
+            throw BusinessRuleException.keyed("error.auth.emailTaken");
         }
+        // İkinci katman: DTO doğrulaması atlansa bile zayıf şifre yazılmaz
+        String pwViolation = com.hotelapp.validation.PasswordPolicy.violationKey(request.getPassword());
+        if (pwViolation != null) {
+            throw BusinessRuleException.keyed(pwViolation);
+        }
+        // İşletme web sitesi yalnız http(s) — herkese açık sayfada bağlantı olarak gösterilir
+        String website = request.getRole() == Role.BUSINESS_OWNER
+                ? com.hotelapp.validation.WebsiteUrlPolicy.normalizeOrReject(request.getWebsite())
+                : null;
 
         User user = User.builder()
                 .fullName(request.getFullName())
@@ -78,7 +89,7 @@ public class AuthService {
                     .neighborhood(request.getNeighborhood())
                     .address(request.getAddress())
                     .phone(request.getBusinessPhone())
-                    .website(request.getWebsite())
+                    .website(website)
                     .description(request.getDescription())
                     .owner(user)
                     .build();
@@ -128,6 +139,12 @@ public class AuthService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
+        } catch (org.springframework.security.authentication.LockedException ex) {
+            // Buraya yalniz DOGRU sifreyle gelinir (hesap durumu post-auth denetlenir):
+            // kullanici kendi ban bitisini gorebilir. Yanlis sifre BadCredentials olur.
+            java.time.LocalDateTime until = userRepository.findByEmail(request.getEmail())
+                    .map(User::getBannedUntil).orElse(null);
+            throw new com.hotelapp.exception.AccountSuspendedException(until);
         } catch (org.springframework.security.core.AuthenticationException ex) {
             // Dagitik deneme izleme (yalniz log; kilitlemez)
             loginAttemptLimiter.recordFailure(request.getEmail());
@@ -145,6 +162,34 @@ public class AuthService {
         return AuthResponse.builder()
                 .token(jwtService.generateToken(user))
                 .refreshToken(refreshToken)
+                .userId(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole())
+                .emailVerified(user.isEmailVerified())
+                .build();
+    }
+
+    /**
+     * Google girişi dönüşü: tek kullanımlık kodu erişim token'ı + refresh token'a çevirir.
+     * Kod geçersiz/süresi dolmuş/kullanılmışsa ya da hesap bu arada kapatıldıysa 422
+     * (401 değil: frontend 401'de oturum yenilemeye çalışır).
+     */
+    @Transactional
+    public AuthResponse exchangeOAuthCode(String code) {
+        Long userId = oAuthLoginCodeStore.consume(code)
+                .orElseThrow(() -> BusinessRuleException.keyed("error.auth.oauthCodeInvalid"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BusinessRuleException.keyed("error.auth.oauthCodeInvalid"));
+        boolean banned = user.getBannedUntil() != null
+                && user.getBannedUntil().isAfter(java.time.LocalDateTime.now());
+        if (!user.isEnabled() || banned) {
+            log.warn("[OAUTH] Kapalı/yasaklı hesap için kod değişimi reddedildi: userId={}", userId);
+            throw BusinessRuleException.keyed("error.auth.oauthCodeInvalid");
+        }
+        return AuthResponse.builder()
+                .token(jwtService.generateToken(user))
+                .refreshToken(refreshTokenService.createForUser(user))
                 .userId(user.getId())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
@@ -216,10 +261,11 @@ public class AuthService {
         private String currentPassword;
 
         @NotBlank(message = "Yeni şifre zorunlu")
-        @Size(min = 8, message = "Yeni şifre en az 8 karakter olmalı")
+        @Size(min = com.hotelapp.validation.PasswordPolicy.MIN_LENGTH,
+              message = "Yeni şifre en az 8 karakter olmalı")
         @jakarta.validation.constraints.Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
-            message = "Şifre en az 1 harf ve 1 rakam içermeli"
+            regexp = com.hotelapp.validation.PasswordPolicy.PATTERN,
+            message = com.hotelapp.validation.PasswordPolicy.MSG_PATTERN
         )
         private String newPassword;
     }

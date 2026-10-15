@@ -3,6 +3,7 @@ package com.hotelapp.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelapp.enums.BusinessType;
 import com.hotelapp.enums.Role;
+import com.hotelapp.validation.PasswordPolicy;
 import com.hotelapp.validation.TurkeyPhone;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
@@ -30,11 +31,9 @@ public class RegisterRequest {
      *   - En az 8 karakter
      *   - En az 1 harf (a-zA-Z) + en az 1 rakam (0-9)
      */
-    @Size(min = 8, message = "Şifre en az 8 karakter olmalı")
-    @Pattern(
-        regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
-        message = "Şifre en az 1 harf ve 1 rakam içermeli"
-    )
+    @NotBlank(message = "Şifre zorunlu")
+    @Size(min = PasswordPolicy.MIN_LENGTH, message = PasswordPolicy.MSG_LENGTH)
+    @Pattern(regexp = PasswordPolicy.PATTERN, message = PasswordPolicy.MSG_PATTERN)
     private String password;
 
     @NotNull(message = "Rol seçimi zorunlu")
@@ -59,6 +58,7 @@ public class RegisterRequest {
     @TurkeyPhone(message = "Geçerli bir telefon numarası girin (örn: 0212 555 12 34)")
     private String businessPhone;
 
+    /** Yalnız http(s) — servis katmanında WebsiteUrlPolicy ile denetlenir (422). */
     private String website;
     private String description;
 

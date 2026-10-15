@@ -34,6 +34,7 @@ public class GdprController {
 
     private final GdprService gdprService;
     private final ObjectMapper objectMapper;
+    private final com.hotelapp.security.ShowcaseDemoGuard showcaseDemoGuard;
 
     @Operation(
             summary = "Verimi indir (KVKK)",
@@ -69,6 +70,8 @@ public class GdprController {
     @DeleteMapping
     public ResponseEntity<Map<String, Object>> deleteAccount(
             @AuthenticationPrincipal UserPrincipal currentUser) {
+        // Vitrinde ortak demo hesabı silinemez (403)
+        showcaseDemoGuard.requireMutable(currentUser.getUsername());
         gdprService.requestDeletion(currentUser.getId());
         return ResponseEntity.ok(Map.of(
                 "status", "DELETION_REQUESTED",

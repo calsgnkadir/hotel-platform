@@ -107,23 +107,63 @@ public class BillingService {
         return init;
     }
 
-    /** iyzico callback → token'ı doğrula, başarılıysa ACTIVE yap. Frontend yönlendirme URL'i döner. */
-    @Transactional
+    /**
+     * iyzico callback → token'ı doğrula, başarılıysa ACTIVE yap. Frontend yönlendirme URL'i döner.
+     *
+     * <p>Dış transaction YOK: iyzico HTTP çağrısı (yavaş olabilir) sırasında ne DB
+     * bağlantısı ne satır kilidi tutulur.
+     * <ol>
+     *   <li>Kilitsiz okuma: bizim oturumumuz mu, zaten sonuçlanmış mı (sonuçlanmışsa
+     *       iyzico'ya hiç gidilmez).</li>
+     *   <li>iyzico'dan sonuç (transaction dışında).</li>
+     *   <li>Kısa transaction: satır kilidi + durum YENİDEN kontrol (bu arada mutabakat ya
+     *       da tekrar gelen callback sonuçlandırdıysa hiçbir şey uygulanmaz) + uygula.</li>
+     * </ol>
+     */
     public String handleCallback(String token) {
         String okUrl   = appBaseUrl + "/business?tab=billing&sub=ok";
         String failUrl = appBaseUrl + "/business?tab=billing&sub=fail";
         if (token == null || token.isBlank()) return failUrl;
 
-        // Önce bizim başlattığımız bir ödeme mi? Değilse iyzico'ya hiç gitme ve
+        // 1) Önce bizim başlattığımız bir ödeme mi? Değilse iyzico'ya hiç gitme ve
         // saldırganın gönderdiği token'ı log'a yazma.
-        PaymentCheckout pc = checkoutRepository.findByTokenForUpdate(token).orElse(null);
+        PaymentCheckout pc = checkoutRepository.findByToken(token).orElse(null);
         if (pc == null) {
-            pc = adoptLegacyCheckout(token);
+            pc = perCheckoutTx.execute(st -> adoptLegacyCheckout(token));
             if (pc == null) {
                 log.warn("[BILLING] callback token eslesmedi");
                 return failUrl;
             }
         }
+        String terminal = terminalUrl(pc, okUrl, failUrl);
+        if (terminal != null) return terminal;
+
+        // 2) iyzico — kilit ve DB bağlantısı tutulmadan
+        IyzicoClient.CheckoutResult r = iyzico.retrieve(token);
+
+        // 3) Kısa transaction: kilitle, durumu yeniden kontrol et, uygula
+        String url = perCheckoutTx.execute(st -> {
+            PaymentCheckout locked = checkoutRepository.findByTokenForUpdate(token).orElse(null);
+            if (locked == null) return failUrl;
+            String settled = terminalUrl(locked, okUrl, failUrl);
+            if (settled != null) return settled;   // bu arada başka yol sonuçlandırdı
+            if (!r.paid()) {
+                // iyzico kesin sonuç döndüyse oturum kapanır; ağ hatası/zaman aşımı ise
+                // PENDING kalır ve mutabakat işi tekrar dener.
+                if (r.paymentStatus() != null) {
+                    complete(locked, PaymentCheckoutStatus.FAILED, null);
+                }
+                log.warn("[BILLING] odeme basarisiz — checkout={} business={} status={}",
+                        locked.getId(), locked.getBusiness().getId(), r.paymentStatus());
+                return failUrl;
+            }
+            return settlePaid(locked, r) ? okUrl : failUrl;
+        });
+        return url != null ? url : failUrl;
+    }
+
+    /** Sonuçlanmış oturum için yönlendirme; PENDING ise null. Sonuçlanmış oturum için iyzico'ya gidilmez. */
+    private static String terminalUrl(PaymentCheckout pc, String okUrl, String failUrl) {
         switch (pc.getStatus()) {
             case SUCCEEDED:
                 // Tüketilmiş oturum tekrar geldi: idempotent, iyzico'ya gidilmez, süre uzamaz.
@@ -133,20 +173,8 @@ public class BillingService {
             case EXPIRED:
                 return failUrl;
             default:
-                break;
+                return null;
         }
-        IyzicoClient.CheckoutResult r = iyzico.retrieve(token);
-        if (!r.paid()) {
-            // iyzico kesin sonuç döndüyse oturum kapanır; ağ hatası vb. ise PENDING kalır
-            // ve mutabakat işi tekrar dener.
-            if (r.paymentStatus() != null) {
-                complete(pc, PaymentCheckoutStatus.FAILED, null);
-            }
-            log.warn("[BILLING] odeme basarisiz — checkout={} business={} status={}",
-                    pc.getId(), pc.getBusiness().getId(), r.paymentStatus());
-            return failUrl;
-        }
-        return settlePaid(pc, r) ? okUrl : failUrl;
     }
 
     /**
@@ -166,11 +194,7 @@ public class BillingService {
         for (PaymentCheckout candidate : pending) {
             String token = candidate.getToken();
             try {
-                // Her kayıt kendi transaction'ında (REQUIRES_NEW): birinin hatası yalnız
-                // kendini geri alır, diğerleri işlenir. Yeni persistence context → kilitli
-                // okuma güncel satırı görür (callback bu arada sonuçlandırdıysa atlanır).
-                Boolean done = perCheckoutTx.execute(st -> reconcileOne(token, now));
-                if (Boolean.TRUE.equals(done)) changed++;
+                if (reconcileOne(token, now)) changed++;
             } catch (RuntimeException ex) {
                 log.warn("[BILLING] mutabakat basarisiz — checkout={}: {}", candidate.getId(), ex.getMessage());
             }
@@ -179,26 +203,39 @@ public class BillingService {
         return changed;
     }
 
-    /** Tek oturumun mutabakatı; çağıranın açtığı ayrı transaction içinde. true = sonuçlandı. */
+    /**
+     * Tek oturumun mutabakatı. true = sonuçlandı.
+     * Kilitsiz güncel okuma → iyzico (transaction dışı) → kayıt başına kısa
+     * REQUIRES_NEW transaction'da kilit + durum yeniden kontrol + uygula. Birinin
+     * hatası yalnız kendini geri alır, diğerleri işlenir.
+     */
     private boolean reconcileOne(String token, LocalDateTime now) {
-        // Callback ile aynı anda işlenmesin: satır kilidi + durum yeniden kontrol.
-        PaymentCheckout pc = checkoutRepository.findByTokenForUpdate(token).orElse(null);
-        if (pc == null || pc.getStatus() != PaymentCheckoutStatus.PENDING) return false;
-        IyzicoClient.CheckoutResult r = iyzico.retrieve(pc.getToken());
-        if (r.paid()) {
-            settlePaid(pc, r);
-            return true;
-        }
-        if (pc.getCreatedAt() != null && pc.getCreatedAt().isBefore(now.minus(EXPIRE_AFTER))) {
-            complete(pc, PaymentCheckoutStatus.EXPIRED, null);
-            return true;
-        }
-        return false;
+        // Callback bu arada sonuçlandırdıysa iyzico'ya hiç gidilmez
+        PaymentCheckout fresh = checkoutRepository.findByToken(token).orElse(null);
+        if (fresh == null || fresh.getStatus() != PaymentCheckoutStatus.PENDING) return false;
+
+        IyzicoClient.CheckoutResult r = iyzico.retrieve(token);
+
+        Boolean done = perCheckoutTx.execute(st -> {
+            // Callback ile aynı anda işlenmesin: satır kilidi + durum yeniden kontrol.
+            PaymentCheckout pc = checkoutRepository.findByTokenForUpdate(token).orElse(null);
+            if (pc == null || pc.getStatus() != PaymentCheckoutStatus.PENDING) return false;
+            if (r.paid()) {
+                settlePaid(pc, r);
+                return true;
+            }
+            if (pc.getCreatedAt() != null && pc.getCreatedAt().isBefore(now.minus(EXPIRE_AFTER))) {
+                complete(pc, PaymentCheckoutStatus.EXPIRED, null);
+                return true;
+            }
+            return false;
+        });
+        return Boolean.TRUE.equals(done);
     }
 
     /**
-     * Mutabakatta kayıt başına transaction. Spring bağlamında REQUIRES_NEW şablonu
-     * kurulur; bağlam dışı birim testlerinde varsayılan transaction'sız çalışır.
+     * Callback/mutabakatta kısa, kayıt başına transaction. Spring bağlamında REQUIRES_NEW
+     * şablonu kurulur; bağlam dışı birim testlerinde varsayılan transaction'sız çalışır.
      */
     private org.springframework.transaction.support.TransactionOperations perCheckoutTx =
             org.springframework.transaction.support.TransactionOperations.withoutTransaction();

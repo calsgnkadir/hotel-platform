@@ -65,7 +65,7 @@ class WebPushServiceTest {
         PushEndpointPolicy allowAll = new PushEndpointPolicy() {
             @Override public boolean isAllowed(String endpoint) { return true; }
         };
-        service = new WebPushService(vapid, repo, new ObjectMapper(), allowAll);
+        service = new WebPushService(vapid, repo, new ObjectMapper(), allowAll, Runnable::run);
     }
 
     @Test
@@ -74,7 +74,7 @@ class WebPushServiceTest {
         VapidService vapid = new VapidService();
         org.springframework.test.util.ReflectionTestUtils.setField(vapid, "subject", "mailto:test@kadrom.local");
         vapid.init();
-        WebPushService strict = new WebPushService(vapid, repo, new ObjectMapper(), new PushEndpointPolicy());
+        WebPushService strict = new WebPushService(vapid, repo, new ObjectMapper(), new PushEndpointPolicy(), Runnable::run);
         PushSubscription sub = PushSubscription.builder().endpoint(endpoint()).build();
         when(repo.findAllByUserId(7L)).thenReturn(List.of(sub));
 
@@ -157,5 +157,24 @@ class WebPushServiceTest {
         JsonNode node = new ObjectMapper().readTree(json);
         assertThat(node.get("body").asText()).hasSize(180).endsWith("…");
         assertThat(node.get("link").asText()).isEqualTo("/");
+    }
+
+    @Test
+    @DisplayName("sendToUser yeni thread acmaz: gorev verilen (sinirli) havuza gider")
+    void sendToUser_usesBoundedExecutor() {
+        List<Runnable> queued = new ArrayList<>();
+        PushEndpointPolicy allowAll = new PushEndpointPolicy() {
+            @Override public boolean isAllowed(String endpoint) { return true; }
+        };
+        WebPushService queuedService = new WebPushService(
+                mock(VapidService.class), repo, new ObjectMapper(), allowAll, queued::add);
+        when(repo.findAllByUserId(9L)).thenReturn(List.of());
+
+        queuedService.sendToUser(9L, new WebPushService.PushMessage("T", "M", "/", 1L));
+
+        assertThat(queued).hasSize(1);
+        verify(repo, never()).findAllByUserId(9L);   // henuz calismadi: cagiran beklemez
+        queued.get(0).run();
+        verify(repo).findAllByUserId(9L);
     }
 }

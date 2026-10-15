@@ -10,6 +10,10 @@ import BackButton from '../../components/BackButton'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
 import { useGoogleSignIn } from '../../lib/authProviders'
 
+// Sunucudaki kurallarla aynı: şifre 8+ karakter, 1 harf + 1 rakam; web sitesi yalnız http(s)
+const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d).+$/
+const WEBSITE_RULE = /^https?:\/\/[^\s/@]+\S*$/i
+
 /** RegisterPage — FAZ A.2 acik+teal yeniden yazim (DarkVeil ve tum altin
  *  gradientler kaldirildi; form logic + validasyon + step akisi aynen korundu). */
 
@@ -191,6 +195,7 @@ export default function RegisterPage() {
                     {...register('password', {
                       required: 'Şifre zorunlu',
                       minLength: { value: 8, message: 'En az 8 karakter olmalı' },
+                      pattern: { value: PASSWORD_RULE, message: 'En az 1 harf ve 1 rakam içermeli' },
                     })} />
                   {errors.password && <p className="error-text">{errors.password.message}</p>}
                 </div>
@@ -287,7 +292,11 @@ export default function RegisterPage() {
 
                     <div>
                       <label className="label">Website <span className="font-normal" style={{ color: 'var(--ah-ink-4)' }}>(opsiyonel)</span></label>
-                      <input type="url" className="input" placeholder="https://www.isletmem.com" {...register('website')} />
+                      <input type="url" className="input" placeholder="https://www.isletmem.com"
+                        {...register('website', {
+                          pattern: { value: WEBSITE_RULE, message: 'Adres http:// veya https:// ile başlamalı' },
+                        })} />
+                      {errors.website && <p className="error-text">{errors.website.message}</p>}
                     </div>
 
                     <div>

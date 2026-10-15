@@ -109,4 +109,25 @@ describe('BusinessPublicPage', () => {
     expect(screen.queryByRole('button', { name: 'Engelle' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'İşletmeyi bildir' })).not.toBeInTheDocument()
   })
+
+  it('web sitesi yalnız http(s) ise bağlantı; javascript: düz metin', async () => {
+    api.getPublicBusiness.mockResolvedValue({ ...BUSINESS, website: 'javascript:alert(1)',
+      instagram: 'javascript:alert(2)', facebook: 'otelim' })
+    renderPage()
+    await screen.findByRole('heading', { level: 1 })
+    const text = screen.getByText('javascript:alert(1)')
+    expect(text.closest('a')).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Instagram' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Facebook' })).toHaveAttribute('href', 'https://facebook.com/otelim')
+    for (const a of document.querySelectorAll('a[href]')) {
+      expect(a.getAttribute('href').toLowerCase()).not.toMatch(/^javascript:/)
+    }
+  })
+
+  it('https web sitesi bağlantı olarak gösterilir', async () => {
+    api.getPublicBusiness.mockResolvedValue({ ...BUSINESS, website: 'https://www.isletmem.com' })
+    renderPage()
+    expect(await screen.findByRole('link', { name: 'https://www.isletmem.com' }))
+      .toHaveAttribute('href', 'https://www.isletmem.com/')
+  })
 })

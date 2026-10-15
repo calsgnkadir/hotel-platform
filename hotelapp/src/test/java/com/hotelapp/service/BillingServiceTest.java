@@ -157,6 +157,7 @@ class BillingServiceTest {
                 .conversationId("sub-7-conv-" + token).status(PaymentCheckoutStatus.PENDING)
                 .expectedPrice(PRICE).createdAt(LocalDateTime.now().minusMinutes(2)).build();
         when(checkouts.findByTokenForUpdate(token)).thenReturn(Optional.of(pc));
+        when(checkouts.findByToken(token)).thenReturn(Optional.of(pc));
         when(checkouts.save(any())).thenAnswer(i -> i.getArgument(0));
         return pc;
     }
@@ -200,7 +201,7 @@ class BillingServiceTest {
     @Test
     void unknownCallbackTokenDoesNotCallIyzico() {
         IyzicoClient iyzico = configuredMock();
-        when(checkouts.findByTokenForUpdate("forged")).thenReturn(Optional.empty());
+        when(checkouts.findByToken("forged")).thenReturn(Optional.empty());
         when(subs.findByLastCheckoutToken("forged")).thenReturn(Optional.empty());
 
         assertThat(service(iyzico).handleCallback("forged")).endsWith("sub=fail");
@@ -356,9 +357,16 @@ class BillingServiceTest {
         IyzicoClient iyzico = configuredMock();
         Subscription sub = sub();
         sub.setLastCheckoutToken("tok-legacy");
-        when(checkouts.findByTokenForUpdate("tok-legacy")).thenReturn(Optional.empty());
+        when(checkouts.findByToken("tok-legacy")).thenReturn(Optional.empty());
         when(subs.findByLastCheckoutToken("tok-legacy")).thenReturn(Optional.of(sub));
-        when(checkouts.save(any())).thenAnswer(i -> i.getArgument(0));
+        // Benimsenen oturum kendi transaction'ında yazılır; kilitli okuma onu görür
+        java.util.concurrent.atomic.AtomicReference<PaymentCheckout> adopted = new java.util.concurrent.atomic.AtomicReference<>();
+        when(checkouts.save(any())).thenAnswer(i -> {
+            PaymentCheckout p = i.getArgument(0);
+            if ("tok-legacy".equals(p.getToken())) adopted.compareAndSet(null, p);
+            return p;
+        });
+        when(checkouts.findByTokenForUpdate("tok-legacy")).thenAnswer(i -> Optional.ofNullable(adopted.get()));
         when(iyzico.retrieve("tok-legacy")).thenReturn(paid("pay-l", "sub-7-1700000000000"));
 
         assertThat(service(iyzico).handleCallback("tok-legacy")).endsWith("sub=ok");
@@ -422,24 +430,30 @@ class BillingServiceTest {
         paidOne.setCreatedAt(LocalDateTime.now().minusMinutes(20));
         PaymentCheckout stale = pending("tok-e3", sub);
         stale.setCreatedAt(LocalDateTime.now().minusHours(25));
+        PaymentCheckout dbBroken = pending("tok-e4", sub);
+        dbBroken.setCreatedAt(LocalDateTime.now().minusMinutes(25));
         when(checkouts.findTop50ByStatusAndCreatedAtBeforeOrderByCreatedAtAsc(eq(PaymentCheckoutStatus.PENDING), any()))
-                .thenReturn(List.of(broken, paidOne, stale));
+                .thenReturn(List.of(broken, dbBroken, paidOne, stale));
         when(iyzico.retrieve("tok-e1")).thenThrow(new IllegalStateException("iyzico zaman asimi"));
         when(iyzico.retrieve("tok-e2")).thenReturn(paid("pay-e2", paidOne.getConversationId()));
         when(iyzico.retrieve("tok-e3")).thenReturn(new IyzicoClient.CheckoutResult(false, null, null, "not found"));
+        when(iyzico.retrieve("tok-e4")).thenReturn(paid("pay-e4", dbBroken.getConversationId()));
+        when(checkouts.findByTokenForUpdate("tok-e4")).thenThrow(new IllegalStateException("kilit zaman asimi"));
         CountingTxManager tx = new CountingTxManager();
         BillingService svc = service(iyzico);
         svc.setTransactionManager(tx);
 
         int changed = svc.reconcilePendingCheckouts();
 
-        // İlk kaydın hatası diğerlerini durdurmaz ve geri almaz
+        // Bir kaydın hatası diğerlerini durdurmaz ve geri almaz
         assertThat(changed).isEqualTo(2);
         assertThat(broken.getStatus()).isEqualTo(PaymentCheckoutStatus.PENDING);
+        assertThat(dbBroken.getStatus()).isEqualTo(PaymentCheckoutStatus.PENDING);
         assertThat(paidOne.getStatus()).isEqualTo(PaymentCheckoutStatus.SUCCEEDED);
         assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
         assertThat(stale.getStatus()).isEqualTo(PaymentCheckoutStatus.EXPIRED);
-        // Kayıt başına ayrı REQUIRES_NEW transaction: 3 açıldı, 2 commit, 1 rollback
+        // iyzico hatası transaction DIŞINDA (hiç transaction açılmaz); uygulama kayıt başına
+        // ayrı REQUIRES_NEW: 3 açıldı (e4, e2, e3), 2 commit, 1 rollback (e4)
         assertThat(tx.begun).isEqualTo(3);
         assertThat(tx.committed).isEqualTo(2);
         assertThat(tx.rolledBack).isEqualTo(1);
@@ -464,9 +478,53 @@ class BillingServiceTest {
                 .expectedPrice(PRICE).build();
         when(checkouts.findTop50ByStatusAndCreatedAtBeforeOrderByCreatedAtAsc(any(), any())).thenReturn(List.of(listed));
         when(checkouts.findByTokenForUpdate("tok-s")).thenReturn(Optional.of(locked));
+        when(checkouts.findByToken("tok-s")).thenReturn(Optional.of(locked));
 
         assertThat(service(iyzico).reconcilePendingCheckouts()).isZero();
         verify(iyzico, never()).retrieve(any());
+    }
+
+    @Test
+    void callbackCallsIyzicoOutsideAnyTransactionAndAppliesInShortOne() throws Exception {
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        PaymentCheckout pc = pending("tok-tx", sub);
+        CountingTxManager tx = new CountingTxManager();
+        int[] openDuringHttp = {-1};
+        when(iyzico.retrieve("tok-tx")).thenAnswer(i -> {
+            openDuringHttp[0] = tx.begun - tx.committed - tx.rolledBack;
+            return paid("pay-tx", pc.getConversationId());
+        });
+        BillingService svc = service(iyzico);
+        svc.setTransactionManager(tx);
+
+        assertThat(svc.handleCallback("tok-tx")).endsWith("sub=ok");
+
+        assertThat(openDuringHttp[0]).isZero();          // HTTP sırasında açık transaction/kilit yok
+        assertThat(tx.begun).isEqualTo(1);               // sonuç tek kısa transaction'da uygulandı
+        assertThat(tx.committed).isEqualTo(1);
+        assertThat(pc.getStatus()).isEqualTo(PaymentCheckoutStatus.SUCCEEDED);
+        assertThat(BillingService.class.getMethod("handleCallback", String.class)
+                .isAnnotationPresent(org.springframework.transaction.annotation.Transactional.class)).isFalse();
+    }
+
+    @Test
+    void callbackRechecksStatusUnderLockAfterHttp() {
+        // Kilitsiz okumada PENDING; iyzico beklenirken mutabakat sonuçlandırdı → çift uygulama yok
+        IyzicoClient iyzico = configuredMock();
+        Subscription sub = sub();
+        PaymentCheckout pc = pending("tok-race", sub);
+        PaymentCheckout settled = PaymentCheckout.builder().id(1L).business(sub.getBusiness()).token("tok-race")
+                .conversationId(pc.getConversationId()).status(PaymentCheckoutStatus.SUCCEEDED)
+                .expectedPrice(PRICE).build();
+        when(checkouts.findByTokenForUpdate("tok-race")).thenReturn(Optional.of(settled));
+        when(iyzico.retrieve("tok-race")).thenReturn(paid("pay-race", pc.getConversationId()));
+
+        assertThat(service(iyzico).handleCallback("tok-race")).endsWith("sub=ok");
+        assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.TRIAL);
+        assertThat(sub.getCurrentPeriodEnd()).isNull();
+        verify(subs, never()).save(any());
+        verify(checkouts, never()).save(any());
     }
 
     @Test

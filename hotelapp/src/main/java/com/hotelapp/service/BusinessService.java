@@ -79,7 +79,8 @@ public class BusinessService {
         business.setLongitude(req.getLongitude());
         business.setDescription(req.getDescription());
         business.setPhone(req.getPhone());
-        business.setWebsite(req.getWebsite());
+        // Yalnız http(s): adres herkese açık sayfada bağlantı olur (javascript: vb. → 422)
+        business.setWebsite(com.hotelapp.validation.WebsiteUrlPolicy.normalizeOrReject(req.getWebsite()));
         business.setCategory(req.getCategory());
         business.setInstagram(req.getInstagram());
         business.setFacebook(req.getFacebook());

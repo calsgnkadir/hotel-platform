@@ -26,12 +26,28 @@ export function formatTime(iso) {
 /**
  * Jitsi call davet mesaji mi?
  * Format: "[CALL:audio]https://meet.jit.si/xxx" veya "[CALL:video]..."
+ *
+ * Yalnız https://meet.jit.si/ odaları "Katıl" butonu olur; başka adres (kimlik
+ * avı sitesi vb.) null döner ve mesaj düz metin gösterilir. Sunucu da bu biçim
+ * dışındaki [CALL: mesajlarını reddeder (MessageService.requireValidCallInvite).
  */
+const JITSI_PREFIX = 'https://meet.jit.si/'
 export function parseCallInvite(content) {
   if (!content) return null
-  const m = content.match(/^\[CALL:(audio|video)\]\s*(https?:\/\/[^\s]+)$/)
+  const m = content.match(/^\[CALL:(audio|video)\]\s*(\S+)$/)
   if (!m) return null
-  return { type: m[1], url: m[2] }
+  const url = m[2]
+  if (!url.startsWith(JITSI_PREFIX)) return null
+  // Ham oda adı + isteğe bağlı #config parçası (sunucudaki kuralla aynı); "..", "/", "@" yok
+  const [room, fragment, ...rest] = url.slice(JITSI_PREFIX.length).split('#')
+  if (rest.length || !/^[A-Za-z0-9_-]{1,128}$/.test(room)) return null
+  if (fragment !== undefined && !/^[A-Za-z0-9._=&-]{0,200}$/.test(fragment)) return null
+  try {
+    if (new URL(url).hostname !== 'meet.jit.si') return null
+  } catch {
+    return null
+  }
+  return { type: m[1], url }
 }
 
 /**

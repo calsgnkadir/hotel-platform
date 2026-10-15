@@ -115,6 +115,8 @@ export default function ResetPasswordPage() {
                     {...register('newPassword', {
                       required: 'Şifre zorunlu',
                       minLength: { value: 8, message: 'En az 8 karakter' },
+                      // Kayıttaki kuralla aynı (sunucu da reddeder)
+                      pattern: { value: /^(?=.*[A-Za-z])(?=.*\d).+$/, message: 'En az 1 harf ve 1 rakam içermeli' },
                     })} />
                   {errors.newPassword && <p className="error-text">{errors.newPassword.message}</p>}
                 </div>

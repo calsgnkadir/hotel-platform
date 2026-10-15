@@ -109,4 +109,54 @@ class CandidateProfileServiceTest {
         assertThatThrownBy(() -> service.getPublicProfile(OWNER_APPLIED, ADMIN))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
+
+    // ── Telefon degisince dogrulama sifirlanir ────────────────────────
+
+    private static CandidateProfileService.ProfileUpdateRequest update(String phone) {
+        CandidateProfileService.ProfileUpdateRequest r = new CandidateProfileService.ProfileUpdateRequest();
+        r.setFullName("Kullanici 1");
+        r.setPhone(phone);
+        return r;
+    }
+
+    private User verifiedCandidate() {
+        User u = users.findById(CANDIDATE).orElseThrow();
+        u.setPhone("0555 111 22 33");
+        u.setPhoneVerifiedAt(java.time.LocalDateTime.now().minusDays(1));
+        u.setPhoneOtpCode("123456");
+        u.setPhoneOtpExpiresAt(java.time.LocalDateTime.now().plusMinutes(5));
+        u.setPhoneOtpAttempts(2);
+        u.setPhoneOtpSentAt(java.time.LocalDateTime.now().minusSeconds(10));
+        return u;
+    }
+
+    @Test
+    void phoneChange_resetsVerificationAndPendingCode() {
+        User u = verifiedCandidate();
+        var sentAt = u.getPhoneOtpSentAt();
+
+        service.updateMyProfile(CANDIDATE, update("0555 999 88 77"));
+
+        assertThat(u.getPhone()).isEqualTo("0555 999 88 77");
+        assertThat(u.isPhoneVerified()).isFalse();
+        assertThat(u.getPhoneOtpCode()).isNull();
+        assertThat(u.getPhoneOtpExpiresAt()).isNull();
+        assertThat(u.getPhoneOtpAttempts()).isZero();
+        assertThat(u.getPhoneOtpSentAt()).isEqualTo(sentAt);   // SMS bekleme suresi korunur
+    }
+
+    @Test
+    void phoneRemoved_resetsVerification() {
+        User u = verifiedCandidate();
+        service.updateMyProfile(CANDIDATE, update(null));
+        assertThat(u.isPhoneVerified()).isFalse();
+    }
+
+    @Test
+    void samePhoneDifferentFormat_keepsVerification() {
+        User u = verifiedCandidate();
+        service.updateMyProfile(CANDIDATE, update("+90 555 111 2233"));
+        assertThat(u.isPhoneVerified()).isTrue();
+        assertThat(u.getPhoneOtpCode()).isEqualTo("123456");
+    }
 }

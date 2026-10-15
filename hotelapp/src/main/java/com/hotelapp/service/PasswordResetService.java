@@ -115,8 +115,10 @@ public class PasswordResetService {
     /** Token + yeni şifre ile sıfırlamayı tamamlar. */
     @Transactional
     public void confirmReset(String token, String newPassword) {
-        if (newPassword == null || newPassword.length() < 8) {
-            throw BusinessRuleException.keyed("error.auth.passwordTooShort");
+        // Kayıttaki şifre kuralıyla aynı (en az 8 karakter + 1 harf + 1 rakam)
+        String violation = com.hotelapp.validation.PasswordPolicy.violationKey(newPassword);
+        if (violation != null) {
+            throw BusinessRuleException.keyed(violation);
         }
 
         PasswordResetToken prt = tokenRepository.findByToken(token)

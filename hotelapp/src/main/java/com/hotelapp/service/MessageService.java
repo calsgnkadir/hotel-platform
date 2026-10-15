@@ -199,10 +199,13 @@ public class MessageService {
             }
         }
 
+        String content = req.getContent().trim();
+        requireValidCallInvite(content);
+
         Message msg = Message.builder()
                 .conversation(conv)
                 .sender(sender)
-                .content(req.getContent().trim())
+                .content(content)
                 .parentMessage(parent)
                 .isRead(false)
                 .build();
@@ -230,6 +233,25 @@ public class MessageService {
         MessageDto senderView = toMessageDto(msg, senderId);
         broadcastMessage(conv, msg, senderId, recipientId);
         return senderView;
+    }
+
+    /** Arama daveti öneki — istemci bu önekli mesajı "Katıl" butonu olarak gösterir. */
+    static final String CALL_PREFIX = "[CALL:";
+    /**
+     * Tek geçerli davet biçimi: Jitsi (meet.jit.si) odası. Oda adı yalnız güvenli
+     * karakterler; isteğe bağlı #config... parçası (sesli arama: video kapalı başlar).
+     */
+    private static final java.util.regex.Pattern CALL_INVITE = java.util.regex.Pattern.compile(
+            "^\\[CALL:(audio|video)\\]\\s*https://meet\\.jit\\.si/[A-Za-z0-9_-]{1,128}(#[A-Za-z0-9._=&-]{0,200})?$");
+
+    /**
+     * "[CALL:" ile başlayan içerik yalnız Jitsi daveti olabilir. Başka adres
+     * (ör. kimlik avı sitesi) "Katıl" butonu kılığında karşı tarafa gitmesin → 422.
+     */
+    static void requireValidCallInvite(String content) {
+        if (content != null && content.startsWith(CALL_PREFIX) && !CALL_INVITE.matcher(content).matches()) {
+            throw BusinessRuleException.keyed("error.message.callInviteInvalid");
+        }
     }
 
     /** Bildirim önizlemesi: arama daveti token'larını okunur metne çevirir. */
@@ -262,6 +284,8 @@ public class MessageService {
         requireSenderNotBlocked(conv, senderId);
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", senderId));
+        // Açıklama da sahte arama daveti taşıyamaz (yüklemeden ÖNCE reddedilir)
+        requireValidCallInvite(caption == null ? null : caption.trim());
 
         // Cloudinary'ye yükle, secure_url al
         String url = fileStorageService.storeMessageAttachment(file, conv.getId());
@@ -464,19 +488,25 @@ public class MessageService {
                     .message(msg).user(user).reaction(reaction).build());
         }
 
-        // Her iki tarafa guncel aggregate push (viewer-bazli 'mine' farkli)
+        // Her iki tarafa guncel aggregate push (viewer-bazli 'mine' farkli).
+        // Payload'lar transaction icinde hazirlanir; gonderim commit SONRASI —
+        // reaksiyon kaydi geri alinirsa yayin yapilmaz (broadcastMessage ile ayni desen).
         Long candidateId = conv.getCandidate().getId();
         Long ownerId     = conv.getBusinessOwner().getId();
-        try {
-            messagingTemplate.convertAndSendToUser(
-                    conv.getCandidate().getEmail(), "/queue/reactions",
-                    new WsReactionPayload(conversationId, messageId, reactionsFor(messageId, candidateId)));
-            messagingTemplate.convertAndSendToUser(
-                    conv.getBusinessOwner().getEmail(), "/queue/reactions",
-                    new WsReactionPayload(conversationId, messageId, reactionsFor(messageId, ownerId)));
-        } catch (Exception e) {
-            log.warn("WS reaction broadcast failed msg={}: {}", messageId, e.getMessage());
-        }
+        String candidateEmail = conv.getCandidate().getEmail();
+        String ownerEmail     = conv.getBusinessOwner().getEmail();
+        WsReactionPayload forCandidate =
+                new WsReactionPayload(conversationId, messageId, reactionsFor(messageId, candidateId));
+        WsReactionPayload forOwner =
+                new WsReactionPayload(conversationId, messageId, reactionsFor(messageId, ownerId));
+        com.hotelapp.config.AfterCommit.run(() -> {
+            try {
+                messagingTemplate.convertAndSendToUser(candidateEmail, "/queue/reactions", forCandidate);
+                messagingTemplate.convertAndSendToUser(ownerEmail, "/queue/reactions", forOwner);
+            } catch (Exception e) {
+                log.warn("WS reaction broadcast failed msg={}: {}", messageId, e.getMessage());
+            }
+        });
 
         return reactionsFor(messageId, userId);
     }

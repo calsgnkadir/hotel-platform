@@ -107,6 +107,58 @@ class AuthServiceTest {
         verify(businessRepository).save(any());
     }
 
+    @Test
+    @DisplayName("Kayit: e-posta kayitliysa hata mesaji/anahtari e-postayi yansitmaz")
+    void register_duplicateEmail_doesNotEchoEmail() {
+        RegisterRequest req = request(Role.CANDIDATE);
+        when(userRepository.existsByEmail(req.getEmail())).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.register(req))
+                .isInstanceOf(BusinessRuleException.class)
+                .satisfies(e -> {
+                    assertThat(((BusinessRuleException) e).getMessageKey()).isEqualTo("error.auth.emailTaken");
+                    assertThat(e.getMessage()).doesNotContain(req.getEmail());
+                    assertThat(((BusinessRuleException) e).getMessageArgs()).isEmpty();
+                });
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Kayit: isletme web sitesi http(s) degilse 422, hicbir sey kaydedilmez")
+    void register_business_nonHttpWebsite_rejected() {
+        for (String bad : java.util.List.of("javascript:alert(1)", "data:text/html,x", "www.isletmem.com",
+                "ftp://isletmem.com", "https://site.com@kotu.example")) {
+            RegisterRequest req = request(Role.BUSINESS_OWNER);
+            req.setBusinessName("Test Isletme");
+            req.setWebsite(bad);
+            when(userRepository.existsByEmail(req.getEmail())).thenReturn(false);
+
+            assertThatThrownBy(() -> authService.register(req))
+                    .as(bad)
+                    .isInstanceOf(BusinessRuleException.class)
+                    .extracting(e -> ((BusinessRuleException) e).getMessageKey())
+                    .isEqualTo("error.business.websiteInvalid");
+        }
+        verify(userRepository, never()).save(any());
+        verify(businessRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Kayit: https web sitesi kirpilip kaydedilir")
+    void register_business_httpsWebsite_saved() {
+        RegisterRequest req = request(Role.BUSINESS_OWNER);
+        req.setBusinessName("Test Isletme");
+        req.setWebsite("  https://www.isletmem.com/iletisim  ");
+        when(userRepository.existsByEmail(req.getEmail())).thenReturn(false);
+
+        authService.register(req);
+
+        ArgumentCaptor<com.hotelapp.entity.Business> captor =
+                ArgumentCaptor.forClass(com.hotelapp.entity.Business.class);
+        verify(businessRepository).save(captor.capture());
+        assertThat(captor.getValue().getWebsite()).isEqualTo("https://www.isletmem.com/iletisim");
+    }
+
     /** DTO katmani: Bean Validation ile ilk savunma hatti. */
     @Nested
     class RegisterRequestValidation {

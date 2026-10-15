@@ -51,6 +51,8 @@ class AsyncInfrastructureTest {
     @Autowired @Qualifier("taskScheduler") ThreadPoolTaskScheduler taskScheduler;
     @Autowired @Qualifier("notificationExecutor") ThreadPoolTaskExecutor notificationExecutor;
     @Autowired EmailService emailService;
+    @Autowired @Qualifier("taskExecutor") ThreadPoolTaskExecutor taskExecutor;
+    @Autowired com.hotelapp.event.NoShowEventListener noShowEventListener;
     @Autowired org.springframework.context.ApplicationContext context;
 
     private Long newUser() {
@@ -183,11 +185,27 @@ class AsyncInfrastructureTest {
         var tasks = scheduledProcessor.getScheduledTasks().stream().map(ScheduledTask::getTask).toList();
         assertThat(tasks).noneMatch(t -> t instanceof CronTask);
         assertThat(tasks).filteredOn(t -> t instanceof FixedDelayTask)
-                // LoginAttemptLimiter.evictIdle yalniz bellek ici temizlik; zamana bagli is kurali yok
-                .filteredOn(t -> !t.getRunnable().toString().contains("LoginAttemptLimiter"))
                 .isNotEmpty()
                 .allSatisfy(t -> assertThat(((FixedDelayTask) t).getInitialDelayDuration())
                         .isGreaterThan(Duration.ofDays(30)));
+    }
+
+    @Test
+    @DisplayName("Niteleyicisiz @Async sinirli 'taskExecutor' havuzunda (SimpleAsyncTaskExecutor degil)")
+    void unqualifiedAsyncUsesBoundedTaskExecutor() throws Exception {
+        var advised = (org.springframework.aop.framework.Advised) noShowEventListener;
+        var interceptor = java.util.Arrays.stream(advised.getAdvisors())
+                .map(org.springframework.aop.Advisor::getAdvice)
+                .filter(a -> a instanceof org.springframework.aop.interceptor.AsyncExecutionInterceptor)
+                .findFirst().orElseThrow();
+        var method = com.hotelapp.event.NoShowEventListener.class
+                .getMethod("onNoShowMarked", com.hotelapp.event.NoShowMarkedEvent.class);
+
+        Object executor = ReflectionTestUtils.invokeMethod(interceptor, "determineAsyncExecutor", method);
+
+        assertThat(executor).isSameAs(taskExecutor);
+        assertThat(taskExecutor.getMaxPoolSize()).isEqualTo(4);
+        assertThat(taskExecutor.getThreadNamePrefix()).isEqualTo("async-");
     }
 
     @Test

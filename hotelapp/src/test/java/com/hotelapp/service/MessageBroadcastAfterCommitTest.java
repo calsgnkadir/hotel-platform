@@ -35,6 +35,9 @@ class MessageBroadcastAfterCommitTest {
 
     private SimpMessagingTemplate ws;
     private MessageService service;
+    private MessageRepository messages;
+    private MessageReactionRepository reactions;
+    private Conversation conv;
 
     private static User user(long id, Role role) {
         User u = new User();
@@ -49,17 +52,18 @@ class MessageBroadcastAfterCommitTest {
     @BeforeEach
     void setUp() {
         ConversationRepository conversations = mock(ConversationRepository.class);
-        MessageRepository messages = mock(MessageRepository.class);
+        messages = mock(MessageRepository.class);
+        reactions = mock(MessageReactionRepository.class);
         UserRepository users = mock(UserRepository.class);
         ws = mock(SimpMessagingTemplate.class);
-        service = new MessageService(conversations, messages, mock(MessageReactionRepository.class), users,
+        service = new MessageService(conversations, messages, reactions, users,
                 mock(ApplicationRepository.class), mock(NotificationService.class), mock(FileStorageService.class),
                 ws, mock(BusinessBlockRepository.class), mock(CandidateBlockRepository.class),
                 mock(BusinessRepository.class));
 
         User candidate = user(CANDIDATE, Role.CANDIDATE);
         User owner = user(OWNER, Role.BUSINESS_OWNER);
-        Conversation conv = Conversation.builder().id(CONV).candidate(candidate).businessOwner(owner).build();
+        conv = Conversation.builder().id(CONV).candidate(candidate).businessOwner(owner).build();
         when(users.findById(CANDIDATE)).thenReturn(Optional.of(candidate));
         when(users.findById(OWNER)).thenReturn(Optional.of(owner));
         when(conversations.findById(CONV)).thenReturn(Optional.of(conv));
@@ -115,5 +119,76 @@ class MessageBroadcastAfterCommitTest {
     void noTransaction_immediate() {
         service.sendMessage(CONV, CANDIDATE, text("merhaba"));
         verify(ws, times(2)).convertAndSendToUser(any(), eq("/queue/messages"), any());
+    }
+
+    // ── Reaksiyon yayini da commit sonrasi ───────────────────────────
+
+    private void stubReactionTarget() {
+        Message target = Message.builder().id(5L).conversation(conv).content("x").build();
+        when(messages.findById(5L)).thenReturn(Optional.of(target));
+        when(reactions.findByMessageIdAndUserId(5L, CANDIDATE)).thenReturn(Optional.empty());
+        when(reactions.findAllByMessageId(5L)).thenReturn(java.util.List.of());
+    }
+
+    @Test
+    @DisplayName("Reaksiyon: commit oncesi WS yayini yok, commit sonrasi iki tarafa")
+    void reactionBroadcastAfterCommit() {
+        stubReactionTarget();
+        TransactionSynchronizationManager.initSynchronization();
+
+        service.toggleReaction(CONV, 5L, CANDIDATE, "heart");
+        verifyNoInteractions(ws);
+
+        TransactionSynchronizationManager.getSynchronizations()
+                .forEach(s -> s.afterCompletion(TransactionSynchronization.STATUS_COMMITTED));
+        verify(ws).convertAndSendToUser(eq("u1@test.local"), eq("/queue/reactions"), any());
+        verify(ws).convertAndSendToUser(eq("u2@test.local"), eq("/queue/reactions"), any());
+    }
+
+    @Test
+    @DisplayName("Reaksiyon kaydi geri alinirsa WS yayini yapilmaz")
+    void reactionRollback_noBroadcast() {
+        stubReactionTarget();
+        TransactionSynchronizationManager.initSynchronization();
+
+        service.toggleReaction(CONV, 5L, CANDIDATE, "heart");
+        TransactionSynchronizationManager.getSynchronizations()
+                .forEach(s -> s.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+
+        verifyNoInteractions(ws);
+    }
+
+    // ── Arama daveti yalniz Jitsi ────────────────────────────────────
+
+    @Test
+    @DisplayName("Jitsi davetleri kabul edilir (sesli arama #config parcasi dahil)")
+    void jitsiInviteAccepted() {
+        service.sendMessage(CONV, CANDIDATE, text("[CALL:video]https://meet.jit.si/kadrom-10-abc123xy"));
+        service.sendMessage(CONV, CANDIDATE,
+                text("[CALL:audio]https://meet.jit.si/kadrom-10-abc123xy#config.startWithVideoMuted=true"));
+        verify(messages, times(2)).save(any());
+    }
+
+    @Test
+    @DisplayName("[CALL: onekli Jitsi disi adres 422 ile reddedilir, kaydedilmez")
+    void nonJitsiInviteRejected() {
+        for (String bad : java.util.List.of(
+                "[CALL:video]https://evil.example/login",
+                "[CALL:video]http://meet.jit.si/oda",
+                "[CALL:video]https://meet.jit.si.evil.example/oda",
+                "[CALL:video]https://meet.jit.si@evil.example/oda",
+                "[CALL:video]javascript:alert(1)",
+                "[CALL:screen]https://meet.jit.si/oda",
+                "[CALL:audio]https://meet.jit.si/oda/../../x")) {
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.sendMessage(CONV, CANDIDATE, text(bad)))
+                    .as(bad)
+                    .isInstanceOf(com.hotelapp.exception.BusinessRuleException.class)
+                    .extracting(e -> ((com.hotelapp.exception.BusinessRuleException) e).getMessageKey())
+                    .isEqualTo("error.message.callInviteInvalid");
+        }
+        verify(messages, never()).save(any());
+        // Onek tasimayan duz metin (adres icerse de) serbest
+        service.sendMessage(CONV, CANDIDATE, text("Toplanti linki: https://example.com [CALL:"));
+        verify(messages).save(any());
     }
 }

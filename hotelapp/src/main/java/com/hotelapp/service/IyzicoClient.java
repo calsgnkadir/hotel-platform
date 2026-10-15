@@ -10,8 +10,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PreDestroy;
+
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * iyzico Checkout Form (hosted ödeme sayfası).
@@ -29,16 +39,42 @@ import java.util.List;
 @Slf4j
 public class IyzicoClient {
 
+    /**
+     * iyzipay-java (2.0.x) HTTP zaman aşımı kütüphanede SABİT 140 sn (connect + read;
+     * Options'ta ayar yok). Çağrı sınırlı bir havuzda koşturulur, çağıran en fazla
+     * {@code timeoutMs} bekler. Zaman aşımında arka plandaki bağlantı kütüphanenin
+     * kendi süresi dolana kadar o havuz thread'ini tutabilir — havuz küçük ve sınırlı
+     * (dolarsa yeni çağrı hemen "meşgul" hatası alır, istek thread'leri tükenmez).
+     */
+    static final int DEFAULT_TIMEOUT_MS = 20_000;
+    private static final int MAX_CONCURRENT_CALLS = 4;
+
     private final Options options;
     private final String callbackUrl;
     private final boolean configured;
     private final boolean sandbox;
+    private final long timeoutMs;
+    private final ThreadPoolExecutor httpPool;
 
+    public IyzicoClient(String apiKey, String secretKey, String baseUrl, String callbackUrl) {
+        this(apiKey, secretKey, baseUrl, callbackUrl, DEFAULT_TIMEOUT_MS);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
     public IyzicoClient(
             @Value("${app.iyzico.api-key:}") String apiKey,
             @Value("${app.iyzico.secret-key:}") String secretKey,
             @Value("${app.iyzico.base-url:https://sandbox-api.iyzipay.com}") String baseUrl,
-            @Value("${app.iyzico.callback-url:http://localhost:8080/api/billing/callback}") String callbackUrl) {
+            @Value("${app.iyzico.callback-url:http://localhost:8080/api/billing/callback}") String callbackUrl,
+            @Value("${app.iyzico.timeout-ms:20000}") long timeoutMs) {
+        this.timeoutMs = timeoutMs;
+        AtomicInteger seq = new AtomicInteger();
+        this.httpPool = new ThreadPoolExecutor(0, MAX_CONCURRENT_CALLS, 60, TimeUnit.SECONDS,
+                new SynchronousQueue<>(), r -> {
+                    Thread t = new Thread(r, "iyzico-http-" + seq.incrementAndGet());
+                    t.setDaemon(true);
+                    return t;
+                }, new ThreadPoolExecutor.AbortPolicy());
         this.options = new Options();
         this.options.setApiKey(apiKey);
         this.options.setSecretKey(secretKey);
@@ -131,13 +167,17 @@ public class IyzicoClient {
             item.setPrice(price);
             req.setBasketItems(List.of(item));
 
-            CheckoutFormInitialize init = CheckoutFormInitialize.create(req, options);
+            CheckoutFormInitialize init = callWithTimeout(() -> createBlocking(req));
             if (!"success".equalsIgnoreCase(init.getStatus())) {
                 log.warn("[IYZICO] checkout init basarisiz: {} / {}", init.getStatus(), init.getErrorMessage());
                 return new CheckoutInit(false, null, null, null, init.getErrorMessage());
             }
             return new CheckoutInit(true, init.getToken(), init.getPaymentPageUrl(),
                     init.getCheckoutFormContent(), null);
+        } catch (TimeoutException | java.util.concurrent.RejectedExecutionException e) {
+            log.warn("[IYZICO] checkout init yanit vermedi ({}): {}", timeoutMs, e.getClass().getSimpleName());
+            return new CheckoutInit(false, null, null, null,
+                    "Ödeme sistemi şu an yanıt vermiyor. Lütfen birkaç dakika sonra tekrar deneyin.");
         } catch (Exception e) {
             log.error("[IYZICO] checkout init hata", e);
             return new CheckoutInit(false, null, null, null, e.getMessage());
@@ -152,15 +192,51 @@ public class IyzicoClient {
         try {
             RetrieveCheckoutFormRequest req = new RetrieveCheckoutFormRequest();
             req.setToken(token);
-            CheckoutForm form = CheckoutForm.retrieve(req, options);
+            CheckoutForm form = callWithTimeout(() -> retrieveBlocking(req));
             boolean paid = "success".equalsIgnoreCase(form.getStatus())
                     && "SUCCESS".equalsIgnoreCase(form.getPaymentStatus());
             return new CheckoutResult(paid, form.getPaymentId(), form.getPaymentStatus(), form.getErrorMessage(),
                     form.getPaidPrice(), form.getBasketId(), form.getConversationId());
+        } catch (TimeoutException e) {
+            // paymentStatus null → BillingService oturumu PENDING bırakır, mutabakat tekrar sorar
+            log.warn("[IYZICO] retrieve zaman asimi ({} ms) — oturum beklemede kalir", timeoutMs);
+            return new CheckoutResult(false, null, null, "iyzico zaman aşımı");
         } catch (Exception e) {
             log.error("[IYZICO] retrieve hata", e);
             return new CheckoutResult(false, null, null, e.getMessage());
         }
+    }
+
+    /** Kütüphanenin bloklayan çağrıları — testte zaman aşımını simüle etmek için ayrı. */
+    CheckoutFormInitialize createBlocking(CreateCheckoutFormInitializeRequest req) {
+        return CheckoutFormInitialize.create(req, options);
+    }
+
+    CheckoutForm retrieveBlocking(RetrieveCheckoutFormRequest req) {
+        return CheckoutForm.retrieve(req, options);
+    }
+
+    /**
+     * Çağrıyı sınırlı havuzda koşturur, en fazla timeoutMs bekler.
+     * @throws TimeoutException süre dolarsa; RejectedExecutionException havuz doluysa
+     */
+    <T> T callWithTimeout(Callable<T> call) throws Exception {
+        Future<T> f = httpPool.submit(call);
+        try {
+            return f.get(timeoutMs, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            f.cancel(true);
+            throw e;
+        } catch (ExecutionException e) {
+            Throwable c = e.getCause();
+            if (c instanceof Exception ex) throw ex;
+            throw e;
+        }
+    }
+
+    @PreDestroy
+    void shutdown() {
+        httpPool.shutdownNow();
     }
 
     private static String safe(String v, String fallback) {

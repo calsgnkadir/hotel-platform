@@ -73,8 +73,9 @@ async function performRefresh() {
 }
 
 /* ─────────── REQUEST interceptor ─────────── */
-// Login/register/refresh'te token gönderme
-const NO_TOKEN_PATHS = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh']
+// Login/register/refresh/Google kod değişiminde token gönderme (eski, süresi dolmuş
+// token proaktif yenilemeyi tetikleyip Google girişini /login'e atmasın)
+const NO_TOKEN_PATHS = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/oauth/exchange']
 
 api.interceptors.request.use(async (config) => {
   const url = config.url || ''

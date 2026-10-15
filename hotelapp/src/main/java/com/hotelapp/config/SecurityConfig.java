@@ -46,6 +46,20 @@ public class SecurityConfig {
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
+    /** 403 gövdesi (Türkçe/İngilizce, Accept-Language) — GlobalExceptionHandler ile aynı biçim. */
+    private final Messages messages;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
+    /**
+     * Swagger/OpenAPI yalnız açıkken herkese açık. Prod'da varsayılan kapalı
+     * (application-prod.yml: SWAGGER_ENABLED); kapalıyken bu yollar izinli listeden
+     * çıkar → girişsiz 401, girişli 404.
+     */
+    @Value("${springdoc.api-docs.enabled:true}")
+    private boolean apiDocsEnabled;
+    @Value("${springdoc.swagger-ui.enabled:true}")
+    private boolean swaggerUiEnabled;
+
     /**
      * CORS izinli domain'ler — virgülle ayrılmış liste.
      * Dev: localhost:5173 (Vite). Prod: Vercel domain env var ile gelir.
@@ -115,6 +129,11 @@ public class SecurityConfig {
                                 "camera=(), microphone=(), geolocation=(self), payment=()"))
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Hata yönlendirmesi (sendError → /error) kendi başına yetki istemesin:
+                        // yoksa 403/404 gibi yanıtlar ERROR dispatch'te girişsiz sayılıp 401'e
+                        // dönüşebiliyordu (JWT filtresi hata dispatch'inde çalışmaz).
+                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
+                        .requestMatchers(docPaths(apiDocsEnabled, swaggerUiEnabled)).permitAll()
                         // FAZ 9.1 — POST /api/listings/{id}/view anonim (landing SEO + widget).
                         // Rate-limit filter view spam'ini engeller. AUTH gerektiren
                         // diger /api/listings/** endpoint'lerinden (detail, my, salary-benchmark)
@@ -127,9 +146,6 @@ public class SecurityConfig {
                                 "/api/businesses/**",
                                 "/api/businesses",
                                 "/api/listings",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
                                 "/oauth2/**",              // #92: Google OAuth flow
                                 "/login/oauth2/**",         // #92: Google callback
                                 "/ws/**",                   // FAZ 1/#12 — WS handshake (auth STOMP CONNECT'te yapilir)
@@ -158,9 +174,13 @@ public class SecurityConfig {
                 // 401'de tetikleniyor, 302'yi (cross-origin OAuth'a follow → CORS)
                 // yakalayamadigi icin sessiz refresh KIRILIYORDU. /api/** artik 401
                 // (JSON) doner; OAuth redirect yalnizca tarayici rotalarinda kalir.
-                .exceptionHandling(ex -> ex.defaultAuthenticationEntryPointFor(
-                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                        new AntPathRequestMatcher("/api/**")))
+                // Girişli ama rolü yetmeyen istek → 403 + JSON (Türkçe). Girişsiz → 401 kalır;
+                // frontend yalnız 401'de oturum yenilemeyi dener, 403'te denemez.
+                .exceptionHandling(ex -> ex
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                new AntPathRequestMatcher("/api/**"))
+                        .accessDeniedHandler(jsonAccessDeniedHandler()))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -177,5 +197,37 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    /** Swagger yolları: yalnız ilgili springdoc bileşeni açıksa izinli listeye girer. */
+    static String[] docPaths(boolean apiDocsEnabled, boolean swaggerUiEnabled) {
+        List<String> paths = new java.util.ArrayList<>();
+        if (apiDocsEnabled) paths.add("/v3/api-docs/**");
+        if (swaggerUiEnabled) {
+            paths.add("/swagger-ui/**");
+            paths.add("/swagger-ui.html");
+        }
+        // requestMatchers boş dizi kabul etmez; eşleşmeyecek sabit bir yol kullan
+        if (paths.isEmpty()) paths.add("/__docs-disabled__");
+        return paths.toArray(String[]::new);
+    }
+
+    /**
+     * Spring varsayılanı sendError(403) yapıyordu: gövde yok ve ERROR dispatch'inde
+     * yanıt girişsiz/401'e dönüşebiliyordu. Burada doğrudan 403 + JSON yazılır.
+     */
+    org.springframework.security.web.access.AccessDeniedHandler jsonAccessDeniedHandler() {
+        return (request, response, ex) -> {
+            if (response.isCommitted()) return;
+            java.util.Map<String, Object> body = new java.util.LinkedHashMap<>();
+            body.put("timestamp", java.time.LocalDateTime.now().toString());
+            body.put("status", HttpStatus.FORBIDDEN.value());
+            body.put("error", HttpStatus.FORBIDDEN.getReasonPhrase());
+            body.put("message", messages.get("error.access.denied"));
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.setContentType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(java.nio.charset.StandardCharsets.UTF_8.name());
+            objectMapper.writeValue(response.getOutputStream(), body);
+        };
     }
 }

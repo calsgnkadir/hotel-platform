@@ -19,6 +19,12 @@ public interface PaymentCheckoutRepository extends JpaRepository<PaymentCheckout
     @Query("SELECT p FROM PaymentCheckout p WHERE p.token = :token")
     Optional<PaymentCheckout> findByTokenForUpdate(@Param("token") String token);
 
+    /**
+     * Kilitsiz okuma — iyzico HTTP çağrısından ÖNCE durum kontrolü için. Sonucu
+     * uygulamadan önce kısa transaction'da {@link #findByTokenForUpdate} ile yeniden okunur.
+     */
+    Optional<PaymentCheckout> findByToken(String token);
+
     /** Mutabakat: belirli andan eski bekleyen oturumlar (en eskiden başlayarak). */
     List<PaymentCheckout> findTop50ByStatusAndCreatedAtBeforeOrderByCreatedAtAsc(
             PaymentCheckoutStatus status, LocalDateTime before);

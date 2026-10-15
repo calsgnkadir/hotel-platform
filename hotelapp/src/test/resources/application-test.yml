@@ -38,6 +38,7 @@ app:
     standby-expiry-initial-delay-ms: 31536000000
     saved-search-initial-delay-ms: 31536000000
     idempotency-evict-initial-delay-ms: 31536000000
+    login-attempt-evict-initial-delay-ms: 31536000000
   listing:
     auto-close-initial-delay-ms: 31536000000
   billing:

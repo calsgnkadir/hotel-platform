@@ -14,6 +14,29 @@ import BusinessLogo from '../../components/BusinessLogo'
 const MapView = lazy(() => import('../../components/MapView'))
 
 /**
+ * Yalnız http(s) adres bağlantı olur; javascript:, data: vb. null (düz metin gösterilir).
+ * Sunucu da kayıtta yalnız http(s) kabul eder; bu, eski kayıtlara karşı ikinci katman.
+ */
+function safeHttpUrl(value) {
+  if (!value || typeof value !== 'string') return null
+  try {
+    const u = new URL(value.trim())
+    return (u.protocol === 'http:' || u.protocol === 'https:') && u.hostname ? u.href : null
+  } catch {
+    return null
+  }
+}
+
+/** Sosyal medya: tam http(s) adres ya da kullanıcı adı (ör. @otelim) → profil bağlantısı. */
+function socialUrl(value, base) {
+  if (!value || typeof value !== 'string') return null
+  const v = value.trim()
+  if (/^https?:/i.test(v)) return safeHttpUrl(v)
+  const handle = v.replace(/^@/, '')
+  return /^[A-Za-z0-9._-]{1,64}$/.test(handle) ? `${base}/${handle}` : null
+}
+
+/**
  * FAZ 5.9 — Isletme public profil sayfasi (paylasilabilir).
  *
  * Route: /p/business/:id
@@ -470,27 +493,33 @@ export default function BusinessPublicPage() {
                   {business.website && (
                     <li>
                       <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--ah-ink-3)' }}>Web</div>
-                      <a href={business.website} target="_blank" rel="noopener noreferrer"
-                         className="font-medium block mt-0.5 hover:underline truncate"
-                         style={{ color: 'var(--ah-ink)' }}>{business.website}</a>
+                      {safeHttpUrl(business.website) ? (
+                        <a href={safeHttpUrl(business.website)} target="_blank" rel="noopener noreferrer"
+                           className="font-medium block mt-0.5 hover:underline truncate"
+                           style={{ color: 'var(--ah-ink)' }}>{business.website}</a>
+                      ) : (
+                        <span className="font-medium block mt-0.5 truncate" style={{ color: 'var(--ah-ink)' }}>
+                          {business.website}
+                        </span>
+                      )}
                     </li>
                   )}
                 </ul>
 
-                {(business.instagram || business.facebook) && (
+                {(socialUrl(business.instagram, 'https://instagram.com') || socialUrl(business.facebook, 'https://facebook.com')) && (
                   <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--ah-line)' }}>
                     <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'var(--ah-ink-3)' }}>Sosyal Medya</div>
                     <div className="flex gap-2 flex-wrap">
-                      {business.instagram && (
-                        <a href={business.instagram.startsWith('http') ? business.instagram : `https://instagram.com/${business.instagram}`}
+                      {socialUrl(business.instagram, 'https://instagram.com') && (
+                        <a href={socialUrl(business.instagram, 'https://instagram.com')}
                            target="_blank" rel="noopener noreferrer"
                            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
                            style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-ink)', border: '1px solid var(--ah-line-2)' }}>
                           Instagram
                         </a>
                       )}
-                      {business.facebook && (
-                        <a href={business.facebook.startsWith('http') ? business.facebook : `https://facebook.com/${business.facebook}`}
+                      {socialUrl(business.facebook, 'https://facebook.com') && (
+                        <a href={socialUrl(business.facebook, 'https://facebook.com')}
                            target="_blank" rel="noopener noreferrer"
                            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
                            style={{ background: 'var(--ah-band)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line)' }}>

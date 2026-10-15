@@ -36,6 +36,7 @@ public class AuthController {
     private final EmailVerificationService emailVerificationService;
     private final com.hotelapp.repository.UserRepository userRepository;
     private final com.hotelapp.security.oauth.OAuthProviders oAuthProviders;
+    private final com.hotelapp.security.ShowcaseDemoGuard showcaseDemoGuard;
 
     /** Cookie adı — frontend bilmek zorunda değil, tarayıcı otomatik gönderir */
     private static final String REFRESH_COOKIE = "refreshToken";
@@ -84,6 +85,27 @@ public class AuthController {
         return ResponseEntity.ok(auth);
     }
 
+    /** Google girişi dönüşündeki tek kullanımlık kod. */
+    public record OAuthExchangeRequest(
+            @jakarta.validation.constraints.NotBlank
+            @jakarta.validation.constraints.Size(max = 128) String code) {}
+
+    @Operation(summary = "Google girişi: tek kullanımlık kodu oturuma çevir",
+               description = "OAuth dönüşünde adresin #code= parçasındaki kod. Erişim token'ı gövdede, "
+                       + "refresh token httpOnly çerezde döner. Kod 60 sn geçerli, tek kullanımlık.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Giriş başarılı"),
+        @ApiResponse(responseCode = "422", description = "Kod geçersiz, süresi dolmuş ya da kullanılmış")
+    })
+    @PostMapping("/oauth/exchange")
+    public ResponseEntity<AuthResponse> exchangeOAuthCode(
+            @Valid @RequestBody OAuthExchangeRequest request,
+            HttpServletResponse response) {
+        AuthResponse auth = authService.exchangeOAuthCode(request.code());
+        attachRefreshCookie(response, auth);
+        return ResponseEntity.ok(auth);
+    }
+
     @Operation(summary = "Refresh token ile yeni access token al",
                description = "Refresh token cookie'den okunur. Yeni access + yeni refresh döner (rotation).")
     @PostMapping("/refresh")
@@ -117,6 +139,8 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> changePassword(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @Valid @RequestBody ChangePasswordRequest request) {
+        // Vitrinde ortak demo hesabının şifresi değiştirilemez (403)
+        showcaseDemoGuard.requireMutable(currentUser.getUsername());
         authService.changePassword(currentUser.getId(), request);
         return ResponseEntity.ok(Map.of("message", "Şifreniz başarıyla değiştirildi"));
     }
