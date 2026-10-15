@@ -36,8 +36,8 @@ docker compose up --build
 
 | Servis | Adres |
 | :----- | :---- |
-| Arayüz | <http://localhost:5173> |
-| API + Swagger | <http://localhost:8080/swagger-ui/index.html> |
+| Arayüz | <http://localhost:5174> (yerel Vite'ın 5173'üyle çakışmaz) |
+| API + Swagger | <http://localhost:8081/swagger-ui/index.html> (IntelliJ'deki yerel backend'in 8080'iyle çakışmaz) |
 | MySQL | `localhost:3307` (yereldeki 3306 ile çakışmaz) |
 
 İlk açılışta demo verisi otomatik yüklenir; aşağıdaki hesaplarla giriş yapabilirsin.
@@ -76,7 +76,7 @@ Aynı imajlar herhangi bir VPS'te `docker compose up` ile de çalışır.
 
 ### 60 Saniyede Tur
 
-> Docker ile ayağa kaldırdıktan sonra <http://localhost:5173> üzerinde:
+> Docker ile ayağa kaldırdıktan sonra <http://localhost:5174> üzerinde (Docker'sız yerel geliştirmede <http://localhost:5173>):
 
 1. **Aday olarak giriş yap** → İlanlar'da vardiya bazlı bir ilana başvur
 2. **"Bugün müsaitim"** anahtarını aç — acil ilanlarda önceliklisin

@@ -2,8 +2,8 @@
 # Kullanim:  cp .env.example .env  &&  docker compose up --build
 # Sonra: frontend http://localhost:5174 · API/Swagger http://localhost:8081/swagger-ui
 #
-# Not: Bu YEREL/portfoy stack'i — canli demo hala Vercel+Railway. Docker onlarin
-# yerine gecmez, "clone'la calistir" + DevOps sinyali icin yanlarinda durur.
+# Not: Bu YEREL/portfoy stack'i. Canli backend yok (Railway denemesi bitti);
+# Vercel'de yalniz arayuz onizlemesi var. "Clone'la calistir" icin.
 
 services:
   mysql:
