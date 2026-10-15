@@ -62,21 +62,23 @@ export function SkeletonList({ count = 3 }) {
 
 /* İlan grid skeleton (3'lü kolon) */
 export function SkeletonListingGrid({ count = 6 }) {
+  // İlan kartıyla aynı iskelet: logo + başlık/meta, vardiya-ücret bandı, etiket satırı.
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
+         role="status" aria-label="İlanlar yükleniyor" data-testid="skeleton-listing-grid">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="card !p-0 overflow-hidden">
-          {/* Hero alan */}
-          <ShimmerBlock className="h-32 w-full rounded-none" style={{ borderRadius: 0 }} />
-          <div className="p-4 space-y-2.5">
-            <ShimmerBlock className="h-4 w-3/4" />
-            <ShimmerBlock className="h-3 w-1/2" />
-            <ShimmerBlock className="h-3 w-2/3" />
-            <ShimmerBlock className="h-3 w-1/3" />
-            <div className="flex gap-2 mt-3">
-              <ShimmerBlock className="h-8 flex-1 rounded-lg" />
-              <ShimmerBlock className="h-8 flex-1 rounded-lg" />
+        <div key={i} className="ah-job" style={{ cursor: 'default' }} aria-hidden="true">
+          <div className="flex gap-3">
+            <ShimmerBlock className="w-11 h-11 flex-shrink-0" style={{ borderRadius: 9 }} />
+            <div className="flex-1 space-y-2 pt-1">
+              <ShimmerBlock className="h-4 w-1/2" />
+              <ShimmerBlock className="h-3 w-3/4" />
             </div>
+          </div>
+          <ShimmerBlock className="h-14 w-full" style={{ borderRadius: 10 }} />
+          <div className="flex gap-2">
+            <ShimmerBlock className="h-5 w-16" />
+            <ShimmerBlock className="h-5 w-20" />
           </div>
         </div>
       ))}

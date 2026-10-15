@@ -11,15 +11,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import * as hotelApi from '../../api/hotel'
 import usePageTitle from '../../lib/usePageTitle'
-import { POSITION_LABELS } from '../../utils/labels'
-
-const EDUCATION_LABELS = { HIGH_SCHOOL: 'Lise', UNIVERSITY_GRADUATE: 'Üniversite' }
-const JOB_TYPE_LABELS = { PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı' }
-const LANG_LABELS = {
-  TURKISH: 'Türkçe', ENGLISH: 'İngilizce', GERMAN: 'Almanca',
-  RUSSIAN: 'Rusça', ARABIC: 'Arapça', FRENCH: 'Fransızca',
-  SPANISH: 'İspanyolca', ITALIAN: 'İtalyanca',
-}
+import {
+  POSITION_LABELS, EDUCATION_LABELS, JOB_TYPE_LABELS, LANGUAGE_LABELS as LANG_LABELS,
+} from '../../utils/labels'
 
 export default function CandidatePublicPage() {
   const { id } = useParams()

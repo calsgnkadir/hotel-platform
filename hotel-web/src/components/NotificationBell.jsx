@@ -153,24 +153,22 @@ export default function NotificationBell({ onNavigate }) {
 
   return (
     <div className="relative" ref={ref}>
-      <button onClick={toggleOpen}
-        className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all
-                   bg-cream-100 hover:bg-cream-200 text-ink-700
-                   dark:bg-ink-700/80 dark:hover:bg-slate-700 dark:text-ink-800
-                   hover:scale-105 active:scale-95"
+      <button type="button" onClick={toggleOpen}
+        className="ah-icon-btn"
         title="Bildirimler"
         aria-label={unread > 0 ? `Bildirimler — ${unread} okunmamış` : 'Bildirimler'}
         aria-haspopup="true"
         aria-expanded={open}>
-        {/* Inbox / kutucuk + dalga — özgün notification ikonu */}
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4"
-             fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 13 L8 13 L9.5 15.5 L14.5 15.5 L16 13 L21 13" />
-          <path d="M5 5 L19 5 L21 13 L21 18 A1.5 1.5 0 0 1 19.5 19.5 L4.5 19.5 A1.5 1.5 0 0 1 3 18 L3 13 Z" />
-        </svg>
+        <span className="ah-icon-btn__face">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-[18px] h-[18px]"
+               fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+               aria-hidden="true">
+            <path d="M3 13 L8 13 L9.5 15.5 L14.5 15.5 L16 13 L21 13" />
+            <path d="M5 5 L19 5 L21 13 L21 18 A1.5 1.5 0 0 1 19.5 19.5 L4.5 19.5 A1.5 1.5 0 0 1 3 18 L3 13 Z" />
+          </svg>
+        </span>
         {unread > 0 && (
-          <span data-testid="notification-unread-badge"
-                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-none font-bold flex items-center justify-center ring-2 ring-ink-900 dark:ring-ink-900">
+          <span data-testid="notification-unread-badge" className="ah-icon-btn__badge" aria-hidden="true">
             {unread > 99 ? '99+' : unread}
           </span>
         )}

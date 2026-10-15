@@ -1,5 +1,5 @@
 /**
- * FAZ 2/#32 — Talent Pool / Favori Adaylar sekmesi + Engellenen adaylar.
+ * FAZ 2/#32 — Favori adaylar + engellenen adaylar (Ekibim sekmesinde).
  *
  * Üstte "Favoriler / Engellenenler" sayaçlı segment (aday tarafı RelationsTab düzeni).
  * Favoriler: avatar/baş harf, ad, e-posta, ilçe, eklenme tarihi; Mesajla + Kaldır.
@@ -46,8 +46,15 @@ function formatDate(value) {
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('tr-TR')
 }
 
-export default function FavoritesTab({ onOpenMessages }) {
-  const [segment, setSegment] = useState('favorites')
+/**
+ * segment (isteğe bağlı): dışarıdan denetlenen görünüm ('favorites' | 'blocked').
+ * Verilirse kendi segment çubuğu gizlenir — Ekibim sekmesi (TeamTab) tek bir
+ * segment çubuğuyla üç görünümü yönetir.
+ */
+export default function FavoritesTab({ onOpenMessages, segment: controlledSegment }) {
+  const [ownSegment, setSegment] = useState('favorites')
+  const controlled = controlledSegment === 'favorites' || controlledSegment === 'blocked'
+  const segment = controlled ? controlledSegment : ownSegment
   const [favCount, setFavCount] = useState(0)
 
   const blockedQuery = useQuery({
@@ -63,6 +70,7 @@ export default function FavoritesTab({ onOpenMessages }) {
 
   return (
     <div className="space-y-4">
+      {!controlled && (
       <div className="flex gap-2" role="tablist" aria-label="Aday listeleri">
         {segments.map(t => {
           const active = segment === t.id
@@ -83,6 +91,7 @@ export default function FavoritesTab({ onOpenMessages }) {
           )
         })}
       </div>
+      )}
 
       {segment === 'favorites'
         ? <FavoritesList onOpenMessages={onOpenMessages} onCount={setFavCount} />
@@ -227,12 +236,12 @@ function FavoritesList({ onOpenMessages, onCount }) {
       <div className="card">
         <EmptyState
           type="favorites"
-          title="Talent Pool'un boş"
-          description="Beğendiğin adayları buraya topla, sonraki ilanda hızlıca eriş:"
+          title="Henüz favori aday yok"
+          description="Beğendiğin adayları buraya topla, sonraki ilanda hızlıca ulaş:"
           steps={[
-            { label: 'Gelen Başvurular > adaya gir', hint: 'Aday kartına tıklayıp detay modali aç' },
-            { label: 'Sağ üstte yıldıza tıkla',     hint: 'Anında favoriler listesine eklenir' },
-            { label: 'Yeni ilan açtığında',          hint: 'Talent Pool tek tuşla davet etmen için burada' },
+            { label: 'Başvurular sekmesinde adayı aç', hint: 'Aday kartına tıklayıp ayrıntıyı aç' },
+            { label: 'Favorilere ekle',                hint: 'Aday anında bu listeye eklenir' },
+            { label: 'Yeni ilan açtığında',            hint: 'Favori adaylarına buradan mesaj at' },
           ]}
         />
       </div>
@@ -241,27 +250,9 @@ function FavoritesList({ onOpenMessages, onCount }) {
 
   return (
     <div className="space-y-3">
-      {/* Header */}
-      <div className="card p-4"
-           style={{ background: 'linear-gradient(135deg, #f2f2f2 0%, #bababa 100%)', borderColor: 'rgba(132, 132, 132, 0.2)' }}>
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-black flex items-center gap-2" style={{ color: '#414141' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                <path d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
-              </svg>
-              Talent Pool
-            </h2>
-            <p className="text-xs mt-0.5" style={{ color: '#4e4e4e' }}>
-              Begendigin adaylari kaydet, sonradan dogrudan ulasab — ilan yayinlamadan calismaya davet et.
-            </p>
-          </div>
-          <div className="text-right flex-shrink-0">
-            <div className="text-3xl font-black" style={{ color: '#626262' }}>{favorites.length}</div>
-            <div className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#4e4e4e' }}>Aday</div>
-          </div>
-        </div>
-      </div>
+      <p className="type-meta tabular-nums">
+        {favorites.length} favori aday · beğendiğin adaylara sonraki ilanlarında hızla ulaş
+      </p>
 
       {/* Liste */}
       {favorites.map(f => (

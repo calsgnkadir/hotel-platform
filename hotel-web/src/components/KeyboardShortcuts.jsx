@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { navFor, panelPathFor, tabForShortcut } from '../lib/navigation'
 
 /**
  * FAZ 5.10 — Klavye kisayollari
@@ -43,18 +44,9 @@ export default function KeyboardShortcuts() {
       setChordActive(false)
     }
 
-    function panel() {
-      const role = user?.role
-      if (role === 'CANDIDATE') return 'candidate'
-      if (role === 'BUSINESS_OWNER') return 'business'
-      if (role === 'ADMIN') return 'admin'
-      return null
-    }
-
     function goTab(tab) {
-      const base = panel()
-      if (!base) return
-      navigate(`/${base}?tab=${tab}`)
+      if (!user?.role) return
+      navigate(`${panelPathFor(user.role)}?tab=${tab}`)
     }
 
     function handleKey(e) {
@@ -79,17 +71,9 @@ export default function KeyboardShortcuts() {
         return
       }
 
-      // Chord: g + harf
+      // Chord: g + harf — hedef sekme lib/navigation.js'teki `shortcut` alanından
       if (chordRef.current.key === 'g') {
-        const role = user?.role
-        let target = null
-        const k = e.key.toLowerCase()
-        if (k === 'o') target = 'overview'
-        else if (k === 'l') target = role === 'BUSINESS_OWNER' ? 'mylistings' : 'listings'
-        else if (k === 'a') target = 'applications'
-        else if (k === 'm') target = 'messages'
-        else if (k === 'p') target = 'profile'
-
+        const target = tabForShortcut(user?.role, e.key)
         if (target) {
           e.preventDefault()
           goTab(target)
@@ -112,132 +96,69 @@ export default function KeyboardShortcuts() {
     }
   }, [navigate, user?.role, helpOpen])
 
+  const rows = [
+    { keys: ['?'], label: 'Bu yardımı aç / kapat' },
+    ...navFor(user?.role).filter(i => i.shortcut)
+      .map(i => ({ keys: ['g', i.shortcut], label: i.label })),
+    { keys: ['Ctrl', 'K'], label: 'Komut paleti (genel arama)' },
+  ]
+
   return (
     <>
-      {/* Chord aktif gostergesi — sag alt, 1.5s sonra silinir */}
+      {/* Chord aktif göstergesi — sağ alt, 1.5 sn sonra silinir */}
       {chordActive && !helpOpen && (
-        <div
-          className="fixed bottom-6 right-6 z-[90] pointer-events-none"
-          aria-hidden
-        >
-          <div
-            className="px-3 py-2 rounded-full flex items-center gap-2"
-            style={{
-              background: 'rgba(19, 17, 15, 0.94)',
-              border: '1px solid rgba(31, 41, 55, 0.30)',
-              boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-            }}
-          >
-            <kbd
-              className="font-mono text-[11px] font-bold px-2 py-0.5 rounded"
-              style={{
-                background: 'rgba(31, 41, 55, 0.18)',
-                color: 'var(--ah-brand)',
-                border: '1px solid rgba(31, 41, 55, 0.40)',
-              }}
-            >
+        <div className="fixed bottom-20 md:bottom-6 right-6 z-[90] pointer-events-none" aria-hidden>
+          <div className="px-3 py-2 rounded-full flex items-center gap-2"
+               style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line-2)', boxShadow: 'var(--elev-2)' }}>
+            <kbd className="font-mono type-badge px-2 py-0.5 rounded-md"
+                 style={{ background: 'var(--ah-band)', color: 'var(--ah-ink)', border: '1px solid var(--ah-line-2)' }}>
               g
             </kbd>
-            <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#1f2937' }}>
-              ikinci tuşu bekliyor...
-            </span>
+            <span className="type-caption">İkinci tuş bekleniyor</span>
           </div>
         </div>
       )}
 
       {helpOpen && (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center px-4"
-      onClick={() => setHelpOpen(false)}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="kbd-help-title"
-    >
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{ background: 'rgba(10, 6, 18, 0.78)', backdropFilter: 'blur(8px)' }}
-      />
-      <div
-        className="relative max-w-md w-full rounded-2xl p-6"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: 'linear-gradient(135deg, rgba(19, 17, 15, 0.94), rgba(13, 11, 9, 0.94))',
-          border: '1px solid rgba(31, 41, 55, 0.18)',
-          boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-        }}
-      >
-        <div className="flex items-baseline justify-between mb-5">
-          <h2
-            id="kbd-help-title"
-            className="text-2xl tracking-wider uppercase text-white"
-            style={{ textShadow: '0 0 14px rgba(31, 41, 55, 0.28)' }}
-          >
-            Klavye Kısayolları
-          </h2>
-          <button
-            onClick={() => setHelpOpen(false)}
-            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-            style={{
-              background: 'rgba(31, 41, 55, 0.10)',
-              color: '#1f2937',
-              border: '1px solid rgba(31, 41, 55, 0.22)',
-            }}
-            aria-label="Kapat"
-          >
-            Esc
-          </button>
-        </div>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+             onClick={() => setHelpOpen(false)}
+             role="dialog" aria-modal="true" aria-labelledby="kbd-help-title">
+          <div aria-hidden className="absolute inset-0" style={{ background: 'rgba(17, 24, 39, 0.45)' }} />
+          <div className="relative max-w-md w-full rounded-2xl p-6"
+               onClick={(e) => e.stopPropagation()}
+               style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)', boxShadow: 'var(--elev-3)' }}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 id="kbd-help-title" className="type-section">Klavye kısayolları</h2>
+              <button type="button" onClick={() => setHelpOpen(false)} className="btn-ghost" aria-label="Kapat">
+                Kapat
+              </button>
+            </div>
 
-        <ul className="space-y-2.5">
-          {[
-            { keys: ['?'],          label: 'Bu yardımı aç / kapat' },
-            { keys: ['g', 'o'],     label: 'Genel Bakış' },
-            { keys: ['g', 'l'],     label: 'İlanlar / İlanlarım' },
-            { keys: ['g', 'a'],     label: 'Başvurular / Gelen Başvurular' },
-            { keys: ['g', 'm'],     label: 'Mesajlar' },
-            { keys: ['g', 'p'],     label: 'Profilim' },
-            { keys: ['Ctrl', 'K'],  label: 'Komut paleti (global arama)' },
-          ].map((row, i) => (
-            <li
-              key={i}
-              className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
-              style={{
-                background: 'rgba(13, 11, 9, 0.55)',
-                border: '1px solid rgba(31, 41, 55, 0.10)',
-              }}
-            >
-              <span className="text-[13px]" style={{ color: '#e5e5e5' }}>
-                {row.label}
-              </span>
-              <span className="flex items-center gap-1">
-                {row.keys.map((k, j) => (
-                  <span key={j} className="flex items-center gap-1">
-                    {j > 0 && <span className="text-[10px]" style={{ color: '#111827' }}>·</span>}
-                    <kbd
-                      className="font-mono text-[11px] font-bold px-2 py-1 rounded-md"
-                      style={{
-                        background: 'rgba(31, 41, 55, 0.10)',
-                        color: 'var(--ah-brand)',
-                        border: '1px solid rgba(31, 41, 55, 0.28)',
-                        minWidth: '24px',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {k}
-                    </kbd>
+            <ul className="space-y-2">
+              {rows.map((row, i) => (
+                <li key={i} className="flex items-center justify-between gap-3 rounded-lg px-3 py-2"
+                    style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)' }}>
+                  <span className="type-body">{row.label}</span>
+                  <span className="flex items-center gap-1">
+                    {row.keys.map((k, j) => (
+                      <span key={j} className="flex items-center gap-1">
+                        {j > 0 && <span className="type-caption" aria-hidden="true">sonra</span>}
+                        <kbd className="font-mono type-badge px-2 py-0.5 rounded-md text-center"
+                             style={{ background: 'var(--ah-card)', color: 'var(--ah-ink)', border: '1px solid var(--ah-line-2)', minWidth: 24 }}>
+                          {k}
+                        </kbd>
+                      </span>
+                    ))}
                   </span>
-                ))}
-              </span>
-            </li>
-          ))}
-        </ul>
+                </li>
+              ))}
+            </ul>
 
-        <p className="mt-5 text-[11px]" style={{ color: '#888888' }}>
-          Input alanına yazıyorsan kısayollar devre dışıdır. <kbd className="font-mono">g</kbd> bastıktan sonra 1.5 saniye içinde ikinci tuşa bas.
-        </p>
-      </div>
-    </div>
+            <p className="mt-4 type-caption">
+              Bir metin alanına yazarken kısayollar devre dışıdır. g tuşundan sonra 1,5 saniye içinde ikinci tuşa bas.
+            </p>
+          </div>
+        </div>
       )}
     </>
   )

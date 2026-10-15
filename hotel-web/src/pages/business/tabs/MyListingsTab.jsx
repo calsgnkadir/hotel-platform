@@ -1,14 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 import { keys } from '../../../lib/queryClient'
-import { POSITION_LABELS, JOB_TYPE_LABELS, SHIFT_SHORT, STATUS_LABELS } from '../lib/constants'
+import { POSITION_LABELS, JOB_TYPE_LABELS, STATUS_LABELS } from '../lib/constants'
 import ListingFormModal from '../modals/ListingFormModal'
 import AttendanceModal from '../modals/AttendanceModal'
 import EmptyState from '../../../components/EmptyState'
 import { SkeletonList } from '../../../components/Skeleton'
+import LoadError from '../../../components/ui/LoadError'
+import { useConfirm } from '../../../lib/useConfirm'
 import { formatSalary } from '../../../lib/salary'  // FAZ 2/#25
 import Sparkline, { weeklyTrend } from '../../../components/Sparkline'  // FAZ D1
 import { nearestShift, formatSlotShort } from '../../../lib/shiftTime'
@@ -25,12 +28,30 @@ export default function MyListingsTab({ applications = [] }) {
   const queryClient = useQueryClient()
 
   // useQuery — cache 30sn, otomatik refetch on mount
-  const { data: listings = [], isLoading, error } = useQuery({
+  const { data: listings = [], isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['my-listings'],
     queryFn: () => hotelApi.getMyListings(),
   })
+  const confirm = useConfirm()
 
-  if (error) toast.error('İlanlar yüklenemedi')
+  // Derin link: ?tab=mylistings&attendance=<ilanId> (Genel bakış > Yapılacaklar > Yoklama)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const attendanceParam = searchParams.get('attendance')
+  useEffect(() => {
+    if (!attendanceParam || attendanceTarget) return
+    const target = listings.find(l => String(l.id) === String(attendanceParam))
+    if (target) setAttendanceTarget(target)
+  }, [attendanceParam, listings])
+  function closeAttendance() {
+    setAttendanceTarget(null)
+    if (attendanceParam) {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev)
+        next.delete('attendance')
+        return next
+      }, { replace: true })
+    }
+  }
 
   // Ekip listesi (.xlsx): kabul edilenler, gün gün; giriş/çıkış + imza sütunu
   async function handleRoster(listingId) {
@@ -48,6 +69,15 @@ export default function MyListingsTab({ applications = [] }) {
     queryClient.invalidateQueries({ queryKey: ['my-listings'] })
 
   async function handleStatusChange(listingId, status) {
+    if (status === 'CLOSED') {
+      const ok = await confirm({
+        title: 'İlan kapatılsın mı?',
+        description: 'Kapatılan ilan yeni başvuru almaz; karar bekleyen, onaydaki ve yedekteki başvurular sona erer. Kabul edilmiş adaylar etkilenmez. Yeniden yayına almak yeni ilan gibi ilan hakkından sayılır.',
+        confirmLabel: 'İlanı kapat',
+        destructive: true,
+      })
+      if (!ok) return
+    }
     try {
       await hotelApi.updateListingStatus(listingId, status)
       toast.success('İlan durumu güncellendi')
@@ -60,6 +90,14 @@ export default function MyListingsTab({ applications = [] }) {
   // FAZ C.2 — Acil isaretle: o an "hemen musait" olan adaylara aninda bildirim
   const [urgentBusyId, setUrgentBusyId] = useState(null)
   async function handleUrgent(listingId, urgent) {
+    if (urgent) {
+      const ok = await confirm({
+        title: 'İlan acil olarak işaretlensin mi?',
+        description: 'Şu an "Bugün müsaitim" diyen adaylara anında bildirim gider. Bu işlem geri alınsa da giden bildirimler geri çekilemez.',
+        confirmLabel: 'Acil olarak işaretle',
+      })
+      if (!ok) return
+    }
     setUrgentBusyId(listingId)
     try {
       const res = await hotelApi.setListingUrgent(listingId, urgent)
@@ -77,6 +115,9 @@ export default function MyListingsTab({ applications = [] }) {
   }
 
   if (isLoading) return <SkeletonList count={4} />
+  if (error && listings.length === 0) {
+    return <LoadError message="İlanların yüklenemedi." onRetry={() => refetch()} retrying={isFetching} />
+  }
 
   return (
     <div className="space-y-4">
@@ -191,63 +232,33 @@ export default function MyListingsTab({ applications = [] }) {
                     <Sparkline data={trendData} color="#1f2937" width={56} height={20} />
                   </div>
                   <div className="flex gap-2 flex-wrap sm:justify-end">
-                  {/* QR yoklama — toplanma noktasında göster, adaylar okutsun */}
-                  <button onClick={() => setAttendanceTarget(listing)}
-                    title="Toplanma noktası için QR + canlı yoklama listesi"
+                  {/* Görünür iki eylem: Düzenle (kapalıysa Tekrar aç) + Yoklama; diğerleri "Diğer" menüsünde */}
+                  {listing.status !== 'CLOSED' ? (
+                    <button type="button" onClick={() => setFormTarget(listing)} className="btn-secondary !px-3">
+                      Düzenle
+                    </button>
+                  ) : (
+                    <button type="button" onClick={() => setDupTarget(listing)} className="btn-secondary !px-3"
+                      title="Bu ilanı vardiyalar gelecek haftaya taşınmış olarak yeniden yayınla">
+                      Tekrar aç
+                    </button>
+                  )}
+                  <button type="button" onClick={() => setAttendanceTarget(listing)}
+                    title="Toplanma noktası için QR ve canlı yoklama listesi"
                     className="btn-secondary !px-3">
                     Yoklama
                   </button>
-                  {/* Ekip listesi — sahada imza/yoklama çıktısı; her akşam 20:00'de e-postayla da gelir */}
-                  <button onClick={() => handleRoster(listing.id)}
-                    disabled={rosterBusyId === listing.id}
-                    title="Kabul edilen adaylar, vardiya günlerine göre (Excel). Her akşam 20:00'de e-postana da gelir."
-                    className="btn-secondary !px-3">
-                    {rosterBusyId === listing.id ? 'Hazırlanıyor…' : 'Ekip listesi'}
-                  </button>
-                  {/* Tekrar aç (şablon): vardiyalar gelecek haftaya taşınmış kopya. Kapalı ilan için de. */}
-                  <button onClick={() => setDupTarget(listing)}
-                    title="Bu ilanı vardiyalar gelecek haftaya taşınmış olarak yeniden yayınla"
-                    className="btn-secondary !px-3">
-                    Tekrar aç
-                  </button>
-                  {listing.status !== 'CLOSED' && (
-                    <button onClick={() => setFormTarget(listing)}
-                      className="btn-secondary !px-3">
-                      Düzenle
-                    </button>
-                  )}
-                  {/* FAZ C.2 — Acil: "bugun/yarin adam lazim" akisinin tetigi */}
-                  {listing.status === 'ACTIVE' && (
-                    <button onClick={() => handleUrgent(listing.id, !listing.urgent)}
-                      disabled={urgentBusyId === listing.id}
-                      title={listing.urgent
-                        ? 'Acil işaretini kaldır'
-                        : 'Şu an müsait olan adaylara anında bildirim gönder'}
-                      className="btn-danger !px-3">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
-                      </svg>
-                      {urgentBusyId === listing.id ? '...' : listing.urgent ? 'Acili kaldır' : 'Acil'}
-                    </button>
-                  )}
-                  {listing.status === 'ACTIVE' && (
-                    <button onClick={() => handleStatusChange(listing.id, 'PAUSED')}
-                      className="btn-secondary !px-3">
-                      Durdur
-                    </button>
-                  )}
-                  {listing.status === 'PAUSED' && (
-                    <button onClick={() => handleStatusChange(listing.id, 'ACTIVE')}
-                      className="btn-secondary !px-3">
-                      Aktifleştir
-                    </button>
-                  )}
-                  {listing.status !== 'CLOSED' && (
-                    <button onClick={() => handleStatusChange(listing.id, 'CLOSED')}
-                      className="btn-secondary !px-3">
-                      Kapat
-                    </button>
-                  )}
+                  <MoreMenu label={`${listing.title} için diğer eylemler`} items={[
+                    { key: 'roster', label: rosterBusyId === listing.id ? 'Hazırlanıyor' : 'Ekip listesi (Excel)',
+                      disabled: rosterBusyId === listing.id, onSelect: () => handleRoster(listing.id) },
+                    listing.status !== 'CLOSED' && { key: 'dup', label: 'Tekrar aç (kopya)', onSelect: () => setDupTarget(listing) },
+                    listing.status === 'ACTIVE' && { key: 'urgent',
+                      label: urgentBusyId === listing.id ? 'Kaydediliyor' : listing.urgent ? 'Acil işaretini kaldır' : 'Acil olarak işaretle',
+                      disabled: urgentBusyId === listing.id, onSelect: () => handleUrgent(listing.id, !listing.urgent) },
+                    listing.status === 'ACTIVE' && { key: 'pause', label: 'Durdur', onSelect: () => handleStatusChange(listing.id, 'PAUSED') },
+                    listing.status === 'PAUSED' && { key: 'activate', label: 'Aktifleştir', onSelect: () => handleStatusChange(listing.id, 'ACTIVE') },
+                    listing.status !== 'CLOSED' && { key: 'close', label: 'Kapat', danger: true, onSelect: () => handleStatusChange(listing.id, 'CLOSED') },
+                  ].filter(Boolean)} />
                   </div>
                 </div>
               </div>
@@ -271,7 +282,55 @@ export default function MyListingsTab({ applications = [] }) {
       )}
 
       {attendanceTarget && (
-        <AttendanceModal listing={attendanceTarget} onClose={() => setAttendanceTarget(null)} />
+        <AttendanceModal listing={attendanceTarget} onClose={closeAttendance} />
+      )}
+    </div>
+  )
+}
+
+/* "Diğer" eylem menüsü — aria-expanded, Escape ve dış tıklama ile kapanır. */
+function MoreMenu({ label, items }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const btnRef = useRef(null)
+  useEffect(() => {
+    if (!open) return undefined
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setOpen(false); btnRef.current?.focus() }
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+  if (!items.length) return null
+  return (
+    <div className="relative" ref={ref}>
+      <button ref={btnRef} type="button" className="btn-secondary !px-3"
+              aria-haspopup="menu" aria-expanded={open} aria-label={label}
+              onClick={() => setOpen(o => !o)}>
+        Diğer
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div role="menu" aria-label={label}
+             className="absolute right-0 mt-1 w-56 z-30 rounded-xl overflow-hidden py-1"
+             style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)', boxShadow: 'var(--elev-2)' }}>
+          {items.map(it => (
+            <button key={it.key} type="button" role="menuitem" disabled={it.disabled}
+                    onClick={() => { setOpen(false); it.onSelect() }}
+                    className="w-full text-left px-3.5 min-h-[44px] type-body hover:bg-[var(--ah-band)] disabled:opacity-50"
+                    style={{ color: it.danger ? 'var(--ah-danger)' : 'var(--ah-ink)' }}>
+              {it.label}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   )

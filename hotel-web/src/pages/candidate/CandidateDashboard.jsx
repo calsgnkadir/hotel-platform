@@ -13,6 +13,8 @@ import { useAuth } from '../../context/AuthContext'
 import * as hotelApi from '../../api/hotel'
 import { keys } from '../../lib/queryClient'
 import { SkeletonList } from '../../components/Skeleton'
+import LoadError from '../../components/ui/LoadError'
+import { ROLE, validTabsFor, defaultTabFor } from '../../lib/navigation'
 import OnboardingWizard, { shouldShowOnboarding } from '../../components/OnboardingWizard'
 import EntryPasses from '../../components/candidate/EntryPasses'  // vardiya günü giriş kartı
 
@@ -24,14 +26,15 @@ import ProfileTab from './tabs/ProfileTab'
 import SavedListingsTab from './tabs/SavedListingsTab'  // Dalga H1
 import RelationsTab from './tabs/RelationsTab'              // Dalga I1
 
-// FAZ 26 — 'overview' (Genel Bakis) tamamen kaldirildi; varsayilan sekme 'listings'.
-const VALID_TABS = ['listings','saved','relations','applications','history','messages','profile']
+// Geçerli sekmeler tek kaynaktan (lib/navigation.js); varsayılan 'listings'.
+const VALID_TABS = validTabsFor(ROLE.CANDIDATE)
+const DEFAULT_TAB = defaultTabFor(ROLE.CANDIDATE)
 
 export default function CandidateDashboard() {
   const { user } = useAuth()
   const [params, setParams] = useSearchParams()
   // FAZ 5.3 — Command Palette ?tab=… ile yonlendirme yapabilir; URL acanin tab'ini al.
-  const initialTab = VALID_TABS.includes(params.get('tab')) ? params.get('tab') : 'listings'
+  const initialTab = VALID_TABS.includes(params.get('tab')) ? params.get('tab') : DEFAULT_TAB
   const [activeTab, _setActiveTab] = useState(initialTab)
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding(user?.id))
   const queryClient = useQueryClient()
@@ -59,7 +62,7 @@ export default function CandidateDashboard() {
     handleTabChange('messages', conversationId ? { c: String(conversationId) } : undefined)
   }
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: keys.applications.candidate(),
     queryFn: async () => {
       const res = await hotelApi.getMyApplications()
@@ -67,14 +70,20 @@ export default function CandidateDashboard() {
     },
   })
   const applications = data ?? []
+  // Başvuru listesine bağlı sekmelerde yükleme hatası kart olarak gösterilir
+  // (İlanlar/Kaydettiklerim/Profil kendi verisini yükler, engellenmez).
+  const needsApplications = activeTab === 'applications' || activeTab === 'history'
+  const appsFailed = !!error && !data
 
   const refetchApplications = () =>
     queryClient.invalidateQueries({ queryKey: keys.applications.candidate() })
 
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={handleTabChange}>
-      {isLoading ? (
+      {isLoading && needsApplications ? (
         <SkeletonList count={4} />
+      ) : appsFailed && needsApplications ? (
+        <LoadError message="Başvuruların yüklenemedi." onRetry={() => refetch()} retrying={isFetching} />
       ) : (
         /* FAZ 5.4 — CSS-based tab transition (Framer key remount tetiklenmiyordu) */
         <div key={activeTab} className="page-enter">

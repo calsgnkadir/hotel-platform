@@ -377,18 +377,25 @@ body, .role-app-bg {
 
 /* İlan kartı (sektör: logo + bilgi + çip + CTA; dekoratif kapak yok) */
 .ah-job { background: var(--ah-card); border: 1px solid var(--ah-line); border-radius: var(--ah-r);
-  padding: 16px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; height: 100%;
-  transition: border-color .15s, box-shadow .15s; }
+  padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; height: 100%;
+  position: relative; transition: border-color .15s, box-shadow .15s; }
+/* Paket 4 — stretched link: başlıktaki <a> kartın tamamını kaplar; kaydet/başvur
+   düğmeleri üst katmanda kalır (iç içe etkileşimli öğe yok). */
+.ah-job__link { color: inherit; text-decoration: none; }
+.ah-job__link::after { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 0; }
+.ah-job__link:focus-visible { outline: none; }
+.ah-job:has(.ah-job__link:focus-visible) { outline: 2px solid var(--ah-brand); outline-offset: 2px; }
+.ah-job .ah-save, .ah-job .ah-job__cta { position: relative; z-index: 1; }
 .ah-job:hover { border-color: #c3cccb; box-shadow: 0 4px 14px rgba(18,32,31,.07); }
 /* FAZ C.2.2 — Acil ilan karti: sol kenarda kirmizi serit + hafif zemin tonu,
    listede goz ilk buraya gitsin. */
 .ah-job--urgent { border-color: var(--ah-danger); box-shadow: inset 3px 0 0 var(--ah-danger); }
 .ah-job--urgent:hover { border-color: var(--ah-danger); }
 .ah-job__top { display: flex; gap: 12px; }
-.ah-logo { width: 46px; height: 46px; border-radius: 9px; flex-shrink: 0; display: grid;
+.ah-logo { width: 44px; height: 44px; border-radius: 9px; flex-shrink: 0; display: grid;
   place-items: center; font-weight: 800; font-size: 17px; color: #fff; }
 .ah-job__hd { min-width: 0; flex: 1; }
-.ah-job__title { font-size: 15.5px; font-weight: 650; color: var(--ah-ink); letter-spacing: -.01em; }
+.ah-job__title { font-size: 15.5px; font-weight: 650; color: var(--ah-ink); letter-spacing: -.01em; margin: 0; }
 .ah-job:hover .ah-job__title { color: var(--ah-brand); }
 /* FAZ B.5.4 — Tek meta satiri: isletme · puan · ilce · mesafe.
    Eskiden __co (isletme) + __loc (ilce/mesafe) iki ayri satirdi, puan da
@@ -410,12 +417,14 @@ body, .role-app-bg {
 .ah-job__rating svg { color: #a4a4a4; flex-shrink: 0; margin-right: 3px; }
 /* FAZ B.3 — kart uzerinde "sana X km" */
 .ah-job__dist { color: var(--ah-brand); font-weight: 600; }
-.ah-save { margin-left: auto; width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--ah-line);
-  background: var(--ah-card); color: var(--ah-ink-4); display: grid; place-items: center;
+.ah-save { margin-left: auto; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--ah-line);
+  background: var(--ah-card); color: var(--ah-ink-3); display: grid; place-items: center;
   cursor: pointer; flex-shrink: 0; transition: border-color .15s, color .15s; }
+/* 44px dokunma alanı (görsel 34px; görünmez genişletme) */
+.ah-save::before { content: ''; position: absolute; inset: -5px; }
 .ah-save:hover { border-color: var(--ah-brand); color: var(--ah-brand); }
 .ah-save--on { border-color: var(--ah-brand); color: var(--ah-brand); }
-.ah-job__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ah-job__tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
 .ah-job__desc { font-size: 12.5px; color: var(--ah-ink-3); line-height: 1.5; margin: 0;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ah-job__cta { margin-top: auto; }
@@ -427,7 +436,7 @@ body, .role-app-bg {
    okunsun diye gorsel agirligi var. */
 .ah-job__band {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 11px 13px;
+  padding: 9px 12px;
   border: 1px solid var(--ah-line);
   border-radius: 10px;
   background: var(--ah-band);
@@ -464,6 +473,99 @@ body, .role-app-bg {
 /* Yesil yalniz isletme GERCEKTEN dogrulandiginda (JSX businessVerified ile ekler).
    Eskiden :first-child idi → dogrulanmamis isletmede "tamamlanan is" yesil gorunuyordu. */
 .ah-trust-item--ok { color: var(--ah-ok); }
+/* Paket 4 — İlan listesi filtre paneli.
+   lg+: sol sütunda yapışkan kart. Daha dar: kapalıyken gizli, açıkken tam ekran
+   alt sayfa (başlık + kayan gövde + sabit "N ilanı göster"). */
+.ah-filter-card { padding: 14px 16px; }
+.ah-filter-sheet { display: none; }
+.ah-filter-sheet__head, .ah-filter-sheet__foot { display: none; }
+@media (max-width: 1023px) {
+  .ah-filter-sheet.is-open {
+    display: flex; flex-direction: column; position: fixed; inset: 0; z-index: 70;
+    background: var(--ah-page);
+  }
+  .ah-filter-sheet.is-open .ah-filter-sheet__head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 16px; border-bottom: 1px solid var(--ah-line); background: var(--ah-card);
+  }
+  .ah-filter-sheet.is-open .ah-filter-sheet__body { flex: 1; overflow-y: auto; padding: 12px 16px; }
+  .ah-filter-sheet.is-open .ah-filter-card { border: 0; box-shadow: none; padding: 0; background: transparent; }
+  .ah-filter-sheet.is-open .ah-filter-sheet__foot {
+    display: flex; gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--ah-line); background: var(--ah-card);
+  }
+}
+@media (min-width: 1024px) {
+  .ah-filter-sheet { display: block; position: sticky; top: 5rem; }
+}
+/* Paket 5 — Mobil alt sekme çubuğu (md altı). Öğeler en az 48px yüksek,
+   eşit genişlik; aktif öğe grafit + ince üst çizgi. iOS güvenli alan payı. */
+.ah-tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
+  display: flex; align-items: stretch;
+  background: var(--ah-card); border-top: 1px solid var(--ah-line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+/* Masaüstünde üst nav var; alt çubuk yalnız md (768px) altında. Bileşendeki
+   md:hidden sınıfı bu dosyadaki display:flex tarafından eziliyordu. */
+@media (min-width: 768px) {
+  .ah-tabbar { display: none; }
+}
+.ah-tabbar__item {
+  flex: 1 1 0; min-width: 0; min-height: 56px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  color: var(--ah-ink-3); background: transparent; border: 0; cursor: pointer;
+  position: relative; padding: 6px 2px;
+}
+.ah-tabbar__item.is-active { color: var(--ah-brand); }
+.ah-tabbar__item.is-active::before {
+  content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 2px;
+  background: var(--ah-brand); border-radius: 0 0 2px 2px;
+}
+.ah-tabbar__item:focus-visible { outline: 2px solid var(--ah-brand); outline-offset: -2px; }
+.ah-tabbar__label {
+  font-size: 12px; line-height: 16px; font-weight: 600; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Segment denetimi (Ekibim görünümleri vb.) — açık zemin, aktif = beyaz kart */
+.ah-segment {
+  display: inline-flex; max-width: 100%; overflow-x: auto; gap: 2px; padding: 3px;
+  background: var(--ah-band); border: 1px solid var(--ah-line); border-radius: 10px;
+  scrollbar-width: none;
+}
+.ah-segment::-webkit-scrollbar { display: none; }
+.ah-segment__item {
+  flex-shrink: 0; min-height: 36px; padding: 0 14px; border-radius: 8px; border: 0;
+  background: transparent; color: var(--ah-ink-3); font-size: 14px; line-height: 20px;
+  font-weight: 500; cursor: pointer; white-space: nowrap;
+}
+.ah-segment__item.is-active {
+  background: var(--ah-card); color: var(--ah-ink); font-weight: 600; box-shadow: var(--elev-1);
+}
+.ah-segment__item:focus-visible { outline: 2px solid var(--ah-brand); outline-offset: 1px; }
+@media (max-width: 767px) { .ah-segment__item { min-height: 44px; } }
+
+/* Başlıktaki ikon düğmeleri: görsel 36px, vuruş alanı 44px */
+.ah-icon-btn {
+  position: relative; width: 44px; height: 44px; display: grid; place-items: center;
+  border-radius: 999px; background: transparent; border: 0; cursor: pointer; color: var(--ah-ink-2);
+}
+.ah-icon-btn__face {
+  width: 36px; height: 36px; border-radius: 999px; display: grid; place-items: center;
+  background: var(--ah-page); transition: background .15s;
+}
+.ah-icon-btn:hover .ah-icon-btn__face { background: var(--ah-band); }
+.ah-icon-btn[aria-current="page"] .ah-icon-btn__face,
+.ah-icon-btn[aria-expanded="true"] .ah-icon-btn__face { background: var(--ah-brand-soft); color: var(--ah-brand); }
+.ah-icon-btn:focus-visible { outline: none; }
+.ah-icon-btn:focus-visible .ah-icon-btn__face { outline: 2px solid var(--ah-brand); outline-offset: 1px; }
+.ah-icon-btn__badge {
+  position: absolute; top: 4px; right: 3px; min-width: 18px; height: 18px; padding: 0 4px;
+  border-radius: 999px; background: var(--ah-danger); color: #fff;
+  font-size: 11px; line-height: 18px; font-weight: 700; text-align: center;
+  box-shadow: 0 0 0 2px var(--ah-card); font-variant-numeric: tabular-nums;
+}
+
 .ah-trust-sub { font-weight: 500; color: var(--ah-ink-3); font-size: 12px; }
 
 /* ═══════════════════════════════════════════════════════════════════════

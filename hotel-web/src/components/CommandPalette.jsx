@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { navFor, panelPathFor } from '../lib/navigation'
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false)
@@ -44,51 +45,37 @@ export default function CommandPalette() {
 
   // Role-aware actions
   const actions = useMemo(() => {
-    const isCand = user?.role === 'CANDIDATE'
-    const isBiz  = user?.role === 'BUSINESS_OWNER'
-
     const list = []
 
-    // Dashboard tab routing icin `?tab=...` query param desteklenir.
-    // CandidateDashboard + BusinessDashboard useSearchParams ile okur (FAZ 5.3).
-    if (isCand) {
-      const toCand = (t) => () => navigate(`/candidate?tab=${t}`)
-      list.push(
-        { id: 'cand-overview',  label: 'Genel Bakış',          keywords: 'anasayfa dashboard ana ozet', section: 'Sayfa', go: toCand('overview') },
-        { id: 'cand-listings',  label: 'İlanları Keşfet',      keywords: 'is is-ilani aktif',           section: 'Sayfa', go: toCand('listings') },
-        { id: 'cand-apps',      label: 'Başvurularım',         keywords: 'basvurular application',      section: 'Sayfa', go: toCand('applications') },
-        { id: 'cand-msgs',      label: 'Mesajlarım',           keywords: 'sohbet chat',                  section: 'Sayfa', go: toCand('messages') },
-        { id: 'cand-profile',   label: 'Profilim',             keywords: 'profil ayar settings',         section: 'Sayfa', go: toCand('profile') },
-        { id: 'cand-history',   label: 'Geçmiş İşlerim',       keywords: 'gecmis tamamlanmis history',   section: 'Sayfa', go: toCand('history') },
-      )
-    }
-
-    if (isBiz) {
-      const toBiz = (t) => () => navigate(`/business?tab=${t}`)
-      list.push(
-        { id: 'biz-overview', label: 'Genel Bakış',        keywords: 'anasayfa dashboard',     section: 'Sayfa', go: toBiz('overview') },
-        { id: 'biz-listings', label: 'İlanlarım',          keywords: 'ilan listing',           section: 'Sayfa', go: toBiz('mylistings') },
-        { id: 'biz-apps',     label: 'Gelen Başvurular',   keywords: 'basvuru application',    section: 'Sayfa', go: toBiz('applications') },
-        { id: 'biz-workers',  label: 'Çalışanlar',         keywords: 'iscili calisan worker',  section: 'Sayfa', go: toBiz('workers') },
-        { id: 'biz-msgs',     label: 'Mesajlarım',         keywords: 'sohbet chat',             section: 'Sayfa', go: toBiz('messages') },
-      )
-    }
+    // Panel sekmeleri tek kaynaktan (lib/navigation.js); ?tab=<id> derin linki
+    // panolar tarafından okunur.
+    const role = user?.role
+    const base = panelPathFor(role)
+    navFor(role).forEach(item => {
+      list.push({
+        id: `tab-${item.id}`,
+        label: item.label,
+        keywords: item.keywords || '',
+        section: 'Sayfa',
+        go: () => navigate(`${base}?tab=${item.id}`),
+      })
+    })
 
     // Genel
     list.push(
-      { id: 'help',    label: 'Yardım & Destek',           keywords: 'sss sorular destek faq',    section: 'Yardım',  go: () => navigate('/yardim') },
-      { id: 'kvkk',    label: 'KVKK Aydınlatma Metni',     keywords: 'gizlilik veri privacy',     section: 'Yardım',  go: () => navigate('/kvkk') },
+      { id: 'help',    label: 'Yardım ve destek',           keywords: 'sss sorular destek faq',    section: 'Yardım',  go: () => navigate('/yardim') },
+      { id: 'kvkk',    label: 'KVKK aydınlatma metni',     keywords: 'gizlilik veri privacy',     section: 'Yardım',  go: () => navigate('/kvkk') },
     )
 
     if (user) {
       list.push(
-        { id: 'logout',  label: 'Çıkış Yap',                 keywords: 'logout cikis signout',     section: 'Hesap',
+        { id: 'logout',  label: 'Çıkış yap',                 keywords: 'logout cikis signout',     section: 'Hesap',
           go: () => { logout(); navigate('/login', { replace: true }) } },
       )
     } else {
       list.push(
-        { id: 'login',    label: 'Giriş Yap',                keywords: 'login signin',            section: 'Hesap', go: () => navigate('/login') },
-        { id: 'register', label: 'Kayıt Ol',                 keywords: 'kayit signup register',   section: 'Hesap', go: () => navigate('/register') },
+        { id: 'login',    label: 'Giriş yap',                keywords: 'login signin',            section: 'Hesap', go: () => navigate('/login') },
+        { id: 'register', label: 'Kayıt ol',                 keywords: 'kayit signup register',   section: 'Hesap', go: () => navigate('/register') },
       )
     }
 
@@ -163,7 +150,8 @@ export default function CommandPalette() {
             value={query}
             onChange={e => { setQuery(e.target.value); setActiveIdx(0) }}
             onKeyDown={onInputKey}
-            placeholder="Sayfa, eylem ara… (esc: kapat)"
+            placeholder="Sayfa veya eylem ara"
+            aria-label="Sayfa veya eylem ara"
             className="flex-1 bg-transparent outline-none text-sm"
             style={{ color: 'var(--text-primary, #171513)' }}
           />

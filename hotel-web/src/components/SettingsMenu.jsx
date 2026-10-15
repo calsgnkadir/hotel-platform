@@ -2,19 +2,26 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
+import { menuNavFor } from '../lib/navigation'
 
 /**
- * Header'daki dişli (Ayarlar) ikonu — tıklayınca dropdown açılır.
- * İçerik: Tema seçimi + Bildirim kapama + Profil linkleri + Yardım + Çıkış
+ * Başlıktaki dişli (Ayarlar) düğmesi — tıklayınca menü açılır.
+ * İçerik: bildirim aç/kapat + rolün menü sekmeleri (lib/navigation.js) + yardım + çıkış.
+ * Erişilebilirlik: aria-expanded, Escape ile kapanır ve odak düğmeye döner.
  */
-export default function SettingsMenu({ onTabChange }) {
+const MENU_ICONS = {
+  user: UserIcon, building: BuildingIcon, clock: ClockIcon, users: UsersIcon,
+}
+
+export default function SettingsMenu({ onTabChange, activeTab }) {
   const [open, setOpen]   = useState(false)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const ref = useRef(null)
+  const buttonRef = useRef(null)
 
-  const isCandidate = user?.role === 'CANDIDATE'
-  const isBusiness  = user?.role === 'BUSINESS_OWNER'
+  // Menü öğeleri tek kaynaktan (lib/navigation.js)
+  const menuItems = menuNavFor(user?.role)
 
   function goTab(tabId) {
     setOpen(false)
@@ -33,12 +40,25 @@ export default function SettingsMenu({ onTabChange }) {
     } catch {}
   }, [muted])
 
+  // Dışarı tıklama + Escape ile kapanma (Escape odağı düğmeye geri verir)
   useEffect(() => {
+    if (!open) return undefined
     function onClick(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false)
     }
-    if (open) document.addEventListener('mousedown', onClick)
-    return () => document.removeEventListener('mousedown', onClick)
+    function onKey(e) {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        setOpen(false)
+        buttonRef.current?.focus()
+      }
+    }
+    document.addEventListener('mousedown', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [open])
 
   function handleLogout() {
@@ -50,87 +70,60 @@ export default function SettingsMenu({ onTabChange }) {
 
   return (
     <div className="relative" ref={ref}>
-      {/* Dişli butonu — .tier-raised quiet icon slot */}
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen(v => !v)}
         title="Ayarlar"
-        className="tier-raised tier-raised-hover w-9 h-9 grid place-items-center transition-colors"
-        style={{ borderRadius: '999px', color: 'var(--text-secondary)' }}
+        aria-label="Ayarlar menüsü"
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-controls="settings-menu"
+        className="ah-icon-btn"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             strokeWidth={1.8} stroke="currentColor"
-             style={{ width: 18, height: 18 }}>
-          <path strokeLinecap="round" strokeLinejoin="round"
-                d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.281Z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-        </svg>
+        <span className="ah-icon-btn__face">
+          <GearIcon />
+        </span>
       </button>
 
-      {/* Dropdown — .tier-featured (dikkat cekicidir cunki modal-alternatif) */}
       {open && (
-        <div className="tier-featured absolute right-0 mt-2 w-72 z-50 overflow-hidden"
-             style={{ background: '#ffffff', border: '1px solid var(--ah-line, #e4e8e8)', boxShadow: '0 12px 32px rgba(18,32,31,.14)' }}>
-          {/* FAZ 26 ITEM 7 — "Görünüm" (Açık/Koyu) bloğu kaldırıldı: koyu mod emekli. */}
-
+        <div id="settings-menu"
+             className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] z-50 overflow-hidden rounded-xl"
+             style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)', boxShadow: 'var(--elev-3)' }}>
           {/* Bildirim */}
-          <div className="px-4 py-3 border-b border-hairline flex items-center justify-between gap-3">
+          <div className="px-4 py-3 flex items-center justify-between gap-3"
+               style={{ borderBottom: '1px solid var(--ah-line)' }}>
             <div>
-              <div className="type-overline mb-0.5">Bildirimler</div>
-              <div className="type-body" style={{ color: 'var(--text-headline)' }}>{muted ? 'Kapalı' : 'Açık'}</div>
+              <div className="type-label mb-0.5">Bildirimler</div>
+              <div className="type-body" style={{ color: 'var(--ah-ink)' }}>{muted ? 'Kapalı' : 'Açık'}</div>
             </div>
-            <ToggleSwitch checked={!muted} onChange={(v) => setMuted(!v)} />
+            <ToggleSwitch checked={!muted} onChange={(v) => setMuted(!v)} label="Bildirimler" />
           </div>
 
-          {/* Profilim — aday + işletme */}
-          {(isCandidate || isBusiness) && (
-            <MenuItem icon={<UserIcon />} label={isBusiness ? 'İşletme Profili' : 'Profilim'}
-                      onClick={() => goTab('profile')} />
-          )}
+          {/* Rol menü öğeleri — lib/navigation.js */}
+          {menuItems.map(item => {
+            const IconCmp = MENU_ICONS[item.icon] || UserIcon
+            return (
+              <MenuItem key={item.id} icon={<IconCmp />} label={item.label}
+                        current={activeTab === item.id}
+                        className={item.mobileOnly ? 'md:hidden' : ''}
+                        onClick={() => goTab(item.id)} />
+            )
+          })}
 
-          {/* Takip Ettiklerim — sadece aday */}
-          {isCandidate && (
-            <MenuItem icon={<BuildingIcon />} label="Takip Ettiklerim"
-                      onClick={() => goTab('relations')} />
-          )}
-
-          {/* Bizde Çalışanlar — sadece isletme */}
-          {isBusiness && (
-            <MenuItem icon={<UsersIcon />} label="Bizde Çalışanlar"
-                      onClick={() => goTab('workers')} />
-          )}
-
-          {/* Favori ve engellenen adaylar — sadece isletme */}
-          {isBusiness && (
-            <MenuItem icon={<StarIcon />} label="Favori ve engellenen adaylar"
-                      onClick={() => goTab('favorites')} />
-          )}
-
-          {/* Geçmiş İşlerim — sadece aday */}
-          {isCandidate && (
-            <MenuItem icon={<ClockIcon />} label="Geçmiş İşlerim"
-                      onClick={() => goTab('history')} />
-          )}
-
-          {/* Yardım */}
-          <MenuItem icon={<HelpIcon />} label="Yardım & Destek"
+          <MenuItem icon={<HelpIcon />} label="Yardım ve destek"
                     href="/yardim" onNavigate={() => setOpen(false)} />
-
-          {/* KVKK */}
-          <MenuItem icon={<DocIcon />} label="KVKK Aydınlatma Metni"
+          <MenuItem icon={<DocIcon />} label="KVKK aydınlatma metni"
                     href="/kvkk" onNavigate={() => setOpen(false)} />
 
-          {/* Çıkış — brick signal */}
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full px-4 py-3 flex items-center gap-3 type-body transition-colors"
-            style={{ color: '#3f4b4a' }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(107, 117, 116, 0.08)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            className="w-full px-4 min-h-[44px] flex items-center gap-3 type-body transition-colors hover:bg-[var(--ah-band)]"
+            style={{ color: 'var(--ah-ink)' }}
           >
             <LogoutIcon />
-            <span className="font-semibold">Çıkış Yap</span>
+            <span className="font-semibold">Çıkış yap</span>
           </button>
         </div>
       )}
@@ -139,33 +132,48 @@ export default function SettingsMenu({ onTabChange }) {
   )
 }
 
-function MenuItem({ icon, label, onClick, href, onNavigate }) {
-  const cls = "w-full px-4 py-3 flex items-center gap-3 type-body transition-colors border-b border-hairline"
-  const style = { color: 'var(--text-primary)' }
-  const hover = {
-    onMouseEnter: (e) => e.currentTarget.style.background = 'rgba(31, 41, 55, 0.06)',
-    onMouseLeave: (e) => e.currentTarget.style.background = 'transparent',
+function MenuItem({ icon, label, onClick, href, onNavigate, current = false, className = '' }) {
+  const cls = `w-full px-4 min-h-[44px] flex items-center gap-3 type-body transition-colors hover:bg-[var(--ah-band)] ${className}`
+  const style = {
+    color: 'var(--ah-ink)',
+    borderBottom: '1px solid var(--ah-line)',
+    fontWeight: current ? 600 : undefined,
   }
+  const iconEl = <span style={{ color: 'var(--ah-ink-3)' }}>{icon}</span>
   if (href) {
     return (
-      <Link to={href} onClick={onNavigate} className={cls} style={style} {...hover}>
-        <span className="text-ivory-700">{icon}</span><span>{label}</span>
+      <Link to={href} onClick={onNavigate} className={cls} style={style}>
+        {iconEl}<span>{label}</span>
       </Link>
     )
   }
   return (
-    <button type="button" onClick={onClick} className={cls} style={style} {...hover}>
-      <span className="text-ivory-700">{icon}</span><span>{label}</span>
+    <button type="button" onClick={onClick} className={cls} style={style}
+            aria-current={current ? 'page' : undefined}>
+      {iconEl}<span>{label}</span>
     </button>
   )
 }
 
-function ToggleSwitch({ checked, onChange }) {
+function GearIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+         strokeWidth={1.8} stroke="currentColor" aria-hidden="true"
+         style={{ width: 18, height: 18 }}>
+      <path strokeLinecap="round" strokeLinejoin="round"
+            d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.281Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  )
+}
+
+function ToggleSwitch({ checked, onChange, label }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={label}
       onClick={() => onChange(!checked)}
       className="relative inline-flex h-6 w-11 items-center rounded-full border transition-colors shrink-0"
       style={{
@@ -210,15 +218,6 @@ function UsersIcon() {
          strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round"
             d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-    </svg>
-  )
-}
-function StarIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-         strokeWidth={1.8} stroke="currentColor" className="w-4 h-4">
-      <path strokeLinecap="round" strokeLinejoin="round"
-            d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
     </svg>
   )
 }

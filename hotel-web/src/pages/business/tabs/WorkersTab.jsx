@@ -49,7 +49,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
           title="Bizde çalışan yok"
           description="3 adımda ekibinin geçmişi burada birikir:"
           steps={[
-            { label: 'Adayı KABUL et',         hint: 'Gelen Başvurular > Kanban\'da kartı "Kabul" kolonuna sürükle' },
+            { label: 'Adayı kabul et',         hint: 'Başvurular sekmesinde adayı kabul et' },
             { label: 'Vardiya günü geçsin',    hint: 'Sistem aday için saat + tarih otomatik hesaplar' },
             { label: 'Burada görünür',         hint: 'Toplam saat, kaç vardiya, son çalışma tarihi' },
           ]}

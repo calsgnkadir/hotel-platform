@@ -64,7 +64,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
       } else {
         await hotelApi.addFavorite(app.candidate.id, null)
         setIsFavorited(true)
-        toast.success('Favorilere eklendi. "Favori Adaylar" sayfasından ulaşabilirsin.')
+        toast.success('Favorilere eklendi. Ekibim > Favoriler bölümünden ulaşabilirsin.')
       }
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setFavLoading(false) }

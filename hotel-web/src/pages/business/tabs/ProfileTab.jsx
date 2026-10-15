@@ -333,7 +333,7 @@ export default function ProfileTab() {
 /* Canli Onizleme — form degistikce sag panelde guncellenir
    Kullanici (aday) public sayfayi nasil gorecek? */
 function BusinessPreviewCard({ form, logoUrl }) {
-  const TYPE_LABELS = { HOTEL: 'Otel', RESTAURANT: 'Restoran', CAFE: 'Kafe', OTHER: 'Diğer' }
+  const TYPE_LABELS = BUSINESS_TYPE_LABELS
   const initial = (form.name || 'A').trim().charAt(0).toUpperCase()
   return (
     <div className="card overflow-hidden">

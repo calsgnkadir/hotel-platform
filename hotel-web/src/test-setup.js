@@ -5,6 +5,12 @@
  */
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import { configure } from '@testing-library/react'
+
+// findBy*/waitFor varsayilan 1 sn bekler. Tam takim tek seferde ve kisitli bellekte
+// kosarken agir bilesen testleri (FavoritesTab, ApplicationsTab) bu sureyi asip
+// rastgele kiriliyordu; tek basina hep geciyorlardi. Davranis degil yuk sorunu.
+configure({ asyncUtilTimeout: 4000 })
 
 // matchMedia (Framer Motion reducedMotion için)
 Object.defineProperty(window, 'matchMedia', {

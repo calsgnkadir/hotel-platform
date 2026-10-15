@@ -7,8 +7,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import EmptyState from '../../../components/EmptyState'
+import { BUSINESS_TYPE_LABELS } from '../../../utils/labels'
 
-const TYPE_LABELS = { HOTEL: 'Otel', RESTAURANT: 'Restoran', CAFE: 'Kafe', OTHER: 'Diğer' }
 
 export default function RelationsTab({ onTabChange }) {
   const [tab, setTab] = useState('following')
@@ -93,7 +93,7 @@ export default function RelationsTab({ onTabChange }) {
                 <h3 className="text-[16px] font-semibold truncate"
                     style={{ color: '#12201f', letterSpacing: '-0.015em' }}>{b.name}</h3>
                 <div className="text-[12px] mt-1 truncate" style={{ color: '#6b7574' }}>
-                  {TYPE_LABELS[b.type] || b.type}
+                  {BUSINESS_TYPE_LABELS[b.type] || b.type}
                   {b.district && ` · ${b.district}`}
                 </div>
               </button>

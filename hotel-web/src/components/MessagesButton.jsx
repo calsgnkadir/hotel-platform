@@ -31,23 +31,22 @@ export default function MessagesButton({ active, onClick }) {
 
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-      style={{
-        background: active ? 'var(--ah-brand-soft)' : 'var(--ah-page)',
-        color: active ? 'var(--ah-brand)' : 'var(--ah-ink-2)',
-      }}
+      className="ah-icon-btn"
       title="Mesajlar"
       aria-label={unread > 0 ? `Mesajlar — ${unread} okunmamış` : 'Mesajlar'}
       aria-current={active ? 'page' : undefined}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4"
-           fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
+      <span className="ah-icon-btn__face">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-[18px] h-[18px]"
+             fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+             aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </span>
       {unread > 0 && (
-        <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full text-white text-[9px] font-black flex items-center justify-center"
-              style={{ background: 'var(--ah-danger)', boxShadow: '0 0 0 2px var(--ah-card)' }}>
+        <span className="ah-icon-btn__badge" aria-hidden="true">
           {unread > 99 ? '99+' : unread}
         </span>
       )}

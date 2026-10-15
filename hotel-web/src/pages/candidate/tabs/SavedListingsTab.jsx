@@ -11,10 +11,9 @@ import * as hotelApi from '../../../api/hotel'
 import { SkeletonListingGrid } from '../../../components/Skeleton'
 import EmptyState from '../../../components/EmptyState'
 import BusinessLogo from '../../../components/BusinessLogo'
-import { POSITION_LABELS } from '../../../utils/labels'
+import { POSITION_LABELS, JOB_TYPE_LABELS } from '../../../utils/labels'
 import { formatSalary } from '../../../lib/salary'
 
-const JOB_TYPE_LABELS = { PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı' }
 
 export default function SavedListingsTab({ onTabChange }) {
   const navigate = useNavigate()

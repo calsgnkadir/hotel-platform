@@ -1,68 +1,51 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import TodayWidget from '../TodayWidget'
 
-describe('TodayWidget (FAZ 0/#4d smoke)', () => {
-  it('basvuru yokken yesil "her sey yolunda" branch', () => {
-    render(<TodayWidget applications={[]} onTabChange={() => {}} />)
-    expect(screen.getByText('Her şey yolunda')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Yeni ilan' })).toBeInTheDocument()
-    expect(screen.getByText(/Ekibim/i)).toBeInTheDocument()
+/**
+ * UI Paket 5 — "Bugün" kartı tek "Yapılacaklar" kartına dönüştü: satırlar
+ * düğme değil derin bağlantı (?tab=applications&status=…). Saf hesap testleri
+ * pages/business/__tests__/OverviewTab.test.jsx içinde (buildTodos).
+ */
+const wrap = (apps) => render(<MemoryRouter><TodayWidget applications={apps} /></MemoryRouter>)
+
+describe('TodayWidget (Yapılacaklar)', () => {
+  it('iş yoksa "Bekleyen iş yok" + İlanlarım bağlantısı', () => {
+    wrap([])
+    expect(screen.getByText('Bekleyen iş yok')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'İlanlarıma git' })).toHaveAttribute('href', '/business?tab=mylistings')
   })
 
-  it('PENDING basvuru varken amber item gosterilir', () => {
-    const apps = [
-      { id: 1, status: 'PENDING', createdAt: new Date().toISOString() },
-      { id: 2, status: 'PENDING', createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() },
-    ]
-    render(<TodayWidget applications={apps} onTabChange={() => {}} />)
-    expect(screen.getByText(/2 başvuru karar bekliyor/i)).toBeInTheDocument()
-  })
-
-  it('REVIEWING + PENDING farkli satirlar', () => {
-    const apps = [
-      { id: 1, status: 'PENDING', createdAt: new Date().toISOString() },
-      { id: 2, status: 'REVIEWING', createdAt: new Date().toISOString() },
-    ]
-    render(<TodayWidget applications={apps} onTabChange={() => {}} />)
-    expect(screen.getByText(/1 başvuru karar bekliyor/i)).toBeInTheDocument()
-    expect(screen.getByText(/1 aday incelemede/i)).toBeInTheDocument()
-  })
-
-  it('CTA butona tiklayinca onTabChange cagrilir', () => {
-    const onTabChange = vi.fn()
-    const apps = [{ id: 1, status: 'PENDING', createdAt: new Date().toISOString() }]
-    render(<TodayWidget applications={apps} onTabChange={onTabChange} />)
-    const btn = screen.getByRole('button', { name: /Kanban'a Git/i })
-    fireEvent.click(btn)
-    expect(onTabChange).toHaveBeenCalledWith('applications')
-  })
-
-  it('hep ACCEPTED ise actionable yok, "yolunda" gosterilir', () => {
-    const apps = Array.from({ length: 5 }, (_, i) => ({
-      id: i, status: 'ACCEPTED', createdAt: new Date().toISOString(),
-    }))
-    render(<TodayWidget applications={apps} onTabChange={() => {}} />)
-    expect(screen.getByText('Her şey yolunda')).toBeInTheDocument()
-  })
-
-  // UI Paket 2 — "BUGÜN" dev büyük harf başlık yerine cümle düzeni; butonlar ortak stil
-  it('başlık "Bugün" cümle düzeninde, BÜYÜK HARF sınıfı yok; CTA ortak buton', () => {
-    const apps = [{ id: 1, status: 'PENDING', createdAt: new Date().toISOString() }]
-    render(<TodayWidget applications={apps} onTabChange={() => {}} />)
-    const h = screen.getByRole('heading', { name: 'Bugün' })
+  it('başlık "Yapılacaklar" cümle düzeninde, büyük harf sınıfı yok', () => {
+    wrap([])
+    const h = screen.getByRole('heading', { name: 'Yapılacaklar' })
     expect(h.className).toContain('type-section')
     expect(h.className).not.toMatch(/uppercase|tracking-wider/)
-    const cta = screen.getByRole('button', { name: "Kanban'a git" })
-    expect(cta.className).toContain('btn-secondary')
-    expect(screen.getByText('1 iş')).toBeInTheDocument()
   })
 
-  it('süresi yaklaşan bekleyen aday Türkçe etiketle gösterilir (HOLD yok)', () => {
-    const apps = [{ id: 1, status: 'HELD', createdAt: new Date().toISOString(),
-      holdDeadline: new Date(Date.now() + 3 * 3600e3).toISOString() }]
-    render(<TodayWidget applications={apps} onTabChange={() => {}} />)
-    expect(screen.getByText(/1 aday onayında/)).toBeInTheDocument()
+  it('bekleyen başvurular filtreye derin bağlantı', () => {
+    const now = Date.now()
+    wrap([
+      { id: 1, status: 'PENDING', createdAt: new Date(now).toISOString() },
+      { id: 2, status: 'PENDING', createdAt: new Date(now - 4 * 3600e3).toISOString() },
+    ])
+    const row = screen.getByTestId('todo-pending')
+    expect(row).toHaveTextContent('2 başvuru karar bekliyor')
+    expect(row).toHaveAttribute('href', '/business?tab=applications&status=PENDING')
+  })
+
+  it('yalnız ACCEPTED (vardiyasız) ise iş yok', () => {
+    wrap(Array.from({ length: 3 }, (_, i) => ({ id: i, status: 'ACCEPTED', createdAt: new Date().toISOString() })))
+    expect(screen.getByText('Bekleyen iş yok')).toBeInTheDocument()
+  })
+
+  it('süresi yaklaşan onay Türkçe etiketle (HOLD yok) ve başvuruya bağlantı', () => {
+    wrap([{ id: 4, status: 'HELD', createdAt: new Date().toISOString(),
+      holdDeadline: new Date(Date.now() + 3 * 3600e3).toISOString() }])
+    const row = screen.getByTestId('todo-held')
+    expect(row).toHaveTextContent('1 aday onayında')
+    expect(row).toHaveAttribute('href', '/business?tab=applications&status=HELD&id=4')
     expect(screen.queryByText(/HOLD/)).not.toBeInTheDocument()
   })
 })

@@ -3,58 +3,62 @@ import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import DashboardLayout from '../../components/DashboardLayout'
 import * as hotelApi from '../../api/hotel'
-import toast from 'react-hot-toast'
 import MessagesPage from '../MessagesPage'
 import { keys } from '../../lib/queryClient'
 import { SkeletonList } from '../../components/Skeleton'
+import LoadError from '../../components/ui/LoadError'
 import { useAuth } from '../../context/AuthContext'
 import OnboardingWizard, { shouldShowOnboarding } from '../../components/OnboardingWizard'
+import { ROLE, resolveTab as resolveNavTab, defaultTabFor } from '../../lib/navigation'
 
-// FAZ 0/#9 — Tüm tab'lar ayrı dosyalarda
 import OverviewTab from './tabs/OverviewTab'
 import MyListingsTab from './tabs/MyListingsTab'
 import ApplicationsTab from './tabs/ApplicationsTab'
-import WorkersTab from './tabs/WorkersTab'
-import FavoritesTab from './tabs/FavoritesTab'  // FAZ 2/#32
+import TeamTab from './tabs/TeamTab'
 import ProfileTab from './tabs/ProfileTab'
 import BillingTab from './tabs/BillingTab'
 
-const VALID_TABS = ['overview','mylistings','applications','workers','favorites','billing','profile','messages']
-// Bildirim/push linklerinde gecen eski sekme adlari (backend "listings" gonderiyor)
-const TAB_ALIASES = { listings: 'mylistings' }
-const resolveTab = (t) => {
-  const r = TAB_ALIASES[t] || t
-  return VALID_TABS.includes(r) ? r : null
-}
+/**
+ * Sekme çözümü lib/navigation.js'ten: geçerli sekmeler + eski adlar
+ * ("listings" → İlanlarım, "workers"/"favorites" → Ekibim'in ilgili görünümü).
+ */
+const resolve = (t) => resolveNavTab(ROLE.BUSINESS, t)
 
 export default function BusinessDashboard() {
   const [params, setParams] = useSearchParams()
-  // FAZ 5.3 — CommandPalette ?tab=… ile derin link
-  const initialTab = resolveTab(params.get('tab')) || 'overview'
-  const [activeTab, _setActiveTab] = useState(initialTab)
+  const initial = resolve(params.get('tab'))
+  const [activeTab, _setActiveTab] = useState(initial?.tab || defaultTabFor(ROLE.BUSINESS))
   const { user } = useAuth()
 
+  // URL değişince (komut paleti, bildirim, eski derin link) sekmeyi eşitle.
+  // Eski ad geldiyse adres yeni biçime yazılır (?tab=workers → ?tab=team&view=workers).
   useEffect(() => {
-    const t = resolveTab(params.get('tab'))
-    if (t && t !== activeTab) _setActiveTab(t)
+    const r = resolve(params.get('tab'))
+    if (!r) return
+    if (r.tab !== activeTab) _setActiveTab(r.tab)
+    if (r.aliased) {
+      const next = new URLSearchParams(params)
+      next.set('tab', r.tab)
+      Object.entries(r.params || {}).forEach(([k, v]) => next.set(k, v))
+      setParams(next, { replace: true })
+    }
   }, [params])
 
   /**
-   * FAZ 19 — extra: sekmeyle BIRLIKTE tasinacak query param'lar
-   * (orn. ?tab=applications&status=ACCEPTED derin linki).
-   * setParams tum param'lari ezdigi icin tek cagride verilmeli — once sekme
-   * degistirip sonra status yazmak ilkini silerdi.
+   * extra: sekmeyle BİRLİKTE taşınacak query parametreleri
+   * (ör. ?tab=applications&status=PENDING derin linki). setParams tüm
+   * parametreleri ezdiği için tek çağrıda verilir.
    */
   function setActiveTab(t, extra) {
-    // Gecersiz id (or. bildirimden gelen bilinmeyen sekme) reddedilir: bos ekran olmasin
-    const tab = resolveTab(t)
-    if (!tab) return false
-    _setActiveTab(tab)
-    setParams({ tab, ...(extra || {}) }, { replace: true })
+    // Geçersiz id (ör. bildirimden gelen bilinmeyen sekme) reddedilir: boş ekran olmasın
+    const r = resolve(t)
+    if (!r) return false
+    _setActiveTab(r.tab)
+    setParams({ tab: r.tab, ...(r.params || {}), ...(extra || {}) }, { replace: true })
     return true
   }
 
-  // Sohbet derin linki: ?tab=messages&c={conversationId} — MessagesPage c'yi okuyup sohbeti secer
+  // Sohbet derin linki: ?tab=messages&c={conversationId}
   function openMessages(conversationId) {
     setActiveTab('messages', conversationId ? { c: String(conversationId) } : undefined)
   }
@@ -62,34 +66,35 @@ export default function BusinessDashboard() {
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding(user?.id))
   const queryClient = useQueryClient()
 
-  // FAZ 0/#10 (Aşama 4) — useQuery: cache + auto-refetch + invalidation
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: keys.applications.business(),
     queryFn: async () => {
       const res = await hotelApi.getBusinessApplications({ size: 1000 })
       return Array.isArray(res) ? res : (res?.content ?? [])
     },
   })
-
-  if (error) toast.error('Başvurular yüklenemedi')
   const applications = data ?? []
 
-  // Tab'ların mutation sonrası çağırması için tek noktadan invalidate
+  // Sekmelerin mutation sonrası çağırması için tek noktadan invalidate
   const refetchApplications = () =>
     queryClient.invalidateQueries({ queryKey: keys.applications.business() })
 
+  // Başvurulara bağlı sekmeler; İlanlarım/Abonelik/Profil/Mesajlar kendi verisini yükler
+  const needsApplications = ['overview', 'applications', 'team', 'mylistings'].includes(activeTab)
+  const appsFailed = !!error && !data
+
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
-      {isLoading ? (
+      {isLoading && needsApplications ? (
         <SkeletonList count={5} />
+      ) : appsFailed && needsApplications && activeTab !== 'mylistings' ? (
+        <LoadError message="Başvurular yüklenemedi." onRetry={() => refetch()} retrying={isFetching} />
       ) : (
-        /* FAZ 5.4 — CSS-based tab transition (Framer key remount tetiklenmiyordu) */
         <div key={activeTab} className="page-enter">
           {activeTab === 'overview'      && <OverviewTab applications={applications} onTabChange={setActiveTab} />}
           {activeTab === 'mylistings'    && <MyListingsTab applications={applications} />}
           {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={openMessages} />}
-          {activeTab === 'workers'       && <WorkersTab applications={applications} onOpenMessages={openMessages} />}
-          {activeTab === 'favorites'     && <FavoritesTab onOpenMessages={openMessages} />}
+          {activeTab === 'team'          && <TeamTab applications={applications} onOpenMessages={openMessages} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'billing'       && <BillingTab />}
           {activeTab === 'profile'       && <ProfileTab />}

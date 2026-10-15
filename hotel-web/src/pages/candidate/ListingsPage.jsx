@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 
-// FAZ 5.4 — stagger variants (daha belirgin: scale + y + slow)
+// Liste girişi: sakin, kısa (kurumsal ton; ölçek/zıplama yok)
 const LIST_STAGGER = {
   hidden:  { opacity: 1 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.075, delayChildren: 0.08 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.03 } },
 }
 const LIST_ITEM = {
-  hidden:  { opacity: 0, y: 28, scale: 0.94 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+  hidden:  { opacity: 0, y: 6 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
 }
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
@@ -29,14 +29,10 @@ import {
   relativeDayLabel, localDateISO,
 } from '../../lib/shiftTime'                                                  // FAZ B.5.5 + gece vardiyası
 import BusinessLogo from '../../components/BusinessLogo'
-
-const POSITION_LABELS = {
-  WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
-  RECEPTION: 'Resepsiyon', KITCHEN_STAFF: 'Mutfak Personeli', BELLBOY: 'Bellboy', SECURITY: 'Güvenlik',
-}
-const JOB_TYPE_LABELS = {
-  PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı',
-}
+import LoadError from '../../components/ui/LoadError'
+import useFocusTrap from '../../lib/useFocusTrap'
+import { POSITION_LABELS, JOB_TYPE_LABELS, labelOf } from '../../utils/labels'
+import { SHIFT_BANDS, SHIFT_BAND_LABELS, listingMatchesBands } from '../../lib/shiftBand'
 
 // FAZ 2/#25 — formatSalary ortak helper'a tasindi (lib/salary.js)
 
@@ -383,15 +379,18 @@ export function nextShiftLabel(slots, now = new Date()) {
   return { day, time, dur: shiftDuration(s.startTime, s.endTime), more }
 }
 
-/* ── İlan kartı — REDESIGN v3 (açık + teal, sektör düzeni).
-   Eski dekoratif kapak (CoverArt "sarı kutu") + yüzen rozetler kaldırıldı;
-   yerine logo + bilgi-önce içerik + tek CTA. ── */
-function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
+/* ── İlan kartı (Paket 4) ──
+   Erişilebilirlik: kartın tamamı tıklanabilir ama rolü "button" DEĞİL — başlık
+   gerçek bir bağlantı (<a href="/listings/:id">) ve CSS ile kartı kaplar
+   (stretched link, .ah-job__link::after). Kaydet ve Başvur düğmeleri bağlantının
+   üstünde ayrı katmanda durur; iç içe etkileşimli öğe yoktur. */
+export function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
   const salaryStr = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
   const isSaved = savedIds?.has(listing.id)
   const position = POSITION_LABELS[listing.position] || listing.position || 'Personel'
+  const href = `/listings/${listing.id}`
 
-  // FAZ B.1 — ucret degeri + birim ayri (buyuk deger + kucuk birim)
+  // Ücret değeri + birim ayrı (büyük değer + küçük birim)
   let wageVal = '', wageUnit = ''
   if (salaryStr) {
     const parts = salaryStr.split(' / ')
@@ -403,25 +402,28 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
   const totalSlots = listing.shiftSlots?.length || 0
   // Doldu = başlamamış vardiya var ama hepsi dolu; hiç başlamamış yoksa süresi dolmuş
   const allFull = totalSlots > 0 && !shift && !!nearestShift(listing.shiftSlots)
+  const expired = totalSlots > 0 && !shift && !allFull
+
+  function openDetail(e) {
+    // Yeni sekme / orta tık tarayıcıya kalsın; normal tıkta SPA yönlendirmesi
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+    e.preventDefault()
+    onDetail?.(listing)
+  }
 
   return (
-    <div className={`ah-job ${listing.urgent ? 'ah-job--urgent' : ''}`} onClick={() => onDetail(listing)}
-         role="button" tabIndex={0}
-         style={!shift ? { opacity: 0.72 } : undefined}
-         onKeyDown={(e) => { if (e.key === 'Enter') onDetail(listing) }}>
-      {/* Ust: logo + pozisyon (birincil) + isletme/ilce (baglam) + kaydet */}
+    <article className={`ah-job ${listing.urgent ? 'ah-job--urgent' : ''}`} data-testid="listing-card">
+      {/* Üst: logo + pozisyon (bağlantı) + işletme · ilçe · mesafe + kaydet */}
       <div className="ah-job__top">
         <BusinessLogo name={listing.businessName} logoUrl={listing.businessLogoUrl} />
         <div className="ah-job__hd">
-          <div className="ah-job__title">{position}</div>
-          {/* FAZ B.5.4 — Tek meta satiri: isletme · ilce · mesafe.
-              Ayiraclar CSS'ten (.ah-job__meta > * + *::before) gelir. */}
+          <h3 className="ah-job__title">
+            <a href={href} onClick={openDetail} className="ah-job__link">{position}</a>
+          </h3>
+          {/* Tek meta satırı: işletme · ilçe · mesafe (ayıraçlar CSS'ten) */}
           <div className="ah-job__meta">
             <span className="ah-job__co-name">{listing.businessName}</span>
-
             <span>{listing.businessDistrict || 'İstanbul'}</span>
-
-            {/* FAZ B.3 — mesafe (konum verildiyse) */}
             {listing._distanceKm != null && (
               <span className="ah-job__dist" title="Sana kuş uçuşu mesafe">
                 {formatDistance(listing._distanceKm)}
@@ -431,7 +433,8 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         </div>
         <button type="button"
                 className={`ah-save ${isSaved ? 'ah-save--on' : ''}`}
-                onClick={(e) => { e.stopPropagation(); onToggleSave?.(listing.id, isSaved) }}
+                onClick={() => onToggleSave?.(listing.id, isSaved)}
+                aria-pressed={!!isSaved}
                 aria-label={isSaved ? 'Kaydedilenlerden çıkar' : 'Kaydet'}
                 title={isSaved ? 'Kaydedilenlerden çıkar' : 'Kaydet'}>
           <svg width="15" height="15" viewBox="0 0 24 24"
@@ -442,7 +445,7 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         </button>
       </div>
 
-      {/* ANA CAPA — en yakin vardiya + ucret (buyuk) */}
+      {/* Ana çapa — en yakın vardiya + ücret */}
       <div className="ah-job__band">
         <div className="ah-job__when">
           <span className="ah-job__band-lbl">
@@ -454,7 +457,6 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
               {shift.time && (
                 <span className="ah-job__when-time">
                   {shift.time}
-                  {/* FAZ B.5.5 — sure: ucretin saatlik karsiligini kurar */}
                   {shift.dur && <span className="ah-job__when-dur">{shift.dur}</span>}
                 </span>
               )}
@@ -477,33 +479,10 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
         </div>
       </div>
 
-      {/* FAZ B.2 — Isletme guven satiri: dogrulama + tamamlanan is sayisi. */}
-      {(listing.businessVerified || listing.businessWorkerCount > 0) && (
-        <div className="ah-job__trust">
-          {listing.businessVerified && (
-            <span className="ah-trust-item ah-trust-item--ok" title="İşletme doğrulandı">
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
-                   strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-              Doğrulandı
-            </span>
-          )}
-          {listing.businessWorkerCount > 0 && (
-            <span className="ah-trust-item" title="Bu işletmede tamamlanan iş sayısı">
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
-                   strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M20 6 9 17l-5-5" /><circle cx="18" cy="18" r="4" />
-              </svg>
-              {listing.businessWorkerCount}+ tamamlanan iş
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Ikincil cipler */}
+      {/* Durum + güven + ikincil bilgiler tek satırda (kart kısa kalsın) */}
       <div className="ah-job__tags">
-        {/* FAZ C.2.2 — Acil rozeti (backend urgentUntil gecince urgent=false doner) */}
+        {expired && <span className="badge badge-neutral">Süresi doldu</span>}
+        {allFull && <span className="badge badge-neutral">Vardiyalar dolu</span>}
         {listing.urgent && (
           <span className="ah-chip ah-chip--urgent" title="Acil ilan — işletme hemen personel arıyor">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -512,112 +491,172 @@ function ListingCard({ listing, onApply, onDetail, savedIds, onToggleSave }) {
             Acil
           </span>
         )}
-        <span className="ah-chip">{JOB_TYPE_LABELS[listing.jobType] || listing.jobType}</span>
+        {listing.businessVerified && (
+          <span className="ah-trust-item ah-trust-item--ok" title="İşletme doğrulandı">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+                 strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+            Doğrulandı
+          </span>
+        )}
+        {listing.businessWorkerCount > 0 && (
+          <span className="ah-trust-item" title="Bu işletmede tamamlanan iş sayısı">
+            {listing.businessWorkerCount}+ tamamlanan iş
+          </span>
+        )}
+        {listing.jobType && <span className="ah-chip">{labelOf(JOB_TYPE_LABELS, listing.jobType)}</span>}
         {shift && shift.more > 0 && (
           <span className="ah-chip">+{shift.more} vardiya daha</span>
         )}
       </div>
 
-      <div className="ah-job__cta">
-        {shift ? (
-          <button className="ah-btn ah-btn--p ah-btn--block ah-btn--arrow"
-                  onClick={(e) => { e.stopPropagation(); onApply(listing) }}>
+      {/* Başvur: mobilde gizli — kartın tamamı detay bağlantısı ve detay sayfasında
+          sabit "Başvur" çubuğu var; böylece 375px'te ilk ekrana en az 2 kart sığar. */}
+      {shift && (
+        <div className="ah-job__cta hidden sm:block">
+          <button type="button" className="ah-btn ah-btn--p ah-btn--block ah-btn--arrow"
+                  onClick={() => onApply(listing)}>
             Başvur
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
             </svg>
           </button>
-        ) : (
-          <button className="ah-btn ah-btn--block" disabled aria-disabled="true"
-                  onClick={(e) => e.stopPropagation()}
-                  style={{ background: 'var(--ah-band)', color: 'var(--ah-ink-3)',
-                           border: '1px solid var(--ah-line)', cursor: 'not-allowed' }}>
-            {allFull ? 'Vardiyalar dolu' : totalSlots === 0 ? 'Vardiya eklenmemiş' : 'Süresi doldu'}
-          </button>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </article>
   )
 }
 
-/* ── Listings Page — FAZ 0/#10 + FAZ 1/#47 + FAZ 1/#30 split + harita ── */
-const FILTERS_OPEN_KEY = 'kadrom.listings.filters-open'
+/* ── Ücret sıralaması — birim normalizasyonu ──
+   Farklı birimdeki ücretler GÜNLÜK karşılığa çevrilip karşılaştırılır:
+     HOURLY  × 8   (8 saatlik iş günü)
+     DAILY   × 1
+     MONTHLY ÷ 26  (ayda 26 iş günü — 6 gün çalışma)
+   Görüşülecek / birimi bilinmeyen / tutarı olmayan ilan null döner ve sıralamada
+   sona düşer (bilmediğimiz birimi tahmin etmeyiz; bkz. lib/salary.js). Üst sınır
+   varsa o, yoksa alt sınır kullanılır. */
+export const WAGE_DAILY_FACTOR = { HOURLY: 8, DAILY: 1, MONTHLY: 1 / 26 }
+
+export function dailyWage(listing) {
+  const factor = WAGE_DAILY_FACTOR[listing?.salaryType]
+  const raw = listing?.salaryMax ?? listing?.salaryMin
+  if (!factor || raw == null || raw === '') return null
+  const n = Number(raw)
+  return Number.isFinite(n) && n > 0 ? n * factor : null
+}
+
+export function compareByDailyWageDesc(a, b) {
+  const wa = dailyWage(a), wb = dailyWage(b)
+  if (wa == null && wb == null) return 0
+  if (wa == null) return 1
+  if (wb == null) return -1
+  return wb - wa
+}
+
+/* Ücret çipleri: ücret birimi çalışma türüne bağlı; "Tümü"yken filtre pasif. */
+const SALARY_STEPS = {
+  DAILY:     { unit: '₺/gün', values: [500, 800, 1000, 1500, 2000] },
+  PART_TIME: { unit: '₺/gün', values: [500, 800, 1000, 1500, 2000] },
+  PERMANENT: { unit: '₺/ay',  values: [10000, 15000, 20000, 25000, 30000] },
+  SEASONAL:  { unit: '₺/ay',  values: [10000, 15000, 20000, 25000, 30000] },
+}
+export function salaryUnitFor(jobType) {
+  return SALARY_STEPS[jobType]?.unit || null
+}
+
+/* ── Listings Page ── */
+export const LISTINGS_PAGE_SIZE = 12
+
+function useIsDesktop() {
+  const query = '(min-width: 1024px)'
+  const get = () => (typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia(query).matches : true)
+  const [match, setMatch] = useState(get)
+  useEffect(() => {
+    if (!window.matchMedia) return undefined
+    const mq = window.matchMedia(query)
+    const on = () => setMatch(mq.matches)
+    mq.addEventListener?.('change', on)
+    return () => mq.removeEventListener?.('change', on)
+  }, [])
+  return match
+}
 
 export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen }) {
   const navigate = useNavigate()
   const [applyTarget, setApplyTarget] = useState(null)
-  // Filtre paneli (mobil/tablet): kapali baslar ki ilanlar ilk ekranda gorunsun;
-  // acip kapatma tercihi bu cihazda hatirlanir. Genis ekranda (lg) filtreler
-  // solda kenar sutununda hep gorunur, bu durumdan etkilenmez.
-  const [showFilters, setShowFilters] = useState(() => {
-    try { return localStorage.getItem(FILTERS_OPEN_KEY) === '1' } catch { return false }
-  })
-  function toggleFilters() {
-    setShowFilters(open => {
-      try { localStorage.setItem(FILTERS_OPEN_KEY, open ? '0' : '1') } catch { /* yok say */ }
-      return !open
-    })
-  }
-  const [page, setPage] = useState(1)
-  const PAGE_SIZE = 6
+  // Filtre paneli: lg+ solda hep görünür; daha dar ekranda tam ekran alt sayfa.
+  // Her ziyarette kapalı başlar — ilanlar ilk ekranda görünsün.
+  const [showFilters, setShowFilters] = useState(false)
+  const isDesktop = useIsDesktop()
+  const sheetOpen = showFilters && !isDesktop
+  const sheetRef = useRef(null)
+  const closeSheet = () => setShowFilters(false)
+  useFocusTrap(sheetRef, sheetOpen, closeSheet)
+  useEffect(() => {
+    if (!sheetOpen) return undefined
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [sheetOpen])
 
-  // Dalga H1 — Kaydedilen ilan ID'leri (kalp ikonunun durumu icin)
+  const [visibleCount, setVisibleCount] = useState(LISTINGS_PAGE_SIZE)
+
+  // Kaydedilen ilan ID'leri (kaydet ikonunun durumu için)
   const queryClient = useQueryClient()
   const { data: savedListings = [] } = useQuery({
     queryKey: ['my-saved-listings'],
     queryFn: () => hotelApi.getMySavedListings(),
     staleTime: 60_000,
   })
-  const savedIds = new Set(savedListings.map(l => l.id))
+  const savedIds = useMemo(() => new Set(savedListings.map(l => l.id)), [savedListings])
 
-  // Dalga I1 — Engellenen isletmelerin ilanlari feed'den dusuruluyor
+  // Engellenen işletmelerin ilanları listeden düşürülür
   const { data: blockedBusinesses = [] } = useQuery({
     queryKey: ['my-blocked-businesses'],
     queryFn: () => hotelApi.getMyBlockedBusinesses(),
     staleTime: 60_000,
   })
-  const blockedBusinessIds = new Set(blockedBusinesses.map(b => b.id))
+  const blockedBusinessIds = useMemo(
+    () => new Set(blockedBusinesses.map(b => b.id)), [blockedBusinesses])
   async function handleToggleSave(listingId, currentlySaved) {
     try {
       if (currentlySaved) await hotelApi.unsaveListing(listingId)
       else                await hotelApi.saveListing(listingId)
       queryClient.invalidateQueries({ queryKey: ['my-saved-listings'] })
-    } catch (e) {
-      toast.error('Kaydetme islemi basarisiz')
+    } catch {
+      toast.error('Kaydetme işlemi başarısız')
     }
   }
 
-  // #47: Detay artık modal değil, kendi route'a navigate
   const openDetail = (listing) => navigate(`/listings/${listing.id}`)
 
-  // Filter state
+  // Filtre durumu
   const [keyword, setKeyword] = useState('')
   const [debouncedKeyword, setDebouncedKeyword] = useState('')
   const [position, setPosition] = useState('')
   const [jobType, setJobType] = useState('')
-  // FAZ B.5.2 — Ilce FILTRESI kaldirildi (kullanici karari): konum artik
-  // mesafe (km) uzerinden. Ilce yalnizca ilan uzerinde METIN olarak gorunur.
   const [minSalary, setMinSalary] = useState('')
+  // Vardiya saati bandları (MORNING/EVENING/NIGHT) — istemci tarafı; API'ye
+  // gönderilmez (bkz. lib/shiftBand.js gerekçesi).
   const [shifts, setShifts] = useState([])
 
-  // Faz E4: Tarih filtresi
   // datePreset: '' | 'TODAY' | 'TOMORROW' | 'WEEK' | 'WEEKEND' | 'CUSTOM'
   const [datePreset, setDatePreset] = useState('')
   const [customFrom, setCustomFrom] = useState('')
   const [customTo,   setCustomTo]   = useState('')
 
-  // Preset dateFrom/dateTo (YYYY-MM-DD)
   const dateRange = (() => {
     const today = new Date()
     const fmt = (d) => localDateISO(d)   // yerel gün (UTC kayması yok)
     const addDays = (d, n) => { const c = new Date(d); c.setDate(c.getDate() + n); return c }
     switch (datePreset) {
-      case 'TODAY':    return { dateFrom: fmt(today),                dateTo: fmt(today) }
-      case 'TOMORROW': return { dateFrom: fmt(addDays(today, 1)),    dateTo: fmt(addDays(today, 1)) }
-      case 'WEEK':     return { dateFrom: fmt(today),                dateTo: fmt(addDays(today, 7)) }
+      case 'TODAY':    return { dateFrom: fmt(today),             dateTo: fmt(today) }
+      case 'TOMORROW': return { dateFrom: fmt(addDays(today, 1)), dateTo: fmt(addDays(today, 1)) }
+      case 'WEEK':     return { dateFrom: fmt(today),             dateTo: fmt(addDays(today, 7)) }
       case 'WEEKEND': {
-        // En yakın Cmt (6) ve Paz (0)
         const dow = today.getDay()  // 0=Paz, 6=Cmt
         const daysToSat = dow === 6 ? 0 : (6 - dow + 7) % 7
         const sat = addDays(today, daysToSat)
@@ -634,21 +673,27 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     return () => clearTimeout(t)
   }, [keyword])
 
-  // FAZ 0/#10 — useQuery: filtreler dependency, otomatik refetch + cache
-  // FAZ 5 — ranked=true: aday tercihlerine göre "sana özel" sıralama
+  // Ücret filtresi çalışma türüne bağlı (birim farklı); tür kalkınca ücret de kalkar.
+  function chooseJobType(v) {
+    setJobType(v)
+    if (v !== jobType) setMinSalary('')
+  }
+
+  // ranked=true: aday tercihlerine göre "sana özel" sıralama.
+  // `shifts` bilerek gönderilmez (istemci tarafında süzülür).
   const filters = {
-    position, jobType, shifts, minSalary,
+    position, jobType,
+    minSalary: jobType ? minSalary : '',
     keyword: debouncedKeyword,
     dateFrom: dateRange.dateFrom,
     dateTo:   dateRange.dateTo,
     ranked: true,
   }
-  const { data: listings = [], isLoading: loading, error } = useQuery({
+  const { data: listings = [], isLoading: loading, isFetching, error, refetch } = useQuery({
     queryKey: keys.listings.list(filters),
     queryFn: () => hotelApi.getListings(filters),
-    keepPreviousData: true,  // filtre değişirken eski listeyi göster (UX)
+    placeholderData: keepPreviousData,  // filtre değişirken eski liste görünür
   })
-  if (error) toast.error('İlanlar yüklenemedi')
 
   function clearFilters() {
     setKeyword(''); setPosition(''); setJobType('')
@@ -656,7 +701,9 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     setDatePreset(''); setCustomFrom(''); setCustomTo('')
   }
 
-  // FAZ B.4 — Bos durumdan tek tikla "bu aramaya ilan cikinca haber ver".
+  // Boş durumdan tek tıkla "bu aramaya ilan çıkınca haber ver".
+  // Vardiya saati kayıtlı aramaya eklenmez (backend eşleştirmesi ilanın boş
+  // `shift` alanına bakıyor; eklenirse yeni ilanlarla hiç eşleşmez).
   async function saveCurrentSearchQuick() {
     const parts = [POSITION_LABELS[position], debouncedKeyword].filter(Boolean)
     const name = parts.length ? parts.join(' · ') : 'Kayıtlı arama'
@@ -666,10 +713,10 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         position: position || null,
         jobType: jobType || null,
         keyword: debouncedKeyword || null,
-        minSalary: minSalary ? Number(minSalary) : null,
+        minSalary: jobType && minSalary ? Number(minSalary) : null,
         dateFrom: dateRange.dateFrom || null,
         dateTo: dateRange.dateTo || null,
-        shifts: shifts.length ? shifts : null,
+        shifts: null,
       })
       toast.success('Arama kaydedildi · yeni eşleşmelerde bildirim alacaksın')
     } catch (err) {
@@ -681,18 +728,18 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
     (keyword ? 1 : 0) + (position ? 1 : 0) + (jobType ? 1 : 0) +
     (minSalary ? 1 : 0) + shifts.length + (datePreset ? 1 : 0)
 
-  // FAZ B.3 — Konum + mesafe. Kullanici acikca "Yakinlar once" derse istekle.
+  // Konum + mesafe. Kullanıcı açıkça "Yakınlar" derse istenir.
   const myLoc = useMyLocation()
   const [nearbyFirst, setNearbyFirst] = useState(false)
-  // Kullanici-gorunur siralama. 'relevance' = API'nin "sana ozel" (ranked) sirasi.
+  // 'relevance' = API'nin "sana özel" (ranked) sırası.
   const [sortBy, setSortBy] = useState('relevance')
 
-  // Dalga I1 — Engelli isletmeleri client-side filtrele (backend rebuild gerekene kadar)
-  // + FAZ B.3 — mesafe hesabi (varsa) + istege gore siralama
+  // Görünen liste: engelli işletme + vardiya saati süzgeci, mesafe, sıralama.
+  // Sayaç, boş durum ve sayfalama hep BU listeyi kullanır.
   const visibleListings = useMemo(() => {
-    let list = blockedBusinessIds.size === 0
-      ? listings
-      : listings.filter(l => !blockedBusinessIds.has(l.businessId))
+    let list = listings
+    if (blockedBusinessIds.size > 0) list = list.filter(l => !blockedBusinessIds.has(l.businessId))
+    if (shifts.length > 0) list = list.filter(l => listingMatchesBands(l, shifts))
 
     if (myLoc.location) {
       list = list.map(l => ({
@@ -704,9 +751,6 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       }))
     }
 
-    // Siralama: "Yakinlar once" toggle'i her seyin onunde (konum varsa);
-    // yoksa kullanicinin sectigi sira. 'relevance' API sirasini korur.
-    const wageOf = l => Number(l.salaryMax ?? l.salaryMin ?? 0)
     if (nearbyFirst && myLoc.location) {
       list = [...list].sort((a, b) => {
         const da = a._distanceKm, db = b._distanceKm
@@ -719,64 +763,61 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       list = [...list].sort((a, b) =>
         String(b.createdAt || '').localeCompare(String(a.createdAt || '')) || (b.id - a.id))
     } else if (sortBy === 'wage') {
-      list = [...list].sort((a, b) => wageOf(b) - wageOf(a))
+      list = [...list].sort(compareByDailyWageDesc)
     }
     return list
-  }, [listings, blockedBusinessIds, myLoc.location, nearbyFirst, sortBy])
+  }, [listings, blockedBusinessIds, shifts, myLoc.location, nearbyFirst, sortBy])
 
-  // FAZ C.2.3 — Genel bakis seridi ozeti. Yeni API cagrisi yok; gorunen
-  // listeden turetilir, filtre degisince kendiliginden guncellenir.
+  // Genel bakış şeridi — görünen listeden türetilir.
   const overview = useMemo(() => {
     const urgentCount = visibleListings.filter(l => l.urgent).length
     const dists = visibleListings.map(l => l._distanceKm).filter(d => d != null)
     const nearestKm = dists.length ? Math.min(...dists) : null
-    // Ortalama gunluk ucret: yalnizca DAILY tipli ilanlar (aylik/saatlik
-    // karistirmak yaniltir); guvenceli taban olarak salaryMin.
+    // Ortalama günlük ücret: yalnız DAILY tipli ilanlar; taban olarak salaryMin.
     const daily = visibleListings
       .filter(l => l.salaryType === 'DAILY' && l.salaryMin != null)
       .map(l => Number(l.salaryMin))
     const avgDaily = daily.length
-      ? Math.round(daily.reduce((s, v) => s + v, 0) / daily.length)
+      ? Math.round(daily.reduce((sum, v) => sum + v, 0) / daily.length)
       : null
     return { total: visibleListings.length, urgentCount, nearestKm, avgDaily }
   }, [visibleListings])
 
-  // 6'lik pagination
-  const totalPages = Math.max(1, Math.ceil(visibleListings.length / PAGE_SIZE))
-  const safePage   = Math.min(page, totalPages)
-  const pageItems  = useMemo(
-    () => visibleListings.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
-    [visibleListings, safePage]
-  )
-  // Filtre/keyword degisirse sayfa 1'e dön (boş sayfada kalmamak için)
-  useEffect(() => { setPage(1) }, [debouncedKeyword, position, jobType, minSalary, shifts, datePreset, customFrom, customTo])
+  const total = visibleListings.length
+  const pageItems = useMemo(
+    () => visibleListings.slice(0, visibleCount), [visibleListings, visibleCount])
+  const remaining = Math.max(0, total - pageItems.length)
+  // Filtre/sıralama değişince ilk 12'ye dön
+  useEffect(() => { setVisibleCount(LISTINGS_PAGE_SIZE) },
+    [debouncedKeyword, position, jobType, minSalary, shifts, datePreset, customFrom, customTo, sortBy, nearbyFirst])
+
+  const salaryCfg = SALARY_STEPS[jobType]
+  const showError = !!error && listings.length === 0
 
   return (
-    <div className="ah-surface space-y-4">
-      {/* Ust arac cubugu — mobilde ilk ekranda ilanlar gorunsun diye kompakt:
-          1. satir arama + Filtreler, 2. satir sayi + siralama + toggle'lar
-          (dar ekranda alt satira tasmak yerine yana kayar). Sayfa basligi
-          panelde (DashboardLayout) — burada tekrar edilmez. */}
+    <div className="ah-surface space-y-3">
+      {/* Araç çubuğu: 1. satır arama + Filtreler, 2. satır sayı + sıralama + düğmeler.
+          Sayfa başlığı panelde (DashboardLayout) — burada tekrar edilmez. */}
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0">
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#98a1a0"
+                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 style={{ color: 'var(--ah-ink-4)' }}
                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.3-4.3" />
             </svg>
-            <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
-              placeholder="İlan başlığında ara..."
+            <input type="search" value={keyword} onChange={e => setKeyword(e.target.value)}
+              placeholder="İlan başlığında ara"
+              aria-label="İlan başlığında ara"
               className="input text-sm"
-              style={{ paddingLeft: '2.5rem', paddingRight: keyword ? '2.5rem' : undefined }} />
+              style={{ paddingLeft: '2.5rem', paddingRight: keyword ? '2.75rem' : undefined }} />
             {keyword && (
-              <button onClick={() => setKeyword('')}
+              <button type="button" onClick={() => setKeyword('')}
                 aria-label="Aramayı temizle"
-                className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                style={{ color: 'var(--ah-ink-3)' }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ah-ink)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ah-ink-3)' }}>
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-11 h-11 grid place-items-center"
+                style={{ color: 'var(--ah-ink-3)' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M18 6 6 18" /><path d="m6 6 12 12" />
@@ -784,25 +825,17 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
               </button>
             )}
           </div>
-
         </div>
-        <button type="button" onClick={toggleFilters} aria-expanded={showFilters}
-          aria-controls="listing-filters"
-          className="lg:hidden inline-flex items-center gap-1.5 flex-shrink-0 rounded-lg text-[13px] font-semibold"
-          style={{
-            padding: '9px 12px',
-            background: showFilters ? 'var(--ah-brand-soft)' : 'var(--ah-card)',
-            color: 'var(--ah-ink)',
-            border: '1px solid var(--ah-line-2)',
-          }}>
+        <button type="button" onClick={() => setShowFilters(true)}
+          aria-expanded={sheetOpen} aria-controls="listing-filters"
+          className="lg:hidden btn-secondary flex-shrink-0 !px-3">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M3 6h18M7 12h10M10 18h4" />
           </svg>
           Filtreler
           {activeFilterCount > 0 && (
-            <span className="tabular-nums rounded-full text-[12px] leading-none text-white"
-                  style={{ background: 'var(--ah-brand)', padding: '3px 6px' }}>
+            <span className="badge badge-neutral tabular-nums" aria-label={`${activeFilterCount} aktif filtre`}>
               {activeFilterCount}
             </span>
           )}
@@ -810,25 +843,24 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 py-0.5 no-scrollbar">
-        <span className="text-[12.5px] tabular-nums flex-shrink-0 mr-auto pr-1" style={{ color: 'var(--ah-ink-3)' }}>
-          {loading ? '...' : `${listings.length} ilan`}
+        <span className="type-meta tabular-nums flex-shrink-0 mr-auto pr-1" data-testid="listing-count"
+              aria-live="polite">
+          {loading ? 'Yükleniyor' : `${total} ilan`}
         </span>
-          {/* Siralama — API "sana ozel" varsayilan; kullanici degistirebilir */}
-          <label className="inline-flex flex-shrink-0 items-center gap-1.5 text-[12.5px]" style={{ color: 'var(--ah-ink-3)' }}>
-            <span className="hidden sm:inline">Sırala</span>
-            <select value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(1) }}
-                    disabled={nearbyFirst}
-                    title={nearbyFirst ? 'Yakınlar açıkken sıralama mesafeye göre' : 'Sıralama'}
-                    className="input text-sm"
-                    style={{ padding: '6px 28px 6px 10px', width: 'auto', minWidth: 132 }}>
-              <option value="relevance">Sana özel</option>
-              <option value="newest">En yeni</option>
-              <option value="wage">Ücret (yüksek)</option>
-            </select>
-          </label>
-          {/* FAZ C.2 — "Bugun musaitim": acil ilan acilirsa ilk bu adaylara gider.
-              Yana kayan satirda sikismasin / iki satira kirilmasin. */}
-          <div className="flex-shrink-0 whitespace-nowrap flex items-center gap-2">
+        <label className="inline-flex flex-shrink-0 items-center gap-1.5 type-meta">
+          <span className="hidden sm:inline">Sırala</span>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                  disabled={nearbyFirst}
+                  aria-label="Sıralama"
+                  title={nearbyFirst ? 'Yakınlar açıkken sıralama mesafeye göre' : 'Sıralama'}
+                  className="input text-sm"
+                  style={{ padding: '6px 28px 6px 10px', width: 'auto', minWidth: 132 }}>
+            <option value="relevance">Sana özel</option>
+            <option value="newest">En yeni</option>
+            <option value="wage">Ücret (günlük karşılık)</option>
+          </select>
+        </label>
+        <div className="flex-shrink-0 whitespace-nowrap flex items-center gap-2">
           <AvailableNowToggle />
           <NearbyToggle
             nearbyFirst={nearbyFirst}
@@ -842,142 +874,185 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
             hasLocation={!!myLoc.location}
             error={myLoc.error}
           />
-          </div>
+        </div>
       </div>
 
-      {/* FAZ C.2.3 — Mini genel bakis seridi: bos/sikici liste hissini kirar,
-          acil ilanlari one cikarir (C.2'nin vitrini). */}
-      {!loading && overview.total > 0 && (
-        <OverviewStrip overview={overview} hasLocation={!!myLoc.location} />
+      {/* Mini genel bakış — mobilde gizli (ilk ekranda kartlara yer kalsın) */}
+      {!loading && !showError && overview.total > 0 && (
+        <div className="hidden sm:block">
+          <OverviewStrip overview={overview} hasLocation={!!myLoc.location} />
+        </div>
       )}
 
-      {/* FAZ B.5.2 — Filtreler: ilce KALDIRILDI (konum = mesafe).
-          Tarih / calisma turu / min ucret tek tikla secilen chip'ler;
-          pozisyon uzun liste oldugu icin select kaliyor. */}
-      <div className="lg:grid lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-5 lg:items-start space-y-4 lg:space-y-0">
-      <aside className={`${showFilters ? '' : 'hidden'} lg:block lg:sticky lg:top-20`}>
-      <div id="listing-filters" className="card" style={{ padding: '14px 16px' }}>
-        <div className="space-y-3">
-          <FilterRow label="Tarih">
-            {[
-              { v: '',         l: 'Tümü' },
-              { v: 'TODAY',    l: 'Bugün' },
-              { v: 'TOMORROW', l: 'Yarın' },
-              { v: 'WEEK',     l: 'Bu Hafta' },
-              { v: 'WEEKEND',  l: 'Haftasonu' },
-              { v: 'CUSTOM',   l: 'Özel tarih' },
-            ].map(o => (
-              <FilterChip key={o.v} active={datePreset === o.v}
-                          onClick={() => setDatePreset(o.v)}>{o.l}</FilterChip>
-            ))}
-          </FilterRow>
-
-          <FilterRow label="Çalışma Türü">
-            <FilterChip active={!jobType} onClick={() => setJobType('')}>Tümü</FilterChip>
-            {Object.entries(JOB_TYPE_LABELS).map(([v, l]) => (
-              <FilterChip key={v} active={jobType === v}
-                          onClick={() => setJobType(jobType === v ? '' : v)}>{l}</FilterChip>
-            ))}
-          </FilterRow>
-
-          <FilterRow label={(jobType === 'DAILY' || jobType === 'PART_TIME') ? 'Min Ücret (günlük)' : 'Min Ücret'}>
-            <FilterChip active={!minSalary} onClick={() => setMinSalary('')}>Tümü</FilterChip>
-            {((jobType === 'DAILY' || jobType === 'PART_TIME')
-              ? [500, 800, 1000, 1500, 2000]
-              : [10000, 15000, 20000, 25000, 30000]).map(v => (
-              <FilterChip key={v} active={minSalary === String(v)}
-                          onClick={() => setMinSalary(minSalary === String(v) ? '' : String(v))}>
-                {v.toLocaleString('tr-TR')} ₺+
-              </FilterChip>
-            ))}
-          </FilterRow>
-
-          <div className="max-w-xs">
-            <FilterField label="Pozisyon">
-              <select value={position} onChange={e => setPosition(e.target.value)} className="input text-sm">
-                <option value="">Tüm pozisyonlar</option>
-                {Object.entries(POSITION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </FilterField>
-          </div>
+      <div className="lg:grid lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-5 lg:items-start space-y-3 lg:space-y-0">
+      <aside id="listing-filters" ref={sheetRef}
+             className={`ah-filter-sheet${sheetOpen ? ' is-open' : ''}`}
+             role={sheetOpen ? 'dialog' : undefined}
+             aria-modal={sheetOpen ? 'true' : undefined}
+             aria-labelledby={sheetOpen ? 'listing-filters-title' : undefined}
+             aria-label={sheetOpen ? undefined : 'Filtreler'}>
+        <div className="ah-filter-sheet__head">
+          <h2 id="listing-filters-title" className="type-section">Filtreler</h2>
+          <button type="button" onClick={closeSheet} aria-label="Filtreleri kapat"
+                  className="w-11 h-11 grid place-items-center rounded-lg -mr-2"
+                  style={{ color: 'var(--ah-ink-2)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
         </div>
 
-        {datePreset === 'CUSTOM' && (
-          <div className="grid grid-cols-2 gap-3 mt-3 max-w-md">
-            <FilterField label="Başlangıç">
-              <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
-                min={localDateISO()} className="input text-sm" />
-            </FilterField>
-            <FilterField label="Bitiş">
-              <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
-                min={customFrom || localDateISO()} className="input text-sm" />
-            </FilterField>
-          </div>
-        )}
+        <div className="ah-filter-sheet__body">
+        <div className="card ah-filter-card">
+          <div className="space-y-3">
+            <FilterRow label="Tarih">
+              {[
+                { v: '',         l: 'Tümü' },
+                { v: 'TODAY',    l: 'Bugün' },
+                { v: 'TOMORROW', l: 'Yarın' },
+                { v: 'WEEK',     l: 'Bu hafta' },
+                { v: 'WEEKEND',  l: 'Hafta sonu' },
+                { v: 'CUSTOM',   l: 'Özel tarih' },
+              ].map(o => (
+                <FilterChip key={o.v} active={datePreset === o.v}
+                            onClick={() => setDatePreset(o.v)}>{o.l}</FilterChip>
+              ))}
+            </FilterRow>
 
-        <div className="flex items-center gap-3 mt-3 pt-3" style={{ borderTop: '1px solid var(--ah-line)' }}>
-          <div className="min-w-0 flex-1">
-            <SavedSearchManager
-              filters={{
-                position, jobType, keyword: debouncedKeyword, minSalary,
-                dateFrom: dateRange.dateFrom, dateTo: dateRange.dateTo, shifts,
-              }}
-              onApply={(ss) => {
-                setPosition(ss.position || '')
-                setJobType(ss.jobType || '')
-                setKeyword(ss.keyword || '')
-                setMinSalary(ss.minSalary != null ? String(ss.minSalary) : '')
-                setShifts(ss.shifts ? Array.from(ss.shifts) : [])
-                if (ss.dateFrom && ss.dateTo) {
-                  setDatePreset('CUSTOM'); setCustomFrom(ss.dateFrom); setCustomTo(ss.dateTo)
-                } else {
-                  setDatePreset(''); setCustomFrom(''); setCustomTo('')
-                }
-                toast.success(`"${ss.name}" uygulandı`)
-              }}
-            />
+            {datePreset === 'CUSTOM' && (
+              <div className="grid grid-cols-2 gap-3 max-w-md">
+                <FilterField label="Başlangıç" htmlFor="lf-from">
+                  <input id="lf-from" type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                    min={localDateISO()} className="input text-sm" />
+                </FilterField>
+                <FilterField label="Bitiş" htmlFor="lf-to">
+                  <input id="lf-to" type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                    min={customFrom || localDateISO()} className="input text-sm" />
+                </FilterField>
+              </div>
+            )}
+
+            <FilterRow label="Vardiya saati">
+              <FilterChip active={shifts.length === 0} onClick={() => setShifts([])}>Tümü</FilterChip>
+              {SHIFT_BANDS.map(b => {
+                const on = shifts.includes(b.id)
+                return (
+                  <FilterChip key={b.id} active={on}
+                              onClick={() => setShifts(prev => on ? prev.filter(x => x !== b.id) : [...prev, b.id])}>
+                    {b.label} <span className="tabular-nums" style={{ opacity: 0.75 }}>{b.hint}</span>
+                  </FilterChip>
+                )
+              })}
+            </FilterRow>
+
+            <FilterRow label="Çalışma türü">
+              <FilterChip active={!jobType} onClick={() => chooseJobType('')}>Tümü</FilterChip>
+              {Object.entries(JOB_TYPE_LABELS).map(([v, l]) => (
+                <FilterChip key={v} active={jobType === v}
+                            onClick={() => chooseJobType(jobType === v ? '' : v)}>{l}</FilterChip>
+              ))}
+            </FilterRow>
+
+            <FilterRow label={salaryCfg ? `En az ücret (${salaryCfg.unit})` : 'En az ücret'}>
+              {salaryCfg ? (
+                <>
+                  <FilterChip active={!minSalary} onClick={() => setMinSalary('')}>Tümü</FilterChip>
+                  {salaryCfg.values.map(v => (
+                    <FilterChip key={v} active={minSalary === String(v)}
+                                onClick={() => setMinSalary(minSalary === String(v) ? '' : String(v))}>
+                      {v.toLocaleString('tr-TR')} {salaryCfg.unit}+
+                    </FilterChip>
+                  ))}
+                </>
+              ) : (
+                <span className="type-caption" data-testid="salary-hint">Önce çalışma türü seç</span>
+              )}
+            </FilterRow>
+
+            <div className="max-w-xs">
+              <FilterField label="Pozisyon" htmlFor="lf-position">
+                <select id="lf-position" value={position} onChange={e => setPosition(e.target.value)} className="input text-sm">
+                  <option value="">Tüm pozisyonlar</option>
+                  {Object.entries(POSITION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </select>
+              </FilterField>
+            </div>
           </div>
-          {activeFilterCount > 0 && (
-            <button onClick={clearFilters}
-              className="text-[12.5px] font-medium flex-shrink-0 self-start inline-flex items-center gap-1"
-              style={{ color: 'var(--ah-ink-3)' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-              </svg>
-              Temizle
-            </button>
-          )}
+
+          <div className="flex items-start gap-3 mt-3 pt-3" style={{ borderTop: '1px solid var(--ah-line)' }}>
+            <div className="min-w-0 flex-1">
+              <SavedSearchManager
+                filters={{
+                  position, jobType, keyword: debouncedKeyword,
+                  minSalary: jobType ? minSalary : '',
+                  dateFrom: dateRange.dateFrom, dateTo: dateRange.dateTo,
+                  shiftBandsActive: shifts.length > 0,
+                }}
+                onApply={(ss) => {
+                  setPosition(ss.position || '')
+                  setJobType(ss.jobType || '')
+                  setKeyword(ss.keyword || '')
+                  setMinSalary(ss.jobType && ss.minSalary != null ? String(ss.minSalary) : '')
+                  // Eski kayıtlı aramalardaki Shift değerleri bandlara birebir uyar
+                  setShifts(ss.shifts ? Array.from(ss.shifts).filter(x => SHIFT_BAND_LABELS[x]) : [])
+                  if (ss.dateFrom && ss.dateTo) {
+                    setDatePreset('CUSTOM'); setCustomFrom(ss.dateFrom); setCustomTo(ss.dateTo)
+                  } else {
+                    setDatePreset(''); setCustomFrom(''); setCustomTo('')
+                  }
+                  toast.success(`"${ss.name}" uygulandı`)
+                }}
+              />
+            </div>
+            {activeFilterCount > 0 && (
+              <button type="button" onClick={clearFilters} className="btn-ghost flex-shrink-0 hidden lg:inline-flex">
+                Temizle
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+        </div>
+
+        {/* Mobil alt sayfa: sabit sonuç düğmesi */}
+        <div className="ah-filter-sheet__foot">
+          <button type="button" onClick={clearFilters} className="btn-secondary !w-auto"
+                  disabled={activeFilterCount === 0}>
+            Temizle
+          </button>
+          <button type="button" onClick={closeSheet} className="btn-primary flex-1" data-testid="filters-apply">
+            {isFetching && !loading ? 'Güncelleniyor' : `${total} ilanı göster`}
+          </button>
+        </div>
       </aside>
 
-      <div className="min-w-0 space-y-4">
+      <div className="min-w-0 space-y-3">
         <ActiveFilterBar
           filters={{ keyword: debouncedKeyword, position, jobType, minSalary, shifts, datePreset, customFrom, customTo }}
-          labels={{ POSITION_LABELS, JOB_TYPE_LABELS }}
           onRemove={(key) => {
             if (key === 'keyword')   { setKeyword(''); setDebouncedKeyword('') }
             if (key === 'position')  setPosition('')
-            if (key === 'jobType')   setJobType('')
+            if (key === 'jobType')   chooseJobType('')
             if (key === 'minSalary') setMinSalary('')
             if (key === 'datePreset'){ setDatePreset(''); setCustomFrom(''); setCustomTo('') }
-            if (key.startsWith('shift:')) setShifts(prev => prev.filter(s => s !== key.slice(6)))
+            if (key.startsWith('shift:')) setShifts(prev => prev.filter(x => x !== key.slice(6)))
           }}
           onClearAll={clearFilters}
         />
 
         {loading ? (
           <SkeletonListingGrid count={6} />
-        ) : listings.length === 0 ? (
+        ) : showError ? (
+          <LoadError message="İlanlar yüklenemedi." onRetry={() => refetch()} />
+        ) : total === 0 ? (
           <div className="card">
             <EmptyState
               type={activeFilterCount > 0 ? 'search' : 'listings'}
               title={activeFilterCount > 0 ? 'Bu aramaya uyan ilan yok' : 'Henüz aktif ilan yok'}
               description={activeFilterCount > 0
                 ? 'Filtreleri gevşetebilir ya da bu aramaya ilan çıkınca haber alabilirsin.'
-                : 'Daha sonra tekrar kontrol et — yeni ilanlar her gün eklenir.'}
-              ctaLabel={activeFilterCount > 0 ? 'Filtreleri Temizle' : null}
+                : 'Daha sonra tekrar kontrol et; yeni ilanlar her gün eklenir.'}
+              ctaLabel={activeFilterCount > 0 ? 'Filtreleri temizle' : null}
               onCta={activeFilterCount > 0 ? clearFilters : undefined}
               ctaSecondaryLabel={activeFilterCount > 0 ? 'Bu aramaya ilan çıkınca haber ver' : null}
               onCtaSecondary={activeFilterCount > 0 ? saveCurrentSearchQuick : undefined}
@@ -986,11 +1061,10 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         ) : (
           <>
             <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
               variants={LIST_STAGGER}
               initial="hidden"
               animate="visible"
-              key={safePage}  /* sayfa degisince stagger tekrar oynar */
             >
               {pageItems.map(listing => (
                 <motion.div key={listing.id} variants={LIST_ITEM}>
@@ -1004,18 +1078,19 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
                 </motion.div>
               ))}
             </motion.div>
-            {totalPages > 1 && (
-              <ListingsPagination page={safePage} totalPages={totalPages} onChange={(p) => {
-                setPage(p)
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-              }} />
-            )}
+            <div className="flex flex-col items-center gap-2 pt-2">
+              <p className="type-caption tabular-nums">{pageItems.length} / {total} ilan gösteriliyor</p>
+              {remaining > 0 && (
+                <button type="button" className="btn-secondary"
+                        onClick={() => setVisibleCount(c => c + LISTINGS_PAGE_SIZE)}>
+                  Daha fazla göster
+                </button>
+              )}
+            </div>
           </>
         )}
       </div>
       </div>
-
-      {/* #47 — Detail kendi route */}
 
       {applyTarget && (
         <ApplyModal
@@ -1029,129 +1104,64 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
   )
 }
 
-/* Dalga 1 — Aktif filtre yatay scroll bar (her chip'te X ile sil) */
+/* Aktif filtre şeridi (her çipte X ile kaldır) */
 const DATE_PRESET_LABELS = {
-  TODAY: 'Bugün', TOMORROW: 'Yarın', WEEK: 'Bu Hafta',
-  WEEKEND: 'Haftasonu', CUSTOM: 'Özel Tarih',
+  TODAY: 'Bugün', TOMORROW: 'Yarın', WEEK: 'Bu hafta',
+  WEEKEND: 'Hafta sonu', CUSTOM: 'Özel tarih',
 }
-const SHIFT_LABELS_INLINE = { MORNING: 'Sabah', EVENING: 'Akşam', NIGHT: 'Gece' }
 
-function ActiveFilterBar({ filters, labels, onRemove, onClearAll }) {
-  const { POSITION_LABELS: posLabels, JOB_TYPE_LABELS: jobLabels } = labels
+function ActiveFilterBar({ filters, onRemove, onClearAll }) {
   const chips = []
   if (filters.keyword)   chips.push({ key: 'keyword',   text: `"${filters.keyword}"` })
-  /* FAZ B.5.2 — ilce chip'i kaldirildi (ilce artik bir filtre degil) */
-  if (filters.position)  chips.push({ key: 'position',  text: posLabels[filters.position] || filters.position })
-  if (filters.jobType)   chips.push({ key: 'jobType',   text: jobLabels[filters.jobType] || filters.jobType })
-  if (filters.minSalary) chips.push({ key: 'minSalary', text: `${Number(filters.minSalary).toLocaleString('tr-TR')} ₺+` })
+  if (filters.position)  chips.push({ key: 'position',  text: labelOf(POSITION_LABELS, filters.position) })
+  if (filters.jobType)   chips.push({ key: 'jobType',   text: labelOf(JOB_TYPE_LABELS, filters.jobType) })
+  if (filters.minSalary && filters.jobType) {
+    chips.push({
+      key: 'minSalary',
+      text: `${Number(filters.minSalary).toLocaleString('tr-TR')} ${salaryUnitFor(filters.jobType) || '₺'}+`,
+    })
+  }
   if (filters.datePreset) {
     const dt = filters.datePreset === 'CUSTOM' && (filters.customFrom || filters.customTo)
       ? `${filters.customFrom || '...'} → ${filters.customTo || '...'}`
       : DATE_PRESET_LABELS[filters.datePreset] || filters.datePreset
     chips.push({ key: 'datePreset', text: dt })
   }
-  (filters.shifts || []).forEach(s =>
-    chips.push({ key: `shift:${s}`, text: SHIFT_LABELS_INLINE[s] || s })
+  (filters.shifts || []).forEach(sh =>
+    chips.push({ key: `shift:${sh}`, text: SHIFT_BAND_LABELS[sh] || sh })
   )
 
   if (chips.length === 0) return null
 
   return (
     <div className="flex items-center gap-2 -mx-1 px-1">
-      <div className="flex items-center gap-2 overflow-x-auto flex-1 py-1
-                      [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-2 overflow-x-auto flex-1 py-1 no-scrollbar">
         {chips.map(c => (
           <button key={c.key}
             type="button"
             onClick={() => onRemove(c.key)}
-            className="group flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors"
-            style={{
-              background: 'var(--ah-brand-soft)',
-              color: 'var(--ah-brand)',
-              border: '1px solid var(--ah-line-2)',
-            }}>
+            aria-label={`Filtreyi kaldır: ${c.text}`}
+            className="chip is-active flex-shrink-0">
             <span className="truncate max-w-[180px]">{c.text}</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                 className="opacity-65 group-hover:opacity-100" aria-hidden="true">
+                 strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M18 6 6 18" /><path d="m6 6 12 12" />
             </svg>
           </button>
         ))}
       </div>
-      <button onClick={onClearAll}
-        type="button"
-        className="btn-ghost flex-shrink-0">
+      <button onClick={onClearAll} type="button" className="btn-ghost flex-shrink-0">
         Hepsini temizle
       </button>
     </div>
   )
 }
 
-/* shadcn-style pagination — 6'lik sayfalar */
-function ListingsPagination({ page, totalPages, onChange }) {
-  function pageNumbers() {
-    const out = []
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) out.push(i)
-      return out
-    }
-    out.push(1)
-    if (page > 4) out.push('…')
-    const start = Math.max(2, page - 1)
-    const end   = Math.min(totalPages - 1, page + 1)
-    for (let i = start; i <= end; i++) out.push(i)
-    if (page < totalPages - 3) out.push('…')
-    out.push(totalPages)
-    return out
-  }
-  return (
-    <nav className="flex items-center justify-center gap-1 pt-4 flex-wrap" aria-label="Sayfalama">
-      <ListingsPageBtn disabled={page === 1} onClick={() => onChange(page - 1)} ariaLabel="Önceki">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="m15 18-6-6 6-6" />
-        </svg>
-        <span className="ml-1">Önceki</span>
-      </ListingsPageBtn>
-      {pageNumbers().map((n, i) => (
-        n === '…'
-          ? <span key={`e${i}`} className="w-9 text-center text-[13px]" style={{ color: '#646464' }}>…</span>
-          : <ListingsPageBtn key={n} active={n === page} onClick={() => onChange(n)} ariaLabel={`Sayfa ${n}`}>
-              {n}
-            </ListingsPageBtn>
-      ))}
-      <ListingsPageBtn disabled={page === totalPages} onClick={() => onChange(page + 1)} ariaLabel="Sonraki">
-        <span className="mr-1">Sonraki</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="m9 18 6-6-6-6" />
-        </svg>
-      </ListingsPageBtn>
-    </nav>
-  )
-}
-
-function ListingsPageBtn({ children, active, disabled, onClick, ariaLabel }) {
-  return (
-    <button type="button" onClick={onClick} disabled={disabled}
-            aria-label={ariaLabel} aria-current={active ? 'page' : undefined}
-            className="min-w-[36px] h-9 inline-flex items-center justify-center px-3 rounded-xl text-[12px] font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5"
-            style={{
-              background: active ? 'var(--ah-brand-soft)' : 'var(--ah-card)',
-              color:      active ? 'var(--ah-brand)' : 'var(--ah-ink-2)',
-              border:    `1px solid ${active ? 'var(--ah-brand)' : 'var(--ah-line-2)'}`,
-            }}>
-      {children}
-    </button>
-  )
-}
-
 /* FAZ B.5 — Ust filtre bari alan sarmalayici (kucuk etiket + kontrol) */
-function FilterField({ label, children }) {
+function FilterField({ label, htmlFor, children }) {
   return (
     <div className="flex flex-col gap-1 min-w-0">
-      <label className="type-label" style={{ color: 'var(--ah-ink-3)' }}>
+      <label className="type-label" htmlFor={htmlFor} style={{ color: 'var(--ah-ink-3)' }}>
         {label}
       </label>
       {children}
@@ -1163,12 +1173,11 @@ function FilterField({ label, children }) {
    Dar ekranda yatay kaydirilir (sarmak yerine), scrollbar gizli. */
 function FilterRow({ label, children }) {
   return (
-    <div className="flex flex-col gap-1.5 min-w-0">
+    <div className="flex flex-col gap-1.5 min-w-0" role="group" aria-label={label}>
       <span className="type-label" style={{ color: 'var(--ah-ink-3)' }}>
         {label}
       </span>
-      <div className="flex items-center gap-1.5 overflow-x-auto -mx-1 px-1 py-0.5 lg:flex-wrap lg:overflow-visible
-                      [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-1.5 flex-wrap">
         {children}
       </div>
     </div>
@@ -1177,19 +1186,10 @@ function FilterRow({ label, children }) {
 
 /* FAZ B.5.2 — Tek tikla secilen filtre chip'i (dropdown yerine). */
 function FilterChip({ active, onClick, children }) {
+  /* print-keep yalnız AKTİF çipte: yazdırmada hangi filtrenin uygulandığı görünsün. */
   return (
-    /* print-keep yalnizca AKTIF chip'te: yazdirmada butonlar gizleniyor,
-       ama hangi filtrenin uygulandigi bilgi degeri tasiyor. Pasif chip'ler
-       kagitta gurultu, onlar gizli kalsin. */
     <button type="button" onClick={onClick} aria-pressed={active}
-      className={`flex-shrink-0 rounded-full text-[12.5px] transition-colors${active ? ' print-keep' : ''}`}
-      style={{
-        padding: '5px 12px',
-        fontWeight: active ? 600 : 500,
-        background: active ? 'var(--ah-brand)' : 'var(--ah-card)',
-        color:      active ? '#fff' : 'var(--ah-ink-2)',
-        border: `1px solid ${active ? 'var(--ah-brand)' : 'var(--ah-line-2)'}`,
-      }}>
+      className={`chip cand-filter-chip flex-shrink-0${active ? ' is-active print-keep' : ''}`}>
       {children}
     </button>
   )
@@ -1263,19 +1263,12 @@ function AvailableNowToggle() {
       title={active
         ? `Bugün ${untilLabel}'a kadar müsait görünüyorsun. Kapatmak için tıkla.`
         : 'Bugün çalışabilecek durumdaysan işaretle — acil ilanlarda önceliklisin'}
-      className="inline-flex items-center gap-1.5 rounded-full text-[12.5px] transition-colors disabled:opacity-60"
-      style={{
-        padding: '6px 13px',
-        fontWeight: active ? 600 : 500,
-        background: active ? '#626262' : 'var(--ah-card)',
-        color:      active ? '#fff' : 'var(--ah-ink-2)',
-        border: `1px solid ${active ? '#626262' : 'var(--ah-line-2)'}`,
-      }}>
+      className={`chip cand-filter-chip disabled:opacity-60${active ? ' is-active' : ''}`}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
       </svg>
-      {busy ? 'Kaydediliyor...'
+      {busy ? 'Kaydediliyor'
         : active ? `Bugün müsaitsin · ${untilLabel}` : 'Bugün müsaitim'}
     </button>
   )
@@ -1294,15 +1287,13 @@ function NearbyToggle({ nearbyFirst, onToggle, loading, hasLocation, error }) {
       onClick={onToggle}
       disabled={loading}
       title={title}
-      className="text-[13px] font-semibold px-3 py-2 rounded-lg inline-flex items-center gap-1.5 transition-colors disabled:opacity-60"
-      style={active
-        ? { background: 'var(--ah-brand)', color: '#ffffff' }
-        : { background: 'var(--ah-card)', border: '1px solid var(--ah-line-2)', color: 'var(--ah-ink-2)' }}>
+      aria-pressed={active}
+      className={`chip cand-filter-chip disabled:opacity-60${active ? ' is-active' : ''}`}>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="10" /><path d="M12 2v20M2 12h20" />
       </svg>
-      {loading ? 'Alınıyor...' : (active ? 'Yakınlar önce' : 'Yakınlar')}
+      {loading ? 'Konum alınıyor' : (active ? 'Yakınlar önce' : 'Yakınlar')}
     </button>
   )
 }

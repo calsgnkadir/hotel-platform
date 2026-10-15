@@ -1,7 +1,6 @@
-import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
-import LanguageSwitcher from './LanguageSwitcher'
+import { ROLE, topNavFor, mobileBarFor, tabLabel, panelPathFor } from '../lib/navigation'
 import EmailVerifyBanner from './EmailVerifyBanner'
 import NotificationBell from './NotificationBell'
 import MessagesButton from './MessagesButton'
@@ -27,7 +26,11 @@ const Icons = {
   heart:        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>,
   eye:          <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>,
   card:         <><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></>,
+  bookmark:     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>,
+  clock:        <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
 }
+
+export function NavIcon(props) { return <Icon {...props} /> }
 
 function Icon({ name, size = 16, active = false }) {
   return (
@@ -42,44 +45,14 @@ function Icon({ name, size = 16, active = false }) {
   )
 }
 
-/* Nav definitions — id, label, icon name
-   FAZ 26 — sol sidebar kaldirildi, ust yatay nav'a gecildi.
-   Aday: Genel Bakis kaldirildi, Mesajlar sag ust ikona tasindi. */
-const candidateNav = [
-  { id: 'listings',      tKey: 'nav.listings',     icon: 'briefcase' },
-  { id: 'applications',  tKey: 'nav.applications', icon: 'send' },
-  { id: 'saved',         label: 'Kaydettiklerim',  icon: 'heart' },
-]
-
-const businessNav = [
-  { id: 'overview',      tKey: 'nav.overview',             icon: 'overview' },
-  { id: 'mylistings',    tKey: 'nav.myListings',           icon: 'briefcase' },
-  { id: 'applications',  tKey: 'nav.incomingApplications', icon: 'inbox' },
-  { id: 'billing',       label: 'Abonelik',                icon: 'card' },
-  { id: 'profile',       label: 'Profilim',                icon: 'building' },
-]
-
-const adminNav = [
-  { id: 'overview',   tKey: 'nav.overview',   icon: 'overview' },
-  { id: 'users',      tKey: 'nav.users',      icon: 'users' },
-  { id: 'businesses', label: 'İşletmeler',    icon: 'building' },
-  { id: 'listings',   label: 'İlanlar',       icon: 'briefcase' },
-  { id: 'reports',    tKey: 'nav.reports',    icon: 'alert' },
-  { id: 'support',    label: 'Destek',        icon: 'lifebuoy' },
-  { id: 'audit',      tKey: 'nav.audit',      icon: 'activity' },
-  { id: 'outbox',     label: 'Outbox',        icon: 'inbox' },
-]
-
 export default function DashboardLayout({ children, activeTab, onTabChange }) {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { t } = useTranslation()
 
-  const isCandidate = user?.role === 'CANDIDATE'
-  const isAdmin     = user?.role === 'ADMIN'
-  const isBusiness  = user?.role === 'BUSINESS_OWNER'
-  const navItems    = isAdmin ? adminNav : (isCandidate ? candidateNav : businessNav)
-  const hasMessages = isCandidate || isBusiness
+  const role        = user?.role
+  const navItems    = topNavFor(role)
+  const barItems    = mobileBarFor(role)
+  const hasMessages = role === ROLE.CANDIDATE || role === ROLE.BUSINESS
 
   function handleTabClick(id) { onTabChange?.(id) }
 
@@ -92,97 +65,93 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
     onTabChange?.(link)
   }
 
-  // Nav'da olmayan (ayarlar menusu / mesaj ikonu) sekmeler icin baslik fallback'i
-  const EXTRA_TITLES = {
-    messages: 'Mesajlar', profile: 'Profilim', relations: 'Takip Ettiklerim',
-    history: 'Geçmiş İşlerim', workers: 'Bizde Çalışanlar',
-    favorites: 'Favori Adaylar',
-  }
-  const currentTitle = (() => {
-    const item = navItems.find(n => n.id === activeTab)
-    if (item) return item.tKey ? t(item.tKey) : item.label
-    return EXTRA_TITLES[activeTab] || 'Panel'
-  })()
-
-  const navButtons = navItems.map(item => (
-    <TopNavItem key={item.id}
-                item={item}
-                active={activeTab === item.id}
-                onClick={() => handleTabClick(item.id)}
-                label={item.tKey ? t(item.tKey) : item.label} />
-  ))
+  // Başlık tek kaynaktan (lib/navigation.js): üst nav, menü ve mesaj sekmeleri dahil
+  const currentTitle = tabLabel(role, activeTab) || 'Panel'
 
   return (
     <div className="min-h-screen relative ah-surface" style={{ background: 'var(--ah-page)' }}>
-      {/* === TOP NAV ===
-          z-40: <main> artik z-index'li degil (asagiya bkz.); icerikteki z-30'a
-          kadar katmanlar (ornegin mesaj surukle-birak ortusu) ust menunun altinda
-          kalir, z-50+ olan pencere/karartmalar (modal-overlay z-1000, ConfirmDialog
-          z-50, CommandPalette z-100) ust menunun ustune cikar. */}
+      {/* === ÜST BAŞLIK ===
+          z-40: <main> z-index'li değil; içerikteki z-30'a kadar katmanlar üst
+          menünün altında kalır, z-50+ pencereler (modal z-1000, ConfirmDialog z-50,
+          CommandPalette z-100) üstüne çıkar. */}
       <header className="sticky top-0 z-40 border-b"
               style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
         <div className="px-4 lg:px-8">
-          {/* Ust satir: marka + (desktop) nav + sag aksiyonlar */}
           <div className="h-14 flex items-center gap-4">
-            <Link to={dashboardHomeFor(user?.role)} className="flex items-baseline gap-2 flex-shrink-0">
+            <Link to={panelPathFor(role)} className="flex items-baseline gap-2 flex-shrink-0">
               <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '0.02em', color: 'var(--ah-ink)' }}>Kadrom</span>
               <span className="hidden sm:inline" style={{ fontSize: 12, fontWeight: 500, color: 'var(--ah-ink-3)' }}>İstanbul</span>
             </Link>
 
-            {/* Desktop nav — marka ile sag aksiyonlar arasi */}
+            {/* Masaüstü nav */}
             <nav className="hidden md:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar" aria-label="Ana navigasyon">
-              {navButtons}
+              {navItems.map(item => (
+                <TopNavItem key={item.id}
+                            item={item}
+                            active={activeTab === item.id}
+                            onClick={() => handleTabClick(item.id)} />
+              ))}
             </nav>
             <div className="flex-1 md:hidden" />
 
-            {/* Sag aksiyonlar */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="hidden lg:block"><LanguageSwitcher /></div>
+            {/* Sağ eylemler — her biri 44px vuruş alanı + aria-label */}
+            <div className="flex items-center gap-1 flex-shrink-0">
               {hasMessages && (
                 <MessagesButton active={activeTab === 'messages'}
                                 onClick={() => handleTabClick('messages')} />
               )}
               <NotificationBell onNavigate={handleNotificationLink} />
-              <SettingsMenu onTabChange={onTabChange} />
+              <SettingsMenu onTabChange={onTabChange} activeTab={activeTab} />
             </div>
           </div>
-
-          {/* Mobil nav — ikinci satir, yatay kaydirilir */}
-          <nav className="md:hidden flex items-center gap-1 pb-2 overflow-x-auto no-scrollbar" aria-label="Ana navigasyon">
-            {navButtons}
-          </nav>
         </div>
       </header>
 
-      {/* === MAIN CONTENT ===
-          Bilerek z-index / position YOK: eskiden "relative z-10" kendi stacking
-          context'ini olusturup icindeki modal karartmasini (z-1000) sticky ust
-          menunun ALTINA hapsediyordu (index.css'te gecici :has yamasi vardi).
-          fade-in yalniz opacity animasyonudur, kalici context birakmaz. */}
+      {/* === İÇERİK ===
+          Bilerek z-index / position yok (modal karartması sticky başlığın altına
+          hapsolmasın). Mobilde alt sekme çubuğu kadar alt boşluk bırakılır. */}
       <main className="fade-in" style={{ color: 'var(--ah-ink-2)' }}>
         <EmailVerifyBanner />
 
-        {/* Page heading — sade, koyu ink. Mobilde gizli: ustteki sekme satiri
-            hangi sayfada oldugunu zaten gosteriyor; dikey yer icerige kalsin.
-            (Ekran okuyucu icin baslik mobilde de var.) */}
+        {/* Sayfa başlığı — mobilde görsel olarak gizli (alt çubuk hangi sayfada
+            olunduğunu gösterir); ekran okuyucu için her zaman var. */}
         <div className="px-4 lg:px-8 pt-3 md:pt-6 lg:pt-8 md:pb-5">
           <h1 className="sr-only md:not-sr-only type-page" style={{ color: 'var(--ah-ink)' }}>
             {currentTitle}
           </h1>
         </div>
 
-        <div className="px-4 lg:px-8 pb-16">
+        <div className={`px-4 lg:px-8 ${barItems.length ? 'pb-28 md:pb-16' : 'pb-16'}`}>
           {children}
         </div>
       </main>
+
+      {/* === MOBİL ALT SEKME ÇUBUĞU === (md altı; her öğe en az 44px) */}
+      {barItems.length > 0 && (
+        <nav className="ah-tabbar md:hidden" aria-label="Ana navigasyon (mobil)">
+          {barItems.map(item => {
+            const active = activeTab === item.id
+            return (
+              <button key={item.id} type="button"
+                      onClick={() => handleTabClick(item.id)}
+                      aria-current={active ? 'page' : undefined}
+                      className={`ah-tabbar__item${active ? ' is-active' : ''}`}>
+                <Icon name={item.icon} size={20} active={active} />
+                <span className="ah-tabbar__label">{item.label}</span>
+              </button>
+            )
+          })}
+        </nav>
+      )}
     </div>
   )
 }
 
 /* ───────── TopNavItem — yatay pill (aktif = teal soft bg) ───────── */
-function TopNavItem({ item, active, onClick, label }) {
+function TopNavItem({ item, active, onClick }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className="relative flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors"
@@ -192,22 +161,12 @@ function TopNavItem({ item, active, onClick, label }) {
         fontWeight: active ? 600 : 500,
         fontSize: 14,
       }}
-      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#f2f5f5' }}
+      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'var(--ah-band)' }}
       onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent' }}>
       <span style={{ color: active ? 'var(--ah-brand)' : 'var(--ah-ink-4)', display: 'inline-flex' }}>
         <Icon name={item.icon} size={16} active={active} />
       </span>
-      {label}
+      {item.label}
     </button>
   )
-}
-
-/* Role'e gore dashboard kok path'i */
-function dashboardHomeFor(role) {
-  switch (role) {
-    case 'ADMIN':          return '/admin'
-    case 'BUSINESS_OWNER': return '/business'
-    case 'CANDIDATE':      return '/candidate'
-    default:               return '/'
-  }
 }

@@ -27,6 +27,10 @@ i18n
       tr: { translation: tr },
       en: { translation: en },
     },
+    // Dil seçici arayüzden kaldırıldı (çeviri eksik). Eskiden İngilizce seçmiş
+    // kullanıcı (localStorage 'lang') geri dönüş yolu olmadan EN'de kalmasın diye
+    // başlangıç dili sabit Türkçe. Altyapı (kaynaklar, changeLanguage) duruyor.
+    lng: 'tr',
     fallbackLng: 'tr',
     supportedLngs: ['tr', 'en'],
     interpolation: { escapeValue: false },  // React zaten escape eder

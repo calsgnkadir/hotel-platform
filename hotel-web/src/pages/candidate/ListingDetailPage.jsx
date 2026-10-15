@@ -28,11 +28,7 @@ import { ApplyModal } from './ListingsPage'
 import { formatSalary, formatPayment, salaryTypeShort } from '../../lib/salary'  // FAZ 2/#25
 import { compareSlots, formatShiftRange, isShiftStarted, isShiftOngoing, isShiftPast } from '../../lib/shiftTime'
 
-const POSITION_LABELS = {
-  WAITER: 'Garson', DISHWASHER: 'Bulaşıkçı', HOUSEKEEPING: 'Kat Hizmetleri',
-  RECEPTION: 'Resepsiyon', KITCHEN_STAFF: 'Mutfak Personeli', BELLBOY: 'Bellboy', SECURITY: 'Güvenlik',
-}
-const JOB_TYPE_LABELS = { PERMANENT: 'Daimi', SEASONAL: 'Sezonluk', DAILY: 'Günlük', PART_TIME: 'Yarı Zamanlı' }
+import { POSITION_LABELS, JOB_TYPE_LABELS } from '../../utils/labels'
 
 /** Ücreti tutar + birim olarak ayırır: { amount: '800 – 1.200 ₺', unit: 'gün' }. */
 function salaryParts(l) {
