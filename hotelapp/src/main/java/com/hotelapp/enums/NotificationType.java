@@ -13,6 +13,7 @@ public enum NotificationType {
     STANDBY_OFFER_EXPIRED,  // FAZ C.1 — yedek teklifine süresinde cevap vermedin
     URGENT_LISTING,         // FAZ C.2 — "hemen müsait"sin ve acil ilan açıldı
     LISTING_CLOSED,         // ilan kapandı (süresi doldu ya da işletme kapattı), açık başvurun EXPIRED oldu
+    HOLD_OFFERED,           // işletme başvuruyu 24 saat bekletti; aday onaylamalı/reddetmeli
 
     // İşletme'ye
     NEW_APPLICATION,        // yeni başvuru geldi
@@ -23,6 +24,7 @@ public enum NotificationType {
     STANDBY_DECLINED,       // FAZ C.1 — yedek aday teklifi reddetti / süresi doldu
     SGK_REMINDER,           // FAZ C.3 — işe giriş bildirgesi (SGK) hatırlatıcı
     DOCUMENT_EXPIRING,      // belgenin (hijyen/sağlık vb.) son kullanma tarihi yaklaşıyor
+    HOLD_RESPONDED,         // aday bekletilen teklifi onayladı ya da reddetti
 
     // ADIM J: Tercihlerine uygun yeni ilan
     MATCHING_LISTING,

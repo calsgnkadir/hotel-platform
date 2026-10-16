@@ -152,13 +152,13 @@ class AsyncInfrastructureTest {
             userRepository.findById(uid);                    // dis islemin baglantisi alinsin
             activeInside[0] = pool.getActiveConnections();
             for (int i = 0; i < 50; i++) {
-                notificationService.notify(uid, NotificationType.GENERIC, "T", "M" + i, null);
+                notificationService.notify(uid, NotificationType.GENERIC, "T", "M", null);
             }
             activeInside[1] = pool.getActiveConnections();
         });
 
         assertThat(activeInside[1]).isEqualTo(activeInside[0]);
-        // dedupe: 50 cagri tek okunmamis kayitta toplanir
+        // dedupe: ayni baglamdaki (ayni baslik+metin+link) 50 cagri tek okunmamis kayitta toplanir
         assertThat(await(() -> notificationRepository.countUnread(uid) == 1, 5000)).isTrue();
     }
 

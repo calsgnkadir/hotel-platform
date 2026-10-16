@@ -200,7 +200,7 @@ public class StandbyService {
                     NotificationType.STANDBY_DECLINED,
                     "Yedek aday yok",
                     noShowApp.getJobListing().getTitle()
-                            + " için no-show sonrası çağrılabilecek yedek aday bulunmuyor.",
+                            + " için boşalan vardiyaya çağrılabilecek yedek aday bulunmuyor.",
                     "applications");
             return null;
         }
@@ -219,7 +219,7 @@ public class StandbyService {
         notificationService.notify(next.getCandidate().getId(),
                 NotificationType.STANDBY_ACTIVATED,
                 "Acil: sıra sende",
-                next.getJobListing().getTitle() + " için asıl aday gelmedi. "
+                next.getJobListing().getTitle() + " için bir vardiya boşaldı. "
                         + OFFER_WINDOW_HOURS + " saat içinde cevap ver — kabul edersen iş senin.",
                 "applications");
 

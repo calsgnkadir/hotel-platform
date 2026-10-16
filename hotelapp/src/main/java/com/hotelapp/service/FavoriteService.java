@@ -75,8 +75,12 @@ public class FavoriteService {
     @Transactional(readOnly = true)
     public List<FavoriteDto> listFavorites(Long ownerId) {
         Business business = getBusinessForOwner(ownerId);
+        // Kapatilmis (silme talebi verilmis) hesaplar listede gorunmez (KVKK). Gecici
+        // banli aday listede kalir: iliski kalicidir, ban suresi bitince calisabilir.
         return favoriteRepository.findByBusinessIdOrderByCreatedAtDesc(business.getId())
-                .stream().map(f -> toDto(f, ownerId)).toList();
+                .stream()
+                .filter(f -> f.getCandidate() != null && f.getCandidate().getDeletionRequestedAt() == null)
+                .map(f -> toDto(f, ownerId)).toList();
     }
 
     @Transactional(readOnly = true)

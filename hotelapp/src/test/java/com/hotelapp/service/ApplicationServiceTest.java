@@ -439,6 +439,69 @@ class ApplicationServiceTest {
     }
 
     // ================================================================
+    // HOLD bildirimleri — ayri tipler, jargonsuz Turkce metin
+    // ================================================================
+    @Nested
+    @DisplayName("HOLD bildirimleri")
+    class HoldNotifications {
+
+        private final java.util.regex.Pattern jargon =
+                java.util.regex.Pattern.compile("(?i)hold|strike|no-show");
+
+        @Test
+        @DisplayName("İşletme beklettiğinde adaya HOLD_OFFERED gider")
+        void holdApplication_sendsHoldOffered() {
+            Application app = appWithStatus(ApplicationStatus.PENDING);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+
+            service.holdApplication(APP_ID, OWNER_ID);
+
+            ArgumentCaptor<String> title = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> msg = ArgumentCaptor.forClass(String.class);
+            verify(notificationService).notify(org.mockito.ArgumentMatchers.eq(CANDIDATE_ID),
+                    org.mockito.ArgumentMatchers.eq(com.hotelapp.enums.NotificationType.HOLD_OFFERED),
+                    title.capture(), msg.capture(), org.mockito.ArgumentMatchers.eq("applications"));
+            assertThat(title.getValue() + msg.getValue()).doesNotContainPattern(jargon);
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.HELD);
+        }
+
+        @Test
+        @DisplayName("Aday reddettiğinde işletmeye HOLD_RESPONDED: 'Aday teklifi reddetti'")
+        void respondToHold_reject_sendsHoldResponded() {
+            Application app = appWithStatus(ApplicationStatus.HELD);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+
+            service.respondToHold(APP_ID, CANDIDATE_ID, false);
+
+            ArgumentCaptor<String> title = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> msg = ArgumentCaptor.forClass(String.class);
+            verify(notificationService).notify(org.mockito.ArgumentMatchers.eq(OWNER_ID),
+                    org.mockito.ArgumentMatchers.eq(com.hotelapp.enums.NotificationType.HOLD_RESPONDED),
+                    title.capture(), msg.capture(), org.mockito.ArgumentMatchers.eq("applications"));
+            assertThat(title.getValue()).isEqualTo("Aday teklifi reddetti");
+            assertThat(title.getValue() + msg.getValue()).doesNotContainPattern(jargon);
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.WITHDRAWN);
+        }
+
+        @Test
+        @DisplayName("Aday onayladığında işletmeye HOLD_RESPONDED: 'Aday teklifi onayladı'")
+        void respondToHold_accept_sendsHoldResponded() {
+            Application app = appWithStatus(ApplicationStatus.HELD);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(metricsProvider.getIfAvailable()).thenReturn(null);
+
+            service.respondToHold(APP_ID, CANDIDATE_ID, true);
+
+            ArgumentCaptor<String> title = ArgumentCaptor.forClass(String.class);
+            verify(notificationService).notify(org.mockito.ArgumentMatchers.eq(OWNER_ID),
+                    org.mockito.ArgumentMatchers.eq(com.hotelapp.enums.NotificationType.HOLD_RESPONDED),
+                    title.capture(), any(), org.mockito.ArgumentMatchers.eq("applications"));
+            assertThat(title.getValue()).isEqualTo("Aday teklifi onayladı");
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.ACCEPTED);
+        }
+    }
+
+    // ================================================================
     // Helpers
     // ================================================================
 

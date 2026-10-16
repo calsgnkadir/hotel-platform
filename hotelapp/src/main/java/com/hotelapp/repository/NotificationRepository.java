@@ -10,14 +10,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
     Page<Notification> findAllByRecipientIdOrderByCreatedAtDesc(Long recipientId, Pageable pageable);
 
-    /** FAZ 11.W4.1 — Dedupe adayi: ayni recipient+type, okunmamis, pencere icinde. */
-    Optional<Notification> findFirstByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
+    /**
+     * FAZ 11.W4.1 — Dedupe adaylari: ayni recipient+type, okunmamis, pencere icinde (en yeni
+     * once, en fazla 20). Baglam eslesmesi NotificationService.sameContext ile yapilir.
+     */
+    List<Notification> findTop20ByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
             Long recipientId, NotificationType type, LocalDateTime windowStart);
 
     @Query("SELECT COUNT(n) FROM Notification n WHERE n.recipient.id = :recipientId AND n.isRead = false")

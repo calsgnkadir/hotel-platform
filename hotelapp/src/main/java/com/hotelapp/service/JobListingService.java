@@ -233,7 +233,7 @@ public class JobListingService {
                     listing.getId(), district, listing.getPosition(),
                     prefMatched.size(), availOptIn.size(), matching.size());
 
-            String posLabel = listing.getPosition().name();
+            String posLabel = listing.getPosition().label();
             int notifiedCount = 0, skippedNoFit = 0;
             for (var aday : matching.values()) {
                 // FAZ J2 ext: aday haftalık müsaitlik bloğu tanımladıysa, ilan

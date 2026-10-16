@@ -1,6 +1,7 @@
 package com.hotelapp.event;
 
 import com.hotelapp.enums.NotificationType;
+import com.hotelapp.service.AccountClosureService;
 import com.hotelapp.service.NotificationService;
 import com.hotelapp.service.OutboxService;
 import com.hotelapp.service.StandbyService;
@@ -28,6 +29,7 @@ public class NoShowEventListener {
     private final NotificationService notificationService;
     private final OutboxService outboxService; // FAZ C.2 — audit log outbox uzerinden
     private final StandbyService standbyService; // FAZ C.1 — yedek adaya otomatik teklif
+    private final AccountClosureService accountClosureService; // ban: gelecek vardiyalar bosalir
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -48,19 +50,40 @@ public class NoShowEventListener {
                             + e.bannedUntil() + ")"));
         }
 
+        // Otomatik ban: ban suresine dusen (bitisinden once baslayan) gelecek kabul edilmis
+        // vardiyalar bosalir, acik basvurular geri cekilir, isletmelere haber + yedek zinciri.
+        // Kendi transaction'inda; patlarsa strike/ban etkilenmez (ana islem commit oldu).
+        AccountClosureService.Result released = AccountClosureService.Result.NONE;
+        if (e.autoBanned()) {
+            try {
+                released = accountClosureService.releaseCandidate(
+                        e.candidateId(), e.bannedUntil(), AccountClosureService.Reason.SUSPENDED);
+            } catch (Exception ex) {
+                log.warn("[NO-SHOW-ASYNC] ban sonrasi vardiyalar bosaltilamadi: candidate={} - {}",
+                        e.candidateId(), ex.getMessage());
+            }
+        }
+
         try {
             // Aday bildirim
             notificationService.notify(e.candidateId(), NotificationType.NO_SHOW_MARKED,
                     "İşe gelmedin olarak işaretlendin",
-                    e.listingTitle() + " için no-show işaretlendin. Kalan strike hakkın: "
-                            + e.candidateStrikesRemaining(),
+                    e.autoBanned()
+                            ? e.listingTitle() + " vardiyasına gelmedin olarak işaretlendin."
+                            : e.listingTitle() + " vardiyasına gelmedin olarak işaretlendin. "
+                                    + "Hesabın askıya alınmadan önce kalan hakkın: "
+                                    + e.candidateStrikesRemaining() + ".",
                     "applications");
 
             if (e.autoBanned()) {
+                String cancelled = released.vacatedShifts() > 0
+                        ? " Bu süreye denk gelen " + released.vacatedShifts()
+                                + " kabul edilmiş vardiyan iptal edildi."
+                        : "";
                 notificationService.notify(e.candidateId(), NotificationType.AUTO_BANNED,
                         "Hesabın geçici olarak askıya alındı",
-                        "Çok sayıda no-show nedeniyle hesabın " + e.bannedUntil().toLocalDate()
-                                + " tarihine kadar askıya alındı.",
+                        "İşe gelmeme hakkın dolduğu için hesabın " + e.bannedUntil().toLocalDate()
+                                + " tarihine kadar askıya alındı." + cancelled,
                         null);
             }
         } catch (Exception ex) {

@@ -322,9 +322,9 @@ public class ApplicationService {
         // Adaya bildirim: 24 saat icinde cevap vermesi gerek
         Long candidateId = app.getCandidate().getId();
         String listingTitle = app.getJobListing().getTitle();
-        notificationService.notify(candidateId, NotificationType.APPLICATION_ACCEPTED,
-                "İşletme seni tutmak istiyor",
-                listingTitle + " ilanı için 24 saat içinde Onayla veya Reddet seç.",
+        notificationService.notify(candidateId, NotificationType.HOLD_OFFERED,
+                "İşletme sana vardiya teklif etti",
+                listingTitle + " ilanı için teklifi 24 saat içinde onayla ya da reddet.",
                 "applications");
         return applicationMapper.toResponse(app);
     }
@@ -378,10 +378,12 @@ public class ApplicationService {
         // Isletmeye bildirim
         Long ownerId = app.getJobListing().getBusiness().getOwner().getId();
         String listingTitle = app.getJobListing().getTitle();
-        notificationService.notify(ownerId,
-                accept ? NotificationType.APPLICATION_ACCEPTED : NotificationType.APPLICATION_WITHDRAWN,
-                accept ? "Aday HOLD'u onayladı" : "Aday HOLD'u reddetti",
-                "\"" + listingTitle + "\" — aday cevabını verdi.",
+        String candidateName = app.getCandidate().getFullName();
+        notificationService.notify(ownerId, NotificationType.HOLD_RESPONDED,
+                accept ? "Aday teklifi onayladı" : "Aday teklifi reddetti",
+                candidateName + " · " + listingTitle + (accept
+                        ? " için teklifini onayladı; vardiya ekibine eklendi."
+                        : " için teklifini reddetti."),
                 "applications");
         return applicationMapper.toResponse(app);
     }

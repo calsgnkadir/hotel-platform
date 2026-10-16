@@ -36,6 +36,13 @@ class GdprServiceTest {
     @Mock private NotificationRepository notificationRepository;
     @Mock private OutboxService outboxService;
     @Mock private RefreshTokenService refreshTokenService;
+    @Mock private AccountClosureService accountClosureService;
+    @Mock private FileStorageService fileStorageService;
+    @Mock private com.hotelapp.repository.BusinessRepository businessRepository;
+    @Mock private com.hotelapp.repository.BusinessPhotoRepository businessPhotoRepository;
+    @Mock private com.hotelapp.repository.UserAvailabilityBlockRepository availabilityBlockRepository;
+    @Mock private com.hotelapp.repository.SavedSearchRepository savedSearchRepository;
+    @Mock private com.hotelapp.repository.PushSubscriptionRepository pushSubscriptionRepository;
     @InjectMocks private GdprService service;
 
     private User user(long id) {
@@ -135,5 +142,173 @@ class GdprServiceTest {
         assertThat(anonymized.getDistrict()).isNull();
         assertThat(anonymized.getScheduledAnonymizeAt()).isNull();
         verify(outboxService).appendAuditLog(any());
+    }
+
+    // ================================================================
+    // Silme talebi aninda acik taahhutler
+    // ================================================================
+
+    @Test
+    @DisplayName("requestDeletion (isletme): ilanlar ortak kapanis yolundan kapanir")
+    void requestDeletion_businessOwner_closesListings() {
+        User u = user(50L);
+        u.setRole(Role.BUSINESS_OWNER);
+        when(userRepository.findById(50L)).thenReturn(Optional.of(u));
+
+        service.requestDeletion(50L);
+
+        verify(accountClosureService).closeBusinessListings(50L);
+        verify(accountClosureService, never()).releaseCandidate(any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("requestDeletion (aday): taahhutler sinirsiz (tum gelecek vardiyalar) birakilir, havuzdan cikar")
+    void requestDeletion_candidate_releasesCommitments() {
+        User u = user(42L);
+        u.setAvailableUntil(LocalDateTime.now().plusHours(3));
+        when(userRepository.findById(42L)).thenReturn(Optional.of(u));
+
+        service.requestDeletion(42L);
+
+        verify(accountClosureService).releaseCandidate(42L, null, AccountClosureService.Reason.ACCOUNT_CLOSED);
+        verify(accountClosureService, never()).closeBusinessListings(any());
+        assertThat(u.getAvailableUntil()).isNull();
+    }
+
+    @Test
+    @DisplayName("requestDeletion idempotent: ikinci cagri taahhutlere dokunmaz")
+    void requestDeletion_idempotent_noClosure() {
+        User u = user(42L);
+        u.setDeletionRequestedAt(LocalDateTime.now().minusDays(1));
+        when(userRepository.findById(42L)).thenReturn(Optional.of(u));
+
+        service.requestDeletion(42L);
+
+        org.mockito.Mockito.verifyNoInteractions(accountClosureService);
+    }
+
+    // ================================================================
+    // Anonimlestirme kapsami
+    // ================================================================
+
+    private User fullCandidate(long id) {
+        User u = user(id);
+        u.setEnabled(false);
+        u.setScheduledAnonymizeAt(LocalDateTime.now().minusDays(1));
+        u.setPassword("$2a$hash");
+        u.setProvider(com.hotelapp.enums.AuthProvider.GOOGLE);
+        u.setProviderId("google-sub-123");
+        u.setPhone("+905551234567");
+        u.setPhoneVerifiedAt(LocalDateTime.now());
+        u.setPhoneOtpCode("123456");
+        u.setPhoneOtpExpiresAt(LocalDateTime.now());
+        u.setPhoneOtpSentAt(LocalDateTime.now());
+        u.setPhoneOtpAttempts(2);
+        u.setAvatarPath("upload:image:kadrom/avatars/1/a.jpg");
+        u.setDistrict("Beyoğlu");
+        u.setNeighborhood("Cihangir");
+        u.setBirthDate(java.time.LocalDate.of(2000, 1, 1));
+        u.setGender(com.hotelapp.enums.Gender.values()[0]);
+        u.setEducation(com.hotelapp.enums.EducationLevel.values()[0]);
+        u.setPreviousExperience("Iki yil garsonluk");
+        u.setSmokes(true);
+        u.setHasLicense(true);
+        u.setAvailableUntil(LocalDateTime.now().plusHours(2));
+        u.setLanguages(new java.util.HashSet<>(java.util.Set.of(com.hotelapp.enums.Language.values()[0])));
+        u.setAvailabilityTypes(new java.util.HashSet<>(java.util.Set.of(com.hotelapp.enums.JobType.values()[0])));
+        u.setPreferredDistricts(new java.util.HashSet<>(java.util.Set.of("Kadıköy")));
+        u.setPreferredPositions(new java.util.HashSet<>(java.util.Set.of(com.hotelapp.enums.Position.WAITER)));
+        return u;
+    }
+
+    @Test
+    @DisplayName("anonymize: listedeki tum kisisel alanlar, on yazilar/notlar temizlenir; avatar depodan silinir")
+    void anonymize_clearsAllPersonalFields_andDeletesAvatar() {
+        User u = fullCandidate(99L);
+        com.hotelapp.entity.Application a = com.hotelapp.entity.Application.builder()
+                .id(1L).coverLetter("Merhaba, deneyimliyim").note("Guler yuzlu").build();
+        when(userRepository.findAllByScheduledAnonymizeAtBefore(any())).thenReturn(List.of(u));
+        when(applicationRepository.findAllByCandidateId(99L)).thenReturn(List.of(a));
+
+        service.anonymizeDueAccounts();
+
+        assertThat(u.getEmail()).isEqualTo("deleted-99@deleted.local");
+        assertThat(u.getFullName()).isEqualTo("Silinmiş Kullanıcı");
+        assertThat(u.getPassword()).isNull();
+        assertThat(u.getProviderId()).isNull();
+        assertThat(u.getPhone()).isNull();
+        assertThat(u.getPhoneVerifiedAt()).isNull();
+        assertThat(u.getPhoneOtpCode()).isNull();
+        assertThat(u.getPhoneOtpExpiresAt()).isNull();
+        assertThat(u.getPhoneOtpSentAt()).isNull();
+        assertThat(u.getPhoneOtpAttempts()).isZero();
+        assertThat(u.getAvatarPath()).isNull();
+        assertThat(u.getDistrict()).isNull();
+        assertThat(u.getNeighborhood()).isNull();
+        assertThat(u.getBirthDate()).isNull();
+        assertThat(u.getGender()).isNull();
+        assertThat(u.getEducation()).isNull();
+        assertThat(u.getPreviousExperience()).isNull();
+        assertThat(u.getSmokes()).isNull();
+        assertThat(u.getHasLicense()).isNull();
+        assertThat(u.getAvailableUntil()).isNull();
+        assertThat(u.getLanguages()).isEmpty();
+        assertThat(u.getAvailabilityTypes()).isEmpty();
+        assertThat(u.getPreferredDistricts()).isEmpty();
+        assertThat(u.getPreferredPositions()).isEmpty();
+        assertThat(a.getCoverLetter()).isNull();
+        assertThat(a.getNote()).isNull();
+        verify(availabilityBlockRepository).deleteAllByUserId(99L);
+        verify(fileStorageService).delete("upload:image:kadrom/avatars/1/a.jpg");
+    }
+
+    @Test
+    @DisplayName("anonymize: avatar silme hatasi anonimlestirmeyi durdurmaz (kayit + audit yine olur)")
+    void anonymize_avatarDeleteFailure_doesNotStop() {
+        User u = fullCandidate(99L);
+        when(userRepository.findAllByScheduledAnonymizeAtBefore(any())).thenReturn(List.of(u));
+        org.mockito.Mockito.doThrow(new RuntimeException("cloudinary down"))
+                .when(fileStorageService).delete(any());
+
+        service.anonymizeDueAccounts();
+
+        verify(userRepository).save(u);
+        assertThat(u.getAvatarPath()).isNull();
+        verify(outboxService).appendAuditLog(any());
+    }
+
+    @Test
+    @DisplayName("anonymize (isletme): isletme adi/iletisim maskelenir, logo+fotograflar silinir, kayit kalir")
+    void anonymize_businessOwner_masksBusiness() {
+        User u = user(60L);
+        u.setRole(Role.BUSINESS_OWNER);
+        u.setScheduledAnonymizeAt(LocalDateTime.now().minusDays(1));
+        com.hotelapp.entity.Business b = com.hotelapp.entity.Business.builder()
+                .id(3L).name("Deniz Otel").address("Sokak 1").phone("02120000000")
+                .website("https://example.test").instagram("deniz").facebook("deniz")
+                .description("Aciklama").workingHours("09-18").logoPath("upload:image:logo")
+                .district("Beşiktaş").owner(u).build();
+        com.hotelapp.entity.BusinessPhoto photo = new com.hotelapp.entity.BusinessPhoto();
+        photo.setFilePath("upload:image:photo1");
+        when(userRepository.findAllByScheduledAnonymizeAtBefore(any())).thenReturn(List.of(u));
+        when(businessRepository.findByOwnerId(60L)).thenReturn(Optional.of(b));
+        when(businessPhotoRepository.findAllByBusinessIdOrderByCreatedAtDesc(3L)).thenReturn(List.of(photo));
+
+        service.anonymizeDueAccounts();
+
+        assertThat(b.getName()).isEqualTo("Kapatılmış işletme");
+        assertThat(b.getAddress()).isNull();
+        assertThat(b.getPhone()).isNull();
+        assertThat(b.getWebsite()).isNull();
+        assertThat(b.getInstagram()).isNull();
+        assertThat(b.getFacebook()).isNull();
+        assertThat(b.getDescription()).isNull();
+        assertThat(b.getWorkingHours()).isNull();
+        assertThat(b.getLogoPath()).isNull();
+        assertThat(b.getDistrict()).isEqualTo("Beşiktaş");
+        verify(businessRepository).save(b);
+        verify(businessPhotoRepository).deleteAll(List.of(photo));
+        verify(fileStorageService).delete("upload:image:logo");
+        verify(fileStorageService).delete("upload:image:photo1");
     }
 }

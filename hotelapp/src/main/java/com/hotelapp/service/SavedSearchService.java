@@ -117,6 +117,8 @@ public class SavedSearchService {
         // Devre disi (silme talebi) hesaba bildirim gitmez
         User owner = s.getUser();
         if (owner == null || !owner.isEnabled()) return 0;
+        // Su an banli hesap giris yapamaz; kayitli arama bildirimi de gitmez (ban bitince surer)
+        if (owner.getBannedUntil() != null && owner.getBannedUntil().isAfter(LocalDateTime.now())) return 0;
 
         LocalDateTime since = s.getLastNotifiedAt() != null
                 ? s.getLastNotifiedAt()

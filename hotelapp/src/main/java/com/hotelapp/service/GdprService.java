@@ -1,17 +1,28 @@
 package com.hotelapp.service;
 
+import com.hotelapp.entity.Application;
+import com.hotelapp.entity.Business;
+import com.hotelapp.entity.BusinessPhoto;
 import com.hotelapp.entity.User;
+import com.hotelapp.enums.Role;
 import com.hotelapp.event.AuditLoggedEvent;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.exception.ResourceNotFoundException;
 import com.hotelapp.repository.ApplicationRepository;
+import com.hotelapp.repository.BusinessPhotoRepository;
+import com.hotelapp.repository.BusinessRepository;
 import com.hotelapp.repository.NotificationRepository;
+import com.hotelapp.repository.PushSubscriptionRepository;
+import com.hotelapp.repository.SavedSearchRepository;
+import com.hotelapp.repository.UserAvailabilityBlockRepository;
 import com.hotelapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -41,12 +52,20 @@ public class GdprService {
 
     private static final String ANONYMIZED_EMAIL_TEMPLATE = "deleted-%d@deleted.local";
     private static final String ANONYMIZED_NAME           = "Silinmiş Kullanıcı";
+    private static final String ANONYMIZED_BUSINESS_NAME  = "Kapatılmış işletme";
 
     private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
     private final NotificationRepository notificationRepository;
     private final OutboxService outboxService;
     private final RefreshTokenService refreshTokenService;
+    private final AccountClosureService accountClosureService;
+    private final FileStorageService fileStorageService;
+    private final BusinessRepository businessRepository;
+    private final BusinessPhotoRepository businessPhotoRepository;
+    private final UserAvailabilityBlockRepository availabilityBlockRepository;
+    private final SavedSearchRepository savedSearchRepository;
+    private final PushSubscriptionRepository pushSubscriptionRepository;
 
     /**
      * Kullanicinin tum verisini map olarak doner. Controller bunu JSON
@@ -133,11 +152,23 @@ public class GdprService {
 
         LocalDateTime now = LocalDateTime.now();
         u.setEnabled(false);
+        if (u.getRole() == Role.CANDIDATE) u.setAvailableUntil(null);   // "hemen musait" havuzundan cik
         u.setDeletionRequestedAt(now);
         u.setScheduledAnonymizeAt(now.plusDays(DELETION_GRACE_DAYS));
         userRepository.save(u);
         // Silme talebiyle tum oturumlar kapanir (refresh token'lar iptal).
         refreshTokenService.revokeAllForUser(userId);
+        // Cihaz bildirim abonelikleri: kapali hesaba telefon bildirimi gitmesin.
+        pushSubscriptionRepository.deleteAll(pushSubscriptionRepository.findAllByUserId(userId));
+
+        // Platformdaki acik taahhutler hemen sonuclanir (30 gun beklemez):
+        //  - isletme: yayindaki/duraklatilmis ilanlar kapanir (adaylara bildirim)
+        //  - aday: acik basvurular geri cekilir, gelecek vardiyalar bosalir (isletmeye bildirim)
+        if (u.getRole() == Role.BUSINESS_OWNER) {
+            accountClosureService.closeBusinessListings(userId);
+        } else if (u.getRole() == Role.CANDIDATE) {
+            accountClosureService.releaseCandidate(userId, null, AccountClosureService.Reason.ACCOUNT_CLOSED);
+        }
 
         log.info("[GDPR] userId={} hesap silme istegi: anonymize date={}", userId, u.getScheduledAnonymizeAt());
 
@@ -177,24 +208,121 @@ public class GdprService {
         }
     }
 
-    private void anonymize(User u) {
+    /**
+     * Kisisel veriyi siler/maskeler. Referans verilen kayitlar (basvuru, mesaj, ilan,
+     * calisma kaydi, kazanc) tutarlilik icin kalir; kisiye ait serbest metin ve tercihler
+     * temizlenir. Mesaj icerikleri karsi tarafin kaydi oldugu icin silinmez; gonderen adi
+     * fullName'den okundugu icin "Silinmis Kullanici" gorunur.
+     * Dosyalar (avatar, isletme logosu/fotograflari) commit sonrasi depodan silinir; silme
+     * hatasi loglanir, anonimlestirmeyi durdurmaz.
+     */
+    void anonymize(User u) {
         Long id = u.getId();
-        String originalEmail = u.getEmail();
+        String avatar = u.getAvatarPath();
+
         u.setEmail(String.format(ANONYMIZED_EMAIL_TEMPLATE, id));
         u.setFullName(ANONYMIZED_NAME);
+        u.setPassword(null);
+        u.setProviderId(null);
         u.setPhone(null);
+        u.setPhoneVerifiedAt(null);
+        u.setPhoneOtpCode(null);
+        u.setPhoneOtpExpiresAt(null);
+        u.setPhoneOtpSentAt(null);
+        u.setPhoneOtpAttempts(0);
         u.setAvatarPath(null);
         u.setDistrict(null);
         u.setNeighborhood(null);
         u.setBirthDate(null);
         u.setGender(null);
+        u.setEducation(null);
+        u.setPreviousExperience(null);
+        u.setSmokes(null);
+        u.setHasLicense(null);
+        u.setIsAvailable(false);
+        u.setAvailableUntil(null);
+        if (u.getLanguages() != null) u.getLanguages().clear();
+        if (u.getAvailabilityTypes() != null) u.getAvailabilityTypes().clear();
+        if (u.getPreferredDistricts() != null) u.getPreferredDistricts().clear();
+        if (u.getPreferredPositions() != null) u.getPreferredPositions().clear();
         u.setScheduledAnonymizeAt(null);
         userRepository.save(u);
+
+        // Adayin kendi yazdigi on yazi ve isletmenin aday hakkindaki karar notu
+        List<Application> apps = applicationRepository.findAllByCandidateId(id);
+        if (apps != null && !apps.isEmpty()) {
+            for (Application a : apps) {
+                a.setCoverLetter(null);
+                a.setNote(null);
+            }
+            applicationRepository.saveAll(apps);
+        }
+        availabilityBlockRepository.deleteAllByUserId(id);
+        savedSearchRepository.deleteAll(savedSearchRepository.findByUser_IdOrderByCreatedAtDesc(id));
+        pushSubscriptionRepository.deleteAll(pushSubscriptionRepository.findAllByUserId(id));
+
+        List<String> files = new java.util.ArrayList<>();
+        if (avatar != null && !avatar.isBlank()) files.add(avatar);
+        if (u.getRole() == Role.BUSINESS_OWNER) {
+            businessRepository.findByOwnerId(id).ifPresent(b -> anonymizeBusiness(b, files));
+        }
+        files.forEach(this::deleteFileQuietly);
 
         log.info("[GDPR-ANONYMIZE] userId={} anonymize edildi (eski email maskelendi)", id);
 
         outboxService.appendAuditLog(AuditLoggedEvent.system(
                 "USER_ANONYMIZED", "USER", id,
                 "Hesap 30 gun grace sonrasi anonymize edildi (KVKK)."));
+    }
+
+    /**
+     * Isletme kaydi kalir (gecmis ilan/basvuru/kazanc kayitlari ona bagli); adi ve
+     * iletisim/konum bilgisi maskelenir, logo ve fotograflar silinir. Ilce korunur
+     * (kisisel veri degil; gecmis ilan kayitlari tutarli kalsin).
+     */
+    private void anonymizeBusiness(Business b, List<String> files) {
+        if (b.getLogoPath() != null && !b.getLogoPath().isBlank()) files.add(b.getLogoPath());
+        b.setName(ANONYMIZED_BUSINESS_NAME);
+        b.setAddress(null);
+        b.setNeighborhood(null);
+        b.setLatitude(null);
+        b.setLongitude(null);
+        b.setPhone(null);
+        b.setWebsite(null);
+        b.setInstagram(null);
+        b.setFacebook(null);
+        b.setDescription(null);
+        b.setWorkingHours(null);
+        b.setLogoPath(null);
+        businessRepository.save(b);
+
+        List<BusinessPhoto> photos = businessPhotoRepository.findAllByBusinessIdOrderByCreatedAtDesc(b.getId());
+        if (photos != null && !photos.isEmpty()) {
+            for (BusinessPhoto p : photos) {
+                if (p.getFilePath() != null && !p.getFilePath().isBlank()) files.add(p.getFilePath());
+            }
+            businessPhotoRepository.deleteAll(photos);
+        }
+    }
+
+    /**
+     * Dosyayi depodan siler: aktif islem varsa commit SONRASI (geri alinirsa dosya kalir),
+     * yoksa hemen. Her hata yutulur ve loglanir: anonimlestirme dosya deposuna bagli degil.
+     */
+    private void deleteFileQuietly(String storedRef) {
+        Runnable job = () -> {
+            try {
+                fileStorageService.delete(storedRef);
+            } catch (RuntimeException ex) {
+                log.warn("[GDPR-ANONYMIZE] dosya depodan silinemedi (anonimlestirme surdu): {}", ex.getMessage());
+            }
+        };
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override public void afterCommit() { job.run(); }
+            });
+        } else {
+            job.run();
+        }
     }
 }

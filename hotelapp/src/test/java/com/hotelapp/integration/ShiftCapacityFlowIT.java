@@ -208,6 +208,52 @@ class ShiftCapacityFlowIT {
         shiftSlotRepository.save(s);
     }
 
+    /**
+     * Hesap kapanisi uctan uca (gercek JPA): kabul edilmis adayin hesabi silinince
+     * gelecek vardiyanin koltugu bosalir ve yedek adaya teklif gider (atomik sayac
+     * sonrasi slot durumu tazelenir). Isletme hesabi silinince ilan kapanir, acik
+     * basvuru EXPIRED olur.
+     */
+    @Test
+    void accountDeletion_releasesSeat_offersStandby_andClosesBusinessListings() throws Exception {
+        String biz = register(business("del-biz@app.com"));
+        Long listingId = createListing(biz, slot(LocalDate.now().plusDays(6), "09:00", "17:00", 1));
+        Long slotId = firstSlotId(listingId, biz);
+        String c1 = register(candidate("del-a1@app.com"));
+        String c2 = register(candidate("del-a2@app.com"));
+        String c3 = register(candidate("del-a3@app.com"));
+        Long app1 = apply(c1, listingId, slotId);
+        Long app2 = apply(c2, listingId, slotId);
+        Long app3 = apply(c3, listingId, slotId);
+        decide(biz, app1, ApplicationStatus.ACCEPTED).andExpect(status().isOk());
+        mvc.perform(put("/api/business/applications/" + app2 + "/standby")
+                        .header("Authorization", "Bearer " + biz))
+                .andExpect(status().isOk());
+        assertThat(shiftSlotRepository.findById(slotId).orElseThrow().getSlotsFilled()).isEqualTo(1);
+
+        // Kabul edilmis aday hesabini kapatir
+        mvc.perform(delete("/api/me").header("Authorization", "Bearer " + c1))
+                .andExpect(status().isOk());
+
+        assertThat(applicationRepository.findById(app1).orElseThrow().getStatus())
+                .isEqualTo(ApplicationStatus.WITHDRAWN);
+        assertThat(shiftSlotRepository.findById(slotId).orElseThrow().getSlotsFilled()).isZero();
+        Application standby = applicationRepository.findById(app2).orElseThrow();
+        assertThat(standby.getStatus()).isEqualTo(ApplicationStatus.STANDBY);
+        assertThat(standby.getStandbyOfferedAt()).isNotNull();
+        assertThat(standby.getStandbyReplacesApplicationId()).isEqualTo(app1);
+
+        // Isletme hesabini kapatir: ilan kapanir, acik basvurular EXPIRED
+        mvc.perform(delete("/api/me").header("Authorization", "Bearer " + biz))
+                .andExpect(status().isOk());
+        assertThat(applicationRepository.findById(app3).orElseThrow().getStatus())
+                .isEqualTo(ApplicationStatus.EXPIRED);
+        assertThat(applicationRepository.findById(app2).orElseThrow().getStatus())
+                .isEqualTo(ApplicationStatus.EXPIRED);
+        mvc.perform(get("/api/listings/" + listingId).header("Authorization", "Bearer " + c3))
+                .andExpect(jsonPath("$.status").value("CLOSED"));
+    }
+
     @Test
     void slot_with_equal_start_and_end_is_rejected() throws Exception {
         String biz = register(business("cap-biz2@app.com"));

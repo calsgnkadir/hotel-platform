@@ -26,6 +26,7 @@ class AdminServiceTest {
     private JobListingRepository listings;
     private RefreshTokenService refreshTokens;
     private JobListingService jobListingService;
+    private AccountClosureService accountClosure;
     private AdminService service;
 
     @BeforeEach
@@ -34,11 +35,12 @@ class AdminServiceTest {
         listings = mock(JobListingRepository.class);
         refreshTokens = mock(RefreshTokenService.class);
         jobListingService = mock(JobListingService.class);
+        accountClosure = mock(AccountClosureService.class);
         // Gercek kapanis yolunu taklit et: durumu CLOSED yapar (yan etkiler JobListingServiceTest'te)
         org.mockito.Mockito.doAnswer(i -> { ((JobListing) i.getArgument(0)).setStatus(ListingStatus.CLOSED); return null; })
                 .when(jobListingService).closeAsModeration(org.mockito.ArgumentMatchers.any(JobListing.class));
         service = new AdminService(users, mock(BusinessRepository.class), listings,
-                mock(ApplicationRepository.class), refreshTokens, jobListingService);
+                mock(ApplicationRepository.class), refreshTokens, jobListingService, accountClosure);
     }
 
     @Test
@@ -53,6 +55,21 @@ class AdminServiceTest {
 
         assertThat(u.getBannedUntil()).isNotNull();
         verify(refreshTokens).revokeAllForUser(5L);
+        // Aday: ban suresine dusen gelecek vardiyalar bosalir (sinir = ban bitisi)
+        verify(accountClosure).releaseCandidate(5L, u.getBannedUntil(), AccountClosureService.Reason.SUSPENDED);
+    }
+
+    @Test
+    @DisplayName("Ban (isletme sahibi): aday taahhut bosaltma cagrilmaz")
+    void ban_businessOwner_noCandidateRelease() {
+        User u = new User();
+        u.setId(6L);
+        u.setRole(Role.BUSINESS_OWNER);
+        when(users.findById(6L)).thenReturn(Optional.of(u));
+
+        service.ban(6L, 7);
+
+        org.mockito.Mockito.verifyNoInteractions(accountClosure);
     }
 
     @Test

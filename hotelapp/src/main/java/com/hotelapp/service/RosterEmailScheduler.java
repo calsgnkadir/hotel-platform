@@ -87,6 +87,6 @@ public class RosterEmailScheduler {
         String html = emailTemplates.rosterReady(owner.getFullName(), l.getTitle(), dateText,
                 Math.max(1, xlsx.length / 1024), baseUrl + "/business?tab=listings");
         emailService.sendWithAttachment(owner.getEmail(), subject, html, fileName, xlsx);
-        notificationService.notify(owner.getId(), NotificationType.GENERIC, "Ekip listesi hazır", notice, "listings");
+        notificationService.notify(owner.getId(), NotificationType.GENERIC, "Ekip listesi hazır", notice, "mylistings");
     }
 }

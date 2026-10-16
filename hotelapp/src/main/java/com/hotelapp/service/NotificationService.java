@@ -47,8 +47,21 @@ public class NotificationService {
     private final Executor notificationExecutor;
     private final TransactionTemplate writeTx;
 
-    /** FAZ 11.W4.1 — Dedupe penceresi: bu sure icinde ayni type+recipient collapse edilir. */
+    /** FAZ 11.W4.1 — Dedupe penceresi: bu sure icinde ayni baglamdaki bildirimler collapse edilir. */
     private static final java.time.Duration DEDUPE_WINDOW = java.time.Duration.ofMinutes(5);
+
+    /** Birlestirme adayi taramasi: pencere icindeki son N okunmamis ayni tip kayit. */
+    private static final int DEDUPE_SCAN = 20;
+
+    /**
+     * Baglami basliktan (gonderen adi) okunan yuksek frekansli tipler: ayni link + ayni
+     * baslik = ayni sohbet; metin (son mesaj onizlemesi) her seferinde degisir ve en
+     * yenisi gosterilir. Diger tiplerde baglam metnin kendisidir (ilan/isletme adi
+     * metinde): yalniz ayni link + baslik + metin birlesir, farkli ilanin bildirimi
+     * ayri kayit olur ve eski metin kaybolmaz.
+     */
+    private static final java.util.Set<NotificationType> TITLE_SCOPED =
+            java.util.EnumSet.of(NotificationType.NEW_MESSAGE);
 
     /** Alici bazli kilit seritleri (dedupe yarisini onler; tek uygulama ornegi icinde). */
     private static final Object[] STRIPES = new Object[64];
@@ -76,10 +89,10 @@ public class NotificationService {
     /**
      * Bildirim olustur — imza degismedi; davranis: commit sonrasi + asenkron.
      *
-     * FAZ 11.W4.1 — Dedupe: son 5dk icinde ayni recipient+type'ta OKUNMAMIS bir
-     * bildirim varsa yeni kayit acilmaz; mevcidin aggregateCount'u artar, message
-     * en yenisiyle degistirilir, createdAt tazelenir (listede uste cikar).
-     * "24 ayri bildirim" yerine "Yeni basvuru (×24)".
+     * FAZ 11.W4.1 — Dedupe: son 5dk icinde ayni recipient+type'ta ve AYNI BAGLAMDA
+     * ({@link #sameContext}) OKUNMAMIS bir bildirim varsa yeni kayit acilmaz; mevcidin
+     * aggregateCount'u artar, message en yenisiyle degistirilir, createdAt tazelenir
+     * (listede uste cikar). Ornek: ayni sohbetten 5 mesaj -> "Yeni mesaj: Ali (×5)".
      */
     public void notify(Long recipientId, NotificationType type, String title, String message, String link) {
         try {
@@ -141,8 +154,12 @@ public class NotificationService {
 
         Notification n;
         var existing = notificationRepository
-                .findFirstByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
-                        recipientId, type, LocalDateTime.now().minus(DEDUPE_WINDOW));
+                .findTop20ByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
+                        recipientId, type, LocalDateTime.now().minus(DEDUPE_WINDOW))
+                .stream()
+                .limit(DEDUPE_SCAN)
+                .filter(c -> sameContext(c, type, title, message, link))
+                .findFirst();
         if (existing.isPresent()) {
             n = existing.get();
             n.setAggregateCount((n.getAggregateCount() == null ? 1 : n.getAggregateCount()) + 1);
@@ -164,6 +181,19 @@ public class NotificationService {
             n = notificationRepository.save(n);
         }
         return new Persisted(recipient.getEmail(), pushUrl(recipient, link), toDto(n));
+    }
+
+    /**
+     * Mevcut kayit yeni bildirimle ayni baglamda mi (birlestirilebilir mi)?
+     * Link'ler cogunlukla panel sekmesi ("applications") oldugundan tek basina baglam
+     * degildir; bu yuzden baslik (ve TITLE_SCOPED disinda metin) da eslesmeli.
+     */
+    static boolean sameContext(Notification existing, NotificationType type,
+                               String title, String message, String link) {
+        if (existing.getType() != type) return false;
+        if (!java.util.Objects.equals(existing.getLink(), link)) return false;
+        if (!java.util.Objects.equals(existing.getTitle(), title)) return false;
+        return TITLE_SCOPED.contains(type) || java.util.Objects.equals(existing.getMessage(), message);
     }
 
     /**

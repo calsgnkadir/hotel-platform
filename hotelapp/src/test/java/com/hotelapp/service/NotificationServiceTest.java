@@ -250,52 +250,111 @@ class NotificationServiceTest {
         }
     }
 
-    @Nested @DisplayName("notify() dedupe — FAZ 11.W4.1")
+    @Nested @DisplayName("notify() dedupe — yalniz ayni baglam birlesir")
     class NotifyDedupe {
 
-        @Test
-        @DisplayName("Pencere icinde ayni type varsa yeni kayit acilmaz, count artar")
-        void aggregatesWithinWindow() {
-            when(userRepository.findById(42L)).thenReturn(Optional.of(user));
-            Notification existing = Notification.builder()
-                    .id(7L).recipient(user)
-                    .type(NotificationType.NEW_APPLICATION)
-                    .title("Yeni başvuru").message("Ali başvurdu")
+        private Notification existing(long id, NotificationType type, String title, String message, String link) {
+            return Notification.builder()
+                    .id(id).recipient(user).type(type)
+                    .title(title).message(message).link(link)
                     .isRead(false).aggregateCount(2)
                     .createdAt(java.time.LocalDateTime.now().minusMinutes(2))
                     .build();
+        }
+
+        private void stubCandidates(NotificationType type, Notification... rows) {
+            when(userRepository.findById(42L)).thenReturn(Optional.of(user));
             when(notificationRepository
-                    .findFirstByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
-                            eq(42L), eq(NotificationType.NEW_APPLICATION), any()))
-                    .thenReturn(Optional.of(existing));
+                    .findTop20ByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
+                            eq(42L), eq(type), any()))
+                    .thenReturn(List.of(rows));
             when(notificationRepository.save(any(Notification.class))).thenAnswer(inv -> inv.getArgument(0));
+        }
 
-            service.notify(42L, NotificationType.NEW_APPLICATION, "Yeni başvuru", "Zeynep başvurdu", "applications");
-
+        private Notification saved() {
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
             verify(notificationRepository).save(captor.capture());
-            Notification saved = captor.getValue();
-            assertThat(saved.getId()).isEqualTo(7L);              // ayni kayit
-            assertThat(saved.getAggregateCount()).isEqualTo(3);   // 2 -> 3
-            assertThat(saved.getMessage()).isEqualTo("Zeynep başvurdu");  // en yeni mesaj
+            return captor.getValue();
+        }
+
+        @Test
+        @DisplayName("Ayni sohbetin (ayni gonderen) mesajlari birlesir: count artar, en yeni onizleme gorunur")
+        void sameConversationMessages_aggregate() {
+            stubCandidates(NotificationType.NEW_MESSAGE,
+                    existing(7L, NotificationType.NEW_MESSAGE, "Yeni mesaj: Ali", "Merhaba", "messages"));
+
+            service.notify(42L, NotificationType.NEW_MESSAGE, "Yeni mesaj: Ali", "Yarın gelebilir misin?", "messages");
+
+            Notification n = saved();
+            assertThat(n.getId()).isEqualTo(7L);
+            assertThat(n.getAggregateCount()).isEqualTo(3);
+            assertThat(n.getMessage()).isEqualTo("Yarın gelebilir misin?");
+        }
+
+        @Test
+        @DisplayName("Farkli gonderenin mesaji ayri kayit olur")
+        void otherConversation_newRow() {
+            stubCandidates(NotificationType.NEW_MESSAGE,
+                    existing(7L, NotificationType.NEW_MESSAGE, "Yeni mesaj: Ali", "Merhaba", "messages"));
+
+            service.notify(42L, NotificationType.NEW_MESSAGE, "Yeni mesaj: Ayşe", "Selam", "messages");
+
+            Notification n = saved();
+            assertThat(n.getId()).isNull();
+            assertThat(n.getAggregateCount()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("Iki farkli ilanin LISTING_CLOSED bildirimi birlesmez; eski metin korunur")
+        void differentListings_doNotMerge() {
+            Notification first = existing(8L, NotificationType.LISTING_CLOSED,
+                    "İlan kapatıldı", "İlan kapatıldı: Garson. Başvurun sonuçlanmadan kapandı.", "applications");
+            stubCandidates(NotificationType.LISTING_CLOSED, first);
+
+            service.notify(42L, NotificationType.LISTING_CLOSED, "İlan kapatıldı",
+                    "İlan kapatıldı: Bulaşıkçı. Başvurun sonuçlanmadan kapandı.", "applications");
+
+            Notification n = saved();
+            assertThat(n.getId()).isNull();
+            assertThat(first.getMessage()).contains("Garson");
+            assertThat(first.getAggregateCount()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("Birebir ayni bildirim (ayni baglam) birlesir; daha eski eslesen kayit da bulunur")
+        void identical_mergesEvenIfNotNewest() {
+            Notification other = existing(9L, NotificationType.LISTING_CLOSED, "İlan kapatıldı", "B ilanı", "applications");
+            Notification same = existing(8L, NotificationType.LISTING_CLOSED, "İlan kapatıldı", "A ilanı", "applications");
+            stubCandidates(NotificationType.LISTING_CLOSED, other, same);
+
+            service.notify(42L, NotificationType.LISTING_CLOSED, "İlan kapatıldı", "A ilanı", "applications");
+
+            Notification n = saved();
+            assertThat(n.getId()).isEqualTo(8L);
+            assertThat(n.getAggregateCount()).isEqualTo(3);
+        }
+
+        @Test
+        @DisplayName("sameContext: link farkliysa birlesmez (null link guvenli)")
+        void sameContext_linkMatters() {
+            Notification n = existing(1L, NotificationType.URGENT_LISTING, "Acil: Garson", "M", "/listings/1");
+            assertThat(NotificationService.sameContext(n, NotificationType.URGENT_LISTING, "Acil: Garson", "M", "/listings/2")).isFalse();
+            assertThat(NotificationService.sameContext(n, NotificationType.URGENT_LISTING, "Acil: Garson", "M", "/listings/1")).isTrue();
+            Notification noLink = existing(2L, NotificationType.GENERIC, "T", "M", null);
+            assertThat(NotificationService.sameContext(noLink, NotificationType.GENERIC, "T", "M", null)).isTrue();
+            assertThat(NotificationService.sameContext(noLink, NotificationType.NEW_MESSAGE, "T", "M", null)).isFalse();
         }
 
         @Test
         @DisplayName("Pencere disinda (veya okunmus) ise yeni kayit acilir")
         void createsNewOutsideWindow() {
-            when(userRepository.findById(42L)).thenReturn(Optional.of(user));
-            when(notificationRepository
-                    .findFirstByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
-                            eq(42L), any(), any()))
-                    .thenReturn(Optional.empty());
-            when(notificationRepository.save(any(Notification.class))).thenAnswer(inv -> inv.getArgument(0));
+            stubCandidates(NotificationType.NEW_APPLICATION);
 
             service.notify(42L, NotificationType.NEW_APPLICATION, "Yeni başvuru", "Can başvurdu", "applications");
 
-            ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
-            verify(notificationRepository).save(captor.capture());
-            assertThat(captor.getValue().getId()).isNull();               // yeni kayit
-            assertThat(captor.getValue().getAggregateCount()).isEqualTo(1);
+            Notification n = saved();
+            assertThat(n.getId()).isNull();
+            assertThat(n.getAggregateCount()).isEqualTo(1);
         }
     }
 

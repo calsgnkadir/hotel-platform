@@ -29,6 +29,7 @@ public class AdminService {
     private final ApplicationRepository applicationRepository;
     private final RefreshTokenService refreshTokenService;
     private final JobListingService jobListingService;   // admin kapanışı ortak kapanış yolundan
+    private final AccountClosureService accountClosureService;   // ban: gelecek vardiyalar boşalır
 
     // ================================================================
     // Listing & detail
@@ -99,6 +100,12 @@ public class AdminService {
         // Acik oturumlar kapanir: refresh alinamaz; erisim token'i JwtAuthFilter'da
         // isAccountNonLocked ile zaten reddedilir.
         refreshTokenService.revokeAllForUser(user.getId());
+        // Aday kilitliyken giris (QR) yapamaz: ban suresine dusen gelecek vardiyalar
+        // bosalir, acik basvurular geri cekilir (isletmeye haber + yedek zinciri).
+        if (user.getRole() == Role.CANDIDATE) {
+            accountClosureService.releaseCandidate(user.getId(), user.getBannedUntil(),
+                    AccountClosureService.Reason.SUSPENDED);
+        }
         return toSummary(user);
     }
 
