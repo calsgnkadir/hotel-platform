@@ -445,7 +445,7 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] **Kayıtlı Aramalar** — kullanıcı filtre setini kaydeder, yeni eşleşmede bildirim (scheduled matcher, 30 dk)
 - [x] **Akıllı sıralama** — aday tercihlerine göre weighted ranking (position +50, district +30, jobType +20, recency +10)
 - [x] **Sade açık arayüz** — grafit/gri marka (`#1f2937`) + muted semantik durum renkleri (yeşil/amber/kiremit/mavi, sadece durum sinyali), tek font (Inter), birleşik rounded kart sistemi, hairline ayraçlar
-- [x] **Test coverage** — backend 553 birim + 35 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 306 vitest (47 dosya), Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
+- [x] **Test coverage** — backend 607 birim + 43 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 410 vitest (62 dosya), Playwright E2E 20 test, Playwright E2E (`playwright.config.js`); CI'da her push/PR'da koşar
 - [x] Landing "Vardiya Nabzı" canlı widget (WebSocket broadcast)
 - [x] **Engelleme** — aday işletmeyi, işletme adayı engelleyebilir; engel başvuru, yedek/HOLD teklifi, mesaj, tepki, "yazıyor" sinyali ve tüm bildirim/SMS yollarında uygulanır, karşı tarafa bildirilmez
 - [x] **Durum dili** — başvuru durumları tek sözlükten (`lib/applicationStatus.js`), aday ve işletme bakış açısına göre ayrı etiket
@@ -460,18 +460,15 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] **Güvenlik sertleştirme (2. tur)** — ön yüz güvenlik başlıkları (CSP, frame-ancestors, HSTS), Google girişinde tek kullanımlık kod (adreste token yok), kilitli/kapalı hesapta ifşasız 401, yanlış rolde 403, ortak şifre kuralı, web sitesi yalnız http(s), arama daveti yalnız Jitsi, prod'da Swagger kapalı, vitrin demo hesabı korumalı, iyzico zaman aşımı
 - [x] **Arayüz Paket 4** — birimli ücret filtresi, vardiya saati filtresi, günlük karşılığa göre ücret sıralaması, mobilde tam ekran filtre paneli, erişilebilir ilan kartı
 - [x] **Arayüz Paket 5** — tek kaynaklı navigasyon, "Ekibim" sekmesi, mobil alt sekme çubuğu, "Yapılacaklar" kartlı işletme ana ekranı
+- [x] **Bildirimler** — beklemeye alma için kendi tipleri, jargonsuz metinler, yalnız aynı bağlamdaki bildirimler birleşir
+- [x] **Hesap kapatma ve KVKK** — silme talebi ve ban'da açık başvurular ve gelecek vardiyalar temizlenir (yedeğe teklif, işletmeye bildirim); anonimleştirme profil, tercih, başvuru notu ve görselleri kapsar
+- [x] **Arayüz cilası** — admin paneli, işletme herkese açık sayfası, mobil sohbet bilgileri paneli, favoriler ve takip listeleri; tüm form etiketleri alanlara bağlı
 
 ### Sıradaki
 
 **Altyapı ve ilan yaşam döngüsü**
 - [ ] Kayıtlı aramada vardiya saati ve ücret biriminin backend'de doğru eşleşmesi
-- [ ] Bildirim tipleri ve birleştirme (beklemeye alma "kabul" tipiyle gidiyor; farklı ilanların bildirimleri birleşiyor)
 - [ ] İlan düzenleme kuralları (geçmiş slot, kapasite ≥ dolu yer), GPS girişinde vardiya eşleşmesi
-- [ ] Hesap silme/ban'da açık başvuru ve ilanların kapatılması, anonimleştirme kapsamı
-
-**Arayüz**
-- [ ] Admin paneli cilası (okunurluk, Türkçe etiketler, onay pencereleri, sekme URL'si)
-- [ ] Paket 2 kalıntıları (işletme herkese açık sayfası, mesaj bileşenleri, favoriler, takip/engellenenler), form etiketleri (htmlFor)
 
 **Önceki plandan**
 - [ ] Metrics dashboard (Grafana / Prometheus)
