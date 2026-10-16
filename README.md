@@ -457,24 +457,21 @@ Tam liste: <http://localhost:8080/swagger-ui.html>
 - [x] **Gece müsaitliği** — aday ertesi güne taşan müsaitlik bloğu girebilir (ör. 22:00–06:00); eşleştirme gün kaydırmasını ve hafta sonu sarmasını hesaplar
 - [x] **İlan yaşam döngüsü** — ilan son vardiyası bitince otomatik kapanır (gece vardiyasında ertesi gün); manuel, admin ve otomatik kapanışta açık başvurular "süresi doldu" olur, adaya tek bildirim gider
 - [x] **Altyapı** — bildirim, WS mesaj yayını ve SMS commit sonrası ve sınırlı havuzda asenkron; outbox üstel bekleme (30 sn → 1 sa, 10 deneme), devre açıkken deneme sayılmaz; e-posta/SMS HTTP zaman aşımları; zamanlanmış işler için 4 thread'lik ayrı havuz
+- [x] **Güvenlik sertleştirme (2. tur)** — ön yüz güvenlik başlıkları (CSP, frame-ancestors, HSTS), Google girişinde tek kullanımlık kod (adreste token yok), kilitli/kapalı hesapta ifşasız 401, yanlış rolde 403, ortak şifre kuralı, web sitesi yalnız http(s), arama daveti yalnız Jitsi, prod'da Swagger kapalı, vitrin demo hesabı korumalı, iyzico zaman aşımı
+- [x] **Arayüz Paket 4** — birimli ücret filtresi, vardiya saati filtresi, günlük karşılığa göre ücret sıralaması, mobilde tam ekran filtre paneli, erişilebilir ilan kartı
+- [x] **Arayüz Paket 5** — tek kaynaklı navigasyon, "Ekibim" sekmesi, mobil alt sekme çubuğu, "Yapılacaklar" kartlı işletme ana ekranı
 
 ### Sıradaki
 
 **Altyapı ve ilan yaşam döngüsü**
+- [ ] Kayıtlı aramada vardiya saati ve ücret biriminin backend'de doğru eşleşmesi
+- [ ] Bildirim tipleri ve birleştirme (beklemeye alma "kabul" tipiyle gidiyor; farklı ilanların bildirimleri birleşiyor)
 - [ ] İlan düzenleme kuralları (geçmiş slot, kapasite ≥ dolu yer), GPS girişinde vardiya eşleşmesi
 - [ ] Hesap silme/ban'da açık başvuru ve ilanların kapatılması, anonimleştirme kapsamı
 
-**Güvenlik (orta/düşük)**
-- [ ] Ön yüz güvenlik başlıkları (CSP, frame-ancestors, HSTS)
-- [ ] İşletme web sitesinde yalnız http(s), arama davetinde yalnız Jitsi adresi
-- [ ] Kilitli/kapalı hesap girişinde 401, OAuth sonrası token'ı URL'de taşımama, şifre sıfırlama kuralı
-- [ ] Swagger'ı prod'da kapatma, vitrin demo hesabını silme/şifre değişikliğine karşı koruma
-
 **Arayüz**
 - [ ] Admin paneli cilası (okunurluk, Türkçe etiketler, onay pencereleri, sekme URL'si)
-- [ ] Paket 2 kalıntıları (işletme sayfası, mesajlar, favoriler, takip/engellenenler, kısayollar), form etiketleri ve 44px dokunma hedefleri
-- [ ] Paket 4 — ilan listesi yoğunluğu ve filtreler (birimli ücret, vardiya saati, sıralama)
-- [ ] Paket 5 — tek navigasyon kaynağı, işletme ana ekranı, mobil alt sekme çubuğu
+- [ ] Paket 2 kalıntıları (işletme herkese açık sayfası, mesaj bileşenleri, favoriler, takip/engellenenler), form etiketleri (htmlFor)
 
 **Önceki plandan**
 - [ ] Metrics dashboard (Grafana / Prometheus)
