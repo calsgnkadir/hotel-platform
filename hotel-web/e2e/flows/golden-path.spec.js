@@ -53,7 +53,8 @@ test.describe.serial('Aday: kayıt → başvuru → sohbet → tekrar giriş', (
     const dialog = page.locator('.modal-content')
     await expect(dialog).toBeVisible()
     await dialog.getByRole('checkbox').first().check()
-    await dialog.getByRole('button', { name: 'Başvur', exact: true }).click()
+    // Vardiya seçilince gönder düğmesi seçim sayısını yazar: "1 vardiyaya başvur"
+    await dialog.getByRole('button', { name: /vardiyaya başvur$/i }).click()
 
     await expect(dialog.getByText('Başvurun gönderildi')).toBeVisible({ timeout: 30_000 })
   })
