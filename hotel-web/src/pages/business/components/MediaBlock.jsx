@@ -57,8 +57,8 @@ export default function MediaBlock({
 
       {/* Logo */}
       <div>
-        <label className="label">Logo</label>
-        <div className="flex items-center gap-4">
+        <span id="media-logo-label" className="label">Logo</span>
+        <div role="group" aria-labelledby="media-logo-label" className="flex items-center gap-4">
           <div className="w-24 h-24 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden flex-shrink-0"
                style={{ background: 'rgba(255, 255, 255, 0.75)', borderColor: 'rgba(31, 41, 55, 0.18)' }}>
             {logoUrl ? (

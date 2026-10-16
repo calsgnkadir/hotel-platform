@@ -43,7 +43,7 @@ export default function LoginPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-baseline gap-2">
             <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>Kadrom</span>
-            <span className="text-[9px] uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>istanbul</span>
+            <span className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>İstanbul</span>
           </Link>
           <Link to="/register" className="text-[13px] font-semibold px-4 py-2 rounded-lg transition-colors"
                 style={{ color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)', background: 'var(--ah-card)' }}>
@@ -73,7 +73,7 @@ export default function LoginPage() {
                 <GoogleSignInButton label="Google ile devam et" />
                 <div className="flex items-center gap-3 my-6">
                   <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
-                  <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>
+                  <span className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>
                     veya
                   </span>
                   <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
@@ -83,8 +83,8 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="label">E-posta</label>
-                <input type="email" className="input" placeholder="ornek@email.com"
+                <label htmlFor="login-email" className="label">E-posta</label>
+                <input id="login-email" type="email" className="input" placeholder="ornek@email.com"
                   autoComplete="email" autoFocus
                   {...register('email', {
                     required: 'E-posta zorunlu',
@@ -95,13 +95,13 @@ export default function LoginPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="label !mb-0">Şifre</label>
+                  <label htmlFor="login-password" className="label !mb-0">Şifre</label>
                   <Link to="/forgot-password" className="text-[11px] font-semibold hover:underline" style={{ color: 'var(--ah-ink-2)' }}>
-                    Şifremi Unuttum
+                    Şifremi unuttum
                   </Link>
                 </div>
                 <div className="relative">
-                  <input type={showPwd ? 'text' : 'password'} className="input pr-10" placeholder="••••••••"
+                  <input id="login-password" type={showPwd ? 'text' : 'password'} className="input pr-10" placeholder="••••••••"
                     autoComplete="current-password"
                     {...register('password', {
                       required: 'Şifre zorunlu',

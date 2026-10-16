@@ -2,7 +2,7 @@
  * FAZ 2/#32 — Favori adaylar + engellenen adaylar (Ekibim sekmesinde).
  *
  * Üstte "Favoriler / Engellenenler" sayaçlı segment (aday tarafı RelationsTab düzeni).
- * Favoriler: avatar/baş harf, ad, e-posta, ilçe, eklenme tarihi; Mesajla + Kaldır.
+ * Favoriler: avatar/baş harf, ad, e-posta, ilçe, eklenme tarihi; Mesaj gönder + Kaldır.
  * Engellenenler: avatar/baş harf, ad, engellenme tarihi; Engeli kaldır.
  *   (Engellenenler listesi e-posta/telefon göstermez.)
  */
@@ -30,12 +30,8 @@ function CandidateAvatar({ url, name }) {
   return (
     <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg flex-shrink-0"
          aria-hidden="true"
-         style={{
-           background: 'rgba(31, 41, 55, 0.08)',
-           border: '1px solid rgba(31, 41, 55, 0.22)',
-           color: '#1f2937',
-         }}>
-      {name?.charAt(0) || '?'}
+         style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-line)', color: 'var(--ah-brand)' }}>
+      {name?.charAt(0)?.toLocaleUpperCase('tr-TR') || '?'}
     </div>
   )
 }
@@ -71,21 +67,16 @@ export default function FavoritesTab({ onOpenMessages, segment: controlledSegmen
   return (
     <div className="space-y-4">
       {!controlled && (
-      <div className="flex gap-2" role="tablist" aria-label="Aday listeleri">
+      <div className="ah-segment" role="tablist" aria-label="Aday listeleri">
         {segments.map(t => {
           const active = segment === t.id
           return (
             <button key={t.id} type="button" role="tab" aria-selected={active}
               onClick={() => setSegment(t.id)}
-              className="inline-flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors"
-              style={{
-                background: active ? 'rgba(31, 41, 55, 0.14)' : 'var(--ah-card)',
-                color: active ? '#1f2937' : 'var(--ah-ink-3)',
-                border: `1px solid ${active ? 'rgba(31, 41, 55, 0.42)' : 'var(--ah-line)'}`,
-              }}>
+              className={`ah-segment__item inline-flex items-center gap-1.5 ${active ? 'is-active' : ''}`}>
               {t.label}
               {t.count > 0 && (
-                <span className="text-[11px] font-semibold tabular-nums opacity-80">{t.count > 99 ? '99+' : t.count}</span>
+                <span className="type-caption type-num">{t.count > 99 ? '99+' : t.count}</span>
               )}
             </button>
           )
@@ -162,8 +153,8 @@ function BlockedList({ query }) {
           <button type="button"
             onClick={() => handleUnblock(b.candidateId, b.candidateName)}
             disabled={unblockingId === b.candidateId}
-            className="btn-secondary flex-shrink-0 !px-3 !text-[13px]">
-            {unblockingId === b.candidateId ? 'Kaldırılıyor...' : 'Engeli kaldır'}
+            className="btn-secondary flex-shrink-0">
+            {unblockingId === b.candidateId ? 'Kaldırılıyor…' : 'Engeli kaldır'}
           </button>
         </div>
       ))}
@@ -193,16 +184,16 @@ function FavoritesList({ onOpenMessages, onCount }) {
 
   async function handleRemove(candidateId, name) {
     const ok = await confirm({
-      title: 'Favoriden kaldır',
-      description: `"${name}" adayı favori listenden çıkarılacak.`,
-      confirmLabel: 'Evet, kaldır',
+      title: 'Favorilerden kaldır',
+      description: `"${name || 'Aday'}" favori listenden çıkarılacak.`,
+      confirmLabel: 'Favorilerden kaldır',
       destructive: true,
     })
     if (!ok) return
     setRemovingId(candidateId)
     try {
       await hotelApi.removeFavorite(candidateId)
-      toast.success('Favoriden kaldirildi')
+      toast.success('Favorilerden kaldırıldı')
       await load()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setRemovingId(null) }
@@ -250,66 +241,48 @@ function FavoritesList({ onOpenMessages, onCount }) {
 
   return (
     <div className="space-y-3">
-      <p className="type-meta tabular-nums">
-        {favorites.length} favori aday · beğendiğin adaylara sonraki ilanlarında hızla ulaş
+      <p className="type-meta type-num">
+        {favorites.length} favori aday. Yeni bir ilan açtığında buradan mesajla ulaşabilirsin.
       </p>
 
-      {/* Liste */}
-      {favorites.map(f => (
-        <div key={f.id} className="card p-4 flex items-center gap-3">
-          {f.candidateAvatarUrl ? (
-            <img src={cldImg(f.candidateAvatarUrl, { w: ImgSize.avatarSm })} alt={f.candidateName}
-              loading="lazy" decoding="async"
-              className="w-12 h-12 rounded-full object-cover border border-cream-300 flex-shrink-0" />
-          ) : (
-            <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg flex-shrink-0"
-                 style={{
-                   background: 'rgba(31, 41, 55, 0.08)',
-                   border: '1px solid rgba(31, 41, 55, 0.22)',
-                   color: '#1f2937',
-                 }}>
-              {f.candidateName?.charAt(0) || '?'}
+      {favorites.map(f => {
+        const added = formatDate(f.createdAt)
+        return (
+          <div key={f.id} className="card !p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <CandidateAvatar url={f.candidateAvatarUrl} name={f.candidateName} />
+              <div className="flex-1 min-w-0">
+                <div className="type-body font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
+                  {f.candidateName}
+                </div>
+                {f.candidateEmail && (
+                  <div className="type-meta truncate">{f.candidateEmail}</div>
+                )}
+                {(f.candidateDistrict || added) && (
+                  <div className="type-caption mt-0.5">
+                    {[f.candidateDistrict, added && `${added} tarihinde eklendi`].filter(Boolean).join(' · ')}
+                  </div>
+                )}
+                {f.note && (
+                  <p className="type-meta mt-1.5 line-clamp-2 break-words">Not: {f.note}</p>
+                )}
+              </div>
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="font-semibold text-ink-800 dark:text-ink-900 truncate">
-              {f.candidateName}
+            <div className="flex gap-2 flex-shrink-0">
+              <button type="button" onClick={() => handleStartChat(f.candidateId)}
+                disabled={openingChatId === f.candidateId}
+                className="btn-secondary flex-1 sm:flex-none">
+                {openingChatId === f.candidateId ? 'Açılıyor…' : 'Mesaj gönder'}
+              </button>
+              <button type="button" onClick={() => handleRemove(f.candidateId, f.candidateName)}
+                disabled={removingId === f.candidateId}
+                className="btn-danger flex-1 sm:flex-none">
+                {removingId === f.candidateId ? 'Kaldırılıyor…' : 'Kaldır'}
+              </button>
             </div>
-            {f.candidateEmail && (
-              <div className="text-xs text-ink-500 truncate">{f.candidateEmail}</div>
-            )}
-            <div className="text-[11px] text-ink-400 mt-0.5">
-              {f.candidateDistrict ? `${f.candidateDistrict} · ` : ''}
-              {new Date(f.createdAt).toLocaleDateString('tr-TR')} tarihinde eklendi
-            </div>
-            {f.note && (
-              <div className="mt-1 text-xs italic text-ink-500 line-clamp-2">"{f.note}"</div>
-            )}
           </div>
-          <div className="flex gap-2 flex-shrink-0">
-            <button onClick={() => handleStartChat(f.candidateId)}
-              disabled={openingChatId === f.candidateId}
-              className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5 disabled:opacity-50"
-              style={{
-                background: 'var(--ah-brand-gradient)',
-                color: '#ffffff',
-                boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-              }}>
-              {openingChatId === f.candidateId ? '...' : 'Mesajla'}
-            </button>
-            <button onClick={() => handleRemove(f.candidateId, f.candidateName)}
-              disabled={removingId === f.candidateId}
-              className="text-[11px] px-3 py-2 rounded-2xl font-semibold uppercase tracking-[0.06em] transition-colors disabled:opacity-50"
-              style={{
-                background: 'rgba(107, 117, 116, 0.10)',
-                color: '#6b7574',
-                border: '1px solid rgba(107, 117, 116, 0.28)',
-              }}>
-              {removingId === f.candidateId ? '...' : 'Kaldir'}
-            </button>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

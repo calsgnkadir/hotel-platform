@@ -9,6 +9,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test-setup.js'],
+    // Varsayilan 5 sn: dosyanin ilk testi (soguk import + ilk render) kisitli bellekli
+    // makinede bu sureyi asip rastgele dusuyordu; davranis hatasi degil yuk.
+    testTimeout: 15000,
     css: false,
     include: ['src/**/*.test.{js,jsx}'],
     // FAZ 6 — coverage threshold (npm run test -- --coverage ile calisir)

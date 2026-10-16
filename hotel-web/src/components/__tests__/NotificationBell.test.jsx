@@ -20,7 +20,7 @@ vi.mock('../../api/hotel', () => ({
 vi.mock('../../lib/websocket', () => ({ wsSubscribe: () => ({ unsubscribe: () => {} }) }))
 vi.mock('../../lib/useWsConnected', () => ({ default: () => true }))
 
-import NotificationBell from '../NotificationBell'
+import NotificationBell, { TYPE_TONE, toneOf } from '../NotificationBell'
 
 const now = new Date().toISOString()
 const ITEMS = [
@@ -80,5 +80,27 @@ describe('NotificationBell sayaç', () => {
     fireEvent.click(await screen.findByText('Yeni başvuru'))
     await waitFor(() => expect(markNotificationRead).toHaveBeenCalledWith(2))
     expect(screen.getByTestId('notification-unread-badge')).toHaveTextContent('3')
+  })
+})
+
+/**
+ * Durum dili: bildirim noktası en fazla 4 ton. Backend'in yeni tipleri
+ * (HOLD_OFFERED, HOLD_RESPONDED, LISTING_CLOSED) tanımlı; bilinmeyen tip nötr.
+ */
+describe('NotificationBell tonları', () => {
+  it('en fazla 4 ton kullanılır', () => {
+    const tones = new Set(Object.values(TYPE_TONE))
+    expect(tones.size).toBeLessThanOrEqual(4)
+    for (const t of tones) expect(['ok', 'warn', 'danger', 'neutral']).toContain(t)
+  })
+
+  it('yeni backend tipleri tanımlı, bilinmeyen tip nötr', () => {
+    expect(toneOf('HOLD_OFFERED')).toBe('warn')
+    expect(toneOf('HOLD_RESPONDED')).toBe('neutral')
+    expect(toneOf('LISTING_CLOSED')).toBe('neutral')
+    expect(TYPE_TONE).toHaveProperty('HOLD_OFFERED')
+    expect(TYPE_TONE).toHaveProperty('HOLD_RESPONDED')
+    expect(TYPE_TONE).toHaveProperty('LISTING_CLOSED')
+    expect(toneOf('BILINMEYEN')).toBe('neutral')
   })
 })

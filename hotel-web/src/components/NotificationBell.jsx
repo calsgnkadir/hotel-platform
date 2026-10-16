@@ -7,30 +7,46 @@ import useWsConnected from '../lib/useWsConnected'
 import EmptyState from './EmptyState'
 
 // Her bildirim tipi için sol kenarda küçük renkli "dot" — emoji yerine sade gösterim
-const TYPE_COLOR = {
-  APPLICATION_ACCEPTED:  'bg-brand-500',
-  APPLICATION_REJECTED:  'bg-red-500',
-  DOCUMENT_REQUEST:      'bg-blue-500',
-  NO_SHOW_MARKED:        'bg-orange-500',
-  AUTO_BANNED:           'bg-red-600',
-  NEW_APPLICATION:       'bg-brand-600',
-  APPLICATION_WITHDRAWN: 'bg-slate-400',
-  DOCUMENT_GRANTED:      'bg-brand-500',
-  DOCUMENT_DENIED:       'bg-red-500',
-  MATCHING_LISTING:      'bg-brand-600',
-  NEW_MESSAGE:           'bg-blue-500',
-  // FAZ C.1 — Yedek aday sistemi (mor aile; ACTIVATED acil olduğu için canlı ton)
-  STANDBY_ASSIGNED:      'bg-violet-500',
-  STANDBY_ACTIVATED:     'bg-violet-600',
-  STANDBY_OFFER_EXPIRED: 'bg-slate-400',
-  STANDBY_FILLED:        'bg-brand-500',
-  STANDBY_DECLINED:      'bg-orange-500',
-  // FAZ C.2 — acil ilan: listedeki en yuksek aciliyet, kirmizi
-  URGENT_LISTING:        'bg-red-600',
-  // FAZ C.3 — SGK ise giris bildirgesi hatirlaticisi (yasal, amber)
-  SGK_REMINDER:          'bg-amber-500',
-  GENERIC:               'bg-cream-500',
+/**
+ * Bildirim noktası tonu — en fazla 4 ton (durum dili kuralı, DESIGN_TOKENS §4c):
+ *   ok      olumlu sonuç (kabul, belge izni, açık kapandı)
+ *   warn    senden bir şey bekleniyor (belge talebi, yedek teklifi, bekletilen teklif, SGK)
+ *   danger  yaptırım / acil (gelmedi, otomatik ban, acil ilan)
+ *   neutral bilgi (geri kalan her şey)
+ * Bilinmeyen tip nötr.
+ */
+export const TYPE_TONE = {
+  APPLICATION_ACCEPTED:  'ok',
+  DOCUMENT_GRANTED:      'ok',
+  STANDBY_FILLED:        'ok',
+  DOCUMENT_REQUEST:      'warn',
+  STANDBY_ACTIVATED:     'warn',
+  HOLD_OFFERED:          'warn',
+  SGK_REMINDER:          'warn',
+  DOCUMENT_EXPIRING:     'warn',
+  NO_SHOW_MARKED:        'danger',
+  AUTO_BANNED:           'danger',
+  URGENT_LISTING:        'danger',
+  APPLICATION_REJECTED:  'neutral',
+  NEW_APPLICATION:       'neutral',
+  APPLICATION_WITHDRAWN: 'neutral',
+  DOCUMENT_DENIED:       'neutral',
+  MATCHING_LISTING:      'neutral',
+  NEW_MESSAGE:           'neutral',
+  STANDBY_ASSIGNED:      'neutral',
+  STANDBY_OFFER_EXPIRED: 'neutral',
+  STANDBY_DECLINED:      'neutral',
+  HOLD_RESPONDED:        'neutral',
+  LISTING_CLOSED:        'neutral',
+  GENERIC:               'neutral',
 }
+const TONE_DOT = {
+  ok:      'var(--ah-ok)',
+  warn:    'var(--ah-warn)',
+  danger:  'var(--ah-danger)',
+  neutral: 'var(--ah-ink-4)',
+}
+export const toneOf = (type) => TYPE_TONE[type] || 'neutral'
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -206,24 +222,20 @@ export default function NotificationBell({ onNavigate }) {
                               dark:border-cream-300 dark:hover:bg-slate-800
                               ${!n.isRead ? 'bg-brand-50/40 dark:bg-brand-900/20' : ''}`}>
                   {/* Sol: tip renkli küçük dot */}
-                  <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${TYPE_COLOR[n.type] || 'bg-slate-400'}`} />
+                  <span className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" aria-hidden="true"
+                        data-tone={toneOf(n.type)} style={{ background: TONE_DOT[toneOf(n.type)] }} />
                   <div className="min-w-0 flex-1">
                     <div className={`text-sm flex items-center gap-1.5 ${!n.isRead ? 'font-semibold text-ink-800 dark:text-ink-900' : 'text-ink-600 dark:text-ink-300'}`}>
                       <span className="truncate">{n.title}</span>
                       {/* FAZ 11.W4.1 — dedupe rozeti: kac bildirim collapse edildi */}
                       {n.aggregateCount > 1 && (
-                        <span className="flex-shrink-0 text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded-full"
-                              style={{
-                                background: 'rgba(31, 41, 55, 0.16)',
-                                border: '1px solid rgba(31, 41, 55, 0.40)',
-                                color: '#1f2937',
-                              }}>
+                        <span className="badge badge-neutral type-num flex-shrink-0" aria-label={`${n.aggregateCount} bildirim`}>
                           ×{n.aggregateCount}
                         </span>
                       )}
                     </div>
                     {n.message && <div className="text-xs text-ink-500 dark:text-ink-400 mt-0.5 line-clamp-2">{n.message}</div>}
-                    <div className="text-[11px] text-ink-400 dark:text-ink-500 mt-1">{timeAgo(n.createdAt)}</div>
+                    <div className="type-caption mt-1">{timeAgo(n.createdAt)}</div>
                   </div>
                   {!n.isRead && <span className="w-2 h-2 rounded-full bg-brand-600 dark:bg-brand-400 flex-shrink-0 mt-1.5" />}
                 </button>

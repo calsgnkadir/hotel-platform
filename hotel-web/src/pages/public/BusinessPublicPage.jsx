@@ -10,6 +10,9 @@ import { useConfirm } from '../../lib/useConfirm'
 import cldImg from '../../lib/cldImg'
 import VerifiedBadge from '../../components/VerifiedBadge'
 import BusinessLogo from '../../components/BusinessLogo'
+import { SkeletonDetail } from '../../components/Skeleton'
+import { BUSINESS_TYPE_LABELS } from '../../utils/labels'
+import { panelPathFor } from '../../lib/navigation'
 
 const MapView = lazy(() => import('../../components/MapView'))
 
@@ -42,18 +45,31 @@ function socialUrl(value, base) {
  * Route: /p/business/:id
  * - Login gerektirmez
  * - SEO meta tags: document.title + og:title + og:image + description
- * - Logo + gallery + ilanlar + harita + iletisim
+ * - Logo + galeri + harita + iletisim (aktif ilan listesi icin backend'de
+ *   isletmeye gore ilan ucu yok; bkz. Madde 6 raporu)
  */
 
-const TYPE_LABELS = {
-  HOTEL: 'Otel',
-  RESTAURANT: 'Restoran',
-  CAFE: 'Kafe',
-  BAR: 'Bar',
-  CATERING: 'Catering',
-  RESORT: 'Resort',
-  HOSTEL: 'Hostel',
-  EVENT_VENUE: 'Etkinlik Mekanı',
+// Etiket kaynağı utils/labels.js (backend BusinessType: HOTEL, RESTAURANT, CAFE).
+// Bilinmeyen tip ham enum olarak değil "İşletme" olarak görünür.
+const TYPE_LABELS = BUSINESS_TYPE_LABELS
+
+function ShareIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth={2} className="w-4 h-4" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+    </svg>
+  )
+}
+
+function PinIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth={2} className="w-4 h-4 flex-shrink-0" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+    </svg>
+  )
 }
 
 const DAY_LABELS_TR = {
@@ -119,7 +135,7 @@ export default function BusinessPublicPage() {
   const navigate = useNavigate()
   const [galleryIndex, setGalleryIndex] = useState(0)
 
-  const { data: business, isLoading, error } = useQuery({
+  const { data: business, isLoading, error, refetch } = useQuery({
     queryKey: keys.businesses?.detail?.(id) ?? ['public-business', id],
     queryFn: () => hotelApi.getPublicBusiness(id),
     enabled: !!id,
@@ -191,9 +207,9 @@ export default function BusinessPublicPage() {
     : (photos[0]?.url ? cldImg(photos[0].url, { w: 1200 }) : null)
 
   useSeoMeta({
-    title: business ? `${business.name} · ${TYPE_LABELS[business.type] || ''} · Kadrom` : 'Kadrom',
+    title: business ? `${business.name} · ${TYPE_LABELS[business.type] || 'İşletme'} · Kadrom` : 'Kadrom',
     description: business?.description?.slice(0, 160) ||
-      (business ? `${business.name} hakkında bilgi, fotoğraflar ve aktif ilanlar.` : ''),
+      (business ? `${business.name} hakkında bilgi, fotoğraflar ve iletişim bilgileri.` : ''),
     image: seoImage,
     url: typeof window !== 'undefined' ? window.location.href : '',
   })
@@ -214,28 +230,43 @@ export default function BusinessPublicPage() {
 
   if (isLoading) {
     return (
-      <div className="ah-surface min-h-screen flex items-center justify-center">
-        <div className="text-2xl tracking-widest" style={{ color: 'var(--ah-ink-3)' }}>YÜKLENİYOR...</div>
+      <div className="ah-surface min-h-screen" role="status" aria-live="polite">
+        <span className="sr-only">İşletme profili yükleniyor</span>
+        <SkeletonDetail />
       </div>
     )
   }
 
   if (error || !business) {
+    const notFound = !error || error?.response?.status === 404
     return (
-      <div className="ah-surface min-h-screen flex flex-col items-center justify-center px-4">
-        <div className="text-3xl tracking-widest mb-2" style={{ color: 'var(--ah-ink)' }}>404</div>
-        <div className="text-sm mb-6" style={{ color: 'var(--ah-ink-3)' }}>İşletme bulunamadı.</div>
-        <Link to="/" className="text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full text-white"
-              style={{ background: 'var(--ah-brand-gradient)', boxShadow: 'var(--elev-1)' }}>
-          Ana Sayfaya Dön
-        </Link>
+      <div className="ah-surface min-h-screen flex items-center justify-center px-4">
+        <div className="card max-w-md w-full text-center space-y-3" role="alert">
+          <h1 className="type-section">{notFound ? 'İşletme bulunamadı' : 'Profil yüklenemedi'}</h1>
+          <p className="type-body" style={{ color: 'var(--ah-ink-3)' }}>
+            {notFound
+              ? 'Bu bağlantıdaki işletme kaldırılmış ya da adres hatalı olabilir.'
+              : 'Bağlantını kontrol edip yeniden dene.'}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center pt-1">
+            {!notFound && (
+              <button type="button" onClick={() => refetch()} className="btn-secondary">Tekrar dene</button>
+            )}
+            <Link to="/" className="btn-primary sm:!w-auto">Ana sayfaya dön</Link>
+          </div>
+        </div>
       </div>
     )
   }
 
-  const typeLabel = TYPE_LABELS[business.type] || business.type
+  const typeLabel = TYPE_LABELS[business.type] || 'İşletme'
   const fullLocation = [business.district, business.neighborhood].filter(Boolean).join(' · ')
   const activePhoto = photos[galleryIndex]
+  const websiteHref = safeHttpUrl(business.website)
+  const instagramHref = socialUrl(business.instagram, 'https://instagram.com')
+  const facebookHref = socialUrl(business.facebook, 'https://facebook.com')
+  const hasContact = business.address || business.phone || business.email || business.website
+  const workingHours = business.workingHours ? parseWorkingHours(business.workingHours) : null
 
   // Schema.org JSON-LD (rich snippet)
   const jsonLd = {
@@ -268,288 +299,251 @@ export default function BusinessPublicPage() {
       <script type="application/ld+json"
               dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
 
-      <div className="relative z-10">
-        {/* Top bar */}
-        <header className="border-b backdrop-blur-xl sticky top-0 z-20"
-                style={{ background: 'rgba(255, 255, 255, 0.85)', borderColor: 'var(--ah-line)' }}>
-          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <Link to="/" className="flex items-baseline gap-2">
-              <span className="text-xl tracking-wider" style={{ color: 'var(--ah-ink)' }}>KADROM</span>
-              <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: 'var(--ah-ink-3)' }}>istanbul</span>
-            </Link>
-            <div className="flex items-center gap-2">
-              <button onClick={handleShare}
-                className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
-                style={{ background: 'var(--ah-band)', color: 'var(--ah-ink)', border: '1px solid var(--ah-line)' }}>
-                Paylaş
+      {/* Üst çubuk */}
+      <header className="border-b backdrop-blur-xl sticky top-0 z-20"
+              style={{ background: 'rgba(255, 255, 255, 0.88)', borderColor: 'var(--ah-line)' }}>
+        <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
+          <Link to="/" className="inline-flex items-center gap-2 rounded-md min-h-[44px]">
+            <span className="type-card" style={{ fontSize: 18, fontWeight: 700 }}>Kadrom</span>
+            <span className="type-caption hidden sm:inline">İstanbul</span>
+          </Link>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button type="button" onClick={handleShare} className="btn-ghost">
+              <ShareIcon /> <span className="sr-only sm:not-sr-only">Paylaş</span>
+            </button>
+            {user ? (
+              <Link to={panelPathFor(user.role)} className="btn-secondary">Panelime dön</Link>
+            ) : (
+              <button type="button" onClick={() => navigate('/login')} className="btn-primary !w-auto">
+                Giriş yap
               </button>
-              <button onClick={() => navigate('/login')}
-                className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full text-white"
-                style={{ background: 'var(--ah-brand-gradient)', boxShadow: 'var(--elev-1)' }}>
-                Giriş Yap
-              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-6 sm:py-8 space-y-5 sm:space-y-6">
+        {/* Başlık kartı — grafit şerit + logo + ad + konum */}
+        <section className="card !p-0 overflow-hidden" aria-labelledby="business-name">
+          <div className="h-20 sm:h-24" style={{ background: 'var(--ah-brand-gradient)' }} aria-hidden="true" />
+          <div className="px-5 lg:px-8 pb-6 -mt-10 sm:-mt-12">
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
+              <BusinessLogo name={business.name} logoUrl={business.logoUrl} size="lg"
+                            alt={`${business.name} logosu`}
+                            style={{ border: '3px solid var(--ah-card)', boxShadow: 'var(--elev-2)' }} />
+              <div className="min-w-0 flex-1 sm:pt-14">
+                <p className="type-meta">
+                  {typeLabel}
+                  {business.category && <span> · {business.category}</span>}
+                </p>
+                <h1 id="business-name" className="type-page inline-flex items-center gap-2 break-words mt-0.5">
+                  {business.name}
+                  {business.verified && <VerifiedBadge size="lg" />}
+                </h1>
+                {(fullLocation || business.city) && (
+                  <p className="type-body mt-1 inline-flex items-center gap-1.5 w-full" style={{ color: 'var(--ah-ink-3)' }}>
+                    <PinIcon /> {fullLocation || business.city}
+                  </p>
+                )}
+                {/* Aday için takip / engelle / bildir */}
+                {isCandidate && (
+                  <div className="mt-4 flex gap-2 flex-wrap">
+                    <button type="button" onClick={toggleFollow} aria-pressed={isFollowing}
+                      className={`${isFollowing ? 'btn-primary' : 'btn-secondary'} !w-auto`}>
+                      {isFollowing ? 'Takip ediliyor' : 'Takip et'}
+                    </button>
+                    <button type="button" onClick={toggleBlock} disabled={blockLoading}
+                      className={isBlocked ? 'btn-secondary' : 'btn-danger'}>
+                      {isBlocked ? 'Engeli kaldır' : 'Engelle'}
+                    </button>
+                    <button type="button" onClick={() => setReportOpen(true)} className="btn-ghost">
+                      İşletmeyi bildir
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </header>
+        </section>
 
-        <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-          {/* HERO — grafit band + logo + name + location */}
-          <section className="tier-raised !p-0 overflow-hidden">
-            <div className="relative h-28" style={{ background: 'var(--ah-brand-gradient)' }}>
-              <div aria-hidden className="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-15"
-                   style={{ background: 'radial-gradient(circle, #fff, transparent 70%)' }} />
-            </div>
-            <div className="px-5 lg:px-8 pb-6 -mt-14 relative">
-              <div className="flex flex-col sm:flex-row items-start gap-5">
-                {/* Logo */}
-                <BusinessLogo name={business.name} logoUrl={business.logoUrl} size="lg"
-                              alt={`${business.name} logosu`}
-                              style={{ border: '3px solid var(--ah-card)', boxShadow: 'var(--elev-2)' }} />
-                <div className="min-w-0 flex-1 sm:pt-14">
-                  <div className="text-[10px] uppercase tracking-[0.25em] font-bold mb-1" style={{ color: 'var(--ah-ink-3)' }}>
-                    {typeLabel}
-                    {business.category && <span> · {business.category}</span>}
-                  </div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl tracking-wide leading-tight inline-flex items-center gap-2"
-                      style={{ color: 'var(--ah-ink)' }}>
-                    {business.name}
-                    {business.verified && <VerifiedBadge size="lg" />}
-                  </h1>
-                  <div className="text-sm mt-1.5" style={{ color: 'var(--ah-ink-3)' }}>
-                    {fullLocation || business.city || '—'}
-                  </div>
-                  {/* Dalga I1 — Aday icin Takip et + Engelle + Bildir (ikincil, kucuk) */}
-                  {isCandidate && (
-                    <div className="mt-4 flex gap-2 flex-wrap">
-                      <button type="button" onClick={toggleFollow} aria-pressed={isFollowing}
-                        className={`${isFollowing ? 'btn-primary' : 'btn-secondary'} !w-auto md:!min-h-[34px] !px-3 !text-[13px]`}>
-                        {isFollowing ? 'Takip ediliyor' : 'Takip et'}
-                      </button>
-                      <button type="button" onClick={toggleBlock} disabled={blockLoading}
-                        className={`${isBlocked ? 'btn-secondary' : 'btn-danger'} md:!min-h-[34px] !px-3 !text-[13px]`}>
-                        {isBlocked ? 'Engeli kaldır' : 'Engelle'}
-                      </button>
-                      <button type="button" onClick={() => setReportOpen(true)}
-                        className="btn-ghost md:!min-h-[34px] !px-3 !text-[13px]">
-                        İşletmeyi bildir
-                      </button>
-                    </div>
-                  )}
-                </div>
+        {/* Galeri */}
+        {photos.length > 0 && (
+          <section className="card !p-0 overflow-hidden" aria-label="Fotoğraflar">
+            <div className="aspect-[16/9] relative" style={{ background: 'var(--ah-ink)' }}>
+              <img src={cldImg(activePhoto.url, { w: 1200 })}
+                   alt={`${business.name} fotoğrafı ${galleryIndex + 1}`}
+                   className="w-full h-full object-cover" />
+              {photos.length > 1 && (
+                <>
+                  <button type="button" onClick={() => setGalleryIndex(i => (i - 1 + photos.length) % photos.length)}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center"
+                          style={{ background: 'rgba(255, 255, 255, 0.92)', border: '1px solid var(--ah-line-2)', color: 'var(--ah-ink)' }}
+                          aria-label="Önceki fotoğraf"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></button>
+                  <button type="button" onClick={() => setGalleryIndex(i => (i + 1) % photos.length)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center"
+                          style={{ background: 'rgba(255, 255, 255, 0.92)', border: '1px solid var(--ah-line-2)', color: 'var(--ah-ink)' }}
+                          aria-label="Sonraki fotoğraf"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg></button>
+                </>
+              )}
+              <div className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded-full type-badge type-num"
+                   style={{ background: 'rgba(17, 24, 39, 0.72)', color: 'var(--text-inverse)' }}>
+                {galleryIndex + 1} / {photos.length}
               </div>
             </div>
           </section>
+        )}
 
-          {/* Gallery */}
-          {photos.length > 0 && (
-            <section className="rounded-2xl overflow-hidden"
-                     style={{
-                       background: 'var(--ah-card)',
-                       border: '1px solid var(--ah-line)',
-                     }}>
-              <div className="aspect-[16/9] relative bg-black">
-                <img src={cldImg(activePhoto.url, { w: 1200 })} alt=""
-                     className="w-full h-full object-cover" />
-                {photos.length > 1 && (
-                  <>
-                    <button onClick={() => setGalleryIndex(i => (i - 1 + photos.length) % photos.length)}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-lg"
-                            style={{ background: 'rgba(255, 255, 255, 0.92)', border: '1px solid var(--ah-line-2)', color: 'var(--ah-ink)' }}
-                            aria-label="Önceki foto"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></button>
-                    <button onClick={() => setGalleryIndex(i => (i + 1) % photos.length)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-lg"
-                            style={{ background: 'rgba(255, 255, 255, 0.92)', border: '1px solid var(--ah-line-2)', color: 'var(--ah-ink)' }}
-                            aria-label="Sonraki foto"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg></button>
-                  </>
-                )}
-                <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold"
-                     style={{ background: 'rgba(17, 17, 17, 0.72)', color: '#fff' }}>
-                  {galleryIndex + 1} / {photos.length}
-                </div>
-              </div>
-            </section>
-          )}
+        <div className="grid lg:grid-cols-3 gap-5 sm:gap-6">
+          {/* Hakkında + çalışma saatleri + konum */}
+          <div className="lg:col-span-2 space-y-5 sm:space-y-6 min-w-0">
+            {business.description ? (
+              <section className="card !p-5" aria-labelledby="bp-about">
+                <h2 id="bp-about" className="type-card mb-2">Hakkında</h2>
+                <p className="type-body leading-relaxed whitespace-pre-wrap break-words" style={{ color: 'var(--ah-ink-2)' }}>
+                  {business.description}
+                </p>
+              </section>
+            ) : (
+              <section className="card !p-5" aria-labelledby="bp-about">
+                <h2 id="bp-about" className="type-card">Hakkında</h2>
+                <p className="type-body mt-1" style={{ color: 'var(--ah-ink-3)' }}>
+                  İşletme henüz tanıtım yazısı eklemedi.
+                </p>
+              </section>
+            )}
 
-          {/* Harita */}
-          {business.latitude != null && business.longitude != null && (
-            <section className="rounded-2xl overflow-hidden"
-                     style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)' }}>
-              <div className="px-5 pt-4 pb-2 flex items-baseline justify-between">
-                <h2 className="type-overline" style={{ color: "var(--accent-action)", fontSize: "13px" }}>
-                  Konum
-                </h2>
-                {business.address && (
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`}
-                     target="_blank" rel="noopener noreferrer"
-                     className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                     style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-ink)', border: '1px solid var(--ah-line-2)' }}>
-                    Google Maps
-                  </a>
-                )}
-              </div>
-              <div className="h-[280px] lg:h-[320px] relative">
-                <Suspense fallback={
-                  <div className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-widest"
-                       style={{ color: 'var(--ah-ink-3)' }}>
-                    Harita yükleniyor...
-                  </div>
-                }>
-                  <MapView
-                    position={[Number(business.latitude), Number(business.longitude)]}
-                    markerLabel={business.name}
-                    zoom={15}
-                  />
-                </Suspense>
-              </div>
-            </section>
-          )}
-
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Description + Working hours (2 col) */}
-            <div className="lg:col-span-2 space-y-6">
-              {business.description && (
-                <section className="rounded-2xl p-5"
-                         style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)' }}>
-                  <h2 className="type-overline mb-3" style={{ color: "var(--accent-action)", fontSize: "13px" }}>
-                    Hakkında
-                  </h2>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--ah-ink-2)' }}>
-                    {business.description}
+            {business.workingHours && (
+              <section className="card !p-5" aria-labelledby="bp-hours">
+                <h2 id="bp-hours" className="type-card mb-2">Çalışma saatleri</h2>
+                {workingHours ? (
+                  <ul>
+                    {DAY_ORDER.map(day => {
+                      const d = workingHours[day]
+                      if (!d) return null
+                      return (
+                        <li key={day} className="flex items-center justify-between gap-3 py-2 border-b last:border-0"
+                            style={{ borderColor: 'var(--ah-line)' }}>
+                          <span className="type-body" style={{ color: 'var(--ah-ink)' }}>{DAY_LABELS_TR[day]}</span>
+                          {d.closed
+                            ? <span className="badge badge-neutral">Kapalı</span>
+                            : <span className="type-body type-num font-semibold" style={{ color: 'var(--ah-ink-2)' }}>{d.open} – {d.close}</span>}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                ) : (
+                  <p className="type-body leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--ah-ink-2)' }}>
+                    {business.workingHours}
                   </p>
-                </section>
-              )}
-
-              {business.workingHours && (() => {
-                const parsed = parseWorkingHours(business.workingHours)
-                return (
-                  <section className="rounded-2xl p-5"
-                           style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)' }}>
-                    <h2 className="type-overline mb-3" style={{ color: "var(--accent-action)", fontSize: "13px" }}>
-                      Çalışma Saatleri
-                    </h2>
-                    {parsed ? (
-                      <ul className="space-y-1.5">
-                        {DAY_ORDER.map(day => {
-                          const d = parsed[day]
-                          if (!d) return null
-                          return (
-                            <li key={day} className="flex items-center justify-between text-sm py-1 border-b last:border-0"
-                                style={{ borderColor: 'var(--ah-line)' }}>
-                              <span className="text-base tracking-wider uppercase" style={{ color: 'var(--ah-ink)' }}>
-                                {DAY_LABELS_TR[day]}
-                              </span>
-                              {d.closed ? (
-                                <span className="text-[11px] font-bold uppercase tracking-widest"
-                                      style={{ color: '#6b7574' }}>
-                                  Kapalı
-                                </span>
-                              ) : (
-                                <span className="font-mono text-[13px] font-bold" style={{ color: 'var(--ah-ink-2)' }}>
-                                  {d.open} – {d.close}
-                                </span>
-                              )}
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    ) : (
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--ah-ink-2)' }}>
-                        {business.workingHours}
-                      </p>
-                    )}
-                  </section>
-                )
-              })()}
-            </div>
-
-            {/* Contact + Social (1 col sidebar) */}
-            <aside className="space-y-4">
-              <section className="rounded-2xl p-5"
-                       style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)' }}>
-                <h2 className="type-overline mb-3" style={{ color: "var(--accent-action)", fontSize: "13px" }}>
-                  İletişim
-                </h2>
-                <ul className="space-y-2 text-sm">
-                  {business.address && (
-                    <li>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--ah-ink-3)' }}>Adres</div>
-                      <div className="font-medium mt-0.5" style={{ color: 'var(--ah-ink-2)' }}>{business.address}</div>
-                    </li>
-                  )}
-                  {business.phone && (
-                    <li>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--ah-ink-3)' }}>Telefon</div>
-                      <a href={`tel:${business.phone}`} className="font-medium block mt-0.5 hover:underline"
-                         style={{ color: 'var(--ah-ink)' }}>{business.phone}</a>
-                    </li>
-                  )}
-                  {business.email && (
-                    <li>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--ah-ink-3)' }}>E-posta</div>
-                      <a href={`mailto:${business.email}`} className="font-medium block mt-0.5 hover:underline truncate"
-                         style={{ color: 'var(--ah-ink)' }}>{business.email}</a>
-                    </li>
-                  )}
-                  {business.website && (
-                    <li>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--ah-ink-3)' }}>Web</div>
-                      {safeHttpUrl(business.website) ? (
-                        <a href={safeHttpUrl(business.website)} target="_blank" rel="noopener noreferrer"
-                           className="font-medium block mt-0.5 hover:underline truncate"
-                           style={{ color: 'var(--ah-ink)' }}>{business.website}</a>
-                      ) : (
-                        <span className="font-medium block mt-0.5 truncate" style={{ color: 'var(--ah-ink)' }}>
-                          {business.website}
-                        </span>
-                      )}
-                    </li>
-                  )}
-                </ul>
-
-                {(socialUrl(business.instagram, 'https://instagram.com') || socialUrl(business.facebook, 'https://facebook.com')) && (
-                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--ah-line)' }}>
-                    <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'var(--ah-ink-3)' }}>Sosyal Medya</div>
-                    <div className="flex gap-2 flex-wrap">
-                      {socialUrl(business.instagram, 'https://instagram.com') && (
-                        <a href={socialUrl(business.instagram, 'https://instagram.com')}
-                           target="_blank" rel="noopener noreferrer"
-                           className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                           style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-ink)', border: '1px solid var(--ah-line-2)' }}>
-                          Instagram
-                        </a>
-                      )}
-                      {socialUrl(business.facebook, 'https://facebook.com') && (
-                        <a href={socialUrl(business.facebook, 'https://facebook.com')}
-                           target="_blank" rel="noopener noreferrer"
-                           className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                           style={{ background: 'var(--ah-band)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line)' }}>
-                          Facebook
-                        </a>
-                      )}
-                    </div>
-                  </div>
                 )}
               </section>
+            )}
 
-              <button onClick={handleShare}
-                className="w-full text-[11px] font-bold uppercase tracking-wider px-4 py-2.5 rounded-full transition-all hover:-translate-y-0.5 text-white"
-                style={{
-                  background: 'var(--ah-brand-gradient)',
-                  boxShadow: 'var(--elev-1)',
-                }}>
-                Profili Paylaş
-              </button>
-            </aside>
+            {business.latitude != null && business.longitude != null && (
+              <section className="card !p-0 overflow-hidden" aria-labelledby="bp-map">
+                <div className="px-5 py-3 flex items-center justify-between gap-3">
+                  <h2 id="bp-map" className="type-card">Konum</h2>
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`}
+                     target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                    Haritada aç<span className="sr-only"> (Google Haritalar, yeni sekmede)</span>
+                  </a>
+                </div>
+                <div className="h-[260px] lg:h-[320px] relative">
+                  <Suspense fallback={
+                    <div className="absolute inset-0 flex items-center justify-center type-meta"
+                         style={{ background: 'var(--ah-band)' }}>
+                      Harita yükleniyor
+                    </div>
+                  }>
+                    <MapView
+                      position={[Number(business.latitude), Number(business.longitude)]}
+                      markerLabel={business.name}
+                      zoom={15}
+                    />
+                  </Suspense>
+                </div>
+              </section>
+            )}
           </div>
 
-          {/* Footer */}
-          <footer className="text-center py-6">
-            <Link to="/" className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--ah-ink-4)' }}>
-              Kadrom · İstanbul Hospitality Network
-            </Link>
-          </footer>
-        </main>
-      </div>
+          {/* İletişim + sosyal medya */}
+          <aside className="space-y-4 min-w-0">
+            <section className="card !p-5" aria-labelledby="bp-contact">
+              <h2 id="bp-contact" className="type-card mb-3">İletişim</h2>
+              {hasContact ? (
+                <dl className="space-y-3">
+                  {business.address && (
+                    <div>
+                      <dt className="type-label">Adres</dt>
+                      <dd className="type-body mt-0.5 break-words" style={{ color: 'var(--ah-ink-2)' }}>{business.address}</dd>
+                    </div>
+                  )}
+                  {business.phone && (
+                    <div>
+                      <dt className="type-label">Telefon</dt>
+                      <dd className="mt-0.5">
+                        <a href={`tel:${business.phone}`} className="type-body type-num font-medium hover:underline"
+                           style={{ color: 'var(--ah-ink)' }}>{business.phone}</a>
+                      </dd>
+                    </div>
+                  )}
+                  {business.email && (
+                    <div>
+                      <dt className="type-label">E-posta</dt>
+                      <dd className="mt-0.5 min-w-0">
+                        <a href={`mailto:${business.email}`} className="type-body font-medium hover:underline block truncate"
+                           style={{ color: 'var(--ah-ink)' }}>{business.email}</a>
+                      </dd>
+                    </div>
+                  )}
+                  {business.website && (
+                    <div>
+                      <dt className="type-label">Web sitesi</dt>
+                      <dd className="mt-0.5 min-w-0">
+                        {websiteHref ? (
+                          <a href={websiteHref} target="_blank" rel="noopener noreferrer"
+                             className="type-body font-medium hover:underline block truncate"
+                             style={{ color: 'var(--ah-ink)' }}>{business.website}</a>
+                        ) : (
+                          <span className="type-body font-medium block truncate" style={{ color: 'var(--ah-ink)' }}>
+                            {business.website}
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              ) : (
+                <p className="type-body" style={{ color: 'var(--ah-ink-3)' }}>İletişim bilgisi eklenmemiş.</p>
+              )}
+
+              {(instagramHref || facebookHref) && (
+                <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--ah-line)' }}>
+                  <h3 className="type-label mb-2">Sosyal medya</h3>
+                  <div className="flex gap-2 flex-wrap">
+                    {instagramHref && (
+                      <a href={instagramHref} target="_blank" rel="noopener noreferrer" className="chip">Instagram</a>
+                    )}
+                    {facebookHref && (
+                      <a href={facebookHref} target="_blank" rel="noopener noreferrer" className="chip">Facebook</a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <button type="button" onClick={handleShare} className="btn-secondary w-full">
+              <ShareIcon /> Profili paylaş
+            </button>
+          </aside>
+        </div>
+
+        <footer className="text-center py-6">
+          <Link to="/" className="type-caption hover:underline">
+            Kadrom · İstanbul'da otel, restoran ve kafe işleri
+          </Link>
+        </footer>
+      </main>
 
       {/* Dalga I1 — Isletmeyi bildir: hedef ISLETME (ReportType.BUSINESS, isletme id'si) */}
       {reportOpen && business?.id && (

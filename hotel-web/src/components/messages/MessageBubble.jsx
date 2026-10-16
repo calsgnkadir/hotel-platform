@@ -14,8 +14,10 @@ import { useState } from 'react'
 import PrivateAttachment from './PrivateAttachment'
 import { formatTime, parseCallInvite } from './utils'
 
-const BRAND = '#1f2937'
-const BRAND_DARK = '#111827'
+const BRAND = 'var(--ah-brand)'
+const BRAND_DARK = 'var(--ah-brand-hover)'
+const WHITE = 'var(--ah-card)'
+const ON_BRAND = 'var(--text-inverse)'
 
 /* ── FAZ 11.W3.3 — Reaction SVG preset (emoji yasak — proje kurali) ── */
 const REACTION_ICONS = {
@@ -39,7 +41,7 @@ export function ReactionIcon({ type, size = 12, color = 'currentColor' }) {
 
 /* WhatsApp-style cift tik — sadece benim mesajimda (teal zemin), beyaz tik. */
 function ReadReceipt({ isRead }) {
-  const color = isRead ? '#ffffff' : 'rgba(255, 255, 255, 0.55)'
+  const color = isRead ? ON_BRAND : 'rgba(255, 255, 255, 0.55)'
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color}
          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
@@ -59,8 +61,8 @@ function CallInviteBubble({ m, type, url }) {
       <div className={`max-w-[75%] rounded-2xl text-sm overflow-hidden
         ${mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
         style={{
-          background: mine ? BRAND : '#ffffff',
-          color: mine ? '#ffffff' : 'var(--ah-ink)',
+          background: mine ? BRAND : WHITE,
+          color: mine ? ON_BRAND : 'var(--ah-ink)',
           border: `1px solid ${mine ? BRAND : 'var(--ah-line)'}`,
           boxShadow: mine ? '0 1px 2px rgba(31, 41, 55, 0.20)' : '0 1px 2px rgba(18, 32, 31, 0.06)',
         }}>
@@ -69,7 +71,7 @@ function CallInviteBubble({ m, type, url }) {
           <div className="w-10 h-10 rounded-full grid place-items-center shrink-0"
                style={{
                  background: mine ? 'rgba(255, 255, 255, 0.14)' : 'var(--ah-brand-soft)',
-                 color: mine ? '#ffffff' : BRAND,
+                 color: mine ? ON_BRAND : BRAND,
                }}>
             {isVideo ? (
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -87,9 +89,9 @@ function CallInviteBubble({ m, type, url }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-sm">
-              {isVideo ? 'Görüntülü Arama' : 'Sesli Arama'}
+              {isVideo ? 'Görüntülü arama' : 'Sesli arama'}
             </div>
-            <div className="text-[11px]" style={{ color: mine ? 'rgba(255, 255, 255, 0.65)' : 'var(--ah-ink-4)' }}>
+            <div className="text-[12px]" style={{ color: mine ? 'rgba(255, 255, 255, 0.78)' : 'var(--ah-ink-3)' }}>
               {mine ? 'Sen davet ettin' : 'Sana davet'} · {formatTime(m.sentAt)}
             </div>
           </div>
@@ -98,7 +100,7 @@ function CallInviteBubble({ m, type, url }) {
            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold border-t transition-opacity hover:opacity-90"
            style={{
              background: BRAND_DARK,
-             color: '#ffffff',
+             color: ON_BRAND,
              borderColor: mine ? 'rgba(255, 255, 255, 0.14)' : 'var(--ah-line)',
            }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -141,12 +143,12 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
       <div className="relative group/msg max-w-[75%]">
         {/* Hover action bar — yanitla + reaksiyon */}
         <div className={`absolute top-1 ${mine ? '-left-16' : '-right-16'} flex items-center gap-1
-                         opacity-0 group-hover/msg:opacity-100 transition-opacity z-10`}>
+                         opacity-0 group-hover/msg:opacity-100 group-focus-within/msg:opacity-100 transition-opacity z-10`}>
           <button type="button" onClick={() => onReply?.(m)}
-                  title="Yanıtla"
+                  title="Yanıtla" aria-label="Yanıtla"
                   className="w-7 h-7 grid place-items-center rounded-full"
                   style={{
-                    background: '#ffffff',
+                    background: WHITE,
                     border: '1px solid var(--ah-line)',
                     color: BRAND,
                     boxShadow: '0 1px 3px rgba(18, 32, 31, 0.10)',
@@ -157,10 +159,10 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
           </button>
           <div className="relative">
             <button type="button" onClick={() => setPickerOpen(v => !v)}
-                    title="Reaksiyon ekle"
+                    title="Tepki ekle" aria-label="Tepki ekle"
                     className="w-7 h-7 grid place-items-center rounded-full"
                     style={{
-                      background: '#ffffff',
+                      background: WHITE,
                       border: '1px solid var(--ah-line)',
                       color: BRAND,
                       boxShadow: '0 1px 3px rgba(18, 32, 31, 0.10)',
@@ -173,7 +175,7 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
             {pickerOpen && (
               <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1.5 rounded-full z-20"
                    style={{
-                     background: '#ffffff',
+                     background: WHITE,
                      border: '1px solid var(--ah-line)',
                      boxShadow: '0 8px 24px rgba(18, 32, 31, 0.14)',
                    }}>
@@ -195,8 +197,8 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
         <div className={`rounded-2xl text-sm overflow-hidden
           ${mine ? 'rounded-br-md' : 'rounded-bl-md'}`}
           style={{
-            background: mine ? BRAND : '#ffffff',
-            color: mine ? '#ffffff' : 'var(--ah-ink)',
+            background: mine ? BRAND : WHITE,
+            color: mine ? ON_BRAND : 'var(--ah-ink)',
             border: `1px solid ${mine ? BRAND : 'var(--ah-line)'}`,
             boxShadow: mine ? '0 1px 2px rgba(31, 41, 55, 0.20)' : '0 1px 2px rgba(18, 32, 31, 0.06)',
           }}>
@@ -208,10 +210,10 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
                    background: innerBg,
                    borderLeftColor: mine ? 'rgba(255, 255, 255, 0.55)' : BRAND,
                  }}>
-              <div className="text-[10px] font-semibold" style={{ color: mine ? 'rgba(255, 255, 255, 0.9)' : BRAND }}>
+              <div className="text-[12px] font-semibold" style={{ color: mine ? 'rgba(255, 255, 255, 0.9)' : BRAND }}>
                 {m.parentSenderName || 'Mesaj'}
               </div>
-              <div className="text-[11px] truncate" style={{ color: mine ? 'rgba(255, 255, 255, 0.7)' : 'var(--ah-ink-3)' }}>
+              <div className="text-[12px] truncate" style={{ color: mine ? 'rgba(255, 255, 255, 0.78)' : 'var(--ah-ink-3)' }}>
                 {m.parentPreview || 'Silinmiş mesaj'}
               </div>
             </div>
@@ -225,8 +227,8 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
           )}
 
           {/* Zaman + read receipt */}
-          <div className="text-[10px] px-3 pb-1 text-right inline-flex items-center justify-end gap-1 w-full"
-               style={{ color: mine ? 'rgba(255, 255, 255, 0.72)' : 'var(--ah-ink-4)' }}>
+          <div className="text-[11px] type-num px-3 pb-1 text-right inline-flex items-center justify-end gap-1 w-full"
+               style={{ color: mine ? 'rgba(255, 255, 255, 0.78)' : 'var(--ah-ink-3)' }}>
             <span>{formatTime(m.sentAt)}</span>
             {mine && <ReadReceipt isRead={m.isRead} />}
           </div>
@@ -239,9 +241,9 @@ export default function MessageBubble({ m, showMeta = true, onReply, onReact }) 
               <button key={r.reaction} type="button"
                       onClick={() => onReact?.(m, r.reaction)}
                       title={r.reaction}
-                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] tabular-nums transition-all hover:scale-110"
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] tabular-nums transition-all hover:scale-110"
                       style={{
-                        background: r.mine ? 'var(--ah-brand-soft)' : '#ffffff',
+                        background: r.mine ? 'var(--ah-brand-soft)' : WHITE,
                         border: `1px solid ${r.mine ? BRAND : 'var(--ah-line)'}`,
                         color: BRAND,
                       }}>

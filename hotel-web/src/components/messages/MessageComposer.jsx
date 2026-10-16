@@ -127,7 +127,7 @@ export default function MessageComposer({
       {replyTo && (
         <div className="px-4 py-2 border-t border-hairline flex items-center gap-2.5"
              style={{ background: 'rgba(31, 41, 55, 0.04)' }}>
-          <div className="w-[3px] self-stretch rounded-full" style={{ background: '#1f2937' }} />
+          <div className="w-[3px] self-stretch rounded-full" style={{ background: 'var(--ah-brand)' }} />
           <div className="flex-1 min-w-0">
             <div className="type-caption font-semibold" style={{ color: 'var(--accent-action)' }}>
               {replyTo.mine ? 'Kendine yanıt' : replyTo.senderName || 'Yanıt'}
@@ -168,17 +168,16 @@ export default function MessageComposer({
               ×
             </button>
             <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg"
-                 style={{ background: 'rgba(107, 117, 116, 0.12)', border: '1px solid rgba(107, 117, 116, 0.32)' }}>
-              <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: '#6b7574' }} />
-              <span className="type-body font-mono" style={{ color: '#6b7574' }}>
+                 style={{ background: 'var(--ah-danger-soft)', border: '1px solid var(--ah-line)' }}>
+              <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: 'var(--ah-danger)' }} aria-hidden="true" />
+              <span className="type-body type-num font-semibold" style={{ color: 'var(--ah-danger)' }} role="timer">
                 Kayıt {fmtDuration(recDuration)}
               </span>
               <span className="type-caption ml-auto">Göndermek için durdur</span>
             </div>
             <button type="button" onClick={() => stopRecording(false)}
                     disabled={sending}
-                    className="type-overline px-4 py-2 rounded-lg text-white flex-shrink-0 transition-colors disabled:opacity-50"
-                    style={{ background: 'linear-gradient(135deg, #6b7574 0%, #5b5b5b 100%)', border: '1px solid rgba(107, 117, 116, 0.45)' }}>
+                    className="btn-secondary flex-shrink-0">
               Durdur
             </button>
           </>
@@ -219,9 +218,9 @@ export default function MessageComposer({
               {draft.length >= 1500 && (
                 <span style={{
                   position: 'absolute',
-                  right: 10, bottom: -16,
-                  fontSize: 10,
-                  color: draft.length >= 1900 ? '#6b7574' : draft.length >= 1800 ? '#6b7574' : 'var(--ah-ink-4)',
+                  right: 10, bottom: -17,
+                  fontSize: 11,
+                  color: draft.length >= 1900 ? 'var(--ah-danger)' : draft.length >= 1800 ? 'var(--ah-warn)' : 'var(--ah-ink-3)',
                   fontVariantNumeric: 'tabular-nums',
                   fontWeight: 600,
                 }}>
@@ -335,11 +334,10 @@ export function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
 
   return (
     <div className="px-3 pb-2 pt-1 border-t border-cream-200 dark:border-cream-300 flex-shrink-0">
-      <div className="text-[9px] uppercase tracking-widest text-ink-400 mb-1.5 flex items-center gap-1.5">
-        <span style={{ color: '#1f2937' }}>·</span>
-        <span>Hızlı yanıt</span>
+      <div className="type-caption mb-1.5 flex items-center gap-1.5 min-w-0">
+        <span className="font-semibold" style={{ color: 'var(--ah-ink-2)' }}>Hızlı yanıt</span>
         {listingTitle && (
-          <span className="truncate text-ink-500" style={{ maxWidth: 200 }}>
+          <span className="truncate" style={{ maxWidth: 200 }}>
             · {listingTitle}
           </span>
         )}
@@ -351,13 +349,8 @@ export function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
             key={i}
             type="button"
             onClick={() => onPick?.(text)}
-            className="px-3 py-1.5 rounded-full text-[12px] whitespace-nowrap transition-all hover:-translate-y-0.5"
-            style={{
-              background: 'rgba(31, 41, 55, 0.08)',
-              color: 'var(--ah-brand)',
-              border: '1px solid rgba(31, 41, 55, 0.22)',
-              flexShrink: 0,
-            }}>
+            className="chip whitespace-nowrap"
+            style={{ flexShrink: 0 }}>
             {text}
           </button>
         ))}

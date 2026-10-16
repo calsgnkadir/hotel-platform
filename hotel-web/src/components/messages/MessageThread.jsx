@@ -14,6 +14,7 @@
  */
 import { useState, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../api/hotel'
 import { extractErrorMessage } from '../../api/client'
@@ -27,6 +28,7 @@ import MessageBubble from './MessageBubble'
 import MessageComposer from './MessageComposer'
 import EmptyThread from './EmptyThread'
 import useMessageSend from './useMessageSend'
+import { ContextSheet } from './ContextPanel'
 
 /** Kullanici dipten bu kadar uzaktaysa "yukarida" sayilir (scroll pill esigi). */
 const SCROLL_BOTTOM_THRESHOLD = 200
@@ -64,6 +66,9 @@ function DayDivider({ label }) {
 
 export default function MessageThread({ conversation, onBack, onMessageSent }) {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  // Mobil / tablet (lg altı): sağ bağlam paneli yok; başlıktaki düğme alt sayfayı açar
+  const [infoOpen, setInfoOpen] = useState(false)
   const lastSeenIdRef = useRef(0)
   const scrollAnchorRef = useRef(null)
   const scrollContainerRef = useRef(null)  // FAZ 11.W3.4 — scroll pill icin
@@ -171,6 +176,7 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
   // Sohbet değiştiğinde: lastSeen reset + okundu işaretle
   useEffect(() => {
     lastSeenIdRef.current = 0
+    setInfoOpen(false)
     if (conversation) {
       hotelApi.markConversationRead(conversation.id).catch(() => {})
     }
@@ -251,9 +257,10 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
 
       {/* Üst başlık */}
       <div className="px-4 py-3 border-b border-hairline flex items-center gap-3 flex-shrink-0">
-        <button onClick={onBack}
-          className="sm:hidden p-1 -ml-1 text-ivory-600 hover:text-ink-800">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        <button type="button" onClick={onBack} aria-label="Sohbet listesine dön"
+          className="sm:hidden w-11 h-11 -ml-3 grid place-items-center rounded-full"
+          style={{ color: 'var(--ah-ink-2)' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true"
                strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
           </svg>
@@ -282,12 +289,23 @@ export default function MessageThread({ conversation, onBack, onMessageSent }) {
             {conversation.otherPartyName}
           </div>
           {conversation.listingTitle && (
-            <div className="type-caption truncate" style={{ color: 'var(--accent-action)' }}>
+            <div className="type-caption truncate" style={{ color: 'var(--ah-ink-3)' }}>
               {conversation.listingTitle}
             </div>
           )}
         </div>
+        <button type="button" onClick={() => setInfoOpen(true)}
+          aria-label="Sohbet bilgileri" aria-haspopup="dialog" aria-expanded={infoOpen}
+          className="ah-icon-btn lg:hidden -mr-2 flex-shrink-0">
+          <span className="ah-icon-btn__face">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" />
+            </svg>
+          </span>
+        </button>
       </div>
+      <ContextSheet open={infoOpen} onClose={() => setInfoOpen(false)}
+        conversation={conversation} userRole={user?.role} navigate={navigate} />
 
       {/* Mesaj akışı — GROUND tier (page bg, cards konusuyor uzerinde) */}
       <div ref={scrollContainerRef}

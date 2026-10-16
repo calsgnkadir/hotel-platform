@@ -286,17 +286,17 @@ export default function ProfileTab() {
               <div className="card p-5 space-y-4">
                 <h3 className="font-display text-[16px] font-semibold pb-2 border-b mb-1" style={{ color: 'var(--ah-ink)', borderColor: 'var(--ah-line)' }}>Temel Bilgiler</h3>
                 <div>
-                  <label className="label">Ad Soyad *</label>
-                  <input type="text" name="fullName" value={form.fullName} onChange={handleChange} className="input" />
+                  <label htmlFor="cand-profile-fullName" className="label">Ad Soyad *</label>
+                  <input id="cand-profile-fullName" type="text" name="fullName" value={form.fullName} onChange={handleChange} className="input" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="label">E-posta <span className="text-ink-400 font-normal">(değiştirilemez)</span></label>
-                    <input type="email" value={profile?.email || ''} disabled className="input bg-cream-50 text-ink-500 cursor-not-allowed" />
+                    <label htmlFor="cand-profile-e-posta-span-classname-t" className="label">E-posta <span className="text-ink-400 font-normal">(değiştirilemez)</span></label>
+                    <input id="cand-profile-e-posta-span-classname-t" type="email" value={profile?.email || ''} disabled className="input bg-cream-50 text-ink-500 cursor-not-allowed" />
                   </div>
                   <div>
-                    <label className="label">Telefon</label>
-                    <input type="tel" name="phone" value={form.phone} maxLength={14}
+                    <label htmlFor="cand-profile-phone" className="label">Telefon</label>
+                    <input id="cand-profile-phone" type="tel" name="phone" value={form.phone} maxLength={14}
                       onChange={e => setForm(prev => ({ ...prev, phone: formatTurkeyPhoneInput(e.target.value) }))}
                       className="input" placeholder="0555 123 45 67" />
                   </div>
@@ -306,12 +306,12 @@ export default function ProfileTab() {
                     ilce yalnizca ISLETME kendi adresini girerken yaziliyor. */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="label">Doğum Tarihi <span className="text-ink-400 font-normal text-[10px]">(16-65 yaş)</span></label>
-                    <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange} {...birthDateBounds()} className="input" />
+                    <label htmlFor="cand-profile-birthDate" className="label">Doğum tarihi <span className="text-ink-400 font-normal">(16-65 yaş)</span></label>
+                    <input id="cand-profile-birthDate" type="date" name="birthDate" value={form.birthDate} onChange={handleChange} {...birthDateBounds()} className="input" />
                   </div>
                   <div>
-                    <label className="label">Cinsiyet</label>
-                    <select name="gender" value={form.gender} onChange={handleChange} className="input">
+                    <label htmlFor="cand-profile-gender" className="label">Cinsiyet</label>
+                    <select id="cand-profile-gender" name="gender" value={form.gender} onChange={handleChange} className="input">
                       <option value="">Belirtmedim</option>
                       {Object.entries(GENDER_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
@@ -324,15 +324,15 @@ export default function ProfileTab() {
                 <h3 className="font-display text-[16px] font-semibold pb-2 border-b mb-1" style={{ color: 'var(--ah-ink)', borderColor: 'var(--ah-line)' }}>Eğitim & Ek</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="label">Eğitim Durumu</label>
-                    <select name="education" value={form.education} onChange={handleChange} className="input">
+                    <label htmlFor="cand-profile-education" className="label">Eğitim durumu</label>
+                    <select id="cand-profile-education" name="education" value={form.education} onChange={handleChange} className="input">
                       <option value="">Seçin</option>
                       {Object.entries(EDUCATION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="label">Ehliyet</label>
-                    <select value={triValue(form.hasLicense)} onChange={e => setTriState('hasLicense', e.target.value)} className="input">
+                    <label htmlFor="cand-profile-ehliyet" className="label">Ehliyet</label>
+                    <select id="cand-profile-ehliyet" value={triValue(form.hasLicense)} onChange={e => setTriState('hasLicense', e.target.value)} className="input">
                       <option value="unknown">Belirtmedim</option>
                       <option value="yes">Var</option>
                       <option value="no">Yok</option>

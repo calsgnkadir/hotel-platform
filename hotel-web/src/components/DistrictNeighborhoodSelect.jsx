@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import { ISTANBUL_DISTRICTS, neighborhoodsOf } from '../data/istanbul'
 
 const OTHER = '__OTHER__'
@@ -21,6 +21,7 @@ export default function DistrictNeighborhoodSelect({
   districtRequired = false,
   className = '',
 }) {
+  const uid = useId()
   const neighborhoods = useMemo(() => neighborhoodsOf(district), [district])
 
   // Mevcut mahalle, listenin bilinen birinden mi?
@@ -49,8 +50,8 @@ export default function DistrictNeighborhoodSelect({
     <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 ${className}`}>
       {/* İlçe */}
       <div>
-        <label className="label">İlçe {districtRequired && '*'}</label>
-        <select value={district} onChange={handleDistrictChange} className="input">
+        <label htmlFor={`${uid}-district`} className="label">İlçe {districtRequired && '*'}</label>
+        <select id={`${uid}-district`} value={district} onChange={handleDistrictChange} className="input">
           <option value="">{districtRequired ? 'Seçin' : '— Seçin —'}</option>
           {ISTANBUL_DISTRICTS.map(d => (
             <option key={d} value={d}>{d}</option>
@@ -60,8 +61,8 @@ export default function DistrictNeighborhoodSelect({
 
       {/* Mahalle */}
       <div>
-        <label className="label">Mahalle</label>
-        <select
+        <label htmlFor={`${uid}-neighborhood`} className="label">Mahalle</label>
+        <select id={`${uid}-neighborhood`}
           value={isOther ? OTHER : (isKnown ? neighborhood : '')}
           onChange={handleNeighborhoodChange}
           disabled={!district}
@@ -75,7 +76,7 @@ export default function DistrictNeighborhoodSelect({
 
         {isOther && (
           <input type="text" value={neighborhood} onChange={handleOtherText}
-            placeholder="Mahalle adını yazın" maxLength={60}
+            placeholder="Mahalle adını yazın" maxLength={60} aria-label="Mahalle adı"
             className="input mt-2 text-sm" />
         )}
       </div>

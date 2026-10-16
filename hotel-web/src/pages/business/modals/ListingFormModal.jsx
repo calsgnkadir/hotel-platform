@@ -265,16 +265,16 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="label">Pozisyon *</label>
-              <select name="position" value={form.position} onChange={handleChange} className="input">
+              <label htmlFor="listing-form-position" className="label">Pozisyon *</label>
+              <select id="listing-form-position" name="position" value={form.position} onChange={handleChange} className="input">
                 {Object.entries(POSITION_LABELS).map(([v, l]) => (
                   <option key={v} value={v}>{l}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label">Çalışma Türü *</label>
-              <select name="jobType" value={form.jobType} onChange={handleChange} className="input">
+              <label htmlFor="listing-form-jobType" className="label">Çalışma türü *</label>
+              <select id="listing-form-jobType" name="jobType" value={form.jobType} onChange={handleChange} className="input">
                 {Object.entries(JOB_TYPE_LABELS).map(([v, l]) => (
                   <option key={v} value={v}>{l}</option>
                 ))}
@@ -283,29 +283,29 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
           </div>
 
           <div>
-            <label className="label">İlan Başlığı *</label>
-            <input type="text" name="title" value={form.title} onChange={handleChange}
+            <label htmlFor="listing-form-title-input" className="label">İlan başlığı *</label>
+            <input id="listing-form-title-input" type="text" name="title" value={form.title} onChange={handleChange}
               className="input" placeholder="Örn: Sabah vardiyası garson aranıyor" />
           </div>
 
           <div>
-            <label className="label">Açıklama *</label>
-            <textarea name="description" value={form.description} onChange={handleChange}
+            <label htmlFor="listing-form-description" className="label">Açıklama *</label>
+            <textarea id="listing-form-description" name="description" value={form.description} onChange={handleChange}
               className="input resize-none h-24 text-sm"
               placeholder="Pozisyon hakkında detaylı bilgi verin..." />
           </div>
 
           <div>
-            <label className="label">Gereksinimler <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-            <textarea name="requirements" value={form.requirements} onChange={handleChange}
+            <label htmlFor="listing-form-requirements" className="label">Gereksinimler <span className="text-ink-400 font-normal">(isteğe bağlı)</span></label>
+            <textarea id="listing-form-requirements" name="requirements" value={form.requirements} onChange={handleChange}
               className="input resize-none h-16 text-sm"
               placeholder="Deneyim, yaş, dil bilgisi vb..." />
           </div>
 
           {/* FAZ 2/#25 - Ucret tipi seffafligi */}
           <div>
-            <label className="label">Ücret tipi *</label>
-            <div className="grid grid-cols-4 gap-2">
+            <span id="listing-form-salaryType-label" className="label">Ücret tipi *</span>
+            <div role="group" aria-labelledby="listing-form-salaryType-label" className="grid grid-cols-4 gap-2">
               {[
                 { v: 'HOURLY',     l: 'Saatlik' },
                 { v: 'DAILY',      l: 'Günlük'  },
@@ -328,15 +328,15 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
           {form.salaryType !== 'NEGOTIABLE' && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label">Min. Ücret ₺ *</label>
-                <input type="number" name="salaryMin" value={form.salaryMin} onChange={handleChange}
+                <label htmlFor="listing-form-salaryMin" className="label">En az ücret (₺) *</label>
+                <input id="listing-form-salaryMin" type="number" name="salaryMin" value={form.salaryMin} onChange={handleChange}
                   className="input"
                   placeholder={form.salaryType === 'HOURLY' ? '150' : form.salaryType === 'DAILY' ? '1500' : '20000'}
                   min="0" />
               </div>
               <div>
-                <label className="label">Max. Ücret ₺ <span className="text-ink-400 font-normal">(ops.)</span></label>
-                <input type="number" name="salaryMax" value={form.salaryMax} onChange={handleChange}
+                <label htmlFor="listing-form-salaryMax" className="label">En fazla ücret (₺) <span className="text-ink-400 font-normal">(isteğe bağlı)</span></label>
+                <input id="listing-form-salaryMax" type="number" name="salaryMax" value={form.salaryMax} onChange={handleChange}
                   className="input"
                   placeholder={form.salaryType === 'HOURLY' ? '200' : form.salaryType === 'DAILY' ? '2000' : '30000'}
                   min="0" />
@@ -358,8 +358,8 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
           {/* V16 — Ödeme netliği: aday başvurmadan ne zaman/nasıl ödeneceğini bilsin */}
           <div className="space-y-3">
             <div>
-              <label className="label">Ödeme ne zaman? *</label>
-              <div className="flex flex-wrap gap-2">
+              <span id="listing-form-paymentPeriod-label" className="label">Ödeme ne zaman? *</span>
+              <div role="group" aria-labelledby="listing-form-paymentPeriod-label" className="flex flex-wrap gap-2">
               {PAYMENT_PERIOD_OPTIONS.map(opt => (
                 <button key={opt.value} type="button"
                   aria-pressed={form.paymentPeriod === opt.value}
@@ -375,8 +375,8 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
             </div>
             </div>
             <div>
-              <label className="label">Ödeme nasıl? *</label>
-              <div className="flex flex-wrap gap-2">
+              <span id="listing-form-paymentMethod-label" className="label">Ödeme nasıl? *</span>
+              <div role="group" aria-labelledby="listing-form-paymentMethod-label" className="flex flex-wrap gap-2">
               {PAYMENT_METHOD_OPTIONS.map(opt => (
                 <button key={opt.value} type="button"
                   aria-pressed={form.paymentMethod === opt.value}
@@ -392,8 +392,8 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
             </div>
             </div>
             <div>
-              <label className="label">Ödeme detayı <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-              <input type="text" name="paymentNote" value={form.paymentNote} onChange={handleChange}
+              <label htmlFor="listing-form-paymentNote" className="label">Ödeme detayı <span className="text-ink-400 font-normal">(isteğe bağlı)</span></label>
+              <input id="listing-form-paymentNote" type="text" name="paymentNote" value={form.paymentNote} onChange={handleChange}
                 maxLength={255} className="input text-sm"
                 placeholder="Örn: Her cuma akşamı IBAN'a / vardiya bitiminde elden" />
             </div>
@@ -401,8 +401,8 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
 
           {/* V16 — İş günü netliği: serbest metin, seçenek değil */}
           <div>
-            <label className="label">Kıyafet ve getirilecekler *</label>
-            <textarea name="dressCode" value={form.dressCode} onChange={handleChange}
+            <label htmlFor="listing-form-dressCode" className="label">Kıyafet ve getirilecekler *</label>
+            <textarea id="listing-form-dressCode" name="dressCode" value={form.dressCode} onChange={handleChange}
               maxLength={2000} className="input resize-none h-20 text-sm"
               placeholder="Örn: Siyah kumaş pantolon, beyaz gömlek, kapalı siyah ayakkabı. Kimliğini ve hijyen belgeni yanında getir." />
           </div>
@@ -410,14 +410,14 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
           {/* V17 — Toplanma: kalabalık vardiyalarda nerede ve ne zaman buluşulacak (QR yoklama burada) */}
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-3">
             <div>
-              <label className="label">Toplanma yeri <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-              <textarea name="meetingPoint" value={form.meetingPoint} onChange={handleChange}
+              <label htmlFor="listing-form-meetingPoint" className="label">Toplanma yeri <span className="text-ink-400 font-normal">(isteğe bağlı)</span></label>
+              <textarea id="listing-form-meetingPoint" name="meetingPoint" value={form.meetingPoint} onChange={handleChange}
                 maxLength={2000} className="input resize-none h-16 text-sm"
                 placeholder="Örn: Otel personel girişi (B kapısı), güvenlik kulübesinin önü" />
             </div>
             <div>
-              <label className="label">Kaç dk önce?</label>
-              <input type="number" name="meetingMinutesBefore" value={form.meetingMinutesBefore}
+              <label htmlFor="listing-form-meetingMinutesBefore" className="label">Kaç dk önce?</label>
+              <input id="listing-form-meetingMinutesBefore" type="number" name="meetingMinutesBefore" value={form.meetingMinutesBefore}
                 onChange={handleChange} min="0" max="240" className="input text-sm" placeholder="30" />
             </div>
           </div>
@@ -429,7 +429,7 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
               <div className="border-2 border-brand-100 dark:border-brand-900/40 rounded-xl p-4 bg-brand-50/40 dark:bg-brand-900/20 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="label !mb-0">Vardiyalar *</label>
+                    <h3 id="listing-form-slots-label" className="label !mb-0">Vardiyalar *</h3>
                     <p className="text-xs text-ink-500 mt-0.5">
                       Adaylar bu vardiyalardan birine veya birkaçına başvurabilir
                     </p>
@@ -467,14 +467,14 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
           })()}
 
           <div>
-            <label className="label">
-              Kontrat Dönemi <span className="text-ink-400 font-normal">(opsiyonel — kalıcı/sezonluk için)</span>
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <input type="date" name="startDate" value={form.startDate}
+            <span id="listing-form-contract-label" className="label">
+              Kontrat dönemi <span className="text-ink-400 font-normal">(isteğe bağlı — kalıcı/sezonluk için)</span>
+            </span>
+            <div role="group" aria-labelledby="listing-form-contract-label" className="grid grid-cols-2 gap-3">
+              <input type="date" name="startDate" aria-label="Kontrat başlangıcı" value={form.startDate}
                 onChange={handleChange} min={localDateISO()}
                 className="input" placeholder="Başlangıç" />
-              <input type="date" name="endDate" value={form.endDate}
+              <input type="date" name="endDate" aria-label="Kontrat bitişi" value={form.endDate}
                 onChange={handleChange} min={form.startDate || localDateISO()}
                 className="input" placeholder="Bitiş" />
             </div>

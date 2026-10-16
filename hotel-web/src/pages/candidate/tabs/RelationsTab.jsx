@@ -1,121 +1,129 @@
 /**
- * Dalga I1 — Takip + Engel listesi (Kariyer.net 'Takip Ettigin/Engelledigin Sirketler')
+ * Dalga I1 — Takip + engel listesi (Kariyer.net "Takip ettiğin / Engellediğin şirketler").
+ *
+ * Üstte sayaçlı segment (işletme tarafı FavoritesTab deseniyle aynı .ah-segment).
+ * Takipten çıkma tek tık (geri alınabilir, kayıp yok); engeli kaldırma onayla —
+ * işletmenin ilanları ilan listende yeniden görünür.
  */
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import EmptyState from '../../../components/EmptyState'
+import BusinessLogo from '../../../components/BusinessLogo'
+import { SkeletonList } from '../../../components/Skeleton'
+import LoadError from '../../../components/ui/LoadError'
+import { useConfirm } from '../../../lib/useConfirm'
 import { BUSINESS_TYPE_LABELS } from '../../../utils/labels'
 
+const FOLLOWING_KEY = ['my-following-businesses']
+const BLOCKED_KEY = ['my-blocked-businesses']
 
 export default function RelationsTab({ onTabChange }) {
   const [tab, setTab] = useState('following')
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const confirm = useConfirm()
+  const [busyId, setBusyId] = useState(null)
 
-  const { data: following = [], isLoading: loadingF } = useQuery({
-    queryKey: ['my-following-businesses'],
-    queryFn: () => hotelApi.getMyFollowingBusinesses(),
-  })
-  const { data: blocked = [], isLoading: loadingB } = useQuery({
-    queryKey: ['my-blocked-businesses'],
-    queryFn: () => hotelApi.getMyBlockedBusinesses(),
-  })
+  const followingQ = useQuery({ queryKey: FOLLOWING_KEY, queryFn: () => hotelApi.getMyFollowingBusinesses() })
+  const blockedQ = useQuery({ queryKey: BLOCKED_KEY, queryFn: () => hotelApi.getMyBlockedBusinesses() })
+  const following = Array.isArray(followingQ.data) ? followingQ.data : []
+  const blocked = Array.isArray(blockedQ.data) ? blockedQ.data : []
 
-  async function handleUnfollow(id) {
-    try { await hotelApi.unfollowBusiness(id); queryClient.invalidateQueries({ queryKey: ['my-following-businesses'] }) }
-    catch { toast.error('İşlem başarısız') }
+  async function handleUnfollow(b) {
+    setBusyId(b.id)
+    try {
+      await hotelApi.unfollowBusiness(b.id)
+      toast.success('Takipten çıkıldı')
+      await queryClient.invalidateQueries({ queryKey: FOLLOWING_KEY })
+    } catch { toast.error('İşlem başarısız') }
+    finally { setBusyId(null) }
   }
-  async function handleUnblock(id) {
-    try { await hotelApi.unblockBusiness(id); queryClient.invalidateQueries({ queryKey: ['my-blocked-businesses'] }) }
-    catch { toast.error('İşlem başarısız') }
+
+  async function handleUnblock(b) {
+    const ok = await confirm({
+      title: 'Engeli kaldır',
+      description: `"${b.name}" işletmesinin ilanları ilan listende yeniden görünür.`,
+      confirmLabel: 'Engeli kaldır',
+    })
+    if (!ok) return
+    setBusyId(b.id)
+    try {
+      await hotelApi.unblockBusiness(b.id)
+      toast.success('Engel kaldırıldı')
+      await queryClient.invalidateQueries({ queryKey: BLOCKED_KEY })
+    } catch { toast.error('İşlem başarısız') }
+    finally { setBusyId(null) }
   }
 
-  const list = tab === 'following' ? following : blocked
-  const isLoading = tab === 'following' ? loadingF : loadingB
+  const isFollowing = tab === 'following'
+  const q = isFollowing ? followingQ : blockedQ
+  const list = isFollowing ? following : blocked
+  const segments = [
+    { id: 'following', label: 'Takip ettiklerim', count: following.length },
+    { id: 'blocked',   label: 'Engellediklerim',  count: blocked.length },
+  ]
 
   return (
     <div className="space-y-4">
-      {/* Tab chip'leri */}
-      <div className="flex gap-2">
-        {[
-          { id: 'following', label: 'Takip Ettiklerim', count: following.length },
-          { id: 'blocked',   label: 'Engellediklerim',  count: blocked.length },
-        ].map(t => {
+      <div className="ah-segment" role="tablist" aria-label="İşletme listeleri">
+        {segments.map(t => {
           const active = tab === t.id
           return (
-            <button key={t.id} type="button" onClick={() => setTab(t.id)}
-              className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5"
-              style={{
-                background: active ? 'rgba(31, 41, 55, 0.14)' : 'rgba(255, 255, 255, 0.75)',
-                color: active ? '#12201f' : '#6b7574',
-                border: `1px solid ${active ? 'rgba(31, 41, 55, 0.42)' : 'rgba(31, 41, 55, 0.10)'}`,
-              }}>
+            <button key={t.id} type="button" role="tab" aria-selected={active}
+              onClick={() => setTab(t.id)}
+              className={`ah-segment__item inline-flex items-center gap-1.5 ${active ? 'is-active' : ''}`}>
               {t.label}
-              {t.count > 0 && (
-                <span className="text-[10px] font-semibold tabular-nums opacity-80">{t.count > 9 ? '9+' : t.count}</span>
-              )}
+              {t.count > 0 && <span className="type-caption type-num">{t.count > 99 ? '99+' : t.count}</span>}
             </button>
           )
         })}
       </div>
 
-      {isLoading ? (
-        <div className="card p-8 text-center"><div className="spinner mx-auto" /></div>
+      {q.isLoading ? (
+        <SkeletonList count={3} />
+      ) : q.isError ? (
+        <LoadError
+          message={isFollowing ? 'Takip ettiğin işletmeler yüklenemedi.' : 'Engellediğin işletmeler yüklenemedi.'}
+          onRetry={() => q.refetch()} retrying={q.isFetching} />
       ) : list.length === 0 ? (
         <div className="card">
           <EmptyState
+            compact
             type="listings"
-            title={tab === 'following' ? 'Henüz takip ettiğin işletme yok' : 'Henüz engellediğin işletme yok'}
-            description={tab === 'following'
-              ? 'İşletme profillerinden + Takip Et\'e tıklayarak buraya ekleyebilirsin.'
-              : 'Engellemek istediğin bir işletme varsa profilinden engelleyebilirsin.'}
-            ctaLabel={tab === 'following' ? 'İlanlara Git' : null}
+            title={isFollowing ? 'Henüz takip ettiğin işletme yok' : 'Engellediğin işletme yok'}
+            description={isFollowing
+              ? 'Bir işletmenin profilinde "Takip et"e dokun; yeni ilanlarını kaçırma.'
+              : 'Bir işletmeyi profilindeki "Engelle" düğmesiyle engelleyebilirsin; ilanları listende görünmez.'}
+            ctaLabel={isFollowing ? 'İlanlara göz at' : null}
             onCta={() => onTabChange?.('listings')}
           />
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {list.map((b, i) => (
-            <div key={b.id}
-                 className="p-5 transition-all relative hover:-translate-y-0.5"
-                 style={{
-                   background: '#ffffff',
-                   borderRadius: '12px',
-                   border: 'none',
-                   boxShadow: '0 12px 32px rgba(0,0,0,0.30), inset 0 1px 0 rgba(239, 239, 239, 0.03)',
-                 }}>
-              <button type="button"
-                      onClick={() => navigate(`/p/business/${b.id}`)}
-                      className="w-full text-left">
-                <h3 className="text-[16px] font-semibold truncate"
-                    style={{ color: '#12201f', letterSpacing: '-0.015em' }}>{b.name}</h3>
-                <div className="text-[12px] mt-1 truncate" style={{ color: '#6b7574' }}>
-                  {BUSINESS_TYPE_LABELS[b.type] || b.type}
-                  {b.district && ` · ${b.district}`}
-                </div>
-              </button>
-              <button type="button"
-                onClick={() => tab === 'following' ? handleUnfollow(b.id) : handleUnblock(b.id)}
-                className="mt-4 w-full text-[10px] font-semibold uppercase tracking-[0.06em] px-3 py-2 rounded-2xl transition-all hover:-translate-y-0.5"
-                style={tab === 'following'
-                  ? {
-                      background: 'rgba(31, 41, 55, 0.06)',
-                      color: '#6b7574',
-                      border: '1px solid rgba(31, 41, 55, 0.18)',
-                    }
-                  : {
-                      background: 'rgba(107, 117, 116, 0.10)',
-                      color: '#bfbfbf',
-                      border: '1px solid rgba(107, 117, 116, 0.32)',
-                    }}>
-                {tab === 'following' ? 'Takipten Çık' : 'Engeli Kaldır'}
-              </button>
-            </div>
-          ))}
-        </div>
+        <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {list.map(b => {
+            const meta = [BUSINESS_TYPE_LABELS[b.type] || 'İşletme', b.district].filter(Boolean).join(' · ')
+            return (
+              <li key={b.id} className="card !p-4 flex flex-col gap-3">
+                <Link to={`/p/business/${b.id}`}
+                  className="flex items-center gap-3 min-w-0 rounded-lg -m-1 p-1 focus-visible:outline focus-visible:outline-2"
+                  style={{ outlineColor: 'var(--ah-brand)' }}>
+                  <BusinessLogo name={b.name} logoUrl={b.logoUrl} size="md" alt={`${b.name} logosu`} />
+                  <div className="min-w-0">
+                    <h3 className="type-card truncate">{b.name}</h3>
+                    <p className="type-meta truncate">{meta}</p>
+                  </div>
+                </Link>
+                <button type="button" disabled={busyId === b.id}
+                  onClick={() => isFollowing ? handleUnfollow(b) : handleUnblock(b)}
+                  className="btn-secondary w-full mt-auto">
+                  {busyId === b.id ? 'İşleniyor…' : (isFollowing ? 'Takipten çık' : 'Engeli kaldır')}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
       )}
     </div>
   )

@@ -173,15 +173,15 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="label">Ad Soyad</label>
-                  <input type="text" className="input" placeholder="Adınız Soyadınız"
+                  <label htmlFor="register-fullName" className="label">Ad Soyad</label>
+                  <input id="register-fullName" type="text" className="input" placeholder="Adınız Soyadınız"
                     {...register('fullName', { required: 'Ad soyad zorunlu' })} />
                   {errors.fullName && <p className="error-text">{errors.fullName.message}</p>}
                 </div>
 
                 <div>
-                  <label className="label">E-posta</label>
-                  <input type="email" className="input" placeholder="ornek@email.com"
+                  <label htmlFor="register-email" className="label">E-posta</label>
+                  <input id="register-email" type="email" className="input" placeholder="ornek@email.com"
                     {...register('email', {
                       required: 'E-posta zorunlu',
                       pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Geçerli bir e-posta girin' },
@@ -190,8 +190,8 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="label">Şifre</label>
-                  <input type="password" className="input" placeholder="En az 8 karakter"
+                  <label htmlFor="register-password" className="label">Şifre</label>
+                  <input id="register-password" type="password" className="input" placeholder="En az 8 karakter"
                     {...register('password', {
                       required: 'Şifre zorunlu',
                       minLength: { value: 8, message: 'En az 8 karakter olmalı' },
@@ -201,8 +201,8 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="label">Telefon <span className="font-normal" style={{ color: 'var(--ah-ink-4)' }}>(opsiyonel)</span></label>
-                  <input type="tel" className="input" placeholder="0555 123 45 67" maxLength={14}
+                  <label htmlFor="register-phone" className="label">Telefon <span className="font-normal" style={{ color: 'var(--ah-ink-4)' }}>(opsiyonel)</span></label>
+                  <input id="register-phone" type="tel" className="input" placeholder="0555 123 45 67" maxLength={14}
                     {...register('phone', {
                       validate: v => validateTurkeyPhone(v, { mobileOnly: true }) || true,
                       onChange: e => { e.target.value = formatTurkeyPhoneInput(e.target.value) },
@@ -217,8 +217,8 @@ export default function RegisterPage() {
                       Aday Bilgileri
                     </p>
                     <div>
-                      <label className="label">Şehir</label>
-                      <select className="input" {...register('city')}>
+                      <label htmlFor="register-city" className="label">Şehir</label>
+                      <select id="register-city" className="input" {...register('city')}>
                         <option value="Istanbul">İstanbul</option>
                       </select>
                       <p className="text-[11.5px] mt-1" style={{ color: 'var(--ah-ink-4)' }}>Platform şu an İstanbul'a özeldir</p>
@@ -234,15 +234,15 @@ export default function RegisterPage() {
                     </p>
 
                     <div>
-                      <label className="label">İşletme Adı</label>
-                      <input type="text" className="input" placeholder="Grand Hotel İstanbul"
+                      <label htmlFor="register-businessName" className="label">İşletme adı</label>
+                      <input id="register-businessName" type="text" className="input" placeholder="Grand Hotel İstanbul"
                         {...register('businessName', { required: 'İşletme adı zorunlu' })} />
                       {errors.businessName && <p className="error-text">{errors.businessName.message}</p>}
                     </div>
 
                     <div>
-                      <label className="label">İşletme Türü</label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <span id="register-businessType-label" className="label">İşletme türü</span>
+                      <div role="group" aria-labelledby="register-businessType-label" className="grid grid-cols-3 gap-2">
                         {BUSINESS_TYPES.map(({ value, label }) => {
                           const active = watch('businessType') === value
                           return (
@@ -274,15 +274,15 @@ export default function RegisterPage() {
                     {errors.district && <p className="error-text">{errors.district.message}</p>}
 
                     <div>
-                      <label className="label">Adres</label>
-                      <input type="text" className="input" placeholder="Cadde, sokak, bina no..."
+                      <label htmlFor="register-address" className="label">Adres</label>
+                      <input id="register-address" type="text" className="input" placeholder="Cadde, sokak, bina no..."
                         {...register('address', { required: 'Adres zorunlu' })} />
                       {errors.address && <p className="error-text">{errors.address.message}</p>}
                     </div>
 
                     <div>
-                      <label className="label">İşletme Telefonu <span className="font-normal" style={{ color: 'var(--ah-ink-4)' }}>(opsiyonel)</span></label>
-                      <input type="tel" className="input" placeholder="0212 555 12 34" maxLength={14}
+                      <label htmlFor="register-businessPhone" className="label">İşletme telefonu <span className="font-normal" style={{ color: 'var(--ah-ink-4)' }}>(opsiyonel)</span></label>
+                      <input id="register-businessPhone" type="tel" className="input" placeholder="0212 555 12 34" maxLength={14}
                         {...register('businessPhone', {
                           validate: v => validateTurkeyPhone(v) || true,
                           onChange: e => { e.target.value = formatTurkeyPhoneInput(e.target.value) },
@@ -291,8 +291,8 @@ export default function RegisterPage() {
                     </div>
 
                     <div>
-                      <label className="label">Website <span className="font-normal" style={{ color: 'var(--ah-ink-4)' }}>(opsiyonel)</span></label>
-                      <input type="url" className="input" placeholder="https://www.isletmem.com"
+                      <label htmlFor="register-website" className="label">Web sitesi <span className="font-normal" style={{ color: 'var(--ah-ink-4)' }}>(opsiyonel)</span></label>
+                      <input id="register-website" type="url" className="input" placeholder="https://www.isletmem.com"
                         {...register('website', {
                           pattern: { value: WEBSITE_RULE, message: 'Adres http:// veya https:// ile başlamalı' },
                         })} />
@@ -300,8 +300,8 @@ export default function RegisterPage() {
                     </div>
 
                     <div>
-                      <label className="label">Açıklama <span className="font-normal" style={{ color: 'var(--ah-ink-4)' }}>(opsiyonel)</span></label>
-                      <textarea className="input resize-none h-20 text-sm"
+                      <label htmlFor="register-description" className="label">Açıklama <span className="font-normal" style={{ color: 'var(--ah-ink-4)' }}>(opsiyonel)</span></label>
+                      <textarea id="register-description" className="input resize-none h-20 text-sm"
                         placeholder="İşletmenizi kısaca tanıtın..."
                         {...register('description')} />
                     </div>

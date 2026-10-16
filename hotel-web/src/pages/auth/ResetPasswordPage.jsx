@@ -110,8 +110,8 @@ export default function ResetPasswordPage() {
               </p>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                  <label className="label">Yeni Şifre</label>
-                  <input type="password" className="input" placeholder="En az 8 karakter" autoFocus
+                  <label htmlFor="reset-newPassword" className="label">Yeni şifre</label>
+                  <input id="reset-newPassword" type="password" className="input" placeholder="En az 8 karakter" autoFocus
                     {...register('newPassword', {
                       required: 'Şifre zorunlu',
                       minLength: { value: 8, message: 'En az 8 karakter' },
@@ -122,8 +122,8 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div>
-                  <label className="label">Yeni Şifre (tekrar)</label>
-                  <input type="password" className="input" placeholder="••••••••"
+                  <label htmlFor="reset-confirmPassword" className="label">Yeni şifre (tekrar)</label>
+                  <input id="reset-confirmPassword" type="password" className="input" placeholder="••••••••"
                     {...register('confirmPassword', {
                       required: 'Tekrar zorunlu',
                       validate: v => v === newPassword || 'Şifreler eşleşmiyor',

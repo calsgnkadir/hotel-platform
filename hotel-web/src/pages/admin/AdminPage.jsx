@@ -1,23 +1,31 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useId } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../api/client'
 import { useConfirm } from '../../lib/useConfirm'
-import { POSITION_LABELS } from '../../utils/labels'
-// Ayarlar + Yardım header'daki Ayarlar SettingsMenu'ye taşındı
+import { POSITION_LABELS, BUSINESS_TYPE_LABELS } from '../../utils/labels'
+import { ROLE, resolveTab, defaultTabFor } from '../../lib/navigation'
+import { SkeletonList, SkeletonStatGrid } from '../../components/Skeleton'
+import LoadError from '../../components/ui/LoadError'
+import EmptyState from '../../components/EmptyState'
+import DismissReportDialog from './DismissReportDialog'
+import {
+  ROLE_LABELS, LISTING_STATUS, REPORT_STATUS, SUPPORT_STATUS, OUTBOX_STATUS,
+  OUTBOX_EVENT_LABELS, SUPPORT_SUBJECT_LABELS, statusMeta, labelOf,
+} from './adminLabels'
 
 /* ── Inline SVG helper (Heroicons stroke stili) ── */
 function Icon({ d, className = 'w-4 h-4', strokeWidth = 2 }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true"
          strokeWidth={strokeWidth} stroke="currentColor" className={className}>
       <path strokeLinecap="round" strokeLinejoin="round" d={d} />
     </svg>
   )
 }
 
-// Sık kullanılan ikon path'leri
 const ICONS = {
   search:   'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z',
   check:    'm4.5 12.75 6 6 9-13.5',
@@ -27,94 +35,163 @@ const ICONS = {
   doc:      'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z',
   user:     'M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z',
   cpuChip:  'M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z',
-  bulb:     'M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.354a14.4 14.4 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18',
-  checkCircle: 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+  info:     'm11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z',
+  external: 'M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25',
 }
 
-const ROLE_LABELS = {
-  CANDIDATE: 'Aday',
-  BUSINESS_OWNER: 'İşletme',
-  ADMIN: 'Admin',
-}
+const fmtDateTime = (v) => v ? new Date(v).toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+const fmtDate = (v) => v ? new Date(v).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
 
-const ROLE_FILTERS = [
-  { value: '',                 label: 'Tümü' },
-  { value: 'CANDIDATE',        label: 'Adaylar' },
-  { value: 'BUSINESS_OWNER',   label: 'İşletmeler' },
-  { value: 'ADMIN',            label: 'Adminler' },
-]
-
-/* ── Overview Tab ── */
-function OverviewTab() {
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
-
+/** Arama kutusu: her tuşta istek atılmasın (400ms). */
+export function useDebouncedValue(value, delay = 400) {
+  const [debounced, setDebounced] = useState(value)
   useEffect(() => {
-    hotelApi.adminGetStats()
-      .then(setStats)
-      .catch(() => toast.error('İstatistikler yüklenemedi'))
-      .finally(() => setLoading(false))
-  }, [])
+    const t = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return debounced
+}
 
-  if (loading) return <div className="flex justify-center py-16"><div className="spinner" /></div>
-  if (!stats) return null
+/* ── Ortak parçalar ── */
 
-  // Kompakt stat strip — renkli SVG kutular kaldırıldı, sadece dot + label + sayı
-  const cards = [
-    { label: 'Toplam Kullanıcı', value: stats.totalUsers,        dot: 'bg-blue-400' },
-    { label: 'Aday',             value: stats.candidates,        dot: 'bg-brand-400' },
-    { label: 'İşletme',          value: stats.businessOwners,    dot: 'bg-brand-500' },
-    { label: 'Admin',            value: stats.admins,            dot: 'bg-amber-400' },
-    { label: 'Banlı',            value: stats.bannedUsers,       dot: 'bg-red-400' },
-    { label: 'İşletme Kayıtlı',  value: stats.totalBusinesses,   dot: 'bg-cyan-400' },
-    { label: 'Toplam İlan',      value: stats.totalListings,     dot: 'bg-pink-400' },
-    { label: 'Toplam Başvuru',   value: stats.totalApplications, dot: 'bg-indigo-400' },
-  ]
-
+/** Filtre çipleri — .chip / .chip.is-active, aria-pressed. */
+function FilterChips({ label, options, value, onChange }) {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
-        {cards.map(c => (
-          <div key={c.label} className="stat-card !p-3">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-              <span className="text-[10px] uppercase tracking-widest text-ink-500 font-semibold truncate">{c.label}</span>
-            </div>
-            <div className="text-xl font-black text-white leading-none">{c.value}</div>
-          </div>
-        ))}
-      </div>
+    <div role="group" aria-label={label} className="flex gap-2 flex-wrap">
+      {options.map(o => (
+        <button key={o.value} type="button" aria-pressed={value === o.value}
+          onClick={() => onChange(o.value)}
+          className={`chip ${value === o.value ? 'is-active' : ''}`}>
+          {o.label}
+        </button>
+      ))}
     </div>
   )
 }
 
-/* ── User Detail Modal ── */
-/**
- * FAZ 15.1 — Admin kullanici detayi.
- *
- * variant='modal' (default, mobile) — modal-overlay + focus trap.
- * variant='panel' — split-view sag panel (yeni), flex-col + kendi scroll'u.
- */
+/** Arama kutusu — görünmez etiket + büyüteç ikonu. */
+function SearchInput({ value, onChange, placeholder, label, className = '' }) {
+  const id = useId()
+  return (
+    <div className={`relative ${className}`}>
+      <label htmlFor={id} className="sr-only">{label}</label>
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--ah-ink-4)' }}>
+        <Icon d={ICONS.search} className="w-4 h-4" />
+      </span>
+      <input id={id} type="search" value={value} onChange={e => onChange(e.target.value)}
+        placeholder={placeholder} className="input" autoComplete="off"
+        // .input kendi padding'ini koyup pl-9'u eziyor; simge için sol boşluk burada
+        style={{ paddingLeft: '2.25rem' }} />
+    </div>
+  )
+}
+
+/** Sekme başlığı: kısa açıklama + sağda sayaç. Başlık masaüstünde DashboardLayout'un
+ *  H1'inde zaten var; burada yalnız mobilde görünür (orada H1 görsel olarak gizli). */
+function TabHeader({ title, description, count, countLabel }) {
+  return (
+    <div className="flex items-end justify-between gap-3 flex-wrap">
+      <div className="min-w-0">
+        <h2 className="type-section md:hidden">{title}</h2>
+        {description && <p className="type-meta mt-0.5">{description}</p>}
+      </div>
+      {typeof count === 'number' && (
+        <span className="badge badge-neutral type-num">{count} {countLabel}</span>
+      )}
+    </div>
+  )
+}
+
+/** Liste gövdesi: yükleniyor / hata / boş / içerik. */
+function ListState({ loading, error, onRetry, empty, emptyTitle, emptyDescription, emptyType = 'search', children }) {
+  if (loading) return <SkeletonList count={4} />
+  if (error) return <LoadError message={error} onRetry={onRetry} />
+  if (empty) {
+    return (
+      <div className="card !p-0">
+        <EmptyState compact type={emptyType} title={emptyTitle} description={emptyDescription} />
+      </div>
+    )
+  }
+  return children
+}
+
+/* ── Genel bakış ── */
+function OverviewTab() {
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    hotelApi.adminGetStats()
+      .then(setStats)
+      .catch(() => setError('İstatistikler yüklenemedi.'))
+      .finally(() => setLoading(false))
+  }, [])
+  useEffect(() => { load() }, [load])
+
+  if (loading) return <SkeletonStatGrid count={4} />
+  if (error || !stats) return <LoadError message={error || 'İstatistikler yüklenemedi.'} onRetry={load} />
+
+  const groups = [
+    {
+      title: 'Kullanıcılar',
+      items: [
+        { label: 'Toplam kullanıcı', value: stats.totalUsers },
+        { label: 'Aday', value: stats.candidates },
+        { label: 'İşletme sahibi', value: stats.businessOwners },
+        { label: 'Yönetici', value: stats.admins },
+        { label: 'Banlı hesap', value: stats.bannedUsers, warn: (stats.bannedUsers || 0) > 0 },
+      ],
+    },
+    {
+      title: 'İçerik',
+      items: [
+        { label: 'Kayıtlı işletme', value: stats.totalBusinesses },
+        { label: 'Toplam ilan', value: stats.totalListings },
+        { label: 'Toplam başvuru', value: stats.totalApplications },
+      ],
+    },
+  ]
+
+  return (
+    <div className="space-y-6">
+      <TabHeader title="Genel bakış" description="Platformdaki hesap ve içerik sayıları." />
+      {groups.map(g => (
+        <section key={g.title} aria-labelledby={`admin-stat-${g.title}`} className="space-y-2.5">
+          <h3 id={`admin-stat-${g.title}`} className="type-label">{g.title}</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {g.items.map(c => (
+              <div key={c.label} className="stat-card !p-4">
+                <div className="stat-card-number" style={c.warn ? { color: 'var(--ah-danger)' } : undefined}>
+                  {(c.value ?? 0).toLocaleString('tr-TR')}
+                </div>
+                <div className="stat-card-label mt-2">{c.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
+
+/* ── Kullanıcı detayı ──
+ * variant='modal' (mobil) — modal-overlay.
+ * variant='panel' (masaüstü) — liste yanında yapışkan panel. */
 function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
   const confirm = useConfirm()
   const [actionLoading, setActionLoading] = useState(false)
   const [banDays, setBanDays] = useState(30)
-
-  async function handleApproveStudent(approved) {
-    setActionLoading(true)
-    try {
-      const updated = await hotelApi.adminSetStudentStatus(user.id, approved)
-      toast.success(approved ? 'Öğrenci onaylandı' : 'Öğrenci onayı kaldırıldı')
-      onUpdated(updated)
-    } catch (err) { toast.error(extractErrorMessage(err)) }
-    finally { setActionLoading(false) }
-  }
+  const banDaysId = useId()
 
   async function handleBan() {
     const ok = await confirm({
       title: 'Kullanıcıyı banla',
-      description: `Bu kullanıcı ${banDays} gün süreyle banlanacak. Ban süresi bitince otomatik açılır.`,
-      confirmLabel: `Evet, ${banDays} gün banla`,
+      description: `${user.fullName} ${banDays} gün süreyle banlanacak. Süre bitince ban kendiliğinden kalkar.`,
+      confirmLabel: `${banDays} gün banla`,
       destructive: true,
     })
     if (!ok) return
@@ -140,120 +217,89 @@ function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
   const isCandidate = user.role === 'CANDIDATE'
   const isAdmin = user.role === 'ADMIN'
 
-  // FAZ 15.1 — Detay govdesi (variant-agnostik)
+  const facts = [
+    { label: 'Kalan uyarı hakkı', value: user.strikesRemaining ?? '—' },
+    { label: 'İlçe', value: user.district || '—' },
+    isCandidate && { label: 'Başvuru', value: user.applicationCount ?? 0 },
+    user.role === 'BUSINESS_OWNER' && { label: 'İlan', value: user.listingCount ?? 0 },
+  ].filter(Boolean)
+
   const body = (
     <>
-        <div className="p-5 border-b border-hairline flex-shrink-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h2 id="admin-user-detail-title" className="type-heading truncate" style={{ fontSize: '17px' }}>{user.fullName}</h2>
-              <p className="type-caption truncate">{user.email}</p>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className={`text-xs font-semibold px-2 py-1 rounded-full
-                ${isAdmin ? 'bg-amber-100 text-amber-700'
-                  : isCandidate ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700'
-                  : 'bg-emerald-100 text-brand-700'}`}>
-                {ROLE_LABELS[user.role]}
-              </span>
-              {variant === 'panel' && (
-                <button onClick={onClose} title="Kapat"
-                  className="tier-raised tier-raised-hover w-8 h-8 flex items-center justify-center"
-                  style={{ borderRadius: '999px', color: 'var(--text-muted)' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              )}
+      <div className="p-5 border-b flex-shrink-0" style={{ borderColor: 'var(--ah-line)' }}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 id="admin-user-detail-title" className="type-card truncate">{user.fullName}</h2>
+            <p className="type-meta truncate">{user.email}</p>
+            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+              <span className="badge badge-neutral">{labelOf(ROLE_LABELS, user.role)}</span>
+              {user.currentlyBanned
+                ? <span className="badge badge-negative">Banlı</span>
+                : <span className="badge badge-positive">Aktif</span>}
             </div>
           </div>
+          <button type="button" onClick={onClose} aria-label="Detayı kapat" className="ah-icon-btn flex-shrink-0 -mr-2 -mt-2">
+            <span className="ah-icon-btn__face"><Icon d={ICONS.xmark} className="w-4 h-4" /></span>
+          </button>
         </div>
+      </div>
 
-        <div className={`p-6 space-y-5 ${variant === 'panel' ? 'flex-1 overflow-y-auto' : ''}`}>
-          {/* Key facts */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="bg-cream-50 rounded-lg p-3 text-center">
-              <div className="text-xs text-ink-500">Strike Hakkı</div>
-              <div className="text-sm font-semibold mt-0.5">{user.strikesRemaining ?? '—'}</div>
+      <div className={`p-5 space-y-5 ${variant === 'panel' ? 'flex-1 overflow-y-auto' : ''}`}>
+        <dl className="grid grid-cols-2 gap-2">
+          {facts.map(f => (
+            <div key={f.label} className="rounded-lg p-3" style={{ background: 'var(--ah-band)' }}>
+              <dt className="type-caption">{f.label}</dt>
+              <dd className="type-body font-semibold type-num mt-0.5" style={{ color: 'var(--ah-ink)' }}>{f.value}</dd>
             </div>
-            <div className="bg-cream-50 rounded-lg p-3 text-center">
-              <div className="text-xs text-ink-500">İlçe</div>
-              <div className="text-sm font-semibold mt-0.5">{user.district || '—'}</div>
-            </div>
-            {isCandidate && (
-              <div className="bg-cream-50 rounded-lg p-3 text-center">
-                <div className="text-xs text-ink-500">Başvuru</div>
-                <div className="text-sm font-semibold mt-0.5">{user.applicationCount ?? 0}</div>
-              </div>
-            )}
-            {user.role === 'BUSINESS_OWNER' && (
-              <div className="bg-cream-50 rounded-lg p-3 text-center">
-                <div className="text-xs text-ink-500">İlan</div>
-                <div className="text-sm font-semibold mt-0.5">{user.listingCount ?? 0}</div>
-              </div>
-            )}
-            <div className={`rounded-lg p-3 text-center ${user.currentlyBanned ? 'bg-red-50' : 'bg-brand-50'}`}>
-              <div className={`text-xs ${user.currentlyBanned ? 'text-red-600' : 'text-brand-700'}`}>Durum</div>
-              <div className={`text-sm font-semibold mt-0.5 ${user.currentlyBanned ? 'text-red-700' : 'text-brand-700'}`}>
-                {user.currentlyBanned ? 'Banlı' : 'Aktif'}
-              </div>
-            </div>
-          </div>
+          ))}
+        </dl>
 
-          {/* Banned info */}
-          {user.currentlyBanned && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-              Ban bitiş: {new Date(user.bannedUntil).toLocaleString('tr-TR')}
-            </div>
-          )}
-
-          {/* Ban yönetimi — admin değilse */}
-          {!isAdmin && (
-            <div className="border-t border-cream-200 pt-4">
-              <h3 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Ban Yönetimi</h3>
-              {user.currentlyBanned ? (
-                <button onClick={handleUnban} disabled={actionLoading}
-                  className="w-full py-2.5 rounded-lg bg-brand-700 hover:bg-emerald-700 text-white text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-1.5">
-                  <Icon d={ICONS.check} className="w-4 h-4" /> Banı Kaldır
-                </button>
-              ) : (
-                <div className="flex gap-2">
-                  <input type="number" value={banDays} onChange={e => setBanDays(parseInt(e.target.value) || 1)}
-                    min="1" max="365" className="input text-sm w-24" />
-                  <button onClick={handleBan} disabled={actionLoading}
-                    className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-1.5">
-                    <Icon d={ICONS.ban} className="w-4 h-4" /> {banDays} Gün Banla
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Meta */}
-          <div className="border-t border-cream-200 pt-3 text-xs text-ink-400">
-            Kayıt: {user.createdAt ? new Date(user.createdAt).toLocaleString('tr-TR') : '—'} · ID: {user.id}
-          </div>
-        </div>
-
-        {variant === 'modal' && (
-          <div className="px-6 pb-5">
-            <button onClick={onClose} className="btn-secondary text-sm">Kapat</button>
+        {user.currentlyBanned && user.bannedUntil && (
+          <div className="rounded-lg p-3 type-body" role="status"
+               style={{ background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)' }}>
+            Ban bitişi: {fmtDateTime(user.bannedUntil)}
           </div>
         )}
+
+        {!isAdmin && (
+          <section className="pt-4 border-t space-y-3" style={{ borderColor: 'var(--ah-line)' }}>
+            <h3 className="type-label">Ban yönetimi</h3>
+            {user.currentlyBanned ? (
+              <button type="button" onClick={handleUnban} disabled={actionLoading} className="btn-secondary w-full">
+                <Icon d={ICONS.check} className="w-4 h-4" /> Banı kaldır
+              </button>
+            ) : (
+              <div className="flex items-end gap-2">
+                <div className="w-28 flex-shrink-0">
+                  <label htmlFor={banDaysId} className="label">Süre (gün)</label>
+                  <input id={banDaysId} type="number" inputMode="numeric" value={banDays}
+                    onChange={e => setBanDays(Math.min(365, Math.max(1, parseInt(e.target.value) || 1)))}
+                    min="1" max="365" className="input" />
+                </div>
+                <button type="button" onClick={handleBan} disabled={actionLoading} className="btn-danger flex-1">
+                  <Icon d={ICONS.ban} className="w-4 h-4" /> {banDays} gün banla
+                </button>
+              </div>
+            )}
+          </section>
+        )}
+
+        <p className="type-caption pt-3 border-t" style={{ borderColor: 'var(--ah-line)' }}>
+          Kayıt: {fmtDateTime(user.createdAt)} · Kimlik no: {user.id}
+        </p>
+      </div>
     </>
   )
 
   if (variant === 'panel') {
-    // Split-view sag panel — scroll body
     return (
-      <div className="tier-raised sticky top-4 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
-        {/* body kendi header/body/footer'ini render eder; body/scroll icin wrap: */}
+      <aside aria-labelledby="admin-user-detail-title"
+        className="card !p-0 sticky top-4 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
         {body}
-      </div>
+      </aside>
     )
   }
 
-  // Mobile / non-split: modal overlay
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content max-h-[90vh] overflow-y-auto"
@@ -265,7 +311,14 @@ function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
   )
 }
 
-/* ── Users Tab — FAZ 15.2 split master-detail ── */
+const ROLE_FILTERS = [
+  { value: '',               label: 'Tümü' },
+  { value: 'CANDIDATE',      label: 'Adaylar' },
+  { value: 'BUSINESS_OWNER', label: 'İşletmeler' },
+  { value: 'ADMIN',          label: 'Yöneticiler' },
+]
+
+/* ── Kullanıcılar — masaüstünde liste + detay paneli ── */
 function UsersTab() {
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1024)
   useEffect(() => {
@@ -275,22 +328,18 @@ function UsersTab() {
   }, [])
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [roleFilter, setRoleFilter] = useState('')
   const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim())
   const [selected, setSelected] = useState(null)
-
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 400)
-    return () => clearTimeout(t)
-  }, [search])
 
   const fetchUsers = useCallback(() => {
     setLoading(true)
+    setError(null)
     hotelApi.adminListUsers(roleFilter || undefined, debouncedSearch || undefined)
       .then(setUsers)
-      .catch(() => toast.error('Kullanıcılar yüklenemedi'))
+      .catch(() => setError('Kullanıcılar yüklenemedi.'))
       .finally(() => setLoading(false))
   }, [roleFilter, debouncedSearch])
 
@@ -304,97 +353,65 @@ function UsersTab() {
   }
 
   function handleUpdated(updatedSummary) {
-    // Detail modal refresh — selected'ı update et + listede de güncelle
     setSelected(prev => prev ? { ...prev, ...updatedSummary } : null)
     setUsers(prev => prev.map(u => u.id === updatedSummary.id ? { ...u, ...updatedSummary } : u))
   }
 
+  const split = !!selected && isDesktop
+
   return (
     <div className="space-y-4">
-      {/* Filtre + arama */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="flex gap-1.5 flex-wrap">
-          {ROLE_FILTERS.map(f => (
-            <button key={f.value} onClick={() => setRoleFilter(f.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
-                ${roleFilter === f.value
-                  ? 'text-white shadow-sm'
-                  : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-              style={roleFilter === f.value ? { background: 'rgba(31, 41, 55, 0.14)', color: '#12201f', border: '1px solid rgba(31, 41, 55, 0.42)' } : {}}>
-              {f.label}
-            </button>
-          ))}
-        </div>
-        <div className="relative flex-1 sm:max-w-xs sm:ml-auto">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none">
-            <Icon d={ICONS.search} className="w-4 h-4" />
-          </span>
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Email veya isim ara..." className="input pl-9 text-sm" />
-        </div>
+      <TabHeader title="Kullanıcılar" description="Hesapları incele, gerekirse süreli ban uygula."
+        count={loading ? undefined : users.length} countLabel="kullanıcı" />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <FilterChips label="Rol filtresi" options={ROLE_FILTERS} value={roleFilter} onChange={setRoleFilter} />
+        <SearchInput value={search} onChange={setSearch} label="Kullanıcı ara"
+          placeholder="E-posta veya ad ara" className="flex-1 sm:max-w-xs sm:ml-auto" />
       </div>
 
-      {/* FAZ 15.2 — Split master-detail: sol liste, sag panel (desktop). Mobile: modal fallback. */}
-      {loading ? (
-        <div className="flex justify-center py-12"><div className="spinner" /></div>
-      ) : users.length === 0 ? (
-        <div className="tier-raised p-14 text-center">
-          <Icon d={ICONS.search} className="w-10 h-10 mx-auto mb-3" strokeWidth={1.5} style={{ color: 'var(--text-faint)' }} />
-          <p className="type-body" style={{ color: 'var(--text-muted)' }}>Eşleşen kullanıcı yok</p>
-        </div>
-      ) : (
-        <div className={selected && isDesktop ? 'grid gap-4' : ''}
-             style={selected && isDesktop ? { gridTemplateColumns: '380px 1fr', alignItems: 'start' } : undefined}>
-          {/* SOL: master list */}
-          <div className="space-y-2 min-w-0">
+      <ListState loading={loading} error={error} onRetry={fetchUsers} empty={users.length === 0}
+        emptyTitle="Eşleşen kullanıcı yok" emptyDescription="Aramayı ya da rol filtresini değiştirip yeniden dene.">
+        <div className={split ? 'grid gap-4' : ''}
+             style={split ? { gridTemplateColumns: 'minmax(0, 380px) minmax(0, 1fr)', alignItems: 'start' } : undefined}>
+          <ul className="space-y-2 min-w-0">
             {users.map(u => {
               const isActive = selected?.id === u.id
-              const compact = !!selected && isDesktop
               return (
-                <div key={u.id}
-                     onClick={() => openDetail(u)}
-                     className={`cursor-pointer transition-all ${isActive ? 'tier-featured' : 'tier-raised tier-raised-hover'} ${compact ? 'p-3' : 'p-4'}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="type-body font-medium truncate" style={{ color: 'var(--text-headline)' }}>{u.fullName}</div>
-                      <div className="type-caption truncate">{u.email}</div>
-                      {!compact && (
-                        <div className="type-caption mt-1">
-                          Strike: <span className="tabular-nums font-semibold" style={{ color: 'var(--text-secondary)' }}>{u.strikesRemaining ?? '—'}</span>
-                          {' · '}Kayıt: {u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '—'}
-                        </div>
-                      )}
+                <li key={u.id}>
+                  <button type="button" onClick={() => openDetail(u)} aria-current={isActive ? 'true' : undefined}
+                    className={`w-full text-left transition-colors focus-visible:outline focus-visible:outline-2 ${isActive ? 'tier-featured' : 'tier-raised tier-raised-hover'} ${split ? 'p-3' : 'p-4'}`}
+                    style={{ outlineColor: 'var(--ah-brand)', outlineOffset: 2 }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="type-body font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{u.fullName}</div>
+                        <div className="type-meta truncate">{u.email}</div>
+                        {!split && (
+                          <div className="type-caption mt-1">
+                            Kalan uyarı hakkı: <span className="type-num font-semibold" style={{ color: 'var(--ah-ink-2)' }}>{u.strikesRemaining ?? '—'}</span>
+                            {' · '}Kayıt: {fmtDate(u.createdAt)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                        <span className="badge badge-neutral">{labelOf(ROLE_LABELS, u.role)}</span>
+                        {u.currentlyBanned
+                          ? <span className="badge badge-negative">Banlı</span>
+                          : <span className="badge badge-positive">Aktif</span>}
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider
-                        ${u.role === 'ADMIN' ? 'bg-amber-100 text-amber-700'
-                          : u.role === 'CANDIDATE' ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-700'
-                          : 'bg-emerald-100 text-brand-700'}`}>
-                        {ROLE_LABELS[u.role]}
-                      </span>
-                      {u.currentlyBanned ? (
-                        <span className="badge badge-rejected inline-flex items-center gap-1">
-                          <Icon d={ICONS.ban} className="w-3 h-3" /> Banlı
-                        </span>
-                      ) : (
-                        <span className="badge badge-accepted">Aktif</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                  </button>
+                </li>
               )
             })}
-          </div>
+          </ul>
 
-          {/* SAG: detail panel — desktop split */}
-          {selected && isDesktop && (
+          {split && (
             <UserDetailModal user={selected} onClose={() => setSelected(null)}
                              onUpdated={handleUpdated} variant="panel" />
           )}
         </div>
-      )}
+      </ListState>
 
-      {/* Mobile / narrow: modal overlay */}
       {selected && !isDesktop && (
         <UserDetailModal user={selected} onClose={() => setSelected(null)}
                          onUpdated={handleUpdated} variant="modal" />
@@ -403,17 +420,12 @@ function UsersTab() {
   )
 }
 
-/* ── Reports Tab (D8) ── */
+/* ── Şikâyetler ── */
 const REPORT_REASON_LABELS = {
   FAKE: 'Sahte', SPAM: 'Spam', SCAM: 'Dolandırıcılık',
   INAPPROPRIATE: 'Uygunsuz', HARASSMENT: 'Taciz', OTHER: 'Diğer',
 }
 const REPORT_TYPE_LABELS = { LISTING: 'İlan', BUSINESS: 'İşletme', USER: 'Kullanıcı' }
-const REPORT_STATUS_META = {
-  PENDING:   { cls: 'bg-amber-100 text-amber-700',     label: 'Bekliyor' },
-  RESOLVED:  { cls: 'bg-emerald-100 text-brand-700', label: 'Çözüldü' },
-  DISMISSED: { cls: 'bg-cream-100 text-ink-500',     label: 'Reddedildi' },
-}
 const REPORT_FILTERS = [
   { value: '',          label: 'Tümü' },
   { value: 'PENDING',   label: 'Bekleyen' },
@@ -424,141 +436,138 @@ const REPORT_FILTERS = [
 function ReportsTab() {
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [statusFilter, setStatusFilter] = useState('')
   const [actionId, setActionId] = useState(null)
+  const [dismissing, setDismissing] = useState(null)   // reddedilecek şikâyet
 
   const fetchReports = useCallback(() => {
     setLoading(true)
+    setError(null)
     hotelApi.adminListReports(statusFilter || undefined)
       .then(setReports)
-      .catch(() => toast.error('Şikayetler yüklenemedi'))
+      .catch(() => setError('Şikâyetler yüklenemedi.'))
       .finally(() => setLoading(false))
   }, [statusFilter])
 
   useEffect(() => { fetchReports() }, [fetchReports])
 
-  async function handleStatus(id, status) {
-    let adminNote = null
-    if (status === 'DISMISSED') {
-      adminNote = prompt('Neden reddediliyor? (opsiyonel)') || null
-    }
+  async function updateStatus(id, status, adminNote = null) {
     setActionId(id)
     try {
       await hotelApi.adminUpdateReportStatus(id, status, adminNote)
-      toast.success(status === 'RESOLVED' ? 'Çözüldü olarak işaretlendi' : 'Reddedildi')
+      toast.success(status === 'RESOLVED' ? 'Çözüldü olarak işaretlendi' : 'Şikâyet reddedildi')
+      setDismissing(null)
       fetchReports()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionId(null) }
   }
 
+  const targetLabel = (r) => `${labelOf(REPORT_TYPE_LABELS, r.targetType, 'Kayıt')} #${r.targetId}`
+
   return (
     <div className="space-y-4">
-      <div className="flex gap-1.5 flex-wrap">
-        {REPORT_FILTERS.map(f => (
-          <button key={f.value} onClick={() => setStatusFilter(f.value)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
-              ${statusFilter === f.value
-                ? 'text-white shadow-sm'
-                : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={statusFilter === f.value ? { background: 'rgba(31, 41, 55, 0.14)', color: '#12201f', border: '1px solid rgba(31, 41, 55, 0.42)' } : {}}>
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <TabHeader title="Şikâyetler" description="Kullanıcıların bildirdiği ilan, işletme ve hesaplar."
+        count={loading ? undefined : reports.length} countLabel="şikâyet" />
+      <FilterChips label="Durum filtresi" options={REPORT_FILTERS} value={statusFilter} onChange={setStatusFilter} />
 
-      {loading ? (
-        <div className="flex justify-center py-12"><div className="spinner" /></div>
-      ) : reports.length === 0 ? (
-        <div className="card">
-          <div className="empty-state py-14">
-            <Icon d={ICONS.checkCircle} className="w-10 h-10 text-brand-700 mb-3" strokeWidth={1.5} />
-            <p className="text-ink-500 text-sm">Şikayet yok</p>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-3">
+      <ListState loading={loading} error={error} onRetry={fetchReports} empty={reports.length === 0}
+        emptyType="generic" emptyTitle="Şikâyet yok"
+        emptyDescription={statusFilter ? 'Bu filtrede şikâyet bulunmuyor.' : 'Şu an incelenecek bir şikâyet bulunmuyor.'}>
+        <ul className="space-y-3">
           {reports.map(r => {
-            const sm = REPORT_STATUS_META[r.status] || REPORT_STATUS_META.PENDING
+            const sm = statusMeta(REPORT_STATUS, r.status)
             return (
-              <div key={r.id} className="tier-raised tier-raised-hover p-4">
+              <li key={r.id} className="card !p-4 sm:!p-5">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cream-100 text-ink-600">
-                        {REPORT_TYPE_LABELS[r.targetType] || r.targetType} #{r.targetId}
-                      </span>
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600">
-                        {REPORT_REASON_LABELS[r.reason] || r.reason}
-                      </span>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sm.cls}`}>
-                        {sm.label}
-                      </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className={sm.cls}>{sm.label}</span>
+                      <span className="badge badge-neutral">{targetLabel(r)}</span>
+                      <span className="badge badge-neutral">{labelOf(REPORT_REASON_LABELS, r.reason)}</span>
                     </div>
                     {r.description && (
-                      <p className="text-sm text-ink-700 mt-2">{r.description}</p>
+                      <p className="type-body mt-2.5 whitespace-pre-wrap break-words">{r.description}</p>
                     )}
-                    <p className="text-xs text-ink-400 mt-1.5">
-                      Şikayet eden: {r.reporterName} ({r.reporterEmail}) ·{' '}
-                      {new Date(r.createdAt).toLocaleString('tr-TR')}
+                    <p className="type-caption mt-2 break-words">
+                      Şikâyet eden: {r.reporterName} ({r.reporterEmail}) · {fmtDateTime(r.createdAt)}
                     </p>
                     {r.adminNote && (
-                      <p className="text-xs text-ink-500 mt-1 italic">Admin notu: {r.adminNote}</p>
+                      <div className="mt-3 rounded-lg p-3" style={{ background: 'var(--ah-band)' }}>
+                        <div className="type-label">Admin notu</div>
+                        <p className="type-body mt-0.5 whitespace-pre-wrap break-words">{r.adminNote}</p>
+                      </div>
                     )}
                   </div>
 
                   {r.status === 'PENDING' && (
-                    <div className="flex gap-2 flex-shrink-0">
-                      <button onClick={() => handleStatus(r.id, 'RESOLVED')} disabled={actionId === r.id}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-emerald-100 text-brand-700 hover:bg-emerald-200 disabled:opacity-50 inline-flex items-center gap-1">
-                        <Icon d={ICONS.check} className="w-3.5 h-3.5" /> Çözüldü
+                    <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+                      <button type="button" onClick={() => updateStatus(r.id, 'RESOLVED')} disabled={actionId === r.id}
+                        className="btn-secondary flex-1 sm:flex-none">
+                        <Icon d={ICONS.check} className="w-4 h-4" /> Çözüldü
                       </button>
-                      <button onClick={() => handleStatus(r.id, 'DISMISSED')} disabled={actionId === r.id}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-md bg-cream-100 text-ink-600 hover:bg-cream-200 disabled:opacity-50 inline-flex items-center gap-1">
-                        <Icon d={ICONS.xmark} className="w-3.5 h-3.5" /> Reddet
+                      <button type="button" onClick={() => setDismissing(r)} disabled={actionId === r.id}
+                        className="btn-ghost flex-1 sm:flex-none">
+                        <Icon d={ICONS.xmark} className="w-4 h-4" /> Reddet
                       </button>
                     </div>
                   )}
                 </div>
-                <p className="text-[11px] text-ink-400 mt-2 inline-flex items-center gap-1">
-                  <Icon d={ICONS.bulb} className="w-3.5 h-3.5 flex-shrink-0" />
-                  İşlem için: Kullanıcılar sekmesinden ilgili kullanıcıyı bulup banlayabilirsin.
-                </p>
-              </div>
+                {r.status === 'PENDING' && (
+                  <p className="type-caption mt-3 inline-flex items-start gap-1.5">
+                    <Icon d={ICONS.info} className="w-4 h-4 flex-shrink-0" />
+                    Gerekirse Kullanıcılar sekmesinden ilgili hesabı bulup banlayabilirsin.
+                  </p>
+                )}
+              </li>
             )
           })}
-        </div>
-      )}
+        </ul>
+      </ListState>
+
+      <DismissReportDialog
+        open={!!dismissing}
+        report={dismissing ? { targetLabel: targetLabel(dismissing) } : null}
+        busy={!!dismissing && actionId === dismissing.id}
+        onCancel={() => setDismissing(null)}
+        onConfirm={(note) => updateStatus(dismissing.id, 'DISMISSED', note)}
+      />
     </div>
   )
 }
 
-/* ── Audit Log Tab (D4) ── */
+/* ── İşlem geçmişi ── */
 const ACTION_META = {
-  BAN_USER:       { path: ICONS.ban,     label: 'Kullanıcı banlandı',  cls: 'bg-red-50 text-red-700' },
-  UNBAN_USER:     { path: ICONS.check,   label: 'Ban kaldırıldı',      cls: 'bg-brand-50 text-brand-700' },
-  MARK_NO_SHOW:   { path: ICONS.ban,     label: 'No-show işaretlendi',  cls: 'bg-amber-50 text-amber-700' },
-  AUTO_BAN:       { path: ICONS.bolt,    label: 'Otomatik ban',         cls: 'bg-red-50 text-red-700' },
-  RESOLVE_REPORT: { path: ICONS.check,   label: 'Şikayet çözüldü',      cls: 'bg-brand-50 text-brand-700' },
-  DISMISS_REPORT: { path: ICONS.xmark,   label: 'Şikayet reddedildi',   cls: 'bg-cream-100 text-ink-500' },
+  BAN_USER:       { path: ICONS.ban,   label: 'Kullanıcı banlandı',   tone: 'badge-negative' },
+  UNBAN_USER:     { path: ICONS.check, label: 'Ban kaldırıldı',       tone: 'badge-neutral' },
+  MARK_NO_SHOW:   { path: ICONS.ban,   label: 'Gelmedi işaretlendi',  tone: 'badge-attention' },
+  AUTO_BAN:       { path: ICONS.bolt,  label: 'Otomatik ban',         tone: 'badge-negative' },
+  RESOLVE_REPORT: { path: ICONS.check, label: 'Şikâyet çözüldü',      tone: 'badge-positive' },
+  DISMISS_REPORT: { path: ICONS.xmark, label: 'Şikâyet reddedildi',   tone: 'badge-neutral' },
+  SUPPORT_IN_PROGRESS: { path: ICONS.doc,   label: 'Destek incelemede', tone: 'badge-neutral' },
+  SUPPORT_RESOLVED:    { path: ICONS.check, label: 'Destek çözüldü',    tone: 'badge-positive' },
+  SUPPORT_DISMISSED:   { path: ICONS.xmark, label: 'Destek reddedildi', tone: 'badge-neutral' },
 }
 const AUDIT_FILTERS = [
-  { value: '',             label: 'Tümü' },
-  { value: 'BAN_USER',     label: 'Banlar' },
-  { value: 'AUTO_BAN',     label: 'Otomatik ban' },
-  { value: 'MARK_NO_SHOW', label: 'No-show' },
-  { value: 'RESOLVE_REPORT', label: 'Şikayet işlem' },
+  { value: '',               label: 'Tümü' },
+  { value: 'BAN_USER',       label: 'Banlar' },
+  { value: 'AUTO_BAN',       label: 'Otomatik ban' },
+  { value: 'MARK_NO_SHOW',   label: 'Gelmedi' },
+  { value: 'RESOLVE_REPORT', label: 'Şikâyet işlemleri' },
 ]
 
 function AuditTab() {
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [actionFilter, setActionFilter] = useState('')
 
   const fetchLogs = useCallback(() => {
     setLoading(true)
+    setError(null)
     hotelApi.adminListAuditLogs(actionFilter || undefined, 100)
       .then(setLogs)
-      .catch(() => toast.error('İşlem geçmişi yüklenemedi'))
+      .catch(() => setError('İşlem geçmişi yüklenemedi.'))
       .finally(() => setLoading(false))
   }, [actionFilter])
 
@@ -566,89 +575,85 @@ function AuditTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-1.5 flex-wrap">
-        {AUDIT_FILTERS.map(f => (
-          <button key={f.value} onClick={() => setActionFilter(f.value)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all
-              ${actionFilter === f.value
-                ? 'text-white shadow-sm'
-                : 'bg-white dark:bg-ink-800 text-ink-600 dark:text-ink-300 border border-cream-300 dark:border-ink-700 hover:border-brand-400 dark:hover:border-brand-500'}`}
-            style={actionFilter === f.value ? { background: 'rgba(31, 41, 55, 0.14)', color: '#12201f', border: '1px solid rgba(31, 41, 55, 0.42)' } : {}}>
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <TabHeader title="İşlem geçmişi" description="Yönetici ve sistem işlemlerinin son 100 kaydı." />
+      <FilterChips label="İşlem filtresi" options={AUDIT_FILTERS} value={actionFilter} onChange={setActionFilter} />
 
-      {loading ? (
-        <div className="flex justify-center py-12"><div className="spinner" /></div>
-      ) : logs.length === 0 ? (
-        <div className="card">
-          <div className="empty-state py-14">
-            <Icon d={ICONS.doc} className="w-10 h-10 text-ink-300 mb-3" strokeWidth={1.5} />
-            <p className="text-ink-500 text-sm">Henüz işlem kaydı yok</p>
-          </div>
-        </div>
-      ) : (
-        <div className="card divide-y divide-slate-50">
+      <ListState loading={loading} error={error} onRetry={fetchLogs} empty={logs.length === 0}
+        emptyType="history" emptyTitle="Henüz işlem kaydı yok" emptyDescription="Ban, şikâyet ve destek işlemleri burada listelenir.">
+        <ul className="card !p-0 divide-y" style={{ borderColor: 'var(--ah-line)' }}>
           {logs.map(l => {
-            const m = ACTION_META[l.action] || { path: ICONS.doc, label: l.action, cls: 'bg-cream-100 text-ink-600' }
+            const m = ACTION_META[l.action] || { path: ICONS.doc, label: 'Diğer işlem', tone: 'badge-neutral' }
             const isSystem = l.actorEmail === 'SYSTEM'
             return (
-              <div key={l.id} className="px-4 py-3 flex items-start gap-3">
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 inline-flex items-center gap-1 ${m.cls}`}>
+              <li key={l.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3" style={{ borderColor: 'var(--ah-line)' }}>
+                <span className={`badge ${m.tone} self-start flex-shrink-0`}>
                   <Icon d={m.path} className="w-3.5 h-3.5" /> {m.label}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-ink-700">{l.details}</div>
-                  <div className="text-xs text-ink-400 mt-0.5 inline-flex items-center gap-1">
+                  <div className="type-body break-words">{l.details}</div>
+                  <div className="type-caption mt-0.5 inline-flex items-center gap-1 flex-wrap">
                     <Icon d={isSystem ? ICONS.cpuChip : ICONS.user} className="w-3.5 h-3.5" />
-                    {isSystem ? 'Sistem' : l.actorEmail}
-                    {' · '}
-                    {new Date(l.createdAt).toLocaleString('tr-TR')}
+                    <span className="break-all">{isSystem ? 'Sistem' : l.actorEmail}</span>
+                    <span aria-hidden="true">·</span>
+                    {fmtDateTime(l.createdAt)}
                   </div>
                 </div>
-              </div>
+              </li>
             )
           })}
-        </div>
-      )}
+        </ul>
+      </ListState>
     </div>
   )
 }
 
-/* ── Main Page ── */
-/* ── FAZ 6.3 — Listing moderation tab ── */
+/* ── İlan moderasyonu ── */
+const LISTING_FILTERS = [
+  { value: '',       label: 'Tümü' },
+  { value: 'ACTIVE', label: 'Yayında' },
+  { value: 'PAUSED', label: 'Askıda' },
+  { value: 'CLOSED', label: 'Kapalı' },
+]
+const LISTING_ACTIONS = {
+  ACTIVE: { button: 'Yayına al', title: 'İlanı yayına al', verb: 'yeniden yayına alınacak', done: 'İlan yayına alındı' },
+  PAUSED: { button: 'Askıya al', title: 'İlanı askıya al', verb: 'askıya alınacak ve adaylara görünmeyecek', done: 'İlan askıya alındı' },
+  CLOSED: { button: 'Kapat',     title: 'İlanı kapat',     verb: 'kapatılacak', done: 'İlan kapatıldı' },
+}
+
 function ListingsTab() {
   const confirm = useConfirm()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [busy, setBusy] = useState(null)
   const [statusFilter, setStatusFilter] = useState('')
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim())
 
   const fetchItems = useCallback(() => {
     setLoading(true)
-    hotelApi.adminListListings(statusFilter || undefined, search || undefined)
+    setError(null)
+    hotelApi.adminListListings(statusFilter || undefined, debouncedSearch || undefined)
       .then(setItems)
-      .catch(err => toast.error(extractErrorMessage(err)))
+      .catch(err => setError(extractErrorMessage(err) || 'İlanlar yüklenemedi.'))
       .finally(() => setLoading(false))
-  }, [statusFilter, search])
+  }, [statusFilter, debouncedSearch])
 
   useEffect(() => { fetchItems() }, [fetchItems])
 
   async function setStatus(listing, newStatus) {
-    const verb = newStatus === 'PAUSED' ? 'askıya alınacak' : (newStatus === 'CLOSED' ? 'kapatılacak' : 'aktif edilecek')
+    const a = LISTING_ACTIONS[newStatus]
     const ok = await confirm({
-      title: `İlanı ${newStatus === 'ACTIVE' ? 'aktifleştir' : (newStatus === 'PAUSED' ? 'askıya al' : 'kapat')}`,
-      description: `"${listing.title}" ilanı ${verb}.`,
-      confirmLabel: 'Evet, devam et',
+      title: a.title,
+      description: `"${listing.title}" ilanı ${a.verb}.`,
+      confirmLabel: a.button,
       destructive: newStatus === 'CLOSED',
     })
     if (!ok) return
     setBusy(listing.id)
     try {
       await hotelApi.adminSetListingStatus(listing.id, newStatus)
-      toast.success(`İlan durumu: ${newStatus}`)
+      toast.success(a.done)
       fetchItems()
     } catch (err) {
       toast.error(extractErrorMessage(err))
@@ -657,122 +662,113 @@ function ListingsTab() {
     }
   }
 
-  const statusColor = (s) => s === 'ACTIVE' ? '#6b7574' : (s === 'PAUSED' ? '#6b7574' : '#6b7574')
-
   return (
     <div className="space-y-4">
-      <div className="card p-4 space-y-3">
-        <div className="flex flex-wrap gap-2 items-center">
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Başlık veya işletme adı..."
-            className="input text-sm flex-1 min-w-[200px]" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-            className="input text-sm" style={{ maxWidth: 160 }}>
-            <option value="">Tüm durumlar</option>
-            <option value="ACTIVE">Aktif</option>
-            <option value="PAUSED">Askıda</option>
-            <option value="CLOSED">Kapalı</option>
-          </select>
-          <div className="text-xs px-3 py-1 rounded-full"
-               style={{ background: 'rgba(31, 41, 55, 0.10)', color: '#1f2937' }}>
-            {items.length} ilan
-          </div>
-        </div>
+      <TabHeader title="İlanlar" description="İlanları yayına al, askıya al ya da kapat."
+        count={loading ? undefined : items.length} countLabel="ilan" />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <FilterChips label="Durum filtresi" options={LISTING_FILTERS} value={statusFilter} onChange={setStatusFilter} />
+        <SearchInput value={search} onChange={setSearch} label="İlan ara"
+          placeholder="Başlık veya işletme adı" className="flex-1 sm:max-w-xs sm:ml-auto" />
       </div>
 
-      {loading ? (
-        <div className="card p-8 text-center text-ink-400">Yükleniyor...</div>
-      ) : items.length === 0 ? (
-        <div className="card p-8 text-center text-ink-400">Sonuç yok</div>
-      ) : (
-        <div className="space-y-2">
-          {items.map(l => (
-            <div key={l.id} className="tier-raised tier-raised-hover p-4 flex items-start justify-between gap-3 flex-wrap">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <a href={`/listings/${l.id}`} target="_blank" rel="noopener noreferrer"
-                    className="font-semibold text-sm" style={{ color: '#3f4b4a' }}>
-                    {l.title}
-                  </a>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                    style={{
-                      background: `${statusColor(l.status)}22`,
-                      color: statusColor(l.status),
-                      border: `1px solid ${statusColor(l.status)}55`,
-                    }}>
-                    {l.status}
-                  </span>
+      <ListState loading={loading} error={error} onRetry={fetchItems} empty={items.length === 0}
+        emptyTitle="İlan bulunamadı" emptyDescription="Aramayı ya da durum filtresini değiştirip yeniden dene.">
+        <ul className="space-y-2">
+          {items.map(l => {
+            const sm = statusMeta(LISTING_STATUS, l.status)
+            return (
+              <li key={l.id} className="card !p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <a href={`/listings/${l.id}`} target="_blank" rel="noopener noreferrer"
+                      className="type-body font-semibold inline-flex items-center gap-1 hover:underline break-words"
+                      style={{ color: 'var(--ah-ink)' }}>
+                      {l.title}
+                      <Icon d={ICONS.external} className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="sr-only">(yeni sekmede açılır)</span>
+                    </a>
+                    <span className={sm.cls}>{sm.label}</span>
+                  </div>
+                  <div className="type-meta mt-1 break-words">
+                    {labelOf(POSITION_LABELS, l.position, 'Pozisyon')} · {l.businessName} · {l.ownerEmail}
+                  </div>
+                  <div className="type-caption mt-0.5">Oluşturma: {fmtDateTime(l.createdAt)}</div>
                 </div>
-                <div className="text-xs mt-1" style={{ color: '#6b7574' }}>
-                  {POSITION_LABELS[l.position] || l.position} · {l.businessName} · {l.ownerEmail}
+                <div className="flex gap-2 flex-shrink-0 flex-wrap">
+                  {['ACTIVE', 'PAUSED', 'CLOSED'].filter(s => s !== l.status).map(s => (
+                    <button key={s} type="button" onClick={() => setStatus(l, s)} disabled={busy === l.id}
+                      className={`${s === 'CLOSED' ? 'btn-danger' : 'btn-secondary'} flex-1 sm:flex-none`}>
+                      {LISTING_ACTIONS[s].button}
+                    </button>
+                  ))}
                 </div>
-                <div className="text-[10px] mt-0.5" style={{ color: '#6b7574' }}>
-                  {new Date(l.createdAt).toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                {l.status !== 'ACTIVE' && (
-                  <button onClick={() => setStatus(l, 'ACTIVE')} disabled={busy === l.id}
-                    className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: 'rgba(107, 117, 116, 0.14)', color: '#bfbfbf', border: '1px solid rgba(107, 117, 116, 0.35)' }}>
-                    Aktive Et
-                  </button>
-                )}
-                {l.status !== 'PAUSED' && (
-                  <button onClick={() => setStatus(l, 'PAUSED')} disabled={busy === l.id}
-                    className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: 'rgba(107, 117, 116, 0.14)', color: '#d2d2d2', border: '1px solid rgba(107, 117, 116, 0.35)' }}>
-                    Askıya Al
-                  </button>
-                )}
-                {l.status !== 'CLOSED' && (
-                  <button onClick={() => setStatus(l, 'CLOSED')} disabled={busy === l.id}
-                    className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
-                    style={{ background: 'rgba(107, 117, 116, 0.14)', color: '#6b7574', border: '1px solid rgba(107, 117, 116, 0.35)' }}>
-                    Kapat
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+              </li>
+            )
+          })}
+        </ul>
+      </ListState>
     </div>
   )
 }
 
+const resolveAdminTab = (t) => resolveTab(ROLE.ADMIN, t)
+
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const [params, setParams] = useSearchParams()
+  const activeTab = resolveAdminTab(params.get('tab'))?.tab || defaultTabFor(ROLE.ADMIN)
+
+  // Geçersiz id (ör. eski yer imi) reddedilir; sekme adresle paylaşılabilir (?tab=reports).
+  function setActiveTab(t) {
+    const r = resolveAdminTab(t)
+    if (!r) return false
+    setParams({ tab: r.tab }, { replace: true })
+    return true
+  }
 
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
-      {activeTab === 'overview' && <OverviewTab />}
-      {activeTab === 'users'    && <UsersTab />}
-      {activeTab === 'listings' && <ListingsTab />}
-      {activeTab === 'reports'  && <ReportsTab />}
-      {activeTab === 'audit'    && <AuditTab />}
-      {activeTab === 'businesses' && <BusinessesTab />}
-      {activeTab === 'support'  && <SupportTab />}
-      {activeTab === 'outbox'   && <OutboxTab />}
+      <div key={activeTab} className="page-enter">
+        {activeTab === 'overview'   && <OverviewTab />}
+        {activeTab === 'users'      && <UsersTab />}
+        {activeTab === 'listings'   && <ListingsTab />}
+        {activeTab === 'reports'    && <ReportsTab />}
+        {activeTab === 'audit'      && <AuditTab />}
+        {activeTab === 'businesses' && <BusinessesTab />}
+        {activeTab === 'support'    && <SupportTab />}
+        {activeTab === 'outbox'     && <OutboxTab />}
+      </div>
     </DashboardLayout>
   )
 }
 
-/* FAZ I.5 — Destek bileti moderasyon tab */
+/* ── Destek talepleri ── */
+const SUPPORT_FILTERS = [
+  { value: 'all',         label: 'Tümü' },
+  { value: 'OPEN',        label: 'Yeni' },
+  { value: 'IN_PROGRESS', label: 'İnceleniyor' },
+  { value: 'RESOLVED',    label: 'Çözüldü' },
+  { value: 'DISMISSED',   label: 'Reddedildi' },
+]
+
 function SupportTab() {
-  const [filter, setFilter] = useState('all')   // all | OPEN | IN_PROGRESS | RESOLVED | DISMISSED
+  const [filter, setFilter] = useState('all')
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [openId, setOpenId] = useState(null)
   const [noteDraft, setNoteDraft] = useState('')
+  const [busy, setBusy] = useState(false)
+  const noteBaseId = useId()
 
   const load = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const status = filter === 'all' ? null : filter
       setItems(await hotelApi.adminListSupport(status, 100))
     } catch (e) {
-      toast.error(extractErrorMessage(e) || 'Liste yüklenemedi')
+      setError(extractErrorMessage(e) || 'Destek talepleri yüklenemedi.')
     } finally {
       setLoading(false)
     }
@@ -781,6 +777,7 @@ function SupportTab() {
   useEffect(() => { load() }, [load])
 
   async function setStatus(id, newStatus, note) {
+    setBusy(true)
     try {
       await hotelApi.adminUpdateSupportStatus(id, newStatus, note)
       toast.success('Durum güncellendi')
@@ -789,282 +786,208 @@ function SupportTab() {
       load()
     } catch (e) {
       toast.error(extractErrorMessage(e) || 'İşlem başarısız')
+    } finally {
+      setBusy(false)
     }
   }
 
-  const FILTERS = [
-    { v: 'all',         label: 'Tümü' },
-    { v: 'OPEN',        label: 'Yeni' },
-    { v: 'IN_PROGRESS', label: 'İnceleniyor' },
-    { v: 'RESOLVED',    label: 'Çözüldü' },
-    { v: 'DISMISSED',   label: 'Reddedildi' },
-  ]
-  const statusStyle = {
-    OPEN:        { color: '#6b7574', bg: 'rgba(132, 132, 132, 0.10)' },
-    IN_PROGRESS: { color: '#7b7b7b', bg: 'rgba(123, 123, 123, 0.10)' },
-    RESOLVED:    { color: '#7f7f7f', bg: 'rgba(127, 127, 127, 0.10)' },
-    DISMISSED:   { color: '#727272', bg: 'rgba(114, 114, 114, 0.10)' },
-  }
-  const SUBJECT_LABEL = {
-    GENERAL:         'Genel',
-    ACCOUNT:         'Hesap',
-    KVKK:            'KVKK',
-    BUSINESS_VERIFY: 'İşletme Doğrulama',
-    TECHNICAL:       'Teknik',
-    PARTNERSHIP:     'İş Birliği',
-  }
-
   return (
-    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {FILTERS.map(f => (
-          <button key={f.v} onClick={() => setFilter(f.v)}
-            style={{
-              padding: '6px 14px', borderRadius: 999,
-              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(161, 161, 161, 0.3)',
-              background: filter === f.v ? 'rgba(31, 41, 55, 0.12)' : 'transparent',
-              color: filter === f.v ? '#1f2937' : '#a1a1a1',
-              fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            }}>
-            {f.label}
-          </button>
-        ))}
-      </div>
+    <div className="space-y-4">
+      <TabHeader title="Destek talepleri" description="Kullanıcıların iletişim formundan gönderdiği talepler."
+        count={loading ? undefined : items.length} countLabel="talep" />
+      <FilterChips label="Durum filtresi" options={SUPPORT_FILTERS} value={filter} onChange={setFilter} />
 
-      {loading ? (
-        <div style={{ color: '#a1a1a1' }}>Yükleniyor…</div>
-      ) : items.length === 0 ? (
-        <div style={{ color: '#a1a1a1', padding: 24, textAlign: 'center' }}>Bilet yok.</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <ListState loading={loading} error={error} onRetry={load} empty={items.length === 0}
+        emptyType="messages" emptyTitle="Destek talebi yok"
+        emptyDescription={filter === 'all' ? 'Yeni bir talep geldiğinde burada görünür.' : 'Bu filtrede talep bulunmuyor.'}>
+        <ul className="space-y-3">
           {items.map(t => {
-            const s = statusStyle[t.status] || statusStyle.OPEN
+            const sm = statusMeta(SUPPORT_STATUS, t.status)
             const isOpen = openId === t.id
+            const closed = t.status === 'RESOLVED' || t.status === 'DISMISSED'
+            const noteId = `${noteBaseId}-${t.id}`
             return (
-              <div key={t.id} style={{
-                padding: 14, borderRadius: 10,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(31, 41, 55, 0.08)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{
-                        padding: '2px 8px', borderRadius: 999,
-                        background: s.bg, color: s.color,
-                        fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
-                      }}>{t.status}</span>
-                      <span style={{ color: 'var(--ah-ink-4)', fontSize: 12, fontWeight: 700 }}>#{t.id}</span>
-                      <span style={{ color: '#1f2937', fontSize: 11, fontWeight: 600 }}>
-                        {SUBJECT_LABEL[t.subject] || t.subject}
-                      </span>
-                      <span style={{ color: '#a1a1a1', fontSize: 11 }}>
-                        {t.userRole} · {t.userFullName} ({t.userEmail})
-                      </span>
+              <li key={t.id} className="card !p-4 sm:!p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className={sm.cls}>{sm.label}</span>
+                      <span className="badge badge-neutral">{labelOf(SUPPORT_SUBJECT_LABELS, t.subject, 'Genel')}</span>
+                      <span className="type-caption type-num">#{t.id}</span>
                     </div>
-                    <div style={{
-                      marginTop: 8, color: '#f3f4f6', fontSize: 13, lineHeight: 1.5,
-                      whiteSpace: 'pre-wrap',
-                    }}>
+                    <p className="type-meta mt-1.5 break-words">
+                      {t.userFullName} · {labelOf(ROLE_LABELS, t.userRole, 'Kullanıcı')} · {t.userEmail}
+                    </p>
+                    <p className="type-body mt-2.5 whitespace-pre-wrap break-words" style={{ color: 'var(--ah-ink)' }}>
                       {t.message}
-                    </div>
+                    </p>
                     {t.adminNote && (
-                      <div style={{
-                        marginTop: 8, padding: 10, borderRadius: 8,
-                        background: 'rgba(31, 41, 55, 0.04)',
-                        border: '1px solid rgba(31, 41, 55, 0.14)',
-                        fontSize: 12, color: '#1f2937',
-                      }}>
-                        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
-                                      color: '#1f2937', marginBottom: 4 }}>ADMIN NOTU</div>
-                        {t.adminNote}
+                      <div className="mt-3 rounded-lg p-3" style={{ background: 'var(--ah-band)' }}>
+                        <div className="type-label">Admin notu</div>
+                        <p className="type-body mt-0.5 whitespace-pre-wrap break-words">{t.adminNote}</p>
                       </div>
                     )}
-                    <div style={{ color: '#727272', fontSize: 10, marginTop: 6 }}>
-                      Açılma: {new Date(t.createdAt).toLocaleString('tr-TR')}
-                      {t.resolvedAt && <> · Kapanış: {new Date(t.resolvedAt).toLocaleString('tr-TR')}</>}
-                    </div>
+                    <p className="type-caption mt-2">
+                      Açılış: {fmtDateTime(t.createdAt)}
+                      {t.resolvedAt && <> · Kapanış: {fmtDateTime(t.resolvedAt)}</>}
+                    </p>
                   </div>
-                  {!isOpen && t.status !== 'RESOLVED' && t.status !== 'DISMISSED' && (
-                    <button onClick={() => { setOpenId(t.id); setNoteDraft(t.adminNote || '') }}
-                      style={{
-                        padding: '6px 12px', borderRadius: 6,
-                        background: 'rgba(31, 41, 55, 0.10)',
-                        border: '1px solid rgba(31, 41, 55, 0.22)',
-                        color: '#1f2937', fontSize: 11, fontWeight: 600,
-                        cursor: 'pointer', whiteSpace: 'nowrap',
-                      }}>
+                  {!isOpen && !closed && (
+                    <button type="button" className="btn-secondary flex-shrink-0"
+                      onClick={() => { setOpenId(t.id); setNoteDraft(t.adminNote || '') }}>
                       Yanıtla
                     </button>
                   )}
                 </div>
 
                 {isOpen && (
-                  <div style={{ marginTop: 12, paddingTop: 12,
-                                borderTop: '1px solid rgba(31, 41, 55, 0.08)' }}>
-                    <textarea value={noteDraft} onChange={e => setNoteDraft(e.target.value)}
-                      placeholder="Kullanıcıya notun (opsiyonel — RESOLVED'da göstereceğiz)"
-                      rows={3}
-                      style={{
-                        width: '100%', padding: 10, borderRadius: 8,
-                        background: 'rgba(0,0,0,0.25)',
-                        border: '1px solid rgba(31, 41, 55, 0.10)',
-                        color: '#f3f4f6', fontSize: 12, outline: 'none',
-                        resize: 'vertical',
-                      }} />
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                      <button onClick={() => setStatus(t.id, 'IN_PROGRESS', noteDraft)}
-                        style={btnBlue}>Inceliyorum</button>
-                      <button onClick={() => setStatus(t.id, 'RESOLVED', noteDraft)}
-                        style={btnGreen}>Çözüldü</button>
-                      <button onClick={() => setStatus(t.id, 'DISMISSED', noteDraft)}
-                        style={btnRed}>Reddet</button>
-                      <button onClick={() => { setOpenId(null); setNoteDraft('') }}
-                        style={btnGhost}>Vazgeç</button>
+                  <div className="mt-4 pt-4 border-t space-y-3" style={{ borderColor: 'var(--ah-line)' }}>
+                    <div>
+                      <label htmlFor={noteId} className="label">Admin notu (isteğe bağlı)</label>
+                      <textarea id={noteId} value={noteDraft} onChange={e => setNoteDraft(e.target.value)}
+                        rows={3} className="input" placeholder="Talebe ilişkin kısa notun" />
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {t.status !== 'IN_PROGRESS' && (
+                        <button type="button" disabled={busy} className="btn-secondary"
+                          onClick={() => setStatus(t.id, 'IN_PROGRESS', noteDraft)}>İncelemeye al</button>
+                      )}
+                      <button type="button" disabled={busy} className="btn-primary !w-auto"
+                        onClick={() => setStatus(t.id, 'RESOLVED', noteDraft)}>Çözüldü</button>
+                      <button type="button" disabled={busy} className="btn-danger"
+                        onClick={() => setStatus(t.id, 'DISMISSED', noteDraft)}>Reddet</button>
+                      <button type="button" disabled={busy} className="btn-ghost"
+                        onClick={() => { setOpenId(null); setNoteDraft('') }}>Vazgeç</button>
                     </div>
                   </div>
                 )}
-              </div>
+              </li>
             )
           })}
-        </div>
-      )}
+        </ul>
+      </ListState>
     </div>
   )
 }
 
-const btnBlue  = { padding: '6px 12px', borderRadius: 6, background: 'rgba(123, 123, 123, 0.15)', color: '#bebebe', border: '1px solid rgba(123, 123, 123, 0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
-const btnGreen = { padding: '6px 12px', borderRadius: 6, background: 'rgba(127, 127, 127, 0.15)', color: '#bfbfbf', border: '1px solid rgba(127, 127, 127, 0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
-const btnRed   = { padding: '6px 12px', borderRadius: 6, background: 'rgba(129, 129, 129, 0.15)', color: '#6b7574', border: '1px solid rgba(129, 129, 129, 0.4)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
-const btnGhost = { padding: '6px 12px', borderRadius: 6, background: 'transparent', color: '#a1a1a1', border: '1px solid #535353', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+/* ── İşletme doğrulama ── */
+const BUSINESS_FILTERS = [
+  { value: 'all',        label: 'Tümü' },
+  { value: 'verified',   label: 'Doğrulanmış' },
+  { value: 'unverified', label: 'Onay bekliyor' },
+]
 
-/* FAZ G.3 — İşletme doğrulama tab */
 function BusinessesTab() {
-  const [filter, setFilter] = useState('all')   // all | verified | unverified
+  const confirm = useConfirm()
+  const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim())
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [busyId, setBusyId] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const verified = filter === 'all' ? null : filter === 'verified'
-      setItems(await hotelApi.adminListBusinesses(verified, search))
+      setItems(await hotelApi.adminListBusinesses(verified, debouncedSearch))
     } catch (e) {
-      toast.error(extractErrorMessage(e) || 'İşletmeler yüklenemedi')
+      setError(extractErrorMessage(e) || 'İşletmeler yüklenemedi.')
     } finally {
       setLoading(false)
     }
-  }, [filter, search])
+  }, [filter, debouncedSearch])
 
   useEffect(() => { load() }, [load])
 
   async function toggleVerified(biz) {
+    if (biz.verifiedAt) {
+      const ok = await confirm({
+        title: 'Doğrulamayı kaldır',
+        description: `"${biz.name}" işletmesinin doğrulandı rozeti kaldırılacak.`,
+        confirmLabel: 'Doğrulamayı kaldır',
+        destructive: true,
+      })
+      if (!ok) return
+    }
+    setBusyId(biz.id)
     try {
       await hotelApi.adminSetBusinessVerified(biz.id, !biz.verifiedAt)
       toast.success(biz.verifiedAt ? 'Doğrulama kaldırıldı' : 'İşletme doğrulandı')
       load()
     } catch (e) {
       toast.error(extractErrorMessage(e) || 'İşlem başarısız')
+    } finally {
+      setBusyId(null)
     }
   }
 
-  const FILTERS = [
-    { v: 'all',         label: 'Tümü' },
-    { v: 'verified',    label: 'Doğrulanmış' },
-    { v: 'unverified',  label: 'Onay Bekliyor' },
-  ]
-
   return (
-    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        {FILTERS.map(f => (
-          <button key={f.v} onClick={() => setFilter(f.v)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: 999,
-              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(161, 161, 161, 0.3)',
-              background: filter === f.v ? 'rgba(31, 41, 55, 0.12)' : 'transparent',
-              color: filter === f.v ? '#1f2937' : '#a1a1a1',
-              fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            }}>
-            {f.label}
-          </button>
-        ))}
-        <input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="ad veya email ara…"
-          style={{
-            flex: 1, minWidth: 220,
-            padding: '8px 12px', borderRadius: 8,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(31, 41, 55, 0.10)',
-            color: '#f3f4f6', fontSize: 13, outline: 'none',
-          }} />
+    <div className="space-y-4">
+      <TabHeader title="İşletmeler" description="Belgelerini kontrol ettiğin işletmeleri doğrula."
+        count={loading ? undefined : items.length} countLabel="işletme" />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <FilterChips label="Doğrulama filtresi" options={BUSINESS_FILTERS} value={filter} onChange={setFilter} />
+        <SearchInput value={search} onChange={setSearch} label="İşletme ara"
+          placeholder="İşletme adı veya e-posta" className="flex-1 sm:max-w-xs sm:ml-auto" />
       </div>
 
-      {loading ? (
-        <div style={{ color: '#a1a1a1' }}>Yükleniyor…</div>
-      ) : items.length === 0 ? (
-        <div style={{ color: '#a1a1a1', padding: 24, textAlign: 'center' }}>İşletme bulunamadı.</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <ListState loading={loading} error={error} onRetry={load} empty={items.length === 0}
+        emptyTitle="İşletme bulunamadı" emptyDescription="Aramayı ya da filtreyi değiştirip yeniden dene.">
+        <ul className="space-y-2">
           {items.map(b => (
-            <div key={b.id} style={{
-              padding: 14, borderRadius: 10,
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(31, 41, 55, 0.08)',
-              display: 'flex', alignItems: 'center', gap: 12,
-            }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <span style={{ color: '#f3f4f6', fontSize: 14, fontWeight: 600 }}>{b.name}</span>
-                  {b.verifiedAt && (
-                    <span style={{
-                      padding: '2px 8px', borderRadius: 999,
-                      background: 'rgba(31, 41, 55, 0.12)',
-                      color: '#1f2937', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
-                    }}>DOĞRULANDI</span>
-                  )}
+            <li key={b.id} className="card !p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="type-body font-semibold break-words" style={{ color: 'var(--ah-ink)' }}>{b.name}</span>
+                  {b.verifiedAt
+                    ? <span className="badge badge-positive"><Icon d={ICONS.check} className="w-3.5 h-3.5" /> Doğrulandı</span>
+                    : <span className="badge badge-attention">Onay bekliyor</span>}
                 </div>
-                <div style={{ color: '#a1a1a1', fontSize: 11, marginTop: 2 }}>
-                  {b.type} · {b.district || '—'} · {b.ownerEmail}
+                <div className="type-meta mt-0.5 break-words">
+                  {labelOf(BUSINESS_TYPE_LABELS, b.type, 'İşletme')} · {b.district || 'İlçe yok'} · {b.ownerEmail}
                 </div>
                 {b.verifiedAt && (
-                  <div style={{ color: '#727272', fontSize: 10, marginTop: 2 }}>
-                    {new Date(b.verifiedAt).toLocaleString('tr-TR')} · admin #{b.verifiedBy}
+                  <div className="type-caption mt-0.5">
+                    Doğrulama: {fmtDateTime(b.verifiedAt)}{b.verifiedBy ? ` · yönetici #${b.verifiedBy}` : ''}
                   </div>
                 )}
               </div>
-              <button onClick={() => toggleVerified(b)}
-                style={{
-                  padding: '6px 14px', borderRadius: 6,
-                  background: b.verifiedAt ? 'rgba(107, 117, 116, 0.12)' : 'var(--ah-brand-gradient)',
-                  border: b.verifiedAt ? '1px solid rgba(129, 129, 129, 0.3)' : 'none',
-                  color: b.verifiedAt ? '#6b7574' : '#ffffff',
-                  fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
-                }}>
-                {b.verifiedAt ? 'Onayı Kaldır' : 'Doğrula'}
+              <button type="button" onClick={() => toggleVerified(b)} disabled={busyId === b.id}
+                className={b.verifiedAt ? 'btn-ghost self-start sm:self-auto' : 'btn-primary sm:!w-auto'}>
+                {b.verifiedAt ? 'Doğrulamayı kaldır' : 'Doğrula'}
               </button>
-            </div>
+            </li>
           ))}
-        </div>
-      )}
+        </ul>
+      </ListState>
     </div>
   )
 }
 
-/* ── Outbox Tab (FAZ D.5) ── */
+/* ── Giden kuyruk (outbox) ── */
+const OUTBOX_FILTERS = [
+  { value: 'all',     label: 'Tümü' },
+  { value: 'pending', label: 'Sırada' },
+  { value: 'dead',    label: 'Başarısız' },
+]
+
 function OutboxTab() {
   const [filter, setFilter] = useState('all')
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [busyId, setBusyId] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       setItems(await hotelApi.adminListOutbox(filter, 100))
     } catch (e) {
-      toast.error(extractErrorMessage(e) || 'Outbox listelenemedi')
+      setError(extractErrorMessage(e) || 'Giden kuyruk yüklenemedi.')
     } finally {
       setLoading(false)
     }
@@ -1073,130 +996,63 @@ function OutboxTab() {
   useEffect(() => { load() }, [load])
 
   async function retry(id) {
+    setBusyId(id)
     try {
       await hotelApi.adminRetryOutbox(id)
-      toast.success('Retry sırasına alındı')
+      toast.success('Yeniden gönderim sırasına alındı')
       load()
     } catch (e) {
       toast.error(extractErrorMessage(e) || 'İşlem başarısız')
+    } finally {
+      setBusyId(null)
     }
   }
 
-  const FILTERS = [
-    { v: 'all',     label: 'Tümü' },
-    { v: 'pending', label: 'Sırada' },
-    { v: 'dead',    label: 'Dead Letter' },
-  ]
-
-  const statusStyle = {
-    DELIVERED: { color: '#7f7f7f', bg: 'rgba(127, 127, 127, 0.10)' },
-    PENDING:   { color: '#6b7574', bg: 'rgba(132, 132, 132, 0.10)' },
-    DEAD:      { color: '#3d3d3d', bg: 'rgba(61, 61, 61, 0.10)' },
-  }
-
   return (
-    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {FILTERS.map(f => (
-          <button
-            key={f.v}
-            onClick={() => setFilter(f.v)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: 999,
-              border: filter === f.v ? '1px solid #1f2937' : '1px solid rgba(161, 161, 161, 0.3)',
-              background: filter === f.v ? 'rgba(31, 41, 55, 0.12)' : 'transparent',
-              color: filter === f.v ? '#1f2937' : '#a1a1a1',
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}>
-            {f.label}
-          </button>
-        ))}
-      </div>
+    <div className="space-y-4">
+      <TabHeader title="Giden kuyruk" description="Arka planda gönderilen e-posta ve işlem kayıtları."
+        count={loading ? undefined : items.length} countLabel="kayıt" />
+      <FilterChips label="Kuyruk filtresi" options={OUTBOX_FILTERS} value={filter} onChange={setFilter} />
 
-      {loading ? (
-        <div style={{ color: '#a1a1a1' }}>Yükleniyor…</div>
-      ) : items.length === 0 ? (
-        <div style={{ color: '#a1a1a1', padding: 24, textAlign: 'center' }}>Bu filtreyle event yok.</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <ListState loading={loading} error={error} onRetry={load} empty={items.length === 0}
+        emptyType="generic" emptyTitle="Bu filtrede kayıt yok" emptyDescription="Kuyruk temiz görünüyor.">
+        <ul className="space-y-2">
           {items.map(e => {
-            const s = statusStyle[e.status] || statusStyle.PENDING
+            const sm = statusMeta(OUTBOX_STATUS, e.status)
             return (
-              <div key={e.id} style={{
-                padding: 14,
-                borderRadius: 10,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(31, 41, 55, 0.08)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 12,
-              }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: 999,
-                      background: s.bg,
-                      color: s.color,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.05em',
-                    }}>{e.status}</span>
-                    <span style={{ color: 'var(--ah-ink-4)', fontSize: 13, fontWeight: 600 }}>#{e.id}</span>
-                    <span style={{ color: '#1f2937', fontSize: 11, fontWeight: 600 }}>{e.eventType}</span>
-                    <span style={{ color: '#a1a1a1', fontSize: 11 }}>
-                      deneme {e.attempts}
-                    </span>
-                    <span style={{ color: '#727272', fontSize: 11 }}>
-                      {new Date(e.createdAt).toLocaleString('tr-TR')}
-                    </span>
+              <li key={e.id} className="card !p-4 flex flex-col sm:flex-row sm:items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex gap-1.5 items-center flex-wrap">
+                    <span className={sm.cls}>{sm.label}</span>
+                    <span className="badge badge-neutral">{labelOf(OUTBOX_EVENT_LABELS, e.eventType, 'Diğer kayıt')}</span>
+                    <span className="type-caption type-num">#{e.id}</span>
                   </div>
+                  <p className="type-caption mt-1.5">
+                    {e.attempts} deneme · {fmtDateTime(e.createdAt)}
+                  </p>
                   {e.lastError && (
-                    <div style={{
-                      marginTop: 6,
-                      fontSize: 11,
-                      color: '#6b7574',
-                      fontFamily: 'Inter, sans-serif',
-                      lineHeight: 1.4,
-                    }}>
-                      {e.lastError}
-                    </div>
+                    <p className="type-meta mt-1.5 break-words" style={{ color: 'var(--ah-danger)' }}>
+                      Son hata: {e.lastError}
+                    </p>
                   )}
-                  <div style={{
-                    marginTop: 6,
-                    fontSize: 10,
-                    color: '#727272',
-                    fontFamily: 'Inter, sans-serif',
-                    wordBreak: 'break-all',
-                  }}>
-                    {e.payloadPreview}
-                  </div>
+                  {e.payloadPreview && (
+                    <pre className="type-caption mt-2 p-2.5 rounded-lg whitespace-pre-wrap break-all overflow-x-auto"
+                      style={{ background: 'var(--ah-band)', fontFamily: 'var(--font-mono)' }}>
+                      {e.payloadPreview}
+                    </pre>
+                  )}
                 </div>
                 {e.status !== 'DELIVERED' && (
-                  <button
-                    onClick={() => retry(e.id)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: 6,
-                      background: 'rgba(31, 41, 55, 0.10)',
-                      border: '1px solid rgba(31, 41, 55, 0.22)',
-                      color: '#1f2937',
-                      fontSize: 11,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                    }}>
-                    Tekrar Dene
+                  <button type="button" onClick={() => retry(e.id)} disabled={busyId === e.id}
+                    className="btn-secondary flex-shrink-0 self-start">
+                    Tekrar dene
                   </button>
                 )}
-              </div>
+              </li>
             )
           })}
-        </div>
-      )}
+        </ul>
+      </ListState>
     </div>
   )
 }

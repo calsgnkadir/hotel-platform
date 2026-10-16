@@ -32,20 +32,20 @@ function SearchInput({ value, onChange }) {
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
            strokeWidth={1.8} stroke="currentColor"
            className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-           style={{ color: focused ? '#1f2937' : '#6b7574' }}>
+           style={{ color: focused ? 'var(--ah-brand)' : 'var(--ah-ink-4)' }} aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round"
               d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
       </svg>
-      <input type="text" value={value}
+      <input type="search" value={value} aria-label="Sohbetlerde ara"
              onChange={e => onChange(e.target.value)}
              onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
              placeholder="Kişi, ilan veya mesaj…"
-             className="w-full bg-transparent outline-none h-9 pl-8 pr-7 text-[12.5px]"
-             style={{ color: 'var(--text-headline)', caretColor: '#1f2937' }} />
+             className="w-full bg-transparent outline-none h-10 pl-8 pr-9 text-[14px]"
+             style={{ color: 'var(--text-headline)', caretColor: 'var(--ah-brand)' }} />
       {value && (
         <button type="button" onClick={() => onChange('')}
-                title="Temizle"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 grid place-items-center rounded-full hover:bg-white/5 transition-colors"
+                aria-label="Aramayı temizle"
+                className="absolute right-0.5 top-1/2 -translate-y-1/2 w-9 h-9 grid place-items-center rounded-full transition-colors"
                 style={{ color: 'var(--text-secondary)' }}>
           ×
         </button>
@@ -77,8 +77,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
       {isActive && (
         <motion.span layoutId="conv-active-rail"
           className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
-          style={{ background: 'linear-gradient(180deg, #1f2937, #1f2937, #111827)',
-                   boxShadow: 'none' }} />
+          style={{ background: 'var(--ah-brand)' }} />
       )}
       {/* Hover sweep */}
       <span aria-hidden className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
@@ -93,12 +92,9 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
               style={{ border: '1px solid rgba(31, 41, 55, 0.18)' }} />
           ) : (
             <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-[15px]"
-                 style={{
-                   background: 'linear-gradient(135deg, rgba(31, 41, 55, 0.55), rgba(244, 246, 246, 0.85))',
-                   border: '1px solid rgba(31, 41, 55, 0.18)',
-                   color: '#1f2937',
-                 }}>
-              {(conv.otherPartyName || '?').charAt(0).toUpperCase()}
+                 aria-hidden="true"
+                 style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-line)', color: 'var(--ah-brand)' }}>
+              {(conv.otherPartyName || '?').charAt(0).toLocaleUpperCase('tr-TR')}
             </div>
           )}
         </div>
@@ -106,35 +102,30 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             {/* FAZ 17 fix: okunmus sohbet ismi eski mor paletten (#dcdcdc) kalmisti -> ivory */}
-            <div className="font-semibold text-[13.5px] truncate"
+            <div className="font-semibold text-[14px] truncate"
                  style={{ color: hasUnread ? 'var(--text-headline)' : 'var(--text-primary)', letterSpacing: '-0.01em' }}>
               {conv.otherPartyName}
             </div>
-            <div className="text-[10px] flex-shrink-0"
-                 style={{ color: 'var(--text-secondary)' }}>
+            <div className="type-caption flex-shrink-0 mr-6">
               {formatRelative(conv.lastMessageAt)}
             </div>
           </div>
           {conv.listingTitle && (
-            <div className="text-[10px] truncate mt-0.5 uppercase tracking-wider font-semibold"
-                 style={{ color: '#1f2937' }}>
+            <div className="type-caption truncate mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
               {conv.listingTitle}
             </div>
           )}
           <div className="flex items-center justify-between gap-2 mt-1.5">
-            <div className={`text-[12px] truncate ${hasUnread ? 'font-medium' : 'font-normal'}`}
-                 style={{ color: hasUnread ? '#1f2937' : 'var(--text-secondary)' }}>
+            <div className={`text-[13px] truncate ${hasUnread ? 'font-semibold' : 'font-normal'}`}
+                 style={{ color: hasUnread ? 'var(--ah-ink)' : 'var(--text-secondary)' }}>
               {conv.lastMessagePreview || <span className="italic" style={{ color: 'var(--text-muted)' }}>Henüz mesaj yok</span>}
             </div>
             {hasUnread && (
               <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 380, damping: 18 }}
-                className="flex-shrink-0 text-[10px] font-bold rounded-full px-1.5 min-w-[20px] text-center"
-                style={{
-                  background: 'var(--ah-brand)',
-                  color: '#ffffff',
-                  boxShadow: 'none',
-                }}>
+                className="flex-shrink-0 text-[11px] leading-[18px] font-bold rounded-full px-1.5 min-w-[20px] text-center type-num"
+                aria-label={`${conv.unreadCount} okunmamış mesaj`}
+                style={{ background: 'var(--ah-brand)', color: 'var(--text-inverse)' }}>
                 {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
               </motion.span>
             )}
@@ -145,9 +136,10 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onToggleStar?.() }}
-        title={isStarred ? 'Yildizi kaldir' : 'Yildizla'}
-        className="absolute top-2 right-2 p-1 rounded-md transition-colors opacity-60 hover:opacity-100"
-        style={{ color: isStarred ? '#1f2937' : '#98a1a0' }}
+        aria-label={isStarred ? 'Yıldızı kaldır' : 'Yıldızla'}
+        aria-pressed={isStarred}
+        className="absolute top-0.5 right-0.5 w-9 h-9 grid place-items-center rounded-md transition-colors opacity-70 hover:opacity-100"
+        style={{ color: isStarred ? 'var(--ah-brand)' : 'var(--ah-ink-4)' }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill={isStarred ? 'currentColor' : 'none'}
              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -162,7 +154,7 @@ function ConversationItem({ conv, isActive, isStarred, onToggleStar, onClick }) 
 /* ── Bos durum: hic sohbet yok ── */
 function EmptyRail({ userRole, onNavigate }) {
   const isBiz = userRole === 'BUSINESS_OWNER'
-  const ctaLabel = isBiz ? 'İlanlarım' : 'İlanları Keşfet'
+  const ctaLabel = isBiz ? 'İlanlarım' : 'İlanları keşfet'
   const ctaPath  = isBiz ? '/business' : '/candidate'
   const helperText = isBiz
     ? 'Yayında bir ilanın olduğunda adaylar başvurunca otomatik sohbet açılır.'
@@ -207,13 +199,7 @@ function EmptyRail({ userRole, onNavigate }) {
         whileHover={{ y: -2, scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
         transition={{ type: 'spring', stiffness: 340, damping: 22 }}
-        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[11.5px] font-semibold"
-        style={{
-          background: 'linear-gradient(135deg, #1f2937 0%, #1f2937 50%, #111827 100%)',
-          color: '#ffffff',
-          border: '1px solid rgba(31, 41, 55, 0.45)',
-          boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-        }}>
+        className="btn-primary !w-auto">
         {ctaLabel}
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5">
@@ -247,12 +233,7 @@ export default function ConversationsRail({
           <h3 className="type-body font-semibold" style={{ color: 'var(--text-headline)' }}>
             Sohbetler
           </h3>
-          <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full"
-                style={{
-                  background: 'rgba(31, 41, 55, 0.08)',
-                  border: '1px solid rgba(31, 41, 55, 0.18)',
-                  color: '#1f2937',
-                }}>
+          <span className="badge badge-neutral type-num">
             {filteredConvs.length}{search ? ` / ${conversations.length}` : ''}
           </span>
         </div>
@@ -260,7 +241,7 @@ export default function ConversationsRail({
         <SearchInput value={search} onChange={onSearchChange} />
 
         {/* Filter chip bar (Tumu / Okunmamis / Yildizli) */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" role="group" aria-label="Sohbet filtresi">
           {[
             { id: 'all',     label: 'Tümü',      count: conversations.length },
             { id: 'unread',  label: 'Okunmamış', count: unreadTotal },
@@ -270,15 +251,11 @@ export default function ConversationsRail({
             return (
               <button key={opt.id} type="button"
                 onClick={() => onFilterChange(opt.id)}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all hover:-translate-y-0.5"
-                style={{
-                  background: isActive ? 'rgba(31, 41, 55, 0.14)' : 'rgba(255, 255, 255, 0.75)',
-                  color: isActive ? '#1f2937' : '#6b7574',
-                  border: `1px solid ${isActive ? 'rgba(31, 41, 55, 0.40)' : 'rgba(31, 41, 55, 0.12)'}`,
-                }}>
+                aria-pressed={isActive}
+                className={`chip ${isActive ? 'is-active' : ''}`}>
                 {opt.label}
                 {opt.count > 0 && (
-                  <span className="text-[9px] font-bold opacity-80">
+                  <span className="type-num font-semibold opacity-80">
                     {opt.count > 9 ? '9+' : opt.count}
                   </span>
                 )}

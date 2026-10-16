@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../api/hotel'
 import { extractErrorMessage } from '../api/client'
@@ -13,6 +13,8 @@ export default function ChangePasswordCard() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPasswords, setShowPasswords] = useState(false)
+  const uid = useId()
+  const ids = { current: `${uid}-current`, next: `${uid}-new`, confirm: `${uid}-confirm` }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -48,8 +50,8 @@ export default function ChangePasswordCard() {
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="label">Mevcut Şifre</label>
-          <input type={showPasswords ? 'text' : 'password'}
+          <label htmlFor={ids.current} className="label">Mevcut şifre</label>
+          <input id={ids.current} type={showPasswords ? 'text' : 'password'}
             value={currentPassword}
             onChange={e => setCurrentPassword(e.target.value)}
             className="input"
@@ -58,8 +60,8 @@ export default function ChangePasswordCard() {
         </div>
 
         <div>
-          <label className="label">Yeni Şifre</label>
-          <input type={showPasswords ? 'text' : 'password'}
+          <label htmlFor={ids.next} className="label">Yeni şifre</label>
+          <input id={ids.next} type={showPasswords ? 'text' : 'password'}
             value={newPassword}
             onChange={e => setNewPassword(e.target.value)}
             className="input"
@@ -68,8 +70,8 @@ export default function ChangePasswordCard() {
         </div>
 
         <div>
-          <label className="label">Yeni Şifre (Tekrar)</label>
-          <input type={showPasswords ? 'text' : 'password'}
+          <label htmlFor={ids.confirm} className="label">Yeni şifre (tekrar)</label>
+          <input id={ids.confirm} type={showPasswords ? 'text' : 'password'}
             value={confirmPassword}
             onChange={e => setConfirmPassword(e.target.value)}
             className="input"

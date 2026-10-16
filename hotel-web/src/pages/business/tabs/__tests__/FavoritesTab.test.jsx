@@ -99,3 +99,35 @@ describe('FavoritesTab — Engellenenler', () => {
     await waitFor(() => expect(getMyBlockedCandidates.mock.calls.length).toBeGreaterThan(callsBefore))
   })
 })
+
+/**
+ * Favoriler bölümü: Türkçe karakterli düğmeler (eskiden "Kaldir", BÜYÜK HARF 11px),
+ * btn-secondary / btn-danger; kaldırma onaylı.
+ */
+describe('FavoritesTab — Favoriler', () => {
+  beforeEach(() => {
+    listFavorites.mockReset().mockResolvedValue([
+      { id: 1, candidateId: 5, candidateName: 'ayşe yılmaz', candidateEmail: 'a@x.com', candidateDistrict: 'Kadıköy', createdAt: '2026-10-01T10:00:00' },
+    ])
+    getMyBlockedCandidates.mockReset().mockResolvedValue([])
+    confirmMock.mockReset()
+  })
+
+  it('satırda Mesaj gönder + Kaldır, ilçe ve tarih tek satırda', async () => {
+    renderTab()
+    expect(await screen.findByText('ayşe yılmaz')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mesaj gönder' })).toHaveClass('btn-secondary')
+    expect(screen.getByRole('button', { name: 'Kaldır' })).toHaveClass('btn-danger')
+    expect(screen.getByText(/Kadıköy · .* tarihinde eklendi/)).toBeInTheDocument()
+    expect(screen.getByText('A')).toBeInTheDocument()
+    expect(screen.queryByText('Kaldir')).not.toBeInTheDocument()
+  })
+
+  it('Kaldır onay ister; onay yoksa API çağrılmaz', async () => {
+    renderTab()
+    confirmMock.mockResolvedValueOnce(false)
+    fireEvent.click(await screen.findByRole('button', { name: 'Kaldır' }))
+    await waitFor(() => expect(confirmMock).toHaveBeenCalledTimes(1))
+    expect(confirmMock.mock.calls[0][0]).toMatchObject({ title: 'Favorilerden kaldır', destructive: true })
+  })
+})

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useId } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../api/hotel'
 import { extractErrorMessage } from '../api/client'
@@ -21,6 +21,7 @@ const REASONS = [
  * @param {function} onClose
  */
 export default function ReportModal({ targetType, targetId, targetLabel, onClose }) {
+  const uid = useId()
   const [reason, setReason] = useState('')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
@@ -60,19 +61,19 @@ export default function ReportModal({ targetType, targetId, targetLabel, onClose
            aria-labelledby="report-modal-title"
            className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
         <div className="p-6 border-b border-cream-200">
-          <h2 id="report-modal-title" className="text-lg font-bold text-ink-900">Bildir</h2>
+          <h2 id="report-modal-title" className="type-card">Bildir</h2>
           {targetLabel && (
             <p className="text-sm text-ink-500 mt-0.5 truncate">{targetLabel}</p>
           )}
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="label">Neden *</label>
-            <div className="space-y-2">
+          <fieldset>
+            <legend id={`${uid}-reason`} className="label">Neden *</legend>
+            <div className="space-y-2" role="radiogroup" aria-labelledby={`${uid}-reason`}>
               {REASONS.map(r => (
                 <label key={r.value}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-all
+                  className={`flex items-center gap-2.5 px-3 min-h-[44px] rounded-lg border cursor-pointer transition-all
                     ${reason === r.value ? 'border-red-400 bg-red-50' : 'border-cream-300 hover:border-red-300'}`}>
                   <input type="radio" name="reason" value={r.value}
                     checked={reason === r.value}
@@ -82,25 +83,25 @@ export default function ReportModal({ targetType, targetId, targetLabel, onClose
                 </label>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           <div>
-            <label className="label">
+            <label htmlFor={`${uid}-desc`} className="label">
               Açıklama
               {reason === 'OTHER'
                 ? <span className="text-red-500"> *</span>
-                : <span className="text-ink-400 font-normal"> (opsiyonel)</span>}
+                : <span className="text-ink-400 font-normal"> (isteğe bağlı)</span>}
             </label>
-            <textarea value={description} onChange={e => setDescription(e.target.value)}
+            <textarea id={`${uid}-desc`} value={description} onChange={e => setDescription(e.target.value)}
               className="input resize-none h-24 text-sm"
               placeholder="Detay verirsen incelememiz kolaylaşır..." />
           </div>
 
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1 text-sm">İptal</button>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">Vazgeç</button>
             <button type="submit" disabled={loading}
-              className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 bg-red-600 hover:bg-red-700">
-              {loading ? 'Gönderiliyor...' : 'Şikayeti Gönder'}
+              className="btn-destructive flex-1">
+              {loading ? 'Gönderiliyor…' : 'Bildirimi gönder'}
             </button>
           </div>
         </form>

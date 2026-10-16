@@ -130,4 +130,37 @@ describe('BusinessPublicPage', () => {
     expect(await screen.findByRole('link', { name: 'https://www.isletmem.com' }))
       .toHaveAttribute('href', 'https://www.isletmem.com/')
   })
+
+  it('Paket 2: cümle düzeni başlıklar, boş durumlar ve oturuma göre üst düğme', async () => {
+    renderPage()
+    await screen.findByRole('heading', { level: 1, name: /deniz otel/ })
+    expect(screen.getByText('Otel')).toBeInTheDocument()
+    expect(screen.queryByText('KADROM')).not.toBeInTheDocument()
+    expect(screen.getByText('İşletme henüz tanıtım yazısı eklemedi.')).toBeInTheDocument()
+    expect(screen.getByText('İletişim bilgisi eklenmemiş.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Panelime dön' })).toHaveAttribute('href', '/candidate')
+    expect(screen.queryByRole('button', { name: 'Giriş yap' })).not.toBeInTheDocument()
+  })
+
+  it('misafir "Giriş yap" görür', async () => {
+    role = null
+    renderPage()
+    await screen.findByRole('heading', { level: 1 })
+    expect(screen.getByRole('button', { name: 'Giriş yap' })).toBeInTheDocument()
+  })
+
+  it('404: "İşletme bulunamadı" ve ana sayfa bağlantısı', async () => {
+    api.getPublicBusiness.mockRejectedValue(Object.assign(new Error('x'), { response: { status: 404 } }))
+    renderPage()
+    expect(await screen.findByRole('heading', { name: 'İşletme bulunamadı' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ana sayfaya dön' })).toHaveAttribute('href', '/')
+    expect(screen.queryByRole('button', { name: 'Tekrar dene' })).not.toBeInTheDocument()
+  })
+
+  it('ağ hatasında "Tekrar dene" yeniden ister', async () => {
+    api.getPublicBusiness.mockRejectedValueOnce(new Error('ağ'))
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Tekrar dene' }))
+    expect(await screen.findByRole('heading', { level: 1, name: /deniz otel/ })).toBeInTheDocument()
+  })
 })

@@ -20,6 +20,23 @@ import ProfileCompletenessCard from '../../../components/ProfileCompletenessCard
 import { calculateBusinessCompleteness } from '../../../lib/profileCompleteness'
 
 /* ── Profile Tab ── */
+// Sunucudaki WebsiteUrlPolicy ile aynı kural (yardımcıdır; asıl kontrol backend'de):
+// boş serbest; doluysa boşluksuz, en çok 255 karakter, http/https şeması, kullanıcı bilgisi yok, host var.
+export const WEBSITE_MESSAGE = 'Web sitesi adresi http:// veya https:// ile başlamalı (örn: https://www.isletmem.com).'
+export function websiteError(raw) {
+  const v = (raw || '').trim()
+  if (!v) return false
+  if (v.length > 255 || /\s/.test(v)) return true
+  try {
+    const u = new URL(v)
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return true
+    if (u.username || u.password) return true
+    return !u.hostname
+  } catch {
+    return true
+  }
+}
+
 export default function ProfileTab() {
   const confirm = useConfirm()
   const [loading, setLoading] = useState(true)
@@ -105,13 +122,23 @@ export default function ProfileTab() {
     } catch (err) { toast.error(extractErrorMessage(err)) }
   }
 
+  const [websiteTouched, setWebsiteTouched] = useState(false)
+  const [websiteServerError, setWebsiteServerError] = useState(null)
+  const websiteHelp = websiteServerError || (websiteTouched && websiteError(form?.website) ? WEBSITE_MESSAGE : null)
+
   function handleChange(e) {
+    if (e.target.name === 'website') setWebsiteServerError(null)
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.name.trim()) return toast.error('İşletme adı zorunlu')
+    if (websiteError(form.website)) {
+      setWebsiteTouched(true)
+      document.getElementById('biz-profile-website')?.focus()
+      return toast.error(WEBSITE_MESSAGE)
+    }
 
     const phoneError = validateTurkeyPhone(form.phone)
     if (phoneError) return toast.error(phoneError)
@@ -156,7 +183,10 @@ export default function ProfileTab() {
       }))
       toast.success('Profil güncellendi!')
     } catch (err) {
-      toast.error(extractErrorMessage(err))
+      const msg = extractErrorMessage(err)
+      // Sunucu (WebsiteUrlPolicy) 422 ile reddederse mesaj alanın altında da görünsün
+      if (err?.response?.status === 422 && /web sitesi|website/i.test(msg)) setWebsiteServerError(msg)
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
@@ -199,23 +229,23 @@ export default function ProfileTab() {
         </h3>
 
         <div>
-          <label className="label">İşletme Adı *</label>
-          <input type="text" name="name" value={form.name} onChange={handleChange}
+          <label htmlFor="biz-profile-name" className="label">İşletme adı *</label>
+          <input id="biz-profile-name" type="text" name="name" value={form.name} onChange={handleChange}
             className="input" placeholder="Test Otel" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="label">Tür *</label>
-            <select name="type" value={form.type} onChange={handleChange} className="input">
+            <label htmlFor="biz-profile-type" className="label">Tür *</label>
+            <select id="biz-profile-type" name="type" value={form.type} onChange={handleChange} className="input">
               {Object.entries(BUSINESS_TYPE_LABELS).map(([v, l]) => (
                 <option key={v} value={v}>{l}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="label">Kategori <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-            <input type="text" name="category" value={form.category} onChange={handleChange}
+            <label htmlFor="biz-profile-category" className="label">Kategori <span className="text-ink-400 font-normal">(isteğe bağlı)</span></label>
+            <input id="biz-profile-category" type="text" name="category" value={form.category} onChange={handleChange}
               className="input" placeholder="5*, 4*, Boutique vb." />
           </div>
         </div>
@@ -228,14 +258,14 @@ export default function ProfileTab() {
           } />
 
         <div>
-          <label className="label">Adres <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-          <input type="text" name="address" value={form.address} onChange={handleChange}
+          <label htmlFor="biz-profile-address" className="label">Adres <span className="text-ink-400 font-normal">(isteğe bağlı)</span></label>
+          <input id="biz-profile-address" type="text" name="address" value={form.address} onChange={handleChange}
             className="input" placeholder="Sokak, bina no, kat" />
         </div>
 
         <div>
-          <label className="label">Açıklama <span className="text-ink-400 font-normal">(opsiyonel)</span></label>
-          <textarea name="description" value={form.description} onChange={handleChange}
+          <label htmlFor="biz-profile-description" className="label">Açıklama <span className="text-ink-400 font-normal">(isteğe bağlı)</span></label>
+          <textarea id="biz-profile-description" name="description" value={form.description} onChange={handleChange}
             className="input resize-none h-24 text-sm"
             placeholder="İşletmenizi adaylara tanıtın..." />
         </div>
@@ -250,27 +280,36 @@ export default function ProfileTab() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="label">Telefon</label>
-            <input type="tel" name="phone" value={form.phone} maxLength={14}
+            <label htmlFor="biz-profile-phone" className="label">Telefon</label>
+            <input id="biz-profile-phone" type="tel" name="phone" value={form.phone} maxLength={14}
               onChange={e => setForm(prev => ({ ...prev, phone: formatTurkeyPhoneInput(e.target.value) }))}
               className="input" placeholder="0212 555 12 34" />
           </div>
           <div>
-            <label className="label">Web Sitesi</label>
-            <input type="text" name="website" value={form.website} onChange={handleChange}
-              className="input" placeholder="https://..." />
+            <label htmlFor="biz-profile-website" className="label">Web sitesi</label>
+            <input id="biz-profile-website" type="text" inputMode="url" name="website" value={form.website}
+              onChange={handleChange} onBlur={() => setWebsiteTouched(true)}
+              autoComplete="url" maxLength={255}
+              aria-invalid={websiteHelp ? 'true' : undefined}
+              aria-describedby="biz-profile-website-help"
+              className="input" placeholder="https://www.isletmem.com" />
+            <p id="biz-profile-website-help" className="type-caption mt-1"
+               style={websiteHelp ? { color: 'var(--ah-danger)' } : undefined}
+               role={websiteHelp ? 'alert' : undefined}>
+              {websiteHelp || 'http:// veya https:// ile başlayan tam adres.'}
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="label">Instagram</label>
-            <input type="text" name="instagram" value={form.instagram} onChange={handleChange}
+            <label htmlFor="biz-profile-instagram" className="label">Instagram</label>
+            <input id="biz-profile-instagram" type="text" name="instagram" value={form.instagram} onChange={handleChange}
               className="input" placeholder="@kullaniciadi" />
           </div>
           <div>
-            <label className="label">Facebook</label>
-            <input type="text" name="facebook" value={form.facebook} onChange={handleChange}
+            <label htmlFor="biz-profile-facebook" className="label">Facebook</label>
+            <input id="biz-profile-facebook" type="text" name="facebook" value={form.facebook} onChange={handleChange}
               className="input" placeholder="sayfa adı veya URL" />
           </div>
         </div>
