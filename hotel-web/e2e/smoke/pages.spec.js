@@ -9,7 +9,7 @@ test.describe('Genel sayfalar', () => {
 
   test('KVKK metni güncel bölümleri içerir', async ({ page }) => {
     await page.goto('/kvkk')
-    await expect(page.getByRole('heading', { name: '6. Çerezler' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '8. Çerezler' })).toBeVisible()
     await expect(page.locator('body')).toContainText('Sohbet ekleri')
     // Kaldırılan belge arşivi ve puanlama anlatılmaz
     await expect(page.locator('body')).not.toContainText(/kimlik fotokopisi|puanlama/i)

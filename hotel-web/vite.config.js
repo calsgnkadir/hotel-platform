@@ -1,8 +1,17 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
+// Canlı derleme koruması (VITE_API_URL boş/localhost) — açıklama ve kurallar
+// src/lib/apiUrlGuard.js içinde (saf modül; testte vite yüklemeden sınanır).
+import { checkProductionApiUrl } from './src/lib/apiUrlGuard.js'
+
+export default defineConfig(({ command, mode }) => {
+  if (command === 'build' && mode === 'production') {
+    const warning = checkProductionApiUrl(loadEnv(mode, process.cwd(), ''))
+    if (warning) console.warn(`[kadrom] Uyarı: ${warning} (yerel/CI derlemesi olarak devam ediliyor)`)
+  }
+  return {
   plugins: [react()],
   // FAZ 0/#4d — Vitest config
   test: {
@@ -100,4 +109,5 @@ export default defineConfig({
       },
     },
   },
+}
 })

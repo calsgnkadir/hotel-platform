@@ -4,6 +4,8 @@ import * as authApi from '../api/auth'
 import { wsConnect, wsDisconnect } from '../lib/websocket'
 import { presenceInit, presenceSubscribe, presenceUnsubscribe } from '../lib/presence'
 import { syncPushSubscription, getPushEndpoint } from '../lib/webpush'
+import { SESSION_CLEARED_EVENT } from '../api/client'
+import EmailVerifyDialog from '../components/EmailVerifyDialog'
 
 const AuthContext = createContext(null)
 
@@ -27,6 +29,18 @@ export function AuthProvider({ children }) {
       }
     }
     setLoading(false)
+  }, [])
+
+  // api/client.js oturumu yenileyemeyip temizlediğinde (ör. herkese açık sayfada
+  // sessizce) arayüz de çıkış yapmış görünsün: WS/presence kapanır, kullanıcı düşer.
+  useEffect(() => {
+    function onCleared() {
+      presenceUnsubscribe()
+      wsDisconnect()
+      setUser(null)
+    }
+    window.addEventListener(SESSION_CLEARED_EVENT, onCleared)
+    return () => window.removeEventListener(SESSION_CLEARED_EVENT, onCleared)
   }, [])
 
   // FAZ 5.1 — Hibrit tema: BIZ koyu (Dark Concierge), CAND/default acik (Hospitality SaaS).
@@ -107,7 +121,13 @@ export function AuthProvider({ children }) {
     loginFromOAuth,
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {/* 403 EMAIL_NOT_VERIFIED gelince açılan doğrulama penceresi (tek yer) */}
+      <EmailVerifyDialog />
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {

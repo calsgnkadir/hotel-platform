@@ -22,8 +22,8 @@ test.describe('Landing', () => {
     const dialog = page.getByRole('dialog', { name: 'Hesap oluştur veya giriş yap' })
     await expect(dialog).toBeVisible()
     await dialog.getByText('İş arıyorum').click()
-    await dialog.getByPlaceholder('email@adresin.com').fill('yeni-aday@test.com')
-    await dialog.getByRole('button', { name: 'Email ile devam et' }).click()
+    await dialog.getByPlaceholder('ornek@email.com').fill('yeni-aday@test.com')
+    await dialog.getByRole('button', { name: 'E-posta ile devam et' }).click()
 
     await expect(page).toHaveURL(/\/register/)
     await expect(page.getByPlaceholder('ornek@email.com')).toHaveValue('yeni-aday@test.com')

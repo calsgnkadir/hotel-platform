@@ -19,17 +19,18 @@ test.describe('Register wizard', () => {
     // Aday secimi -> step 2
     await page.getByText('İş Arıyorum').click()
 
-    // Step 2'de "Aday" rozeti + Geri butonu
+    // Step 2'de "Aday" rozeti + rol seçimine dönüş düğmesi ("Hesap türü")
     await expect(page.getByText(/aday/i).first()).toBeVisible()
-    await expect(page.getByText(/geri/i).first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /Hesap türü/ })).toBeVisible()
   })
 
   test('Step 2 -> Geri butonu step 1 e doner', async ({ page }) => {
     await page.goto('/register')
     await page.getByText('İş Arıyorum').click()
-    await expect(page.getByText(/geri/i).first()).toBeVisible()
+    const back = page.getByRole('button', { name: /Hesap türü/ })
+    await expect(back).toBeVisible()
 
-    await page.getByText(/geri/i).first().click()
+    await back.click()
 
     // Step 1'e dondu — rol kartlari tekrar gorunur
     await expect(page.getByText('İş Arıyorum')).toBeVisible()

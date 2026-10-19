@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GoogleSignInButton from './GoogleSignInButton'
+import TermsConsent from './TermsConsent'
 import { useGoogleSignIn } from '../lib/authProviders'
+import { rememberOAuthConsent } from '../lib/legal'
+import { rememberReturn } from '../lib/authReturn'
 
 /**
  * AuthModal — Landing CTA'larindan acilan tek-ekran auth secici.
@@ -11,11 +14,16 @@ import { useGoogleSignIn } from '../lib/authProviders'
  *   1. Rol sec (Aday / Isletme) — opsiyonel
  *   2. Google ile devam et VEYA email gir + "Email ile devam et"
  *   3. Email yolu -> /register, role + email pre-fill (RegisterPage step2'ye atlar)
+ *
+ * Google yalnız ADAY hesabı açar: işletme seçiliyken gösterilmez. Kullanım
+ * Şartları kutusu işaretlenmeden Google düğmesi pasiftir; işaret, e-posta yoluyla
+ * kayıt formuna da taşınır (aynı onayı iki kez istemeyiz).
  */
 export default function AuthModal({ open, onClose, defaultRole = null }) {
   const navigate = useNavigate()
   const [role, setRole] = useState(defaultRole)
   const [email, setEmail] = useState('')
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const dialogRef = useRef(null)
   const google = useGoogleSignIn()  // Google ayarlı değilse buton + ayraç gizli
 
@@ -31,7 +39,7 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
 
   useEffect(() => {
     if (!open) {
-      const t = setTimeout(() => { setRole(null); setEmail('') }, 200)
+      const t = setTimeout(() => { setRole(null); setEmail(''); setTermsAccepted(false) }, 200)
       return () => clearTimeout(t)
     }
   }, [open])
@@ -40,9 +48,16 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
     e.preventDefault()
     onClose()
     navigate('/register', {
-      state: { preselectedRole: role, prefillEmail: email.trim() || undefined },
+      state: { preselectedRole: role, prefillEmail: email.trim() || undefined, termsAccepted },
     })
   }
+
+  function beforeGoogle() {
+    rememberOAuthConsent()
+    rememberReturn(null)  // ana sayfadan: dönüşte rol paneline
+  }
+
+  const showGoogle = google && role !== 'BUSINESS_OWNER'
 
   if (!open) return null
 
@@ -87,7 +102,7 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
                 style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.015em', color: 'var(--ah-ink)' }}>
               Hesap oluştur veya giriş yap
             </h2>
-            <p className="mt-1 text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
+            <p className="mt-1 type-meta">
               Aday mısın yoksa işletme mi?
             </p>
           </div>
@@ -100,13 +115,19 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
                       title="İşletme" subtitle="Eleman arıyorum" />
           </div>
 
-          {/* Google + ayrac — yalnızca Google girişi gerçekten ayarlıysa */}
-          {google && (
+          {/* Google + ayrac — yalnızca Google girişi ayarlıysa ve işletme seçili değilse */}
+          {showGoogle && (
             <>
-              <GoogleSignInButton label="Google ile devam et" />
+              <div className="space-y-3">
+                <TermsConsent id="auth-modal-terms" checked={termsAccepted} onChange={setTermsAccepted} compact />
+                <GoogleSignInButton label="Google ile aday olarak devam et"
+                  disabled={!termsAccepted}
+                  disabledHint="Önce Kullanım Şartları'nı kabul et"
+                  onBeforeRedirect={beforeGoogle} />
+              </div>
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
-                <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>veya</span>
+                <span className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>veya</span>
                 <div className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
               </div>
             </>
@@ -114,12 +135,14 @@ export default function AuthModal({ open, onClose, defaultRole = null }) {
 
           {/* Email */}
           <form onSubmit={handleEmailContinue} className="space-y-3">
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@adresin.com" required
+            <label htmlFor="auth-modal-email" className="sr-only">E-posta</label>
+            <input id="auth-modal-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder="ornek@email.com" required autoComplete="email"
               className="input"
               autoFocus />
-            <button type="submit" className="btn-primary">Email ile devam et</button>
+            <button type="submit" className="btn-primary">E-posta ile devam et</button>
           </form>
+
 
           <p className="text-center text-[12.5px]" style={{ color: 'var(--ah-ink-3)' }}>
             Zaten hesabın var mı?{' '}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import { extractErrorMessage } from '../../../api/client'
 import MapView from '../../../components/MapView'
 
 /**
@@ -16,8 +17,9 @@ export default function BusinessLocationEditor({
   const hasExact = latitude != null && longitude != null
 
   async function handleSearch() {
-    if (!searchInput || searchInput.trim().length < 5) {
-      toast.error('Adres en az 5 karakter olmalı')
+    // Backend kuralıyla aynı: en az 3 karakter
+    if (!searchInput || searchInput.trim().length < 3) {
+      toast.error('Aramak için en az 3 karakter yaz.')
       return
     }
     setSearching(true)
@@ -29,10 +31,11 @@ export default function BusinessLocationEditor({
         onChange(coords[0], coords[1])
         toast.success('Adres haritada bulundu')
       } else {
-        toast.error('Adres bulunamadı — haritaya tıklayarak da işaretleyebilirsiniz')
+        toast.error('Adres bulunamadı. Haritaya tıklayarak da işaretleyebilirsin.')
       }
     } catch (err) {
-      toast.error('Adres arama başarısız')
+      // 503 (yoğunluk/sağlayıcı hatası) ve 422 mesajları backend'den Türkçe gelir
+      toast.error(extractErrorMessage(err) || 'Adres araması şu anda yapılamıyor.')
     } finally {
       setSearching(false)
     }

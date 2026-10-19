@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
@@ -16,7 +16,7 @@ vi.mock('../../../context/AuthContext', () => ({ useAuth: () => ({ loginFromOAut
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }))
 vi.mock('react-hot-toast', () => ({ default: toast }))
 
-import OAuthSuccessPage from '../OAuthSuccessPage'
+import OAuthSuccessPage, { oauthNav } from '../OAuthSuccessPage'
 
 function renderAt() {
   render(
@@ -24,6 +24,7 @@ function renderAt() {
       <Routes>
         <Route path="/oauth-success" element={<OAuthSuccessPage />} />
         <Route path="/candidate" element={<div>aday-paneli</div>} />
+        <Route path="/listings/:id" element={<div>ilan-sayfasi</div>} />
         <Route path="/login" element={<div>giris</div>} />
       </Routes>
     </MemoryRouter>
@@ -33,6 +34,7 @@ function renderAt() {
 describe('OAuthSuccessPage', () => {
   beforeEach(() => {
     post.mockReset(); loginFromOAuth.mockReset(); toast.error.mockReset(); toast.success.mockReset()
+    sessionStorage.clear()
   })
 
   it('kodu okur, adresten siler ve oturuma çevirir', async () => {
@@ -71,5 +73,63 @@ describe('OAuthSuccessPage', () => {
     renderAt()
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Bağlantı geçersiz'))
     expect(loginFromOAuth).not.toHaveBeenCalled()
+  })
+
+  it('kayıtta işaretlenen onay exchange gövdesine eklenir ve sekmeden silinir', async () => {
+    sessionStorage.setItem('kadrom.oauth.consent', JSON.stringify({
+      termsAccepted: true, privacyNoticeVersion: '2026-10-17', at: Date.now(),
+    }))
+    window.history.replaceState(null, '', '/oauth-success#code=kod1')
+    post.mockResolvedValue({ data: { token: 't', userId: 1, fullName: 'Ayşe', role: 'CANDIDATE' } })
+    renderAt()
+    await waitFor(() => expect(post).toHaveBeenCalled())
+    expect(post).toHaveBeenCalledWith('/api/auth/oauth/exchange', {
+      code: 'kod1', termsAccepted: true, privacyNoticeVersion: '2026-10-17',
+    })
+    expect(sessionStorage.getItem('kadrom.oauth.consent')).toBeNull()
+  })
+
+  it('süresi geçmiş onay gönderilmez', async () => {
+    sessionStorage.setItem('kadrom.oauth.consent', JSON.stringify({
+      termsAccepted: true, privacyNoticeVersion: '2026-10-17', at: Date.now() - 2 * 60 * 60 * 1000,
+    }))
+    window.history.replaceState(null, '', '/oauth-success#code=kod2')
+    post.mockResolvedValue({ data: { token: 't', userId: 1, role: 'CANDIDATE' } })
+    renderAt()
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/api/auth/oauth/exchange', { code: 'kod2' }))
+  })
+
+  it('girişten sonra saklanan dönüş yoluna gider (paylaşılan ilan)', async () => {
+    sessionStorage.setItem('kadrom.auth.return', JSON.stringify({ path: '/listings/7', reason: null }))
+    window.history.replaceState(null, '', '/oauth-success#code=kod3')
+    post.mockResolvedValue({ data: { token: 't', userId: 1, role: 'CANDIDATE' } })
+    renderAt()
+    expect(await screen.findByText('ilan-sayfasi')).toBeInTheDocument()
+  })
+
+  it('CONSENT_REQUIRED: onay ekranı; kabul edilince onay saklanır ve Google adımı yinelenir', async () => {
+    const toGoogle = vi.spyOn(oauthNav, 'toGoogle').mockImplementation(() => {})
+    sessionStorage.setItem('kadrom.auth.return', JSON.stringify({ path: '/listings/7', reason: null }))
+    window.history.replaceState(null, '', '/oauth-success#code=yeni')
+    post.mockRejectedValue({ response: { status: 422, data: { code: 'CONSENT_REQUIRED', message: 'Onay gerekli' } } })
+    renderAt()
+
+    expect(await screen.findByRole('heading', { name: 'Hesabını oluşturmadan önce' })).toBeInTheDocument()
+    expect(loginFromOAuth).not.toHaveBeenCalled()
+    expect(toast.error).not.toHaveBeenCalled()
+
+    // İşaretlemeden devam: hata, yönlendirme yok
+    fireEvent.click(screen.getByRole('button', { name: 'Kabul et ve Google ile devam et' }))
+    expect(screen.getByText("Devam etmek için Kullanım Şartları'nı kabul etmelisin.")).toBeInTheDocument()
+    expect(toGoogle).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /Kullanım Şartları/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Kabul et ve Google ile devam et' }))
+    expect(toGoogle).toHaveBeenCalledTimes(1)
+    expect(JSON.parse(sessionStorage.getItem('kadrom.oauth.consent'))).toMatchObject({
+      termsAccepted: true, privacyNoticeVersion: '2026-10-17',
+    })
+    expect(JSON.parse(sessionStorage.getItem('kadrom.auth.return'))).toMatchObject({ path: '/listings/7' })
+    toGoogle.mockRestore()
   })
 })

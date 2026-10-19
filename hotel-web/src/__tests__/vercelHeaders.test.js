@@ -55,8 +55,15 @@ describe('vercel.json güvenlik başlıkları', () => {
     ]))
     expect(directive('media-src')).toEqual(expect.arrayContaining(['blob:', 'https://res.cloudinary.com']))
     expect(directive('connect-src')).toEqual(expect.arrayContaining([
-      'https://api.kadrom.me', 'wss://api.kadrom.me', 'https://nominatim.openstreetmap.org',
+      'https://api.kadrom.me', 'wss://api.kadrom.me',
     ]))
+  })
+
+  it("CSP: adres arama backend üzerinden — tarayıcı Nominatim'e doğrudan bağlanmaz", () => {
+    // GET /api/geo/search (OSM kullanım politikası sunucuda uygulanır)
+    expect(csp).not.toContain('nominatim.openstreetmap.org')
+    // Harita döşemeleri (CARTO) yalnız görsel olarak yüklenir
+    expect(directive('img-src')).toContain('https://*.basemaps.cartocdn.com')
   })
 
   it('CSP: index.html onload ve offline.html betikleri hash ile izinli (LF ve CRLF)', () => {

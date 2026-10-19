@@ -8,7 +8,10 @@ import { validateTurkeyPhone, formatTurkeyPhoneInput } from '../../utils/validat
 import DistrictNeighborhoodSelect from '../../components/DistrictNeighborhoodSelect'
 import BackButton from '../../components/BackButton'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
+import TermsConsent from '../../components/TermsConsent'
 import { useGoogleSignIn } from '../../lib/authProviders'
+import { consentPayload, rememberOAuthConsent } from '../../lib/legal'
+import { homeForRole, rememberReturn, returnPathOf } from '../../lib/authReturn'
 
 // Sunucudaki kurallarla aynı: şifre 8+ karakter, 1 harf + 1 rakam; web sitesi yalnız http(s)
 const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d).+$/
@@ -34,9 +37,15 @@ export default function RegisterPage() {
   const location = useLocation()
   const preselectedRole = location.state?.preselectedRole
   const prefillEmail = location.state?.prefillEmail
+  // Paylaşılan ilandan / korumalı sayfadan gelindiyse kayıttan sonra oraya dönülür
+  const from = location.state?.from
   const [step, setStep] = useState(preselectedRole ? 2 : 1)
   const [selectedRole, setSelectedRole] = useState(preselectedRole || null)
   const google = useGoogleSignIn()  // Google ayarlı değilse buton + ayraç gizli
+  // Kullanım Şartları onayı — adım 1 (Google) ve adım 2 (form) aynı durumu paylaşır.
+  // Giriş penceresinde (AuthModal) işaretlendiyse buraya taşınır.
+  const [termsAccepted, setTermsAccepted] = useState(!!location.state?.termsAccepted)
+  const [termsError, setTermsError] = useState('')
 
   const {
     register, handleSubmit, watch, setValue,
@@ -45,15 +54,33 @@ export default function RegisterPage() {
 
   function goToStep2(role) { setSelectedRole(role); setStep(2) }
 
+  function onTermsChange(v) {
+    setTermsAccepted(v)
+    if (v) setTermsError('')
+  }
+
+  // Google'a gitmeden önce: onay + dönüş yolu sekmede saklanır (/oauth-success okur)
+  function beforeGoogle() {
+    rememberOAuthConsent()
+    rememberReturn(from)
+  }
+
   async function onSubmit(data) {
-    const payload = { ...data, role: selectedRole }
+    if (!termsAccepted) return  // hata submitWithTerms'te gösterildi
+    const payload = { ...data, role: selectedRole, ...consentPayload() }
     try {
       const result = await registerUser(payload)
-      toast.success('Hesabınız başarıyla oluşturuldu!')
-      navigate(result.role === 'CANDIDATE' ? '/candidate' : '/business', { replace: true })
+      toast.success('Hesabın oluşturuldu.')
+      navigate(returnPathOf(from) || homeForRole(result.role), { replace: true })
     } catch (err) {
       toast.error(extractErrorMessage(err))
     }
+  }
+
+  // Onay kutusu alan hatalarıyla birlikte doğrulanır (hepsi aynı anda görünsün)
+  function submitWithTerms(e) {
+    if (!termsAccepted) setTermsError('Devam etmek için Kullanım Şartları\'nı kabul etmelisin.')
+    return handleSubmit(onSubmit)(e)
   }
 
   return (
@@ -61,11 +88,11 @@ export default function RegisterPage() {
          style={{ background: 'var(--ah-page)', color: 'var(--ah-ink-2)' }}>
       <header className="border-b" style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-          <BackButton to="/login" label="Girişe Dön" />
+          <BackButton to="/login" label="Girişe dön" />
           <span className="hidden sm:block w-px h-5" style={{ background: 'var(--ah-line-2)' }} />
           <Link to="/" className="hidden sm:flex items-baseline gap-2">
             <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>Kadrom</span>
-            <span className="text-[9px] uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>istanbul</span>
+            <span className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>İstanbul</span>
           </Link>
         </div>
       </header>
@@ -75,7 +102,7 @@ export default function RegisterPage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
                  style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-line)' }}>
-              <span className="text-[11px] font-semibold" style={{ color: 'var(--ah-brand)' }}>Ücretsiz Kayıt</span>
+              <span className="type-badge" style={{ color: 'var(--ah-brand)' }}>Ücretsiz kayıt</span>
             </div>
             <h1 style={{
               fontSize: 'clamp(24px, 3.5vw, 30px)', lineHeight: 1.15, fontWeight: 800,
@@ -84,18 +111,19 @@ export default function RegisterPage() {
               Kadrom'a katıl
             </h1>
             <p className="text-[13.5px] mt-2" style={{ color: 'var(--ah-ink-3)' }}>
-              İstanbul'un iş platformu
+              İstanbul'da otel, restoran ve kafelerde vardiyalı iş
             </p>
           </div>
 
           {/* Step indicator */}
-          <div className="flex items-center gap-2 mb-6 max-w-md mx-auto">
+          <div className="flex items-center gap-2 mb-6 max-w-md mx-auto" aria-label={`Adım ${step} / 2`}>
             {[1, 2].map(n => (
               <div key={n} className="flex items-center gap-2 flex-1">
                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
+                  aria-hidden="true"
                   style={step >= n
-                    ? { background: 'var(--ah-brand)', color: '#ffffff' }
-                    : { background: 'var(--ah-card)', color: 'var(--ah-ink-4)', border: '1px solid var(--ah-line-2)' }}>
+                    ? { background: 'var(--ah-brand)', color: 'var(--ah-card)' }
+                    : { background: 'var(--ah-card)', color: 'var(--ah-ink-3)', border: '1px solid var(--ah-line-2)' }}>
                   {n}
                 </div>
                 {n < 2 && (
@@ -103,9 +131,8 @@ export default function RegisterPage() {
                 )}
               </div>
             ))}
-            <span className="text-[10px] uppercase tracking-[0.06em] ml-1 font-semibold"
-                  style={{ color: 'var(--ah-ink-4)' }}>
-              {step === 1 ? 'Tür' : 'Bilgi'}
+            <span className="type-label ml-1" style={{ color: 'var(--ah-ink-3)' }}>
+              {step === 1 ? 'Hesap türü' : 'Bilgiler'}
             </span>
           </div>
 
@@ -113,14 +140,28 @@ export default function RegisterPage() {
             {/* ── STEP 1 ── */}
             {step === 1 && (
               <div className="space-y-3">
-                {/* Google + ayrac — yalnızca Google girişi gerçekten ayarlıysa */}
+                {/* Google + ayrac — yalnızca Google girişi gerçekten ayarlıysa.
+                    Google ile kayıt yalnız ADAY hesabı açar (işletme e-postayla kayıt olur).
+                    Kullanım Şartları işaretlenmeden düğme pasif: e-postalı kayıttaki
+                    açık onayla aynı standart ("devam ederek kabul" sayılmaz). */}
                 {google && (
                   <>
-                    <GoogleSignInButton label="Google ile Aday Olarak Kayıt" />
+                    <div className="rounded-lg p-4 space-y-3"
+                         style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)' }}>
+                      <div>
+                        <p className="type-subhead" style={{ color: 'var(--ah-ink)' }}>İş arıyorsan en hızlısı</p>
+                        <p className="type-caption mt-0.5">Google hesabınla aday olarak saniyeler içinde kayıt ol.</p>
+                      </div>
+                      <TermsConsent id="register-terms-google" checked={termsAccepted} onChange={onTermsChange} compact />
+                      <GoogleSignInButton label="Google ile aday olarak kayıt ol"
+                        disabled={!termsAccepted}
+                        disabledHint="Önce Kullanım Şartları'nı kabul et"
+                        onBeforeRedirect={beforeGoogle} />
+                    </div>
                     <div className="flex items-center gap-3 py-1">
                       <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
-                      <span className="text-[10px] uppercase tracking-[0.06em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>
-                        veya rol seç
+                      <span className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>
+                        veya hesap türünü seç
                       </span>
                       <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
                     </div>
@@ -150,7 +191,7 @@ export default function RegisterPage() {
 
                 <p className="text-[12.5px] text-center mt-5" style={{ color: 'var(--ah-ink-3)' }}>
                   Zaten hesabın var mı?{' '}
-                  <Link to="/login" className="font-bold hover:underline" style={{ color: 'var(--ah-brand)' }}>
+                  <Link to="/login" state={from ? { from } : undefined} className="font-bold hover:underline" style={{ color: 'var(--ah-brand)' }}>
                     Giriş yap
                   </Link>
                 </p>
@@ -159,16 +200,19 @@ export default function RegisterPage() {
 
             {/* ── STEP 2 ── */}
             {step === 2 && (
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={submitWithTerms} className="space-y-4" noValidate>
                 <div className="flex items-center gap-2 mb-2">
                   <button type="button" onClick={() => setStep(1)}
-                    className="text-[12.5px] font-semibold hover:underline flex items-center gap-1"
-                    style={{ color: 'var(--ah-ink-3)' }}>
-                    ← Geri
+                    className="btn-ghost !w-auto !px-2 -ml-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2}
+                         stroke="currentColor" className="w-4 h-4" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                    Hesap türü
                   </button>
-                  <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.06em] px-2.5 py-1 rounded-full"
+                  <span className="ml-auto type-badge px-2.5 py-1 rounded-full"
                         style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)', border: '1px solid var(--ah-line)' }}>
-                    {selectedRole === 'CANDIDATE' ? 'Aday' : 'İşletme Sahibi'}
+                    {selectedRole === 'CANDIDATE' ? 'Aday' : 'İşletme sahibi'}
                   </span>
                 </div>
 
@@ -213,8 +257,8 @@ export default function RegisterPage() {
                 {/* CANDIDATE extra */}
                 {selectedRole === 'CANDIDATE' && (
                   <div className="space-y-4 pt-4" style={{ borderTop: '1px solid var(--ah-line)' }}>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.06em]" style={{ color: 'var(--ah-brand)' }}>
-                      Aday Bilgileri
+                    <p className="type-label" style={{ color: 'var(--ah-ink)' }}>
+                      Aday bilgileri
                     </p>
                     <div>
                       <label htmlFor="register-city" className="label">Şehir</label>
@@ -229,8 +273,8 @@ export default function RegisterPage() {
                 {/* BUSINESS_OWNER extra */}
                 {selectedRole === 'BUSINESS_OWNER' && (
                   <div className="space-y-4 pt-4" style={{ borderTop: '1px solid var(--ah-line)' }}>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.06em]" style={{ color: 'var(--ah-brand)' }}>
-                      İşletme Bilgileri
+                    <p className="type-label" style={{ color: 'var(--ah-ink)' }}>
+                      İşletme bilgileri
                     </p>
 
                     <div>
@@ -308,29 +352,19 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                {/* KVKK + Terms onay */}
-                <label className="flex items-start gap-2.5 text-[12.5px] leading-relaxed pt-2"
-                       style={{ color: 'var(--ah-ink-3)' }}>
-                  <input type="checkbox" className="mt-0.5" style={{ accentColor: 'var(--ah-brand)' }}
-                    {...register('acceptedTerms', { required: 'Devam etmek için onaylamalısın' })} />
-                  <span>
-                    <Link to="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline" style={{ color: 'var(--ah-brand)' }}>Kullanım Şartları</Link>
-                    {' '}ve{' '}
-                    <Link to="/kvkk" target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline" style={{ color: 'var(--ah-brand)' }}>KVKK Aydınlatma Metni</Link>
-                    'ni okudum, kabul ediyorum.
-                  </span>
-                </label>
-                {errors.acceptedTerms && (
-                  <p className="text-[11px] -mt-2" style={{ color: 'var(--ah-danger)' }}>{errors.acceptedTerms.message}</p>
-                )}
+                {/* Kullanım Şartları: zorunlu onay kutusu. KVKK: yalnız bilgilendirme. */}
+                <div className="pt-4" style={{ borderTop: '1px solid var(--ah-line)' }}>
+                  <TermsConsent id="register-terms" checked={termsAccepted} onChange={onTermsChange} error={termsError} />
+                </div>
 
                 <button type="submit" disabled={isSubmitting} className="btn-primary">
-                  {isSubmitting ? 'Kaydediliyor...' : 'Hesap Oluştur'}
+                  {isSubmitting ? 'Hesap oluşturuluyor...' : 'Hesap oluştur'}
                 </button>
 
                 <p className="text-[12.5px] text-center" style={{ color: 'var(--ah-ink-3)' }}>
                   Zaten hesabın var mı?{' '}
-                  <Link to="/login" className="font-bold hover:underline" style={{ color: 'var(--ah-brand)' }}>
+                  <Link to="/login" state={from ? { from } : undefined} className="font-bold hover:underline" style={{ color: 'var(--ah-brand)' }}>
+
                     Giriş yap
                   </Link>
                 </p>

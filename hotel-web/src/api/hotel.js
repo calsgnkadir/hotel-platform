@@ -21,6 +21,14 @@ export async function cancelBilling() {
   return data
 }
 
+/* ── Adres arama (backend vekili; OSM Nominatim politikası sunucuda uygulanır) ──
+ * Yalnız kullanıcı "Ara"ya bastığında çağrılır; otomatik tamamlama yok.
+ * Dönüş: [{ lat, lon, displayName }] */
+export async function searchGeo(q) {
+  const { data } = await api.get('/api/geo/search', { params: { q } })
+  return data
+}
+
 // FAZ 5.9 — public profil sayfasi (login gerektirmez)
 export async function getPublicBusiness(id) {
   const { data } = await api.get(`/api/businesses/${id}`)

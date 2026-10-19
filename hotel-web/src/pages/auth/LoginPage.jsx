@@ -1,11 +1,12 @@
 import { useForm } from 'react-hook-form'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { extractErrorMessage } from '../../api/client'
 import GoogleSignInButton from '../../components/GoogleSignInButton'
 import { useGoogleSignIn } from '../../lib/authProviders'
+import { clearReturn, homeForRole, peekReturn, rememberReturn, returnPathOf } from '../../lib/authReturn'
 
 /**
  * LoginPage — FAZ A.2 acik+teal yeniden yazim.
@@ -21,15 +22,18 @@ export default function LoginPage() {
   const google = useGoogleSignIn()  // Google ayarlı değilse buton + ayraç gizli
   const [showPwd, setShowPwd] = useState(false)
 
+  // Dönüş: router state (ProtectedRoute, paylaşılan ilan, kayıt ekranı) ya da
+  // oturum süresi dolunca api/client.js'in sekmeye bıraktığı kayıt (tam yenileme).
+  const [stored] = useState(() => peekReturn())
+  useEffect(() => { clearReturn() }, [])
+  const from = location.state?.from || stored?.path || null
+  const expired = location.state?.reason === 'expired' || stored?.reason === 'expired'
+
   async function onSubmit(data) {
     try {
       const result = await login(data.email, data.password)
-      const redirectTo = location.state?.from?.pathname
-      if (redirectTo) navigate(redirectTo, { replace: true })
-      else if (result.role === 'CANDIDATE')      navigate('/candidate', { replace: true })
-      else if (result.role === 'BUSINESS_OWNER') navigate('/business',  { replace: true })
-      else if (result.role === 'ADMIN')          navigate('/admin',     { replace: true })
-      toast.success(`Hoş geldin, ${result.fullName.split(' ')[0]}.`)
+      navigate(returnPathOf(from) || homeForRole(result.role), { replace: true })
+      toast.success(`Hoş geldin, ${(result.fullName || '').split(' ')[0]}.`)
     } catch (err) {
       toast.error(extractErrorMessage(err))
     }
@@ -45,9 +49,8 @@ export default function LoginPage() {
             <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>Kadrom</span>
             <span className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>İstanbul</span>
           </Link>
-          <Link to="/register" className="text-[13px] font-semibold px-4 py-2 rounded-lg transition-colors"
-                style={{ color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)', background: 'var(--ah-card)' }}>
-            Kayıt Ol
+          <Link to="/register" state={from ? { from } : undefined} className="btn-secondary !w-auto">
+            Kayıt ol
           </Link>
         </div>
       </header>
@@ -66,11 +69,25 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {expired && (
+            <div role="status" className="mb-4 rounded-lg px-4 py-3 flex items-start gap-2.5 type-meta"
+                 style={{ background: 'var(--ah-info-soft)', border: '1px solid var(--ah-line)', color: 'var(--ah-ink-2)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                   strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-px" aria-hidden="true"
+                   style={{ color: 'var(--ah-info)' }}>
+                <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+              </svg>
+              <span>Oturumun sona erdi, tekrar giriş yap. Girişten sonra kaldığın sayfaya döneceksin.</span>
+            </div>
+          )}
+
           <div className="card">
-            {/* Google + ayrac — yalnızca Google girişi gerçekten ayarlıysa */}
+            {/* Google + ayrac — yalnızca Google girişi gerçekten ayarlıysa.
+                Kayıtlı kullanıcı için onay kutusu yok; Google ile ilk kez gelen yeni
+                kullanıcıya /oauth-success onay ekranı açılır (backend CONSENT_REQUIRED). */}
             {google && (
               <>
-                <GoogleSignInButton label="Google ile devam et" />
+                <GoogleSignInButton label="Google ile devam et" onBeforeRedirect={() => rememberReturn(from)} />
                 <div className="flex items-center gap-3 my-6">
                   <span className="flex-1 h-px" style={{ background: 'var(--ah-line)' }} />
                   <span className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>
@@ -136,9 +153,10 @@ export default function LoginPage() {
 
             <p className="text-[12.5px] text-center mt-6" style={{ color: 'var(--ah-ink-3)' }}>
               Hesabın yok mu?{' '}
-              <Link to="/register" className="font-bold hover:underline" style={{ color: 'var(--ah-ink)' }}>
+              <Link to="/register" state={from ? { from } : undefined} className="font-bold hover:underline" style={{ color: 'var(--ah-ink)' }}>
                 Ücretsiz oluştur
               </Link>
+
             </p>
 
           </div>

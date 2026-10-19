@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
@@ -24,6 +24,39 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { listingQuota } from '../tabs/BillingTab'
+
+/**
+ * Yeni ilan formunda eşzamanlı kota: "Aktif ilan: X / Y". Bilgi amaçlı —
+ * kural backend'de (sınır doluysa ilan açma 422 döner, mesajı toast'ta görünür).
+ * Özet alınamazsa hiçbir şey göstermez (formu engellemez).
+ */
+function QuotaNote() {
+  const [quota, setQuota] = useState(null)
+  useEffect(() => {
+    let alive = true
+    Promise.resolve()
+      .then(() => hotelApi.getBilling())
+      .then(b => { if (alive && b) setQuota(listingQuota(b)) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [])
+  if (!quota) return null
+  return (
+    <div data-testid="listing-form-quota" className="mt-3 rounded-lg px-3 py-2 type-meta flex items-start gap-2"
+         role={quota.canPost ? undefined : 'alert'}
+         style={quota.canPost
+           ? { background: 'var(--ah-band)', border: '1px solid var(--ah-line)', color: 'var(--ah-ink-2)' }
+           : { background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: 'var(--ah-ink)' }}>
+      <span>
+        <b className="type-num">Aktif ilan: {quota.active} / {quota.limit}</b>
+        {quota.canPost
+          ? <> · {quota.remaining} ilan daha açabilirsin.</>
+          : <> · Sınır doldu. Yeni ilan için yayındaki bir ilanı kapat.</>}
+      </span>
+    </div>
+  )
+}
 
 function genSlotUid() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
@@ -260,7 +293,9 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
               : isDup ? 'Vardiyalar gelecek haftaya taşındı — kontrol edip yayınla'
               : 'Adayların göreceği iş ilanı'}
           </p>
+          {!isEdit && <QuotaNote />}
         </div>
+
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

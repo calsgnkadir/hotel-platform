@@ -50,8 +50,18 @@ export function wsOnStatusChange(cb) {
 
 export function wsGetState() { return connectionState }
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '')
-const WS_URL = `${BASE_URL}/ws`
+// API adresi build anında gömülür. Boşsa: geliştirmede (npm run dev) eskisi gibi
+// backend'in kendi portu; derlenmiş sürümde aynı köken (/ws, ör. vite preview
+// proxy'si ya da aynı alan adındaki ters vekil) — canlıya asla localhost gömülmez.
+
+// Canlı derlemede VITE_API_URL boş/localhost ise vite.config.js derlemeyi durdurur.
+export function resolveWsBase(apiUrl = import.meta.env.VITE_API_URL, dev = import.meta.env.DEV) {
+  if (apiUrl) return apiUrl.replace(/\/$/, '')
+  if (dev) return 'http://localhost:8080'
+  return typeof window !== 'undefined' ? window.location.origin : ''
+}
+const WS_URL = `${resolveWsBase()}/ws`
+
 
 function getToken() {
   return localStorage.getItem('token')

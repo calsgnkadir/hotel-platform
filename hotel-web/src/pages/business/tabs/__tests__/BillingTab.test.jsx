@@ -17,10 +17,11 @@ import BillingTab from '../BillingTab'
 /**
  * Ödeme sistemi kapalıyken (iyzico anahtarı yok) satın alma butonu ve test
  * kartı görünmez; test kartı yalnız sandbox ortamında görünür.
+ * Kota eşzamanlıdır: "Aktif ilan: X / Y" (activeListings / concurrentLimit).
  */
 const BASE = {
   status: 'TRIAL', plan: 'STANDARD_MONTHLY', active: false, monthlyPrice: 499,
-  freeListings: 5, usedListings: 2, freeRemaining: 3,
+  concurrentLimit: 5, activeListings: 2,
 }
 
 function renderTab(billing) {
@@ -38,21 +39,34 @@ function renderTab(billing) {
 describe('BillingTab ödeme durumları', () => {
   beforeEach(() => { getBilling.mockReset() })  // süslü parantez: dönen fn teardown sayılmasın
 
-  it('ödeme kapalıyken: satın alma yok, test kartı yok, sınırsız notu var', async () => {
+  it('ödeme kapalıyken: net ücretsiz metni, aktif ilan sayacı, satın alma ve test kartı yok', async () => {
     renderTab({ enforced: false, paymentsAvailable: false, sandbox: false })
-    expect(await screen.findByText('İlan yayınlama şimdilik ücretsiz ve sınırsız.')).toBeInTheDocument()
-    expect(screen.getByText(/Ücretli abonelik henüz aktif değil/)).toBeInTheDocument()
+    expect(await screen.findByText('Şu an tüm işletmeler için ücretsiz: aynı anda 5 aktif ilan.')).toBeInTheDocument()
+    expect(screen.getByTestId('quota-meter')).toHaveTextContent('Aktif ilan: 2 / 5')
+    expect(screen.getByText('ücretli plan henüz açık değil')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Aboneliğe geç' })).not.toBeInTheDocument()
     expect(screen.queryByText(/test kartı/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/kullanıldı/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/sınırsız/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/enforce/)).not.toBeInTheDocument()
   })
 
-  it('canlı ödeme açıkken: kota ve satın alma butonu var, test kartı yok', async () => {
+  it('canlı ödeme açıkken: sayaç ve satın alma butonu var, test kartı yok', async () => {
     renderTab({ enforced: true, paymentsAvailable: true, sandbox: false })
     expect(await screen.findByRole('button', { name: 'Aboneliğe geç' })).toBeInTheDocument()
-    expect(screen.getByText(/kullanıldı/)).toBeInTheDocument()
+    expect(screen.getByTestId('quota-meter')).toHaveTextContent('Aktif ilan: 2 / 5')
+    expect(screen.getByText('aylık · aynı anda 10 aktif ilan')).toBeInTheDocument()
     expect(screen.queryByText(/test kartı/i)).not.toBeInTheDocument()
+  })
+
+  it('abonelikte sınır 10: "Aktif ilan: 7 / 10"', async () => {
+    renderTab({ status: 'ACTIVE', active: true, paymentsAvailable: true, concurrentLimit: 10, activeListings: 7 })
+    expect(await screen.findByTestId('quota-meter')).toHaveTextContent('Aktif ilan: 7 / 10')
+    expect(screen.getByTestId('billing-post-state')).toHaveTextContent('İlan yayınlayabilirsin')
+  })
+
+  it('eski yanıt (concurrentLimit yok) freeListings/usedListings ile çalışır', async () => {
+    renderTab({ concurrentLimit: undefined, activeListings: undefined, freeListings: 5, usedListings: 4, paymentsAvailable: false })
+    expect(await screen.findByTestId('quota-meter')).toHaveTextContent('Aktif ilan: 4 / 5')
   })
 
   it('sandbox ortamında test kartı gösterilir', async () => {
@@ -60,9 +74,15 @@ describe('BillingTab ödeme durumları', () => {
     expect(await screen.findByText(/test kartı/i)).toBeInTheDocument()
   })
 
-  it('kota dolunca "İlan hakkın doldu" görünür', async () => {
-    renderTab({ enforced: true, paymentsAvailable: true, sandbox: false, usedListings: 5, freeRemaining: 0 })
-    expect(await screen.findByText('İlan hakkın doldu')).toBeInTheDocument()
+  it('sınır dolunca uyarı ve yol gösterme (ödeme kapalı: yalnız ilan kapatma)', async () => {
+    renderTab({ paymentsAvailable: false, activeListings: 5 })
+    expect(await screen.findByTestId('billing-post-state')).toHaveTextContent('Aktif ilan sınırına ulaştın')
+    expect(screen.getByText(/Yeni ilan için yayındaki bir ilanı kapat/)).not.toHaveTextContent(/aboneliğe geç/)
+  })
+
+  it('sınır dolunca, ödeme açıksa abonelik de önerilir', async () => {
+    renderTab({ paymentsAvailable: true, activeListings: 5 })
+    expect(await screen.findByText(/Yeni ilan için yayındaki bir ilanı kapat/)).toHaveTextContent('ya da aboneliğe geç')
   })
 })
 
@@ -90,7 +110,7 @@ describe('BillingTab abonelik bitişi / iptal', () => {
     renderTab({ status: 'CANCELED', active: true, enforced: true, paymentsAvailable: true, currentPeriodEnd: PERIOD_END })
     expect(await screen.findByText('İptal edildi (dönem sonuna kadar geçerli)')).toBeInTheDocument()
     expect(screen.getByText(/Aboneliğin iptal edildi;/)).toHaveTextContent(
-      `Aboneliğin iptal edildi; ${PERIOD_END_TR} tarihine kadar sınırsız ilan açık.`)
+      `Aboneliğin iptal edildi; ${PERIOD_END_TR} tarihine kadar aynı anda 5 aktif ilan hakkın sürer.`)
     expect(screen.queryByRole('button', { name: 'İptal et' })).not.toBeInTheDocument()
     expect(screen.queryByText('Aktif abonelik')).not.toBeInTheDocument()
     expect(screen.queryByText(/Bir sonraki yenileme/)).not.toBeInTheDocument()

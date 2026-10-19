@@ -15,14 +15,22 @@ COPY package*.json ./
 RUN rm -f package-lock.json && npm install --no-audit --no-fund
 
 COPY . .
-# API/WS adresi build-time gömülür (Vite). Compose backend'i 8080'de açar;
-# REST (VITE_API_URL || '') ve WS (VITE_API_URL || localhost:8080) buraya gider.
-ARG VITE_API_URL=http://localhost:8080
+
+# ── Dist stage: statik derleme ─────────────────────────────────────
+# Ayrı aşama: compose.verify.yml "build" hedefinde yalnız testleri koşar
+# (API adresi gerekmez); derleme bu aşamada, adres zorunlu.
+FROM build AS dist
+# API/WS adresi build-time gömülür (Vite). Varsayılan YOK: imaj hangi backend'e
+# gideceğini bilmeden derlenmez (canlıya yanlışlıkla localhost gömülmesin).
+#   docker build --build-arg VITE_API_URL=https://api.kadrom.me .
+# Compose bunu args ile verir (docker-compose.yml: yerel yığın, deploy/prod: PUBLIC_URL).
+ARG VITE_API_URL
+RUN test -n "$VITE_API_URL" || (echo "HATA: VITE_API_URL build arg zorunlu (ör. --build-arg VITE_API_URL=https://api.kadrom.me)" >&2; exit 1)
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # ── Runtime stage: nginx ile statik servis ─────────────────────────
 FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=dist /app/dist /usr/share/nginx/html
 EXPOSE 80

@@ -12,7 +12,7 @@
  *  - lg altında sabit alt bar: [ücret /gün] [Başvur] — sayfa açılır açılmaz görünür.
  *  - lg+ yan panel: vardiya özeti + başvuru eylemi + işletme kısa bilgisi.
  */
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as hotelApi from '../../api/hotel'
 import { keys } from '../../lib/queryClient'
@@ -51,6 +51,7 @@ function fmtDay(date) {
 export default function ListingDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const [applyOpen, setApplyOpen] = useState(false)  // ApplyModal state
@@ -154,10 +155,19 @@ export default function ListingDetailPage() {
     else navigate(user?.role === 'CANDIDATE' ? '/candidate' : '/')
   }
 
+  // Girişsiz ziyaretçi: paylaşılan ilan bağlantısından gelir. Kayıt/giriş sonrası
+  // aynı ilana dönmesi için geldiği yol router state'te taşınır (LoginPage/RegisterPage).
+  const returnState = { from: { pathname: location.pathname, search: location.search } }
+  function goRegister() {
+    navigate('/register', { state: { ...returnState, preselectedRole: 'CANDIDATE' } })
+  }
+  function goLogin() {
+    navigate('/login', { state: returnState })
+  }
+
   function handleApply() {
     if (!user) {
-      toast('Başvurmak için giriş yapmalısın')
-      navigate('/login?return=' + encodeURIComponent(`/listings/${id}`))
+      goLogin()
       return
     }
     if (user.role !== 'CANDIDATE') {
@@ -397,13 +407,29 @@ export default function ListingDetailPage() {
             <div className="card p-5">
               <h2 className="type-card" style={{ color: 'var(--ah-ink)' }}>Başvuru</h2>
               <ShiftSummary hasFuture={hasFuture} openSlots={openSlots} openPeople={openPeople} />
-              <button type="button" onClick={handleApply} disabled={!canApply} className="btn-primary mt-4">
-                {applyLabel}
-              </button>
-              {canApply && (
-                <p className="type-caption text-center mt-2" style={{ color: 'var(--ah-ink-3)' }}>
-                  Başvurmak 30 saniye sürer
-                </p>
+              {!user && canApply ? (
+                <div className="mt-4 space-y-2" data-testid="guest-apply-actions">
+                  <button type="button" onClick={goRegister} className="btn-primary">
+                    Başvurmak için kayıt ol
+                  </button>
+                  <button type="button" onClick={goLogin} className="btn-secondary w-full">
+                    Giriş yap
+                  </button>
+                  <p className="type-caption text-center pt-1" style={{ color: 'var(--ah-ink-3)' }}>
+                    Ücretsiz; kayıttan sonra bu ilana geri dönersin.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <button type="button" onClick={handleApply} disabled={!canApply} className="btn-primary mt-4">
+                    {applyLabel}
+                  </button>
+                  {canApply && (
+                    <p className="type-caption text-center mt-2" style={{ color: 'var(--ah-ink-3)' }}>
+                      Başvurmak 30 saniye sürer
+                    </p>
+                  )}
+                </>
               )}
               {alreadyApplied && <AppliedNote />}
             </div>
@@ -443,11 +469,23 @@ export default function ListingDetailPage() {
               : `${openSlots.length} açık vardiya`}
           </p>
         </div>
-        <button type="button" onClick={handleApply} disabled={!canApply}
-          className="btn-primary !w-auto flex-shrink-0 min-w-[132px]">
-          {applyLabel}
-        </button>
+        {!user && canApply ? (
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <button type="button" onClick={goLogin} className="btn-ghost !w-auto !px-2.5">
+              Giriş yap
+            </button>
+            <button type="button" onClick={goRegister} className="btn-primary !w-auto">
+              Kayıt ol, başvur
+            </button>
+          </div>
+        ) : (
+          <button type="button" onClick={handleApply} disabled={!canApply}
+            className="btn-primary !w-auto flex-shrink-0 min-w-[132px]">
+            {applyLabel}
+          </button>
+        )}
       </div>
+
 
       {/* ApplyModal - başvur butonuna basınca açılır */}
       {applyOpen && (

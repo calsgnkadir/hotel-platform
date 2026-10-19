@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { isPublicPath, rememberReturn } from '../lib/authReturn'
 
 /**
  * F0.2 — Merkezi Axios instance + refresh token rotation.
@@ -10,8 +11,20 @@ import axios from 'axios'
  *  - Access süresi dolarsa (proactive) veya 401 alırsa (reactive)
  *    → /api/auth/refresh çağrılır (cookie otomatik gider)
  *    → yeni access token alınır, request retry edilir
- *  - Refresh de fail ederse → tam temizle + /login'e at
+ *  - Refresh de fail ederse → handleSessionExpired():
+ *      herkese açık sayfada (ana sayfa, ilan, işletme profili, yasal metinler)
+ *        yalnız oturum sessizce temizlenir, istek girişsiz sürer, yönlendirme yok;
+ *      korumalı sayfada /login'e gidilir; geldiği yol + "oturum sona erdi" bilgisi
+ *        sessionStorage'da taşınır (LoginPage okur, girişten sonra geri döner).
+ *
+ * Olaylar (window):
+ *  - 'kadrom:session-cleared'     oturum temizlendi (AuthContext kullanıcıyı düşürür)
+ *  - 'kadrom:email-not-verified'  403 EMAIL_NOT_VERIFIED (EmailVerifyDialog açılır)
  */
+export const SESSION_CLEARED_EVENT = 'kadrom:session-cleared'
+export const EMAIL_NOT_VERIFIED_EVENT = 'kadrom:email-not-verified'
+export const EMAIL_NOT_VERIFIED_MESSAGE = 'Devam etmek için e-posta adresini doğrula.'
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '',
   headers: { 'Content-Type': 'application/json' },
@@ -31,12 +44,31 @@ function isTokenExpired(token) {
   }
 }
 
-function clearSessionAndRedirect() {
+/** Backend 403 EMAIL_NOT_VERIFIED mi? (ilan açma/yayınlama, başvuru, sohbet başlatma) */
+export function isEmailNotVerifiedError(error) {
+  return error?.response?.status === 403 && error?.response?.data?.code === 'EMAIL_NOT_VERIFIED'
+}
+
+/** Tam sayfa geçişi (testte izlenebilsin diye nesne üzerinden). */
+export const sessionNav = {
+  toLogin() { window.location.assign('/login') },
+}
+
+/**
+ * Yenilenemeyen oturum.
+ * Dönüş: true  → korumalı sayfa; /login'e gidiliyor (istek iptal edilmeli)
+ *        false → herkese açık sayfa; oturum sessizce temizlendi, istek girişsiz sürebilir
+ */
+export function handleSessionExpired() {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
-  if (!window.location.pathname.includes('/login')) {
-    window.location.href = '/login'
-  }
+  try { window.dispatchEvent(new Event(SESSION_CLEARED_EVENT)) } catch { /* yok say */ }
+
+  const { pathname, search, hash } = window.location
+  if (isPublicPath(pathname)) return false
+  rememberReturn({ pathname, search, hash }, 'expired')
+  sessionNav.toLogin()
+  return true
 }
 
 /* ─────────── Refresh token rotation ─────────── */
@@ -55,13 +87,16 @@ async function performRefresh() {
   ).then(res => {
     const { token, ...userFields } = res.data
     if (token) localStorage.setItem('token', token)
-    // user bilgileri de güncellenir (rol değişmiş olabilir)
+    // user bilgileri de güncellenir (rol değişmiş olabilir). Önceki kayıttaki alanlar
+    // korunur: eskiden yalnız 4 alan yazılıyordu, emailVerified düşünce doğrulanmış
+    // kullanıcıya da "E-postanı doğrula" bandı çıkıyordu.
     if (userFields.userId) {
+      let prev = {}
+      try { prev = JSON.parse(localStorage.getItem('user') || '{}') || {} } catch { prev = {} }
       localStorage.setItem('user', JSON.stringify({
+        ...prev,
+        ...userFields,
         id: userFields.userId,
-        email: userFields.email,
-        fullName: userFields.fullName,
-        role: userFields.role,
       }))
     }
     return token
@@ -89,8 +124,10 @@ api.interceptors.request.use(async (config) => {
     try {
       token = await performRefresh()
     } catch {
-      clearSessionAndRedirect()
-      return Promise.reject(new axios.Cancel('Oturum süresi doldu'))
+      if (handleSessionExpired()) {
+        return Promise.reject(new axios.Cancel('Oturum süresi doldu'))
+      }
+      token = null  // herkese açık sayfa: istek girişsiz devam eder
     }
   }
 
@@ -113,12 +150,23 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config
 
+    // 403 EMAIL_NOT_VERIFIED — ham toast yerine doğrulama penceresi açılır
+    if (isEmailNotVerifiedError(error)) {
+      try {
+        window.dispatchEvent(new CustomEvent(EMAIL_NOT_VERIFIED_EVENT, {
+          detail: { message: error.response.data?.message || EMAIL_NOT_VERIFIED_MESSAGE },
+        }))
+      } catch { /* yok say */ }
+      return Promise.reject(error)
+    }
+
     // 401 — token reddedildi → bir kez refresh dene
     if (error.response?.status === 401 && original && !original._retry) {
       // Login/register/refresh'in kendisi 401 ise refresh denemeyiz
       const isAuthEndpoint = NO_TOKEN_PATHS.some(p => (original.url || '').includes(p))
       if (isAuthEndpoint) {
-        clearSessionAndRedirect()
+        // Yanlış şifre vb. — yalnız yerel oturum kalıntısı varsa temizlenir
+        if (localStorage.getItem('token')) handleSessionExpired()
         return Promise.reject(error)
       }
 
@@ -128,8 +176,11 @@ api.interceptors.response.use(
         original.headers.Authorization = `Bearer ${newToken}`
         return api(original)   // request'i tekrar dene
       } catch {
-        clearSessionAndRedirect()
-        return Promise.reject(error)
+        if (handleSessionExpired()) return Promise.reject(error)
+        // Herkese açık sayfa: aynı isteği girişsiz bir kez daha dene
+        // (ilan detayı, işletme profili girişsiz de okunur)
+        if (original.headers) delete original.headers.Authorization
+        return api(original)
       }
     }
 
@@ -146,6 +197,7 @@ api.interceptors.response.use(
 export function extractErrorMessage(error) {
   const data = error.response?.data
   if (!data) return 'Sunucuya bağlanılamadı'
+  if (isEmailNotVerifiedError(error)) return EMAIL_NOT_VERIFIED_MESSAGE
   if (data.fields) return Object.values(data.fields).join(', ')
   return data.message || 'Bir hata oluştu'
 }

@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 're
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { coordsOfDistrict, ISTANBUL_CENTER } from '../data/istanbul'
+import { searchGeo } from '../api/hotel'
 
 /**
  * #81 v2: Leaflet harita — okuma + düzenleme modu.
@@ -17,9 +18,15 @@ import { coordsOfDistrict, ISTANBUL_CENTER } from '../data/istanbul'
  *   - editable:     false        true ise tıklamayla marker güncellenir
  *   - onChange:     ([lat,lng])  düzenleme modunda yeni koordinat callback
  *
- * Tile: CartoDB Dark (ücretsiz, key yok).
- * Geocoding: Nominatim (OpenStreetMap, ücretsiz, rate-limited).
+ * Döşeme: CARTO Voyager (açık tema; sokak adları ve parklar okunur, anahtar yok).
+ *   CSP img-src: https://*.basemaps.cartocdn.com (vercel.json) — aynı alan.
+ * Atıf: "© OpenStreetMap katkıcıları, © CARTO" her zaman görünür (lisans şartı).
+ * Adres arama: backend üzerinden (GET /api/geo/search) — tarayıcı Nominatim'e
+ *   doğrudan gitmez; yalnız "Ara" eyleminde çağrılır (otomatik tamamlama YOK,
+ *   OSM kullanım politikası).
  */
+
+export const TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
 
 // ── Custom marker (Vite/webpack uyumsuzluğu için divIcon) ──
 const brandIcon = L.divIcon({
@@ -27,8 +34,8 @@ const brandIcon = L.divIcon({
   html: `
     <div style="
       width: 32px; height: 32px;
-      background: #1f2937;
-      border: 2px solid white;
+      background: var(--ah-brand);
+      border: 2px solid var(--ah-card);
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
       box-shadow: 0 4px 12px rgba(107, 117, 116, 0.5);
@@ -36,7 +43,7 @@ const brandIcon = L.divIcon({
     ">
       <div style="
         width: 10px; height: 10px;
-        background: white;
+        background: var(--ah-card);
         border-radius: 50%;
         transform: rotate(45deg);
       "></div>
@@ -88,15 +95,15 @@ export default function MapView({
 
   if (!hasExact && !district && !editable) {
     return (
-      <div className="rounded-2xl border border-cream-300 flex items-center justify-center"
-           style={{ height, background: 'var(--ah-band)' }}>
+      <div className="rounded-xl flex items-center justify-center"
+           style={{ height, background: 'var(--ah-band)', border: '1px solid var(--ah-line)' }}>
         <p className="type-meta">Konum bilgisi yok</p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-cream-300 relative" style={{ height }}>
+    <div className="rounded-xl overflow-hidden relative" style={{ height, border: '1px solid var(--ah-line)' }}>
       <MapContainer
         center={coords}
         zoom={effectiveZoom}
@@ -105,24 +112,24 @@ export default function MapView({
         attributionControl={false}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url={TILE_URL}
           subdomains={['a', 'b', 'c', 'd']}
           maxZoom={19}
         />
         <Marker position={coords} icon={brandIcon}>
           <Popup>
-            <div className="text-[12px]">
-              {title && <div className="font-bold text-ink-900 mb-0.5">{title}</div>}
-              <div className="text-ink-700">
+            <div className="type-caption" style={{ color: 'var(--ah-ink-2)' }}>
+              {title && <div className="font-semibold mb-0.5" style={{ color: 'var(--ah-ink)' }}>{title}</div>}
+              <div>
                 {district}{neighborhood ? ` · ${neighborhood}` : ''}
               </div>
               {isApprox && (
-                <div className="text-[12px] mt-1" style={{ color: 'var(--ah-warn)' }}>
+                <div className="mt-1" style={{ color: 'var(--ah-warn)' }}>
                   Yaklaşık konum — işletme henüz tam konum girmemiş
                 </div>
               )}
               {hasExact && (
-                <div className="text-[12px] text-ink-700 mt-1 tabular-nums">
+                <div className="mt-1 tabular-nums">
                   Tam konum: {coords[0].toFixed(5)}, {coords[1].toFixed(5)}
                 </div>
               )}
@@ -135,40 +142,42 @@ export default function MapView({
 
       {/* Düzenleme modunda kullanıcıya rehber */}
       {editable && (
-        <div className="absolute top-2 left-2 right-2 bg-cream-100/85 backdrop-blur-sm border border-emerald-500/30 text-ink-900 text-[12px] font-semibold px-3 py-1.5 rounded-full text-center pointer-events-none">
+        <div className="absolute top-2 left-2 right-2 z-[500] type-caption font-semibold px-3 py-1.5 rounded-full text-center pointer-events-none"
+             style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)', color: 'var(--ah-ink)', boxShadow: 'var(--elev-1)' }}>
           Konumu seçmek için haritaya tıkla
         </div>
       )}
 
-      {/* Sağ alt köşe — attribution (CartoDB + OSM zorunlu) */}
-      <div className="absolute bottom-1 right-1 text-[11px] text-ink-700 bg-cream-100/80 px-1.5 py-0.5 rounded backdrop-blur-sm">
-        © <a href="https://carto.com/attributions" target="_blank" rel="noreferrer" className="hover:underline">CARTO</a>
-        {' '}·{' '}
-        © <a href="https://openstreetmap.org/copyright" target="_blank" rel="noreferrer" className="hover:underline">OSM</a>
+      {/* Sağ alt köşe — atıf (OpenStreetMap ODbL + CARTO lisansı gereği her zaman görünür) */}
+      <div data-testid="map-attribution"
+           className="absolute bottom-0 right-0 z-[500] text-[11px] leading-4 px-1.5 py-0.5 rounded-tl"
+           style={{ background: 'var(--ah-card)', color: 'var(--ah-ink-2)', opacity: 0.92 }}>
+        © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">OpenStreetMap katkıcıları</a>
+        , © <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">CARTO</a>
       </div>
     </div>
   )
 }
 
+/** Backend'in kabul ettiği en kısa sorgu (GET /api/geo/search). */
+export const GEOCODE_MIN_CHARS = 3
+
 /**
- * Nominatim adres arama yardımcısı (OpenStreetMap, ücretsiz).
- * Kullanıcı adres yazınca koordinat önerisi getirir.
- * Rate limit: 1 req/sec — UI'da debounce zorunlu.
+ * Adres → koordinat (ilk sonuç). Backend vekili GET /api/geo/search?q=...
+ * (girişli) [{ lat, lon, displayName }] döner; OSM politikası (önbellek, hız
+ * sınırı, kimlik) orada uygulanır. YALNIZ kullanıcı "Ara"ya bastığında /
+ * Enter'da çağır — yazarken çağırma.
  *
- * @returns Promise<[lat, lng] | null>
+ * @returns Promise<[lat, lng] | null>  (bulunamadı → null; ağ/sunucu hatası → throw)
  */
 export async function geocodeAddress(query) {
-  if (!query || query.trim().length < 5) return null
-  try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=tr&limit=1&q=${encodeURIComponent(query + ', İstanbul')}`
-    const res = await fetch(url, {
-      headers: { 'Accept-Language': 'tr,en' },
-    })
-    if (!res.ok) return null
-    const arr = await res.json()
-    if (!Array.isArray(arr) || arr.length === 0) return null
-    return [parseFloat(arr[0].lat), parseFloat(arr[0].lon)]
-  } catch {
-    return null
-  }
+  const q = (query || '').trim()
+  if (q.length < GEOCODE_MIN_CHARS) return null
+  const results = await searchGeo(q)
+  const first = Array.isArray(results) ? results[0] : null
+  if (!first) return null
+  const lat = Number(first.lat)
+  const lon = Number(first.lon)
+  return Number.isFinite(lat) && Number.isFinite(lon) ? [lat, lon] : null
 }
+
