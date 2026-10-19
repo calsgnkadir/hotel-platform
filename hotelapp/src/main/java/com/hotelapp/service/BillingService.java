@@ -24,11 +24,14 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Faz 1 — İşletme aboneliği (iyzico SANDBOX). İşçi tarafı her zaman ücretsiz.
+ * Faz 1 — İşletme aboneliği (iyzico). İşçi tarafı her zaman ücretsiz.
  *
- * MODEL: İlk {free-listings} ilan ücretsiz. 4. ilandan itibaren aktif (ödenmiş)
- * abonelik gerekir. Kapatılan (CLOSED) ilan kotayı boşaltır — eskisini kapatınca
- * yeni ücretsiz ilan hakkı açılır.
+ * MODEL (eşzamanlı aktif ilan sınırı): ücretsiz planda aynı anda en fazla
+ * {free-listings} (5) ACTIVE ilan; ödenmiş abonelikte ay içinde sınırsız ilan ama
+ * aynı anda en fazla {paid-concurrent-listings} (10) ACTIVE ilan. Duraklatılan
+ * (PAUSED) ve kapatılan (CLOSED) ilan sayılmaz — birini duraklatınca/kapatınca yer
+ * açılır. Sınır ilan oluştururken ve ilanı ACTIVE yaparken uygulanır; admin
+ * moderasyonu sınırın dışındadır.
  *
  * Akış: "Aboneliği başlat" iyzico hosted forma yönlendirir (her başlatma ayrı
  * {@link PaymentCheckout} kaydı, PENDING) → iyzico callback'e token atar → token
@@ -37,8 +40,8 @@ import java.util.UUID;
  * ({@link #reconcilePendingCheckouts()}) 15 dakikadan eski bekleyenleri sorgular.
  *
  * enforce=false iken hiçbir şey kısıtlanmaz (demo/dev akış bozulmaz).
- * Ödeme yapılandırılmamışsa (iyzico anahtarı yok) da kota uygulanmaz: ücret
- * alınamayan bir şey kısıtlanmaz — platform ücretsiz/sınırsız çalışır.
+ * Ödeme yapılandırılmamışsa (iyzico anahtarı yok) ücretsiz 5'lik sınır YİNE
+ * uygulanır; yalnız abonelik satın alınamaz ve hata mesajı abonelik önermez.
  */
 @Service
 @RequiredArgsConstructor
@@ -60,6 +63,7 @@ public class BillingService {
 
     @Value("${app.billing.enforce:true}")           private boolean enforce;
     @Value("${app.billing.free-listings:5}")        private int freeListings;
+    @Value("${app.billing.paid-concurrent-listings:10}") private int paidConcurrentListings;
     @Value("${app.billing.trial-days:14}")          private int trialDays;
     @Value("${app.billing.monthly-price:499.00}")   private BigDecimal monthlyPrice;
     @Value("${app.billing.plan:STANDARD_MONTHLY}")  private String planName;
@@ -73,11 +77,24 @@ public class BillingService {
                                 LocalDateTime currentPeriodEnd, boolean active, boolean enforced,
                                 BigDecimal monthlyPrice,
                                 int freeListings, long usedListings, long freeRemaining,
-                                boolean paymentsAvailable, boolean sandbox) {}
+                                boolean paymentsAvailable, boolean sandbox,
+                                int concurrentLimit, long activeListings,
+                                int freeConcurrentLimit, int paidConcurrentLimit) {}
 
-    /** Kota yalnızca açıkça istenmişse VE ödeme gerçekten alınabiliyorsa uygulanır. */
+    /**
+     * Eşzamanlı aktif ilan kotası anlık görüntüsü.
+     * limit: bu işletmenin şu anki planındaki sınır; active: ACTIVE ilan sayısı.
+     */
+    public record ListingQuota(boolean enforced, boolean paid, boolean paymentsAvailable,
+                               int limit, long active) {
+        public boolean canActivateOneMore() {
+            return !enforced || active < limit;
+        }
+    }
+
+    /** Kota açıkça kapatılmadıkça (BILLING_ENFORCE=false) uygulanır — ödeme kapalıyken de. */
     private boolean enforced() {
-        return enforce && iyzico.isConfigured();
+        return enforce;
     }
 
     @Transactional
@@ -332,36 +349,55 @@ public class BillingService {
         return toStatus(s);
     }
 
-    /**
-     * İlan açma kapısı. enforce kapalıysa daima true (demo/dev bozulmaz).
-     * Aksi halde: aktif (ödenmiş) abonelik → sınırsız; yoksa CLOSED olmayan
-     * ilan sayısı ücretsiz kotanın altındaysa serbest.
-     */
+    /** İşletmenin anlık kota durumu (ACTIVE ilan sayısı + plana göre sınır). */
+    @Transactional(readOnly = true)
+    public ListingQuota quotaForBusiness(Long businessId) {
+        Subscription s = subscriptionRepository.findByBusinessId(businessId).orElse(null);
+        boolean paid = s != null && isPaid(s);
+        long active = jobListingRepository.countByBusiness_IdAndStatus(businessId, ListingStatus.ACTIVE);
+        return new ListingQuota(enforced(), paid, iyzico.isConfigured(),
+                paid ? paidConcurrentListings : freeListings, active);
+    }
+
+    /** Bir ilan daha ACTIVE olabilir mi (yeni ilan ya da PAUSED/CLOSED → ACTIVE)? */
     @Transactional(readOnly = true)
     public boolean canCreateListingByBusiness(Long businessId) {
         if (!enforced()) return true;
-        Subscription s = subscriptionRepository.findByBusinessId(businessId).orElse(null);
-        if (s != null && isPaid(s)) return true;                 // abonelik → sınırsız
-        long used = jobListingRepository.countByBusiness_IdAndStatusNot(businessId, ListingStatus.CLOSED);
-        return used < freeListings;                              // ilk N ilan ücretsiz
+        return quotaForBusiness(businessId).canActivateOneMore();
     }
 
     /**
-     * Kotada zaten sayılan (CLOSED olmayan, ör. PAUSED) ilanı yeniden yayına alma kapısı.
-     * Bu ilanın kendisi sayımda olduğu için koşul "bu ilan hariç kullanım < kota",
-     * yani used <= free. Abonelik bitince kota üstünde kalan duraklatılmış ilanlar
-     * ödeme ya da başka ilan kapatılmadan tekrar yayına alınamaz.
+     * İlan yayınlama kapısı: bir ilan daha ACTIVE olacaksa çağrılır, sınır doluysa
+     * Türkçe 422. İşletme satırı kilitlenir: aynı işletmenin eşzamanlı istekleri
+     * sırayla sayılır (çağıranın transaction'ı içinde).
      */
-    @Transactional(readOnly = true)
-    public boolean canActivateCountedListing(Long businessId) {
-        if (!enforced()) return true;
-        Subscription s = subscriptionRepository.findByBusinessId(businessId).orElse(null);
-        if (s != null && isPaid(s)) return true;
-        long used = jobListingRepository.countByBusiness_IdAndStatusNot(businessId, ListingStatus.CLOSED);
-        return used <= freeListings;
+    @Transactional
+    public void requireActivationSlot(Long businessId) {
+        if (!enforced()) return;
+        businessRepository.lockById(businessId);
+        ListingQuota q = quotaForBusiness(businessId);
+        if (q.canActivateOneMore()) return;
+        throw new com.hotelapp.exception.BusinessRuleException(quotaExceededMessage(q));
     }
 
-    /** Ücretsiz kota büyüklüğü — hata mesajı vb. için. */
+    String quotaExceededMessage(ListingQuota q) {
+        if (q.paid()) {
+            return String.format("Aboneliğinle aynı anda en fazla %d aktif ilan yayınlayabilirsin "
+                    + "(şu an %d aktif). Yeni ilan için bir ilanını duraklat ya da kapat.",
+                    q.limit(), q.active());
+        }
+        if (q.paymentsAvailable()) {
+            return String.format("Ücretsiz planda aynı anda en fazla %d aktif ilan yayınlayabilirsin "
+                    + "(şu an %d aktif). Bir ilanını duraklat ya da kapat; daha fazlası için Abonelik "
+                    + "sekmesinden aboneliğini başlat (aynı anda en fazla %d aktif ilan).",
+                    q.limit(), q.active(), paidConcurrentListings);
+        }
+        return String.format("Ücretsiz planda aynı anda en fazla %d aktif ilan yayınlayabilirsin "
+                + "(şu an %d aktif). Yeni ilan için bir ilanını duraklat ya da kapat.",
+                q.limit(), q.active());
+    }
+
+    /** Ücretsiz plandaki eşzamanlı aktif ilan sınırı. */
     public int getFreeListings() { return freeListings; }
 
     // ── iç yardımcılar ───────────────────────────────────────────────
@@ -393,13 +429,20 @@ public class BillingService {
                 && s.getCurrentPeriodEnd().isAfter(LocalDateTime.now());
     }
 
+    /**
+     * usedListings = activeListings (eşzamanlı ACTIVE ilan); freeRemaining ücretsiz
+     * plandaki boş yer. concurrentLimit: şu anki plana göre sınır (ücretsiz 5 / ücretli 10).
+     */
     private BillingStatus toStatus(Subscription s) {
-        long used = jobListingRepository.countByBusiness_IdAndStatusNot(
-                s.getBusiness().getId(), ListingStatus.CLOSED);
-        long remaining = Math.max(0, (long) freeListings - used);
+        long active = jobListingRepository.countByBusiness_IdAndStatus(
+                s.getBusiness().getId(), ListingStatus.ACTIVE);
+        boolean paid = isPaid(s);
+        long remaining = Math.max(0, (long) freeListings - active);
         return new BillingStatus(s.getStatus(), s.getPlan(), s.getTrialEndsAt(),
-                s.getCurrentPeriodEnd(), isPaid(s), enforced(), monthlyPrice,
-                freeListings, used, remaining,
-                iyzico.isConfigured(), iyzico.isConfigured() && iyzico.isSandbox());
+                s.getCurrentPeriodEnd(), paid, enforced(), monthlyPrice,
+                freeListings, active, remaining,
+                iyzico.isConfigured(), iyzico.isConfigured() && iyzico.isSandbox(),
+                paid ? paidConcurrentListings : freeListings, active,
+                freeListings, paidConcurrentListings);
     }
 }

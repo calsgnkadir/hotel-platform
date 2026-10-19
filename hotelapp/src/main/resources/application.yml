@@ -128,6 +128,19 @@ app:
   # Frontend URL — reset linki için (https://hotel-platform-seven.vercel.app)
   base-url: ${APP_BASE_URL:http://localhost:5173}
 
+  # E-posta dogrulamasi zorunlu: ilan olusturma/yayina alma, basvuru ve sohbet baslatma
+  # dogrulanmamis e-postada 403 (code=EMAIL_NOT_VERIFIED). Google hesaplari dogrulanmis
+  # sayilir. dev ve test profillerinde false (CI E2E: yeni aday dogrulamadan basvurur).
+  # Prod'da false acilisi durdurur (ProductionSafetyConfiguration).
+  auth:
+    require-verified-email: ${APP_REQUIRE_VERIFIED_EMAIL:true}
+
+  # Adres arama (GET /api/geo/search) — Nominatim'e sunucudan, saniyede en fazla 1 istek,
+  # sonuc 24 saat bellekte. Nominatim kullanim kosulu: tanitici User-Agent + iletisim e-postasi.
+  geo:
+    nominatim-url: ${GEO_NOMINATIM_URL:https://nominatim.openstreetmap.org/search}
+    contact-email: ${GEO_CONTACT_EMAIL:${RESEND_FROM:}}
+
   email:
     resend:
       # Resend API key — yoksa email "DEV MODE" log'a düşer (gerçek mail gitmez)
@@ -209,17 +222,19 @@ app:
     key: ${APP_ENCRYPTION_KEY:}
 
   # Faz 1 — Isletme aboneligi (iyzico). Isci HER ZAMAN ucretsiz.
-  # MODEL: ilk free-listings (5) ilan ucretsiz; sonrasi aktif abonelik ister.
-  # Kapatilan (CLOSED) ilan kotayi bosaltir. enforce=false iken hicbir sey
-  # kisitlanmaz (BILLING_ENFORCE=false ile demo'yu tamamen serbest birakabilirsin).
+  # MODEL: ucretsiz planda AYNI ANDA en fazla free-listings (5) ACTIVE ilan; odenmis
+  # abonelikte ay icinde sinirsiz ilan ama ayni anda en fazla paid-concurrent-listings (10).
+  # PAUSED/CLOSED ilan sayilmaz. Odeme kapaliyken (iyzico anahtari yok) de 5'lik sinir
+  # uygulanir. enforce=false iken hicbir sey kisitlanmaz (BILLING_ENFORCE=false).
   billing:
     enforce:       ${BILLING_ENFORCE:true}
     free-listings: ${BILLING_FREE_LISTINGS:5}
+    paid-concurrent-listings: ${BILLING_PAID_CONCURRENT_LISTINGS:10}
     trial-days:    ${BILLING_TRIAL_DAYS:14}
     monthly-price: ${BILLING_MONTHLY_PRICE:499.00}
     plan:          ${BILLING_PLAN:STANDARD_MONTHLY}
   # iyzico — kodda varsayilan anahtar YOK. Bos birakilirsa odeme KAPALI
-  # (abonelik baslatilamaz, ilan kotasi uygulanmaz → platform ucretsiz/sinirsiz).
+  # (abonelik baslatilamaz; ucretsiz 5 aktif ilan siniri yine gecerli).
   # Yerel/demo test icin kendi sandbox anahtarlarini env ile ver (IYZICO_API_KEY/SECRET_KEY).
   # Canli (prod, showcase'siz): sandbox ayari ve localhost callback reddedilir.
   iyzico:

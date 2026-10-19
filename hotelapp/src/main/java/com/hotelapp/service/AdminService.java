@@ -105,6 +105,11 @@ public class AdminService {
         if (user.getRole() == Role.CANDIDATE) {
             accountClosureService.releaseCandidate(user.getId(), user.getBannedUntil(),
                     AccountClosureService.Reason.SUSPENDED);
+        } else if (user.getRole() == Role.BUSINESS_OWNER) {
+            // Isletme askiya alindi: ACTIVE ilanlar PAUSED + adminSuspended (audit), kabul
+            // edilmis adaylarin baslamamis vardiyalari iptal + adaya bildirim. Ban kalkinca
+            // ilanlar kendiliginden acilmaz; admin ilan moderasyonundan ACTIVE yapar.
+            accountClosureService.suspendBusinessListings(user.getId());
         }
         return toSummary(user);
     }

@@ -130,6 +130,7 @@ class GdprServiceTest {
         u.setPhone("+905551234567");
         u.setDistrict("Beyoğlu");
         when(userRepository.findAllByScheduledAnonymizeAtBefore(any())).thenReturn(List.of(u));
+        when(userRepository.findById(u.getId())).thenReturn(Optional.of(u));
 
         service.anonymizeDueAccounts();
 
@@ -228,13 +229,15 @@ class GdprServiceTest {
         com.hotelapp.entity.Application a = com.hotelapp.entity.Application.builder()
                 .id(1L).coverLetter("Merhaba, deneyimliyim").note("Guler yuzlu").build();
         when(userRepository.findAllByScheduledAnonymizeAtBefore(any())).thenReturn(List.of(u));
+        when(userRepository.findById(u.getId())).thenReturn(Optional.of(u));
         when(applicationRepository.findAllByCandidateId(99L)).thenReturn(List.of(a));
 
         service.anonymizeDueAccounts();
 
         assertThat(u.getEmail()).isEqualTo("deleted-99@deleted.local");
         assertThat(u.getFullName()).isEqualTo("Silinmiş Kullanıcı");
-        assertThat(u.getPassword()).isNull();
+        // NOT NULL kolon: null degil, eski parolayla da hicbir parolayla da eslesmeyen BCrypt ozeti
+        assertThat(u.getPassword()).isNotBlank().isNotEqualTo("$2a$hash").startsWith("$2a$");
         assertThat(u.getProviderId()).isNull();
         assertThat(u.getPhone()).isNull();
         assertThat(u.getPhoneVerifiedAt()).isNull();
@@ -263,10 +266,31 @@ class GdprServiceTest {
     }
 
     @Test
+    @DisplayName("anonymizeDueAccounts: bir kullanicinin hatasi digerlerini durdurmaz; kurtarilan hesaba dokunulmaz")
+    void anonymizeDueAccounts_isolatesFailuresPerUser() {
+        User bad = user(1L);
+        bad.setScheduledAnonymizeAt(LocalDateTime.now().minusDays(1));
+        User good = user(2L);
+        good.setScheduledAnonymizeAt(LocalDateTime.now().minusDays(1));
+        User recovered = user(3L);   // listede ama bu arada kurtarildi
+        when(userRepository.findAllByScheduledAnonymizeAtBefore(any())).thenReturn(List.of(bad, good, recovered));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(bad));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(good));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(user(3L)));
+        when(applicationRepository.findAllByCandidateId(1L)).thenThrow(new RuntimeException("db"));
+
+        service.anonymizeDueAccounts();
+
+        assertThat(good.getEmail()).isEqualTo("deleted-2@deleted.local");
+        verify(applicationRepository, never()).findAllByCandidateId(3L);
+    }
+
+    @Test
     @DisplayName("anonymize: avatar silme hatasi anonimlestirmeyi durdurmaz (kayit + audit yine olur)")
     void anonymize_avatarDeleteFailure_doesNotStop() {
         User u = fullCandidate(99L);
         when(userRepository.findAllByScheduledAnonymizeAtBefore(any())).thenReturn(List.of(u));
+        when(userRepository.findById(u.getId())).thenReturn(Optional.of(u));
         org.mockito.Mockito.doThrow(new RuntimeException("cloudinary down"))
                 .when(fileStorageService).delete(any());
 
@@ -291,6 +315,7 @@ class GdprServiceTest {
         com.hotelapp.entity.BusinessPhoto photo = new com.hotelapp.entity.BusinessPhoto();
         photo.setFilePath("upload:image:photo1");
         when(userRepository.findAllByScheduledAnonymizeAtBefore(any())).thenReturn(List.of(u));
+        when(userRepository.findById(u.getId())).thenReturn(Optional.of(u));
         when(businessRepository.findByOwnerId(60L)).thenReturn(Optional.of(b));
         when(businessPhotoRepository.findAllByBusinessIdOrderByCreatedAtDesc(3L)).thenReturn(List.of(photo));
 

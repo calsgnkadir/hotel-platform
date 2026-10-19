@@ -106,6 +106,21 @@ public class User {
     private LocalDateTime deletionRequestedAt;
     private LocalDateTime scheduledAnonymizeAt;
 
+    /**
+     * V27 — KVKK onay kaydı. Kayıtta ve Google ile ilk girişte yazılır.
+     * termsAcceptedAt: Kullanım Şartları kabul anı. privacyNoticeVersion: okunduğu
+     * beyan edilen Aydınlatma Metni sürümü (ör. "2026-10-17"); privacyNoticeAckAt: o an.
+     * V27 öncesi hesaplarda NULL (geriye uyum).
+     */
+    @Column(name = "terms_accepted_at")
+    private LocalDateTime termsAcceptedAt;
+
+    @Column(name = "privacy_notice_version", length = 32)
+    private String privacyNoticeVersion;
+
+    @Column(name = "privacy_notice_ack_at")
+    private LocalDateTime privacyNoticeAckAt;
+
     /** FAZ 4.4 — Email dogrulanmis mi? OAuth icin daima true. */
     public boolean isEmailVerified() {
         return emailVerifiedAt != null

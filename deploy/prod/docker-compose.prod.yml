@@ -55,19 +55,39 @@ services:
       FLYWAY_ENABLED: "true"
       JPA_DDL_AUTO: validate
       # Ayni origin + HTTPS: Secure cerez, SameSite=Lax yeterli (cross-site degil).
-      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      # Prod COOKIE_SECURE=false ile ACILMAZ (HTTP-only test artik desteklenmiyor).
+      COOKIE_SECURE: "true"
       COOKIE_SAMESITE: ${COOKIE_SAMESITE:-Lax}
       # Frontend ile ayni public adres. CORS ayni-origin'de tetiklenmez ama
       # application-prod.yml bu degiskeni ZORUNLU okur (default yok).
       APP_BASE_URL: ${PUBLIC_URL:?orn. https://kadrom.me}
       APP_CORS_ALLOWED_ORIGINS: ${PUBLIC_URL:?zorunlu}
-      # Opsiyonel entegrasyonlar — verilmezse o ozellik devre disi, uygulama yine acilir.
-      CLOUDINARY_URL: ${CLOUDINARY_URL:-cloudinary://test:test@test}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-dummy-client-id}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-dummy-client-secret}
-      RESEND_API_KEY: ${RESEND_API_KEY:-test-key}
-      # iyzico odeme — bos birakilirsa ODEME KAPALI: abonelik baslatilamaz,
-      # ilan kotasi uygulanmaz (platform ucretsiz/sinirsiz calisir).
+      # ── ZORUNLU entegrasyonlar (prod acilisi bunlarsiz durur — ProductionSafetyConfiguration)
+      # Gorsel yukleme (avatar/logo/ilan foto). 'test' iceren deger reddedilir.
+      CLOUDINARY_URL: ${CLOUDINARY_URL:?cloudinary://KEY:SECRET@CLOUD zorunlu}
+      # E-posta (dogrulama, sifre sifirlama, ekip listesi). Anahtar 're_' ile baslar;
+      # gonderen adres dogrulanmis alan adinda olmali (@resend.dev kabul edilmez).
+      RESEND_API_KEY: ${RESEND_API_KEY:?re_... zorunlu}
+      RESEND_FROM: ${RESEND_FROM:?orn. bildirim@kadrom.me zorunlu}
+      RESEND_FROM_NAME: ${RESEND_FROM_NAME:-Kadrom}
+      # Web push: kalici VAPID cifti (yoksa her restart tum abonelikleri gecersiz kilar).
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:?kalici VAPID genel anahtari zorunlu}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:?kalici VAPID ozel anahtari zorunlu}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:?orn. mailto:destek@kadrom.me zorunlu}
+      # Adres arama (Nominatim) iletisim adresi; bos ise RESEND_FROM kullanilir.
+      GEO_CONTACT_EMAIL: ${GEO_CONTACT_EMAIL:-${RESEND_FROM}}
+      # ── ISTEGE BAGLI (bos = ozellik kapali, uygulama yine acilir)
+      # Google ile giris: verilmezse "not-configured" (bos deger Spring OAuth istemcisini cokertir), buton gizlenir.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-not-configured}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-not-configured}
+      # SMS (acil ilan / yedek aktivasyonu). SMS_ENABLED=false iken gercek SMS gitmez.
+      SMS_ENABLED: ${SMS_ENABLED:-false}
+      SMS_PROVIDER: ${SMS_PROVIDER:-netgsm}
+      NETGSM_USERCODE: ${NETGSM_USERCODE:-}
+      NETGSM_PASSWORD: ${NETGSM_PASSWORD:-}
+      NETGSM_HEADER: ${NETGSM_HEADER:-}
+      # iyzico odeme — bos birakilirsa ODEME KAPALI: abonelik baslatilamaz; ucretsiz
+      # planin "ayni anda 5 aktif ilan" siniri yine gecerli.
       # CANLIYA GECIS: kayitli sirket + gercek merchant hesabi -> .env.prod'da
       # IYZICO_API_KEY/SECRET doldur, IYZICO_BASE_URL=https://api.iyzipay.com yap.
       # Sandbox anahtari / sandbox adresi prod'da acilista reddedilir.
@@ -75,6 +95,8 @@ services:
       IYZICO_SECRET_KEY: ${IYZICO_SECRET_KEY:-}
       IYZICO_BASE_URL: ${IYZICO_BASE_URL:-https://api.iyzipay.com}
       IYZICO_CALLBACK_URL: ${IYZICO_CALLBACK_URL:-$PUBLIC_URL/api/billing/callback}
+      # Ucretli abonelikte ayni anda en fazla aktif ilan (ucretsiz plan: BILLING_FREE_LISTINGS=5)
+      BILLING_PAID_CONCURRENT_LISTINGS: ${BILLING_PAID_CONCURRENT_LISTINGS:-10}
       # Alan sifreleme anahtari prod icin zorunlu.
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?256-bit base64 anahtar zorunlu}
       # 512MB-1GB makinede JVM sinirla.

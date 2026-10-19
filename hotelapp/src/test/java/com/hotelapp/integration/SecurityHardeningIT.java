@@ -54,6 +54,31 @@ class SecurityHardeningIT {
     @Autowired private ObjectMapper json;
     @Autowired private UserRepository userRepository;
 
+    // ---------------- Adres arama / KVKK onayı (HTTP) ----------------
+
+    @Test
+    @DisplayName("Adres arama yalnız girişli kullanıcıya; kısa sorgu 422 (dış çağrı yapılmaz)")
+    void geoSearch_requiresAuth_andRejectsShortQuery() throws Exception {
+        mvc.perform(get("/api/geo/search").param("q", "taksim"))
+                .andExpect(status().isUnauthorized());
+        Auth cand = register(candidate("cand.geo@test.com"));
+        mvc.perform(get("/api/geo/search").param("q", "ab").header("Authorization", "Bearer " + cand.token))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value("Aramak için en az 3 karakter yaz."));
+    }
+
+    @Test
+    @DisplayName("Kayıt: Kullanım Şartları kabul edilmeden 422, hesap oluşmaz")
+    void register_withoutTerms_422() throws Exception {
+        RegisterRequest r = candidate("no.terms@test.com");
+        r.setTermsAccepted(false);
+        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(r)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value("Kullanım Şartları kabul edilmeli."));
+        assertThat(userRepository.findByEmail("no.terms@test.com")).isEmpty();
+    }
+
     // ---------------- Actuator ----------------
 
     @Test
@@ -219,6 +244,8 @@ class SecurityHardeningIT {
 
     private RegisterRequest candidate(String email) {
         RegisterRequest r = new RegisterRequest();
+        r.setTermsAccepted(true);              // KVKK onayi (V27)
+        r.setPrivacyNoticeVersion("2026-10-17");
         r.setFullName("Aday Test");
         r.setEmail(email);
         r.setPassword("Test1234");
@@ -229,6 +256,8 @@ class SecurityHardeningIT {
 
     private RegisterRequest business(String email) {
         RegisterRequest r = new RegisterRequest();
+        r.setTermsAccepted(true);              // KVKK onayi (V27)
+        r.setPrivacyNoticeVersion("2026-10-17");
         r.setFullName("Biz Test");
         r.setEmail(email);
         r.setPassword("Test1234");

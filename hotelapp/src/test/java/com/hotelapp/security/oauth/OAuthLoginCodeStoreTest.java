@@ -30,6 +30,23 @@ class OAuthLoginCodeStoreTest {
     }
 
     @Test
+    void peekDoesNotConsume_andRespectsTtl() {
+        MutableClock clock = new MutableClock();
+        OAuthLoginCodeStore store = new OAuthLoginCodeStore(clock);
+        String code = store.issue(9L);
+
+        assertThat(store.peek(code)).contains(9L);
+        assertThat(store.peek(code)).contains(9L);          // KVKK onayı eksikse aynı kodla tekrar
+        assertThat(store.peek("yanlis")).isEmpty();
+        assertThat(store.consume(code)).contains(9L);
+        assertThat(store.peek(code)).isEmpty();              // tüketildi
+
+        String other = store.issue(10L);
+        clock.now.set(clock.now.get().plusSeconds(OAuthLoginCodeStore.TTL_SECONDS));
+        assertThat(store.peek(other)).isEmpty();
+    }
+
+    @Test
     void codeExpiresAfterTtl() {
         MutableClock clock = new MutableClock();
         OAuthLoginCodeStore store = new OAuthLoginCodeStore(clock);

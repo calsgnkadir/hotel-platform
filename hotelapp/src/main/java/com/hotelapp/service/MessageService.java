@@ -64,6 +64,17 @@ public class MessageService {
     private static final Set<String> ALLOWED_REACTIONS =
             Set.of("heart", "check", "question", "thumbs-up", "alert", "x");
 
+    /**
+     * E-posta doğrulama kapısı. Spring setter ile gerçek politikayı enjekte eder;
+     * bağlam dışı birim testlerinde varsayılan kapalıdır.
+     */
+    private EmailVerificationPolicy emailVerificationPolicy = EmailVerificationPolicy.disabled();
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setEmailVerificationPolicy(EmailVerificationPolicy policy) {
+        this.emailVerificationPolicy = policy;
+    }
+
     // ----------------------------------------------------------------
     // Sohbet listesi (sayfalı, son mesaja göre azalan)
     // ----------------------------------------------------------------
@@ -92,6 +103,8 @@ public class MessageService {
         if (initiator.getId().equals(otherId)) {
             throw BusinessRuleException.keyed("error.message.selfConversation");
         }
+        // Sohbet başlatma yalnız e-postası doğrulanmış hesapla (403 EMAIL_NOT_VERIFIED)
+        emailVerificationPolicy.requireVerified(initiator);
         User other = otherId == null ? null : userRepository.findById(otherId).orElse(null);
         if (other == null || !other.isEnabled()) {
             throw cannotStartConversation();

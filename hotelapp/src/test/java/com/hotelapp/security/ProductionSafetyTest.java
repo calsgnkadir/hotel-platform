@@ -13,7 +13,56 @@ class ProductionSafetyTest {
                 .withInitializer(ctx -> ctx.getEnvironment().setActiveProfiles(profiles))
                 .withPropertyValues("spring.datasource.username=kadrom_app", "spring.jpa.hibernate.ddl-auto=validate",
                         "app.push.vapid.public-key=test-public", "app.push.vapid.private-key=test-private",
-                        "app.email.resend.api-key=re_test_only", "app.email.resend.from=bildirim@kadrom.me");
+                        "app.email.resend.api-key=re_test_only", "app.email.resend.from=bildirim@kadrom.me",
+                        "app.security.cookie-secure=true", "app.base-url=https://kadrom.me",
+                        "cloudinary.url=cloudinary://key:secret@kadrom-cloud",
+                        "app.cors.allowed-origins=https://kadrom.me, https://www.kadrom.me");
+    }
+
+    @Test void productionRequiresSecureCookie() {
+        context("prod").withPropertyValues("app.security.cookie-secure=false")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("COOKIE_SECURE"));
+        context("prod").withPropertyValues("app.security.cookie-secure=")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("COOKIE_SECURE"));
+    }
+
+    @Test void productionRequiresPublicHttpsBaseUrl() {
+        for (String url : new String[]{"http://kadrom.me", "https://localhost:5173", "http://localhost:5173",
+                "https://127.0.0.1", ""}) {
+            context("prod").withPropertyValues("app.base-url=" + url)
+                    .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("APP_BASE_URL"));
+        }
+    }
+
+    @Test void productionRejectsTestCloudinary() {
+        context("prod").withPropertyValues("cloudinary.url=cloudinary://test:test@test")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("CLOUDINARY_URL"));
+    }
+
+    @Test void productionRejectsLocalhostOrWildcardCors() {
+        for (String cors : new String[]{"https://kadrom.me,http://localhost:5173", "*",
+                "https://kadrom.me, https://*.vercel.app", " http://127.0.0.1:3000 "}) {
+            context("prod").withPropertyValues("app.cors.allowed-origins=" + cors)
+                    .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("APP_CORS_ALLOWED_ORIGINS"));
+        }
+    }
+
+    @Test void productionRequiresVerifiedEmailGate() {
+        context("prod").withPropertyValues("app.auth.require-verified-email=false")
+                .run(ctx -> assertThat(ctx.getStartupFailure()).hasMessageContaining("require-verified-email"));
+    }
+
+    @Test void showcaseIsExemptFromPublicDeploymentChecks() {
+        context("prod", "showcase").withPropertyValues("app.security.cookie-secure=false",
+                        "app.base-url=http://localhost:5173", "cloudinary.url=cloudinary://test:test@test",
+                        "app.cors.allowed-origins=http://localhost:5173")
+                .run(ctx -> assertThat(ctx).hasNotFailed());
+    }
+
+    @Test void corsListIsTrimmed() {
+        assertThat(com.hotelapp.config.SecurityConfig.parseOrigins(" https://a.example , https://b.example ,, "))
+                .containsExactly("https://a.example", "https://b.example");
+        assertThat(com.hotelapp.config.SecurityConfig.parseOrigins(null)).isEmpty();
     }
 
     @Test void productionRequiresRealEmailSetup() {

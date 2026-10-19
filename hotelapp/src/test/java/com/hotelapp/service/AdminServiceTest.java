@@ -60,8 +60,8 @@ class AdminServiceTest {
     }
 
     @Test
-    @DisplayName("Ban (isletme sahibi): aday taahhut bosaltma cagrilmaz")
-    void ban_businessOwner_noCandidateRelease() {
+    @DisplayName("Ban (isletme sahibi): ilanlar askiya alinir, aday taahhut bosaltma (aday yolu) cagrilmaz")
+    void ban_businessOwner_suspendsListings() {
         User u = new User();
         u.setId(6L);
         u.setRole(Role.BUSINESS_OWNER);
@@ -69,7 +69,26 @@ class AdminServiceTest {
 
         service.ban(6L, 7);
 
-        org.mockito.Mockito.verifyNoInteractions(accountClosure);
+        verify(refreshTokens).revokeAllForUser(6L);
+        verify(accountClosure).suspendBusinessListings(6L);
+        verify(accountClosure, org.mockito.Mockito.never())
+                .releaseCandidate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    @DisplayName("Ban kaldirma ilanlari kendiliginden acmaz (admin acar)")
+    void unban_doesNotReopenListings() {
+        User u = new User();
+        u.setId(6L);
+        u.setRole(Role.BUSINESS_OWNER);
+        u.setBannedUntil(java.time.LocalDateTime.now().plusDays(3));
+        when(users.findById(6L)).thenReturn(Optional.of(u));
+
+        service.unban(6L);
+
+        assertThat(u.getBannedUntil()).isNull();
+        org.mockito.Mockito.verifyNoInteractions(accountClosure, jobListingService);
     }
 
     @Test

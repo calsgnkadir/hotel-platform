@@ -30,6 +30,9 @@ app:
   # bu domain'i 1 yil HTTPS-only isaretler, dev'i bozar)
   security:
     hsts-enabled: false
+  # CI E2E (dev,demo) yeni kayit olan adayla e-posta dogrulamadan basvurur.
+  auth:
+    require-verified-email: ${APP_REQUIRE_VERIFIED_EMAIL:false}
   # Dev'de scheduler'lari sakinlestir — konsol noise + gereksiz DB yuku dusurulur.
   # (Prod varsayilan degerleri: outbox 5sn, pulse 30sn.)
   outbox:

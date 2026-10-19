@@ -23,6 +23,9 @@ app:
     expiration-ms: 3600000
     refresh-expiration-ms: 86400000
   base-url: http://localhost:8080
+  # E-posta dogrulama kapisi testlerde kapali (ayri testler acarak dogrular)
+  auth:
+    require-verified-email: false
   rate-limit:
     enabled: false   # test'te bypass — peş peşe register'da 429 yememek için
   # @Scheduled isler testte kendiliginden tetiklenmesin (slotlar gecmise tasindigi icin

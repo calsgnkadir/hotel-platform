@@ -40,8 +40,11 @@ primary_region = 'ams'
   COOKIE_SECURE = 'true'
   COOKIE_SAMESITE = 'None'
 
-  # Fly proxy X-Forwarded-* gonderir; OAuth redirect URI https kalsin
-  # (application-prod.yml zaten forward-headers-strategy: framework)
+  # Fly proxy X-Forwarded-* gonderir; Tomcat RemoteIpValve cozer
+  # (application-prod.yml: forward-headers-strategy: native — 'framework' bilerek
+  # kullanilmaz, XFF'in istemcinin yazabildigi en sol degerini IP sayiyordu).
+  # Fly'in proxy adresleri varsayilan internal-proxies disindaysa
+  # SERVER_TOMCAT_REMOTEIP_INTERNALPROXIES ile ekle.
   APP_BASE_URL = 'https://hotel-platform-seven.vercel.app'
   APP_CORS_ALLOWED_ORIGINS = 'https://hotel-platform-seven.vercel.app'
 

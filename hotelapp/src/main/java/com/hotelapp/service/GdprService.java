@@ -196,16 +196,49 @@ public class GdprService {
      * Cron: 0 0 3 * * * (saniye dakika saat gunay haftaicigunu)
      */
     @Scheduled(cron = "${app.scheduling.gdpr-anonymize-cron:0 0 3 * * *}")
-    @Transactional
     public void anonymizeDueAccounts() {
         LocalDateTime now = LocalDateTime.now();
-        List<User> due = userRepository.findAllByScheduledAnonymizeAtBefore(now);
-        if (due.isEmpty()) return;
+        List<Long> dueIds = userRepository.findAllByScheduledAnonymizeAtBefore(now).stream()
+                .map(User::getId).toList();
+        if (dueIds.isEmpty()) return;
 
-        log.info("[GDPR-ANONYMIZE] {} kullanici anonymize edilecek", due.size());
-        for (User u : due) {
-            anonymize(u);
+        log.info("[GDPR-ANONYMIZE] {} kullanici anonymize edilecek", dueIds.size());
+        int failed = 0;
+        for (Long id : dueIds) {
+            // Kullanici basina ayri (REQUIRES_NEW) transaction: birinin hatasi yalniz kendini
+            // geri alir, digerleri anonimlesir; hatali kayit ertesi gece yeniden denenir.
+            try {
+                perUserTx.executeWithoutResult(st -> {
+                    User fresh = userRepository.findById(id).orElse(null);
+                    // Bu arada kurtarildiysa (scheduledAnonymizeAt temizlendi) dokunulmaz
+                    if (fresh == null || fresh.getScheduledAnonymizeAt() == null
+                            || !fresh.getScheduledAnonymizeAt().isBefore(now)) return;
+                    anonymize(fresh);
+                });
+            } catch (RuntimeException ex) {
+                failed++;
+                log.error("[GDPR-ANONYMIZE] userId={} anonimlestirilemedi (ertesi calismada tekrar denenecek): {}",
+                        id, ex.getMessage(), ex);
+            }
         }
+        if (failed > 0) {
+            log.warn("[GDPR-ANONYMIZE] {} / {} kullanici anonimlestirilemedi", failed, dueIds.size());
+        }
+    }
+
+    /**
+     * Kullanici basina transaction. Spring baglaminda REQUIRES_NEW sablonu kurulur;
+     * baglam disi birim testlerinde transaction'siz calisir (BillingService deseni).
+     */
+    private org.springframework.transaction.support.TransactionOperations perUserTx =
+            org.springframework.transaction.support.TransactionOperations.withoutTransaction();
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setTransactionManager(org.springframework.transaction.PlatformTransactionManager txManager) {
+        org.springframework.transaction.support.TransactionTemplate t =
+                new org.springframework.transaction.support.TransactionTemplate(txManager);
+        t.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        this.perUserTx = t;
     }
 
     /**
@@ -222,7 +255,10 @@ public class GdprService {
 
         u.setEmail(String.format(ANONYMIZED_EMAIL_TEMPLATE, id));
         u.setFullName(ANONYMIZED_NAME);
-        u.setPassword(null);
+        // users.password NOT NULL (V1): null yazmak MySQL'de tum isi cokertiyordu.
+        // Kimsenin bilemeyecegi rastgele BCrypt ozeti — hesap parolayla acilamaz.
+        u.setPassword(com.hotelapp.security.UnusablePassword.newHash());
+        u.setEmailVerifiedAt(null);
         u.setProviderId(null);
         u.setPhone(null);
         u.setPhoneVerifiedAt(null);

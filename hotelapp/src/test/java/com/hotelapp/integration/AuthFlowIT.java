@@ -234,6 +234,8 @@ class AuthFlowIT {
 
     private RegisterRequest candidate(String email) {
         RegisterRequest r = new RegisterRequest();
+        r.setTermsAccepted(true);              // KVKK onayi (V27)
+        r.setPrivacyNoticeVersion("2026-10-17");
         r.setFullName("Test Aday");
         r.setEmail(email);
         r.setPassword("Test1234");
@@ -244,6 +246,8 @@ class AuthFlowIT {
 
     private RegisterRequest business(String email) {
         RegisterRequest r = new RegisterRequest();
+        r.setTermsAccepted(true);              // KVKK onayi (V27)
+        r.setPrivacyNoticeVersion("2026-10-17");
         r.setFullName("Test Yonetici");
         r.setEmail(email);
         r.setPassword("Biz1234A");

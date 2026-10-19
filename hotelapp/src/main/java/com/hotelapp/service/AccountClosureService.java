@@ -33,9 +33,15 @@ import java.util.stream.Collectors;
  * {@link AdminService#ban}.
  *
  * <ul>
- *   <li><b>İşletme sahibi:</b> ACTIVE/PAUSED ilanlar ortak kapanış yolundan kapanır
- *       ({@link JobListingService#closeAsModeration}: açık başvurular EXPIRED, adaya
- *       bildirim, ekip listesi olayı).</li>
+ *   <li><b>İşletme sahibi (hesap kapanışı):</b> ACTIVE/PAUSED ilanlar ortak kapanış
+ *       yolundan kapanır ({@link JobListingService#closeAsModeration}: açık başvurular
+ *       EXPIRED, adaya bildirim, ekip listesi olayı).</li>
+ *   <li><b>İşletme sahibi (admin ban):</b> ACTIVE ilanlar PAUSED + adminSuspended olur
+ *       ({@link #suspendBusinessListings}); ban kalkınca kendiliğinden açılmaz, admin açar.</li>
+ *   <li>Her iki işletme yolunda kabul edilmiş adayların <i>başlamamış</i> vardiyaları
+ *       iptal edilir: koltuk atomik iner, adaya bildirim gider; tüm vardiyaları
+ *       boşalan başvuru WITHDRAWN olur (aday yolundaki kural). Yedek zinciri
+ *       tetiklenmez — ilan kapalı/askıda.</li>
  *   <li><b>Aday:</b> açık başvurular (PENDING/REVIEWING/HELD/STANDBY) WITHDRAWN; aktif
  *       yedek teklifi varsa zincir sıradaki yedeğe geçer. ACCEPTED başvuruların
  *       <i>henüz başlamamış</i> (ve verilen sınırdan önce başlayan) vardiyaları boşalır:
@@ -83,23 +89,128 @@ public class AccountClosureService {
     // İşletme sahibi
     // ================================================================
 
-    /** İşletme sahibinin yayındaki/duraklatılmış ilanlarını kapatır. @return kapanan ilan sayısı */
+    /**
+     * İşletme sahibinin yayındaki/duraklatılmış ilanlarını kapatır; kabul edilmiş
+     * adayların başlamamış vardiyalarını iptal eder (adaya bildirim).
+     * @return kapanan ilan sayısı
+     */
     @Transactional
     public int closeBusinessListings(Long ownerId) {
         int closed = 0;
+        int cancelledShifts = 0;
         for (JobListing listing : jobListingRepository.findAllByBusiness_OwnerId(ownerId)) {
             if (listing.getStatus() == ListingStatus.ACTIVE || listing.getStatus() == ListingStatus.PAUSED) {
+                cancelledShifts += cancelAcceptedFutureShifts(listing, Reason.ACCOUNT_CLOSED);
                 jobListingService.closeAsModeration(listing);
                 closed++;
             }
         }
-        if (closed > 0) {
+        if (closed > 0 || cancelledShifts > 0) {
             outboxService.appendAuditLog(AuditLoggedEvent.system(
                     "LISTINGS_CLOSED_ON_ACCOUNT_CLOSURE", "USER", ownerId,
-                    "Hesap kapanışı: " + closed + " ilan kapatıldı."));
-            log.info("[ACCOUNT-CLOSURE] owner={} icin {} ilan kapatildi", ownerId, closed);
+                    "Hesap kapanışı: " + closed + " ilan kapatıldı · iptal edilen kabul vardiyası: "
+                            + cancelledShifts));
+            log.info("[ACCOUNT-CLOSURE] owner={} icin {} ilan kapatildi, {} vardiya iptal",
+                    ownerId, closed, cancelledShifts);
         }
         return closed;
+    }
+
+    /**
+     * Admin ban (işletme sahibi): ACTIVE ilanlar PAUSED + adminSuspended olur (işletme
+     * ban bitince bile kendisi yayına alamaz; admin ACTIVE yapar). ACTIVE/PAUSED
+     * ilanlardaki kabul edilmiş adayların başlamamış vardiyaları iptal edilir.
+     * Açık (PENDING/REVIEWING...) başvurular bekler; ilan askıdayken yeni başvuru alınmaz.
+     * @return askıya alınan ilan sayısı
+     */
+    @Transactional
+    public int suspendBusinessListings(Long ownerId) {
+        int suspended = 0;
+        int cancelledShifts = 0;
+        for (JobListing listing : jobListingRepository.findAllByBusiness_OwnerId(ownerId)) {
+            ListingStatus st = listing.getStatus();
+            if (st != ListingStatus.ACTIVE && st != ListingStatus.PAUSED) continue;
+            cancelledShifts += cancelAcceptedFutureShifts(listing, Reason.SUSPENDED);
+            if (st == ListingStatus.ACTIVE) {
+                listing.setStatus(ListingStatus.PAUSED);
+                listing.setAdminSuspended(true);
+                jobListingRepository.save(listing);
+                suspended++;
+            }
+        }
+        if (suspended > 0 || cancelledShifts > 0) {
+            outboxService.appendAuditLog(AuditLoggedEvent.system(
+                    "LISTINGS_SUSPENDED_ON_BAN", "USER", ownerId,
+                    "İşletme askıya alındı: " + suspended + " ilan duraklatıldı (admin askısı) · "
+                            + "iptal edilen kabul vardiyası: " + cancelledShifts));
+            log.info("[ACCOUNT-CLOSURE] owner={} ban: {} ilan askiya alindi, {} vardiya iptal",
+                    ownerId, suspended, cancelledShifts);
+        }
+        return suspended;
+    }
+
+    /**
+     * İlandaki ACCEPTED başvuruların başlamamış vardiyalarını boşaltır ve adaya bildirir.
+     * @return iptal edilen vardiya sayısı
+     */
+    private int cancelAcceptedFutureShifts(JobListing listing, Reason reason) {
+        List<Application> accepted = applicationRepository.findAllByJobListingIdAndStatusIn(
+                listing.getId(), EnumSet.of(ApplicationStatus.ACCEPTED));
+        if (accepted == null || accepted.isEmpty()) return 0;
+        LocalDateTime now = LocalDateTime.now(clock);
+        int cancelled = 0;
+        for (Application app : accepted) {
+            List<ShiftSlot> future = vacateFutureShifts(app, now, null);
+            if (future.isEmpty()) continue;
+            cancelled += future.size();
+            notifyCandidate(app, listing, future, reason);
+        }
+        return cancelled;
+    }
+
+    private static final java.time.format.DateTimeFormatter TR_DATE =
+            java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    private void notifyCandidate(Application app, JobListing listing, List<ShiftSlot> slots, Reason reason) {
+        if (app.getCandidate() == null || app.getCandidate().getId() == null) return;
+        String shifts = slots.stream()
+                .map(sl -> sl.getDate().format(TR_DATE) + " " + sl.getStartTime() + "-" + sl.getEndTime())
+                .collect(Collectors.joining(", "));
+        String who = reason == Reason.ACCOUNT_CLOSED ? "İşletme hesabını kapattı" : "İşletme askıya alındı";
+        String tail = slots.size() > 1 ? " vardiyaların iptal edildi." : " vardiyan iptal edildi.";
+        String title = slots.size() > 1 ? "Vardiyaların iptal edildi" : "Vardiyan iptal edildi";
+        notificationService.notify(app.getCandidate().getId(), NotificationType.LISTING_CLOSED,
+                title, who + "; " + listing.getTitle() + " · " + shifts + tail, "applications");
+    }
+
+    /**
+     * Başvurunun başlamamış (ve {@code until} verilmişse ondan önce başlayan) vardiyalarını
+     * boşaltır: koltuk atomik iner; hepsi boşalıyorsa başvuru WITHDRAWN, değilse yalnız o
+     * vardiyalar başvurudan çıkar. Eski (V25 öncesi) gelmedi kaydına dokunmaz.
+     * @return boşaltılan vardiyalar (boşsa hiçbir şey değişmedi)
+     */
+    private List<ShiftSlot> vacateFutureShifts(Application app, LocalDateTime now, LocalDateTime until) {
+        if (NoShowSlots.isLegacy(app)) return List.of();
+        List<ShiftSlot> future = SlotSeats.byId(app.getRequestedSlots()).stream()
+                .filter(ShiftWindow::hasTimes)
+                .filter(sl -> ShiftWindow.startAt(sl).isAfter(now))
+                .filter(sl -> until == null || ShiftWindow.startAt(sl).isBefore(until))
+                .filter(sl -> !NoShowSlots.isMarked(app, sl))
+                .toList();
+        if (future.isEmpty()) return future;
+
+        for (ShiftSlot slot : future) {
+            SlotSeats.release(shiftSlotRepository, slot);
+        }
+        if (future.size() == app.getRequestedSlots().size()) {
+            // Hiç çalışılmış/başlamış vardiya yok: başvuru geri çekilir, slot kaydı kalır.
+            app.setStatus(ApplicationStatus.WITHDRAWN);
+        } else {
+            // Geçmiş vardiyalar (kazanç, giriş kaydı) ACCEPTED başvuruda kalır.
+            app.getRequestedSlots().removeAll(future);
+        }
+        applicationRepository.save(app);
+        return future;
     }
 
     // ================================================================
@@ -137,27 +248,10 @@ public class AccountClosureService {
                 applicationRepository.save(app);
                 withdrawn++;
                 if (cascadeFor != null) chainContinuations.add(cascadeFor);
-            } else if (status == ApplicationStatus.ACCEPTED && !NoShowSlots.isLegacy(app)) {
-                // Eski (V25 öncesi) gelmedi kaydında koltuklar zaten boşaltılmıştı: dokunma.
-                List<ShiftSlot> future = SlotSeats.byId(app.getRequestedSlots()).stream()
-                        .filter(ShiftWindow::hasTimes)
-                        .filter(sl -> ShiftWindow.startAt(sl).isAfter(now))
-                        .filter(sl -> until == null || ShiftWindow.startAt(sl).isBefore(until))
-                        .filter(sl -> !NoShowSlots.isMarked(app, sl))
-                        .toList();
+            } else if (status == ApplicationStatus.ACCEPTED) {
+                // Eski (V25 öncesi) gelmedi kaydında koltuklar zaten boşaltılmıştı: dokunulmaz.
+                List<ShiftSlot> future = vacateFutureShifts(app, now, until);
                 if (future.isEmpty()) continue;
-
-                for (ShiftSlot slot : future) {
-                    SlotSeats.release(shiftSlotRepository, slot);
-                }
-                if (future.size() == app.getRequestedSlots().size()) {
-                    // Hiç çalışılmış/başlamış vardiya yok: başvuru geri çekilir, slot kaydı kalır.
-                    app.setStatus(ApplicationStatus.WITHDRAWN);
-                } else {
-                    // Geçmiş vardiyalar (kazanç, giriş kaydı) ACCEPTED başvuruda kalır.
-                    app.getRequestedSlots().removeAll(future);
-                }
-                applicationRepository.save(app);
                 vacatedShifts += future.size();
                 vacatedApps.add(new Vacated(app, future));
             }

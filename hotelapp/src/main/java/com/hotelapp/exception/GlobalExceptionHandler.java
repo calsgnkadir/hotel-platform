@@ -55,13 +55,19 @@ public class GlobalExceptionHandler {
     // 422 — iş kuralı ihlali
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessRule(BusinessRuleException ex) {
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, resolve(ex));
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, resolve(ex), codeOf(ex));
     }
 
     // 403 — kaynak başka kullanıcıya ait
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
-        return build(HttpStatus.FORBIDDEN, resolve(ex));
+        return build(HttpStatus.FORBIDDEN, resolve(ex), codeOf(ex));
+    }
+
+    // 503 — dış servis geçici olarak yok (ör. adres arama); mesaj Türkçe ve güvenli
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<Map<String, Object>> handleUnavailable(ServiceUnavailableException ex) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
 
     // 429 — uygulama katmanı hız sınırı (ör. e-posta başına giriş denemesi)
@@ -230,12 +236,22 @@ public class GlobalExceptionHandler {
                 "Sistem hatası. Lütfen daha sonra tekrar deneyin.");
     }
 
+    /** Makine tarafından okunur hata kodu (yalnız {@link CodedError} istisnalarında). */
+    private static String codeOf(Exception ex) {
+        return ex instanceof CodedError c ? c.getCode() : null;
+    }
+
     private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message) {
+        return build(status, message, null);
+    }
+
+    private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message, String code) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now().toString());
         body.put("status", status.value());
         body.put("error", status.getReasonPhrase());
         body.put("message", message);
+        if (code != null) body.put("code", code);
         return ResponseEntity.status(status).body(body);
     }
 }

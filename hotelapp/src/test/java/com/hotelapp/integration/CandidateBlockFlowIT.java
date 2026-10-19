@@ -214,6 +214,8 @@ class CandidateBlockFlowIT {
 
     private RegisterRequest candidate(String email) {
         RegisterRequest r = new RegisterRequest();
+        r.setTermsAccepted(true);              // KVKK onayi (V27)
+        r.setPrivacyNoticeVersion("2026-10-17");
         r.setFullName("Aday Test");
         r.setEmail(email);
         r.setPassword("Test1234");
@@ -224,6 +226,8 @@ class CandidateBlockFlowIT {
 
     private RegisterRequest business(String email) {
         RegisterRequest r = new RegisterRequest();
+        r.setTermsAccepted(true);              // KVKK onayi (V27)
+        r.setPrivacyNoticeVersion("2026-10-17");
         r.setFullName("Biz Test");
         r.setEmail(email);
         r.setPassword("Test1234");

@@ -51,6 +51,17 @@ public class JobListingService {
     private final com.hotelapp.repository.UserAvailabilityBlockRepository availabilityBlockRepository;  // J2 müsaitlik filtre
     private final com.hotelapp.repository.ApplicationRepository applicationRepository;                 // Dalga 4 — guven sinyali
 
+    /**
+     * E-posta doğrulama kapısı (ilan oluşturma / yayına alma). Spring setter ile gerçek
+     * politikayı enjekte eder; bağlam dışı birim testlerinde varsayılan kapalıdır.
+     */
+    private EmailVerificationPolicy emailVerificationPolicy = EmailVerificationPolicy.disabled();
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setEmailVerificationPolicy(EmailVerificationPolicy policy) {
+        this.emailVerificationPolicy = policy;
+    }
+
     // ----------------------------------------------------------------
     // Public: browse active listings (dynamic filtering via Specification)
     // ----------------------------------------------------------------
@@ -153,9 +164,12 @@ public class JobListingService {
         validateSalary(request);
         validateSlots(request.getShiftSlots());
 
-        // Faz 1 — abonelik kapisi (girdi dogrulamasindan SONRA). enforce=false iken daima
-        // gecer (demo/dev bozulmaz). Model: ilk N ilan ucretsiz, sonrasi aktif abonelik.
-        requireListingQuota(business.getId());
+        // Yayınlama yalnız e-postası doğrulanmış işletmeden (403 EMAIL_NOT_VERIFIED)
+        emailVerificationPolicy.requireVerified(business.getOwner());
+
+        // Faz 1 — eşzamanlı aktif ilan kotası (girdi doğrulamasından SONRA). enforce=false
+        // iken daima geçer. Ücretsiz 5 / ücretli 10 aktif ilan (ödeme kapalıyken de).
+        billingService.requireActivationSlot(business.getId());
 
         JobListing listing = JobListing.builder()
                 .business(business)
@@ -340,16 +354,6 @@ public class JobListingService {
         }
     }
 
-    /** Faz 1 abonelik kapisi — ilan acma ve kapali ilani yeniden acma icin ortak. */
-    private void requireListingQuota(Long businessId) {
-        if (!billingService.canCreateListingByBusiness(businessId)) {
-            throw new BusinessRuleException(String.format(
-                    "Ücretsiz %d ilan hakkını kullandın. Daha fazla ilan yayınlamak için " +
-                    "Abonelik sekmesinden aboneliğini başlat.",
-                    billingService.getFreeListings()));
-        }
-    }
-
     // ----------------------------------------------------------------
     // Business owner: update listing status
     // ----------------------------------------------------------------
@@ -364,18 +368,12 @@ public class JobListingService {
                     + "Ayrıntı için destek ekibiyle iletişime geç.");
         }
         boolean closing = status == ListingStatus.CLOSED && listing.getStatus() != ListingStatus.CLOSED;
-        // Kapatilan ilan kotayi bosaltir; yeniden acmak yeni ilan acmakla ayni kotaya tabidir.
-        // CLOSED ilan sayima dahil olmadigi icin "used < free" siniri dogrudan gecerli.
-        boolean reopening = listing.getStatus() == ListingStatus.CLOSED && status != ListingStatus.CLOSED;
-        // PAUSED -> ACTIVE: ilan zaten sayimda; abonelik bittiyse kota ustundeki
-        // duraklatilmis ilan yayina alinamaz (bu ilan haric kullanim < kota).
-        boolean resuming = listing.getStatus() == ListingStatus.PAUSED && status == ListingStatus.ACTIVE;
-        if (reopening) requireListingQuota(listing.getBusiness().getId());
-        else if (resuming && !billingService.canActivateCountedListing(listing.getBusiness().getId())) {
-            throw new BusinessRuleException(String.format(
-                    "Ücretsiz %d ilan hakkını aştın. Bu ilanı yeniden yayına almak için " +
-                    "Abonelik sekmesinden aboneliğini başlat ya da başka bir ilanını kapat.",
-                    billingService.getFreeListings()));
+        // Kota yalnız ACTIVE ilanları sayar: PAUSED/CLOSED -> ACTIVE bir yer ister
+        // (doğrulanmış e-posta + eşzamanlı sınır). Duraklatma/kapatma serbesttir.
+        boolean activating = status == ListingStatus.ACTIVE && listing.getStatus() != ListingStatus.ACTIVE;
+        if (activating) {
+            emailVerificationPolicy.requireVerified(listing.getBusiness().getOwner());
+            billingService.requireActivationSlot(listing.getBusiness().getId());
         }
         if (closing) {
             closeListing(listing, false);

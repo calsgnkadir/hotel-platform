@@ -31,6 +31,12 @@ public class ProductionSafetyConfiguration {
                         || env.getProperty("app.push.vapid.private-key", "").isBlank())) {
                 throw new IllegalStateException("PROD-SAFETY: set a persistent VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY pair; otherwise every restart invalidates all push subscriptions.");
             }
+            // Canlı (vitrin hariç) dağıtımın HTTPS/çerez/CORS/depolama ayarları. Yanlış
+            // değerle açılış: çerez HTTP'de sızar, e-posta bağlantıları localhost'a gider,
+            // her origin kimlikli istek atabilir ya da yüklemeler sahte Cloudinary'ye düşer.
+            if (!env.acceptsProfiles(Profiles.of("showcase"))) {
+                checkPublicDeployment(env);
+            }
             // E-posta olmadan şifre sıfırlama, e-posta doğrulama ve ekip listesi çalışmaz.
             // Resend anahtarları 're_' ile başlar; onboarding@resend.dev yalnızca hesap
             // sahibine gönderir. Vitrin (showcase) demo hesaplarına mail atmasın diye muaf.
@@ -64,5 +70,36 @@ public class ProductionSafetyConfiguration {
                 }
             }
         };
+    }
+
+    /** COOKIE_SECURE, APP_BASE_URL, CLOUDINARY_URL, CORS ve e-posta doğrulama kapısı. */
+    static void checkPublicDeployment(Environment env) {
+        if (!Boolean.parseBoolean(env.getProperty("app.security.cookie-secure", "false").trim())) {
+            throw new IllegalStateException("PROD-SAFETY: set COOKIE_SECURE=true; production is served over HTTPS and the refresh cookie must never travel over plain HTTP.");
+        }
+        String baseUrl = env.getProperty("app.base-url", "").trim().toLowerCase();
+        if (!baseUrl.startsWith("https://") || isLocal(baseUrl)) {
+            throw new IllegalStateException("PROD-SAFETY: APP_BASE_URL must be the public https address (e.g. https://kadrom.me), not http or localhost.");
+        }
+        String cloudinary = env.getProperty("cloudinary.url", "").trim().toLowerCase();
+        if (cloudinary.contains("test")) {
+            throw new IllegalStateException("PROD-SAFETY: CLOUDINARY_URL looks like a test placeholder (contains 'test'); set the real cloudinary://KEY:SECRET@CLOUD value.");
+        }
+        String cors = env.getProperty("app.cors.allowed-origins", "");
+        for (String raw : cors.split(",")) {
+            String origin = raw.trim().toLowerCase();
+            if (origin.isEmpty()) continue;
+            if (origin.contains("*") || isLocal(origin)) {
+                throw new IllegalStateException("PROD-SAFETY: APP_CORS_ALLOWED_ORIGINS must list only public origins; '*' and localhost are not allowed with credentialed requests.");
+            }
+        }
+        if (!Boolean.parseBoolean(env.getProperty("app.auth.require-verified-email", "true").trim())) {
+            throw new IllegalStateException("PROD-SAFETY: app.auth.require-verified-email must be true in production (APP_REQUIRE_VERIFIED_EMAIL).");
+        }
+    }
+
+    private static boolean isLocal(String url) {
+        return url.contains("localhost") || url.contains("127.0.0.1") || url.contains("0.0.0.0")
+                || url.contains("[::1]");
     }
 }

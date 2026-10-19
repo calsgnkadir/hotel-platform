@@ -21,13 +21,15 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
- * Ödeme yapılandırılmamışsa (iyzico anahtarı yok) kota uygulanmaz ve iyzico
- * çağrılmaz. Eskiden boşken sandbox anahtarlarına düşülüyordu.
+ * Kota: ücretsiz planda aynı anda 5, ücretli abonelikte aynı anda 10 ACTIVE ilan —
+ * ödeme yapılandırılmamışken de ücretsiz sınır uygulanır. Ödeme kapalıyken iyzico
+ * çağrılmaz.
  */
 class BillingServiceTest {
 
@@ -48,6 +50,7 @@ class BillingServiceTest {
         BillingService s = new BillingService(subs, businesses, listings, iyzico, checkouts);
         ReflectionTestUtils.setField(s, "enforce", true);
         ReflectionTestUtils.setField(s, "freeListings", 5);
+        ReflectionTestUtils.setField(s, "paidConcurrentListings", 10);
         ReflectionTestUtils.setField(s, "trialDays", 14);
         ReflectionTestUtils.setField(s, "monthlyPrice", new BigDecimal("499.00"));
         ReflectionTestUtils.setField(s, "planName", "STANDARD_MONTHLY");
@@ -60,13 +63,95 @@ class BillingServiceTest {
     }
 
     @Test
-    void withoutKeysPaymentsAreOffAndQuotaIsNotEnforced() {
+    void withoutKeysPaymentsAreOffButFreeConcurrentLimitStillApplies() {
         IyzicoClient iyzico = client("", "", "https://sandbox-api.iyzipay.com");
         assertThat(iyzico.isConfigured()).isFalse();
-        when(listings.countByBusiness_IdAndStatusNot(7L, ListingStatus.CLOSED)).thenReturn(50L);
+        when(subs.findByBusinessId(7L)).thenReturn(Optional.empty());
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(5L);
+        BillingService svc = service(iyzico);
 
-        assertThat(service(iyzico).canCreateListingByBusiness(7L)).isTrue();
-        verifyNoInteractions(subs);
+        assertThat(svc.canCreateListingByBusiness(7L)).isFalse();
+        assertThatThrownBy(() -> svc.requireActivationSlot(7L))
+                .isInstanceOf(com.hotelapp.exception.BusinessRuleException.class)
+                .hasMessage("Ücretsiz planda aynı anda en fazla 5 aktif ilan yayınlayabilirsin "
+                        + "(şu an 5 aktif). Yeni ilan için bir ilanını duraklat ya da kapat.");
+        // Eşzamanlı istekler sırayla sayılsın: işletme satırı kilitlenir
+        verify(businesses).lockById(7L);
+
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(4L);
+        assertThat(svc.canCreateListingByBusiness(7L)).isTrue();
+        svc.requireActivationSlot(7L);
+    }
+
+    @Test
+    void enforceOffNeverLimits() {
+        BillingService svc = service(client("", "", "https://sandbox-api.iyzipay.com"));
+        ReflectionTestUtils.setField(svc, "enforce", false);
+        svc.requireActivationSlot(7L);
+        assertThat(svc.canCreateListingByBusiness(7L)).isTrue();
+        verifyNoInteractions(listings, businesses);
+    }
+
+    @Test
+    void onlyActiveListingsCountTowardsTheLimit() {
+        when(subs.findByBusinessId(7L)).thenReturn(Optional.empty());
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(4L);
+        // PAUSED/CLOSED sayılmaz: yalnız ACTIVE sorgulanır
+        assertThat(service(client("", "", "https://api.iyzipay.com")).canCreateListingByBusiness(7L)).isTrue();
+        verify(listings, never()).countByBusiness_IdAndStatusNot(any(), any());
+    }
+
+    @Test
+    void paidSubscriptionAllowsTenConcurrent() {
+        IyzicoClient iyzico = client("live-placeholder", "secret-placeholder", "https://api.iyzipay.com");
+        Business b = new Business();
+        b.setId(7L);
+        Subscription paid = Subscription.builder().business(b).status(SubscriptionStatus.ACTIVE).plan("P")
+                .currentPeriodEnd(LocalDateTime.now().plusDays(10)).build();
+        when(subs.findByBusinessId(7L)).thenReturn(Optional.of(paid));
+        BillingService svc = service(iyzico);
+
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(9L);
+        svc.requireActivationSlot(7L);
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(10L);
+        assertThatThrownBy(() -> svc.requireActivationSlot(7L))
+                .hasMessage("Aboneliğinle aynı anda en fazla 10 aktif ilan yayınlayabilirsin "
+                        + "(şu an 10 aktif). Yeni ilan için bir ilanını duraklat ya da kapat.");
+    }
+
+    @Test
+    void freePlanWithPaymentsOnSuggestsSubscription() {
+        IyzicoClient iyzico = client("live-placeholder", "secret-placeholder", "https://api.iyzipay.com");
+        when(subs.findByBusinessId(7L)).thenReturn(Optional.empty());
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(5L);
+        assertThatThrownBy(() -> service(iyzico).requireActivationSlot(7L))
+                .hasMessageContaining("en fazla 5 aktif ilan")
+                .hasMessageContaining("Abonelik sekmesinden aboneliğini başlat")
+                .hasMessageContaining("en fazla 10 aktif ilan");
+    }
+
+    @Test
+    void statusExposesConcurrentLimitAndActiveListings() {
+        Business b = new Business();
+        b.setId(7L);
+        Subscription sub = Subscription.builder().business(b).status(SubscriptionStatus.TRIAL).plan("P").build();
+        when(businesses.findByOwnerId(1L)).thenReturn(Optional.of(b));
+        when(subs.findByBusinessId(7L)).thenReturn(Optional.of(sub));
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(3L);
+
+        BillingService.BillingStatus free = service(client("", "", "https://api.iyzipay.com")).statusForOwner(1L);
+        assertThat(free.concurrentLimit()).isEqualTo(5);
+        assertThat(free.activeListings()).isEqualTo(3L);
+        assertThat(free.freeRemaining()).isEqualTo(2L);
+        assertThat(free.enforced()).isTrue();
+        assertThat(free.freeConcurrentLimit()).isEqualTo(5);
+        assertThat(free.paidConcurrentLimit()).isEqualTo(10);
+
+        sub.setStatus(SubscriptionStatus.ACTIVE);
+        sub.setCurrentPeriodEnd(LocalDateTime.now().plusDays(3));
+        BillingService.BillingStatus paid = service(client("", "", "https://api.iyzipay.com")).statusForOwner(1L);
+        assertThat(paid.concurrentLimit()).isEqualTo(10);
+        assertThat(paid.activeListings()).isEqualTo(3L);
     }
 
     @Test
@@ -80,23 +165,11 @@ class BillingServiceTest {
     void withKeysQuotaIsEnforced() {
         IyzicoClient iyzico = client("live-placeholder", "secret-placeholder", "https://api.iyzipay.com");
         when(subs.findByBusinessId(7L)).thenReturn(Optional.empty());
-        when(listings.countByBusiness_IdAndStatusNot(7L, ListingStatus.CLOSED)).thenReturn(5L);
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(5L);
         assertThat(service(iyzico).canCreateListingByBusiness(7L)).isFalse();
 
-        when(listings.countByBusiness_IdAndStatusNot(7L, ListingStatus.CLOSED)).thenReturn(4L);
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(4L);
         assertThat(service(iyzico).canCreateListingByBusiness(7L)).isTrue();
-    }
-
-    @Test
-    void resumingCountedListingAllowsUpToQuotaInclusive() {
-        IyzicoClient iyzico = client("live-placeholder", "secret-placeholder", "https://api.iyzipay.com");
-        when(subs.findByBusinessId(7L)).thenReturn(Optional.empty());
-        // 5 acik ilan (duraklatilan dahil): bu ilan haric 4 < 5 → yayina alinabilir
-        when(listings.countByBusiness_IdAndStatusNot(7L, ListingStatus.CLOSED)).thenReturn(5L);
-        assertThat(service(iyzico).canActivateCountedListing(7L)).isTrue();
-        // Abonelik bitmis, 6 acik ilan: kota ustu → reddedilir
-        when(listings.countByBusiness_IdAndStatusNot(7L, ListingStatus.CLOSED)).thenReturn(6L);
-        assertThat(service(iyzico).canActivateCountedListing(7L)).isFalse();
     }
 
     @Test
@@ -110,7 +183,7 @@ class BillingServiceTest {
 
         BillingService.BillingStatus off = service(client("", "", "https://sandbox-api.iyzipay.com")).statusForOwner(1L);
         assertThat(off.paymentsAvailable()).isFalse();
-        assertThat(off.enforced()).isFalse();
+        assertThat(off.enforced()).isTrue();   // ödeme kapalıyken de ücretsiz sınır geçerli
         assertThat(off.sandbox()).isFalse();
 
         BillingService.BillingStatus sandbox = service(client("sandbox-x", "sandbox-y", "https://sandbox-api.iyzipay.com")).statusForOwner(1L);
@@ -544,7 +617,7 @@ class BillingServiceTest {
         when(businesses.findByOwnerId(1L)).thenReturn(Optional.of(b));
         when(subs.findByBusinessId(7L)).thenReturn(Optional.of(sub));
         when(subs.save(any())).thenAnswer(i -> i.getArgument(0));
-        when(listings.countByBusiness_IdAndStatusNot(7L, ListingStatus.CLOSED)).thenReturn(50L);
+        when(listings.countByBusiness_IdAndStatus(7L, ListingStatus.ACTIVE)).thenReturn(7L);
         BillingService svc = service(iyzico);
 
         BillingService.BillingStatus st = svc.cancel(1L);

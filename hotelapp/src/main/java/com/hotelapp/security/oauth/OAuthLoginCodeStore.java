@@ -63,6 +63,18 @@ public class OAuthLoginCodeStore {
         return code;
     }
 
+    /**
+     * Kodu TÜKETMEDEN okur (KVKK onayı eksikse kullanıcı aynı kodla tekrar dener).
+     * Geçerliyse kullanıcı id'si; yoksa/süresi dolmuşsa boş. Oturum yalnız
+     * {@link #consume} başarılıysa açılır.
+     */
+    public Optional<Long> peek(String code) {
+        if (code == null || code.isBlank() || code.length() > 128) return Optional.empty();
+        Entry e = codes.get(hash(code));
+        if (e == null || !clock.instant().isBefore(e.expiresAt())) return Optional.empty();
+        return Optional.of(e.userId());
+    }
+
     /** Kodu tüketir: geçerliyse kullanıcı id'si; yoksa/süresi dolmuşsa/kullanılmışsa boş. */
     public Optional<Long> consume(String code) {
         if (code == null || code.isBlank() || code.length() > 128) return Optional.empty();

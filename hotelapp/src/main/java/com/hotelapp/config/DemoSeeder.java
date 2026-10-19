@@ -54,11 +54,32 @@ public class DemoSeeder implements CommandLineRunner {
     private static final String SENTINEL_EMAIL = "demo-aday1@test.com";
     private final Random random = new Random(42);  // deterministic
 
+    /**
+     * E-posta doğrulama kapısından önce oluşmuş demo veritabanı: demo hesapları
+     * (yalnız demo-adayN / demo-isletmeN @test.com) doğrulanmış işaretlenir.
+     */
+    private void markExistingDemoAccountsVerified() {
+        List<String> emails = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) emails.add("demo-aday" + i + "@test.com");
+        for (int i = 1; i <= 6; i++) emails.add("demo-isletme" + i + "@test.com");
+        int n = 0;
+        for (String e : emails) {
+            User u = userRepository.findByEmail(e).orElse(null);
+            if (u != null && u.getEmailVerifiedAt() == null) {
+                u.setEmailVerifiedAt(LocalDateTime.now());
+                userRepository.save(u);
+                n++;
+            }
+        }
+        if (n > 0) log.info("[DEMO-SEED] {} mevcut demo hesap doğrulanmış işaretlendi", n);
+    }
+
     @Override
     @Transactional
     public void run(String... args) {
         if (userRepository.findByEmail(SENTINEL_EMAIL).isPresent()) {
             log.info("[DEMO-SEED] Sentinel '{}' zaten var — atlanıyor", SENTINEL_EMAIL);
+            markExistingDemoAccountsVerified();
             return;
         }
         log.info("[DEMO-SEED] Demo verisi oluşturuluyor...");
@@ -79,6 +100,7 @@ public class DemoSeeder implements CommandLineRunner {
             User c = User.builder()
                     .email("demo-aday" + (i + 1) + "@test.com")
                     .password(pwd)
+                    .emailVerifiedAt(LocalDateTime.now())   // demo hesaplar dogrulanmis (e-posta kapisi)
                     .fullName(candidateNames[i])
                     .role(Role.CANDIDATE)
                     .phone("0555" + String.format("%07d", 1000000 + i))
@@ -119,6 +141,7 @@ public class DemoSeeder implements CommandLineRunner {
             User owner = User.builder()
                     .email("demo-isletme" + (i + 1) + "@test.com")
                     .password(pwd)
+                    .emailVerifiedAt(LocalDateTime.now())   // demo hesaplar dogrulanmis (e-posta kapisi)
                     .fullName(bd.name + " Yöneticisi")
                     .role(Role.BUSINESS_OWNER)
                     .phone("0212" + String.format("%07d", 2000000 + i))

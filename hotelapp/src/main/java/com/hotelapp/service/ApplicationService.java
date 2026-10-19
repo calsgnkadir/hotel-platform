@@ -54,6 +54,17 @@ public class ApplicationService {
     @org.springframework.beans.factory.annotation.Value("${app.base-url:http://localhost:5173}")
     private String baseUrl;
 
+    /**
+     * E-posta doğrulama kapısı. Spring setter ile gerçek politikayı enjekte eder;
+     * bağlam dışı birim testlerinde varsayılan kapalıdır.
+     */
+    private EmailVerificationPolicy emailVerificationPolicy = EmailVerificationPolicy.disabled();
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setEmailVerificationPolicy(EmailVerificationPolicy policy) {
+        this.emailVerificationPolicy = policy;
+    }
+
     /** Ayni ilana ikinci basvuruyu engelleyen (henuz sonuclanmamis ya da kabul) durumlar. */
     static final List<ApplicationStatus> ACTIVE_FOR_DUPLICATE = List.of(
             ApplicationStatus.PENDING,
@@ -76,6 +87,18 @@ public class ApplicationService {
         if (listing.getStatus() != ListingStatus.ACTIVE) {
             throw new BusinessRuleException("Bu ilan şu anda aktif değil");
         }
+
+        // İlan sahibi askıya alınmış (ban) ya da hesabını kapatmışsa (silme talebi)
+        // başvuru alınmaz: işletme başvuruyu göremez/yanıtlayamaz.
+        User owner = listing.getBusiness() != null ? listing.getBusiness().getOwner() : null;
+        if (owner != null && (!owner.isEnabled()
+                || (owner.getBannedUntil() != null && owner.getBannedUntil().isAfter(LocalDateTime.now())))) {
+            throw new BusinessRuleException(
+                    "Bu işletme şu anda başvuru kabul etmiyor. Başka bir ilana göz atabilirsin.");
+        }
+
+        // Başvuru yalnız e-postası doğrulanmış adaydan (403 EMAIL_NOT_VERIFIED)
+        emailVerificationPolicy.requireVerified(candidate);
 
         // Isletme bu adayi engellediyse basvuru kaydi olusmaz (ilan gorunur kalir).
         requireNotBlockedByBusiness(listing.getBusiness().getId(), candidateId);

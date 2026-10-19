@@ -256,4 +256,74 @@ class AccountClosureServiceTest {
         verify(jobListingService, never()).closeAsModeration(closed);
         verify(outboxService).appendAuditLog(any());
     }
+
+    private static ShiftSlot slotAt(long id, LocalDateTime start) {
+        return ShiftSlot.builder().id(id).date(start.toLocalDate())
+                .startTime(start.toLocalTime()).endTime(start.toLocalTime().plusHours(6))
+                .slotsNeeded(2).slotsFilled(2).build();
+    }
+
+    @Test
+    @DisplayName("Hesap kapanışı (işletme): kabul edilen adayın gelecek vardiyası iptal, koltuk iner, adaya bildirim; geçmiş vardiya korunur")
+    void closeBusinessListings_cancelsAcceptedFutureShifts() {
+        JobListing active = listing(1L, ListingStatus.ACTIVE);
+        ShiftSlot past = slotAt(10L, NOW.minusDays(1));
+        ShiftSlot future = slotAt(11L, NOW.plusDays(2).withHour(9));
+        Application mixed = app(5L, ApplicationStatus.ACCEPTED, active, past, future);
+        ShiftSlot onlyFuture = slotAt(12L, NOW.plusDays(3).withHour(9));
+        Application allFuture = app(6L, ApplicationStatus.ACCEPTED, active, onlyFuture);
+        when(jobListingRepository.findAllByBusiness_OwnerId(OWNER_ID)).thenReturn(List.of(active));
+        when(applicationRepository.findAllByJobListingIdAndStatusIn(eq(1L), any()))
+                .thenReturn(List.of(mixed, allFuture));
+
+        service.closeBusinessListings(OWNER_ID);
+
+        verify(shiftSlotRepository).decrementFilled(11L);
+        verify(shiftSlotRepository).decrementFilled(12L);
+        verify(shiftSlotRepository, never()).decrementFilled(10L);
+        assertThat(mixed.getStatus()).isEqualTo(ApplicationStatus.ACCEPTED);
+        assertThat(mixed.getRequestedSlots()).containsExactly(past);
+        assertThat(allFuture.getStatus()).isEqualTo(ApplicationStatus.WITHDRAWN);
+        ArgumentCaptor<String> msg = ArgumentCaptor.forClass(String.class);
+        verify(notificationService, org.mockito.Mockito.times(2)).notify(eq(CANDIDATE_ID),
+                eq(NotificationType.LISTING_CLOSED), any(), msg.capture(), eq("applications"));
+        assertThat(msg.getAllValues().get(0))
+                .isEqualTo("İşletme hesabını kapattı; Garson · "
+                        + future.getDate().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                        + " 09:00-15:00 vardiyan iptal edildi.");
+        // Yedek zinciri tetiklenmez (ilan kapanıyor)
+        org.mockito.Mockito.verifyNoInteractions(standbyService);
+        verify(jobListingService).closeAsModeration(active);
+    }
+
+    @Test
+    @DisplayName("Ban (işletme): ACTIVE ilan PAUSED + adminSuspended, PAUSED dokunulmaz, CLOSED atlanır; kabul vardiyası iptal + audit")
+    void suspendBusinessListings_pausesAndCancels() {
+        JobListing active = listing(1L, ListingStatus.ACTIVE);
+        JobListing paused = listing(2L, ListingStatus.PAUSED);
+        JobListing closed = listing(3L, ListingStatus.CLOSED);
+        ShiftSlot future = slotAt(21L, NOW.plusDays(1).withHour(9));
+        Application acc = app(7L, ApplicationStatus.ACCEPTED, paused, future);
+        when(jobListingRepository.findAllByBusiness_OwnerId(OWNER_ID)).thenReturn(List.of(active, paused, closed));
+        when(applicationRepository.findAllByJobListingIdAndStatusIn(eq(2L), any())).thenReturn(List.of(acc));
+        when(applicationRepository.findAllByJobListingIdAndStatusIn(eq(1L), any())).thenReturn(List.of());
+
+        int n = service.suspendBusinessListings(OWNER_ID);
+
+        assertThat(n).isEqualTo(1);
+        assertThat(active.getStatus()).isEqualTo(ListingStatus.PAUSED);
+        assertThat(active.isAdminSuspended()).isTrue();
+        assertThat(paused.getStatus()).isEqualTo(ListingStatus.PAUSED);
+        assertThat(closed.getStatus()).isEqualTo(ListingStatus.CLOSED);
+        assertThat(closed.isAdminSuspended()).isFalse();
+        verify(applicationRepository, never()).findAllByJobListingIdAndStatusIn(eq(3L), any());
+        verify(shiftSlotRepository).decrementFilled(21L);
+        assertThat(acc.getStatus()).isEqualTo(ApplicationStatus.WITHDRAWN);
+        ArgumentCaptor<String> msg = ArgumentCaptor.forClass(String.class);
+        verify(notificationService).notify(eq(CANDIDATE_ID), eq(NotificationType.LISTING_CLOSED),
+                any(), msg.capture(), eq("applications"));
+        assertThat(msg.getValue()).startsWith("İşletme askıya alındı; Garson · ").endsWith("vardiyan iptal edildi.");
+        verify(jobListingService, never()).closeAsModeration(any());
+        verify(outboxService).appendAuditLog(any());
+    }
 }

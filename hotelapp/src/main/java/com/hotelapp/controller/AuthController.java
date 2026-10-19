@@ -85,23 +85,30 @@ public class AuthController {
         return ResponseEntity.ok(auth);
     }
 
-    /** Google girişi dönüşündeki tek kullanımlık kod. */
+    /**
+     * Google girişi dönüşündeki tek kullanımlık kod. termsAccepted + privacyNoticeVersion
+     * isteğe bağlı; hesabın onay kaydı yoksa zorunlu (yoksa 422 code=CONSENT_REQUIRED).
+     */
     public record OAuthExchangeRequest(
             @jakarta.validation.constraints.NotBlank
-            @jakarta.validation.constraints.Size(max = 128) String code) {}
+            @jakarta.validation.constraints.Size(max = 128) String code,
+            Boolean termsAccepted,
+            @jakarta.validation.constraints.Size(max = 32) String privacyNoticeVersion) {}
 
     @Operation(summary = "Google girişi: tek kullanımlık kodu oturuma çevir",
                description = "OAuth dönüşünde adresin #code= parçasındaki kod. Erişim token'ı gövdede, "
                        + "refresh token httpOnly çerezde döner. Kod 60 sn geçerli, tek kullanımlık.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Giriş başarılı"),
-        @ApiResponse(responseCode = "422", description = "Kod geçersiz, süresi dolmuş ya da kullanılmış")
+        @ApiResponse(responseCode = "422", description = "Kod geçersiz, süresi dolmuş ya da kullanılmış; "
+                + "ya da onay gerekli (code=CONSENT_REQUIRED, kod geçerli kalır)")
     })
     @PostMapping("/oauth/exchange")
     public ResponseEntity<AuthResponse> exchangeOAuthCode(
             @Valid @RequestBody OAuthExchangeRequest request,
             HttpServletResponse response) {
-        AuthResponse auth = authService.exchangeOAuthCode(request.code());
+        AuthResponse auth = authService.exchangeOAuthCode(
+                request.code(), request.termsAccepted(), request.privacyNoticeVersion());
         attachRefreshCookie(response, auth);
         return ResponseEntity.ok(auth);
     }

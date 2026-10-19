@@ -63,6 +63,14 @@ public class AuthService {
         if (pwViolation != null) {
             throw BusinessRuleException.keyed(pwViolation);
         }
+        // KVKK onayı: kabul edilmeden ve sürüm bilinmeden hesap açılmaz (422)
+        if (!Boolean.TRUE.equals(request.getTermsAccepted())) {
+            throw new BusinessRuleException(TERMS_REQUIRED);
+        }
+        String noticeVersion = normalizeNoticeVersion(request.getPrivacyNoticeVersion());
+        if (noticeVersion == null) {
+            throw new BusinessRuleException(NOTICE_VERSION_REQUIRED);
+        }
         // İşletme web sitesi yalnız http(s) — herkese açık sayfada bağlantı olarak gösterilir
         String website = request.getRole() == Role.BUSINESS_OWNER
                 ? com.hotelapp.validation.WebsiteUrlPolicy.normalizeOrReject(request.getWebsite())
@@ -75,6 +83,7 @@ public class AuthService {
                 .role(request.getRole())
                 .phone(request.getPhone())
                 .build();
+        recordConsent(user, noticeVersion);
 
         userRepository.save(user);
 
@@ -177,15 +186,39 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse exchangeOAuthCode(String code) {
-        Long userId = oAuthLoginCodeStore.consume(code)
+        return exchangeOAuthCode(code, null, null);
+    }
+
+    /**
+     * KVKK: hesabın onay kaydı yoksa (Google ile ilk kez oluşan hesap ya da V27 öncesi
+     * hesap) termsAccepted=true + privacyNoticeVersion zorunludur; yoksa 422
+     * {@code CONSENT_REQUIRED} döner ve kod TÜKETİLMEZ — frontend onay kutusunu
+     * gösterip aynı kodla (60 sn içinde) tekrar dener. Onay geldiyse yeni sürüm kaydedilir.
+     */
+    @Transactional
+    public AuthResponse exchangeOAuthCode(String code, Boolean termsAccepted, String privacyNoticeVersion) {
+        Long userId = oAuthLoginCodeStore.peek(code)
                 .orElseThrow(() -> BusinessRuleException.keyed("error.auth.oauthCodeInvalid"));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> BusinessRuleException.keyed("error.auth.oauthCodeInvalid"));
-        boolean banned = user.getBannedUntil() != null
+        User user = userRepository.findById(userId).orElse(null);
+        boolean banned = user != null && user.getBannedUntil() != null
                 && user.getBannedUntil().isAfter(java.time.LocalDateTime.now());
-        if (!user.isEnabled() || banned) {
+        if (user == null || !user.isEnabled() || banned) {
+            oAuthLoginCodeStore.consume(code);
             log.warn("[OAUTH] Kapalı/yasaklı hesap için kod değişimi reddedildi: userId={}", userId);
             throw BusinessRuleException.keyed("error.auth.oauthCodeInvalid");
+        }
+        String noticeVersion = normalizeNoticeVersion(privacyNoticeVersion);
+        boolean consentGiven = Boolean.TRUE.equals(termsAccepted) && noticeVersion != null;
+        if (user.getTermsAcceptedAt() == null && !consentGiven) {
+            throw new com.hotelapp.exception.ConsentRequiredException();   // kod geçerli kalır
+        }
+        // Kod atomik tüketilir: aynı kodla eşzamanlı ikinci istek burada düşer
+        if (oAuthLoginCodeStore.consume(code).isEmpty()) {
+            throw BusinessRuleException.keyed("error.auth.oauthCodeInvalid");
+        }
+        if (consentGiven) {
+            recordConsent(user, noticeVersion);
+            userRepository.save(user);
         }
         return AuthResponse.builder()
                 .token(jwtService.generateToken(user))
@@ -196,6 +229,25 @@ public class AuthService {
                 .role(user.getRole())
                 .emailVerified(user.isEmailVerified())
                 .build();
+    }
+
+    static final String TERMS_REQUIRED = "Kullanım Şartları kabul edilmeli.";
+    static final String NOTICE_VERSION_REQUIRED = "Aydınlatma Metni sürümü eksik ya da geçersiz.";
+    private static final java.util.regex.Pattern NOTICE_VERSION = java.util.regex.Pattern.compile("[A-Za-z0-9._-]{1,32}");
+
+    /** Sürüm metni: boş/uzun/garip karakterliyse null (çağıran 422/CONSENT_REQUIRED döner). */
+    static String normalizeNoticeVersion(String v) {
+        if (v == null) return null;
+        String t = v.trim();
+        return NOTICE_VERSION.matcher(t).matches() ? t : null;
+    }
+
+    /** Kullanım Şartları kabulü + Aydınlatma Metni sürüm onayı (şimdi). */
+    private static void recordConsent(User user, String noticeVersion) {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        user.setTermsAcceptedAt(now);
+        user.setPrivacyNoticeVersion(noticeVersion);
+        user.setPrivacyNoticeAckAt(now);
     }
 
     /**

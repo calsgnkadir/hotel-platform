@@ -40,6 +40,9 @@ public interface JobListingRepository
     /** Faz 1 — Abonelik kotasi: bir isletmenin CLOSED olmayan (yer isgal eden) ilan sayisi. */
     long countByBusiness_IdAndStatusNot(Long businessId, com.hotelapp.enums.ListingStatus status);
 
+    /** Kota: bir isletmenin verilen durumdaki ilan sayisi (eszamanli ACTIVE siniri). */
+    long countByBusiness_IdAndStatus(Long businessId, com.hotelapp.enums.ListingStatus status);
+
     /**
      * Otomatik kapanış adayları: verilen durumlarda, en az bir slotu olan ve hiçbir
      * slotu {@code today}'den sonra başlamayan ilanlar. Kesin karar (gece vardiyası

@@ -34,6 +34,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -135,6 +136,34 @@ class JobListingServiceTest {
     @Nested
     @DisplayName("createListing — validation + ownership")
     class CreateListing {
+
+        @Test
+        @DisplayName("E-posta dogrulanmamis isletme ilan olusturamaz: 403, kota sorulmaz, kayit yok")
+        void unverifiedOwner_cannotCreate() {
+            service.setEmailVerificationPolicy(new EmailVerificationPolicy(true));
+            when(businessRepository.findByOwnerId(OWNER_ID)).thenReturn(Optional.of(businessOwnedBy(OWNER_ID)));
+
+            assertThatThrownBy(() -> service.createListing(OWNER_ID, validRequest()))
+                    .isInstanceOf(com.hotelapp.exception.EmailNotVerifiedException.class);
+            verify(billingService, never()).requireActivationSlot(any());
+            verify(jobListingRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Aktif ilan siniri doluysa ilan olusturulmaz (422)")
+        void quotaFull_cannotCreate() {
+            service.setEmailVerificationPolicy(new EmailVerificationPolicy(true));
+            Business b = businessOwnedBy(OWNER_ID);
+            b.getOwner().setEmailVerifiedAt(java.time.LocalDateTime.now());
+            when(businessRepository.findByOwnerId(OWNER_ID)).thenReturn(Optional.of(b));
+            doThrow(new BusinessRuleException("Ücretsiz planda aynı anda en fazla 5 aktif ilan yayınlayabilirsin (şu an 5 aktif)."))
+                    .when(billingService).requireActivationSlot(100L);
+
+            assertThatThrownBy(() -> service.createListing(OWNER_ID, validRequest()))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("şu an 5 aktif");
+            verify(jobListingRepository, never()).save(any());
+        }
 
         @Test
         @DisplayName("Business profili yoksa BusinessRuleException")
@@ -340,43 +369,63 @@ class JobListingServiceTest {
         }
 
         @Test
-        @DisplayName("Kapali ilani yeniden acmak kota doluyken reddedilir, ilan kapali kalir")
+        @DisplayName("Kapali ilani yeniden yayina almak aktif ilan siniri doluyken reddedilir, ilan kapali kalir")
         void reopening_closed_listing_without_quota_is_refused() {
             JobListing l = closedListing();
             when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
-            when(billingService.canCreateListingByBusiness(100L)).thenReturn(false);
-            when(billingService.getFreeListings()).thenReturn(5);
+            doThrow(new BusinessRuleException("Ücretsiz planda aynı anda en fazla 5 aktif ilan"))
+                    .when(billingService).requireActivationSlot(100L);
 
             assertThatThrownBy(() -> service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("Ücretsiz 5 ilan hakkını kullandın");
+                    .hasMessageContaining("en fazla 5 aktif ilan");
             assertThat(l.getStatus()).isEqualTo(ListingStatus.CLOSED);
             verify(jobListingRepository, never()).save(any());
         }
 
         @Test
-        @DisplayName("Kapali ilani yeniden acmak kota varken serbest")
+        @DisplayName("Kapali ilani yeniden yayina almak sinir icindeyken serbest")
         void reopening_closed_listing_with_quota_is_allowed() {
             JobListing l = closedListing();
             when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
-            when(billingService.canCreateListingByBusiness(100L)).thenReturn(true);
 
             service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE);
             assertThat(l.getStatus()).isEqualTo(ListingStatus.ACTIVE);
+            verify(billingService).requireActivationSlot(100L);
             verify(jobListingRepository).save(l);
         }
 
         @Test
-        @DisplayName("Acik ilani duraklatmak/kapatmak kota kontrolu yapmaz")
-        void non_reopening_transitions_skip_quota() {
+        @DisplayName("Duraklatma/kapatma ve CLOSED -> PAUSED kota kontrolu yapmaz (yalniz ACTIVE sayilir)")
+        void non_activating_transitions_skip_quota() {
             JobListing l = closedListing();
-            l.setStatus(ListingStatus.ACTIVE);
             when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
-
+            service.updateStatus(42L, OWNER_ID, ListingStatus.PAUSED);   // CLOSED -> PAUSED
+            l.setStatus(ListingStatus.ACTIVE);
             service.updateStatus(42L, OWNER_ID, ListingStatus.PAUSED);
             service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
             service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
-            verify(billingService, never()).canCreateListingByBusiness(any());
+            verify(billingService, never()).requireActivationSlot(any());
+        }
+
+        @Test
+        @DisplayName("E-posta dogrulanmamis isletme ilani yayina alamaz: 403 EMAIL_NOT_VERIFIED, kota sorulmaz")
+        void unverified_owner_cannot_activate() {
+            service.setEmailVerificationPolicy(new EmailVerificationPolicy(true));
+            JobListing l = closedListing();
+            l.setStatus(ListingStatus.PAUSED);
+            l.getBusiness().getOwner().setEmailVerifiedAt(null);
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            assertThatThrownBy(() -> service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE))
+                    .isInstanceOf(com.hotelapp.exception.EmailNotVerifiedException.class)
+                    .hasMessage("Devam etmek için e-posta adresini doğrula.");
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.PAUSED);
+            verify(billingService, never()).requireActivationSlot(any());
+
+            // Duraklatma/kapatma dogrulama istemez
+            service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
+            assertThat(l.getStatus()).isEqualTo(ListingStatus.CLOSED);
         }
 
         @Test
@@ -409,32 +458,31 @@ class JobListingServiceTest {
         }
 
         @Test
-        @DisplayName("PAUSED -> ACTIVE kota asiliyken reddedilir")
+        @DisplayName("PAUSED -> ACTIVE aktif ilan siniri doluyken reddedilir")
         void resuming_paused_listing_over_quota_is_refused() {
             JobListing l = closedListing();
             l.setStatus(ListingStatus.PAUSED);
             when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
-            when(billingService.canActivateCountedListing(100L)).thenReturn(false);
-            when(billingService.getFreeListings()).thenReturn(5);
+            doThrow(new BusinessRuleException("Ücretsiz planda aynı anda en fazla 5 aktif ilan"))
+                    .when(billingService).requireActivationSlot(100L);
 
             assertThatThrownBy(() -> service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("Ücretsiz 5 ilan hakkını aştın");
+                    .hasMessageContaining("en fazla 5 aktif ilan");
             assertThat(l.getStatus()).isEqualTo(ListingStatus.PAUSED);
             verify(jobListingRepository, never()).save(any());
         }
 
         @Test
-        @DisplayName("PAUSED -> ACTIVE kota icindeyken serbest (yeni-ilan kapisi kullanilmaz)")
+        @DisplayName("PAUSED -> ACTIVE sinir icindeyken serbest")
         void resuming_paused_listing_within_quota_is_allowed() {
             JobListing l = closedListing();
             l.setStatus(ListingStatus.PAUSED);
             when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
-            when(billingService.canActivateCountedListing(100L)).thenReturn(true);
 
             service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE);
             assertThat(l.getStatus()).isEqualTo(ListingStatus.ACTIVE);
-            verify(billingService, never()).canCreateListingByBusiness(any());
+            verify(billingService).requireActivationSlot(100L);
         }
     }
 

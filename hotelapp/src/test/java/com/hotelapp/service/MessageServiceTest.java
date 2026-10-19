@@ -113,6 +113,24 @@ class MessageServiceTest {
     }
 
     @Test
+    void unverifiedUserCannotStartConversation_butCanStillWriteExisting() {
+        service.setEmailVerificationPolicy(new EmailVerificationPolicy(true));
+        blocked(false);
+        for (long initiator : new long[]{CANDIDATE, OWNER}) {
+            long other = initiator == CANDIDATE ? OWNER : CANDIDATE;
+            assertThatThrownBy(() -> service.startConversation(initiator, startWith(other)))
+                    .isInstanceOf(com.hotelapp.exception.EmailNotVerifiedException.class)
+                    .hasMessage("Devam etmek için e-posta adresini doğrula.");
+        }
+        verify(conversations, never()).save(any());
+        // Mevcut sohbette mesaj yazmak kapsam dışı (kapı yalnız başlatmada)
+        assertThat(service.sendMessage(CONV, CANDIDATE, text("merhaba")).getContent()).isEqualTo("merhaba");
+
+        candidate.setEmailVerifiedAt(LocalDateTime.now());
+        assertThat(service.startConversation(CANDIDATE, startWith(OWNER)).getId()).isEqualTo(CONV);
+    }
+
+    @Test
     void blockedBusinessCannotStartConversation() {
         blocked(true);
         assertThatThrownBy(() -> service.startConversation(OWNER, startWith(CANDIDATE)))

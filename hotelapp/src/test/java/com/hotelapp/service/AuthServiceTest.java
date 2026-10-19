@@ -49,7 +49,121 @@ class AuthServiceTest {
     @Mock private AuthenticationManager authenticationManager;
     @Mock private RefreshTokenService refreshTokenService;
     @Mock private PushSubscriptionService pushSubscriptionService;
+    @Mock private com.hotelapp.security.oauth.OAuthLoginCodeStore oAuthLoginCodeStore;
     @InjectMocks private AuthService authService;
+
+    // ── KVKK onay kaydı ───────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Kayit: termsAccepted true degilse 422, kullanici yazilmaz")
+    void register_withoutTerms_rejected() {
+        for (Boolean v : new Boolean[]{null, false}) {
+            RegisterRequest req = request(Role.CANDIDATE);
+            req.setTermsAccepted(v);
+            assertThatThrownBy(() -> authService.register(req))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessage("Kullanım Şartları kabul edilmeli.");
+        }
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Kayit: Aydinlatma Metni surumu eksik/gecersizse 422")
+    void register_withoutNoticeVersion_rejected() {
+        for (String v : new String[]{null, " ", "x".repeat(33), "2026 10 17<script>"}) {
+            RegisterRequest req = request(Role.CANDIDATE);
+            req.setPrivacyNoticeVersion(v);
+            assertThatThrownBy(() -> authService.register(req))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("Aydınlatma Metni");
+        }
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Kayit: onay zamani ve surum kaydedilir")
+    void register_recordsConsent() {
+        RegisterRequest req = request(Role.CANDIDATE);
+        req.setPrivacyNoticeVersion(" 2026-10-17 ");
+        authService.register(req);
+
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        User u = captor.getValue();
+        assertThat(u.getTermsAcceptedAt()).isNotNull();
+        assertThat(u.getPrivacyNoticeVersion()).isEqualTo("2026-10-17");
+        assertThat(u.getPrivacyNoticeAckAt()).isNotNull();
+    }
+
+    private User googleUser(boolean hasConsent) {
+        User u = User.builder().id(77L).email("g@test.com").fullName("G").role(Role.CANDIDATE)
+                .provider(com.hotelapp.enums.AuthProvider.GOOGLE).enabled(true).build();
+        if (hasConsent) u.setTermsAcceptedAt(java.time.LocalDateTime.now().minusDays(3));
+        return u;
+    }
+
+    @Test
+    @DisplayName("OAuth exchange: onay kaydi yok ve onay gelmedi -> 422 CONSENT_REQUIRED, kod TUKETILMEZ")
+    void exchange_withoutConsent_requiresConsent_keepsCode() {
+        when(oAuthLoginCodeStore.peek("kod")).thenReturn(java.util.Optional.of(77L));
+        when(userRepository.findById(77L)).thenReturn(java.util.Optional.of(googleUser(false)));
+
+        assertThatThrownBy(() -> authService.exchangeOAuthCode("kod", null, null))
+                .isInstanceOf(com.hotelapp.exception.ConsentRequiredException.class)
+                .satisfies(ex -> assertThat(((com.hotelapp.exception.CodedError) ex).getCode())
+                        .isEqualTo("CONSENT_REQUIRED"));
+        assertThatThrownBy(() -> authService.exchangeOAuthCode("kod", false, "2026-10-17"))
+                .isInstanceOf(com.hotelapp.exception.ConsentRequiredException.class);
+        verify(oAuthLoginCodeStore, never()).consume(any());
+        verifyNoInteractions(refreshTokenService, jwtService);
+    }
+
+    @Test
+    @DisplayName("OAuth exchange: onayla gelirse kaydedilir ve oturum acilir")
+    void exchange_withConsent_recordsAndLogsIn() {
+        User u = googleUser(false);
+        when(oAuthLoginCodeStore.peek("kod")).thenReturn(java.util.Optional.of(77L));
+        when(oAuthLoginCodeStore.consume("kod")).thenReturn(java.util.Optional.of(77L));
+        when(userRepository.findById(77L)).thenReturn(java.util.Optional.of(u));
+        when(jwtService.generateToken(u)).thenReturn("jwt");
+
+        var res = authService.exchangeOAuthCode("kod", true, "2026-10-17");
+
+        assertThat(res.getToken()).isEqualTo("jwt");
+        assertThat(u.getTermsAcceptedAt()).isNotNull();
+        assertThat(u.getPrivacyNoticeVersion()).isEqualTo("2026-10-17");
+        verify(userRepository).save(u);
+    }
+
+    @Test
+    @DisplayName("OAuth exchange: onay kaydi varsa alan istenmez; yeni surum gelirse guncellenir")
+    void exchange_existingConsent_optionalNewVersion() {
+        User u = googleUser(true);
+        u.setPrivacyNoticeVersion("2026-01-01");
+        when(oAuthLoginCodeStore.peek(anyString())).thenReturn(java.util.Optional.of(77L));
+        when(oAuthLoginCodeStore.consume(anyString())).thenReturn(java.util.Optional.of(77L));
+        when(userRepository.findById(77L)).thenReturn(java.util.Optional.of(u));
+
+        authService.exchangeOAuthCode("kod1", null, null);
+        assertThat(u.getPrivacyNoticeVersion()).isEqualTo("2026-01-01");
+        verify(userRepository, never()).save(any());
+
+        authService.exchangeOAuthCode("kod2", true, "2026-10-17");
+        assertThat(u.getPrivacyNoticeVersion()).isEqualTo("2026-10-17");
+    }
+
+    @Test
+    @DisplayName("OAuth exchange: kod bu arada kullanildiysa (yaris) 422, oturum yok")
+    void exchange_codeRace_rejected() {
+        when(oAuthLoginCodeStore.peek("kod")).thenReturn(java.util.Optional.of(77L));
+        when(oAuthLoginCodeStore.consume("kod")).thenReturn(java.util.Optional.empty());
+        when(userRepository.findById(77L)).thenReturn(java.util.Optional.of(googleUser(true)));
+
+        assertThatThrownBy(() -> authService.exchangeOAuthCode("kod", null, null))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("error.auth.oauthCodeInvalid");
+        verifyNoInteractions(refreshTokenService, jwtService);
+    }
 
     @Test
     @DisplayName("Kayit: role=ADMIN serviste reddedilir, kullanici kaydedilmez")
@@ -207,6 +321,8 @@ class AuthServiceTest {
 
     private static RegisterRequest request(Role role) {
         RegisterRequest r = new RegisterRequest();
+        r.setTermsAccepted(true);              // KVKK onayi (V27)
+        r.setPrivacyNoticeVersion("2026-10-17");
         r.setFullName("Test Kullanici");
         r.setEmail("birim.test@test.com");
         r.setPassword("Test1234");

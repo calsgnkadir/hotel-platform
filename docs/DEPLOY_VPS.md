@@ -32,6 +32,14 @@ Kredi kartı gerektirmeyen / öğrenci kredili yollar:
 | **Azure for Students** | ~$100, kart istemez | VM (B1s/B2s) aç, aynı adımlar. |
 | Hetzner / herhangi VPS | ~€4/ay | Öğrenci değilsen en ucuz always-on. |
 
+> **Sunucu Türkiye'de olacak (karar).** Kullanıcı verisi (aday profili, telefon,
+> vardiya/giriş kayıtları) KVKK kapsamında; veritabanı ve yedekler Türkiye'deki bir
+> veri merkezinde durur, yurt dışına aktarım azalır. Türkiye lokasyonu sunan bir VPS
+> sağlayıcısı seç (veri merkezi şehrini sözleşmede/panelde doğrula). Dikkat: Cloudinary
+> (görsel), Resend (e-posta), Google girişi ve OpenStreetMap/Nominatim (adres arama)
+> yurt dışı hizmetlerdir — bunlara giden veri için Aydınlatma Metni'nde yurt dışı
+> aktarım bilgisi gerekir (hukuki değerlendirme: açık konu).
+
 Sunucu: **Ubuntu 22.04+, en az 2 GB RAM** (Spring Boot + MySQL + build için 1 GB
 sıkışır; 2 GB rahat). 1 vCPU yeterli.
 
@@ -71,6 +79,20 @@ Güvenlik duvarı — sadece 80/443 (ve SSH) açık olsun; DB portu zaten dışa
 sudo ufw allow OpenSSH && sudo ufw allow 80 && sudo ufw allow 443 && sudo ufw enable
 ```
 
+### Canlıya almadan önce kısa kontrol listesi
+
+| | Adım | Komut / not |
+| :-- | :-- | :-- |
+| ☐ | **Güvenlik duvarı** yalnız 22/80/443 | yukarıdaki `ufw`; `sudo ufw status verbose` |
+| ☐ | **SSH yalnız anahtarla** | `ssh-copy-id` ile anahtarını ekle → `/etc/ssh/sshd_config`: `PasswordAuthentication no`, `PermitRootLogin no` → `sudo systemctl restart ssh` (önce ikinci oturumda anahtarla girişi dene) |
+| ☐ | **Otomatik güvenlik güncellemeleri** | `sudo apt install unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades` |
+| ☐ | **Saat (NTP) ve saat dilimi** | `timedatectl` → `System clock synchronized: yes`; değilse `sudo timedatectl set-ntp true`. Uygulama Europe/Istanbul kullanır; vardiya/QR girişi doğru saate bağlı. |
+| ☐ | **Gece yedeği (cron)** | aşağıda "Yedekleme" — `backup.sh` her gece |
+| ☐ | **Sunucu dışı kopya** | yedeği başka bir yere (ikinci sunucu / nesne depolama) kopyala; disk giderse yedek de gider |
+| ☐ | **Geri yükleme provası** | ilk kurulumda bir kez ve ayda bir: yedeği ayrı bir test veritabanına `restore.sh` ile yükle, giriş yapılabildiğini gör |
+| ☐ | **`.env.prod` izni** | `chmod 600 deploy/prod/.env.prod`; repoya girmez |
+| ☐ | **İlk yönetici** | §5.1 |
+
 ---
 
 ## 3. Repoyu çek, secret'ları doldur
@@ -82,18 +104,32 @@ cp deploy/prod/.env.prod.example deploy/prod/.env.prod
 nano deploy/prod/.env.prod
 ```
 
-En az şunları doldur (`.env.prod` repoya girmez — `.gitignore`'da):
+Şunları doldur (`.env.prod` repoya girmez — `.gitignore`'da). Biri eksikse
+`docker compose` başlamaz ya da backend açılışta durur (`ProductionSafetyConfiguration`):
 
 ```bash
 DOMAIN=kadrom.me
-PUBLIC_URL=https://kadrom.me
+PUBLIC_URL=https://kadrom.me                  # https; localhost/http reddedilir
 MYSQL_ROOT_PASSWORD=<ayrı güçlü yönetici parolası>
 DB_PASSWORD=<kadrom_app için farklı güçlü parola>
 APP_ENCRYPTION_KEY=<openssl rand -base64 32 çıktısı>
 JWT_SECRET=<openssl rand -base64 48 çıktısı>
+CLOUDINARY_URL=cloudinary://KEY:SECRET@CLOUD  # 'test' içeren değer reddedilir
+RESEND_API_KEY=re_...
+RESEND_FROM=bildirim@kadrom.me                # doğrulanmış alan adı; @resend.dev olmaz
+VAPID_PUBLIC_KEY=...                          # npx web-push generate-vapid-keys (bir kez)
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:destek@kadrom.me
 ```
 
-`openssl rand -base64 48` sunucuda çalışır; çıktıyı yapıştır.
+İsteğe bağlı: `GOOGLE_CLIENT_ID/SECRET` (Google girişi), `GEO_CONTACT_EMAIL`
+(adres arama; yoksa `RESEND_FROM`), `SMS_ENABLED` + `NETGSM_*`, `IYZICO_*` (yoksa
+ödeme kapalı; ücretsiz planın "aynı anda 5 aktif ilan" sınırı yine geçerli).
+Tam liste ve açıklamalar: `deploy/prod/.env.prod.example`.
+
+`openssl rand -base64 48` sunucuda çalışır; çıktıyı yapıştır. Windows'ta
+PowerShell: `[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(48))`
+(`Get-Random` kullanma — kriptografik değil).
 
 ---
 
@@ -132,6 +168,34 @@ curl https://kadrom.me/api/listings -o /dev/null -w "%{http_code}\n"  # 200
 
 Tarayıcıda `https://kadrom.me` açılır. Kendi hesabınla kayıt, giriş ve mesajlaşmayı doğrula. Üretimde demo hesap oluşturulmaz.
 
+### 5.1 İlk yönetici (tek seferlik)
+
+Kayıt formu ADMIN rolü vermez (bilerek). İlk yöneticiyi sunucuda, veritabanında bir kez yükselt:
+
+1. Sitede kendi e-postanla **normal kayıt ol** ve gelen bağlantıyla **e-postanı doğrula**
+   (doğrulanmamış adresi yükseltme: adres sana ait olmayabilir).
+2. Sunucuda (repo kökünden) e-postayı kendi adresinle değiştirerek bir SQL dosyası yaz
+   ve etkileşimsiz çalıştır (parola konteynerin kendi ortam değişkeninden okunur):
+
+```bash
+cat > /tmp/ilk-admin.sql <<'SQL'
+UPDATE users SET role = 'ADMIN'
+ WHERE email = 'sen@ornek.com' AND email_verified_at IS NOT NULL;
+SELECT id, email, role FROM users WHERE role = 'ADMIN';
+SQL
+docker compose --env-file deploy/prod/.env.prod -f deploy/prod/docker-compose.prod.yml \
+  exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" hotel_platform' < /tmp/ilk-admin.sql
+rm /tmp/ilk-admin.sql
+```
+
+   Çıktıda kendi e-postan `ADMIN` olarak görünmeli; görünmüyorsa e-posta doğrulanmamıştır.
+
+3. Çıkış yapıp tekrar gir (arayüz rolü oturum açılırken alır; sunucu her istekte rolü veritabanından okur).
+
+Neden env ile otomatik yükseltme (`ADMIN_BOOTSTRAP_EMAIL`) yok: o e-postayı senden önce
+biri kaydederse yönetici olurdu; tek seferlik ve doğrulanmış adrese bağlı SQL adımı
+hem daha basit hem saldırı yüzeyi bırakmaz. İkinci yöneticiyi de aynı yolla ekle.
+
 ---
 
 ## 6. Health-check'i geri aç ve README/CV'yi güncelle
@@ -148,19 +212,11 @@ Canlıyı **doğruladıktan sonra**:
 
 ---
 
-## 7. HTTP-only hızlı test (domain yoksa)
+## 7. HTTP-only hızlı test (artık yok)
 
-Sadece IP ile denemek için `.env.prod`:
-
-```bash
-DOMAIN=:80
-PUBLIC_URL=http://<SUNUCU_IP>
-COOKIE_SECURE=false
-```
-
-`docker compose ... up -d --build` → `http://<SUNUCU_IP>` açılır. Caddy sertifika
-denemez. Bu geçici; kalıcı demo için domain + HTTPS'e geç (tarayıcılar HTTP'yi
-"güvensiz" işaretler).
+Prod profili `COOKIE_SECURE=false`, `http://` ya da `localhost` adresle **açılmaz**
+(oturum çerezi düz HTTP'de sızar). Alan adı + HTTPS olmadan prod kurma; yalnız
+denemek için repo kökündeki yerel `docker-compose.yml`'i (dev/demo) kullan.
 
 ---
 
@@ -196,7 +252,10 @@ cd deploy/prod && chmod +x backup.sh restore.sh
 - `backup.sh` son **14** yedegi tutar (`KEEP` env ile degistir), `--single-transaction` ile
   kilitsiz/tutarli dump alir, bos/bozuk dump'i yakalayip hata doner (cron alarmi icin).
 - **Off-site kopya sart:** yedekler sunucuda; diski kaybedersen yedek de gider. En az bir
-  kopyayi baska yere al (rclone -> S3/Backblaze B2, ya da `scp` ile baska sunucu).
+  kopyayi baska yere al (rclone -> nesne depolama, ya da `scp`/`rsync` ile baska sunucu).
+  Ornek (yedekten sonra, 04:00): `0 4 * * * rsync -a /opt/kadrom/deploy/prod/backups/ yedek@ikinci-sunucu:/yedek/kadrom/`
+  Kopya da Turkiye'de olsun (KVKK); dump sifreli alanlari sifreli tasir, `APP_ENCRYPTION_KEY`'i
+  yedekle AYNI yerde tutma.
 - Ayda bir **geri yukleme provasi** yap — test edilmemis yedek, yedek degildir.
 
 ## Mevcut veritabanından geçiş
@@ -208,7 +267,8 @@ cd deploy/prod && chmod +x backup.sh restore.sh
 | Belirti | Çözüm |
 | :-- | :-- |
 | Caddy sertifika alamıyor | DNS A kaydı sunucu IP'sine mi bakıyor? 80/443 açık mı? `docker compose ... logs caddy` |
-| Giriş 401 ama şifre doğru | `COOKIE_SECURE=true` ama site HTTP mi? HTTPS'e geç ya da test için `false`. |
+| Giriş 401 ama şifre doğru | Site HTTP mi? Prod yalnız HTTPS'te çalışır (`COOKIE_SECURE=true` zorunlu). |
+| Backend `PROD-SAFETY: ...` ile kapanıyor | Mesajdaki değişkeni `.env.prod`'da düzelt (ör. `RESEND_FROM`, `VAPID_*`, `CLOUDINARY_URL`, https `PUBLIC_URL`). |
 | WebSocket bağlanmıyor | `PUBLIC_URL` frontend build'ine gömülü — değiştirdiysen `--build` ile yeniden kur. |
 | Build OOM (`Killed`) | Sunucu <2 GB. RAM artır ya da imajı güçlü makinede build edip push et. |
 | `checksum mismatch V4` | Bu repoda düzeltildi; güncel `main`'de olduğundan emin ol. Detay: [README](../README.md#veritabanı-migrationları) |

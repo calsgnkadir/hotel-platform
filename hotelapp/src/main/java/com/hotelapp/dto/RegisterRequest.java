@@ -62,6 +62,15 @@ public class RegisterRequest {
     private String website;
     private String description;
 
+    /**
+     * KVKK — Kullanım Şartları kabulü. true olmalı; değilse servis 422
+     * "Kullanım Şartları kabul edilmeli." döner (Bean Validation 400 değil).
+     */
+    private Boolean termsAccepted;
+
+    /** KVKK — onaylanan Aydınlatma Metni sürümü (zorunlu, ör. "2026-10-17"; en fazla 32 karakter). */
+    private String privacyNoticeVersion;
+
     /** Kendi kendine kayitta secilebilecek roller. ADMIN asla buradan atanmaz. */
     public static final Set<Role> SELF_REGISTRATION_ROLES =
             Set.copyOf(EnumSet.of(Role.CANDIDATE, Role.BUSINESS_OWNER));

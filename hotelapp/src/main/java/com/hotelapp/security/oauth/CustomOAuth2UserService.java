@@ -6,7 +6,6 @@ import com.hotelapp.enums.Role;
 import com.hotelapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * #92: Google'dan dönen user bilgisini DB'ye işler.
@@ -34,14 +32,29 @@ import java.util.UUID;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final com.hotelapp.service.RefreshTokenService refreshTokenService;
 
     @Override
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(request);
-        Map<String, Object> attrs = oAuth2User.getAttributes();
+        User user = upsertGoogleUser(oAuth2User.getAttributes());
 
+        // SuccessHandler bu attribute'lardan userId'yi okuyacak
+        return new DefaultOAuth2User(
+                Collections.singleton(() -> "ROLE_" + user.getRole().name()),
+                Map.of(
+                        "userId", user.getId(),
+                        "email",  user.getEmail(),
+                        "name",   user.getFullName(),
+                        "role",   user.getRole().name()
+                ),
+                "email"  // name attribute key
+        );
+    }
+
+    /** Google kullanıcı bilgisini DB'ye işler (Google'a çağrı yapmaz; test edilebilir). */
+    User upsertGoogleUser(Map<String, Object> attrs) {
         String email     = ((String) attrs.get("email")).toLowerCase().trim();
         String name      = (String) attrs.getOrDefault("name", email);
         String googleId  = (String) attrs.get("sub");          // Google unique ID
@@ -65,21 +78,36 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 throw new OAuth2AuthenticationException("Hesap kullanıma kapalı.");
             }
             if (user.getProvider() != AuthProvider.GOOGLE) {
+                // Hesap ele geçirme önlemi: e-postası hiç doğrulanmamış LOCAL hesabı bu
+                // adresin sahibi olmayan biri açmış olabilir (önceden kayıt saldırısı).
+                // Google adresi doğruladığı için hesap gerçek sahibine geçer: eski parola
+                // kullanılamaz hale gelir ve açık oturumların hepsi kapanır.
+                if (user.getEmailVerifiedAt() == null) {
+                    user.setPassword(com.hotelapp.security.UnusablePassword.newHash());
+                    refreshTokenService.revokeAllForUser(user.getId());
+                    log.warn("[OAUTH] Doğrulanmamış LOCAL hesap Google'a bağlandı: parola geçersizleştirildi, "
+                            + "oturumlar kapatıldı: userId={}", user.getId());
+                }
                 user.setProvider(AuthProvider.GOOGLE);
                 user.setProviderId(googleId);
-                userRepository.save(user);
                 log.info("[OAUTH] Mevcut LOCAL kullanıcı GOOGLE'a yükseltildi: userId={}", user.getId());
             } else {
                 log.info("[OAUTH] Mevcut GOOGLE kullanıcı giriş yaptı: userId={}", user.getId());
             }
+            // Google e-postayı doğruladı (email_verified=true yukarıda zorunlu)
+            if (user.getEmailVerifiedAt() == null) {
+                user.setEmailVerifiedAt(java.time.LocalDateTime.now());
+            }
+            userRepository.save(user);
         } else {
             // Yeni kullanıcı — CANDIDATE rolüyle oluştur.
             // password DB'de NOT NULL — OAuth user'a kullanılamaz random BCrypt hash koy.
             // (Kullanıcı isterse "şifremi unuttum" ile gerçek şifre belirleyebilir.)
-            String randomPassword = passwordEncoder.encode("OAUTH-" + UUID.randomUUID());
+            // KVKK onayı burada yazılmaz: POST /api/auth/oauth/exchange onayı ister.
             user = User.builder()
                     .email(email)
-                    .password(randomPassword)
+                    .password(com.hotelapp.security.UnusablePassword.newHash())
+                    .emailVerifiedAt(java.time.LocalDateTime.now())
                     .fullName(name)
                     .role(Role.CANDIDATE)
                     .provider(AuthProvider.GOOGLE)
@@ -89,17 +117,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userRepository.save(user);
             log.info("[OAUTH] Yeni Google kullanıcısı oluşturuldu: userId={}", user.getId());
         }
-
-        // SuccessHandler bu attribute'lardan userId'yi okuyacak
-        return new DefaultOAuth2User(
-                Collections.singleton(() -> "ROLE_" + user.getRole().name()),
-                Map.of(
-                        "userId", user.getId(),
-                        "email",  user.getEmail(),
-                        "name",   user.getFullName(),
-                        "role",   user.getRole().name()
-                ),
-                "email"  // name attribute key
-        );
+        return user;
     }
 }

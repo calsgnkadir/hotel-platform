@@ -75,10 +75,20 @@ public class SecurityConfig {
     @Value("${app.security.hsts-enabled:true}")
     private boolean hstsEnabled;
 
+    /** Virgulle ayrilmis origin listesi: trim + bos girdiler atilir (CORS ve WebSocket ortak). */
+    public static List<String> parseOrigins(String csv) {
+        if (csv == null) return List.of();
+        return Arrays.stream(csv.split(","))
+                .map(String::trim)
+                .filter(o -> !o.isEmpty())
+                .toList();
+    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        // Liste "a, b" yazilsa da eslessin: bosluklar ve bos girdiler atilir
+        config.setAllowedOrigins(parseOrigins(allowedOrigins));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Content-Disposition"));

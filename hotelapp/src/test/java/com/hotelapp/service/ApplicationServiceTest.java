@@ -161,6 +161,69 @@ class ApplicationServiceTest {
         }
 
         @Test
+        @DisplayName("İlan sahibi banlı ya da hesabını kapatmışsa 422, kayıt oluşmaz")
+        void ownerBannedOrClosed_throws() {
+            when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+            JobListing banned = activeListing();
+            banned.getBusiness().getOwner().setBannedUntil(java.time.LocalDateTime.now().plusDays(2));
+            JobListing closed = activeListing();
+            closed.getBusiness().getOwner().setEnabled(false);
+            for (JobListing l : new JobListing[]{banned, closed}) {
+                when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
+                assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
+                        .isInstanceOf(BusinessRuleException.class)
+                        .hasMessage("Bu işletme şu anda başvuru kabul etmiyor. Başka bir ilana göz atabilirsin.");
+            }
+            verify(applicationRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Süresi geçmiş ban başvuruyu engellemez")
+        void ownerBanExpired_allowsApplication() {
+            when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+            JobListing l = activeListing();
+            l.getBusiness().getOwner().setBannedUntil(java.time.LocalDateTime.now().minusDays(1));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(l));
+            when(messageService.openConversationForApplication(any(), any()))
+                    .thenReturn(com.hotelapp.entity.Conversation.builder().id(5L).build());
+            when(applicationMapper.toResponse(any()))
+                    .thenReturn(com.hotelapp.dto.ApplicationResponse.builder().build());
+
+            service.createApplication(CANDIDATE_ID, req());
+            verify(applicationRepository).save(any(Application.class));
+        }
+
+        @Test
+        @DisplayName("E-postası doğrulanmamış aday başvuramaz: 403 EMAIL_NOT_VERIFIED, kayıt oluşmaz")
+        void unverifiedCandidate_throws() {
+            service.setEmailVerificationPolicy(new EmailVerificationPolicy(true));
+            when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(activeListing()));
+
+            assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
+                    .isInstanceOf(com.hotelapp.exception.EmailNotVerifiedException.class)
+                    .hasMessage("Devam etmek için e-posta adresini doğrula.");
+            verify(applicationRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Doğrulanmış (ya da Google) aday politika açıkken başvurabilir")
+        void verifiedCandidate_allowed() {
+            service.setEmailVerificationPolicy(new EmailVerificationPolicy(true));
+            User c = candidate();
+            c.setProvider(com.hotelapp.enums.AuthProvider.GOOGLE);   // Google = doğrulanmış
+            when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.of(c));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(activeListing()));
+            when(messageService.openConversationForApplication(any(), any()))
+                    .thenReturn(com.hotelapp.entity.Conversation.builder().id(5L).build());
+            when(applicationMapper.toResponse(any()))
+                    .thenReturn(com.hotelapp.dto.ApplicationResponse.builder().build());
+
+            service.createApplication(CANDIDATE_ID, req());
+            verify(applicationRepository).save(any(Application.class));
+        }
+
+        @Test
         @DisplayName("Aday yoksa ResourceNotFoundException")
         void candidateNotFound_throws() {
             when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.empty());

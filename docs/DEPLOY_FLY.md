@@ -112,6 +112,26 @@ fly apps create kadrom-api --org personal
 
 ### Secret'ları ata
 
+Prod profili bunlardan biri eksik ya da sahteyse **açılmaz** (`ProductionSafetyConfiguration`):
+
+| Secret | Zorunlu | Not |
+|---|---|---|
+| `DB_PASSWORD` | evet | 2. adımdaki `MYSQL_PASSWORD` |
+| `JWT_SECRET` | evet | güvenli üreteçle en az 48 bayt (aşağıda) |
+| `APP_ENCRYPTION_KEY` | evet | 256-bit base64; kaybedersen şifreli alanlar okunamaz |
+| `CLOUDINARY_URL` | evet | `cloudinary://KEY:SECRET@CLOUD`; `test` içeren değer reddedilir |
+| `RESEND_API_KEY` | evet | `re_` ile başlar |
+| `RESEND_FROM` | evet | doğrulanmış alan adında adres; `@resend.dev` reddedilir |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | evet | bir kez üret, değiştirme (`npx web-push generate-vapid-keys`) |
+| `VAPID_SUBJECT` | evet | ör. `mailto:destek@kadrom.me` |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | hayır | yoksa Google butonu gizlenir |
+| `GEO_CONTACT_EMAIL` | hayır | adres arama iletişim adresi; yoksa `RESEND_FROM` |
+| `SMS_ENABLED`, `NETGSM_*` | hayır | yoksa SMS kapalı (log'a düşer) |
+| `IYZICO_*` | hayır | yoksa ödeme kapalı; ücretsiz 5 aktif ilan sınırı yine geçerli |
+
+`[env]` bloğunda olanlar: `COOKIE_SECURE=true` (prod'da `false` açılışı durdurur),
+`APP_BASE_URL` / `APP_CORS_ALLOWED_ORIGINS` (https olmalı; `localhost` ve `*` reddedilir).
+
 ```bash
 fly secrets set --app kadrom-api \
   DB_PASSWORD='2.-ADIMDAKI-MYSQL_PASSWORD' \
@@ -119,14 +139,19 @@ fly secrets set --app kadrom-api \
   APP_ENCRYPTION_KEY="$(openssl rand -base64 32)" \
   CLOUDINARY_URL='cloudinary://KEY:SECRET@CLOUD_NAME' \
   RESEND_API_KEY='re_...' \
-  GOOGLE_CLIENT_ID='...apps.googleusercontent.com' \
-  GOOGLE_CLIENT_SECRET='...'
+  RESEND_FROM='bildirim@ALAN-ADIN' \
+  VAPID_PUBLIC_KEY='...' \
+  VAPID_PRIVATE_KEY='...' \
+  VAPID_SUBJECT='mailto:destek@ALAN-ADIN'
+# istege bagli:
+#   GOOGLE_CLIENT_ID='...apps.googleusercontent.com' GOOGLE_CLIENT_SECRET='...'
 ```
 
-`openssl` yoksa PowerShell'de:
+`openssl` yoksa PowerShell'de kriptografik üreteçle (`Get-Random` **kullanma** — tahmin edilebilir):
 
 ```powershell
-[Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Max 256 }))
+[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(48))   # JWT_SECRET
+[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))   # APP_ENCRYPTION_KEY
 ```
 
 > Secret'lar `fly.toml`'a **yazılmaz** — repoda secret tutmuyoruz. Yalnızca
@@ -155,10 +180,10 @@ Started HotelStudentPlatformApplication
 
 ```bash
 curl https://kadrom-api.fly.dev/actuator/health
-curl https://kadrom-api.fly.dev/v3/api-docs -o NUL -w "%{http_code}\n"
+curl https://kadrom-api.fly.dev/api/listings -o NUL -w "%{http_code}\n"
 ```
 
-`{"status":"UP"}` ve `200` bekleniyor.
+`{"status":"UP"}` ve `200` bekleniyor. (Swagger / `/v3/api-docs` prod'da varsayılan kapalıdır.)
 
 ---
 
