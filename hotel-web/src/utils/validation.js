@@ -57,7 +57,7 @@ export function formatTurkeyPhoneInput(raw) {
 // YAŞ (doğum tarihi)
 // ────────────────────────────────────────────────
 
-const MIN_AGE = 16
+const MIN_AGE = 18
 const MAX_AGE = 65
 
 /**
@@ -77,7 +77,7 @@ export function calculateAge(birthDate) {
 }
 
 /**
- * Yaş 16-65 aralığında mı? Boş geçerli.
+ * Yaş 18-65 aralığında mı? Boş geçerli.
  * @returns {string|null} - Hata mesajı veya null
  */
 export function validateAdultAge(birthDate, opts = {}) {

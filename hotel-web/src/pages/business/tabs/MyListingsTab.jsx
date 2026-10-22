@@ -229,7 +229,7 @@ export default function MyListingsTab({ applications = [] }) {
                     <span className="type-meta tabular-nums">
                       {last8wTotal}
                     </span>
-                    <Sparkline data={trendData} color="#1f2937" width={56} height={20} />
+                    <Sparkline data={trendData} width={56} height={20} />  {/* renk: bileşen varsayılanı (marka grafiti) */}
                   </div>
                   <div className="flex gap-2 flex-wrap sm:justify-end">
                   {/* Görünür iki eylem: Düzenle (kapalıysa Tekrar aç) + Yoklama; diğerleri "Diğer" menüsünde */}

@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import cldImg, { ImgSize } from '../lib/cldImg'
-import { LOGO_FALLBACK_BG } from '../lib/logoColor'
+import { LOGO_FALLBACK_BG, LOGO_FALLBACK_FG, LOGO_FALLBACK_BORDER } from '../lib/logoColor'
 
 /**
  * İşletme logosu — tek kaynak.
  *
  * Gerçek logo varsa onu (Cloudinary küçültmeli), yoksa ya da görsel
- * yüklenemezse işletme adının baş harfini grafit kutuda gösterir.
+ * yüklenemezse işletme adının baş harfini açık kutuda (marka yumuşak zemin,
+ * koyu harf, ince çerçeve) gösterir — karar notu lib/logoColor.js'te.
  *
  * Boyutlar:
  *   sm  40px (başvuru penceresi başlığı, liste satırı)
@@ -58,12 +59,15 @@ export default function BusinessLogo({ name, logoUrl, size = 'md', alt, classNam
       role={alt ? 'img' : undefined}
       aria-label={alt || undefined}
       aria-hidden={alt ? undefined : true}
-      // .ah-logo (tokens.css): grid ortalama, kalın beyaz harf
+      // .ah-logo (tokens.css): grid ortalama, kalın harf
       className={`ah-logo ${className}`.trim()}
       data-testid="business-logo-initial"
       style={{
         ...base,
         background: LOGO_FALLBACK_BG,
+        color: LOGO_FALLBACK_FG,
+        border: LOGO_FALLBACK_BORDER,
+        boxSizing: 'border-box',
         fontSize: s.font,
         lineHeight: 1,
       }}

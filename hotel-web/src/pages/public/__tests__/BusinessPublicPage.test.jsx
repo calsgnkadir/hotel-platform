@@ -131,6 +131,17 @@ describe('BusinessPublicPage', () => {
       .toHaveAttribute('href', 'https://www.isletmem.com/')
   })
 
+  it('işletme sahibinin e-postası herkese açık sayfada gösterilmez (yanıtta gelse bile)', async () => {
+    api.getPublicBusiness.mockResolvedValue({ ...BUSINESS, email: 'sahip@otel.test' })
+    renderPage()
+    await screen.findByRole('heading', { level: 1 })
+    expect(screen.queryByText('sahip@otel.test')).not.toBeInTheDocument()
+    expect(screen.queryByText('E-posta')).not.toBeInTheDocument()
+    expect(document.querySelector('a[href^="mailto:"]')).toBeNull()
+    // Yalnız e-posta varsa iletişim bölümü boş durumunu gösterir
+    expect(screen.getByText('İletişim bilgisi eklenmemiş.')).toBeInTheDocument()
+  })
+
   it('Paket 2: cümle düzeni başlıklar, boş durumlar ve oturuma göre üst düğme', async () => {
     renderPage()
     await screen.findByRole('heading', { level: 1, name: /deniz otel/ })

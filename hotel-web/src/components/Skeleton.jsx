@@ -17,7 +17,8 @@ function ShimmerBlock({ className = '', style = {} }) {
     <div
       className={`rounded animate-pulse ${className}`}
       style={{
-        background: 'linear-gradient(90deg, rgba(31, 41, 55, 0.08) 0%, rgba(31, 41, 55, 0.18) 50%, rgba(31, 41, 55, 0.08) 100%)',
+        // Grafit (ink) tonlu, sicak zeminde de ayrisan yumusak parilti
+        background: 'linear-gradient(90deg, rgba(17, 24, 39, 0.06) 0%, rgba(17, 24, 39, 0.12) 50%, rgba(17, 24, 39, 0.06) 100%)',
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.5s ease-in-out infinite',
         ...style,
@@ -124,10 +125,12 @@ export function SkeletonMessages({ count = 4 }) {
   )
 }
 
-/* Form alanı skeleton (profil yüklerken) */
+/* Form alanı skeleton (profil yüklerken). Genişlik sınırı yok: profil
+   sekmeleri panelin .ah-container genişliğini kullanır; iskelet de aynı yeri
+   kaplasın ki yükleme bitince düzen zıplamasın. */
 export function SkeletonForm({ fields = 4 }) {
   return (
-    <div className="space-y-5 max-w-5xl mx-auto">
+    <div className="space-y-5" role="status" aria-label="Yükleniyor">
       <div className="card space-y-4">
         {Array.from({ length: fields }).map((_, i) => (
           <div key={i} className="space-y-1.5">
@@ -183,12 +186,13 @@ export function SkeletonStatGrid({ count = 4 }) {
 }
 
 /* Dalga E — ListingDetailPage tam sayfa skeleton
-   Hero + chip + aciklama + sag basvur card */
+   Hero + chip + aciklama + sag basvur card. Kap ve kolonlar ilan detayinin
+   kendisiyle ayni (max-w-6xl, lg'de 1fr + 320px) — yuklenince kayma olmasin. */
 export function SkeletonDetail() {
   return (
-    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
-      <div className="xl:grid xl:grid-cols-[1fr_340px] xl:gap-5 space-y-5 xl:space-y-0">
-        <div className="space-y-5 min-w-0">
+    <div className="max-w-6xl mx-auto px-4 lg:px-6 py-4 lg:py-6">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 space-y-4 lg:space-y-0">
+        <div className="space-y-4 min-w-0">
           {/* Hero */}
           <div className="card !p-0 overflow-hidden">
             <ShimmerBlock className="h-48 w-full" style={{ borderRadius: 0 }} />

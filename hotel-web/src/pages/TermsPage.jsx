@@ -19,7 +19,8 @@ export default function TermsPage() {
                'radial-gradient(ellipse 600px 500px at 85% 75%, rgba(31, 41, 55, 0.10) 0%, transparent 60%)',
            }} />
 
-      <div className="fixed top-3 left-4 z-40">
+      {/* Geri düğmesi içerik sütununa hizalı, akış içinde (sabit değil) */}
+      <div className="relative z-10 max-w-3xl mx-auto -mt-6 mb-4">
         <BackButton label="Geri" />
       </div>
 

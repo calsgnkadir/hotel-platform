@@ -239,21 +239,26 @@ code, pre, kbd, samp {
 .btn-destructive:hover:not(:disabled) { filter: brightness(0.92); }
 
 /* ────────────────────────────────────────────────────────────────
-   CARD — FAZ 5.UX4: Unified card token system
-   Radius rounded-2xl (16px), border-white/5, p-6, hover glow.
-   Asymmetric corners kaldirildi — uniform.
+   CARD — tek kart sistemi. Radius 12px (rounded-xl; token olcegi
+   {6,8,10,12,14} — eski 16px olcek disiydi), 1px hairline, p-6.
+   Hover YALNIZ tiklanabilir kartta: statik bilgi kartinin fareyle
+   "kalkmasi" tiklanabilir oldugunu ima ediyordu (yanlis affordance).
+   Tiklanabilir = <a>/<button>/[role=button] kart ya da .card-clickable.
    ──────────────────────────────────────────────────────────────── */
 .card {
-  @apply p-6 rounded-2xl transition-all duration-300 relative;
+  @apply p-6 rounded-xl relative;
   background: var(--ah-card);
   color: var(--ah-ink);
   border: 1px solid var(--ah-line);
   box-shadow: var(--elev-1);   /* duz degil, yumusak derinlik */
+  transition: border-color .15s ease, box-shadow .15s ease;
 }
-.card:hover {
+:is(a, button, [role="button"]).card:hover,
+.card.card-clickable:hover {
   border-color: var(--ah-line-2);
-  box-shadow: 0 4px 14px rgba(18, 32, 31, 0.07);
+  box-shadow: var(--elev-hover);
 }
+.card.card-clickable { cursor: pointer; }
 .dark .card {
   background: #1b1815;
   color: #e5e5e5;
@@ -263,16 +268,16 @@ code, pre, kbd, samp {
 /* 3-tier: hepsi ayni radius + border, ic hierarchy uzerinden ayrisir */
 .card-metric,
 .card-content {
-  @apply p-6 rounded-2xl relative;
+  @apply p-6 rounded-xl relative;
   background: var(--ah-card);
   color: var(--ah-ink);
   border: 1px solid var(--ah-line);
   transition: border-color 220ms, box-shadow 220ms, transform 220ms;
 }
-.card-metric:hover,
-.card-content:hover {
+:is(a, button, [role="button"]):is(.card-metric, .card-content):hover,
+:is(.card-metric, .card-content).card-clickable:hover {
   border-color: var(--ah-line-2);
-  box-shadow: 0 4px 14px rgba(18, 32, 31, 0.07);
+  box-shadow: var(--elev-hover);
   transform: translateY(-1px);
 }
 
@@ -300,9 +305,11 @@ code, pre, kbd, samp {
 }
 
 /* Card icindeki form elemanlari — ACIK tema (eski koyu-graphite leftover'i;
-   etiketler champagne, inputlar koyu zemin+ivory idi -> beyaz kartta yanlisti). */
+   etiketler champagne, inputlar koyu zemin+ivory idi -> beyaz kartta yanlisti).
+   Dugme gibi gorunen <label> (dosya secici: label.btn-primary) haric tutulur;
+   yoksa !important ink-2 rengi grafit dugmenin beyaz yazisini eziyordu. */
 .card .label,
-.card label {
+.card label:not([class*="btn"]) {
   color: var(--ah-ink-2) !important;
 }
 .card input,
@@ -390,12 +397,14 @@ code, pre, kbd, samp {
    radial glow ve text-shadow kaldirildi)
    ──────────────────────────────────────────────────────────────── */
 .stat-card {
-  @apply p-6 rounded-2xl relative overflow-hidden transition-all duration-300;
+  @apply p-6 rounded-xl relative overflow-hidden transition-all duration-300;
   background: var(--ah-card);
   border: 1px solid var(--ah-line);
   box-shadow: var(--elev-1);
 }
-.stat-card:hover {
+/* Statik sayac kartinda hover yok (yalniz tiklanabilir stat-card) */
+:is(a, button, [role="button"]).stat-card:hover,
+.stat-card.card-clickable:hover {
   border-color: var(--ah-line-2);
   box-shadow: var(--elev-2);
 }
@@ -482,7 +491,7 @@ code, pre, kbd, samp {
   cursor: pointer;
 }
 .chip:hover {
-  border-color: #bcc4c4;
+  border-color: var(--ah-ink-4);
   color: var(--ah-ink);
   background: var(--ah-band);
 }
@@ -516,7 +525,7 @@ code, pre, kbd, samp {
   cursor: pointer;
 }
 .funnel-stage-btn:hover {
-  background: rgba(185, 185, 185, 0.06);
+  background: var(--ah-band);
 }
 .funnel-stage-btn:focus-visible {
   outline: 2px solid var(--ah-brand);   /* ITEM 5 — altin odak halkasi -> teal */
@@ -884,6 +893,12 @@ textarea:focus-visible {
   outline: 2px solid var(--ah-brand);
   outline-offset: 2px;
 }
+/* Dugme gorunumlu dosya secici (<label class="btn-*"><input class="sr-only">):
+   odak gizli input'ta; halka label'da gorunsun (klavye kullanicisi icin). */
+label:is(.btn-primary, .btn-secondary, .btn-ghost, .btn-danger):has(input:focus-visible) {
+  outline: 2px solid var(--ah-brand);
+  outline-offset: 2px;
+}
 /* Modal overlay focus alminca outline gosterme (sadece kendisi container) */
 .modal-overlay:focus-visible { outline: none; box-shadow: none; }
 
@@ -1026,12 +1041,12 @@ textarea:focus-visible {
   /* Yuzey token'lari da aciga cek (var(--surface-raised) kullanan bilesenler) */
   --surface-base: var(--ah-page);
   --surface-raised: var(--ah-card);
-  --surface-floating: #f4f6f6;
+  --surface-floating: var(--ah-band);
   --bg-app: var(--ah-page);
   --bg-surface: var(--ah-card);
-  --bg-elevated: #f4f6f6;
+  --bg-elevated: var(--ah-band);
   --bg-subtle: var(--ah-card);
-  --bg-muted: #f4f6f6;
+  --bg-muted: var(--ah-band);
 }
 
 .ah-surface .card,
@@ -1040,7 +1055,8 @@ textarea:focus-visible {
   background: var(--ah-card); color: var(--ah-ink-2);
   border: 1px solid var(--ah-line); box-shadow: var(--elev-1);  /* yumusak derinlik */
 }
-.ah-surface .card:hover { border-color: var(--ah-line-2); box-shadow: var(--elev-2); }
+.ah-surface :is(a, button, [role="button"]).card:hover,
+.ah-surface .card.card-clickable:hover { border-color: var(--ah-line-2); box-shadow: var(--elev-hover); }
 .ah-surface .card-header { color: var(--ah-ink); border-color: var(--ah-line); }
 
 .ah-surface .input,
@@ -1053,7 +1069,7 @@ textarea:focus-visible {
 }
 .ah-surface .input::placeholder { color: var(--ah-ink-4) !important; }
 .ah-surface .input:focus { border-color: var(--ah-brand) !important; box-shadow: 0 0 0 3px var(--ah-brand-soft) !important; }
-.ah-surface .input:disabled { background: #f4f6f6 !important; color: var(--ah-ink-3) !important; }
+.ah-surface .input:disabled { background: var(--ah-band) !important; color: var(--ah-ink-3) !important; }
 .ah-surface .label { color: var(--ah-ink-2); }  /* form etiketleri daha okunur (ink-3 -> ink-2) */
 
 /* Butonlar: .ah-surface altinda ayri override yok — taban .btn-* (Paket 2) gecerli. */
@@ -1064,7 +1080,7 @@ textarea:focus-visible {
 /* FAZ E.1 — --ah-brand-line hic tanimli degildi: gecersiz var yuzunden border
    currentColor'a (ink-2 gri) dusuyordu, featured teal vurgusunu alamiyordu.
    var(--ah-brand) = gercek teal accent. */
-.ah-surface .tier-featured { background: var(--ah-card); border: 1px solid var(--ah-brand); box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+.ah-surface .tier-featured { background: var(--ah-card); border: 1px solid var(--ah-brand); box-shadow: var(--elev-hover); }
 
 .ah-surface .type-display, .ah-surface .type-heading { color: var(--ah-ink); }
 .ah-surface .type-subhead, .ah-surface .type-body { color: var(--ah-ink-2); }
@@ -1073,7 +1089,8 @@ textarea:focus-visible {
 
 /* stat-card ailesi — açık zeminde beyaz kart, koyu ink sayı */
 .ah-surface .stat-card { background: var(--ah-card); border: 1px solid var(--ah-line); }
-.ah-surface .stat-card:hover { border-color: var(--ah-line-2); box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+.ah-surface :is(a, button, [role="button"]).stat-card:hover,
+.ah-surface .stat-card.card-clickable:hover { border-color: var(--ah-line-2); box-shadow: var(--elev-hover); }
 .ah-surface .stat-card::after { display: none; }
 .ah-surface .stat-card-number { color: var(--ah-ink); }
 .ah-surface .stat-card-divider { background: var(--ah-line); }
@@ -1083,7 +1100,7 @@ textarea:focus-visible {
 
 /* filtre çipleri (.chip) — açık zeminde teal aktif */
 .ah-surface .chip { background: var(--ah-card); border: 1px solid var(--ah-line-2); color: var(--ah-ink-2); }
-.ah-surface .chip:hover { border-color: #bcc4c4; color: var(--ah-ink); background: #f7f9f9; }
+.ah-surface .chip:hover { border-color: var(--ah-ink-4); color: var(--ah-ink); background: var(--ah-band); }
 .ah-surface .chip.is-active { background: var(--ah-brand); border-color: var(--ah-brand); color: #fff; }
 .ah-surface .chip.is-active:hover { background: var(--ah-brand-hover); color: #fff; }
 
@@ -1093,3 +1110,21 @@ textarea:focus-visible {
 .ah-surface .text-ivory-200, .ah-surface .text-ivory-300,
 .ah-surface .text-ivory-400, .ah-surface .text-ivory-600,
 .ah-surface .text-ivory-700, .ah-surface .text-token, .ah-surface .text-token-2 { color: var(--ah-ink-2); }
+
+/* ────────────────────────────────────────────────────────────────
+   G1 — Sayfa kabi. Panel (DashboardLayout) ust bar ici, sayfa basligi ve
+   icerik ayni sutunda hizalanir; 1440px ustunde ortalanir (2560px'te
+   satirlar ekran boyu uzamaz). Ust barin beyaz zemini ve alt cizgisi
+   tam genislikte kalir — yalniz ici bu kaba alinir.
+   ──────────────────────────────────────────────────────────────── */
+.ah-container {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+@media (min-width: 1024px) {
+  .ah-container { padding-left: 32px; padding-right: 32px; }
+}

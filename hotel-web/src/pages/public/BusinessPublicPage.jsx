@@ -265,7 +265,7 @@ export default function BusinessPublicPage() {
   const websiteHref = safeHttpUrl(business.website)
   const instagramHref = socialUrl(business.instagram, 'https://instagram.com')
   const facebookHref = socialUrl(business.facebook, 'https://facebook.com')
-  const hasContact = business.address || business.phone || business.email || business.website
+  const hasContact = business.address || business.phone || business.website
   const workingHours = business.workingHours ? parseWorkingHours(business.workingHours) : null
 
   // Schema.org JSON-LD (rich snippet)
@@ -484,15 +484,6 @@ export default function BusinessPublicPage() {
                       <dd className="mt-0.5">
                         <a href={`tel:${business.phone}`} className="type-body type-num font-medium hover:underline"
                            style={{ color: 'var(--ah-ink)' }}>{business.phone}</a>
-                      </dd>
-                    </div>
-                  )}
-                  {business.email && (
-                    <div>
-                      <dt className="type-label">E-posta</dt>
-                      <dd className="mt-0.5 min-w-0">
-                        <a href={`mailto:${business.email}`} className="type-body font-medium hover:underline block truncate"
-                           style={{ color: 'var(--ah-ink)' }}>{business.email}</a>
                       </dd>
                     </div>
                   )}

@@ -148,7 +148,7 @@ export default function ProfileTab() {
   )
 
   return (
-    <div className="ah-surface max-w-[1400px] mx-auto">
+    <div className="ah-surface">
       {savedAt && (
         <Alert variant="success" title="Profil güncellendi">
           Değişiklikler kaydedildi — işverenler artık güncel bilgilerinizi görür.
@@ -306,7 +306,7 @@ export default function ProfileTab() {
                     ilce yalnizca ISLETME kendi adresini girerken yaziliyor. */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="cand-profile-birthDate" className="label">Doğum tarihi <span className="text-ink-400 font-normal">(16-65 yaş)</span></label>
+                    <label htmlFor="cand-profile-birthDate" className="label">Doğum tarihi <span className="text-ink-400 font-normal">(18-65 yaş)</span></label>
                     <input id="cand-profile-birthDate" type="date" name="birthDate" value={form.birthDate} onChange={handleChange} {...birthDateBounds()} className="input" />
                   </div>
                   <div>

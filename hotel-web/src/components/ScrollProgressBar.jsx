@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 
 /**
- * FAZ 5.11 — Sayfa scroll yuzdesi (en ust ince bar, mor gradient).
+ * FAZ 5.11 — Sayfa kaydırma yüzdesi (en üstte 2px ince çubuk, düz marka grafiti;
+ * eski gradientin ikinci rengi yeşilimsi griydi ve inline hex'ti).
  * Sayfanin scroll yuksekligine gore 0-100 arasi width animasyon eder.
  */
 export default function ScrollProgressBar() {
@@ -34,8 +35,7 @@ export default function ScrollProgressBar() {
         className="h-full transition-all duration-150 ease-out"
         style={{
           width: `${progress}%`,
-          background: 'linear-gradient(90deg, #1f2937 0%, #1f2937 50%, #6b7574 100%)',
-          boxShadow: 'none',
+          background: 'var(--ah-brand)',
         }}
       />
     </div>

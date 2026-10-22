@@ -10,11 +10,13 @@ describe('BusinessLogo', () => {
     expect(screen.queryByTestId('business-logo-initial')).not.toBeInTheDocument()
   })
 
-  it('logo yoksa grafit zeminde baş harf', () => {
+  it('logo yoksa açık kutuda (yumuşak zemin, koyu harf, çerçeve) baş harf', () => {
     render(<BusinessLogo name="deniz otel" />)
     const box = screen.getByTestId('business-logo-initial')
     expect(box).toHaveTextContent('D')
-    expect(box.style.background).toBe('var(--ah-brand)')
+    expect(box.style.background).toBe('var(--ah-brand-soft)')
+    expect(box.style.color).toBe('var(--ah-ink)')
+    expect(box.style.border).toContain('var(--ah-line-2)')
     expect(box.className).toContain('ah-logo')
   })
 

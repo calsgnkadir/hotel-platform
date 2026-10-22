@@ -78,7 +78,8 @@ export default function HelpPage() {
 
   return (
     <div className="min-h-screen py-10 px-4 relative z-10">
-      <div className="fixed top-3 left-4 z-40">
+      {/* Geri düğmesi içerik sütununa hizalı, akış içinde (sabit değil) */}
+      <div className="relative z-10 max-w-3xl mx-auto -mt-6 mb-4">
         <BackButton label="Geri" />
       </div>
 

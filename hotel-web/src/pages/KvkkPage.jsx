@@ -17,8 +17,8 @@ import { PRIVACY_NOTICE_VERSION, PRIVACY_NOTICE_DATE_LABEL, TERMS_PATH } from '.
 export default function KvkkPage() {
   return (
     <div className="min-h-screen py-10 px-4 relative ah-surface" style={{ background: 'var(--ah-page)' }}>
-      {/* Sabit sol üst geri butonu */}
-      <div className="fixed top-3 left-4 z-40">
+      {/* Geri düğmesi içerik sütununun sol üstünde, akış içinde (sabit değil: mobilde metnin üstüne biniyordu, geniş ekranda içerikten kopuktu) */}
+      <div className="relative z-10 max-w-3xl mx-auto -mt-6 mb-4">
         <BackButton label="Geri" />
       </div>
 

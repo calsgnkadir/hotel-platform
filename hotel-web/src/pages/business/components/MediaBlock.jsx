@@ -50,8 +50,7 @@ export default function MediaBlock({
 
   return (
     <div className="card p-5 space-y-5">
-      <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-          style={{ color: '#1f2937', borderColor: 'rgba(31, 41, 55, 0.10)' }}>
+      <h3 className="type-card pb-3 border-b" style={{ borderColor: 'var(--ah-line)' }}>
         Görseller
       </h3>
 
@@ -59,39 +58,40 @@ export default function MediaBlock({
       <div>
         <span id="media-logo-label" className="label">Logo</span>
         <div role="group" aria-labelledby="media-logo-label" className="flex items-center gap-4">
-          <div className="w-24 h-24 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden flex-shrink-0"
-               style={{ background: 'rgba(255, 255, 255, 0.75)', borderColor: 'rgba(31, 41, 55, 0.18)' }}>
+          <div className="w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden flex-shrink-0"
+               style={{ background: 'var(--ah-band)', borderColor: 'var(--ah-line-2)', color: 'var(--ah-ink-4)' }}>
             {logoUrl ? (
               <img src={`${cldImg(logoUrl, { w: ImgSize.avatarLg })}?v=${logoVersion}`} alt="Logo"
                    loading="lazy" decoding="async"
                    className="w-full h-full object-cover" />
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-ink-400 dark:text-ink-500">
+                   strokeWidth={1.5} stroke="currentColor" className="w-10 h-10" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21" />
               </svg>
             )}
           </div>
-          <div className="flex-1 space-y-2">
-            <label className="block px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full cursor-pointer text-center transition-all hover:-translate-y-0.5"
-                   style={logoUploading
-                     ? { background: 'rgba(31, 41, 55, 0.14)', color: '#1f2937', cursor: 'wait' }
-                     : { background: 'var(--ah-brand-gradient)', color: '#fff', boxShadow: 'none' }}>
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex flex-wrap gap-2">
+            {/* Dosya seçici: <label> ortak .btn-primary ölçeğinde (büyük harf /
+                hap biçim / elle renk yok). Odak halkası gizli input'tan gelir
+                (index.css: label.btn-*:has(input:focus-visible)). */}
+            <label className={`btn-primary !w-auto ${logoUploading ? 'opacity-60 !cursor-wait' : ''}`}
+                   aria-busy={logoUploading || undefined}>
               <input type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
                 onChange={handleLogoChange} disabled={logoUploading} />
               {logoUploading
-                ? 'Yükleniyor...'
-                : (logoUrl ? 'Logoyu Değiştir' : 'Logo Yükle')}
+                ? 'Yükleniyor…'
+                : (logoUrl ? 'Logoyu değiştir' : 'Logo yükle')}
             </label>
             {logoUrl && (
-              <button type="button" onClick={onLogoDelete}
-                className="block w-full px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-all hover:-translate-y-0.5"
-                style={{ background: 'rgba(107, 117, 116, 0.12)', color: '#6b7574', border: '1px solid rgba(107, 117, 116, 0.25)' }}>
-                Logoyu Kaldır
+              <button type="button" onClick={onLogoDelete} className="btn-danger">
+                Logoyu kaldır
               </button>
             )}
-            <p className="text-xs text-ink-400">Max 10 MB · JPG/PNG/WEBP/HEIC</p>
+            </div>
+            <p className="type-caption">En fazla 10 MB · JPG, PNG, WEBP, HEIC</p>
           </div>
         </div>
       </div>

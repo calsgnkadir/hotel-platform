@@ -202,7 +202,7 @@ export default function ProfileTab() {
   )
 
   return (
-    <div className="grid xl:grid-cols-[1fr_360px] gap-4 items-start max-w-[1400px] mx-auto">
+    <div className="grid xl:grid-cols-[1fr_360px] gap-4 items-start">
     <div className="space-y-5 min-w-0">
     <ProfileCompletenessCard data={completeness} />
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -381,7 +381,7 @@ function BusinessPreviewCard({ form, logoUrl }) {
         <h3 className="text-base tracking-[0.2em] uppercase"
             style={{ color: '#1f2937' }}>Canlı Önizleme</h3>
         <span className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: '#98a1a0' }}>aday bu şekilde görür</span>
+              style={{ color: 'var(--ah-ink-3)' }}>aday bu şekilde görür</span>
       </div>
       <div className="p-4">
         {/* Logo + isim */}
@@ -414,7 +414,7 @@ function BusinessPreviewCard({ form, logoUrl }) {
         {/* Konum */}
         {(form.district || form.address) && (
           <div className="flex items-start gap-2 text-[12px] mb-3"
-               style={{ color: '#6b7574' }}>
+               style={{ color: 'var(--ah-ink-3)' }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                  className="flex-shrink-0 mt-0.5" aria-hidden="true">

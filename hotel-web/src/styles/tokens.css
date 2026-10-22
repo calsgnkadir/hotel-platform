@@ -26,13 +26,13 @@
   /* ================== SURFACES ================== */
   --surface-base:     var(--ah-page);
   --surface-raised:   var(--ah-card);
-  --surface-floating: #f7f9f9;
+  --surface-floating: var(--ah-band);
 
   --bg-app:           var(--ah-page);
   --bg-surface:       var(--ah-card);
-  --bg-elevated:      #f7f9f9;
+  --bg-elevated:      var(--ah-band);
   --bg-subtle:        var(--ah-page);
-  --bg-muted:         #f1f4f4;
+  --bg-muted:         var(--ah-band);
 
   /* ================== BORDERS ================== */
   --hairline:        var(--ah-line);
@@ -100,12 +100,14 @@
   /* ================== ELEVATION — FAZ 26 ITEM 5 ==================
    * Duz olcek. Glow (0 0 Npx renkli) YOK. Referans: 1px hairline +
    * cok hafif notr golge. Derinlik golgeyle degil cizgiyle anlatilir. */
-  /* Yumusak derinlik — golge tinti sicak (kahve-gri) ve biraz daha belirgin;
-     kartlar artik tamamen duz degil (klinik his kirildi). */
+  /* Yumusak derinlik — golge tonu marka grafitinden (rgba(17,24,39,..) =
+     --ah-ink); notr gri yerine ink ailesiyle ayni renk ailesi. */
   --elev-0: none;
-  --elev-1: 0 1px 3px rgba(57, 57, 57, 0.08), 0 1px 2px rgba(57, 57, 57, 0.05);
-  --elev-2: 0 6px 18px rgba(57, 57, 57, 0.10);
-  --elev-3: 0 14px 34px rgba(57, 57, 57, 0.14);
+  --elev-1: 0 1px 3px rgba(17, 24, 39, 0.07), 0 1px 2px rgba(17, 24, 39, 0.04);
+  --elev-2: 0 6px 18px rgba(17, 24, 39, 0.09);
+  --elev-3: 0 14px 34px rgba(17, 24, 39, 0.13);
+  /* Hover golgesi (tiklanabilir kart) — eskiden 6 yerde elle yazilmisti. */
+  --elev-hover: 0 4px 14px rgba(17, 24, 39, 0.07);
 }
 
 /* ================== BODY / GLOBAL ================== */
@@ -322,11 +324,15 @@ body, .role-app-bg {
   --ah-brand-gradient: linear-gradient(135deg, var(--ah-brand) 0%, var(--ah-brand-hover) 100%);
   /* SICAK TABAN (kullanici: beyaz+teal fazla klinik/sert). Zemin, kenarlik ve
      ic yuzey soguk mavi-griden sicak kir-beyaza cekildi; kartlar temiz beyaz
-     kalir (sicak taban uzerinde ayrisir). Metin/kontrast degismedi. */
+     kalir (sicak taban uzerinde ayrisir). */
   --ah-page:#f2f0ea;  --ah-card:#ffffff;  --ah-line:#e7e3db;  --ah-line-2:#d9d3c8;
   /* FAZ B.5.1 — beyaz kart icinde ayrisan ic yuzey ("karar kutusu") */
   --ah-band:#f4f1ea;
-  --ah-ink:#12201f;   --ah-ink-2:#3f4b4a; --ah-ink-3:#5c6564; --ah-ink-4:#6b7574;  /* muted tonlar okunurluk icin koyulastirildi: ink-3 ~5.6:1, ink-4 ~4.8:1 (ikisi de AA) */
+  /* Metin tonlari grafit ailesi (2026-10-21; eskiden yesilimsi #12201f/#3f4b4a..
+     marka grafitiyle catisiyordu). Kontrast beyaz kart / sicak zemin #f2f0ea:
+     ink 17.7 / 15.6, ink-2 10.3 / 9.0, ink-3 7.6 / 6.6, ink-4 6.0 / 5.3 :1
+     (hepsi AA; ink-4 band #f4f1ea uzerinde de 5.3:1). */
+  --ah-ink:#111827;   --ah-ink-2:#374151; --ah-ink-3:#4b5563; --ah-ink-4:#5b6472;
   /* Semantik sinyal renkleri — MUTED (neon degil), grafit marka ile uyumlu.
      Sadece durum rozetleri + tehlikeli aksiyon + acil icin; marka gri her yerde kalir.
      Metin koyu, -soft pale zeminde AA okunur. (Onceden hepsi #6b7574'e ezilmisti.) */
@@ -365,7 +371,7 @@ body, .role-app-bg {
   .ah-job:hover .ah-btn--arrow svg { transform: none; }
 }
 
-.ah-chip { font-size: 12px; font-weight: 600; color: var(--ah-ink-2); background: #f1f4f4;
+.ah-chip { font-size: 12px; font-weight: 600; color: var(--ah-ink-2); background: var(--ah-band);
   border-radius: 6px; padding: 4px 9px; display: inline-flex; align-items: center; gap: 5px; }
 .ah-chip--sal { color: var(--ah-ok); background: var(--ah-ok-soft); font-variant-numeric: tabular-nums; }
 .ah-chip--ver { color: var(--ah-brand); background: var(--ah-brand-soft); }
@@ -386,35 +392,31 @@ body, .role-app-bg {
 .ah-job__link:focus-visible { outline: none; }
 .ah-job:has(.ah-job__link:focus-visible) { outline: 2px solid var(--ah-brand); outline-offset: 2px; }
 .ah-job .ah-save, .ah-job .ah-job__cta { position: relative; z-index: 1; }
-.ah-job:hover { border-color: #c3cccb; box-shadow: 0 4px 14px rgba(18,32,31,.07); }
+.ah-job:hover { border-color: var(--ah-line-2); box-shadow: var(--elev-hover); }
 /* FAZ C.2.2 — Acil ilan karti: sol kenarda kirmizi serit + hafif zemin tonu,
    listede goz ilk buraya gitsin. */
 .ah-job--urgent { border-color: var(--ah-danger); box-shadow: inset 3px 0 0 var(--ah-danger); }
 .ah-job--urgent:hover { border-color: var(--ah-danger); }
 .ah-job__top { display: flex; gap: 12px; }
 .ah-logo { width: 44px; height: 44px; border-radius: 9px; flex-shrink: 0; display: grid;
-  place-items: center; font-weight: 800; font-size: 17px; color: #fff; }
+  place-items: center; font-weight: 800; font-size: 17px; color: var(--ah-ink);
+  background: var(--ah-brand-soft); border: 1px solid var(--ah-line-2); box-sizing: border-box; }
 .ah-job__hd { min-width: 0; flex: 1; }
 .ah-job__title { font-size: 15.5px; font-weight: 650; color: var(--ah-ink); letter-spacing: -.01em; margin: 0; }
 .ah-job:hover .ah-job__title { color: var(--ah-brand); }
-/* FAZ B.5.4 — Tek meta satiri: isletme · puan · ilce · mesafe.
-   Eskiden __co (isletme) + __loc (ilce/mesafe) iki ayri satirdi, puan da
-   guven satirindaydi. Ayiraci CSS uretir: JSX'te kosullu "·" kalabaligi
+/* FAZ B.5.4 — Tek meta satiri: isletme · ilce · mesafe.
+   Eskiden __co (isletme) + __loc (ilce/mesafe) iki ayri satirdi. Ayiraci CSS uretir: JSX'te kosullu "·" kalabaligi
    olmaz ve bir oge gizlendiginde ayiraci da kendiliginden kaybolur.
    Dar kartta tasma yerine alt satira kirilir. */
 /* nowrap: sarilirsa alt satir oksuz bir "·" ile basliyor (cirkin). Bunun
    yerine satir tek kalir; yeri daralinca sadece ISLETME ADI kirpilir —
-   puan/ilce/mesafe kisa ve sabit, hepsi hep gorunur. */
+   ilce/mesafe kisa ve sabit, hep gorunur. */
 .ah-job__meta { font-size: 12.5px; color: var(--ah-ink-3); margin-top: 2px;
   display: flex; align-items: center; flex-wrap: nowrap; }
 .ah-job__meta > * + *::before { content: '·'; margin: 0 5px; color: var(--ah-ink-4); }
 .ah-job__meta > * { flex-shrink: 0; white-space: nowrap; }
 .ah-job__co-name { color: var(--ah-ink-2); font-weight: 500;
   flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-/* Puan: gap yerine svg margin — ::before ayiraci ile araya fazladan bosluk girmesin */
-.ah-job__rating { display: inline-flex; align-items: center; color: var(--ah-ink-2);
-  font-weight: 600; font-variant-numeric: tabular-nums; }
-.ah-job__rating svg { color: #a4a4a4; flex-shrink: 0; margin-right: 3px; }
 /* FAZ B.3 — kart uzerinde "sana X km" */
 .ah-job__dist { color: var(--ah-brand); font-weight: 600; }
 .ah-save { margin-left: auto; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--ah-line);
@@ -441,7 +443,7 @@ body, .role-app-bg {
   border-radius: 10px;
   background: var(--ah-band);
 }
-.ah-job:hover .ah-job__band { border-color: #c3cccb; }
+.ah-job:hover .ah-job__band { border-color: var(--ah-line-2); }
 .ah-job__when { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 /* Paket 2 — eski 9.5px BUYUK HARF ink-4 (band zemininde <4.5:1) → type-label */
 .ah-job__band-lbl {
@@ -459,12 +461,8 @@ body, .role-app-bg {
 .ah-job__wage-val { font-size: 17px; font-weight: 750; color: var(--ah-ink); letter-spacing: -0.015em; font-variant-numeric: tabular-nums; line-height: 1.15; }
 .ah-job__wage-unit { font-size: 12px; font-weight: 500; color: var(--ah-ink-3); }
 
-/* FAZ B.2 — Guven satiri: isletmenin sicilinin urun icinde gorunmesi.
-   Rozet degil, sayisal kanit: puan, tamamlanan is, dogrulama. */
-.ah-job__trust {
-  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-  padding: 2px 0;
-}
+/* FAZ B.2 — Guven ogeleri (etiket satirinda): dogrulama, tamamlanan is.
+   Puan/skor gosterilmez (urun karari). */
 .ah-trust-item {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 12px; font-weight: 600; color: var(--ah-ink-3);
@@ -565,8 +563,6 @@ body, .role-app-bg {
   font-size: 11px; line-height: 18px; font-weight: 700; text-align: center;
   box-shadow: 0 0 0 2px var(--ah-card); font-variant-numeric: tabular-nums;
 }
-
-.ah-trust-sub { font-weight: 500; color: var(--ah-ink-3); font-size: 12px; }
 
 /* ═══════════════════════════════════════════════════════════════════════
  * FAZ 26 — ITEM 1: KOYU token seti (opt-in).

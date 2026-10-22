@@ -74,9 +74,11 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           z-40: <main> z-index'li değil; içerikteki z-30'a kadar katmanlar üst
           menünün altında kalır, z-50+ pencereler (modal z-1000, ConfirmDialog z-50,
           CommandPalette z-100) üstüne çıkar. */}
+      {/* Beyaz zemin + alt çizgi tam genişlikte; içerik .ah-container (1440px)
+          ile sayfa başlığı ve gövdeyle aynı sütuna hizalanır. */}
       <header className="sticky top-0 z-40 border-b"
               style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
-        <div className="px-4 lg:px-8">
+        <div className="ah-container">
           <div className="h-14 flex items-center gap-4">
             <Link to={panelPathFor(role)} className="flex items-baseline gap-2 flex-shrink-0">
               <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '0.02em', color: 'var(--ah-ink)' }}>Kadrom</span>
@@ -111,17 +113,21 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
           Bilerek z-index / position yok (modal karartması sticky başlığın altına
           hapsolmasın). Mobilde alt sekme çubuğu kadar alt boşluk bırakılır. */}
       <main className="fade-in" style={{ color: 'var(--ah-ink-2)' }}>
-        <EmailVerifyBanner />
+        {/* Bant kendi mx-4/lg:mx-8 boşluğunu taşır; 1440px kaba ortalanır ki
+            geniş ekranda başlık ve içerikle aynı sol hizada dursun. */}
+        <div className="max-w-[1440px] mx-auto">
+          <EmailVerifyBanner />
+        </div>
 
         {/* Sayfa başlığı — mobilde görsel olarak gizli (alt çubuk hangi sayfada
             olunduğunu gösterir); ekran okuyucu için her zaman var. */}
-        <div className="px-4 lg:px-8 pt-3 md:pt-6 lg:pt-8 md:pb-5">
+        <div className="ah-container pt-3 md:pt-6 lg:pt-8 md:pb-5">
           <h1 className="sr-only md:not-sr-only type-page" style={{ color: 'var(--ah-ink)' }}>
             {currentTitle}
           </h1>
         </div>
 
-        <div className={`px-4 lg:px-8 ${barItems.length ? 'pb-28 md:pb-16' : 'pb-16'}`}>
+        <div className={`ah-container ${barItems.length ? 'pb-28 md:pb-16' : 'pb-16'}`}>
           {children}
         </div>
       </main>

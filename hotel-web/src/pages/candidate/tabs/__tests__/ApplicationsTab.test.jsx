@@ -83,7 +83,7 @@ describe('Aday ApplicationsTab — işletme logosu', () => {
     expect(boxes).toHaveLength(2)
     for (const b of boxes) {
       expect(b).toHaveTextContent('D')
-      expect(b.style.background).toBe('var(--ah-brand)')
+      expect(b.style.background).toBe('var(--ah-brand-soft)')
     }
   })
 })

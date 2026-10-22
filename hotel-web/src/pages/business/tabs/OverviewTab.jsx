@@ -44,7 +44,7 @@ export default function OverviewTab({ applications = [], onTabChange }) {
     .slice(0, RECENT_LIMIT)
 
   return (
-    <div className="space-y-4 max-w-5xl">
+    <div className="space-y-4">
       <TodayWidget applications={applications} />
 
       <ul className="grid grid-cols-2 sm:grid-cols-4 gap-2.5" data-testid="kpi-strip" aria-label="Özet sayılar">
