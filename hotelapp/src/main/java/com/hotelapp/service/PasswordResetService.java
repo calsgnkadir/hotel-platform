@@ -35,6 +35,9 @@ import java.util.UUID;
 @Slf4j
 public class PasswordResetService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final EmailService emailService;
@@ -63,14 +66,14 @@ public class PasswordResetService {
         User user = userOpt.get();
 
         // Önceki açık token'ları kapat (sadece son link çalışsın)
-        tokenRepository.invalidateAllActiveForUser(user.getId(), LocalDateTime.now());
+        tokenRepository.invalidateAllActiveForUser(user.getId(), LocalDateTime.now(clock));
 
         // Yeni token oluştur
         String token = UUID.randomUUID().toString().replace("-", "");
         PasswordResetToken prt = PasswordResetToken.builder()
                 .token(token)
                 .user(user)
-                .expiresAt(LocalDateTime.now().plusHours(expiryHours))
+                .expiresAt(LocalDateTime.now(clock).plusHours(expiryHours))
                 .build();
         tokenRepository.save(prt);
 
@@ -137,7 +140,7 @@ public class PasswordResetService {
         userRepository.save(user);
 
         // Token'ı tek-kullanımlık olarak işaretle
-        prt.setUsedAt(LocalDateTime.now());
+        prt.setUsedAt(LocalDateTime.now(clock));
         tokenRepository.save(prt);
 
         // Guvenlik: sifirlama sonrasi tum mevcut oturumlari (refresh token) iptal et —

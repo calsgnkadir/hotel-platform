@@ -64,7 +64,7 @@ public class UserPrincipal implements UserDetails {
     @Override
     public boolean isAccountNonLocked() {
         LocalDateTime ban = user.getBannedUntil();
-        return ban == null || ban.isBefore(LocalDateTime.now());
+        return ban == null || ban.isBefore(LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul")));
     }
 
     @Override

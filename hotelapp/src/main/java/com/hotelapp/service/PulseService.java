@@ -31,6 +31,9 @@ import java.time.LocalDateTime;
 @Slf4j
 public class PulseService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final JobListingRepository jobListingRepository;
     private final ShiftSlotRepository shiftSlotRepository;
     private final ApplicationRepository applicationRepository;
@@ -39,14 +42,14 @@ public class PulseService {
 
     @Transactional(readOnly = true)
     public PulseDto snapshot() {
-        LocalDateTime hourAgo = LocalDateTime.now().minusHours(1);
-        LocalDate today = LocalDate.now();
+        LocalDateTime hourAgo = LocalDateTime.now(clock).minusHours(1);
+        LocalDate today = LocalDate.now(clock);
         return PulseDto.builder()
                 .activeListings(jobListingRepository.countByStatus(ListingStatus.ACTIVE))
                 .openShifts(shiftSlotRepository.countOpenSlots(today))
                 .applicationsLastHour(applicationRepository.countByCreatedAtAfter(hourAgo))
                 .onlineUsers(presenceService.onlineUserCount())
-                .generatedAt(LocalDateTime.now())
+                .generatedAt(LocalDateTime.now(clock))
                 .build();
     }
 

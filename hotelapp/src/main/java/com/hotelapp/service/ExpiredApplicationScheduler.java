@@ -17,6 +17,9 @@ import java.util.List;
 @Slf4j
 public class ExpiredApplicationScheduler {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final ApplicationRepository applicationRepository;
     private final StandbyService standbyService;   // FAZ C.1
     private final SgkReminderService sgkReminderService;   // FAZ C.3
@@ -25,7 +28,7 @@ public class ExpiredApplicationScheduler {
     @Scheduled(cron = "${app.scheduling.expire-applications-cron:0 0 2 * * *}")
     @Transactional
     public void markExpiredApplications() {
-        List<Application> expired = applicationRepository.findExpiredApplications(LocalDateTime.now());
+        List<Application> expired = applicationRepository.findExpiredApplications(LocalDateTime.now(clock));
 
         expired.forEach(app -> {
             app.setStatus(ApplicationStatus.EXPIRED);
@@ -41,7 +44,7 @@ public class ExpiredApplicationScheduler {
                initialDelayString = "${app.scheduling.hold-expiry-initial-delay-ms:0}")
     @Transactional
     public void expireOverdueHolds() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         List<Application> overdue = applicationRepository
                 .findByStatusAndHoldDeadlineBefore(ApplicationStatus.HELD, now);
         if (overdue.isEmpty()) return;

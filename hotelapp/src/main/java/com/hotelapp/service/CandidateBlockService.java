@@ -44,6 +44,9 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class CandidateBlockService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     /** Engel aninda reddedilen aktif basvuru durumlari. */
     static final Set<ApplicationStatus> ACTIVE_STATUSES = Set.of(
             ApplicationStatus.PENDING,
@@ -121,7 +124,7 @@ public class CandidateBlockService {
      * yedege gecer.
      */
     private int rejectActiveApplications(Long businessId, Long candidateId) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         List<Long> cascadeFor = new ArrayList<>();
         int count = 0;
         for (Application app : applicationRepository.findAllByCandidateId(candidateId)) {

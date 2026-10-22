@@ -163,6 +163,77 @@ class ApplicationServiceShiftRulesTest {
         }
 
         @Test
+        @DisplayName("Kabul: aday satırı çakışma kontrolünden ÖNCE kilitlenir; sıra aday → başvuru → slot")
+        void accept_locksCandidateBeforeOverlapAndSeats() throws Exception {
+            at(DAY.atTime(6, 0));
+            Application app = app(ApplicationStatus.REVIEWING, slot(901L, DAY.plusDays(1), 8, 16));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(shiftSlotRepository.incrementFilledIfAvailable(901L)).thenReturn(1);
+
+            service.reviewApplication(APP_ID, OWNER_ID, accept());
+
+            InOrder order = inOrder(userRepository, applicationRepository, shiftSlotRepository);
+            order.verify(userRepository).findByIdForUpdate(CANDIDATE_ID);
+            order.verify(applicationRepository).findAllByCandidateIdAndStatus(CANDIDATE_ID, ApplicationStatus.ACCEPTED);
+            order.verify(applicationRepository).saveAndFlush(app);
+            order.verify(shiftSlotRepository).incrementFilledIfAvailable(901L);
+
+            Transactional tx = ApplicationService.class
+                    .getMethod("reviewApplication", Long.class, Long.class, ReviewRequest.class)
+                    .getAnnotation(Transactional.class);
+            assertThat(tx.isolation()).isEqualTo(org.springframework.transaction.annotation.Isolation.READ_COMMITTED);
+        }
+
+        @Test
+        @DisplayName("Red: aday satırı kilitlenmez")
+        void reject_doesNotLockCandidate() {
+            Application app = app(ApplicationStatus.REVIEWING, slot(901L, DAY.plusDays(1), 8, 16));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            ReviewRequest r = new ReviewRequest();
+            r.setDecision(ApplicationStatus.REJECTED);
+
+            service.reviewApplication(APP_ID, OWNER_ID, r);
+
+            verify(userRepository, never()).findByIdForUpdate(any());
+        }
+
+        @Test
+        @DisplayName("HOLD onayı: aday satırı çakışma kontrolünden ve koltuktan önce kilitlenir")
+        void holdAccept_locksCandidateFirst() throws Exception {
+            at(DAY.atTime(6, 0));
+            Application app = app(ApplicationStatus.HELD, slot(901L, DAY.plusDays(1), 8, 16));
+            app.setHoldDeadline(DAY.atTime(12, 0));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(shiftSlotRepository.incrementFilledIfAvailable(901L)).thenReturn(1);
+
+            service.respondToHold(APP_ID, CANDIDATE_ID, true);
+
+            InOrder order = inOrder(userRepository, applicationRepository, shiftSlotRepository);
+            order.verify(userRepository).findByIdForUpdate(CANDIDATE_ID);
+            order.verify(applicationRepository).findAllByCandidateIdAndStatus(CANDIDATE_ID, ApplicationStatus.ACCEPTED);
+            order.verify(applicationRepository).saveAndFlush(app);
+            order.verify(shiftSlotRepository).incrementFilledIfAvailable(901L);
+
+            Transactional tx = ApplicationService.class
+                    .getMethod("respondToHold", Long.class, Long.class, boolean.class)
+                    .getAnnotation(Transactional.class);
+            assertThat(tx.isolation()).isEqualTo(org.springframework.transaction.annotation.Isolation.READ_COMMITTED);
+        }
+
+        @Test
+        @DisplayName("HOLD süresi enjekte saatle ölçülür (JVM saatinden bağımsız)")
+        void holdDeadline_usesInjectedClock() {
+            at(DAY.atTime(12, 1));
+            Application app = app(ApplicationStatus.HELD, slot(901L, DAY.plusDays(1), 8, 16));
+            app.setHoldDeadline(DAY.atTime(12, 0));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+
+            assertThatThrownBy(() -> service.respondToHold(APP_ID, CANDIDATE_ID, true))
+                    .isInstanceOf(OfferExpiredException.class);
+            verify(userRepository, never()).findByIdForUpdate(any());
+        }
+
+        @Test
         @DisplayName("Kabul: ikinci slot dolduysa 422 'Bu vardiya doldu' (transaction geri alınır), bildirim/audit yok")
         void accept_secondSlotFull_throws() {
             at(DAY.atTime(6, 0));
@@ -193,6 +264,44 @@ class ApplicationServiceShiftRulesTest {
                     .isInstanceOf(BusinessRuleException.class)
                     .hasMessageContaining("Bu vardiya doldu");
             verify(outboxService, never()).appendAuditLog(any());
+        }
+    }
+
+    // ================================================================
+    @Nested
+    @DisplayName("Saat — başvuruda vardiya başlangıcı enjekte saatle")
+    class ApplyClock {
+
+        private ApplicationRequest request(long slotId) {
+            ApplicationRequest req = new ApplicationRequest();
+            req.setJobListingId(LISTING_ID);
+            req.setSlotIds(List.of(slotId));
+            return req;
+        }
+
+        private JobListing listingWith(ShiftSlot s) {
+            JobListing l = listing();
+            l.setShiftSlots(new java.util.ArrayList<>(List.of(s)));
+            s.setJobListing(l);
+            s.setSlotsFilled(0);
+            return l;
+        }
+
+        @Test
+        @DisplayName("Vardiya enjekte saate göre başladıysa başvuru 422")
+        void startedByClock_refused() {
+            at(DAY.atTime(8, 1));
+            ShiftSlot s = slot(901L, DAY, 8, 16);
+            when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(listingWith(s)));
+            when(applicationRepository.findFirstByCandidateIdAndJobListingIdAndStatusIn(anyLong(), anyLong(), any()))
+                    .thenReturn(Optional.empty());
+            when(shiftSlotRepository.findById(901L)).thenReturn(Optional.of(s));
+
+            assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, request(901L)))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("Bu vardiya başladı");
+            verify(applicationRepository, never()).save(any());
         }
     }
 

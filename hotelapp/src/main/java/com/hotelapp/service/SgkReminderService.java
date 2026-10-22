@@ -35,6 +35,9 @@ import java.util.List;
 @Slf4j
 public class SgkReminderService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final ApplicationRepository applicationRepository;
     private final NotificationService notificationService;
     private final OutboxService outboxService;
@@ -47,7 +50,7 @@ public class SgkReminderService {
      */
     @Transactional
     public int sendDueReminders() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         LocalDate tomorrow = today.plusDays(1);
 
         List<Application> due = applicationRepository
@@ -58,7 +61,7 @@ public class SgkReminderService {
         for (Application app : due) {
             try {
                 notifyOwner(app);
-                app.setSgkReminderSentAt(LocalDateTime.now());
+                app.setSgkReminderSentAt(LocalDateTime.now(clock));
                 applicationRepository.save(app);
                 sent++;
             } catch (Exception ex) {
@@ -91,7 +94,7 @@ public class SgkReminderService {
     /** En yakın vardiyanın "bugün 16:00" / "yarın 08:00" etiketi. */
     private String nearestSlotLabel(Application app) {
         if (app.getRequestedSlots() == null) return null;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         return app.getRequestedSlots().stream()
                 .filter(s -> s.getDate() != null && !s.getDate().isBefore(today))
                 .min((a, b) -> {
@@ -103,7 +106,7 @@ public class SgkReminderService {
     }
 
     private String slotLabel(ShiftSlot s) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         String day = s.getDate().isEqual(today) ? "bugün"
                 : s.getDate().isEqual(today.plusDays(1)) ? "yarın"
                 : s.getDate().getDayOfMonth() + "." + s.getDate().getMonthValue();

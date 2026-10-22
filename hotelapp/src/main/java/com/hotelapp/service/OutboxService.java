@@ -28,6 +28,9 @@ import java.time.LocalDateTime;
 @Slf4j
 public class OutboxService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     public static final String TYPE_AUDIT_LOG = "AUDIT_LOG";
     public static final String TYPE_EMAIL     = "EMAIL"; // FAZ D.9
 
@@ -47,7 +50,7 @@ public class OutboxService {
         OutboxEvent row = OutboxEvent.builder()
                 .eventType(TYPE_EMAIL)
                 .payload(payload)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(clock))
                 .attempts(0)
                 .build();
         outboxRepository.save(row);
@@ -66,7 +69,7 @@ public class OutboxService {
         OutboxEvent row = OutboxEvent.builder()
                 .eventType(TYPE_AUDIT_LOG)
                 .payload(payload)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(clock))
                 .attempts(0)
                 .build();
         outboxRepository.save(row);

@@ -36,6 +36,9 @@ import java.util.List;
 @Slf4j
 public class SupportTicketService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private static final int DAILY_LIMIT_PER_USER = 5;   // spam koruması
     private static final int MAX_ADMIN_PAGE       = 100;
 
@@ -50,7 +53,7 @@ public class SupportTicketService {
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", userId));
 
         // Anti-spam: son 24 saatte aynı kullanıcıdan kaç bilet?
-        var since = LocalDateTime.now().minusHours(24);
+        var since = LocalDateTime.now(clock).minusHours(24);
         long todayCount = ticketRepository.findAllByUserIdOrderByCreatedAtDesc(userId).stream()
                 .filter(t -> t.getCreatedAt() != null && t.getCreatedAt().isAfter(since))
                 .count();
@@ -101,7 +104,7 @@ public class SupportTicketService {
             t.setAdminNote(adminNote.trim());
         }
         if (newStatus == SupportStatus.RESOLVED || newStatus == SupportStatus.DISMISSED) {
-            t.setResolvedAt(LocalDateTime.now());
+            t.setResolvedAt(LocalDateTime.now(clock));
         }
         ticketRepository.save(t);
 

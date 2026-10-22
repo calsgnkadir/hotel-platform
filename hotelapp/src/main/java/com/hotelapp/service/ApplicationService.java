@@ -92,7 +92,7 @@ public class ApplicationService {
         // başvuru alınmaz: işletme başvuruyu göremez/yanıtlayamaz.
         User owner = listing.getBusiness() != null ? listing.getBusiness().getOwner() : null;
         if (owner != null && (!owner.isEnabled()
-                || (owner.getBannedUntil() != null && owner.getBannedUntil().isAfter(LocalDateTime.now())))) {
+                || (owner.getBannedUntil() != null && owner.getBannedUntil().isAfter(LocalDateTime.now(clock))))) {
             throw new BusinessRuleException(
                     "Bu işletme şu anda başvuru kabul etmiyor. Başka bir ilana göz atabilirsin.");
         }
@@ -162,7 +162,7 @@ public class ApplicationService {
                 // ESKİ: sadece tarih kontrolü → bugün başlamış ama henüz bitmemiş vardiyaya başvuru kabul oluyordu.
                 if (slot.getDate() != null && slot.getStartTime() != null) {
                     java.time.LocalDateTime slotStart = ShiftWindow.startAt(slot.getDate(), slot.getStartTime());
-                    if (slotStart.isBefore(java.time.LocalDateTime.now())) {
+                    if (slotStart.isBefore(java.time.LocalDateTime.now(clock))) {
                         throw new BusinessRuleException(
                                 "Bu vardiya başladı/geçti: " + slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime());
                     }
@@ -213,7 +213,7 @@ public class ApplicationService {
         }
 
         application.setStatus(ApplicationStatus.REVIEWING);
-        application.setReviewedAt(LocalDateTime.now());
+        application.setReviewedAt(LocalDateTime.now(clock));
         applicationRepository.save(application);
         return applicationMapper.toResponse(application);
     }
@@ -221,7 +221,9 @@ public class ApplicationService {
     // ----------------------------------------------------------------
     // BUSINESS OWNER: Accept or reject application
     // ----------------------------------------------------------------
-    @Transactional
+    // READ_COMMITTED: aday kilidi alindiktan sonraki cakisma sorgusu taze veriyi gorsun
+    // (bkz. AcceptanceGuard.lockCandidate).
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ApplicationResponse reviewApplication(Long applicationId, Long ownerId, ReviewRequest request) {
         Application application = getApplicationForBusinessOwner(applicationId, ownerId);
 
@@ -241,6 +243,8 @@ public class ApplicationService {
 
         // Kabul kapısı: ilan yayında, işletme aktif, başlamış vardiyalar çıkar, çakışma yok.
         if (request.getDecision() == ApplicationStatus.ACCEPTED) {
+            // Ayni adayin eszamanli kabulleri sirayla (cakisma kontrolu yarissiz).
+            AcceptanceGuard.lockCandidate(application, userRepository);
             AcceptanceGuard.check(application, applicationRepository, LocalDateTime.now(clock));
         }
 
@@ -252,7 +256,7 @@ public class ApplicationService {
         application.setNote(request.getNote());
         // Isletmenin karar ani: incelemeye alinmadan dogrudan karar verildiyse de dolsun
         // (yanit suresi ve "bu isletmede tamamlanan is" sayimlari buna bakar).
-        if (application.getReviewedAt() == null) application.setReviewedAt(LocalDateTime.now());
+        if (application.getReviewedAt() == null) application.setReviewedAt(LocalDateTime.now(clock));
         // FAZ C.1 — Yedekteki aday dogrudan sonuclandirildiysa yedek alanlari temizlenir;
         // aksi halde acik kalan teklif scheduler'i yaniltir.
         if (current == ApplicationStatus.STANDBY) {
@@ -336,8 +340,8 @@ public class ApplicationService {
             throw BusinessRuleException.keyed("error.application.holdOnlyPending", s.label());
         }
         app.setStatus(ApplicationStatus.HELD);
-        app.setHoldDeadline(LocalDateTime.now().plusHours(24));
-        if (app.getReviewedAt() == null) app.setReviewedAt(LocalDateTime.now());
+        app.setHoldDeadline(LocalDateTime.now(clock).plusHours(24));
+        if (app.getReviewedAt() == null) app.setReviewedAt(LocalDateTime.now(clock));
         applicationRepository.save(app);
 
         // FAZ 18 — Audit
@@ -360,7 +364,8 @@ public class ApplicationService {
     // ----------------------------------------------------------------
     // FAZ 2/#28 — CANDIDATE: HELD durumuna cevap ver (Onayla/Reddet)
     // ----------------------------------------------------------------
-    @Transactional(noRollbackFor = com.hotelapp.exception.OfferExpiredException.class)
+    @Transactional(noRollbackFor = com.hotelapp.exception.OfferExpiredException.class,
+            isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ApplicationResponse respondToHold(Long applicationId, Long candidateId, boolean accept) {
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
@@ -370,7 +375,7 @@ public class ApplicationService {
         if (app.getStatus() != ApplicationStatus.HELD) {
             throw BusinessRuleException.keyed("error.application.holdRespondOnly", app.getStatus().label());
         }
-        if (app.getHoldDeadline() != null && LocalDateTime.now().isAfter(app.getHoldDeadline())) {
+        if (app.getHoldDeadline() != null && LocalDateTime.now(clock).isAfter(app.getHoldDeadline())) {
             // Suresi gecmis: EXPIRED kalici olur (noRollbackFor), sonra 422.
             app.setStatus(ApplicationStatus.EXPIRED);
             applicationRepository.save(app);
@@ -380,6 +385,7 @@ public class ApplicationService {
         if (accept) {
             // Engel aninda HELD basvurular REJECTED olur; bu kontrol yaris durumuna karsi yedek.
             requireNotBlockedByBusiness(app.getJobListing().getBusiness().getId(), candidateId);
+            AcceptanceGuard.lockCandidate(app, userRepository);
             AcceptanceGuard.check(app, applicationRepository, LocalDateTime.now(clock));
             // ACCEPTED'e gec (iyimser kilit) + koltuklari atomik al (hepsi ya da hicbiri)
             app.setStatus(ApplicationStatus.ACCEPTED);
@@ -552,7 +558,7 @@ public class ApplicationService {
         LocalDateTime bannedUntil = null;
         if (remaining <= 0) {
             // Otomatik ban: 30 gün
-            bannedUntil = LocalDateTime.now().plusDays(30);
+            bannedUntil = LocalDateTime.now(clock).plusDays(30);
             candidate.setBannedUntil(bannedUntil);
             // Ban sonrası tekrar 3 hak tanı
             candidate.setStrikesRemaining(3);

@@ -15,6 +15,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT u FROM User u WHERE u.id = :id")
     Optional<User> findByIdForPhoneVerification(@Param("id") Long id);
+
+    /**
+     * Kabul kapısı: aynı adayın eşzamanlı kabulleri (farklı ilanlarda bile) bu satır
+     * kilidinde sırayla işlenir; çakışma kontrolü diğer kabulü görmeden geçemez.
+     * Kilit sırası: önce aday satırı, sonra başvuru satırı ve slot koltukları.
+     */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM User u WHERE u.id = :id")
+    Optional<User> findByIdForUpdate(@Param("id") Long id);
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
     List<User> findAllByRole(Role role);

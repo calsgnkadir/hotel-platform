@@ -35,6 +35,9 @@ import java.util.List;
 @Slf4j
 public class OutboxRelay {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private static final int BATCH_SIZE = 20;
     /** Public: hem repository query'sinde hem de OutboxStatusWriter'da magic 5 tekrar etmesin. */
     public static final int MAX_ATTEMPTS = 10;
@@ -54,7 +57,7 @@ public class OutboxRelay {
                initialDelayString = "${app.outbox.relayInitialDelayMs:0}")
     public void relay() {
         List<OutboxEvent> pending = outboxRepository.findDue(
-                MAX_ATTEMPTS, java.time.LocalDateTime.now(), PageRequest.of(0, BATCH_SIZE));
+                MAX_ATTEMPTS, java.time.LocalDateTime.now(clock), PageRequest.of(0, BATCH_SIZE));
         if (pending.isEmpty()) return;
 
         log.debug("[OUTBOX-RELAY] {} pending event islenecek", pending.size());
@@ -125,7 +128,7 @@ public class OutboxRelay {
     @Scheduled(cron = "${app.outbox.cleanupCron:0 0 4 * * *}")
     @org.springframework.transaction.annotation.Transactional
     public void cleanupProcessed() {
-        var cutoff = java.time.LocalDateTime.now().minusDays(30);
+        var cutoff = java.time.LocalDateTime.now(clock).minusDays(30);
         int deleted = outboxRepository.deleteProcessedOlderThan(cutoff);
         if (deleted > 0) {
             log.info("[OUTBOX-CLEANUP] {} eski islenmis event silindi (>30 gun)", deleted);

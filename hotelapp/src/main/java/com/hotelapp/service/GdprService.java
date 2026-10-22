@@ -47,6 +47,9 @@ import java.util.Map;
 @Slf4j
 public class GdprService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     /** Hesap silme istegi sonrasi PII anonymize edilene kadar bekleme suresi. */
     public static final int DELETION_GRACE_DAYS = 30;
 
@@ -77,7 +80,7 @@ public class GdprService {
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", userId));
 
         Map<String, Object> export = new LinkedHashMap<>();
-        export.put("exportedAt", LocalDateTime.now().toString());
+        export.put("exportedAt", LocalDateTime.now(clock).toString());
         export.put("legalBasis", "KVKK Madde 11 - verilere erişim hakkı");
 
         Map<String, Object> profile = new LinkedHashMap<>();
@@ -150,7 +153,7 @@ public class GdprService {
             return;
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         u.setEnabled(false);
         if (u.getRole() == Role.CANDIDATE) u.setAvailableUntil(null);   // "hemen musait" havuzundan cik
         u.setDeletionRequestedAt(now);
@@ -197,7 +200,7 @@ public class GdprService {
      */
     @Scheduled(cron = "${app.scheduling.gdpr-anonymize-cron:0 0 3 * * *}")
     public void anonymizeDueAccounts() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         List<Long> dueIds = userRepository.findAllByScheduledAnonymizeAtBefore(now).stream()
                 .map(User::getId).toList();
         if (dueIds.isEmpty()) return;

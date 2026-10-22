@@ -28,6 +28,9 @@ import java.util.UUID;
 @Slf4j
 public class EmailVerificationService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final UserRepository userRepository;
     private final EmailVerificationTokenRepository tokenRepository;
     private final EmailService emailService;
@@ -47,13 +50,13 @@ public class EmailVerificationService {
             return;
         }
 
-        tokenRepository.invalidateAllActiveForUser(user.getId(), LocalDateTime.now());
+        tokenRepository.invalidateAllActiveForUser(user.getId(), LocalDateTime.now(clock));
 
         String token = UUID.randomUUID().toString().replace("-", "");
         EmailVerificationToken evt = EmailVerificationToken.builder()
                 .token(token)
                 .user(user)
-                .expiresAt(LocalDateTime.now().plusHours(expiryHours))
+                .expiresAt(LocalDateTime.now(clock).plusHours(expiryHours))
                 .build();
         tokenRepository.save(evt);
 
@@ -87,11 +90,11 @@ public class EmailVerificationService {
 
         User user = evt.getUser();
         if (!user.isEmailVerified()) {
-            user.setEmailVerifiedAt(LocalDateTime.now());
+            user.setEmailVerifiedAt(LocalDateTime.now(clock));
             userRepository.save(user);
         }
 
-        evt.setUsedAt(LocalDateTime.now());
+        evt.setUsedAt(LocalDateTime.now(clock));
         tokenRepository.save(evt);
 
         log.info("[EMAIL-VERIFY] Email dogrulandi: userId={}", user.getId());

@@ -48,6 +48,9 @@ import java.util.UUID;
 @Slf4j
 public class BillingService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final SubscriptionRepository subscriptionRepository;
     private final BusinessRepository businessRepository;
     private final JobListingRepository jobListingRepository;
@@ -203,7 +206,7 @@ public class BillingService {
                initialDelayString = "${app.billing.reconcile-initial-delay-ms:120000}")
     public int reconcilePendingCheckouts() {
         if (!iyzico.isConfigured()) return 0;
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         List<PaymentCheckout> pending = checkoutRepository
                 .findTop50ByStatusAndCreatedAtBeforeOrderByCreatedAtAsc(
                         PaymentCheckoutStatus.PENDING, now.minus(RECONCILE_AFTER));
@@ -288,7 +291,7 @@ public class BillingService {
             log.info("[BILLING] ayni odeme tekrar geldi, yok sayildi — business={}", businessId);
             return true;
         }
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime base = (s.getCurrentPeriodEnd() != null && s.getCurrentPeriodEnd().isAfter(now))
                 ? s.getCurrentPeriodEnd() : now;      // erken yenileme kalan günleri korur
         s.setStatus(SubscriptionStatus.ACTIVE);
@@ -318,7 +321,7 @@ public class BillingService {
     private void complete(PaymentCheckout pc, PaymentCheckoutStatus status, BigDecimal paidPrice) {
         pc.setStatus(status);
         pc.setPaidPrice(paidPrice);
-        pc.setCompletedAt(LocalDateTime.now());
+        pc.setCompletedAt(LocalDateTime.now(clock));
         checkoutRepository.save(pc);
     }
 
@@ -413,7 +416,7 @@ public class BillingService {
                     .business(b)
                     .status(SubscriptionStatus.TRIAL)   // "ücretsiz plan" başlangıç durumu
                     .plan(planName)
-                    .trialEndsAt(LocalDateTime.now().plusDays(trialDays))
+                    .trialEndsAt(LocalDateTime.now(clock).plusDays(trialDays))
                     .build();
             return subscriptionRepository.save(s);
         });
@@ -426,7 +429,7 @@ public class BillingService {
     private boolean isPaid(Subscription s) {
         return (s.getStatus() == SubscriptionStatus.ACTIVE || s.getStatus() == SubscriptionStatus.CANCELED)
                 && s.getCurrentPeriodEnd() != null
-                && s.getCurrentPeriodEnd().isAfter(LocalDateTime.now());
+                && s.getCurrentPeriodEnd().isAfter(LocalDateTime.now(clock));
     }
 
     /**

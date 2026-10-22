@@ -23,6 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReportService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
 
@@ -77,7 +80,7 @@ public class ReportService {
                 .orElseThrow(() -> new ResourceNotFoundException("Şikayet", reportId));
         report.setStatus(newStatus);
         report.setAdminNote(adminNote);
-        report.setReviewedAt(LocalDateTime.now());
+        report.setReviewedAt(LocalDateTime.now(clock));
         reportRepository.save(report);
         return toDto(report);
     }

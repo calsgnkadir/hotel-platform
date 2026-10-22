@@ -73,7 +73,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             // Yasakli / devre disi (silme talebi) hesap Google ile de oturum acamaz
             // (form girisinde DaoAuthenticationProvider ayni kontrolu yapar).
             if (!user.isEnabled() || (user.getBannedUntil() != null
-                    && user.getBannedUntil().isAfter(java.time.LocalDateTime.now()))) {
+                    && user.getBannedUntil().isAfter(java.time.LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul"))))) {
                 log.warn("[OAUTH] Kapalı/yasaklı hesapla Google girişi reddedildi: userId={}", user.getId());
                 throw new OAuth2AuthenticationException("Hesap kullanıma kapalı.");
             }

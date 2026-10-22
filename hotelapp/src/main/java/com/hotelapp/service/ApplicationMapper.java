@@ -23,6 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApplicationMapper {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final FileStorageService fileStorageService;
     private final ConversationRepository conversationRepository;
 
@@ -71,7 +74,7 @@ public class ApplicationMapper {
                         app.getStatus() == com.hotelapp.enums.ApplicationStatus.STANDBY
                         && app.getStandbyOfferedAt() != null
                         && app.getStandbyDeadline() != null
-                        && app.getStandbyDeadline().isAfter(java.time.LocalDateTime.now()))
+                        && app.getStandbyDeadline().isAfter(java.time.LocalDateTime.now(clock)))
                 .workCompleted(isWorkCompleted(app))
                 .candidate(buildCandidateSummary(app.getCandidate()))
                 .listing(ApplicationResponse.ListingSummary.builder()

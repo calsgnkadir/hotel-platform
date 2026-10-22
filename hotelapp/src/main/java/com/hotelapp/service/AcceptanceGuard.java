@@ -8,6 +8,7 @@ import com.hotelapp.enums.ApplicationStatus;
 import com.hotelapp.enums.ListingStatus;
 import com.hotelapp.exception.BusinessRuleException;
 import com.hotelapp.repository.ApplicationRepository;
+import com.hotelapp.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,6 +42,24 @@ final class AcceptanceGuard {
             "Bu işletmenin hesabı şu anda aktif değil; başvuru kabul edilemez.";
     static final String NO_FUTURE_SHIFT =
             "Başvurudaki vardiyaların hepsi başladı ya da geçti; başvuru kabul edilemez.";
+
+    /**
+     * Adayın satırını PESSIMISTIC_WRITE ile kilitler. Tüm kabul yolları {@link #check}'ten
+     * ÖNCE çağırır: aynı adayın iki farklı ilandaki eşzamanlı kabulü sırayla işlenir ve
+     * ikincisi birincinin ACCEPTED kaydını görüp çakışmada 422 alır.
+     *
+     * <p>Kilit sırası (deadlock'a karşı): aday satırı → başvuru satırı (saveAndFlush,
+     * @Version) → slot koltukları (SlotSeats, id sırasıyla). Kabul yollarının hiçbiri
+     * slot/başvuru kilidi tutarken aday satırını beklemez.
+     *
+     * <p>Çağıran transaction READ_COMMITTED olmalı: MySQL'in varsayılan REPEATABLE READ'inde
+     * kilitten önceki ilk okuma anlık görüntüyü sabitler ve çakışma sorgusu kilidi bekleyip
+     * aldıktan sonra bile diğer kabulü göremezdi.
+     */
+    static void lockCandidate(Application app, UserRepository userRepository) {
+        if (app.getCandidate() == null || app.getCandidate().getId() == null) return;
+        userRepository.findByIdForUpdate(app.getCandidate().getId());
+    }
 
     static void check(Application app, ApplicationRepository applicationRepository, LocalDateTime now) {
         requireListingOpen(app.getJobListing(), now);

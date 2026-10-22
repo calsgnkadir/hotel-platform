@@ -56,6 +56,7 @@ public class StandbyService {
     private final ApplicationMapper applicationMapper;
     private final SmsService smsService;   // yedek kanal (push'a EK) — acil aktivasyonda
     private final CandidateBlockRepository candidateBlockRepository;   // isletme adayi engeller
+    private final com.hotelapp.repository.UserRepository userRepository; // kabulde aday satiri kilidi
 
     /** Vardiya saatleri Türkiye yerel saati (testte sabitlenebilir). */
     java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
@@ -255,7 +256,9 @@ public class StandbyService {
      * Yedek aday acil teklifi kabul/ret eder.
      * Suresi gecmis teklif: EXPIRED + siradaki yedege gecis KALICI olur, sonra 422.
      */
-    @Transactional(noRollbackFor = OfferExpiredException.class)
+    // READ_COMMITTED: aday kilidi alindiktan sonraki cakisma sorgusu taze veriyi gorsun.
+    @Transactional(noRollbackFor = OfferExpiredException.class,
+            isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ApplicationResponse respondToOffer(Long applicationId, Long candidateId, boolean accept) {
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
@@ -266,7 +269,7 @@ public class StandbyService {
         if (app.getStatus() != ApplicationStatus.STANDBY || app.getStandbyOfferedAt() == null) {
             throw new BusinessRuleException("Bu başvuru için aktif bir yedek teklifi yok.");
         }
-        if (app.getStandbyDeadline() != null && LocalDateTime.now().isAfter(app.getStandbyDeadline())) {
+        if (app.getStandbyDeadline() != null && LocalDateTime.now(clock).isAfter(app.getStandbyDeadline())) {
             expireOffer(app, "Aday süresinde cevap vermedi");
             cascadeToNextStandby(app);
             throw new OfferExpiredException("Yedek teklifinin süresi doldu.");
@@ -282,6 +285,8 @@ public class StandbyService {
                 throw new BusinessRuleException("Bu işletmeye başvuru yapamazsın.");
             }
             // Kabul kapısı (işletme kararı ve teklif onayıyla aynı kural).
+            // Ayni adayin eszamanli kabulleri sirayla (cakisma kontrolu yarissiz).
+            AcceptanceGuard.lockCandidate(app, userRepository);
             AcceptanceGuard.check(app, applicationRepository, LocalDateTime.now(clock));
             app.setStatus(ApplicationStatus.ACCEPTED);
             app.setStandbyDeadline(null);
@@ -331,7 +336,7 @@ public class StandbyService {
     @Transactional
     public int expireOverdueOffers() {
         List<Application> overdue = applicationRepository
-                .findByStatusAndStandbyDeadlineBefore(ApplicationStatus.STANDBY, LocalDateTime.now());
+                .findByStatusAndStandbyDeadlineBefore(ApplicationStatus.STANDBY, LocalDateTime.now(clock));
         if (overdue.isEmpty()) return 0;
 
         int n = 0;
@@ -390,7 +395,7 @@ public class StandbyService {
      */
     private void claimOpenSeats(Application app) {
         if (app.getRequestedSlots() == null || app.getRequestedSlots().isEmpty()) return; // slotsuz eski akis
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         Set<ShiftSlot> claimed = new HashSet<>();
         for (ShiftSlot slot : SlotSeats.byId(app.getRequestedSlots())) {
             if (!ShiftWindow.hasTimes(slot) || ShiftWindow.hasEnded(slot, now)) continue;

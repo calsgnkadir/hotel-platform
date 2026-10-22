@@ -44,6 +44,7 @@ class StandbyServiceTest {
     @Mock private ApplicationMapper applicationMapper;
     @Mock private SmsService smsService;
     @Mock private com.hotelapp.repository.CandidateBlockRepository candidateBlockRepository;
+    @Mock private com.hotelapp.repository.UserRepository userRepository;
 
     private StandbyService service;
 
@@ -58,7 +59,7 @@ class StandbyServiceTest {
         if (service == null) {
             service = new StandbyService(applicationRepository, shiftSlotRepository,
                     notificationService, outboxService, applicationMapper, smsService,
-                    candidateBlockRepository);
+                    candidateBlockRepository, userRepository);
             lenient().when(applicationMapper.toResponse(any()))
                     .thenReturn(ApplicationResponse.builder().build());
         }
@@ -278,6 +279,46 @@ class StandbyServiceTest {
             assertThat(a.getStatus()).isEqualTo(ApplicationStatus.STANDBY);
             assertThat(slot.getSlotsFilled()).isZero();
             verify(shiftSlotRepository, never()).incrementFilledIfAvailable(any());
+        }
+
+        @Test
+        @DisplayName("Kabul: aday satırı çakışma kontrolünden ve koltuktan önce kilitlenir (READ_COMMITTED)")
+        void accept_locksCandidateFirst() throws Exception {
+            ShiftSlot slot = upcomingSlot(1, 0);
+            Application a = offeredStandby(slot);
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(shiftSlotRepository.incrementFilledIfAvailable(500L)).thenReturn(1);
+
+            svc().respondToOffer(77L, CANDIDATE_ID, true);
+
+            org.mockito.InOrder order = inOrder(userRepository, applicationRepository, shiftSlotRepository);
+            order.verify(userRepository).findByIdForUpdate(CANDIDATE_ID);
+            order.verify(applicationRepository).findAllByCandidateIdAndStatus(CANDIDATE_ID, ApplicationStatus.ACCEPTED);
+            order.verify(applicationRepository).saveAndFlush(a);
+            order.verify(shiftSlotRepository).incrementFilledIfAvailable(500L);
+
+            org.springframework.transaction.annotation.Transactional tx = StandbyService.class
+                    .getMethod("respondToOffer", Long.class, Long.class, boolean.class)
+                    .getAnnotation(org.springframework.transaction.annotation.Transactional.class);
+            assertThat(tx.isolation())
+                    .isEqualTo(org.springframework.transaction.annotation.Isolation.READ_COMMITTED);
+        }
+
+        @Test
+        @DisplayName("Teklif süresi enjekte saatle ölçülür; ret yolunda aday kilitlenmez")
+        void deadline_usesInjectedClock_andDeclineDoesNotLock() {
+            ShiftSlot slot = upcomingSlot(1, 0);
+            Application a = offeredStandby(slot);
+            java.time.ZoneId tr = java.time.ZoneId.of("Europe/Istanbul");
+            // Saat teklif son tarihinin 1 dk sonrasına sabitlenir: süresi dolmuş sayılmalı.
+            svc().clock = java.time.Clock.fixed(
+                    a.getStandbyDeadline().plusMinutes(1).atZone(tr).toInstant(), tr);
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+
+            assertThatThrownBy(() -> svc().respondToOffer(77L, CANDIDATE_ID, false))
+                    .isInstanceOf(com.hotelapp.exception.OfferExpiredException.class);
+            assertThat(a.getStatus()).isEqualTo(ApplicationStatus.EXPIRED);
+            verify(userRepository, never()).findByIdForUpdate(any());
         }
 
         @Test

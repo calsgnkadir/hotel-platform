@@ -28,6 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class AuthService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final UserRepository userRepository;
     private final BusinessRepository businessRepository;
     private final PasswordEncoder passwordEncoder;
@@ -204,7 +207,7 @@ public class AuthService {
                 .orElseThrow(() -> BusinessRuleException.keyed("error.auth.oauthCodeInvalid"));
         User user = userRepository.findById(userId).orElse(null);
         boolean banned = user != null && user.getBannedUntil() != null
-                && user.getBannedUntil().isAfter(java.time.LocalDateTime.now());
+                && user.getBannedUntil().isAfter(java.time.LocalDateTime.now(clock));
         if (user == null || !user.isEnabled() || banned) {
             oAuthLoginCodeStore.consume(code);
             log.warn("[OAUTH] Kapalı/yasaklı hesap için kod değişimi reddedildi: userId={}", userId);
@@ -247,7 +250,7 @@ public class AuthService {
 
     /** Kullanım Şartları kabulü + Aydınlatma Metni sürüm onayı (şimdi). */
     private static void recordConsent(User user, String noticeVersion) {
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul"));
         user.setTermsAcceptedAt(now);
         user.setPrivacyNoticeVersion(noticeVersion);
         user.setPrivacyNoticeAckAt(now);

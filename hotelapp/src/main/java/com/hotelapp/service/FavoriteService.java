@@ -28,6 +28,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FavoriteService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final BusinessFavoriteRepository favoriteRepository;
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
@@ -59,7 +62,7 @@ public class FavoriteService {
                             .business(business)
                             .candidate(candidate)
                             .note(note)
-                            .createdAt(LocalDateTime.now())
+                            .createdAt(LocalDateTime.now(clock))
                             .build();
                     return toDto(favoriteRepository.save(fav), ownerId);
                 });

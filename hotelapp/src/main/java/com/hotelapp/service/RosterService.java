@@ -48,6 +48,9 @@ import java.util.TreeMap;
 @RequiredArgsConstructor
 public class RosterService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     /** Yoklama satırı durumu: işletme bu vardiyayı gelmedi işaretledi. */
     static final String NO_SHOW_STATUS = "Gelmedi";
 
@@ -198,7 +201,7 @@ public class RosterService {
                 sh.createRow(1).createCell(0).setCellValue(
                         (date == null || date.equals(LocalDate.MIN) ? "" : D.format(date) + " · ")
                         + e.getValue().size() + " kişi · Oluşturma: "
-                        + DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(LocalDateTime.now())
+                        + DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(LocalDateTime.now(clock))
                         + " · Kadrom"
                         + (listing.getMeetingPoint() != null ? " · Toplanma: " + listing.getMeetingPoint() : ""));
 

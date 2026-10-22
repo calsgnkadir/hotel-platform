@@ -21,6 +21,9 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ProfileViewService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final ProfileViewRepository profileViewRepository;
 
     /**
@@ -39,7 +42,7 @@ public class ProfileViewService {
             if (viewerId != null && viewerId.equals(profileId)) return;
 
             if (viewerId != null) {
-                LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+                LocalDateTime startOfDay = LocalDate.now(clock).atStartOfDay();
                 if (profileViewRepository.existsTodayByProfileAndViewer(profileId, viewerId, startOfDay)) {
                     return;
                 }
@@ -58,7 +61,7 @@ public class ProfileViewService {
 
     @Transactional(readOnly = true)
     public ProfileViewStats getStats(Long profileId, int days) {
-        LocalDateTime since = LocalDate.now().minusDays(days).atStartOfDay();
+        LocalDateTime since = LocalDate.now(clock).minusDays(days).atStartOfDay();
         long total = profileViewRepository.countByProfileIdSince(profileId, since);
         long unique = profileViewRepository.countDistinctViewersByProfileIdSince(profileId, since);
         return new ProfileViewStats(total, unique, days);

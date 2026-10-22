@@ -25,7 +25,7 @@ public class AdultAgeValidator implements ConstraintValidator<AdultAge, LocalDat
     public boolean isValid(LocalDate birthDate, ConstraintValidatorContext context) {
         if (birthDate == null) return true;
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(java.time.ZoneId.of("Europe/Istanbul"));
         // Gelecek tarihli doğum: geçersiz
         if (birthDate.isAfter(today)) return false;
 

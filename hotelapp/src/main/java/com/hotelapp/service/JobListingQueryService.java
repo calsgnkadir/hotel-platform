@@ -46,6 +46,9 @@ import java.util.List;
 @Slf4j
 public class JobListingQueryService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final JobListingRepository jobListingRepository;
     private final JobListingService jobListingService;  // mapping delegasyonu icin
     private final UserRepository userRepository;        // FAZ 5 — ranked sort
@@ -100,7 +103,7 @@ public class JobListingQueryService {
             java.util.Set<Position> prefPositions = candidate.getPreferredPositions();
             java.util.Set<String>   prefDistricts = candidate.getPreferredDistricts();
             java.util.Set<JobType>  prefJobTypes  = candidate.getAvailabilityTypes();
-            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            java.time.LocalDateTime now = java.time.LocalDateTime.now(clock);
 
             raw.sort((a, b) -> {
                 int sa = scoreListing(a, prefPositions, prefDistricts, prefJobTypes, now);

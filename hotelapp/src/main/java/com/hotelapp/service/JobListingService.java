@@ -40,6 +40,9 @@ import java.util.List;
 @Slf4j
 public class JobListingService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
     private final JobListingRepository jobListingRepository;
     private final BusinessRepository businessRepository;
@@ -234,7 +237,7 @@ public class JobListingService {
             // Iki opt-in kanali: (1) district+position tercihi (klasik), (2) musaitlik blogu tanimlamis.
             // Sorgular devre disi/banli hesaplari ve bu isletmeyle iki yonlu engelli adaylari disarida birakir.
             Long businessId = listing.getBusiness().getId();
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now(clock);
             var prefMatched = userRepository.findCandidatesMatchingPreferences(
                     district, listing.getPosition(), businessId, now);
             var availOptIn  = userRepository.findCandidatesWithAvailabilityBlocks(businessId, now);
@@ -301,8 +304,10 @@ public class JobListingService {
         if (slots == null || slots.isEmpty()) {
             throw BusinessRuleException.keyed("error.listing.slotRequired");
         }
-        LocalDate today = LocalDate.now();
-        java.time.LocalTime nowTime = java.time.LocalTime.now();
+        // Tek okuma: gece yarısı sınırında tarih ve saat aynı ana ait olsun.
+        LocalDateTime nowAt = LocalDateTime.now(clock);
+        LocalDate today = nowAt.toLocalDate();
+        java.time.LocalTime nowTime = nowAt.toLocalTime();
         for (int i = 0; i < slots.size(); i++) {
             ShiftSlotCreate s = slots.get(i);
             int n = i + 1;
@@ -369,7 +374,7 @@ public class JobListingService {
 
     /** Düzenlemede geçmiş tarih kuralı yalnız değişen tarihe uygulanır (yayındaki ilan başlamış olabilir). */
     private void validateDates(ListingRequest req, LocalDate currentStart, LocalDate currentEnd) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         LocalDate start = req.getStartDate();
         LocalDate end   = req.getEndDate();
 

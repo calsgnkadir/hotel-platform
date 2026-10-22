@@ -35,6 +35,9 @@ import java.util.Optional;
 @Slf4j
 public class RefreshTokenService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final RefreshTokenRepository repo;
 
     /** 7 gün geçerli (access token 15 dk) */
@@ -51,7 +54,7 @@ public class RefreshTokenService {
         RefreshToken entity = RefreshToken.builder()
                 .user(user)
                 .tokenHash(sha256(rawToken))
-                .expiresAt(LocalDateTime.now().plusDays(EXPIRES_DAYS))
+                .expiresAt(LocalDateTime.now(clock).plusDays(EXPIRES_DAYS))
                 .revoked(false)
                 .build();
         repo.save(entity);
@@ -99,7 +102,7 @@ public class RefreshTokenService {
 
         // Eski token revoke + yeni token üret (rotation)
         token.setRevoked(true);
-        token.setLastUsedAt(LocalDateTime.now());
+        token.setLastUsedAt(LocalDateTime.now(clock));
         repo.save(token);
 
         String newRawToken = createForUser(token.getUser());
@@ -131,7 +134,7 @@ public class RefreshTokenService {
     @Scheduled(cron = "${app.scheduling.refresh-token-cleanup-cron:0 0 3 * * *}")
     @Transactional
     public void cleanup() {
-        int deleted = repo.deleteExpiredAndRevoked(LocalDateTime.now().minusDays(30));
+        int deleted = repo.deleteExpiredAndRevoked(LocalDateTime.now(clock).minusDays(30));
         if (deleted > 0) log.info("RefreshToken cleanup: {} kayit silindi", deleted);
     }
 
@@ -141,7 +144,7 @@ public class RefreshTokenService {
     static boolean isActive(User u) {
         if (u == null || !u.isEnabled()) return false;
         LocalDateTime ban = u.getBannedUntil();
-        return ban == null || ban.isBefore(LocalDateTime.now());
+        return ban == null || ban.isBefore(LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul")));
     }
 
     private String generateRawToken() {

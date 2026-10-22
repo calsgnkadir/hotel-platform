@@ -26,6 +26,9 @@ import java.util.List;
 @Slf4j
 public class AuditLogService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final AuditLogRepository auditLogRepository;
     private final UserRepository userRepository;
 
@@ -71,7 +74,7 @@ public class AuditLogService {
                 .targetType(targetType)
                 .targetId(targetId)
                 .details(details)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(clock))
                 .build();
         auditLogRepository.save(entry);
     }

@@ -42,6 +42,9 @@ import java.util.Set;
 @Slf4j
 public class SavedSearchService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     public static final int MAX_PER_USER = 20;
 
     private final SavedSearchRepository repo;
@@ -77,7 +80,7 @@ public class SavedSearchService {
                 .dateTo(p.getDateTo())
                 .shifts(p.getShifts() == null ? new HashSet<>() : new HashSet<>(p.getShifts()))
                 .notificationsEnabled(true)
-                .lastNotifiedAt(LocalDateTime.now())  // sıfır geçmiş için backfill atma
+                .lastNotifiedAt(LocalDateTime.now(clock))  // sıfır geçmiş için backfill atma
                 .build();
         return repo.save(s);
     }
@@ -118,7 +121,7 @@ public class SavedSearchService {
         User owner = s.getUser();
         if (owner == null || !owner.isEnabled()) return 0;
         // Su an banli hesap giris yapamaz; kayitli arama bildirimi de gitmez (ban bitince surer)
-        if (owner.getBannedUntil() != null && owner.getBannedUntil().isAfter(LocalDateTime.now())) return 0;
+        if (owner.getBannedUntil() != null && owner.getBannedUntil().isAfter(LocalDateTime.now(clock))) return 0;
 
         LocalDateTime since = s.getLastNotifiedAt() != null
                 ? s.getLastNotifiedAt()
@@ -166,7 +169,7 @@ public class SavedSearchService {
                 title, message, link
         );
 
-        s.setLastNotifiedAt(LocalDateTime.now());  // managed entity → dirty checking flush eder
+        s.setLastNotifiedAt(LocalDateTime.now(clock));  // managed entity → dirty checking flush eder
         return matches.size();
     }
 

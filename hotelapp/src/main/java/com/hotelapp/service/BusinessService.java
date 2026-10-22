@@ -24,6 +24,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BusinessService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final BusinessRepository businessRepository;
     private final BusinessPhotoRepository businessPhotoRepository;
     private final FileStorageService fileStorageService;
@@ -40,7 +43,7 @@ public class BusinessService {
                 ? businessRepository.findAllByType(type)
                 : businessRepository.findAll();
         // Askıdaki (ban) ya da hesabı kapatılmış (enabled=false) sahiplerin işletmeleri listelenmez.
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now(clock);
         return businesses.stream()
                 .filter(b -> ownerActive(b, now))
                 .map(b -> toDto(b, false))
@@ -73,7 +76,7 @@ public class BusinessService {
         // Askıdaki ya da kapatılmış sahibin işletme sayfası doğrudan bağlantıyla da açılmaz
         // (listeyle aynı kural; kullanıcı kararı 2026-10-22).
         Business business = businessRepository.findById(id)
-                .filter(b -> ownerActive(b, java.time.LocalDateTime.now()))
+                .filter(b -> ownerActive(b, java.time.LocalDateTime.now(clock)))
                 .orElseThrow(() -> new ResourceNotFoundException("İşletme", id));
         return toDto(business, false);
     }

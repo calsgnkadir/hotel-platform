@@ -23,6 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final UserRepository userRepository;
     private final BusinessRepository businessRepository;
     private final JobListingRepository jobListingRepository;
@@ -95,7 +98,7 @@ public class AdminService {
         if (user.getRole() == Role.ADMIN) {
             throw new BusinessRuleException("Admin kullanıcı banlanamaz.");
         }
-        user.setBannedUntil(LocalDateTime.now().plusDays(days));
+        user.setBannedUntil(LocalDateTime.now(clock).plusDays(days));
         userRepository.save(user);
         // Acik oturumlar kapanir: refresh alinamaz; erisim token'i JwtAuthFilter'da
         // isAccountNonLocked ile zaten reddedilir.
@@ -134,7 +137,7 @@ public class AdminService {
                 .candidates(userRepository.countByRole(Role.CANDIDATE))
                 .businessOwners(userRepository.countByRole(Role.BUSINESS_OWNER))
                 .admins(userRepository.countByRole(Role.ADMIN))
-                .bannedUsers(userRepository.countCurrentlyBanned(LocalDateTime.now()))
+                .bannedUsers(userRepository.countCurrentlyBanned(LocalDateTime.now(clock)))
                 .totalBusinesses(businessRepository.count())
                 .totalListings(jobListingRepository.count())
                 .totalApplications(applicationRepository.count())
@@ -160,7 +163,7 @@ public class AdminService {
     }
 
     private boolean isBanned(User u) {
-        return u.getBannedUntil() != null && u.getBannedUntil().isAfter(LocalDateTime.now());
+        return u.getBannedUntil() != null && u.getBannedUntil().isAfter(LocalDateTime.now(clock));
     }
 
     // ================================================================
@@ -340,7 +343,7 @@ public class AdminService {
         var biz = businessRepository.findById(businessId)
             .orElseThrow(() -> new ResourceNotFoundException("İşletme", businessId));
         if (verified) {
-            biz.setVerifiedAt(LocalDateTime.now());
+            biz.setVerifiedAt(LocalDateTime.now(clock));
             biz.setVerifiedBy(adminId);
         } else {
             biz.setVerifiedAt(null);

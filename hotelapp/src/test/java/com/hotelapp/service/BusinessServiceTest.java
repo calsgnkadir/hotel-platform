@@ -79,6 +79,24 @@ class BusinessServiceTest {
     }
 
     @Test
+    @DisplayName("Yasak bitişi enjekte saate (İstanbul) göre ölçülür")
+    void banExpiry_usesInjectedClock() {
+        java.time.ZoneId tr = java.time.ZoneId.of("Europe/Istanbul");
+        LocalDateTime banEnd = LocalDateTime.of(2026, 10, 3, 12, 0);
+        User banned = owner(12L);
+        banned.setBannedUntil(banEnd);
+        when(businessRepository.findById(2L)).thenReturn(Optional.of(business(2L, banned)));
+        when(businessPhotoRepository.findByBusinessIdAndIsCoverTrue(2L)).thenReturn(Optional.empty());
+
+        service.clock = java.time.Clock.fixed(banEnd.minusMinutes(1).atZone(tr).toInstant(), tr);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.getPublicById(2L))
+                .isInstanceOf(com.hotelapp.exception.ResourceNotFoundException.class);
+
+        service.clock = java.time.Clock.fixed(banEnd.plusMinutes(1).atZone(tr).toInstant(), tr);
+        assertThat(service.getPublicById(2L).getId()).isEqualTo(2L);
+    }
+
+    @Test
     @DisplayName("Tekil sayfa: yasaklı ya da kapatılmış sahibin işletmesi 404")
     void publicById_inactiveOwner_notFound() {
         User banned = owner(12L);

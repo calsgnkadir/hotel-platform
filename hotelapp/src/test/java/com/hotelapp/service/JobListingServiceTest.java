@@ -223,6 +223,27 @@ class JobListingServiceTest {
         }
 
         @Test
+        @DisplayName("Bugünkü vardiyanın başlangıcı enjekte saate (İstanbul) göre ölçülür")
+        void todaySlot_usesInjectedClock() {
+            java.time.ZoneId tr = java.time.ZoneId.of("Europe/Istanbul");
+            LocalDate day = LocalDate.of(2026, 10, 3);
+            service.clock = java.time.Clock.fixed(day.atTime(10, 0).atZone(tr).toInstant(), tr);
+
+            assertThatThrownBy(() -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "validateSlots", List.of(slot(day, "09:00", "12:00", 1))))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("bugün için başlangıç saati");
+            // Aynı gün, saatten sonra başlayan vardiya geçerli
+            org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "validateSlots",
+                    List.of(slot(day, "11:00", "15:00", 1)));
+            // Dünkü vardiya: geçmiş tarih
+            assertThatThrownBy(() -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "validateSlots", List.of(slot(day.minusDays(1), "11:00", "15:00", 1))))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("geçmiş tarih olamaz");
+        }
+
+        @Test
         @DisplayName("16 saati aşan vardiya (gündüz ya da gece) reddedilir")
         void tooLongSlot_throws() {
             assertThatThrownBy(() -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,

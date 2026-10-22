@@ -25,12 +25,15 @@ import java.time.LocalDateTime;
 @Slf4j
 public class OutboxStatusWriter {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final OutboxEventRepository outboxRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markProcessed(Long id) {
         outboxRepository.findById(id).ifPresent(e -> {
-            e.setProcessedAt(LocalDateTime.now());
+            e.setProcessedAt(LocalDateTime.now(clock));
             outboxRepository.save(e);
         });
     }
@@ -52,7 +55,7 @@ public class OutboxStatusWriter {
                         id, maxAttempts, msg);
             } else {
                 var delay = OutboxRelay.backoffAfter(e.getAttempts());
-                e.setNextAttemptAt(LocalDateTime.now().plus(delay));
+                e.setNextAttemptAt(LocalDateTime.now(clock).plus(delay));
                 outboxRepository.save(e);
                 log.warn("[OUTBOX-RELAY] event id={} fail (attempt {}), sonraki deneme {} sn sonra: {}",
                         id, e.getAttempts(), delay.toSeconds(), msg);
@@ -67,7 +70,7 @@ public class OutboxStatusWriter {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markDeferred(Long id, java.time.Duration delay, Exception ex) {
         outboxRepository.findById(id).ifPresent(e -> {
-            e.setNextAttemptAt(LocalDateTime.now().plus(delay));
+            e.setNextAttemptAt(LocalDateTime.now(clock).plus(delay));
             e.setLastError(errorText(ex));
             outboxRepository.save(e);
             log.info("[OUTBOX-RELAY] event id={} devre acik, {} sn ertelendi (deneme sayilmadi)",

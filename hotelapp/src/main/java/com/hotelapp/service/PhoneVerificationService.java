@@ -26,6 +26,9 @@ import java.time.LocalDateTime;
 @Slf4j
 public class PhoneVerificationService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private static final int CODE_TTL_MIN        = 10;
     private static final int RESEND_COOLDOWN_SEC = 60;
     private static final int MAX_ATTEMPTS        = 5;
@@ -51,13 +54,13 @@ public class PhoneVerificationService {
         if (u.isPhoneVerified())
             throw new BusinessRuleException("Telefonun zaten doğrulanmış.");
         if (u.getPhoneOtpSentAt() != null
-                && u.getPhoneOtpSentAt().isAfter(LocalDateTime.now().minusSeconds(RESEND_COOLDOWN_SEC)))
+                && u.getPhoneOtpSentAt().isAfter(LocalDateTime.now(clock).minusSeconds(RESEND_COOLDOWN_SEC)))
             throw new BusinessRuleException("Çok sık denedin. Bir dakika sonra tekrar iste.");
 
         String code = String.format("%06d", random.nextInt(1_000_000));
         u.setPhoneOtpCode(code);
-        u.setPhoneOtpExpiresAt(LocalDateTime.now().plusMinutes(CODE_TTL_MIN));
-        u.setPhoneOtpSentAt(LocalDateTime.now());
+        u.setPhoneOtpExpiresAt(LocalDateTime.now(clock).plusMinutes(CODE_TTL_MIN));
+        u.setPhoneOtpSentAt(LocalDateTime.now(clock));
         u.setPhoneOtpAttempts(0);
         userRepository.save(u);
 
@@ -73,7 +76,7 @@ public class PhoneVerificationService {
         if (u.isPhoneVerified()) return status(userId);
         if (u.getPhoneOtpCode() == null || u.getPhoneOtpExpiresAt() == null)
             throw new BusinessRuleException("Aktif doğrulama kodu yok. Yeni kod iste.");
-        if (u.getPhoneOtpExpiresAt().isBefore(LocalDateTime.now()))
+        if (u.getPhoneOtpExpiresAt().isBefore(LocalDateTime.now(clock)))
             throw new BusinessRuleException("Kodun süresi doldu. Yeni kod iste.");
         if (u.getPhoneOtpAttempts() >= MAX_ATTEMPTS)
             throw new BusinessRuleException("Çok fazla yanlış deneme. Yeni kod iste.");
@@ -86,7 +89,7 @@ public class PhoneVerificationService {
             throw new IncorrectPhoneCodeException("Kod hatalı. Kalan deneme: " + left);
         }
 
-        u.setPhoneVerifiedAt(LocalDateTime.now());
+        u.setPhoneVerifiedAt(LocalDateTime.now(clock));
         u.setPhoneOtpCode(null);
         u.setPhoneOtpExpiresAt(null);
         u.setPhoneOtpSentAt(null);

@@ -40,6 +40,9 @@ import java.util.concurrent.Executor;
 @Slf4j
 public class NotificationService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;  // FAZ 1/#22 — WS push
@@ -155,7 +158,7 @@ public class NotificationService {
         Notification n;
         var existing = notificationRepository
                 .findTop20ByRecipientIdAndTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
-                        recipientId, type, LocalDateTime.now().minus(DEDUPE_WINDOW))
+                        recipientId, type, LocalDateTime.now(clock).minus(DEDUPE_WINDOW))
                 .stream()
                 .limit(DEDUPE_SCAN)
                 .filter(c -> sameContext(c, type, title, message, link))
@@ -166,7 +169,7 @@ public class NotificationService {
             n.setMessage(message);          // en yeni icerik gorunur
             n.setTitle(title);
             n.setLink(link);
-            n.setCreatedAt(LocalDateTime.now());  // listede uste tasi
+            n.setCreatedAt(LocalDateTime.now(clock));  // listede uste tasi
             n = notificationRepository.save(n);
         } else {
             n = Notification.builder()
@@ -176,7 +179,7 @@ public class NotificationService {
                     .message(message)
                     .link(link)
                     .isRead(false)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now(clock))
                     .build();
             n = notificationRepository.save(n);
         }

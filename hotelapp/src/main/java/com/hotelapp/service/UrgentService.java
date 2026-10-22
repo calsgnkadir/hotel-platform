@@ -45,6 +45,9 @@ import java.util.List;
 @Slf4j
 public class UrgentService {
 
+    /** İş kuralı saati: Türkiye yerel saati, JVM saat diliminden bağımsız (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     /** Acil ilan bildiriminde tek seferde ulaşılacak azami aday (spam/gürültü freni). */
     private static final int MAX_PUSH_TARGETS = 200;
 
@@ -76,7 +79,7 @@ public class UrgentService {
     @Transactional
     public AvailabilityStatus goAvailableToday(Long candidateId) {
         User u = candidate(candidateId);
-        LocalDateTime until = LocalDate.now().atTime(LocalTime.MAX);   // bugün 23:59:59.999
+        LocalDateTime until = LocalDate.now(clock).atTime(LocalTime.MAX);   // bugün 23:59:59.999
         u.setAvailableUntil(until);
         userRepository.save(u);
 
@@ -108,7 +111,7 @@ public class UrgentService {
     /** İşletme tarafında gösterilen havuz büyüklüğü. */
     @Transactional(readOnly = true)
     public long availableNowCount() {
-        return userRepository.countAvailableNowCandidates(LocalDateTime.now());
+        return userRepository.countAvailableNowCandidates(LocalDateTime.now(clock));
     }
 
     // ================================================================
@@ -143,7 +146,7 @@ public class UrgentService {
         }
 
         LocalDateTime until = computeUrgentUntil(listing);
-        if (until.isBefore(LocalDateTime.now())) {
+        if (until.isBefore(LocalDateTime.now(clock))) {
             throw new BusinessRuleException(
                     "İlanın vardiyaları geçmiş; acil işaretlemenin bir karşılığı yok.");
         }
@@ -156,7 +159,7 @@ public class UrgentService {
                 ownerId, "LISTING_URGENT_ON", "JOB_LISTING", listingId,
                 listing.getTitle() + " · bitiş: " + until));
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime lastNotified = listing.getUrgentNotifiedAt();
         boolean throttled = lastNotified != null && lastNotified.isAfter(now.minus(NOTIFY_COOLDOWN));
         int notified = 0;
@@ -184,7 +187,7 @@ public class UrgentService {
         try {
             // Sorgu devre disi/banli hesaplari ve bu isletmeyle iki yonlu engelli adaylari disarida birakir
             List<User> pool = userRepository.findAvailableNowCandidates(
-                    LocalDateTime.now(), listing.getPosition(), listing.getBusiness().getId());
+                    LocalDateTime.now(clock), listing.getPosition(), listing.getBusiness().getId());
             if (pool.isEmpty()) {
                 log.info("[URGENT] listing={} icin musait aday yok", listing.getId());
                 return 0;
@@ -231,7 +234,7 @@ public class UrgentService {
      * engellemek için kendiliğinden söner.
      */
     private LocalDateTime computeUrgentUntil(JobListing listing) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         return (listing.getShiftSlots() == null ? List.<ShiftSlot>of() : listing.getShiftSlots())
                 .stream()
                 .filter(ShiftWindow::hasTimes)
@@ -244,7 +247,7 @@ public class UrgentService {
     /** "bugün 16:00" / "yarın 08:00" / "5 Haz 08:00" — bildirim metni için. */
     private String nearestSlotLabel(JobListing listing) {
         if (listing.getShiftSlots() == null) return null;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         return listing.getShiftSlots().stream()
                 .filter(s -> s.getDate() != null && !s.getDate().isBefore(today))
                 .min((a, b) -> {
