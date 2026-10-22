@@ -96,11 +96,12 @@
         </dependency>
 
         <!-- FAZ 4.3 — Flyway migration framework
-             core: migration motoru, mysql modulu: MySQL-specific connector
-             versiyon Spring Boot 3.2.5 BOM'undan gelir (10.x serisi MySQL 8 uyumlu) -->
+             Boot 4'te Flyway otomatik yapılandırması ayrı modülde (spring-boot-flyway);
+             starter olmadan flyway-core sınıf yolunda olsa bile migration ÇALIŞMAZ.
+             mysql modulu: MySQL-specific connector; sürümler Boot BOM'undan gelir. -->
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
