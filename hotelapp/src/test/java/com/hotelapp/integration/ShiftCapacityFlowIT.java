@@ -162,17 +162,22 @@ class ShiftCapacityFlowIT {
         Long appId = json.readTree(body).get("id").asLong();
         decide(biz, appId, ApplicationStatus.ACCEPTED).andExpect(status().isOk());
 
-        // Dogrudan kabul (incelemeye alinmadan) da ilan detayindaki "bu isletmede
-        // tamamlanan is" sayisina girer; gercek detay ucu sayiyi doldurur.
+        // Ileri tarihli kabul henuz "tamamlanan is" degildir (O2): hicbir vardiya bitmedi.
         mvc.perform(get("/api/listings/" + listingId).header("Authorization", "Bearer " + cand))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.businessWorkerCount").value(1));
+                .andExpect(jsonPath("$.businessWorkerCount").value(0));
 
         // Zamani kaydir: s1 iki gun once calisildi, s2 iki saat once basladi (TR saati).
         LocalDateTime nowTr = LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul")).withSecond(0).withNano(0);
         moveSlot(s1, nowTr.minusDays(2).minusHours(2));
         Long current = s2;
         moveSlot(current, nowTr.minusHours(2));
+
+        // Dogrudan kabul (incelemeye alinmadan) da, bir vardiyasi bitince, ilan detayindaki
+        // "bu isletmede tamamlanan is" sayisina girer.
+        mvc.perform(get("/api/listings/" + listingId).header("Authorization", "Bearer " + cand))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.businessWorkerCount").value(1));
 
         mvc.perform(put("/api/business/applications/" + appId + "/no-show")
                         .header("Authorization", "Bearer " + biz))

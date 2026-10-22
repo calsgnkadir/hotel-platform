@@ -8,5 +8,19 @@ public enum ApplicationStatus {
     ACCEPTED,     // kabul edildi
     REJECTED,     // reddedildi
     EXPIRED,      // 1 hafta içinde cevap gelmedi (veya HELD 24 saat dolup cevap gelmedi)
-    WITHDRAWN     // aday kendisi iptal etti (PENDING/REVIEWING aşamasında)
+    WITHDRAWN;    // aday kendisi iptal etti (PENDING/REVIEWING aşamasında)
+
+    /** Kullanıcıya dönen mesajlar için Türkçe karşılık (API'de enum adı değişmez). */
+    public String label() {
+        return switch (this) {
+            case PENDING   -> "Beklemede";
+            case REVIEWING -> "İnceleniyor";
+            case HELD      -> "Teklif edildi";
+            case STANDBY   -> "Yedekte";
+            case ACCEPTED  -> "Kabul edildi";
+            case REJECTED  -> "Reddedildi";
+            case EXPIRED   -> "Süresi doldu";
+            case WITHDRAWN -> "Geri çekildi";
+        };
+    }
 }

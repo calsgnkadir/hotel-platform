@@ -23,6 +23,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findAllByCandidateId(Long candidateId);
 
+    /** Kabul kapısı: adayın verilen durumdaki başvuruları (vardiya çakışması kontrolü). */
+    List<Application> findAllByCandidateIdAndStatus(Long candidateId, ApplicationStatus status);
+
     /**
      * FAZ F.6 — GDPR export icin N+1 fix: jobListing + business eager fetch.
      * Genel findAllByCandidateId'i degistirmedik (diger cagri noktalarinin
@@ -61,8 +64,31 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
                                WHERE a2 = a
                                  AND NOT EXISTS (SELECT 1 FROM ApplicationNoShowSlot m2
                                                  WHERE m2.application = a AND m2.shiftSlot = s))))
+          AND (NOT EXISTS (SELECT 1 FROM Application a3 JOIN a3.requestedSlots s3 WHERE a3 = a)
+               OR EXISTS (SELECT 1 FROM Application a4 JOIN a4.requestedSlots s4
+                          WHERE a4 = a
+                            AND ((s4.endTime > s4.startTime
+                                  AND (s4.date < :today OR (s4.date = :today AND s4.endTime <= :nowTime)))
+                              OR (s4.endTime <= s4.startTime
+                                  AND (s4.date < :yesterday OR (s4.date = :yesterday AND s4.endTime <= :nowTime))))
+                            AND NOT EXISTS (SELECT 1 FROM ApplicationNoShowSlot m4
+                                            WHERE m4.application = a AND m4.shiftSlot = s4)))
     """)
-    long countCompletedJobsForCandidate(@Param("candidateId") Long candidateId);
+    long countCompletedJobsForCandidateAt(@Param("candidateId") Long candidateId,
+                                          @Param("today") java.time.LocalDate today,
+                                          @Param("yesterday") java.time.LocalDate yesterday,
+                                          @Param("nowTime") java.time.LocalTime nowTime);
+
+    /**
+     * Tamamlanan iş: yukarıdaki kural + en az bir gelmedi işaretsiz vardiyası BİTMİŞ olmalı
+     * (ShiftWindow: gece vardiyası ertesi gün biter; Europe/Istanbul). İleri tarihli kabul sayılmaz.
+     * Slotsuz eski başvuru tamamlanmış sayılır (geriye uyum).
+     */
+    default long countCompletedJobsForCandidate(Long candidateId) {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul"));
+        return countCompletedJobsForCandidateAt(candidateId, now.toLocalDate(),
+                now.toLocalDate().minusDays(1), now.toLocalTime());
+    }
 
     /** Adayın vardiya bazlı gelmedi satırı sayısı. */
     @Query("""
@@ -92,6 +118,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
      *  Slot silmeden once FK ihlali/veri kaybi engeli icin. */
     boolean existsByRequestedSlots_Id(Long slotId);
 
+    /** Bu vardiyada verilen durumlardan birinde başvuru var mı (ör. bekleyen başvurulu
+     *  vardiyanın saati değiştirilemesin). */
+    boolean existsByRequestedSlots_IdAndStatusIn(Long slotId, java.util.Collection<ApplicationStatus> statuses);
+
     /** Aday bu isletmede CALISMIS mi (ACCEPTED basvuru) — hassas bilgi yetki kontrolu */
     boolean existsByCandidateIdAndJobListingBusinessOwnerIdAndStatus(
             Long candidateId, Long ownerId, ApplicationStatus status);
@@ -113,8 +143,27 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
                                WHERE a2 = a
                                  AND NOT EXISTS (SELECT 1 FROM ApplicationNoShowSlot m2
                                                  WHERE m2.application = a AND m2.shiftSlot = s))))
+          AND (NOT EXISTS (SELECT 1 FROM Application a3 JOIN a3.requestedSlots s3 WHERE a3 = a)
+               OR EXISTS (SELECT 1 FROM Application a4 JOIN a4.requestedSlots s4
+                          WHERE a4 = a
+                            AND ((s4.endTime > s4.startTime
+                                  AND (s4.date < :today OR (s4.date = :today AND s4.endTime <= :nowTime)))
+                              OR (s4.endTime <= s4.startTime
+                                  AND (s4.date < :yesterday OR (s4.date = :yesterday AND s4.endTime <= :nowTime))))
+                            AND NOT EXISTS (SELECT 1 FROM ApplicationNoShowSlot m4
+                                            WHERE m4.application = a AND m4.shiftSlot = s4)))
     """)
-    long countCompletedByBusinessOwner(@Param("ownerId") Long ownerId);
+    long countCompletedByBusinessOwnerAt(@Param("ownerId") Long ownerId,
+                                         @Param("today") java.time.LocalDate today,
+                                         @Param("yesterday") java.time.LocalDate yesterday,
+                                         @Param("nowTime") java.time.LocalTime nowTime);
+
+    /** İşletmede tamamlanan iş — aday sayımıyla aynı kural (bitmiş vardiya şartı dahil). */
+    default long countCompletedByBusinessOwner(Long ownerId) {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul"));
+        return countCompletedByBusinessOwnerAt(ownerId, now.toLocalDate(),
+                now.toLocalDate().minusDays(1), now.toLocalTime());
+    }
 
     List<Application> findAllByJobListing_Business_OwnerId(Long ownerId);
 

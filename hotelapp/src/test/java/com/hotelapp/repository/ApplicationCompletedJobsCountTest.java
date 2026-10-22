@@ -149,4 +149,66 @@ class ApplicationCompletedJobsCountTest {
         // İşletme geneli: adayın 3 tamamlanan işi + diğer adayın düşen başvurusu (0)
         assertThat(applicationRepository.countCompletedByBusinessOwner(owner.getId())).isEqualTo(3);
     }
+
+    private ShiftSlot slotAt(LocalDate date, int sh, int eh) {
+        ShiftSlot s = ShiftSlot.builder().jobListing(listing).date(date)
+                .startTime(LocalTime.of(sh, 0)).endTime(LocalTime.of(eh, 0))
+                .slotsNeeded(3).slotsFilled(1).build();
+        em.persist(s);
+        return s;
+    }
+
+    private long candidateAt(LocalDateTime now) {
+        return applicationRepository.countCompletedJobsForCandidateAt(candidate.getId(),
+                now.toLocalDate(), now.toLocalDate().minusDays(1), now.toLocalTime());
+    }
+
+    private long ownerAt(LocalDateTime now) {
+        return applicationRepository.countCompletedByBusinessOwnerAt(owner.getId(),
+                now.toLocalDate(), now.toLocalDate().minusDays(1), now.toLocalTime());
+    }
+
+    @Test
+    void future_accepted_shift_is_not_a_completed_job() {
+        accepted(candidate, false, slot(-3));   // 3 gün sonra
+        flush();
+
+        assertThat(applicationRepository.countCompletedJobsForCandidate(candidate.getId())).isZero();
+        assertThat(applicationRepository.countCompletedByBusinessOwner(owner.getId())).isZero();
+    }
+
+    @Test
+    void day_shift_counts_once_it_ended_today() {
+        LocalDate day = LocalDate.of(2026, 10, 3);
+        accepted(candidate, false, slotAt(day, 8, 16));
+        flush();
+
+        assertThat(candidateAt(day.atTime(15, 0))).isZero();
+        assertThat(candidateAt(day.atTime(16, 0))).isEqualTo(1);
+        assertThat(ownerAt(day.atTime(16, 0))).isEqualTo(1);
+    }
+
+    @Test
+    void overnight_shift_counts_only_after_next_morning_end() {
+        LocalDate day = LocalDate.of(2026, 10, 3);
+        accepted(candidate, false, slotAt(day, 22, 6));
+        flush();
+
+        assertThat(candidateAt(day.atTime(23, 0))).isZero();
+        assertThat(candidateAt(day.plusDays(1).atTime(5, 0))).isZero();
+        assertThat(candidateAt(day.plusDays(1).atTime(6, 0))).isEqualTo(1);
+        assertThat(ownerAt(day.plusDays(2).atTime(1, 0))).isEqualTo(1);
+    }
+
+    @Test
+    void only_ended_shift_marked_no_show_and_rest_in_future_is_not_completed() {
+        LocalDate day = LocalDate.of(2026, 10, 3);
+        ShiftSlot past = slotAt(day, 8, 16), future = slotAt(day.plusDays(5), 8, 16);
+        Application a = accepted(candidate, true, past, future);
+        markNoShow(a, past);
+        flush();
+
+        assertThat(candidateAt(day.plusDays(1).atTime(9, 0))).isZero();
+        assertThat(candidateAt(day.plusDays(6).atTime(9, 0))).isEqualTo(1);
+    }
 }

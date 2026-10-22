@@ -1,6 +1,7 @@
 package com.hotelapp.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.DayOfWeek;
@@ -14,7 +15,9 @@ public class ApplicationRequest {
     @NotNull(message = "İlan ID zorunlu")
     private Long jobListingId;
 
-    private String coverLetter; // optional
+    /** İsteğe bağlı; ilk sohbet mesajı olur, bu yüzden mesaj sınırıyla (2000) aynı. */
+    @Size(max = 2000, message = "Ön yazı en fazla 2000 karakter olabilir")
+    private String coverLetter;
 
     /** Eski akış (Faz E öncesi) — yeni başvurular boş bırakmalı */
     private List<AvailabilityDto> availabilities; // optional/legacy

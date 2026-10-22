@@ -39,7 +39,20 @@ public class BusinessService {
         List<Business> businesses = (type != null)
                 ? businessRepository.findAllByType(type)
                 : businessRepository.findAll();
-        return businesses.stream().map(this::toDto).toList();
+        // Askıdaki (ban) ya da hesabı kapatılmış (enabled=false) sahiplerin işletmeleri listelenmez.
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        return businesses.stream()
+                .filter(b -> ownerActive(b, now))
+                .map(b -> toDto(b, false))
+                .toList();
+    }
+
+    /** İşletme sahibi aktif mi (hesap açık ve yasaklı değil)? */
+    static boolean ownerActive(Business b, java.time.LocalDateTime now) {
+        var owner = b.getOwner();
+        if (owner == null) return false;
+        if (!owner.isEnabled()) return false;
+        return owner.getBannedUntil() == null || !owner.getBannedUntil().isAfter(now);
     }
 
     // ----------------------------------------------------------------
@@ -57,9 +70,12 @@ public class BusinessService {
     // ----------------------------------------------------------------
     @Transactional(readOnly = true)
     public BusinessDto getPublicById(Long id) {
+        // Askıdaki ya da kapatılmış sahibin işletme sayfası doğrudan bağlantıyla da açılmaz
+        // (listeyle aynı kural; kullanıcı kararı 2026-10-22).
         Business business = businessRepository.findById(id)
+                .filter(b -> ownerActive(b, java.time.LocalDateTime.now()))
                 .orElseThrow(() -> new ResourceNotFoundException("İşletme", id));
-        return toDto(business);
+        return toDto(business, false);
     }
 
     // ----------------------------------------------------------------
@@ -281,7 +297,16 @@ public class BusinessService {
     // ----------------------------------------------------------------
     // Mapping
     // ----------------------------------------------------------------
+    /** Sahibin kendi uç noktaları: e-posta dahil. */
     private BusinessDto toDto(Business b) {
+        return toDto(b, true);
+    }
+
+    /**
+     * @param includeOwnerEmail yalnız işletme sahibinin kendi profil yanıtlarında true.
+     *        Herkese açık yanıtlar (liste, tekil detay) sahibin hesap e-postasını içermez (KVKK).
+     */
+    private BusinessDto toDto(Business b, boolean includeOwnerEmail) {
         return BusinessDto.builder()
                 .id(b.getId())
                 .name(b.getName())
@@ -294,7 +319,7 @@ public class BusinessService {
                 .longitude(b.getLongitude())
                 .description(b.getDescription())
                 .phone(b.getPhone())
-                .email(b.getOwner() != null ? b.getOwner().getEmail() : null)  // Dalga G2 — public email
+                .email(includeOwnerEmail && b.getOwner() != null ? b.getOwner().getEmail() : null)
                 .website(b.getWebsite())
                 .category(b.getCategory())
                 .instagram(b.getInstagram())
@@ -327,7 +352,7 @@ public class BusinessService {
         private java.math.BigDecimal longitude;
         private String description;
         private String phone;
-        // Dalga G2 — Isletme iletisim bilgisi tamamen acik (otel/restoran rehberi gibi)
+        /** Sahibin hesap e-postası — yalnız sahibin kendi profil yanıtlarında dolu; herkese açık yanıtlarda null. */
         private String email;
         private String website;
         private String category;

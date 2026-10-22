@@ -281,6 +281,23 @@ public class JobListingService {
     //   vardiyasi, ertesi gun biter), sure <= 16 saat, slotsNeeded >= 1
     // ----------------------------------------------------------------
     private void validateSlots(List<ShiftSlotCreate> slots) {
+        validateSlots(slots, java.util.Map.of());
+    }
+
+    /**
+     * Düzenlemede: {@code existingById} ilandaki mevcut slotlar. Aynı id ile tarih/saati
+     * değişmeden gelen slota geçmiş tarih/başlangıç kuralı uygulanmaz (devam eden ilan
+     * düzenlenebilsin); yalnız yeni ya da zamanı değişen slotlar denetlenir.
+     * Kabul edilmiş adayı olan slotun (slotsFilled > 0) zamanı değiştirilemez ve
+     * ihtiyaç sayısı dolu koltuk sayısının altına indirilemez.
+     */
+    /** Vardiyanın zamanını kilitleyen açık başvuru durumları (kabul, koltuk sayacıyla ayrıca). */
+    private static final java.util.Set<com.hotelapp.enums.ApplicationStatus> SLOT_TIME_LOCKING = java.util.EnumSet.of(
+            com.hotelapp.enums.ApplicationStatus.PENDING, com.hotelapp.enums.ApplicationStatus.REVIEWING,
+            com.hotelapp.enums.ApplicationStatus.HELD, com.hotelapp.enums.ApplicationStatus.STANDBY,
+            com.hotelapp.enums.ApplicationStatus.ACCEPTED);
+
+    private void validateSlots(List<ShiftSlotCreate> slots, java.util.Map<Long, ShiftSlot> existingById) {
         if (slots == null || slots.isEmpty()) {
             throw BusinessRuleException.keyed("error.listing.slotRequired");
         }
@@ -292,6 +309,35 @@ public class JobListingService {
             if (s.getDate() == null)      throw new BusinessRuleException("Slot " + n + ": tarih zorunlu");
             if (s.getStartTime() == null) throw new BusinessRuleException("Slot " + n + ": başlangıç saati zorunlu");
             if (s.getEndTime() == null)   throw new BusinessRuleException("Slot " + n + ": bitiş saati zorunlu");
+            ShiftSlot existing = s.getId() != null ? existingById.get(s.getId()) : null;
+            if (existing != null) {
+                boolean timeChanged = !s.getDate().equals(existing.getDate())
+                        || !s.getStartTime().equals(existing.getStartTime())
+                        || !s.getEndTime().equals(existing.getEndTime());
+                int filled = existing.getSlotsFilled() == null ? 0 : existing.getSlotsFilled();
+                if (timeChanged && filled > 0) {
+                    throw new BusinessRuleException("Slot " + n + ": bu vardiyada kabul edilmiş aday var; "
+                            + "vardiyanın tarih ya da saatini değiştirmek yerine yeni vardiya ekleyin.");
+                }
+                // Bekleyen başvurusu olan vardiya da kaydırılamaz: aday başvurduğu saatten
+                // farklı bir vardiyaya habersiz taşınmasın (kullanıcı kararı 2026-10-22).
+                if (timeChanged && applicationRepository.existsByRequestedSlots_IdAndStatusIn(
+                        existing.getId(), SLOT_TIME_LOCKING)) {
+                    throw new BusinessRuleException("Slot " + n + ": bu vardiyaya bekleyen başvuru var; "
+                            + "vardiyanın tarih ya da saatini değiştirmek yerine yeni vardiya ekleyin.");
+                }
+                int needed = s.getSlotsNeeded() == null ? 1 : s.getSlotsNeeded();
+                if (needed < filled) {
+                    throw new BusinessRuleException("Slot " + n + ": ihtiyaç sayısı kabul edilmiş aday sayısından ("
+                            + filled + ") az olamaz.");
+                }
+                if (!timeChanged) {
+                    if (s.getSlotsNeeded() != null && s.getSlotsNeeded() < 1) {
+                        throw new BusinessRuleException("Slot " + n + ": ihtiyaç sayısı en az 1 olmalı");
+                    }
+                    continue;   // değişmeyen mevcut vardiya: geçmiş/başlamış olabilir
+                }
+            }
             if (s.getDate().isBefore(today)) {
                 throw new BusinessRuleException("Slot " + n + ": geçmiş tarih olamaz");
             }
@@ -318,14 +364,19 @@ public class JobListingService {
     // - Verilirse: bugün veya sonrası olmalı, end >= start
     // ----------------------------------------------------------------
     private void validateDates(ListingRequest req) {
+        validateDates(req, null, null);
+    }
+
+    /** Düzenlemede geçmiş tarih kuralı yalnız değişen tarihe uygulanır (yayındaki ilan başlamış olabilir). */
+    private void validateDates(ListingRequest req, LocalDate currentStart, LocalDate currentEnd) {
         LocalDate today = LocalDate.now();
         LocalDate start = req.getStartDate();
         LocalDate end   = req.getEndDate();
 
-        if (start != null && start.isBefore(today)) {
+        if (start != null && !start.equals(currentStart) && start.isBefore(today)) {
             throw new BusinessRuleException("Başlangıç tarihi geçmişte olamaz");
         }
-        if (end != null && end.isBefore(today)) {
+        if (end != null && !end.equals(currentEnd) && end.isBefore(today)) {
             throw new BusinessRuleException("Bitiş tarihi geçmişte olamaz");
         }
         if (start != null && end != null && end.isBefore(start)) {
@@ -480,9 +531,12 @@ public class JobListingService {
     public ListingResponse updateListing(Long listingId, Long ownerId, ListingRequest request) {
         JobListing listing = getListingForOwner(listingId, ownerId);
 
-        validateDates(request);
+        validateDates(request, listing.getStartDate(), listing.getEndDate());
         validateSalary(request);
-        validateSlots(request.getShiftSlots());
+        java.util.Map<Long, ShiftSlot> currentSlots = listing.getShiftSlots() == null ? java.util.Map.of()
+                : listing.getShiftSlots().stream().filter(s -> s.getId() != null)
+                    .collect(java.util.stream.Collectors.toMap(ShiftSlot::getId, s -> s));
+        validateSlots(request.getShiftSlots(), currentSlots);
 
         listing.setPosition(request.getPosition());
         listing.setJobType(request.getJobType());

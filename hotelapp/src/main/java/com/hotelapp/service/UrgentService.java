@@ -136,7 +136,7 @@ public class UrgentService {
 
         if (listing.getStatus() != ListingStatus.ACTIVE) {
             throw new BusinessRuleException(
-                    "Sadece aktif ilanlar acil işaretlenebilir. Mevcut durum: " + listing.getStatus());
+                    "Yalnızca yayındaki ilanlar acil olarak işaretlenebilir.");
         }
         if (listing.isUrgentNow()) {
             throw new BusinessRuleException("Bu ilan zaten acil olarak işaretli.");

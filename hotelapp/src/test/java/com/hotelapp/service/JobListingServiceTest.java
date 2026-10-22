@@ -734,4 +734,152 @@ class JobListingServiceTest {
             org.mockito.Mockito.verifyNoInteractions(applicationRepository, notificationService);
         }
     }
+
+    // ============================================================
+    @Nested
+    @DisplayName("updateListing — mevcut vardiya ve tarih kuralları (Y3/Y4)")
+    class UpdateListingTimeRules {
+
+        private JobListing listingWith(LocalDate startDate, ShiftSlot... slots) {
+            Business b = businessOwnedBy(OWNER_ID);
+            b.setType(com.hotelapp.enums.BusinessType.HOTEL);
+            JobListing listing = JobListing.builder().id(5L).business(b)
+                    .position(Position.WAITER).jobType(JobType.PERMANENT).title("Garson")
+                    .status(ListingStatus.ACTIVE).startDate(startDate).build();
+            listing.setShiftSlots(new java.util.ArrayList<>());
+            for (ShiftSlot sl : slots) {
+                sl.setJobListing(listing);
+                listing.getShiftSlots().add(sl);
+            }
+            when(jobListingRepository.findById(5L)).thenReturn(Optional.of(listing));
+            return listing;
+        }
+
+        private ShiftSlot existing(long id, LocalDate date, String start, String end, int needed, int filled) {
+            return ShiftSlot.builder().id(id).date(date)
+                    .startTime(LocalTime.parse(start)).endTime(LocalTime.parse(end))
+                    .slotsNeeded(needed).slotsFilled(filled).build();
+        }
+
+        private ShiftSlotCreate same(ShiftSlot sl, Integer needed) {
+            ShiftSlotCreate c = slot(sl.getDate(), sl.getStartTime().toString(), sl.getEndTime().toString(), needed);
+            c.setId(sl.getId());
+            return c;
+        }
+
+        @Test
+        @DisplayName("Geçmişteki değişmeyen vardiya ve değişmeyen geçmiş başlangıç tarihi düzenlemeyi engellemez")
+        void unchangedPastSlotAndStartDate_allowed() {
+            LocalDate yesterday = LocalDate.now().minusDays(1);
+            ShiftSlot past = existing(100L, yesterday, "10:00", "18:00", 2, 1);
+            listingWith(yesterday, past);
+            ListingRequest r = validRequest();
+            r.setStartDate(yesterday);
+            r.setShiftSlots(List.of(same(past, 2), slot(LocalDate.now().plusDays(3), "10:00", "18:00", 1)));
+
+            service.updateListing(5L, OWNER_ID, r);
+
+            verify(jobListingRepository).save(any());
+        }
+
+        @Test
+        @DisplayName("Başlangıç tarihi geçmişe DEĞİŞTİRİLİRSE reddedilir")
+        void startDateChangedToPast_throws() {
+            ShiftSlot future = existing(100L, LocalDate.now().plusDays(2), "10:00", "18:00", 1, 0);
+            listingWith(LocalDate.now().plusDays(1), future);
+            ListingRequest r = validRequest();
+            r.setStartDate(LocalDate.now().minusDays(3));
+            r.setShiftSlots(List.of(same(future, 1)));
+
+            assertThatThrownBy(() -> service.updateListing(5L, OWNER_ID, r))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("Başlangıç tarihi geçmişte olamaz");
+            verify(jobListingRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Boş mevcut vardiya geçmiş tarihe taşınırsa reddedilir")
+        void emptySlotMovedToPast_throws() {
+            ShiftSlot future = existing(100L, LocalDate.now().plusDays(2), "10:00", "18:00", 1, 0);
+            listingWith(null, future);
+            ShiftSlotCreate moved = slot(LocalDate.now().minusDays(1), "10:00", "18:00", 1);
+            moved.setId(100L);
+            ListingRequest r = validRequest();
+            r.setShiftSlots(List.of(moved));
+
+            assertThatThrownBy(() -> service.updateListing(5L, OWNER_ID, r))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("geçmiş tarih olamaz");
+        }
+
+        @Test
+        @DisplayName("Kabul edilmiş adayı olan vardiyanın saati değiştirilemez (422)")
+        void filledSlotTimeChange_throws() {
+            ShiftSlot filled = existing(100L, LocalDate.now().plusDays(2), "10:00", "18:00", 2, 1);
+            listingWith(null, filled);
+            ShiftSlotCreate changed = slot(filled.getDate(), "12:00", "20:00", 2);
+            changed.setId(100L);
+            ListingRequest r = validRequest();
+            r.setShiftSlots(List.of(changed));
+
+            assertThatThrownBy(() -> service.updateListing(5L, OWNER_ID, r))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("kabul edilmiş aday var")
+                    .hasMessageContaining("yeni vardiya ekleyin");
+            assertThat(filled.getStartTime()).isEqualTo(LocalTime.parse("10:00"));
+            verify(jobListingRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Bekleyen başvurusu olan vardiyanın saati değiştirilemez; başvurusuz boş vardiya değişebilir")
+        void pendingSlotTimeChange_throws() {
+            ShiftSlot pending = existing(100L, LocalDate.now().plusDays(2), "10:00", "18:00", 2, 0);
+            listingWith(null, pending);
+            when(applicationRepository.existsByRequestedSlots_IdAndStatusIn(org.mockito.ArgumentMatchers.eq(100L), any()))
+                    .thenReturn(true);
+            ShiftSlotCreate changed = slot(pending.getDate(), "12:00", "20:00", 2);
+            changed.setId(100L);
+            ListingRequest r = validRequest();
+            r.setShiftSlots(List.of(changed));
+
+            assertThatThrownBy(() -> service.updateListing(5L, OWNER_ID, r))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("bekleyen başvuru var");
+            assertThat(pending.getStartTime()).isEqualTo(LocalTime.parse("10:00"));
+            verify(jobListingRepository, never()).save(any());
+
+            when(applicationRepository.existsByRequestedSlots_IdAndStatusIn(org.mockito.ArgumentMatchers.eq(100L), any()))
+                    .thenReturn(false);
+            service.updateListing(5L, OWNER_ID, r);
+            assertThat(pending.getStartTime()).isEqualTo(LocalTime.parse("12:00"));
+        }
+
+        @Test
+        @DisplayName("İhtiyaç sayısı dolu koltuk sayısının altına indirilemez")
+        void neededBelowFilled_throws() {
+            ShiftSlot filled = existing(100L, LocalDate.now().plusDays(2), "10:00", "18:00", 3, 2);
+            listingWith(null, filled);
+            ListingRequest r = validRequest();
+            r.setShiftSlots(List.of(same(filled, 1)));
+
+            assertThatThrownBy(() -> service.updateListing(5L, OWNER_ID, r))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("az olamaz");
+            assertThat(filled.getSlotsNeeded()).isEqualTo(3);
+        }
+
+        @Test
+        @DisplayName("Dolu vardiyada yalnız ihtiyaç sayısını artırmak serbest")
+        void filledSlotNeededIncrease_allowed() {
+            ShiftSlot filled = existing(100L, LocalDate.now().plusDays(2), "10:00", "18:00", 2, 2);
+            listingWith(null, filled);
+            ListingRequest r = validRequest();
+            r.setShiftSlots(List.of(same(filled, 4)));
+
+            service.updateListing(5L, OWNER_ID, r);
+
+            assertThat(filled.getSlotsNeeded()).isEqualTo(4);
+            assertThat(filled.getSlotsFilled()).isEqualTo(2);
+        }
+    }
 }

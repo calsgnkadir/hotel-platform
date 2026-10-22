@@ -11,7 +11,6 @@ import com.hotelapp.repository.ConversationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 
@@ -96,20 +95,34 @@ public class ApplicationMapper {
                 .build();
     }
 
+    /** Vardiya saatleri Türkiye yerel saati. */
+    static final java.time.ZoneId ZONE = java.time.ZoneId.of("Europe/Istanbul");
+
+    static boolean isWorkCompleted(Application application) {
+        return isWorkCompleted(application, java.time.LocalDateTime.now(ZONE));
+    }
+
     /**
-     * Basvurudaki tum vardiyalar gecmiste mi (calisma tamamlandi mi)?
+     * Basvurudaki tum vardiyalar bitti mi (calisma tamamlandi mi)? Bitis ShiftWindow'dan:
+     * gece vardiyasi ertesi gun biter. Saat bilgisi eksik eski slotta gun sonu esas alinir.
      * Slot yoksa (eski basvuru) tamamlandi sayilir (backward compat).
      */
-    static boolean isWorkCompleted(Application application) {
+    static boolean isWorkCompleted(Application application, java.time.LocalDateTime now) {
         if (application.getRequestedSlots() == null || application.getRequestedSlots().isEmpty()) {
             return true;
         }
-        LocalDate today = LocalDate.now();
         return application.getRequestedSlots().stream()
-                .map(ShiftSlot::getDate)
+                .map(ApplicationMapper::endOf)
+                .filter(java.util.Objects::nonNull)
                 .max(Comparator.naturalOrder())
-                .map(latest -> latest.isBefore(today))
+                .map(latestEnd -> !now.isBefore(latestEnd))
                 .orElse(true);
+    }
+
+    /** Slotun bitis ani; saatsiz eski slotta gunun sonu. */
+    static java.time.LocalDateTime endOf(ShiftSlot s) {
+        if (ShiftWindow.hasTimes(s)) return ShiftWindow.endAt(s);
+        return s.getDate() != null ? s.getDate().plusDays(1).atStartOfDay() : null;
     }
 
     /** Aday ozeti — ad + avatar. */

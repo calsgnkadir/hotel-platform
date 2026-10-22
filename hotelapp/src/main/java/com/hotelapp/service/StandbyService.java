@@ -57,6 +57,9 @@ public class StandbyService {
     private final SmsService smsService;   // yedek kanal (push'a EK) — acil aktivasyonda
     private final CandidateBlockRepository candidateBlockRepository;   // isletme adayi engeller
 
+    /** Vardiya saatleri Türkiye yerel saati (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     // ================================================================
     // BUSINESS OWNER — yedek isaretle / geri al
     // ================================================================
@@ -77,7 +80,8 @@ public class StandbyService {
                 && current != ApplicationStatus.REVIEWING
                 && current != ApplicationStatus.HELD) {
             throw new BusinessRuleException(
-                    "Sadece sonuçlanmamış başvurular yedek olarak işaretlenebilir. Mevcut durum: " + current);
+                    "Yalnızca sonuçlanmamış başvurular yedek olarak işaretlenebilir. Başvurunun durumu: "
+                    + current.label());
         }
 
         long existing = applicationRepository.countByJobListingIdAndStatus(
@@ -169,7 +173,17 @@ public class StandbyService {
         if (noShowApp == null) return null;
 
         Long listingId = noShowApp.getJobListing().getId();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
+
+        // Kapalı ya da yönetici tarafından askıya alınmış ilanda yedek çağrılmaz:
+        // teklif kabul edilemez (AcceptanceGuard), aday boşuna aranmasın. İşletmenin
+        // kendi duraklattığı ilanda (PAUSED) gelmeyen adayın yerine yedek yine aranır.
+        var noShowListing = noShowApp.getJobListing();
+        if (noShowListing.getStatus() == com.hotelapp.enums.ListingStatus.CLOSED
+                || noShowListing.isAdminSuspended()) {
+            log.info("[STANDBY] listing={} kapalı/askıda, yedek teklifi atlandı", listingId);
+            return null;
+        }
 
         List<ShiftSlot> pool = vacatedSlotIds != null
                 ? shiftSlotRepository.findAllById(vacatedSlotIds)
@@ -267,6 +281,8 @@ public class StandbyService {
                     app.getJobListing().getBusiness().getId(), candidateId)) {
                 throw new BusinessRuleException("Bu işletmeye başvuru yapamazsın.");
             }
+            // Kabul kapısı (işletme kararı ve teklif onayıyla aynı kural).
+            AcceptanceGuard.check(app, applicationRepository, LocalDateTime.now(clock));
             app.setStatus(ApplicationStatus.ACCEPTED);
             app.setStandbyDeadline(null);
             // Once basvuru (iyimser kilit): isletme ayni anda karar verdiyse 409.

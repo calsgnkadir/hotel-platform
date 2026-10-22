@@ -43,8 +43,8 @@ class MessagesTest {
     @DisplayName("TR: tırnaklı argümanlı mesajda {0} doldurulur (HOLD''a)")
     void turkishApostropheWithArgs() {
         LocaleContextHolder.setLocale(Locale.forLanguageTag("tr"));
-        String msg = buildMessages().get("error.application.holdOnlyPending", "ACCEPTED");
-        assertThat(msg).isEqualTo("Yalnızca bekleyen veya incelenen başvuru HOLD'a alınabilir. Mevcut durum: ACCEPTED");
+        String msg = buildMessages().get("error.application.holdOnlyPending", "Kabul edildi");
+        assertThat(msg).isEqualTo("Yalnızca bekleyen veya incelenen başvuru adaya teklif edilebilir. Başvurunun durumu: Kabul edildi");
     }
 
     @Test

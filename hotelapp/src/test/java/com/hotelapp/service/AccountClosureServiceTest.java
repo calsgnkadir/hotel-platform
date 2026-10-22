@@ -196,6 +196,20 @@ class AccountClosureServiceTest {
     }
 
     @Test
+    @DisplayName("Askıya alınmış ilanda vardiya boşalır ama yedek zinciri tetiklenmez")
+    void suspendedListing_noStandbyOffer() {
+        JobListing l = listing(22L, ListingStatus.PAUSED);
+        l.setAdminSuspended(true);
+        Application accepted = app(5L, ApplicationStatus.ACCEPTED, l, slot(500L, LocalDate.of(2026, 10, 20)));
+        when(applicationRepository.findAllByCandidateId(CANDIDATE_ID)).thenReturn(List.of(accepted));
+
+        service.releaseCandidate(CANDIDATE_ID, null, AccountClosureService.Reason.ACCOUNT_CLOSED);
+
+        verify(shiftSlotRepository).decrementFilled(500L);
+        verify(standbyService, never()).offerAfterNoShow(anyLong(), any());
+    }
+
+    @Test
     @DisplayName("Kapalı ilandaki vardiya boşalır ve işletmeye haber gider ama yedek çağrılmaz")
     void closedListing_noStandbyOffer() {
         JobListing l = listing(22L, ListingStatus.CLOSED);

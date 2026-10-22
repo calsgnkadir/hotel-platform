@@ -51,12 +51,20 @@ public class WorkSessionService {
         Application app = applicationRepository.findByIdForCheckIn(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
         validateApplication(app, candidateId);
-        Business biz = app.getJobListing().getBusiness();
+        if (lat == null || lng == null) {
+            throw new BusinessRuleException("Konum bilgisi alınamadı. Konum iznini açıp tekrar dene.");
+        }
+        // Kapalı ya da yönetici tarafından askıya alınmış ilanda yeni giriş yok.
+        com.hotelapp.entity.JobListing listing = app.getJobListing();
+        if (listing.getStatus() == com.hotelapp.enums.ListingStatus.CLOSED || listing.isAdminSuspended()) {
+            throw new BusinessRuleException("Bu ilan kapalı; mesai girişi yapılamaz.");
+        }
+        Business biz = listing.getBusiness();
 
         // Isletme konumu yoksa fence yapilamaz
         if (biz.getLatitude() == null || biz.getLongitude() == null) {
             throw new BusinessRuleException(
-                    "Isletmenin konumu sisteme girilmedi — clock-in yapilamaz");
+                    "İşletmenin konumu sisteme girilmemiş; konumla mesai girişi yapılamaz.");
         }
 
         int distance = haversineMeters(
@@ -64,7 +72,7 @@ public class WorkSessionService {
 
         if (distance > FENCE_RADIUS_METERS) {
             throw new BusinessRuleException(String.format(
-                    "Isyerinden cok uzaktasin (~%d m). Maksimum %d m olmali.",
+                    "İş yerine çok uzaktasın (yaklaşık %d m). En fazla %d m uzaklıkta olmalısın.",
                     distance, FENCE_RADIUS_METERS));
         }
 
@@ -73,11 +81,19 @@ public class WorkSessionService {
                 workSessionRepository.findByApplicationCandidateIdAndClockOutAtIsNull(candidateId);
         if (!openSessions.isEmpty()) {
             throw new BusinessRuleException(
-                    "Zaten acik bir mesain var. Once 'Mesaiyi Bitir' yapmalisin.");
+                    "Zaten açık bir mesain var. Önce \"Mesaiyi Bitir\" demelisin.");
         }
 
         LocalDateTime now = LocalDateTime.now(clock);
         ShiftSlot slot = ShiftAttendance.inferSlot(app.getRequestedSlots(), now).orElse(null);
+        // Vardiyalı başvuruda giriş yalnız vardiya gününde, vardiya bitmeden (QR kartla aynı
+        // pencere). Slotsuz eski başvuru (Faz E1 öncesi) saat bilgisi taşımadığı için istisna:
+        // slotu yoktur, kapalı ilan kuralı yukarıda sınırlar.
+        boolean slotted = app.getRequestedSlots() != null && !app.getRequestedSlots().isEmpty();
+        if (slotted && slot == null && !NoShowSlots.isLegacy(app)) {
+            throw new BusinessRuleException(
+                    "Şu anda devam eden bir vardiyan yok. Mesai girişi yalnız vardiya gününde, vardiya bitmeden yapılabilir.");
+        }
         // Gelmedi isaretli vardiyada (V25 satiri) giris yok. Eski kayit (satir yok):
         // o saatte eslesen vardiya da yoksa giris yok (onceki davranis).
         if (NoShowSlots.isMarked(app, slot) || (slot == null && NoShowSlots.isLegacy(app))) {
@@ -104,12 +120,15 @@ public class WorkSessionService {
     public WorkSessionDto clockOut(Long candidateId, Long applicationId,
                                     BigDecimal lat, BigDecimal lng) {
         Application app = getOwnedAcceptedApplication(applicationId, candidateId);
+        if (lat == null || lng == null) {
+            throw new BusinessRuleException("Konum bilgisi alınamadı. Konum iznini açıp tekrar dene.");
+        }
         Business biz = app.getJobListing().getBusiness();
 
         WorkSession ws = workSessionRepository
                 .findFirstByApplicationIdAndClockOutAtIsNull(applicationId)
                 .orElseThrow(() -> new BusinessRuleException(
-                        "Acik bir mesain yok — once 'Mesaiye Basla' yap"));
+                        "Açık bir mesain yok. Önce \"Mesaiye Başla\" demelisin."));
 
         int distance = (biz.getLatitude() != null && biz.getLongitude() != null)
                 ? haversineMeters(lat, lng, biz.getLatitude(), biz.getLongitude())
@@ -120,7 +139,7 @@ public class WorkSessionService {
             log.warn("[WS-CLOCK-OUT] uzak cikis kabul edildi: appId={} dist={}m", applicationId, distance);
         }
 
-        ws.setClockOutAt(LocalDateTime.now());
+        ws.setClockOutAt(LocalDateTime.now(clock));
         ws.setClockOutLat(lat);
         ws.setClockOutLng(lng);
         ws.setClockOutDistanceMeters(distance);
@@ -164,7 +183,7 @@ public class WorkSessionService {
         }
         if (app.getStatus() != ApplicationStatus.ACCEPTED) {
             throw new BusinessRuleException(
-                    "Mesai kaydedebilmek icin basvurun ACCEPTED olmali. Mevcut: " + app.getStatus());
+                    "Mesai kaydı yalnız kabul edilmiş başvurularda yapılabilir.");
         }
     }
 

@@ -337,7 +337,7 @@ class ApplicationServiceTest {
 
             assertThatThrownBy(() -> service.markNoShow(APP_ID, OWNER_ID))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("KABUL EDİLMİŞ");
+                    .hasMessageContaining("kabul edilmiş");
         }
 
         @Test
@@ -349,7 +349,7 @@ class ApplicationServiceTest {
 
             assertThatThrownBy(() -> service.markNoShow(APP_ID, OWNER_ID))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("zaten no-show");
+                    .hasMessageContaining("zaten gelmedi");
         }
 
         @Test

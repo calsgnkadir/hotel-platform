@@ -38,4 +38,39 @@ class InputPolicyTest {
                     .isEqualTo("error.business.websiteInvalid");
         }
     }
+
+    @Test
+    void candidateBirthDate_minimumAge18() {
+        var validator = jakarta.validation.Validation.buildDefaultValidatorFactory().getValidator();
+        var req = new com.hotelapp.service.CandidateProfileService.ProfileUpdateRequest();
+        req.setFullName("Deneme Aday");
+
+        req.setBirthDate(java.time.LocalDate.now().minusYears(17));
+        assertThat(validator.validateProperty(req, "birthDate"))
+                .extracting(jakarta.validation.ConstraintViolation::getMessage)
+                .containsExactly("Yaşınız 18-65 aralığında olmalı");
+
+        req.setBirthDate(java.time.LocalDate.now().minusYears(18));
+        assertThat(validator.validateProperty(req, "birthDate")).isEmpty();
+    }
+
+    @Test
+    void applicationAndReviewText_haveSizeLimits() {
+        var validator = jakarta.validation.Validation.buildDefaultValidatorFactory().getValidator();
+        var app = new com.hotelapp.dto.ApplicationRequest();
+        app.setJobListingId(1L);
+        app.setCoverLetter("a".repeat(2000));
+        assertThat(validator.validate(app)).isEmpty();
+        app.setCoverLetter("a".repeat(2001));
+        assertThat(validator.validate(app)).extracting(jakarta.validation.ConstraintViolation::getMessage)
+                .containsExactly("Ön yazı en fazla 2000 karakter olabilir");
+
+        var review = new com.hotelapp.dto.ReviewRequest();
+        review.setDecision(com.hotelapp.enums.ApplicationStatus.REJECTED);
+        review.setNote("n".repeat(255));
+        assertThat(validator.validate(review)).isEmpty();
+        review.setNote("n".repeat(256));
+        assertThat(validator.validate(review)).extracting(jakarta.validation.ConstraintViolation::getMessage)
+                .containsExactly("Not en fazla 255 karakter olabilir");
+    }
 }

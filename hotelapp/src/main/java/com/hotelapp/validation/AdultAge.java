@@ -23,7 +23,7 @@ public @interface AdultAge {
 
     String message() default "Yaş {min}-{max} aralığında olmalı";
 
-    int min() default 16;
+    int min() default 18;
 
     int max() default 65;
 

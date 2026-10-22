@@ -356,7 +356,7 @@ public class CandidateProfileService {
         private String district;
         private String neighborhood;
 
-        @AdultAge(min = 16, max = 65, message = "Yaşınız 16-65 aralığında olmalı")
+        @AdultAge(min = 18, max = 65, message = "Yaşınız 18-65 aralığında olmalı")
         private LocalDate birthDate;
 
         private Gender gender;

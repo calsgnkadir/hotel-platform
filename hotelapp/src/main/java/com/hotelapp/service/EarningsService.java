@@ -39,9 +39,13 @@ public class EarningsService {
     // MONTHLY ucreti saatlige cevirmek icin: 22 is gunu x 8 saat.
     private static final BigDecimal MONTHLY_HOURS = BigDecimal.valueOf(22L * 8);
 
+    /** Vardiya saatleri Türkiye yerel saati (testte sabitlenebilir). */
+    java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
+
     @Transactional(readOnly = true)
     public EarningsResponse getMyEarnings(Long candidateId) {
-        LocalDate today = LocalDate.now();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now(clock);
+        LocalDate today = now.toLocalDate();
         LocalDate monthStart = today.withDayOfMonth(1);
         LocalDate yearStart  = today.withDayOfYear(1);
 
@@ -72,7 +76,9 @@ public class EarningsService {
 
             for (ShiftSlot slot : slots) {
                 if (slot.getDate() == null) continue;
-                if (!slot.getDate().isBefore(today)) continue;  // sadece gecmis (tamamlanmis) vardiyalar
+                // Yalniz bitmis vardiyalar (ShiftWindow: gece vardiyasi ertesi gun biter)
+                java.time.LocalDateTime end = ApplicationMapper.endOf(slot);
+                if (end == null || now.isBefore(end)) continue;
                 // Gelmedi isaretli vardiya kazanca girmez; ayni basvurunun calisilmis diger
                 // vardiyalari kalir (V25 satiri; eski kayit onceki gibi sayilir).
                 if (NoShowSlots.isMarked(app, slot)) continue;

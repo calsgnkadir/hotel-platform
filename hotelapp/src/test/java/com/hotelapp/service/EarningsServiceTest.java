@@ -128,4 +128,58 @@ class EarningsServiceTest {
                     .containsExactlyInAnyOrder(d1.getDate(), d2.getDate());
         }
     }
+
+    @Nested @DisplayName("getMyEarnings — vardiya bitişi ShiftWindow'a göre (O1)")
+    class EndedByShiftWindow {
+
+        private static final java.time.ZoneId TR = java.time.ZoneId.of("Europe/Istanbul");
+        private static final java.time.LocalDate DAY = java.time.LocalDate.of(2026, 10, 3);
+
+        private EarningsService serviceWith(java.time.LocalDateTime now, ShiftSlot... slots) {
+            var apps = org.mockito.Mockito.mock(com.hotelapp.repository.ApplicationRepository.class);
+            var sessions = org.mockito.Mockito.mock(com.hotelapp.repository.WorkSessionRepository.class);
+            var listing = com.hotelapp.entity.JobListing.builder().id(10L).title("Gece")
+                    .salaryType(SalaryType.HOURLY).salaryMin(new BigDecimal("100")).salaryMax(new BigDecimal("100"))
+                    .business(com.hotelapp.entity.Business.builder().id(3L).name("Grand Otel").build())
+                    .build();
+            var app = com.hotelapp.entity.Application.builder().id(5L)
+                    .status(com.hotelapp.enums.ApplicationStatus.ACCEPTED)
+                    .jobListing(listing)
+                    .requestedSlots(new java.util.HashSet<>(java.util.Set.of(slots))).build();
+            org.mockito.Mockito.when(apps.findAllByCandidateId(7L)).thenReturn(java.util.List.of(app));
+            org.mockito.Mockito.when(sessions.findByApplicationIdOrderByClockInAtDesc(5L)).thenReturn(java.util.List.of());
+            var svc = new EarningsService(apps, sessions);
+            svc.clock = java.time.Clock.fixed(now.atZone(TR).toInstant(), TR);
+            return svc;
+        }
+
+        private ShiftSlot slot(long id, java.time.LocalDate date, int sh, int eh) {
+            return ShiftSlot.builder().id(id).date(date)
+                    .startTime(LocalTime.of(sh, 0)).endTime(LocalTime.of(eh, 0)).build();
+        }
+
+        @Test
+        @DisplayName("Bugün biten gündüz vardiyası bitişten sonra kazanca girer (eskiden ertesi güne kadar beklerdi)")
+        void dayShiftEndedToday_counts() {
+            var res = serviceWith(DAY.atTime(17, 0), slot(1L, DAY, 8, 16)).getMyEarnings(7L);
+            assertThat(res.getShiftCount()).isEqualTo(1);
+            assertThat(res.getTotalGross()).isEqualByComparingTo("800.00");
+        }
+
+        @Test
+        @DisplayName("Dün başlayıp bu sabah 06:00'da biten gece vardiyası 05:00'te henüz sayılmaz, 07:00'de sayılır")
+        void overnightCountsOnlyAfterNextMorningEnd() {
+            ShiftSlot night = slot(1L, DAY, 22, 6);
+            assertThat(serviceWith(DAY.plusDays(1).atTime(5, 0), night).getMyEarnings(7L).getShiftCount()).isZero();
+            var res = serviceWith(DAY.plusDays(1).atTime(7, 0), night).getMyEarnings(7L);
+            assertThat(res.getShiftCount()).isEqualTo(1);
+            assertThat(res.getTotalHours()).isEqualTo(8.0);
+        }
+
+        @Test
+        @DisplayName("Gelecek vardiya kazanca girmez")
+        void futureShift_excluded() {
+            assertThat(serviceWith(DAY.atTime(7, 0), slot(1L, DAY, 8, 16)).getMyEarnings(7L).getShiftCount()).isZero();
+        }
+    }
 }

@@ -208,8 +208,8 @@ public class ApplicationService {
 
         if (application.getStatus() != ApplicationStatus.PENDING) {
             throw new BusinessRuleException(
-                    "Sadece PENDING durumdaki başvurular incelemeye alınabilir. Mevcut durum: "
-                    + application.getStatus());
+                    "Yalnızca bekleyen başvurular incelemeye alınabilir. Başvurunun durumu: "
+                    + application.getStatus().label());
         }
 
         application.setStatus(ApplicationStatus.REVIEWING);
@@ -231,12 +231,17 @@ public class ApplicationService {
                 || current == ApplicationStatus.REJECTED
                 || current == ApplicationStatus.EXPIRED
                 || current == ApplicationStatus.WITHDRAWN) {
-            throw new BusinessRuleException("Bu başvuru zaten sonuçlandırılmış: " + current);
+            throw new BusinessRuleException("Bu başvuru zaten sonuçlandırılmış (" + current.label() + ").");
         }
 
         if (request.getDecision() != ApplicationStatus.ACCEPTED
                 && request.getDecision() != ApplicationStatus.REJECTED) {
             throw BusinessRuleException.keyed("error.application.decisionInvalid");
+        }
+
+        // Kabul kapısı: ilan yayında, işletme aktif, başlamış vardiyalar çıkar, çakışma yok.
+        if (request.getDecision() == ApplicationStatus.ACCEPTED) {
+            AcceptanceGuard.check(application, applicationRepository, LocalDateTime.now(clock));
         }
 
         // Aktif yedek teklifi olan aday reddedilirse acik kapanmadan kalmasin.
@@ -328,7 +333,7 @@ public class ApplicationService {
         Application app = getApplicationForBusinessOwner(applicationId, ownerId);
         ApplicationStatus s = app.getStatus();
         if (s != ApplicationStatus.PENDING && s != ApplicationStatus.REVIEWING) {
-            throw BusinessRuleException.keyed("error.application.holdOnlyPending", s);
+            throw BusinessRuleException.keyed("error.application.holdOnlyPending", s.label());
         }
         app.setStatus(ApplicationStatus.HELD);
         app.setHoldDeadline(LocalDateTime.now().plusHours(24));
@@ -363,7 +368,7 @@ public class ApplicationService {
             throw UnauthorizedException.keyed("error.application.notOwner");
         }
         if (app.getStatus() != ApplicationStatus.HELD) {
-            throw BusinessRuleException.keyed("error.application.holdRespondOnly", app.getStatus());
+            throw BusinessRuleException.keyed("error.application.holdRespondOnly", app.getStatus().label());
         }
         if (app.getHoldDeadline() != null && LocalDateTime.now().isAfter(app.getHoldDeadline())) {
             // Suresi gecmis: EXPIRED kalici olur (noRollbackFor), sonra 422.
@@ -375,6 +380,7 @@ public class ApplicationService {
         if (accept) {
             // Engel aninda HELD basvurular REJECTED olur; bu kontrol yaris durumuna karsi yedek.
             requireNotBlockedByBusiness(app.getJobListing().getBusiness().getId(), candidateId);
+            AcceptanceGuard.check(app, applicationRepository, LocalDateTime.now(clock));
             // ACCEPTED'e gec (iyimser kilit) + koltuklari atomik al (hepsi ya da hicbiri)
             app.setStatus(ApplicationStatus.ACCEPTED);
             applicationRepository.saveAndFlush(app);
@@ -439,7 +445,7 @@ public class ApplicationService {
                 case REJECTED  -> "Bu başvuru zaten reddedilmiş.";
                 case EXPIRED   -> "Bu başvurunun süresi dolmuş.";
                 case WITHDRAWN -> "Bu başvuru zaten iptal edilmiş.";
-                default        -> "Bu başvuru iptal edilemez. Mevcut durum: " + current;
+                default        -> "Bu başvuru iptal edilemez. Başvurunun durumu: " + current.label();
             };
             throw new BusinessRuleException(msg);
         }
@@ -506,13 +512,13 @@ public class ApplicationService {
 
         if (application.getStatus() != ApplicationStatus.ACCEPTED) {
             throw new BusinessRuleException(
-                    "Sadece KABUL EDİLMİŞ başvurular no-show olarak işaretlenebilir. Mevcut durum: "
-                    + application.getStatus());
+                    "Yalnızca kabul edilmiş başvurular gelmedi olarak işaretlenebilir. Başvurunun durumu: "
+                    + application.getStatus().label());
         }
         // V25 oncesi isaret (ya da slotsuz basvuru): eski akista tum koltuklar zaten
         // bosaltildi; yeni vardiya isareti cift bosaltma olurdu.
         if (NoShowSlots.isLegacy(application)) {
-            throw new BusinessRuleException("Bu başvuru zaten no-show olarak işaretlenmiş.");
+            throw new BusinessRuleException("Bu başvuru zaten gelmedi olarak işaretlenmiş.");
         }
 
         ShiftSlot slot = selectNoShowSlot(application, slotId);

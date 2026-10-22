@@ -146,6 +146,7 @@ class ApplicationServiceShiftRulesTest {
         @Test
         @DisplayName("Kabul: önce başvuru flush (iyimser kilit), sonra slotlar id sırasıyla koşullu artırılır")
         void accept_claimsSeatsInIdOrder() {
+            at(DAY.atTime(6, 0));
             ShiftSlot b = slot(902L, DAY.plusDays(2), 8, 16);
             ShiftSlot a = slot(901L, DAY.plusDays(1), 8, 16);
             Application app = app(ApplicationStatus.REVIEWING, b, a);
@@ -164,6 +165,7 @@ class ApplicationServiceShiftRulesTest {
         @Test
         @DisplayName("Kabul: ikinci slot dolduysa 422 'Bu vardiya doldu' (transaction geri alınır), bildirim/audit yok")
         void accept_secondSlotFull_throws() {
+            at(DAY.atTime(6, 0));
             ShiftSlot a = slot(901L, DAY.plusDays(1), 8, 16);
             ShiftSlot b = slot(902L, DAY.plusDays(2), 8, 16);
             Application app = app(ApplicationStatus.REVIEWING, a, b);
@@ -181,6 +183,7 @@ class ApplicationServiceShiftRulesTest {
         @Test
         @DisplayName("HOLD onayı: slot dolduysa 422, audit/bildirim yok")
         void holdAccept_full_throws() {
+            at(DAY.atTime(6, 0));
             Application app = app(ApplicationStatus.HELD, slot(901L, DAY.plusDays(1), 8, 16));
             app.setHoldDeadline(LocalDateTime.now().plusHours(5));
             when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
@@ -475,10 +478,10 @@ class ApplicationServiceShiftRulesTest {
 
             assertThatThrownBy(() -> service.markNoShow(APP_ID, OWNER_ID))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("zaten no-show");
+                    .hasMessageContaining("zaten gelmedi");
             assertThatThrownBy(() -> service.markNoShow(APP_ID, OWNER_ID, 901L))
                     .isInstanceOf(BusinessRuleException.class)
-                    .hasMessageContaining("zaten no-show");
+                    .hasMessageContaining("zaten gelmedi");
             verify(shiftSlotRepository, never()).decrementFilled(anyLong());
             verify(noShowSlotRepository, never()).saveAndFlush(any());
         }
@@ -494,6 +497,133 @@ class ApplicationServiceShiftRulesTest {
             assertThat(app.isNoShow()).isTrue();
             assertThat(app.getCandidate().getStrikesRemaining()).isEqualTo(2);
             verifyNoInteractions(shiftSlotRepository, noShowSlotRepository);
+        }
+    }
+
+    // ================================================================
+    @Nested
+    @DisplayName("Kabul kapısı — ilan/işletme durumu, başlamış vardiya, çakışma (Y5/O6/O7)")
+    class AcceptanceGate {
+
+        private ReviewRequest accept() {
+            ReviewRequest r = new ReviewRequest();
+            r.setDecision(ApplicationStatus.ACCEPTED);
+            return r;
+        }
+
+        @Test
+        @DisplayName("Kapalı ilanda işletme kabulü 422, başvuru ve koltuk değişmez")
+        void closedListing_reviewAccept_throws() {
+            at(DAY.atTime(6, 0));
+            Application app = app(ApplicationStatus.REVIEWING, slot(901L, DAY.plusDays(1), 8, 16));
+            app.getJobListing().setStatus(ListingStatus.CLOSED);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+
+            assertThatThrownBy(() -> service.reviewApplication(APP_ID, OWNER_ID, accept()))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessage(AcceptanceGuard.LISTING_NOT_ACTIVE);
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.REVIEWING);
+            verify(applicationRepository, never()).saveAndFlush(any());
+            verifyNoInteractions(shiftSlotRepository);
+        }
+
+        @Test
+        @DisplayName("Ret kararı kapıdan etkilenmez (askıdaki ilanda da reddedilebilir)")
+        void suspendedListing_reject_allowed() {
+            at(DAY.atTime(6, 0));
+            Application app = app(ApplicationStatus.REVIEWING, slot(901L, DAY.minusDays(1), 8, 16));
+            app.getJobListing().setAdminSuspended(true);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            ReviewRequest r = new ReviewRequest();
+            r.setDecision(ApplicationStatus.REJECTED);
+
+            service.reviewApplication(APP_ID, OWNER_ID, r);
+
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.REJECTED);
+        }
+
+        @Test
+        @DisplayName("Yasaklı işletme sahibi kabul edemez")
+        void bannedOwner_reviewAccept_throws() {
+            at(DAY.atTime(6, 0));
+            Application app = app(ApplicationStatus.REVIEWING, slot(901L, DAY.plusDays(1), 8, 16));
+            app.getJobListing().getBusiness().getOwner().setBannedUntil(LocalDateTime.now().plusDays(3));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+
+            assertThatThrownBy(() -> service.reviewApplication(APP_ID, OWNER_ID, accept()))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessage(AcceptanceGuard.OWNER_INACTIVE);
+        }
+
+        @Test
+        @DisplayName("Başlamış vardiya başvurudan çıkar; yalnız gelecek vardiyanın koltuğu alınır")
+        void startedSlotPruned_onAccept() {
+            at(DAY.atTime(12, 0));
+            ShiftSlot started = slot(901L, DAY, 8, 16);
+            ShiftSlot future = slot(902L, DAY.plusDays(1), 8, 16);
+            Application app = app(ApplicationStatus.REVIEWING, started, future);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(shiftSlotRepository.incrementFilledIfAvailable(902L)).thenReturn(1);
+
+            service.reviewApplication(APP_ID, OWNER_ID, accept());
+
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.ACCEPTED);
+            assertThat(app.getRequestedSlots()).containsExactly(future);
+            verify(shiftSlotRepository, never()).incrementFilledIfAvailable(901L);
+        }
+
+        @Test
+        @DisplayName("Teklif onayı: tüm vardiyalar başladıysa 422, koltuk alınmaz")
+        void holdAccept_allStarted_throws() {
+            at(DAY.atTime(23, 0));
+            Application app = app(ApplicationStatus.HELD, slot(901L, DAY, 22, 6));   // gece vardiyası başladı
+            app.setHoldDeadline(LocalDateTime.now().plusHours(5));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+
+            assertThatThrownBy(() -> service.respondToHold(APP_ID, CANDIDATE_ID, true))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessage(AcceptanceGuard.NO_FUTURE_SHIFT);
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.HELD);
+            verifyNoInteractions(shiftSlotRepository);
+        }
+
+        @Test
+        @DisplayName("Gece vardiyasıyla çakışma: D 22:00–06:00 kabulü varken D+1 04:00–10:00 kabul edilemez")
+        void overnightOverlap_throws() {
+            at(DAY.atTime(6, 0));
+            ShiftSlot night = slot(800L, DAY, 22, 6);
+            Application other = Application.builder().id(99L).status(ApplicationStatus.ACCEPTED)
+                    .candidate(candidate()).jobListing(listing()).requestedSlots(new HashSet<>(Set.of(night))).build();
+            ShiftSlot morning = ShiftSlot.builder().id(901L).date(DAY.plusDays(1))
+                    .startTime(LocalTime.of(4, 0)).endTime(LocalTime.of(10, 0)).slotsNeeded(1).slotsFilled(0).build();
+            Application app = app(ApplicationStatus.REVIEWING, morning);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(applicationRepository.findAllByCandidateIdAndStatus(CANDIDATE_ID, ApplicationStatus.ACCEPTED))
+                    .thenReturn(List.of(other));
+
+            assertThatThrownBy(() -> service.reviewApplication(APP_ID, OWNER_ID, accept()))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("başka bir vardiyada")
+                    .hasMessageContaining("03.10.2026 22:00");
+            verifyNoInteractions(shiftSlotRepository);
+        }
+
+        @Test
+        @DisplayName("Gece vardiyası bitişine bitişik (06:00) vardiya çakışma sayılmaz")
+        void adjacentAfterOvernight_allowed() {
+            at(DAY.atTime(6, 0));
+            ShiftSlot night = slot(800L, DAY, 22, 6);
+            Application other = Application.builder().id(99L).status(ApplicationStatus.ACCEPTED)
+                    .candidate(candidate()).jobListing(listing()).requestedSlots(new HashSet<>(Set.of(night))).build();
+            Application app = app(ApplicationStatus.REVIEWING, slot(901L, DAY.plusDays(1), 6, 14));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(app));
+            when(applicationRepository.findAllByCandidateIdAndStatus(CANDIDATE_ID, ApplicationStatus.ACCEPTED))
+                    .thenReturn(List.of(other));
+            when(shiftSlotRepository.incrementFilledIfAvailable(901L)).thenReturn(1);
+
+            service.reviewApplication(APP_ID, OWNER_ID, accept());
+
+            assertThat(app.getStatus()).isEqualTo(ApplicationStatus.ACCEPTED);
         }
     }
 }

@@ -542,4 +542,69 @@ class StandbyServiceTest {
                     .hasMessageContaining("Bu vardiya doldu");
         }
     }
+
+    // ================================================================
+    @Nested
+    @DisplayName("Kabul kapısı ve askıdaki ilan (Y5/O6/O7)")
+    class AcceptanceGate {
+
+        private Application offered(ShiftSlot slot) {
+            Application a = app(77L, ApplicationStatus.STANDBY, slot);
+            a.setStandbyOfferedAt(LocalDateTime.now().minusMinutes(10));
+            a.setStandbyDeadline(LocalDateTime.now().plusHours(2));
+            a.setStandbyReplacesApplicationId(APP_ID);
+            return a;
+        }
+
+        @Test
+        @DisplayName("Askıya alınmış ilanda yedek teklifi kabul edilemez, koltuk alınmaz")
+        void acceptOnSuspendedListing_throws() {
+            Application a = offered(upcomingSlot(1, 0));
+            a.getJobListing().setAdminSuspended(true);
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+
+            assertThatThrownBy(() -> svc().respondToOffer(77L, CANDIDATE_ID, true))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessage(AcceptanceGuard.LISTING_NOT_ACTIVE);
+            assertThat(a.getStatus()).isEqualTo(ApplicationStatus.STANDBY);
+            verify(shiftSlotRepository, never()).incrementFilledIfAvailable(any());
+        }
+
+        @Test
+        @DisplayName("Aday aynı saatte başka bir kabul edilmiş vardiyadaysa yedek teklifi kabul edilemez")
+        void acceptWithOverlappingShift_throws() {
+            ShiftSlot mine = upcomingSlot(1, 0);   // yarın 08-16
+            Application a = offered(mine);
+            ShiftSlot other = ShiftSlot.builder().id(900L).date(mine.getDate())
+                    .startTime(LocalTime.of(12, 0)).endTime(LocalTime.of(20, 0)).slotsNeeded(1).slotsFilled(1).build();
+            Application acceptedElsewhere = Application.builder().id(5L).status(ApplicationStatus.ACCEPTED)
+                    .candidate(user(CANDIDATE_ID)).jobListing(listing())
+                    .requestedSlots(new java.util.HashSet<>(Set.of(other))).build();
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(applicationRepository.findAllByCandidateIdAndStatus(CANDIDATE_ID, ApplicationStatus.ACCEPTED))
+                    .thenReturn(List.of(acceptedElsewhere));
+
+            assertThatThrownBy(() -> svc().respondToOffer(77L, CANDIDATE_ID, true))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("başka bir vardiyada");
+            verify(shiftSlotRepository, never()).incrementFilledIfAvailable(any());
+        }
+
+        @Test
+        @DisplayName("Askıdaki ya da duraklatılmış ilanda yedek zinciri tetiklenmez")
+        void offerAfterNoShow_onSuspendedOrClosedListing_skips() {
+            Application noShow = app(APP_ID, ApplicationStatus.ACCEPTED);
+            noShow.getJobListing().setAdminSuspended(true);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
+
+            assertThat(svc().offerAfterNoShow(APP_ID, List.of(500L))).isNull();
+
+            noShow.getJobListing().setAdminSuspended(false);
+            noShow.getJobListing().setStatus(com.hotelapp.enums.ListingStatus.CLOSED);
+            assertThat(svc().offerAfterNoShow(APP_ID, List.of(500L))).isNull();
+
+            verify(applicationRepository, never()).findAvailableStandbys(any());
+            verifyNoInteractions(notificationService, smsService);
+        }
+    }
 }

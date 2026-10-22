@@ -63,7 +63,7 @@ public class CandidateBlockService {
     private Business getBusinessForOwner(Long ownerId) {
         return businessRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> new BusinessRuleException(
-                        "Once isletme profilini olustur (Settings > Isletme)"));
+                        "Önce işletme profilini oluşturmalısın."));
     }
 
     @Transactional

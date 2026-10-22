@@ -119,7 +119,7 @@ class OutboxAdminServiceTest {
 
         assertThatThrownBy(() -> service.retry(8L))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("teslim edilmis");
+                .hasMessageContaining("Teslim edilmiş olay yeniden denenemez");
     }
 
     @Test

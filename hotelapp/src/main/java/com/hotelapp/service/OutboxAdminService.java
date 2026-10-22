@@ -58,7 +58,7 @@ public class OutboxAdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("OutboxEvent", id));
         if (e.getProcessedAt() != null) {
             throw new BusinessRuleException(
-                    "Zaten teslim edilmis event retry edilemez (duplicate teslimat riski)");
+                    "Teslim edilmiş olay yeniden denenemez (çift teslimat riski).");
         }
         e.setAttempts(0);
         e.setLastError(null);

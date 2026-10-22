@@ -37,7 +37,7 @@ public class WorkSessionController {
     public ResponseEntity<WorkSessionDto> clockIn(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId,
-            @org.springframework.web.bind.annotation.RequestBody GeoBody body) {
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody GeoBody body) {
         return ResponseEntity.ok(workSessionService.clockIn(
                 currentUser.getId(), applicationId, body.getLat(), body.getLng()));
     }
@@ -47,7 +47,7 @@ public class WorkSessionController {
     public ResponseEntity<WorkSessionDto> clockOut(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId,
-            @org.springframework.web.bind.annotation.RequestBody GeoBody body) {
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody GeoBody body) {
         return ResponseEntity.ok(workSessionService.clockOut(
                 currentUser.getId(), applicationId, body.getLat(), body.getLng()));
     }
@@ -92,7 +92,11 @@ public class WorkSessionController {
 
     @Data
     public static class GeoBody {
-        @NotNull private BigDecimal lat;
-        @NotNull private BigDecimal lng;
+        @NotNull(message = "Konum (enlem) zorunlu")
+        @jakarta.validation.constraints.DecimalMin(value = "-90", message = "Geçersiz konum") @jakarta.validation.constraints.DecimalMax(value = "90", message = "Geçersiz konum")
+        private BigDecimal lat;
+        @NotNull(message = "Konum (boylam) zorunlu")
+        @jakarta.validation.constraints.DecimalMin(value = "-180", message = "Geçersiz konum") @jakarta.validation.constraints.DecimalMax(value = "180", message = "Geçersiz konum")
+        private BigDecimal lng;
     }
 }

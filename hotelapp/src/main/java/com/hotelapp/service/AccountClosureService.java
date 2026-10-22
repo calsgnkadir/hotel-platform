@@ -271,8 +271,9 @@ public class AccountClosureService {
         }
         for (Vacated v : vacatedApps) {
             notifyBusiness(v, reason);
-            ListingStatus ls = v.app().getJobListing().getStatus();
-            if (ls == ListingStatus.ACTIVE || ls == ListingStatus.PAUSED) {
+            // Yedek zinciri yalnız kapanmamış, askıya alınmamış ilanda (teklif kabul edilebilsin).
+            JobListing vl = v.app().getJobListing();
+            if (vl.getStatus() != ListingStatus.CLOSED && !vl.isAdminSuspended()) {
                 standbyService.offerAfterNoShow(v.app().getId(),
                         v.slots().stream().map(ShiftSlot::getId).toList());
             }
