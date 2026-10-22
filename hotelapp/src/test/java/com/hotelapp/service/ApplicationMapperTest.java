@@ -41,8 +41,8 @@ class ApplicationMapperTest {
     @Test
     @DisplayName("isWorkCompleted: en son slot bugun ya da ileride -> false")
     void isWorkCompleted_futureSlot_false() {
-        assertThat(ApplicationMapper.isWorkCompleted(appWithLatestSlot(LocalDate.now()))).isFalse();
-        assertThat(ApplicationMapper.isWorkCompleted(appWithLatestSlot(LocalDate.now().plusDays(1)))).isFalse();
+        assertThat(ApplicationMapper.isWorkCompleted(appWithLatestSlot(LocalDate.now(ApplicationMapper.ZONE)))).isFalse();
+        assertThat(ApplicationMapper.isWorkCompleted(appWithLatestSlot(LocalDate.now(ApplicationMapper.ZONE).plusDays(1)))).isFalse();
     }
 
     private static final java.time.LocalDate DAY = java.time.LocalDate.of(2026, 10, 3);

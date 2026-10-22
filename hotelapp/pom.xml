@@ -252,6 +252,16 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- Testler uygulamanın çalışma saat dilimiyle koşsun: main() JVM'i Europe/Istanbul'a
+                 alır, Hibernate jdbc.time_zone da İstanbul. @DataJpaTest/@SpringBootTest main()'i
+                 çağırmadığı için CI (UTC) ile yerelde LocalTime/LocalDate sonuçları ayrışıyordu. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Duser.timezone=Europe/Istanbul</argLine>
+                </configuration>
+            </plugin>
             <!-- *IT entegrasyon testleri (H2, @ActiveProfiles("test")) `mvn verify`
                  sirasinda failsafe ile kosar; basarisizlikta build kirilir.
                  Surefire varsayilan olarak yalniz *Test/*Tests/Test* kosar, *IT'leri almaz.
@@ -259,6 +269,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <argLine>-Duser.timezone=Europe/Istanbul</argLine>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
