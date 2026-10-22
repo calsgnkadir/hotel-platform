@@ -1,5 +1,6 @@
 package com.hotelapp.dto;
 
+import com.hotelapp.validation.PasswordMaxBytes;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -11,5 +12,6 @@ public class LoginRequest {
     private String email;
 
     @NotBlank
+    @PasswordMaxBytes
     private String password;
 }

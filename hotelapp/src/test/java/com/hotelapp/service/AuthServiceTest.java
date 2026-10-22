@@ -182,6 +182,64 @@ class AuthServiceTest {
     }
 
     @Test
+    @DisplayName("Kayıt: 72 UTF-8 baytı aşan parola hashlenmeden reddedilir")
+    void register_overlongPassword_rejectedBeforeEncoding() {
+        RegisterRequest req = request(Role.CANDIDATE);
+        req.setPassword("A1" + "a".repeat(71));
+
+        assertThatThrownBy(() -> authService.register(req))
+                .isInstanceOf(BusinessRuleException.class)
+                .extracting(e -> ((BusinessRuleException) e).getMessageKey())
+                .isEqualTo("error.auth.passwordTooLong");
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Şifre değişimi: 72 UTF-8 baytı aşan eski veya yeni parola okunmadan/hashlenmeden reddedilir")
+    void changePassword_rejectsOverlongCurrentOrNewPassword() {
+        for (boolean oldPasswordOverlong : new boolean[]{true, false}) {
+            var req = new AuthService.ChangePasswordRequest();
+            req.setCurrentPassword(oldPasswordOverlong ? "A1" + "a".repeat(71) : "Current123");
+            req.setNewPassword(oldPasswordOverlong ? "NewPass123" : "B1" + "b".repeat(71));
+
+            assertThatThrownBy(() -> authService.changePassword(77L, req))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .extracting(e -> ((BusinessRuleException) e).getMessageKey())
+                    .isEqualTo("error.auth.passwordTooLong");
+        }
+        verify(userRepository, never()).findById(any());
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Şifre değişimi: mevcut ve yeni parola tam 72 UTF-8 baytta doğrulanıp güncellenir")
+    void changePassword_acceptsExactly72Utf8BytesForCurrentAndNewPassword() {
+        String current72 = "C1" + "c".repeat(68) + "é";
+        String new72 = "N1" + "n".repeat(70);
+        User user = User.builder().id(77L).email("person@example.test").password("old-hash")
+                .role(Role.CANDIDATE).build();
+        when(userRepository.findById(77L)).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.matches(current72, "old-hash")).thenReturn(true);
+        when(passwordEncoder.encode(new72)).thenReturn("new-hash");
+
+        var req = new AuthService.ChangePasswordRequest();
+        req.setCurrentPassword(current72);
+        req.setNewPassword(new72);
+
+        authService.changePassword(77L, req);
+
+        assertThat(current72.getBytes(java.nio.charset.StandardCharsets.UTF_8)).hasSize(72);
+        assertThat(new72.getBytes(java.nio.charset.StandardCharsets.UTF_8)).hasSize(72);
+        assertThat(user.getPassword()).isEqualTo("new-hash");
+        verify(passwordEncoder).matches(current72, "old-hash");
+        verify(passwordEncoder).encode(new72);
+        verify(userRepository).save(user);
+        verify(refreshTokenService).revokeAllForUser(77L);
+    }
+
+    @Test
     @DisplayName("Kayit: rol yoksa serviste de reddedilir")
     void register_nullRole_rejectedBeforeSave() {
         RegisterRequest req = request(null);
@@ -316,6 +374,16 @@ class AuthServiceTest {
 
             assertThat(v).extracting(ConstraintViolation::getMessage)
                     .containsExactly("Rol seçimi zorunlu");
+        }
+
+        @Test
+        @DisplayName("DTO: 73 UTF-8 baytlık kayıt parolası reddedilir")
+        void overlongPassword_isRejected() {
+            RegisterRequest request = request(Role.CANDIDATE);
+            request.setPassword("A1" + "a".repeat(71));
+
+            assertThat(validator.validate(request))
+                    .anySatisfy(v -> assertThat(v.getMessage()).contains("72 UTF-8"));
         }
     }
 

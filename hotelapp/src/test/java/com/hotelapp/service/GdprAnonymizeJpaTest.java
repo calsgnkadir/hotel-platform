@@ -7,9 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -42,10 +42,10 @@ class GdprAnonymizeJpaTest {
     @Autowired private UserRepository userRepository;
     @Autowired private JdbcTemplate jdbc;
 
-    @MockBean private OutboxService outboxService;
-    @MockBean private RefreshTokenService refreshTokenService;
-    @MockBean private AccountClosureService accountClosureService;
-    @MockBean private FileStorageService fileStorageService;
+    @MockitoBean private OutboxService outboxService;
+    @MockitoBean private RefreshTokenService refreshTokenService;
+    @MockitoBean private AccountClosureService accountClosureService;
+    @MockitoBean private FileStorageService fileStorageService;
 
     @BeforeEach
     void enforceNotNullLikeMysql() {

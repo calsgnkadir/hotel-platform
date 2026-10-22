@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>4.1.1</version>
         <relativePath/>
     </parent>
 
@@ -22,6 +22,14 @@
     <properties>
         <java.version>17</java.version>
         <jjwt.version>0.12.5</jjwt.version>
+        <!-- Spring Boot 4.1.1 manages Jackson 2.21.5 and Jackson 3.1.5. Keep both
+             BOM-aligned families on upstream fixed lines for CVE-2026-110879. -->
+        <jackson-2-bom.version>2.21.8</jackson-2-bom.version>
+        <jackson-bom.version>3.1.8</jackson-bom.version>
+        <!-- Boot 4.1.1 manages Tomcat 11.0.24; update to the latest security fix. -->
+        <tomcat.version>11.0.27</tomcat.version>
+        <!-- H2 2.4.240 has a reported CHECK/ENUM failure with Hibernate-created schemas. -->
+        <h2.version>2.3.232</h2.version>
     </properties>
 
     <dependencies>
@@ -29,7 +37,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.3.0</version>
+            <version>5.4.0</version>
         </dependency>
 
 
@@ -72,6 +80,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Existing application code uses FasterXML Jackson 2 ObjectMapper. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-jackson2</artifactId>
         </dependency>
 
         <!-- MySQL -->
@@ -119,12 +133,15 @@
             <version>8.10.1</version>
         </dependency>
 
-        <!-- FAZ 2/#18 — Resilience4j Circuit Breaker (Cloudinary, Resend, Push)
-             AOP + reactor-core transitive dep'leri otomatik gelir. -->
+        <!-- FAZ 2/#18 — Boot 4 / Framework 7 uyumlu circuit-breaker entegrasyonu. -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-spring-boot3</artifactId>
-            <version>2.2.0</version>
+            <artifactId>resilience4j-spring-boot4</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aspectj</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -144,11 +161,18 @@
             <version>1.36.0</version>
         </dependency>
 
+        <!-- cloudinary-http44 1.36.0 otherwise resolves HttpClient 4.4, before CVE-2020-13956's fix. -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+
         <!-- API Dokümantasyonu — Swagger UI -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.5.0</version>
+            <version>3.1.1</version>
         </dependency>
 
         <!-- Lombok -->
@@ -171,7 +195,22 @@
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <artifactId>spring-boot-starter-test-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-micrometer-metrics-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
