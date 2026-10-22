@@ -50,6 +50,9 @@ export default defineConfig(({ command, mode }) => {
   },
   server: {
     port: 5173,
+    // Port doluysa sessizce 5174'e kayma: backend CORS/WebSocket, e-posta linkleri ve
+    // Google dönüşü 5173'e ayarlı. Dolu ise açık hata ver (eski sunucuyu kapat).
+    strictPort: true,
     // Geliştirmede CORS sorunu yaşamamak için backend'e proxy
     proxy: {
       '/api': {
