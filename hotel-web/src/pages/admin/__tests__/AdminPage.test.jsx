@@ -88,6 +88,15 @@ describe('AdminPage sekme adresi', () => {
     expect(await screen.findByText('Toplam kullanıcı')).toBeInTheDocument()
   })
 
+  it('KPI kartı ilgili sekmeye götürür; sekmesi olmayan sayı bağlantısız', async () => {
+    renderAt('/admin')
+    const listings = await screen.findByRole('link', { name: /Toplam ilan\s*5/ })
+    expect(listings).toHaveAttribute('href', '/admin?tab=listings')
+    expect(screen.queryByRole('link', { name: /Toplam başvuru/ })).not.toBeInTheDocument()
+    fireEvent.click(listings)
+    expect(screen.getByTestId('active-tab')).toHaveTextContent('listings')
+  })
+
   it('?tab=reports derin linki Şikâyetler sekmesini açar', async () => {
     renderAt('/admin?tab=reports')
     expect(screen.getByTestId('active-tab')).toHaveTextContent('reports')

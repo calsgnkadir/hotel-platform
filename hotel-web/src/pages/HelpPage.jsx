@@ -124,7 +124,7 @@ export default function HelpPage() {
         </div>
 
         <section className="bg-white rounded-2xl shadow-xl border border-brand-200 p-6 sm:p-8">
-          <div className="text-[11px] uppercase tracking-widest mb-4" style={{ color: 'var(--ah-ink-3)' }}>
+          <div className="type-label mb-4" style={{ color: 'var(--ah-ink-3)' }} aria-live="polite">
             {filtered.length} sonuç
           </div>
           {filtered.length === 0 ? (
@@ -158,7 +158,7 @@ function FaqItem({ cat, q, a }) {
         aria-expanded={open}
       >
         <span className="flex items-center gap-2 min-w-0">
-          <span className="text-[9px] uppercase tracking-widest font-bold flex-shrink-0 px-1.5 py-0.5 rounded"
+          <span className="type-badge flex-shrink-0 px-2 py-0.5 rounded"
                 style={{ background: 'rgba(31, 41, 55, 0.12)', color: '#1f2937', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
             {cat}
           </span>

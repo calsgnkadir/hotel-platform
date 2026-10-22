@@ -21,7 +21,14 @@ function PhoneIcon() {
   )
 }
 
-export default function PhoneVerifyCard() {
+// Telefon numarası olmayan kullanıcıya numarayı nereye ekleyeceğini söyleyen metin.
+// İşletme panelinde "Bilgilerim" sekmesi yok; numara aynı sayfadaki İletişim kartında.
+const MISSING_PHONE_HINT = {
+  candidate: 'Önce “Bilgilerim” sekmesinden telefon numaranı ekle; sonra buradan doğrulayabilirsin.',
+  business:  'Önce bu sayfadaki “İletişim” bölümüne telefon numaranızı yazıp değişiklikleri kaydedin; sonra buradan doğrulayabilirsiniz.',
+}
+
+export default function PhoneVerifyCard({ audience = 'candidate' }) {
   const [status, setStatus] = useState(null)   // { phone, verified, hasPhone }
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -61,7 +68,7 @@ export default function PhoneVerifyCard() {
 
   if (loading || !status) {
     return (
-      <div className="card p-5" style={{ color: 'var(--ah-ink-3)', fontSize: 13 }}>
+      <div className="card p-5 type-meta" role="status">
         Telefon durumu yükleniyor…
       </div>
     )
@@ -71,7 +78,7 @@ export default function PhoneVerifyCard() {
     <div className="card p-5">
       <div className="flex items-center gap-2 mb-1">
         <span style={{ color: 'var(--ah-ink-3)' }}><PhoneIcon /></span>
-        <h3 className="font-display text-[16px] font-semibold" style={{ color: 'var(--ah-ink)' }}>Telefon Doğrulama</h3>
+        <h3 className="type-card">Telefon doğrulama</h3>
       </div>
 
       {status.verified ? (
@@ -83,43 +90,40 @@ export default function PhoneVerifyCard() {
           <span><b>Doğrulandı</b>{status.phone ? ` · ${status.phone}` : ''}</span>
         </div>
       ) : !status.hasPhone ? (
-        <p className="text-[13px] mt-2" style={{ color: 'var(--ah-ink-3)' }}>
-          Önce “Bilgilerim” sekmesinden telefon numaranı ekle; sonra buradan doğrulayabilirsin.
+        <p className="type-meta mt-2">
+          {MISSING_PHONE_HINT[audience] || MISSING_PHONE_HINT.candidate}
         </p>
       ) : (
         <>
-          <p className="text-[13px] mt-1" style={{ color: 'var(--ah-ink-3)' }}>
+          <p className="type-meta mt-1">
             Numaran{status.phone ? ` (${status.phone})` : ''} için SMS ile kod gönderelim.
             Doğrulanmış numara karşı tarafa güven verir.
           </p>
 
           {!codeSent ? (
             <button type="button" onClick={handleSend} disabled={sending}
-              className="mt-3 px-4 py-2 text-sm font-semibold rounded-lg text-white disabled:opacity-60"
-              style={{ background: 'var(--ah-brand-gradient)', boxShadow: 'var(--elev-1)' }}>
+              className="btn-primary !w-auto mt-3">
               {sending ? 'Gönderiliyor…' : 'Kod gönder'}
             </button>
           ) : (
             <form onSubmit={handleVerify} className="mt-3 space-y-2">
-              <label className="text-[12px] font-semibold" style={{ color: 'var(--ah-ink-3)' }}>SMS ile gelen 6 haneli kod</label>
+              <label htmlFor="phone-otp" className="type-label block">SMS ile gelen 6 haneli kod</label>
               <div className="flex items-center gap-2 flex-wrap">
-                <input inputMode="numeric" autoComplete="one-time-code" maxLength={6}
+                <input id="phone-otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
                        value={code} onChange={e => setCode(e.target.value.replace(/[^0-9]/g, ''))}
                        placeholder="______"
                        className="input text-center tracking-[0.4em] font-mono"
                        style={{ width: 140, letterSpacing: '0.4em' }} />
                 <button type="submit" disabled={verifying}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg text-white disabled:opacity-60"
-                  style={{ background: 'var(--ah-brand)' }}>
+                  className="btn-primary !w-auto">
                   {verifying ? 'Doğrulanıyor…' : 'Doğrula'}
                 </button>
                 <button type="button" onClick={handleSend} disabled={sending}
-                  className="px-3 py-2 text-sm font-semibold rounded-lg disabled:opacity-60"
-                  style={{ background: '#fff', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}>
+                  className="btn-ghost">
                   Tekrar gönder
                 </button>
               </div>
-              <p className="text-[11.5px]" style={{ color: 'var(--ah-ink-4)' }}>
+              <p className="type-caption">
                 Kod gelmezse bir dakika sonra tekrar iste. 10 dakika geçerli.
               </p>
             </form>

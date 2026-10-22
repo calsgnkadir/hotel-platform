@@ -29,11 +29,11 @@ export default function ForgotPasswordPage() {
       {/* Ust bar */}
       <header className="border-b" style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-          <BackButton to="/login" label="Girişe Dön" />
+          <BackButton to="/login" label="Girişe dön" />
           <span className="hidden sm:block w-px h-5" style={{ background: 'var(--ah-line-2)' }} />
           <Link to="/" className="hidden sm:flex items-baseline gap-2">
             <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>Kadrom</span>
-            <span className="text-[9px] uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>istanbul</span>
+            <span className="text-[12px] font-medium" style={{ color: 'var(--ah-ink-3)' }}>İstanbul</span>
           </Link>
         </div>
       </header>

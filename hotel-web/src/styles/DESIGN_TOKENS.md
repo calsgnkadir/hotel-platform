@@ -44,7 +44,9 @@ Durum renkleri -soft zemin üstünde de AA (warn 5.0, info 5.6, danger 5.6).
   Eskiden hepsi `!important` ile griye eziliyordu; artık eklemeyin.
 - İşletme güven satırı: yeşil yalnız `.ah-trust-item--ok` ile (işletme gerçekten
   doğrulanmışsa). Konuma bağlı `:first-child` boyaması yok.
-- Logo monogramları: `lib/logoColor.js` (beyaz metinle ≥4.5:1).
+- Logo monogramları (logo yoksa baş harf kutusu): `lib/logoColor.js`, AÇIK varyant —
+  zemin `--ah-brand-soft`, harf `--ah-ink`, çerçeve 1px `--ah-line-2` (~15.5:1).
+  Dolu grafit kutu + beyaz harf artık kullanılmaz; bileşenlerde `.ah-logo` / `BusinessLogo`.
 
 ## 2b. Modal
 

@@ -81,4 +81,12 @@ describe('OverviewTab', () => {
     const row = screen.getByRole('link', { name: /Aday 2/ })
     expect(row).toHaveAttribute('href', '/business?tab=applications&id=2')
   })
+
+  it('KPI kartları etiket + sayıyla ilgili sekmeye bağlanır', () => {
+    render(<MemoryRouter><OverviewTab applications={[app(1, 'PENDING'), app(2, 'ACCEPTED')]} onTabChange={() => {}} /></MemoryRouter>)
+    const strip = screen.getByTestId('kpi-strip')
+    expect(within(strip).getByRole('link', { name: /Toplam başvuru\s*2/ })).toHaveAttribute('href', '/business?tab=applications')
+    expect(within(strip).getByRole('link', { name: /Kabul edilen\s*1/ })).toHaveAttribute('href', '/business?tab=applications&status=ACCEPTED')
+    expect(within(strip).getByRole('link', { name: /Tamamlanan iş/ })).toHaveAttribute('href', '/business?tab=team')
+  })
 })

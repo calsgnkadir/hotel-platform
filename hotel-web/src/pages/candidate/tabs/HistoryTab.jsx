@@ -8,6 +8,28 @@ import { totalHoursForApplication } from '../../../utils/shifts'
 import { POSITION_LABELS } from '../../../utils/labels'
 import { rosterSlots } from '../../../lib/shiftTime'
 
+/** 'YYYY-MM-DD' -> yerel gece yarısı (new Date('2026-01-12') UTC'dir; UTC batısında bir gün geri kayar). */
+function localDay(iso) {
+  const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+/**
+ * Geçmiş kartındaki tarih: tek gün "12 Oca 2026", aralık "12 Oca – 15 Oca 2026".
+ * Yıl farklıysa iki uçta da yıl yazılır. (Eskiden ayıraç yoktu: "12 Oca 15 Oca 2026".)
+ */
+export function historyDateLabel(firstDate, lastDate) {
+  if (!firstDate) return '—'
+  const full = { day: 'numeric', month: 'short', year: 'numeric' }
+  const a = localDay(firstDate)
+  if (!lastDate || firstDate === lastDate) return a.toLocaleDateString('tr-TR', full)
+  const b = localDay(lastDate)
+  const left = a.getFullYear() === b.getFullYear()
+    ? a.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })
+    : a.toLocaleDateString('tr-TR', full)
+  return `${left} – ${b.toLocaleDateString('tr-TR', full)}`
+}
+
 export default function HistoryTab({ applications, onOpenMessages }) {
   // Sadece kabul edilmis + calisma tamamlanmis basvurular. Gelmedi isaretli
   // vardiyalar saat ve tarihten duser (backend "tamamlanan is" kurali ile ayni):
@@ -48,17 +70,17 @@ export default function HistoryTab({ applications, onOpenMessages }) {
       <div className="grid grid-cols-2 gap-2.5">
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} />
-            <span className="text-[10px] uppercase tracking-[0.04em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>Toplam Çalışma</span>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} aria-hidden="true" />
+            <span className="type-label">Toplam çalışma</span>
           </div>
-          <div className="text-xl font-black leading-none" style={{ color: 'var(--ah-ink)' }}>{totalHours.toFixed(0)}<span className="text-sm font-bold" style={{ color: 'var(--ah-ink-4)' }}>sa</span></div>
+          <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>{totalHours.toFixed(0)}<span className="text-sm font-semibold ml-0.5" style={{ color: 'var(--ah-ink-3)' }}>sa</span></div>
         </div>
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} />
-            <span className="text-[10px] uppercase tracking-[0.04em] font-semibold" style={{ color: 'var(--ah-ink-4)' }}>Farklı İşletme</span>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} aria-hidden="true" />
+            <span className="type-label">Farklı işletme</span>
           </div>
-          <div className="text-xl font-black leading-none" style={{ color: 'var(--ah-ink)' }}>{uniqueBusinesses}</div>
+          <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>{uniqueBusinesses}</div>
         </div>
       </div>
 
@@ -69,11 +91,7 @@ export default function HistoryTab({ applications, onOpenMessages }) {
             .map(s => s.date).filter(Boolean).sort()
           const firstDate = slotDates[0]
           const lastDate = slotDates[slotDates.length - 1]
-          const dateLabel = !firstDate
-            ? '—'
-            : firstDate === lastDate
-              ? new Date(firstDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
-              : `${new Date(firstDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${new Date(lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}`
+          const dateLabel = historyDateLabel(firstDate, lastDate)
 
           return (
             <div key={app.id} className="card">
@@ -90,9 +108,9 @@ export default function HistoryTab({ applications, onOpenMessages }) {
                   <div className="min-w-0">
                     <div className="font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>{app.listing?.title}</div>
                     <div className="text-[13px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{app.listing?.businessName}</div>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[12.5px]" style={{ color: 'var(--ah-ink-3)' }}>
-                      <span>{dateLabel}</span>
-                      <span>{hours.toFixed(1)} saat</span>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 type-meta">
+                      <span className="type-num">{dateLabel}</span>
+                      <span className="type-num">{hours.toFixed(1)} saat</span>
                       <span>{POSITION_LABELS[app.listing?.position] || app.listing?.position}</span>
                     </div>
                   </div>

@@ -67,20 +67,22 @@ export default function NotificationSettings() {
     <div className="card p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="text-[13px] font-bold uppercase tracking-[0.08em] mb-1.5" style={{ color: 'var(--ah-ink)' }}>
-            Bildirimler
-          </h3>
-          <p className="text-[12.5px] leading-relaxed" style={{ color: 'var(--ah-ink-3)' }}>
+          <h3 className="type-card mb-1">Bildirimler</h3>
+          <p className="type-meta" aria-live="polite">
             {STATUS[state]}
           </p>
         </div>
         {(state === 'on' || state === 'off') && (
           <button type="button" role="switch" aria-checked={state === 'on'} aria-label="Anlık bildirimler"
                   disabled={busy} onClick={state === 'on' ? turnOff : turnOn}
-                  className="relative flex-shrink-0 w-11 h-6 rounded-full transition-colors disabled:opacity-60"
+                  className="relative flex-shrink-0 mt-0.5 w-11 h-6 rounded-full transition-colors disabled:opacity-60
+                             after:content-[''] after:absolute after:-inset-2.5"
                   style={{ background: state === 'on' ? 'var(--ah-brand)' : 'var(--ah-line-2)' }}>
-            <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all"
-                  style={{ left: state === 'on' ? 22 : 2 }} />
+            {/* Tutamaç: .bg-white sınıfı .card içinde !important ile saydamlaşıyordu
+                (index.css ".card .bg-white") → anahtar tutamaçsız görünüyordu. */}
+            <span aria-hidden="true"
+                  className="absolute top-0.5 w-5 h-5 rounded-full shadow transition-[left] duration-150"
+                  style={{ left: state === 'on' ? 22 : 2, background: 'var(--ah-card)' }} />
           </button>
         )}
       </div>

@@ -282,7 +282,7 @@ export default function EmptyState({
                   {s.label}
                 </div>
                 {s.hint && (
-                  <div className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
+                  <div className="type-caption mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
                     {s.hint}
                   </div>
                 )}

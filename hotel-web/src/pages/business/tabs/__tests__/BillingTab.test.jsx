@@ -43,7 +43,7 @@ describe('BillingTab ödeme durumları', () => {
     renderTab({ enforced: false, paymentsAvailable: false, sandbox: false })
     expect(await screen.findByText('Şu an tüm işletmeler için ücretsiz: aynı anda 5 aktif ilan.')).toBeInTheDocument()
     expect(screen.getByTestId('quota-meter')).toHaveTextContent('Aktif ilan: 2 / 5')
-    expect(screen.getByText('ücretli plan henüz açık değil')).toBeInTheDocument()
+    expect(screen.getByText('Ücretli plan henüz açık değil')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Aboneliğe geç' })).not.toBeInTheDocument()
     expect(screen.queryByText(/test kartı/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/sınırsız/i)).not.toBeInTheDocument()
@@ -54,7 +54,7 @@ describe('BillingTab ödeme durumları', () => {
     renderTab({ enforced: true, paymentsAvailable: true, sandbox: false })
     expect(await screen.findByRole('button', { name: 'Aboneliğe geç' })).toBeInTheDocument()
     expect(screen.getByTestId('quota-meter')).toHaveTextContent('Aktif ilan: 2 / 5')
-    expect(screen.getByText('aylık · aynı anda 10 aktif ilan')).toBeInTheDocument()
+    expect(screen.getByText('Aylık · aynı anda 10 aktif ilan')).toBeInTheDocument()
     expect(screen.queryByText(/test kartı/i)).not.toBeInTheDocument()
   })
 

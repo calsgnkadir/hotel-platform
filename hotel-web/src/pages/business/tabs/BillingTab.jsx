@@ -210,12 +210,12 @@ export default function BillingTab() {
             {payments || paid ? (
               <>
                 <div className="type-num leading-none" style={{ color: 'var(--ah-ink)', fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em' }}>{price} ₺</div>
-                <div className="type-meta mt-1.5">aylık · aynı anda {paidLimit} aktif ilan</div>
+                <div className="type-meta mt-1.5">Aylık · aynı anda {paidLimit} aktif ilan</div>
               </>
             ) : (
               <>
                 <div className="leading-none" style={{ color: 'var(--ah-ink)', fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em' }}>Ücretsiz</div>
-                <div className="type-meta mt-1.5">ücretli plan henüz açık değil</div>
+                <div className="type-meta mt-1.5">Ücretli plan henüz açık değil</div>
               </>
             )}
           </div>

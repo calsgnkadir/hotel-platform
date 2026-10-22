@@ -135,14 +135,13 @@ export default function CandidatePublicPage() {
                   </h1>
                   {/* Dalga H2 — Is ariyorum rozeti (LinkedIn Open to Work) */}
                   {profile.isAvailable && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
+                    <span className="inline-flex items-center gap-1.5 type-badge px-2.5 py-1 rounded-full"
                           style={{
-                            background: 'var(--ah-brand-soft)',
-                            color: 'var(--ah-brand)',
-                            border: '1px solid var(--ah-line-2)',
+                            background: 'var(--ah-ok-soft)',
+                            color: 'var(--ah-ok)',
                           }}>
-                      <span className="w-1.5 h-1.5 rounded-full inline-block"
-                            style={{ background: 'var(--ah-brand)' }} />
+                      <span className="w-1.5 h-1.5 rounded-full inline-block" aria-hidden="true"
+                            style={{ background: 'var(--ah-ok)' }} />
                       İş Arıyor
                     </span>
                   )}
@@ -159,14 +158,14 @@ export default function CandidatePublicPage() {
         {/* Deneyim metrikleri — guvenilirlik skoru gosterilmez (kullanici istegi) */}
         <div className="grid grid-cols-2 gap-3">
           <MetricCard
-            label="Tamamlanan İş"
+            label="Tamamlanan iş"
             value={profile.completedJobs ?? 0}
-            sub="kabul + çalışma"
+            sub="kabul edilip çalışılan"
           />
           <MetricCard
-            label="No-show"
+            label="Gelmedi"
             value={profile.noShowCount ?? 0}
-            sub="iptal/gelmedim"
+            sub="işaretlenen vardiya"
           />
         </div>
 
@@ -229,9 +228,8 @@ export default function CandidatePublicPage() {
         {profile.sensitiveUnlocked ? (
           <div className="tier-featured p-5">
             <div className="flex items-center justify-between pb-2 mb-3 border-b" style={{ borderColor: 'var(--ah-line)' }}>
-              <h2 className="type-overline"
-                  style={{ color: 'var(--ah-ink)', fontSize: '12px' }}>İletişim Bilgileri</h2>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
+              <h2 className="type-card">İletişim bilgileri</h2>
+              <span className="inline-flex items-center gap-1 type-badge px-2.5 py-1 rounded-full"
                     style={{
                       background: 'var(--ah-brand-soft)',
                       color: 'var(--ah-brand)',
@@ -258,7 +256,7 @@ export default function CandidatePublicPage() {
               )}
             </div>
 
-            <p className="text-[11px] mt-3 italic"
+            <p className="type-caption mt-3"
                style={{ color: 'var(--ah-ink-3)' }}>
               KVKK kapsamında bu bilgiler sadece adayın size başvurmuş olması nedeniyle gösteriliyor.
               Üçüncü kişilerle paylaşmayın.
@@ -295,13 +293,13 @@ export default function CandidatePublicPage() {
 function MetricCard({ label, value, sub }) {
   return (
     <div className="tier-raised p-4">
-      <div className="type-overline mb-1" style={{ color: 'var(--ah-ink-3)' }}>
+      <div className="type-meta mb-1">
         {label}
       </div>
-      <div className="text-2xl tracking-wider mb-0.5 tabular-nums" style={{ color: 'var(--ah-ink)', fontWeight: 600 }}>
+      <div className="type-page type-num mb-0.5" style={{ color: 'var(--ah-ink)' }}>
         {value}
       </div>
-      <div className="type-overline" style={{ color: 'var(--ah-ink-4)' }}>
+      <div className="type-caption">
         {sub}
       </div>
     </div>

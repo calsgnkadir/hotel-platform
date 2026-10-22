@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useId } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout'
 import * as hotelApi from '../../api/hotel'
 import toast from 'react-hot-toast'
@@ -37,6 +37,11 @@ const ICONS = {
   cpuChip:  'M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z',
   info:     'm11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z',
   external: 'M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25',
+  users:    'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z',
+  building: 'M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21',
+  shield:   'M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z',
+  briefcase:'M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0',
+  inbox:    'M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z',
 }
 
 const fmtDateTime = (v) => v ? new Date(v).toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
@@ -139,19 +144,20 @@ function OverviewTab() {
     {
       title: 'Kullanıcılar',
       items: [
-        { label: 'Toplam kullanıcı', value: stats.totalUsers },
-        { label: 'Aday', value: stats.candidates },
-        { label: 'İşletme sahibi', value: stats.businessOwners },
-        { label: 'Yönetici', value: stats.admins },
-        { label: 'Banlı hesap', value: stats.bannedUsers, warn: (stats.bannedUsers || 0) > 0 },
+        { label: 'Toplam kullanıcı', value: stats.totalUsers,     icon: 'users',  tab: 'users' },
+        { label: 'Aday',             value: stats.candidates,     icon: 'user',   tab: 'users' },
+        { label: 'İşletme sahibi',   value: stats.businessOwners, icon: 'building', tab: 'users' },
+        { label: 'Yönetici',         value: stats.admins,         icon: 'shield', tab: 'users' },
+        { label: 'Banlı hesap',      value: stats.bannedUsers,    icon: 'ban',    tab: 'users', warn: (stats.bannedUsers || 0) > 0 },
       ],
     },
     {
       title: 'İçerik',
       items: [
-        { label: 'Kayıtlı işletme', value: stats.totalBusinesses },
-        { label: 'Toplam ilan', value: stats.totalListings },
-        { label: 'Toplam başvuru', value: stats.totalApplications },
+        { label: 'Kayıtlı işletme', value: stats.totalBusinesses,   icon: 'building',  tab: 'businesses' },
+        { label: 'Toplam ilan',     value: stats.totalListings,     icon: 'briefcase', tab: 'listings' },
+        // Admin panelinde başvuru sekmesi yok; kart bilgi amaçlı, bağlantısız
+        { label: 'Toplam başvuru',  value: stats.totalApplications, icon: 'inbox' },
       ],
     },
   ]
@@ -161,20 +167,47 @@ function OverviewTab() {
       <TabHeader title="Genel bakış" description="Platformdaki hesap ve içerik sayıları." />
       {groups.map(g => (
         <section key={g.title} aria-labelledby={`admin-stat-${g.title}`} className="space-y-2.5">
-          <h3 id={`admin-stat-${g.title}`} className="type-label">{g.title}</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <h3 id={`admin-stat-${g.title}`} className="type-card">{g.title}</h3>
+          <ul className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {g.items.map(c => (
-              <div key={c.label} className="stat-card !p-4">
-                <div className="stat-card-number" style={c.warn ? { color: 'var(--ah-danger)' } : undefined}>
-                  {(c.value ?? 0).toLocaleString('tr-TR')}
-                </div>
-                <div className="stat-card-label mt-2">{c.label}</div>
-              </div>
+              <li key={c.label} className="min-w-0">
+                <AdminKpiCard {...c} />
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
       ))}
     </div>
+  )
+}
+
+/** KPI kartı: ikon kutusu + etiket üstte + sayı altta. `tab` verilirse ilgili sekmeye bağlanır. */
+function AdminKpiCard({ label, value, icon, tab, warn }) {
+  const body = (
+    <>
+      <span className="w-8 h-8 rounded-lg grid place-items-center flex-shrink-0"
+            style={warn
+              ? { background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)' }
+              : { background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' }}>
+        <Icon d={ICONS[icon] || ICONS.info} className="w-4 h-4" strokeWidth={1.7} />
+      </span>
+      <span className="min-w-0">
+        <span className="type-meta block truncate">{label}</span>
+        <span className="type-page type-num block mt-0.5"
+              style={{ color: warn ? 'var(--ah-danger)' : 'var(--ah-ink)' }}>
+          {(value ?? 0).toLocaleString('tr-TR')}
+        </span>
+      </span>
+    </>
+  )
+  const base = 'card !p-4 h-full flex items-start gap-3'
+  if (!tab) return <div className={base}>{body}</div>
+  return (
+    <Link to={`/admin?tab=${tab}`}
+          className={`${base} transition-[border-color,box-shadow] duration-150 hover:border-[var(--ah-line-2)] hover:shadow-[var(--elev-hover)]
+                      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ah-brand)]`}>
+      {body}
+    </Link>
   )
 }
 

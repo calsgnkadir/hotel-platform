@@ -1,10 +1,11 @@
+import { useId } from 'react'
 import { Area, AreaChart, ResponsiveContainer } from 'recharts'
 
 /**
  * FAZ 5.6 — Stat kart sparkline (Recharts AreaChart, axissiz/gridsiz)
  *
  * Kullanim:
- *   <Sparkline data={weeklyTrend(items)} color="#1f2937" />
+ *   <Sparkline data={weeklyTrend(items)} />   // renk varsayılanı: var(--ah-brand)
  */
 export function weeklyTrend(items, filterFn, weeks = 8) {
   const buckets = new Array(weeks).fill(0)
@@ -22,18 +23,22 @@ export function weeklyTrend(items, filterFn, weeks = 8) {
   return buckets.map((c, i) => ({ w: i, c }))
 }
 
-export default function Sparkline({ data, color = '#1f2937', width = 68, height = 26 }) {
+export default function Sparkline({ data, color = 'var(--ah-brand)', width = 68, height = 26 }) {
+  // Her örneğe benzersiz gradyan kimliği. Eskiden renkten türetiliyordu: aynı
+  // renkte iki grafik aynı id'yi paylaşıyor, var(--..) renginde id bozuluyordu.
+  // useId ":r1:" döner; url(#..) içinde güvenli olsun diye harf/rakam dışı atılır.
+  const gradId = `spark-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
   const allZero = !data || data.every(d => d.c === 0)
   if (allZero) {
+    // Veri yok: soluk kısa çizgi (eski koyu tema rengi açık kartta görünmüyordu)
     return (
-      <div style={{ width, height }} className="flex items-center justify-end">
-        <span className="text-[9px] uppercase tracking-widest" style={{ color: 'rgba(229,231,235,0.30)' }}>
+      <div style={{ width, height }} className="flex items-center justify-end" aria-hidden="true">
+        <span className="text-[12px]" style={{ color: 'var(--ah-ink-4)' }}>
           ─
         </span>
       </div>
     )
   }
-  const gradId = `spark-${color.replace('#', '')}`
   return (
     <div style={{ width, height }}>
       <ResponsiveContainer width="100%" height="100%">

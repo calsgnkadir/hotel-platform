@@ -180,10 +180,10 @@ export default function ProfileTab() {
               <p className="text-xs mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
                 {profile?.email || ''}
               </p>
-              <div className="w-full pt-3 mt-3 border-t flex items-center justify-between text-[11px]"
+              <div className="w-full pt-3 mt-3 border-t flex items-center justify-between type-label"
                    style={{ borderColor: 'var(--ah-line)' }}>
-                <span style={{ color: 'var(--ah-ink-3)' }}>ÜYE OLDU</span>
-                <span className="font-semibold" style={{ color: 'var(--ah-ink-2)' }}>
+                <span style={{ color: 'var(--ah-ink-3)' }}>Üyelik tarihi</span>
+                <span className="font-semibold type-num" style={{ color: 'var(--ah-ink-2)' }}>
                   {profile?.createdAt
                     ? new Date(profile.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
                     : '—'}
@@ -198,18 +198,20 @@ export default function ProfileTab() {
                 <p className="text-[13px] font-semibold" style={{ color: 'var(--ah-ink)' }}>
                   {form.isAvailable ? 'İş arıyorum' : 'Şu anda aramıyorum'}
                 </p>
-                <p className="text-[11px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
+                <p className="type-caption mt-0.5">
                   {form.isAvailable
                     ? 'İşletmeler seni 3 kat daha hızlı bulsun.'
                     : 'Aktif olduğunda daha çok teklif alırsın.'}
                 </p>
               </div>
-              <button type="button" role="switch" aria-checked={form.isAvailable}
+              <button type="button" role="switch" aria-checked={form.isAvailable} aria-label="İş arıyorum durumu"
                 onClick={() => setForm(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
-                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
+                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0
+                           after:content-[''] after:absolute after:-inset-2.5"
                 style={{ background: form.isAvailable ? 'var(--ah-brand)' : 'var(--ah-line-2)' }}>
-                <span className="inline-block rounded-full bg-white transition-transform"
-                      style={{ width: 18, height: 18, transform: form.isAvailable ? 'translateX(21px)' : 'translateX(3px)' }} />
+                {/* .card içinde .bg-white saydamlaşıyor (index.css) → tutamaç rengi token ile */}
+                <span aria-hidden="true" className="inline-block rounded-full shadow transition-transform"
+                      style={{ width: 18, height: 18, background: 'var(--ah-card)', transform: form.isAvailable ? 'translateX(23px)' : 'translateX(3px)' }} />
               </button>
             </div>
 
@@ -217,15 +219,15 @@ export default function ProfileTab() {
             <div className="px-6 py-4 flex items-center justify-between gap-3 border-t"
                  style={{ borderColor: 'var(--ah-line)' }}>
               <div>
-                <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: 'var(--ah-ink-3)' }}>
-                  Email Doğrulama
+                <p className="type-label">
+                  E-posta doğrulama
                 </p>
                 <p className="text-sm font-semibold mt-1" style={{ color: 'var(--ah-ink)' }}>
                   {profile?.emailVerifiedAt ? 'Doğrulandı' : 'Beklemede'}
                 </p>
               </div>
-              <span className="w-2.5 h-2.5 rounded-full"
-                    style={{ background: profile?.emailVerifiedAt ? 'var(--ah-ink)' : 'var(--ah-ink-4)' }} />
+              <span className="w-2.5 h-2.5 rounded-full" aria-hidden="true"
+                    style={{ background: profile?.emailVerifiedAt ? 'var(--ah-ok)' : 'var(--ah-warn)' }} />
             </div>
 
             {/* Profil doluluk — panel sonu (guvenilirlik skoru kaldirildi) */}
@@ -255,7 +257,7 @@ export default function ProfileTab() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Fotograf */}
               <div className="card p-5">
-                <h3 className="font-display text-[16px] font-semibold mb-4" style={{ color: 'var(--ah-ink)' }}>Profil Fotoğrafı</h3>
+                <h3 className="type-card mb-4">Profil fotoğrafı</h3>
                 <div className="flex items-center gap-4">
                   <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                        style={{ background: 'rgba(31, 41, 55, 0.06)', border: '2px solid rgba(31, 41, 55, 0.20)' }}>
@@ -265,26 +267,25 @@ export default function ProfileTab() {
                       <span className="text-4xl tracking-wider" style={{ color: '#1f2937' }}>{(profile?.fullName || 'A').charAt(0).toUpperCase()}</span>
                     )}
                   </div>
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex flex-wrap gap-2">
                     <button type="button" onClick={() => setCropOpen(true)} disabled={avatarUploading}
-                      className="block w-full px-4 py-2.5 text-sm font-semibold rounded-lg cursor-pointer text-center transition-colors disabled:opacity-60 disabled:cursor-wait"
-                      style={{ background: 'var(--ah-brand)', color: '#ffffff' }}>
-                      {avatarUploading ? 'Yükleniyor...' : (profile?.avatarUrl ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle')}
+                      className="btn-secondary !w-auto">
+                      {avatarUploading ? 'Yükleniyor...' : (profile?.avatarUrl ? 'Fotoğrafı değiştir' : 'Fotoğraf yükle')}
                     </button>
                     <AvatarCropModal open={cropOpen} onClose={() => setCropOpen(false)} onConfirm={handleCroppedAvatar} />
                     {profile?.avatarUrl && (
-                      <button type="button" onClick={handleAvatarDelete}
-                        className="block w-full px-4 py-2 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ background: '#fff', color: '#3f4b4a', border: '1px solid var(--ah-line-2)' }}>Fotoğrafı Kaldır</button>
+                      <button type="button" onClick={handleAvatarDelete} className="btn-ghost">Fotoğrafı kaldır</button>
                     )}
-                    <p className="text-xs" style={{ color: 'var(--ah-ink-4)' }}>Max 5 MB · JPG/PNG/WEBP/HEIC · Yüze odaklı 400×400 olarak kaydedilir</p>
+                    </div>
+                    <p className="type-caption">En çok 5 MB · JPG, PNG, WEBP, HEIC · Yüze odaklı 400×400 olarak kaydedilir</p>
                   </div>
                 </div>
               </div>
 
               {/* Temel Bilgiler */}
               <div className="card p-5 space-y-4">
-                <h3 className="font-display text-[16px] font-semibold pb-2 border-b mb-1" style={{ color: 'var(--ah-ink)', borderColor: 'var(--ah-line)' }}>Temel Bilgiler</h3>
+                <h3 className="type-card pb-3 border-b mb-1" style={{ borderColor: 'var(--ah-line)' }}>Temel bilgiler</h3>
                 <div>
                   <label htmlFor="cand-profile-fullName" className="label">Ad Soyad *</label>
                   <input id="cand-profile-fullName" type="text" name="fullName" value={form.fullName} onChange={handleChange} className="input" />
@@ -321,7 +322,7 @@ export default function ProfileTab() {
 
               {/* Egitim & Ek */}
               <div className="card p-5 space-y-4">
-                <h3 className="font-display text-[16px] font-semibold pb-2 border-b mb-1" style={{ color: 'var(--ah-ink)', borderColor: 'var(--ah-line)' }}>Eğitim & Ek</h3>
+                <h3 className="type-card pb-3 border-b mb-1" style={{ borderColor: 'var(--ah-line)' }}>Eğitim ve ek bilgiler</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label htmlFor="cand-profile-education" className="label">Eğitim durumu</label>

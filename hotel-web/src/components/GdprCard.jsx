@@ -51,17 +51,10 @@ export default function GdprCard() {
 
   return (
     <div className="card p-5" style={{ marginTop: 16 }}>
-      <h3 style={{
-        fontSize: 13,
-        fontWeight: 700,
-        color: '#1f2937',
-        textTransform: 'uppercase',
-        letterSpacing: '0.08em',
-        marginBottom: 8,
-      }}>
+      <h3 className="type-card mb-1">
         KVKK · Verileriniz
       </h3>
-      <p style={{ fontSize: 12, color: '#727272', marginBottom: 16, lineHeight: 1.5 }}>
+      <p className="type-meta mb-4">
         KVKK madde 11 kapsamında verilerinize erişme ve silme hakkınız vardır.
       </p>
 
@@ -70,34 +63,15 @@ export default function GdprCard() {
           type="button"
           onClick={handleExport}
           disabled={exporting}
-          style={{
-            padding: '10px 16px',
-            borderRadius: 8,
-            background: 'rgba(31, 41, 55, 0.10)',
-            color: 'var(--ah-brand)',
-            fontSize: 13,
-            fontWeight: 600,
-            border: '1px solid rgba(31, 41, 55, 0.22)',
-            cursor: exporting ? 'wait' : 'pointer',
-            transition: 'all 200ms',
-          }}>
-          {exporting ? 'Hazırlanıyor...' : 'Verilerimi İndir (JSON)'}
+          className="btn-secondary">
+          {exporting ? 'Hazırlanıyor...' : 'Verilerimi indir (JSON)'}
         </button>
 
         <button
           type="button"
           onClick={() => setConfirming(true)}
-          style={{
-            padding: '10px 16px',
-            borderRadius: 8,
-            background: 'transparent',
-            color: '#3d3d3d',
-            fontSize: 13,
-            fontWeight: 600,
-            border: '1px solid rgba(61, 61, 61, 0.3)',
-            cursor: 'pointer',
-          }}>
-          Hesabımı Sil
+          className="btn-danger">
+          Hesabımı sil
         </button>
       </div>
 

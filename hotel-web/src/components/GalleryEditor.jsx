@@ -167,18 +167,25 @@ export default function GalleryEditor() {
     <div className="card p-5 space-y-4">
       <div className="flex items-start justify-between flex-wrap gap-2">
         <div>
-          <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider">Galeri</h3>
-          <p className="text-xs text-ink-500 mt-0.5">
-            {photos.length}/{MAX_PHOTOS} foto · sürükleyerek sırala · kapak yap
+          <h3 className="type-card">Galeri</h3>
+          <p className="type-meta mt-0.5">
+            <span className="type-num">{photos.length}/{MAX_PHOTOS}</span> fotoğraf · sürükleyerek sıralayın, birini kapak yapın
           </p>
         </div>
         <div>
           <input ref={fileInputRef} type="file" accept="image/*" multiple
             onChange={handleFiles} className="hidden" />
-          <button onClick={() => fileInputRef.current?.click()}
+          {/* type="button": bu kart işletme profil <form>'unun içinde; tipsiz düğme formu gönderiyordu */}
+          <button type="button" onClick={() => fileInputRef.current?.click()}
             disabled={uploading || remaining <= 0}
-            className="text-xs font-semibold px-3 py-2 rounded-lg text-white disabled:opacity-50 bg-brand-700 hover:bg-brand-800 transition-colors">
-            {uploading ? 'Yükleniyor...' : remaining > 0 ? '+ Foto Ekle' : 'Limit doldu'}
+            className="btn-secondary !w-auto">
+            {remaining > 0 && !uploading && (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2}
+                   stroke="currentColor" className="w-4 h-4" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            )}
+            {uploading ? 'Yükleniyor...' : remaining > 0 ? 'Fotoğraf ekle' : 'Sınıra ulaşıldı'}
           </button>
         </div>
       </div>
@@ -186,12 +193,12 @@ export default function GalleryEditor() {
       {photos.length === 0 ? (
         <div className="empty-state py-10 text-center">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-ink-300 mb-3 mx-auto">
+               strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 mb-3 mx-auto" style={{ color: 'var(--ah-ink-4)' }} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round"
               d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
           </svg>
-          <p className="text-sm text-ink-500">Galeri boş</p>
-          <p className="text-xs text-ink-400 mt-1">İlk foto eklenince otomatik kapak olur</p>
+          <p className="type-subhead" style={{ color: 'var(--ah-ink-2)' }}>Henüz fotoğraf yok</p>
+          <p className="type-caption mt-1">Eklediğiniz ilk fotoğraf otomatik olarak kapak olur.</p>
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -249,19 +256,21 @@ function SortablePhoto({ photo, busy, onSetCover, onDelete }) {
         loading="lazy" decoding="async" />
 
       {photo.isCover && (
-        <div className="absolute top-1 left-1 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-md bg-brand-700">
+        <div className="absolute top-1.5 left-1.5 type-badge text-white px-2 py-0.5 rounded-md" style={{ background: 'var(--ah-brand)' }}>
           Kapak
         </div>
       )}
 
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 focus-within:bg-black/40">
         {!photo.isCover && (
           <button
+            type="button"
             onPointerDown={stopDrag}
             onClick={onSetCover}
             disabled={busy}
+            aria-label="Kapak yap"
             title="Kapak yap"
-            className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-amber-600 shadow disabled:opacity-50">
+            className="w-9 h-9 rounded-full bg-white/95 hover:bg-white shadow disabled:opacity-50" style={{ color: 'var(--ah-warn)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
                  className="w-4 h-4 mx-auto">
               <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
@@ -269,11 +278,13 @@ function SortablePhoto({ photo, busy, onSetCover, onDelete }) {
           </button>
         )}
         <button
+          type="button"
           onPointerDown={stopDrag}
           onClick={onDelete}
           disabled={busy}
+          aria-label="Fotoğrafı sil"
           title="Sil"
-          className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-red-600 shadow disabled:opacity-50">
+          className="w-9 h-9 rounded-full bg-white/95 hover:bg-white shadow disabled:opacity-50" style={{ color: 'var(--ah-danger)' }}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                strokeWidth={2} stroke="currentColor" className="w-4 h-4 mx-auto">
             <path strokeLinecap="round" strokeLinejoin="round"

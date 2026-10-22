@@ -42,9 +42,9 @@ export default function ChangePasswordCard() {
   return (
     <div className="card p-5 space-y-4">
       <div>
-        <h3 className="text-sm font-bold text-ink-800 uppercase tracking-wider">Şifre Değiştir</h3>
-        <p className="text-xs text-ink-500 mt-1">
-          Güvenliğiniz için zaman zaman şifrenizi yenileyin
+        <h3 className="type-card">Şifre değiştir</h3>
+        <p className="type-meta mt-1">
+          Güvenliğiniz için şifrenizi zaman zaman yenileyin.
         </p>
       </div>
 
@@ -78,14 +78,14 @@ export default function ChangePasswordCard() {
             placeholder="Yeni şifreyi tekrar girin"
             autoComplete="new-password" />
           {confirmPassword && newPassword !== confirmPassword && (
-            <p className="text-xs text-red-600 mt-1">Şifreler eşleşmiyor</p>
+            <p className="type-caption mt-1" style={{ color: 'var(--ah-danger)' }} role="alert">Şifreler eşleşmiyor</p>
           )}
           {confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 && (
-            <p className="text-xs text-brand-700 mt-1">Şifreler eşleşiyor</p>
+            <p className="type-caption mt-1" style={{ color: 'var(--ah-ok)' }}>Şifreler eşleşiyor</p>
           )}
         </div>
 
-        <label className="flex items-center gap-2 text-xs text-ink-600 cursor-pointer select-none">
+        <label className="flex items-center gap-2 min-h-[44px] type-meta cursor-pointer select-none">
           <input type="checkbox" checked={showPasswords}
             onChange={e => setShowPasswords(e.target.checked)}
             className="w-4 h-4 accent-brand-700" />
@@ -94,9 +94,8 @@ export default function ChangePasswordCard() {
 
         <div className="pt-2">
           <button type="submit" disabled={loading}
-            className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-all disabled:opacity-60 hover:-translate-y-0.5"
-            style={{ background: 'var(--ah-brand-gradient)', boxShadow: '0 4px 16px rgba(31, 41, 55, 0.25)' }}>
-            {loading ? 'Değiştiriliyor...' : 'Şifreyi Güncelle'}
+            className="btn-secondary !w-auto">
+            {loading ? 'Değiştiriliyor...' : 'Şifreyi güncelle'}
           </button>
         </div>
       </form>

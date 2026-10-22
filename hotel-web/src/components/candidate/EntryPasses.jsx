@@ -59,7 +59,7 @@ export default function EntryPasses() {
                 <QRCodeSVG value={p.passUrl} size={48} level="M" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>
+                <div className="type-label" style={{ color: 'var(--ah-ink-3)' }}>
                   {/* Gece vardiyası dün başlamış olabilir — "Bugünkü" yalnız bugün başlayana */}
                   {!p.shiftDate || p.shiftDate === localDateISO() ? 'Bugünkü giriş kartın' : 'Giriş kartın'}
                 </div>
@@ -86,7 +86,7 @@ export default function EntryPasses() {
             </div>
           ) : (
             <button key={p.passUrl} type="button" onClick={() => setOpen(p.passUrl)}
-                    className="card w-full !p-3 flex items-center gap-3 text-left transition-shadow hover:shadow-md">
+                    className="card w-full !p-3 flex items-center gap-3 text-left transition-colors hover:border-[var(--ah-line-2)]">
               {body}
             </button>
           )
@@ -99,7 +99,7 @@ export default function EntryPasses() {
              role="dialog" aria-modal="true" aria-label="Giriş kartı">
           <div className="w-full max-w-sm rounded-2xl p-6 text-center" style={{ background: '#ffffff' }}
                onClick={e => e.stopPropagation()}>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>
+            <div className="type-label" style={{ color: 'var(--ah-ink-3)' }}>
               Giriş kartı
             </div>
             <div className="text-lg font-semibold mt-0.5" style={{ color: 'var(--ah-ink)' }}>{current.fullName}</div>

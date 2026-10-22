@@ -22,18 +22,17 @@ export default function ProfileCompletenessCard({ data, bare = false }) {
     <div className={bare ? '' : 'card p-5'}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--ah-ink-3)' }}>
-            Profil Doluluk
-          </div>
-          <div className="text-sm" style={{ color: 'var(--ah-ink-2)' }}>{message}</div>
+          <h3 className="type-card mb-1">Profil doluluğu</h3>
+          <p className="type-meta">{message}</p>
         </div>
-        <div className="text-3xl font-black flex-shrink-0 tabular-nums" style={{ color: 'var(--ah-ink)' }}>
+        <div className="text-[28px] leading-8 font-bold tracking-tight flex-shrink-0 type-num" style={{ color: 'var(--ah-ink)' }}>
           %{percentage}
         </div>
       </div>
 
       {/* Progress bar */}
       <div className="w-full h-2 rounded-full overflow-hidden mb-3"
+           role="progressbar" aria-label="Profil doluluğu" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percentage}
            style={{ background: 'var(--ah-line)' }}>
         <div
           className="h-full transition-all duration-500 rounded-full"
@@ -44,19 +43,19 @@ export default function ProfileCompletenessCard({ data, bare = false }) {
       {/* Eksik alanlar listesi */}
       {missing.length > 0 && (
         <div>
-          <div className="text-xs font-semibold mb-2" style={{ color: 'var(--ah-ink-3)' }}>
-            Eksik {missing.length} alan:
+          <div className="type-label mb-2">
+            Eksik {missing.length} alan
           </div>
           <div className="flex flex-wrap gap-1.5">
             {missing.slice(0, 8).map(m => (
               <span key={m.key}
-                className="text-[11px] px-2 py-1 rounded-full"
+                className="type-badge px-2.5 py-1 rounded-full"
                 style={{ background: 'var(--ah-band)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line)' }}>
                 {m.label}
               </span>
             ))}
             {missing.length > 8 && (
-              <span className="text-[11px] px-2 py-1" style={{ color: 'var(--ah-ink-3)' }}>
+              <span className="type-badge px-2 py-1" style={{ color: 'var(--ah-ink-3)' }}>
                 +{missing.length - 8} daha…
               </span>
             )}

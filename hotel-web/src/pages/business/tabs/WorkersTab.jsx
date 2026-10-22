@@ -70,73 +70,60 @@ export default function WorkersTab({ applications, onOpenMessages }) {
   return (
     <div className="space-y-4">
       {/* FAZ 5.14 — Ekip vitrin satırı: avatar cluster + sayım */}
-      <div className="p-5 flex items-center justify-between gap-4 flex-wrap"
-           style={{
-             background: '#ffffff',
-             borderRadius: '12px',
-             border: 'none',
-             boxShadow: '0 14px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(239, 239, 239, 0.03)',
-           }}>
+      {/* Eski koyu tema gölgesi (0.30 siyah) açık zeminde kirli duruyordu → düz kart */}
+      <div className="card !p-5 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
           <AvatarCluster items={clusterItems} size={40} max={5} showOnlineDot />
           <div>
-            <div className="text-[16px] font-semibold" style={{ color: '#12201f', letterSpacing: '-0.015em' }}>
+            <div className="type-card">
               {workers.length} kişilik ekip
             </div>
-            <div className="text-[11px] mt-0.5" style={{ color: '#6b7574' }}>
-              yeşil nokta = şu an çevrimiçi
+            <div className="type-caption mt-0.5">
+              Yeşil nokta: şu an çevrimiçi
             </div>
           </div>
         </div>
         <div className="tabular-nums"
-             style={{
-               color: '#1f2937',
-               fontSize: '28px',
-               fontWeight: 600,
-               letterSpacing: '-0.03em',
-               lineHeight: 1,
-               filter: 'drop-shadow(0 0 14px rgba(31, 41, 55, 0.30))',
-             }}>
-          {totalHours.toFixed(0)} <span className="text-[10px] font-medium uppercase tracking-[0.06em] ml-1" style={{ color: '#6b7574' }}>SAAT</span>
+             style={{ color: 'var(--ah-ink)', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1 }}>
+          {totalHours.toFixed(0)} <span className="type-label ml-1">saat</span>
         </div>
       </div>
 
       {/* Özet */}
       <div className="grid grid-cols-2 gap-3">
         <div className="stat-card">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: 'var(--ah-brand-soft)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.8} stroke="white" className="w-5 h-5">
+                 strokeWidth={1.8} stroke="var(--ah-brand)" className="w-5 h-5" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
             </svg>
           </div>
           <div className="flex items-end justify-between gap-2">
             <div>
-              <div className="text-2xl font-bold text-ink-900">{workers.length}</div>
-              <div className="text-xs text-ink-500 mt-0.5">Farklı Aday Çalıştı</div>
+              <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>{workers.length}</div>
+              <div className="type-meta mt-0.5">Farklı aday çalıştı</div>
             </div>
             {/* FAZ D1 — son 8 hafta yeni iseaccept trend */}
             <Sparkline data={weeklyTrend(applications, a => a.status === 'ACCEPTED')}
-                       color="#919191" width={56} height={24} />
+                       color="var(--ah-ink-4)" width={56} height={24} />
           </div>
         </div>
         <div className="stat-card">
-          <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center mb-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: 'var(--ah-brand-soft)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.8} stroke="white" className="w-5 h-5">
+                 strokeWidth={1.8} stroke="var(--ah-brand)" className="w-5 h-5" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
           </div>
           <div className="flex items-end justify-between gap-2">
             <div>
-              <div className="text-2xl font-bold text-ink-900">{totalHours.toFixed(0)}<span className="text-base">sa</span></div>
-              <div className="text-xs text-ink-500 mt-0.5">Toplam İş Saati</div>
+              <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>{totalHours.toFixed(0)}<span className="text-base font-semibold ml-0.5">sa</span></div>
+              <div className="type-meta mt-0.5">Toplam iş saati</div>
             </div>
             {/* FAZ D1 — son 8 hafta toplam başvuru trendi (yoğunluk göstergesi) */}
-            <Sparkline data={weeklyTrend(applications, null)}
-                       color="#1f2937" width={56} height={24} />
+            <Sparkline data={weeklyTrend(applications, null)} width={56} height={24} />
           </div>
         </div>
       </div>

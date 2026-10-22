@@ -3,6 +3,7 @@ import { StatusBadge, NoShowSummaryBadge } from '../components/Badges'
 import EmptyState from '../../../components/EmptyState'
 import TodayWidget, { businessLink } from '../components/TodayWidget'
 import { isFullyNoShow } from '../../../lib/shiftTime'
+import { NavIcon } from '../../../components/DashboardLayout'
 
 const DAY = 86_400_000
 const RECENT_LIMIT = 6
@@ -10,17 +11,24 @@ const RECENT_LIMIT = 6
 /**
  * İşletme Genel bakış (Paket 5):
  *   1) Yapılacaklar — tek eylem kartı (TodayWidget)
- *   2) KPI şeridi — 4 sayı; Yapılacaklar'daki sayıları TEKRARLAMAZ
+ *   2) KPI şeridi — 4 sayı; Yapılacaklar'daki sayıları TEKRARLAMAZ.
+ *      Her kart ilgili sekmeye bağlantı (etiket üstte, sayı altta).
  *   3) Son hareketler — eski "Son başvurular" + "Bugünkü akış" tek listede;
  *      her satır başvuruya derin bağlantı (?tab=applications&id=)
+ * Düzen: mobil/tablet tek sütun (Yapılacaklar → KPI → Son hareketler);
+ * xl'de iki sütun — solda Son hareketler, sağda Yapılacaklar + 2x2 KPI.
  */
 export function overviewKpis(applications = [], now = new Date()) {
   const weekAgo = now.getTime() - 7 * DAY
   return [
-    { key: 'total',     label: 'Toplam başvuru',  value: applications.length },
-    { key: 'week',      label: 'Son 7 günde gelen', value: applications.filter(a => new Date(a.createdAt).getTime() >= weekAgo).length },
-    { key: 'accepted',  label: 'Kabul edilen',    value: applications.filter(a => a.status === 'ACCEPTED' && !isFullyNoShow(a)).length },
-    { key: 'completed', label: 'Tamamlanan iş',   value: applications.filter(a => a.status === 'ACCEPTED' && a.workCompleted && !isFullyNoShow(a)).length },
+    { key: 'total',     label: 'Toplam başvuru',  icon: 'inbox',    to: businessLink({ tab: 'applications' }),
+      value: applications.length },
+    { key: 'week',      label: 'Son 7 günde gelen', icon: 'trending', to: businessLink({ tab: 'applications' }),
+      value: applications.filter(a => new Date(a.createdAt).getTime() >= weekAgo).length },
+    { key: 'accepted',  label: 'Kabul edilen',    icon: 'users',    to: businessLink({ tab: 'applications', status: 'ACCEPTED' }),
+      value: applications.filter(a => a.status === 'ACCEPTED' && !isFullyNoShow(a)).length },
+    { key: 'completed', label: 'Tamamlanan iş',   icon: 'activity', to: businessLink({ tab: 'team' }),
+      value: applications.filter(a => a.status === 'ACCEPTED' && a.workCompleted && !isFullyNoShow(a)).length },
   ]
 }
 
@@ -44,19 +52,20 @@ export default function OverviewTab({ applications = [], onTabChange }) {
     .slice(0, RECENT_LIMIT)
 
   return (
-    <div className="space-y-4">
-      <TodayWidget applications={applications} />
+    <div className="grid gap-4 items-start xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="space-y-4 min-w-0 xl:order-2">
+        <TodayWidget applications={applications} />
 
-      <ul className="grid grid-cols-2 sm:grid-cols-4 gap-2.5" data-testid="kpi-strip" aria-label="Özet sayılar">
-        {kpis.map(k => (
-          <li key={k.key} className="card !p-4">
-            <p className="type-page tabular-nums" style={{ color: 'var(--ah-ink)' }}>{k.value}</p>
-            <p className="type-meta mt-1">{k.label}</p>
-          </li>
-        ))}
-      </ul>
+        <ul className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 gap-3" data-testid="kpi-strip" aria-label="Özet sayılar">
+          {kpis.map(k => (
+            <li key={k.key} className="min-w-0">
+              <KpiCard {...k} />
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      <section className="card !p-0 overflow-hidden" aria-labelledby="recent-title">
+      <section className="card !p-0 overflow-hidden min-w-0 xl:order-1" aria-labelledby="recent-title">
         <div className="px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3"
              style={{ borderBottom: '1px solid var(--ah-line)' }}>
           <h2 id="recent-title" className="type-card">Son hareketler</h2>
@@ -108,5 +117,24 @@ export default function OverviewTab({ applications = [], onTabChange }) {
         )}
       </section>
     </div>
+  )
+}
+
+/** KPI kartı: solda ikon kutusu, etiket üstte, sayı altta; kart ilgili sekmeye gider. */
+function KpiCard({ label, value, icon, to }) {
+  return (
+    <Link to={to}
+          className="card !p-4 h-full flex items-start gap-3 transition-[border-color,box-shadow] duration-150
+                     hover:border-[var(--ah-line-2)] hover:shadow-[var(--elev-hover)]
+                     focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ah-brand)]">
+      <span className="w-8 h-8 rounded-lg grid place-items-center flex-shrink-0"
+            style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' }}>
+        <NavIcon name={icon} size={16} />
+      </span>
+      <span className="min-w-0">
+        <span className="type-meta block truncate">{label}</span>
+        <span className="type-page type-num block mt-0.5" style={{ color: 'var(--ah-ink)' }}>{value}</span>
+      </span>
+    </Link>
   )
 }

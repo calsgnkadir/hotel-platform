@@ -104,9 +104,9 @@ export default function ContactPage() {
 
         {/* Veri sorumlusu kartı (KVKK m.10) */}
         <section className="bg-white rounded-2xl shadow-xl border border-brand-200 p-6 sm:p-8 mb-6">
-          <div className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: 'var(--ah-ink-3)' }}>
-            Veri Sorumlusu
-          </div>
+          <h2 className="type-card mb-3">
+            Veri sorumlusu
+          </h2>
           <div className="grid sm:grid-cols-2 gap-3">
             <InfoCard label="Genel destek" value={SUPPORT_EMAIL} href={`mailto:${SUPPORT_EMAIL}`} />
             <InfoCard label="KVKK başvuruları" value={KVKK_EMAIL} href={`mailto:${KVKK_EMAIL}`} />
@@ -121,9 +121,9 @@ export default function ContactPage() {
 
         {/* Form — mailto pre-fill */}
         <section className="bg-white rounded-2xl shadow-xl border border-brand-200 p-6 sm:p-8">
-          <div className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: 'var(--ah-ink-3)' }}>
-            Bize Yaz
-          </div>
+          <h2 className="type-card mb-3">
+            Bize yaz
+          </h2>
           <div className="space-y-4">
             <div>
               <label className="block text-[12px] font-semibold mb-1.5" style={{ color: 'var(--ah-ink-3)' }}>
@@ -175,7 +175,7 @@ export default function ContactPage() {
                   {sending ? 'Gönderiliyor…'
                     : body.trim() ? 'Talebi Gönder' : 'Önce mesaj yaz'}
                 </button>
-                <p className="text-[11px] text-ink-500 leading-relaxed">
+                <p className="type-caption leading-relaxed">
                   Talebin platformda kayıt altına alınır; admin paneline düşer ve <strong>24 saat</strong>{' '}
                   içinde yanıtlanır. Tercihen{' '}
                   <a href={mailtoHref} className="underline">e-posta uygulamasında aç</a>.
@@ -193,7 +193,7 @@ export default function ContactPage() {
                    }}>
                   {body.trim() ? 'E-posta uygulamasında aç' : 'Önce mesaj yaz'}
                 </a>
-                <p className="text-[11px] text-ink-500 leading-relaxed">
+                <p className="type-caption leading-relaxed">
                   Bu form, varsayılan e-posta uygulamanı açar — gönderim {targetEmail}{' '}
                   adresine yapılır. <Link to="/login" className="underline">Giriş yaparsan</Link>{' '}
                   doğrudan platforma yazabilirsin.
@@ -213,11 +213,11 @@ export default function ContactPage() {
 function InfoCard({ label, value, href, caption }) {
   const inner = (
     <>
-      <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--ah-ink-3)' }}>{label}</div>
+      <div className="type-label" style={{ color: 'var(--ah-ink-3)' }}>{label}</div>
       <div className={`font-mono text-[13px] truncate mt-1 ${href ? 'underline' : ''}`}
            style={{ color: 'var(--ah-ink)' }}>{value}</div>
       {caption && (
-        <div className="text-[10px] mt-1" style={{ color: 'var(--ah-ink-4)' }}>{caption}</div>
+        <div className="type-caption mt-1">{caption}</div>
       )}
     </>
   )

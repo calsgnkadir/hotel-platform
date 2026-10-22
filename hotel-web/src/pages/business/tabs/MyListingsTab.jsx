@@ -189,20 +189,22 @@ export default function MyListingsTab({ applications = [] }) {
                       </span>
                     )}
                   </div>
-                  <p className="type-caption mt-1">
-                    {POSITION_LABELS[listing.position]} · {JOB_TYPE_LABELS[listing.jobType]}
-                  </p>
-                  {/* Conversion — champagne accent bilgi satiri */}
-                  <p className="type-caption mt-1 tabular-nums" style={{ color: 'var(--accent-action)' }}>
-                    {views.toLocaleString('tr-TR')} görüntülenme · {listingApplications} başvuru
-                    {conversion !== null && ` · %${conversion} dönüşüm`}
-                  </p>
+                  {/* Meta satırları tek ton (type-meta / ink-3); ücret tek vurgulu satır.
+                      Pozisyon ya da çalışma tipi boşsa baştaki/sondaki "·" çıkmaz. */}
+                  {(() => {
+                    const kind = [POSITION_LABELS[listing.position], JOB_TYPE_LABELS[listing.jobType]].filter(Boolean).join(' · ')
+                    return kind ? <p className="type-meta mt-1">{kind}</p> : null
+                  })()}
                   {(() => {
                     const s = formatSalary(listing.salaryMin, listing.salaryMax, listing.salaryType, listing.tipsIncluded)
                     return s ? (
-                      <p className="type-caption font-medium mt-0.5" style={{ color: 'var(--accent-action)' }}>{s}</p>
+                      <p className="type-meta type-num font-semibold mt-0.5" style={{ color: 'var(--ah-ink)' }}>{s}</p>
                     ) : null
                   })()}
+                  <p className="type-meta type-num mt-0.5">
+                    {views.toLocaleString('tr-TR')} görüntülenme · {listingApplications} başvuru
+                    {conversion !== null && ` · %${conversion} dönüşüm`}
+                  </p>
                   {/* Faz E2: slot özeti */}
                   {listing.shiftSlots?.length > 0 && (() => {
                     const total      = listing.shiftSlots.length
@@ -211,15 +213,15 @@ export default function MyListingsTab({ applications = [] }) {
                     const filled     = listing.shiftSlots.reduce((sum, s) => sum + (s.slotsFilled || 0), 0)
                     const nextStr = next ? formatSlotShort(next) : null
                     return (
-                      <p className="type-caption font-medium mt-0.5" style={{ color: 'var(--accent-action)' }}>
+                      <p className="type-meta type-num mt-0.5">
                         {total} vardiya
                         {nextStr && ` · en yakın: ${nextStr}`}
                         {totalSeats > 0 && ` · ${filled}/${totalSeats} dolu`}
                       </p>
                     )
                   })()}
-                  <p className="type-caption mt-0.5">
-                    {new Date(listing.createdAt).toLocaleDateString('tr-TR')}
+                  <p className="type-caption type-num mt-0.5">
+                    Oluşturulma: {new Date(listing.createdAt).toLocaleDateString('tr-TR')}
                   </p>
                 </div>
                 <div className="flex flex-col items-start sm:items-end gap-2 sm:flex-shrink-0 sm:max-w-[60%]">

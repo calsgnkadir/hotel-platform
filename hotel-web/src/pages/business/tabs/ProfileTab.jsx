@@ -223,9 +223,8 @@ export default function ProfileTab() {
 
       {/* Temel bilgiler */}
       <div className="card p-5 space-y-4">
-        <h3 className="font-display text-[16px] font-semibold pb-2 border-b"
-            style={{ color: '#1f2937', borderColor: 'rgba(31, 41, 55, 0.10)' }}>
-          Temel Bilgiler
+        <h3 className="type-card pb-3 border-b" style={{ borderColor: 'var(--ah-line)' }}>
+          Temel bilgiler
         </h3>
 
         <div>
@@ -273,8 +272,7 @@ export default function ProfileTab() {
 
       {/* İletişim */}
       <div className="card p-5 space-y-4">
-        <h3 className="font-display text-[16px] font-semibold pb-2 border-b"
-            style={{ color: '#1f2937', borderColor: 'rgba(31, 41, 55, 0.10)' }}>
+        <h3 className="type-card pb-3 border-b" style={{ borderColor: 'var(--ah-line)' }}>
           İletişim
         </h3>
 
@@ -334,9 +332,8 @@ export default function ProfileTab() {
       )}
 
       <div className="card p-5 space-y-3">
-        <h3 className="font-display text-[16px] font-semibold pb-2 border-b"
-            style={{ color: '#1f2937', borderColor: 'rgba(31, 41, 55, 0.10)' }}>
-          Çalışma Saatleri
+        <h3 className="type-card pb-3 border-b" style={{ borderColor: 'var(--ah-line)' }}>
+          Çalışma saatleri
         </h3>
         <WorkingHoursEditor
           value={parseWorkingHours(form.workingHours)}
@@ -347,10 +344,8 @@ export default function ProfileTab() {
       </div>
 
       <div className="flex justify-end gap-3">
-        <button type="submit" disabled={saving}
-          className="px-6 py-2.5 text-base tracking-wider uppercase text-white rounded-full transition-all disabled:opacity-60 hover:-translate-y-0.5"
-          style={{ background: 'var(--ah-brand-gradient)', color: '#ffffff', boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)' }}>
-          {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+        <button type="submit" disabled={saving} className="btn-primary sm:!w-auto">
+          {saving ? 'Kaydediliyor...' : 'Değişiklikleri kaydet'}
         </button>
       </div>
     </form>
@@ -361,7 +356,7 @@ export default function ProfileTab() {
     <aside className="xl:sticky xl:top-4 xl:self-start space-y-4">
       <BusinessPreviewCard form={form} logoUrl={logoUrl} />
       <NotificationSettings />
-      <PhoneVerifyCard />
+      <PhoneVerifyCard audience="business" />
       <ChangePasswordCard />
       <GdprCard />
     </aside>
@@ -374,116 +369,87 @@ export default function ProfileTab() {
 function BusinessPreviewCard({ form, logoUrl }) {
   const TYPE_LABELS = BUSINESS_TYPE_LABELS
   const initial = (form.name || 'A').trim().charAt(0).toUpperCase()
+  const typeLine = [TYPE_LABELS[form.type] || form.type, form.category].filter(Boolean).join(' · ')
+  const links = [
+    form.website && 'Web sitesi',
+    form.instagram && 'Instagram',
+    form.facebook && 'Facebook',
+  ].filter(Boolean)
   return (
-    <div className="card overflow-hidden">
-      <div className="px-4 py-3 border-b flex items-center justify-between"
-           style={{ borderColor: 'rgba(31, 41, 55, 0.10)' }}>
-        <h3 className="text-base tracking-[0.2em] uppercase"
-            style={{ color: '#1f2937' }}>Canlı Önizleme</h3>
-        <span className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: 'var(--ah-ink-3)' }}>aday bu şekilde görür</span>
+    <section className="card overflow-hidden" aria-labelledby="biz-preview-title">
+      <div className="px-4 py-3 border-b flex items-baseline justify-between gap-3"
+           style={{ borderColor: 'var(--ah-line)' }}>
+        <h3 id="biz-preview-title" className="type-card">Canlı önizleme</h3>
+        <span className="type-label">Aday bu şekilde görür</span>
       </div>
       <div className="p-4">
-        {/* Logo + isim */}
+        {/* Logo + isim — acik logo kutusu (Paket B ile ayni dil) */}
         <div className="flex items-center gap-3 mb-4">
           <div className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
-               style={{
-                 background: 'rgba(31, 41, 55, 0.08)',
-                 border: '1px solid rgba(31, 41, 55, 0.22)',
-               }}>
+               style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-line-2)' }}>
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-2xl" style={{ color: '#1f2937' }}>{initial}</span>
+              <span className="text-[22px] font-bold" style={{ color: 'var(--ah-ink)' }}>{initial}</span>
             )}
           </div>
           <div className="flex-1 min-w-0">
-            {/* Duz beyaz kart icinde beyaz metin gorunmuyordu. */}
-            <div className="text-xl tracking-wider uppercase truncate"
-                 style={{ color: 'var(--ah-ink)' }}>
+            <div className="type-section truncate">
               {form.name || 'İşletme adınız'}
             </div>
-            <div className="text-[11px] uppercase tracking-wider mt-0.5"
-                 style={{ color: '#1f2937' }}>
-              {TYPE_LABELS[form.type] || form.type}
-              {form.category && ` · ${form.category}`}
-            </div>
+            {typeLine && <div className="type-meta mt-0.5 truncate">{typeLine}</div>}
           </div>
         </div>
 
         {/* Konum */}
         {(form.district || form.address) && (
-          <div className="flex items-start gap-2 text-[12px] mb-3"
-               style={{ color: 'var(--ah-ink-3)' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          <div className="flex items-start gap-2 type-meta mb-3">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                  className="flex-shrink-0 mt-0.5" aria-hidden="true">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
               <circle cx="12" cy="10" r="3" />
             </svg>
             <div className="min-w-0">
-              {form.district && <div className="font-medium">{form.district}{form.neighborhood && ` / ${form.neighborhood}`}</div>}
-              {form.address && <div className="text-[11px] mt-0.5 line-clamp-2"
-                                     style={{ color: '#98a1a0' }}>
-                {form.address}
-              </div>}
+              {form.district && <div style={{ color: 'var(--ah-ink-2)' }}>{form.district}{form.neighborhood && ` / ${form.neighborhood}`}</div>}
+              {form.address && <div className="type-caption mt-0.5 line-clamp-2">{form.address}</div>}
             </div>
           </div>
         )}
 
         {/* Telefon */}
         {form.phone && (
-          <div className="flex items-center gap-2 text-[12px] mb-3"
-               style={{ color: '#6b7574' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          <div className="flex items-center gap-2 type-meta mb-3">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
             </svg>
-            <span>{form.phone}</span>
+            <span className="type-num">{form.phone}</span>
           </div>
         )}
 
         {/* Aciklama */}
         {form.description && (
-          <p className="text-[12px] leading-relaxed mb-3 line-clamp-4"
-             style={{ color: '#6b7574' }}>
+          <p className="type-body mb-3 line-clamp-4" style={{ color: 'var(--ah-ink-2)' }}>
             {form.description}
           </p>
         )}
 
         {/* Sosyal */}
-        {(form.website || form.instagram || form.facebook) && (
+        {links.length > 0 && (
           <div className="pt-3 border-t flex items-center gap-2 flex-wrap"
-               style={{ borderColor: 'rgba(31, 41, 55, 0.08)' }}>
-            {form.website && (
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded"
-                    style={{ background: 'rgba(31, 41, 55, 0.10)', color: '#1f2937', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
-                Web
-              </span>
-            )}
-            {form.instagram && (
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded"
-                    style={{ background: 'rgba(31, 41, 55, 0.10)', color: '#1f2937', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
-                Instagram
-              </span>
-            )}
-            {form.facebook && (
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded"
-                    style={{ background: 'rgba(31, 41, 55, 0.10)', color: '#1f2937', border: '1px solid rgba(31, 41, 55, 0.22)' }}>
-                Facebook
-              </span>
-            )}
+               style={{ borderColor: 'var(--ah-line)' }}>
+            {links.map(l => <span key={l} className="ah-chip">{l}</span>)}
           </div>
         )}
 
         {/* Bos durumu */}
         {!form.name && !form.district && !form.description && (
-          <p className="text-center text-[11px] italic py-4"
-             style={{ color: '#98a1a0' }}>
+          <p className="text-center type-caption py-4">
             Form alanlarını doldurdukça burada güncellenir.
           </p>
         )}
       </div>
-    </div>
+    </section>
   )
 }

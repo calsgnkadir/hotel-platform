@@ -80,7 +80,7 @@ export default function GalleryCarousel({ businessId, photos: externalPhotos, he
                     ${i === index ? 'bg-white w-4' : 'bg-white/60'}`} />
               ))}
             </div>
-            <div className="absolute top-2 right-2 text-[10px] text-white font-medium bg-black/40 rounded-full px-2 py-0.5">
+            <div className="absolute top-2 right-2 type-badge type-num text-white bg-black/55 rounded-full px-2.5 py-0.5">
               {index + 1} / {photos.length}
             </div>
           </>

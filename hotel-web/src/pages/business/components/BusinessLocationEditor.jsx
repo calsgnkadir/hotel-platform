@@ -56,19 +56,16 @@ export default function BusinessLocationEditor({
     <div className="card p-5 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-base tracking-[0.2em] uppercase pb-2 border-b"
-              style={{ color: '#1f2937', borderColor: 'rgba(31, 41, 55, 0.10)' }}>
-            Tam Konum
-          </h3>
-          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-0.5">
+          <h3 className="type-card">Tam konum</h3>
+          <p className="type-meta mt-1">
             {hasExact
-              ? 'Aday\'lar ilan detayında bu tam konumu görür.'
+              ? 'Adaylar ilan detayında bu tam konumu görür.'
               : 'Adresi yaz veya haritada tıklayarak işaretle. Aksi halde ilçe merkezi gösterilir.'}
           </p>
         </div>
         {hasExact && (
           <button type="button" onClick={handleClear}
-            className="btn-sm bg-cream-100 hover:bg-cream-200 text-ink-700 dark:bg-ink-700 dark:hover:bg-slate-700 dark:text-ink-300 flex-shrink-0">
+            className="btn-ghost flex-shrink-0">
             Temizle
           </button>
         )}
@@ -80,10 +77,11 @@ export default function BusinessLocationEditor({
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
-          placeholder="Örn: Bağdat Caddesi 42 — Adres + numara"
-          className="input flex-1 text-sm" />
+          aria-label="Adres ara"
+          placeholder="Örn: Bağdat Caddesi 42"
+          className="input flex-1 min-w-0 text-sm" />
         <button type="button" onClick={handleSearch} disabled={searching}
-          className="btn-sm bg-brand-700 text-white hover:bg-brand-800 disabled:opacity-50 flex-shrink-0 px-4">
+          className="btn-secondary !w-auto flex-shrink-0">
           {searching ? 'Aranıyor...' : 'Ara'}
         </button>
       </div>
@@ -99,8 +97,9 @@ export default function BusinessLocationEditor({
       />
 
       {hasExact && (
-        <div className="flex items-center gap-2 text-[11px] text-brand-700 dark:text-brand-700 font-mono">
-          <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
+        <div className="flex items-center gap-2 type-caption type-num">
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-ok)' }} aria-hidden="true" />
+          <span className="sr-only">Seçili koordinat:</span>
           {position[0].toFixed(5)}, {position[1].toFixed(5)}
         </div>
       )}

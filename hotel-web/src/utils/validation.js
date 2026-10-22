@@ -60,6 +60,25 @@ export function formatTurkeyPhoneInput(raw) {
 const MIN_AGE = 18
 const MAX_AGE = 65
 
+/** Date -> yerel takvim günü olarak YYYY-MM-DD (toISOString UTC'ye kaydırır; kullanma). */
+export function toLocalIsoDate(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/**
+ * 'YYYY-MM-DD' metnini yerel gece yarısı olarak çöz. `new Date('2008-10-21')`
+ * UTC gece yarısı döner; UTC'nin batısındaki saat dilimlerinde bir gün geri kayar.
+ */
+function parseLocalDate(value) {
+  if (value instanceof Date) return value
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value))
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+  return new Date(value)
+}
+
 /**
  * Doğum tarihinden yaş hesapla.
  * @param {string|Date} birthDate
@@ -67,8 +86,8 @@ const MAX_AGE = 65
  */
 export function calculateAge(birthDate) {
   if (!birthDate) return null
-  const d = birthDate instanceof Date ? birthDate : new Date(birthDate)
-  if (isNaN(d)) return null
+  const d = parseLocalDate(birthDate)
+  if (!d || isNaN(d)) return null
   const today = new Date()
   let age = today.getFullYear() - d.getFullYear()
   const m = today.getMonth() - d.getMonth()
@@ -99,7 +118,9 @@ export function birthDateBounds(opts = {}) {
   const maxDate = new Date(today.getFullYear() - min, today.getMonth(), today.getDate())
   const minDate = new Date(today.getFullYear() - max, today.getMonth(), today.getDate())
   return {
-    max: maxDate.toISOString().split('T')[0],  // en geç (max yaş - min yıl)
-    min: minDate.toISOString().split('T')[0],  // en erken (max yıl önce)
+    // Yerel takvim günü: toISOString() UTC'ye çevirip İstanbul'da (UTC+3) gece
+    // yarısından sonra bir önceki güne kayıyordu → 18. doğum gününde engel.
+    max: toLocalIsoDate(maxDate),  // en geç (max yaş - min yıl)
+    min: toLocalIsoDate(minDate),  // en erken (max yıl önce)
   }
 }

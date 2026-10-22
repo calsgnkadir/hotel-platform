@@ -36,7 +36,7 @@ export default function TermsPage() {
               style={{ color: 'var(--ah-ink)', letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             Kullanım Şartları
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.08em] font-medium mt-3"
+          <p className="type-label mt-3"
              style={{ color: 'var(--ah-ink-3)' }}>
             Hizmet Sözleşmesi · Son güncelleme: 19 Haziran 2026
           </p>
@@ -117,7 +117,7 @@ export default function TermsPage() {
             style={{ color: '#1f2937', textDecoration: 'underline' }}>KVKK metni</a>.
           </Section>
 
-          <p style={{ marginTop: 24, fontSize: 11, color: '#a1a1a1', fontStyle: 'italic' }}>
+          <p className="type-caption" style={{ marginTop: 24, fontStyle: 'italic' }}>
             Üye kaydı oluşturarak bu sözleşmeyi okuduğunuzu ve kabul ettiğinizi beyan etmiş olursunuz.
           </p>
         </div>
@@ -130,8 +130,8 @@ function Section({ title, children }) {
   return (
     <section style={{ marginBottom: 22 }}>
       <h2 className="" style={{
-        fontSize: 15, fontWeight: 600, color: '#1f2937',
-        marginBottom: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
+        fontSize: 16, fontWeight: 600, color: 'var(--ah-ink)',
+        marginBottom: 10, letterSpacing: '-0.005em',
       }}>
         {title}
       </h2>

@@ -10,27 +10,21 @@ export default function NotFoundPage() {
     <div className="min-h-screen flex items-center justify-center p-6 relative z-10">
       <div className="text-center max-w-md">
         <div className="tabular-nums inline-flex items-center justify-center w-28 h-28 rounded-full mb-7 text-5xl font-semibold"
+             aria-hidden="true"
              style={{
-               background: 'rgba(31, 41, 55, 0.08)',
-               border: '1px solid rgba(31, 41, 55, 0.22)',
-               color: '#1f2937',
+               background: 'var(--ah-brand-soft)',
+               border: '1px solid var(--ah-line-2)',
+               color: 'var(--ah-ink)',
                letterSpacing: '-0.03em',
-               filter: 'drop-shadow(0 0 18px rgba(31, 41, 55, 0.25))',
              }}>
           404
         </div>
         <h1 className="text-2xl font-semibold mb-2" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.02em' }}>Sayfa bulunamadı</h1>
-        <p className="text-[13px] mb-7" style={{ color: 'var(--ah-ink-3)' }}>
+        <p className="type-body mb-7" style={{ color: 'var(--ah-ink-3)' }}>
           Aradığın sayfa silinmiş, taşınmış olabilir veya hiç var olmadı.
         </p>
-        <Link to="/"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[13px] font-semibold uppercase tracking-[0.06em] transition-all hover:-translate-y-0.5"
-          style={{
-            background: 'var(--ah-brand-gradient)',
-            color: '#fff',
-            boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
-          }}>
-          Ana Sayfaya Dön
+        <Link to="/" className="btn-primary !w-auto">
+          Ana sayfaya dön
         </Link>
       </div>
     </div>

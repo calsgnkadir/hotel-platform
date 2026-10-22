@@ -30,25 +30,21 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-baseline gap-2">
             <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.01em', color: 'var(--ah-ink)' }}>Kadrom</span>
-            <span className="hidden sm:inline" style={{ fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--ah-ink-4)' }}>istanbul</span>
+            <span className="hidden sm:inline" style={{ fontSize: 12, fontWeight: 500, color: 'var(--ah-ink-3)' }}>İstanbul</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-7 text-[13px] font-medium" style={{ color: 'var(--ah-ink-3)' }}>
+          <nav className="hidden md:flex items-center gap-7 text-[14px] font-medium" style={{ color: 'var(--ah-ink-2)' }} aria-label="Sayfa bölümleri">
             <a href="#nasil" className="hover:underline" style={{ color: 'inherit' }}>Nasıl çalışır</a>
             <a href="#neden" className="hover:underline" style={{ color: 'inherit' }}>Neden Kadrom</a>
             <a href="#iletisim" className="hover:underline" style={{ color: 'inherit' }}>İletişim</a>
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link to="/login"
-              className="text-[13px] font-semibold px-4 py-2 rounded-lg transition-colors"
-              style={{ color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)', background: 'var(--ah-card)' }}>
-              Giriş Yap
+            <Link to="/login" className="btn-ghost">
+              Giriş yap
             </Link>
-            <button type="button" onClick={() => openAuth()}
-              className="text-[13px] font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
-              style={{ background: 'var(--ah-brand)', color: '#ffffff' }}>
-              Kayıt Ol
+            <button type="button" onClick={() => openAuth()} className="btn-primary !w-auto">
+              Kayıt ol
             </button>
           </div>
         </div>
@@ -61,20 +57,20 @@ export default function LandingPage() {
           <div className="lg:col-span-7">
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-6"
                  style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-line)' }}>
-              <span className="text-[11px] font-semibold" style={{ color: 'var(--ah-brand)' }}>
+              <span className="text-[12px] font-semibold" style={{ color: 'var(--ah-brand)' }}>
                 Otel · Restoran · Kafe — vardiyalık personel
               </span>
             </div>
 
             <h1 style={{
-              fontSize: 'clamp(30px, 4.5vw, 44px)', lineHeight: 1.12, fontWeight: 800,
+              fontSize: 'clamp(32px, 4.8vw, 56px)', lineHeight: 1.08, fontWeight: 800,
               letterSpacing: '-0.025em', color: 'var(--ah-ink)',
             }}>
               Ajansın yaptığını yapar,
               <span className="block" style={{ color: 'var(--ah-brand)' }}>komisyonunu almaz.</span>
             </h1>
 
-            <p className="mt-5 max-w-xl text-[15px] leading-relaxed" style={{ color: 'var(--ah-ink-3)' }}>
+            <p className="mt-5 max-w-xl text-[16px] leading-relaxed" style={{ color: 'var(--ah-ink-3)' }}>
               İşletme ile çalışanı doğrudan buluşturur: işletme aracı komisyonu ödemez,
               çalışan kazancının tamamını alır. Eşleştirme, mesajlaşma, vardiya takibi
               ve giriş-çıkış kaydı — hepsi platformda.
@@ -84,7 +80,7 @@ export default function LandingPage() {
               <button type="button" onClick={() => openAuth('CANDIDATE')}
                 className="flex-1 sm:flex-initial sm:min-w-[220px] text-left px-5 py-4 rounded-xl transition-opacity hover:opacity-90"
                 style={{ background: 'var(--ah-brand)', color: '#ffffff' }}>
-                <span className="block text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ opacity: 0.8 }}>Çalışan için</span>
+                <span className="block text-[12px] font-medium" style={{ opacity: 0.85 }}>Çalışan için</span>
                 <span className="block text-base font-bold mt-0.5">İş arıyorum</span>
               </button>
               <button type="button" onClick={() => openAuth('BUSINESS_OWNER')}
@@ -92,13 +88,13 @@ export default function LandingPage() {
                 style={{ background: 'var(--ah-card)', color: 'var(--ah-ink)', border: '1px solid var(--ah-line-2)' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--ah-brand)' }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--ah-line-2)' }}>
-                <span className="block text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>İşletme için</span>
+                <span className="block text-[12px] font-medium" style={{ color: 'var(--ah-ink-3)' }}>İşletme için</span>
                 <span className="block text-base font-bold mt-0.5">Personel arıyorum</span>
               </button>
             </div>
 
             {/* Guven satiri — urunun gercek ozellikleri */}
-            <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>
+            <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-[13px] font-medium" style={{ color: 'var(--ah-ink-2)' }}>
               {['GPS doğrulamalı giriş-çıkış', 'Kişisel giriş kartı', 'Excel ekip listesi'].map(label => (
                 <span key={label} className="flex items-center gap-1.5">
                   <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="var(--ah-ok)"
@@ -115,8 +111,7 @@ export default function LandingPage() {
           <div className="lg:col-span-5 hidden lg:block">
             <div className="card !p-0 overflow-hidden" style={{ boxShadow: 'var(--elev-2)' }}>
               <div className="px-5 py-4 flex items-center gap-3 border-b" style={{ borderColor: 'var(--ah-line)' }}>
-                <span className="w-11 h-11 rounded-lg grid place-items-center text-white font-bold text-lg"
-                      style={{ background: 'var(--ah-brand)' }}>K</span>
+                <span className="ah-logo" aria-hidden="true">K</span>
                 <div className="min-w-0">
                   <div className="font-semibold" style={{ color: 'var(--ah-ink)' }}>Karaköy Kıyı Restoran</div>
                   <div className="text-[12px]" style={{ color: 'var(--ah-ink-3)' }}>Beyoğlu · 38 vardiya tamamlandı</div>
@@ -135,7 +130,7 @@ export default function LandingPage() {
                 </button>
               </div>
             </div>
-            <p className="mt-3 text-center text-[11px]" style={{ color: 'var(--ah-ink-4)' }}>
+            <p className="mt-3 text-center text-[12px]" style={{ color: 'var(--ah-ink-4)' }}>
               Örnek ilan görünümü
             </p>
           </div>
@@ -182,16 +177,18 @@ export default function LandingPage() {
       </section>
 
       {/* ───── Neden ajans degil ───── */}
-      <section id="neden" style={{ background: 'var(--ah-card)', borderTop: '1px solid var(--ah-line)', borderBottom: '1px solid var(--ah-line)' }}>
+      {/* Grafit zemin: sayfanın tek koyu bandı (ritim). Başlık beyaz ~14.7:1,
+          alt metin beyaz %80 ~9.6:1; kartlar beyaz zemin + ink tonları (AA). */}
+      <section id="neden" style={{ background: 'var(--ah-brand)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 lg:py-20">
-          <h2 className="text-center mb-3" style={{ fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--ah-ink)' }}>
+          <h2 className="text-center mb-3" style={{ fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff' }}>
             Neden ajans değil?
           </h2>
-          <p className="text-center text-[14px] mb-12 max-w-xl mx-auto" style={{ color: 'var(--ah-ink-3)' }}>
+          <p className="text-center text-[15px] mb-12 max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.8)' }}>
             Ajansın verdiği güvenceyi ürünle karşılıyoruz — aradan çıkan komisyon iki tarafta kalıyor.
           </p>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
             <WhyCard
               iconPath="M12 6v6l4 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
               title="Aracı maliyeti yok"
@@ -218,23 +215,21 @@ export default function LandingPage() {
 
       {/* ───── CTA band ───── */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-        <div className="rounded-xl px-6 py-12 text-center" style={{ background: 'var(--ah-brand)', color: '#ffffff' }}>
-          <h2 style={{ fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 800, letterSpacing: '-0.02em' }}>
+        {/* Koyu bant artık "Neden ajans değil?" bölümünde; burada açık kart
+            (iki grafit blok art arda gelmesin). */}
+        <div className="card !px-6 !py-12 text-center" style={{ boxShadow: 'var(--elev-2)' }}>
+          <h2 style={{ fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--ah-ink)' }}>
             Kayıt iki dakika sürer.
           </h2>
-          <p className="mt-2 text-[14px]" style={{ opacity: 0.85 }}>
+          <p className="mt-2 text-[15px]" style={{ color: 'var(--ah-ink-3)' }}>
             Çalışan veya işletme — bir sonraki vardiya buradan bulunur.
           </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <button type="button" onClick={() => openAuth()}
-              className="text-[14px] font-bold px-7 py-3 rounded-lg transition-opacity hover:opacity-90"
-              style={{ background: '#ffffff', color: 'var(--ah-brand)' }}>
-              Hemen Kayıt Ol
+          <div className="mt-7 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+            <button type="button" onClick={() => openAuth()} className="btn-primary sm:!w-auto !px-7">
+              Hemen kayıt ol
             </button>
-            <Link to="/login"
-              className="text-[14px] font-semibold px-7 py-3 rounded-lg transition-colors"
-              style={{ border: '1px solid rgba(255,255,255,0.45)', color: '#ffffff' }}>
-              Giriş Yap
+            <Link to="/login" className="btn-secondary !px-7">
+              Giriş yap
             </Link>
           </div>
         </div>
@@ -246,11 +241,11 @@ export default function LandingPage() {
              style={{ color: 'var(--ah-ink-3)' }}>
           <div className="flex items-baseline gap-2">
             <span className="font-bold text-base" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>Kadrom</span>
-            <span className="text-[9px] uppercase tracking-[0.06em]" style={{ color: 'var(--ah-ink-4)' }}>istanbul</span>
+            <span className="text-[12px] font-medium" style={{ color: 'var(--ah-ink-3)' }}>İstanbul</span>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link to="/kvkk" className="hover:underline" style={{ color: 'inherit' }}>KVKK</Link>
-            <Link to="/terms" className="hover:underline" style={{ color: 'inherit' }}>Kullanım Koşulları</Link>
+            <Link to="/terms" className="hover:underline" style={{ color: 'inherit' }}>Kullanım koşulları</Link>
             <Link to="/yardim" className="hover:underline" style={{ color: 'inherit' }}>Yardım</Link>
             <a href="mailto:destek@kadrom.me" className="hover:underline" style={{ color: 'inherit' }}>destek@kadrom.me</a>
             <span style={{ color: 'var(--ah-ink-4)' }}>© 2026 Kadrom</span>
@@ -270,11 +265,10 @@ function ShiftRow({ pos, time, wage }) {
     <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg"
          style={{ background: 'var(--ah-page)', border: '1px solid var(--ah-line)' }}>
       <div className="min-w-0">
-        <div className="font-semibold text-[13px] truncate" style={{ color: 'var(--ah-ink)' }}>{pos}</div>
-        <div className="text-[11.5px] truncate mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{time}</div>
+        <div className="font-semibold text-[14px] truncate" style={{ color: 'var(--ah-ink)' }}>{pos}</div>
+        <div className="text-[12px] truncate mt-0.5 tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>{time}</div>
       </div>
-      <span className="text-[11px] font-semibold px-2 py-1 rounded-md shrink-0"
-            style={{ background: 'var(--ah-ok-soft)', color: 'var(--ah-ok)' }}>{wage}</span>
+      <span className="ah-chip shrink-0" style={{ background: 'var(--ah-card)', border: '1px solid var(--ah-line)' }}>{wage}</span>
     </div>
   )
 }
@@ -283,9 +277,7 @@ function ShiftRow({ pos, time, wage }) {
 function StepsCard({ title, steps }) {
   return (
     <div className="card">
-      <div className="text-[11px] font-bold uppercase tracking-[0.06em] mb-5" style={{ color: 'var(--ah-brand)' }}>
-        {title}
-      </div>
+      <h3 className="type-section mb-5">{title}</h3>
       <ol className="space-y-5">
         {steps.map(([head, text], i) => (
           <li key={head} className="flex gap-3.5">
@@ -307,7 +299,7 @@ function StepsCard({ title, steps }) {
 /* ── Neden karti ── */
 function WhyCard({ iconPath, title, text }) {
   return (
-    <div className="card">
+    <div className="card h-full">
       <div className="w-10 h-10 rounded-lg mb-4 grid place-items-center"
            style={{ background: 'var(--ah-brand-soft)' }}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -315,8 +307,8 @@ function WhyCard({ iconPath, title, text }) {
           <path strokeLinecap="round" strokeLinejoin="round" d={iconPath} />
         </svg>
       </div>
-      <h3 className="text-[15px] font-bold mb-1.5" style={{ color: 'var(--ah-ink)', letterSpacing: '-0.01em' }}>{title}</h3>
-      <p className="text-[13px] leading-relaxed" style={{ color: 'var(--ah-ink-3)' }}>{text}</p>
+      <h3 className="type-card mb-1.5">{title}</h3>
+      <p className="text-[14px] leading-relaxed" style={{ color: 'var(--ah-ink-3)' }}>{text}</p>
     </div>
   )
 }
