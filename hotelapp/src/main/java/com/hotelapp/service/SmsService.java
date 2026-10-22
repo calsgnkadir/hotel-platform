@@ -100,7 +100,7 @@ public class SmsService {
         }
         try {
             if ("netgsm".equalsIgnoreCase(provider)) {
-                String url = UriComponentsBuilder.fromHttpUrl(netgsmUrl)
+                String url = UriComponentsBuilder.fromUriString(netgsmUrl)
                         .queryParam("usercode", netgsmUsercode)
                         .queryParam("password", netgsmPassword)
                         .queryParam("gsmno", phone)

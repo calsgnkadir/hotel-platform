@@ -52,8 +52,7 @@ public class AppConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService());
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
         // Hesap durumu (ban/kapalı) şifre doğrulandıktan SONRA denetlenir. Varsayılanda
         // önce denetleniyordu: yanlış şifreyle bile "hesap kilitli" yanıtı hesabın

@@ -139,6 +139,9 @@ public class AuthService {
      *                 kullaniciyi kilitleyemez.
      */
     public AuthResponse login(LoginRequest request, String clientIp) {
+        if (!com.hotelapp.validation.PasswordPolicy.isWithinBcryptLimit(request.getPassword())) {
+            throw BusinessRuleException.keyed("error.auth.passwordTooLong");
+        }
         // (e-posta + IP) basina deneme siniri; hesap var/yok fark etmez
         if (!loginAttemptLimiter.tryAcquire(request.getEmail(), clientIp)) {
             throw new com.hotelapp.exception.TooManyRequestsException(
@@ -289,6 +292,12 @@ public class AuthService {
      */
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequest req) {
+        if (!com.hotelapp.validation.PasswordPolicy.isWithinBcryptLimit(req.getCurrentPassword())) {
+            throw BusinessRuleException.keyed("error.auth.passwordTooLong");
+        }
+        String violation = com.hotelapp.validation.PasswordPolicy.violationKey(req.getNewPassword());
+        if (violation != null) throw BusinessRuleException.keyed(violation);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", userId));
 
@@ -310,9 +319,11 @@ public class AuthService {
     @Data
     public static class ChangePasswordRequest {
         @NotBlank(message = "Mevcut şifre zorunlu")
+        @com.hotelapp.validation.PasswordMaxBytes
         private String currentPassword;
 
         @NotBlank(message = "Yeni şifre zorunlu")
+        @com.hotelapp.validation.PasswordMaxBytes
         @Size(min = com.hotelapp.validation.PasswordPolicy.MIN_LENGTH,
               message = "Yeni şifre en az 8 karakter olmalı")
         @jakarta.validation.constraints.Pattern(

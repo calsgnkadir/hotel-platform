@@ -7,9 +7,9 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
@@ -37,8 +37,8 @@ class CheckInConcurrencyTest {
     @Autowired EntityManager em;
     @Autowired WorkSessionRepository sessions;
     @Autowired PlatformTransactionManager transactionManager;
-    @MockBean RosterService rosterService;
-    @MockBean FileStorageService fileStorageService;
+    @MockitoBean RosterService rosterService;
+    @MockitoBean FileStorageService fileStorageService;
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})

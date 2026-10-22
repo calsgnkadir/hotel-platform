@@ -69,8 +69,9 @@ public class PasswordResetController {
         private String token;
 
         @NotBlank
-        @Size(min = com.hotelapp.validation.PasswordPolicy.MIN_LENGTH, max = 128,
-              message = "Şifre en az 8 karakter olmalı")
+        @com.hotelapp.validation.PasswordMaxBytes
+        @Size(min = com.hotelapp.validation.PasswordPolicy.MIN_LENGTH,
+              message = com.hotelapp.validation.PasswordPolicy.MSG_LENGTH)
         @jakarta.validation.constraints.Pattern(
                 regexp = com.hotelapp.validation.PasswordPolicy.PATTERN,
                 message = com.hotelapp.validation.PasswordPolicy.MSG_PATTERN)

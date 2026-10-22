@@ -119,7 +119,7 @@ public class GeoSearchService {
     }
 
     private List<GeoResult> fetch(String q) {
-        UriComponentsBuilder b = UriComponentsBuilder.fromHttpUrl(nominatimUrl)
+        UriComponentsBuilder b = UriComponentsBuilder.fromUriString(nominatimUrl)
                 .queryParam("q", q)
                 .queryParam("format", "jsonv2")
                 .queryParam("countrycodes", "tr")

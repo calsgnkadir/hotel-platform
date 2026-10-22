@@ -138,4 +138,15 @@ class AuthServiceLoginLimitTest {
                 .isInstanceOf(BadCredentialsException.class);
         verify(loginAttemptLimiter).recordFailure(EMAIL);
     }
+
+    @Test
+    @DisplayName("72 bayti aşan login girdisi auth manager'a ulaşmaz ve 4xx iş kuralı verir")
+    void overlongPassword_isRejectedBeforeAuthentication() {
+        assertThatThrownBy(() -> authService.login(req("A1" + "a".repeat(71)), USER_IP))
+                .isInstanceOf(com.hotelapp.exception.BusinessRuleException.class)
+                .extracting(e -> ((com.hotelapp.exception.BusinessRuleException) e).getMessageKey())
+                .isEqualTo("error.auth.passwordTooLong");
+        verify(authenticationManager, org.mockito.Mockito.never()).authenticate(any());
+        verify(loginAttemptLimiter, org.mockito.Mockito.never()).tryAcquire(EMAIL, USER_IP);
+    }
 }

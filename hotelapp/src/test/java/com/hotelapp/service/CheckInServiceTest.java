@@ -186,6 +186,16 @@ class CheckInServiceTest {
     }
 
     @Test
+    void attendance_denies_another_business_owner_before_reading_roster_rows() {
+        when(jobListingRepository.findById(10L)).thenReturn(Optional.of(listing));
+
+        assertThatThrownBy(() -> service.attendance(10L, 999L, TODAY))
+                .isInstanceOf(UnauthorizedException.class);
+
+        verify(rosterService, never()).collectRows(any(), any());
+    }
+
+    @Test
     void attendance_keeps_no_show_row_but_does_not_count_it_as_expected_staff() {
         // Karar 2: gelmedi satırı yoklamada kayıt olarak görünür; yerine kabul edilen
         // yedekle aynı koltuk için beklenen kişi sayısı 1 kalır.

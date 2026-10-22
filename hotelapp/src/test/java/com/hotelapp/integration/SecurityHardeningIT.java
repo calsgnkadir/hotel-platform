@@ -18,7 +18,7 @@ import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 // Test ortaminda metrik ihracati (prometheus) varsayilan kapali; yetki testi icin ac
-@org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability(tracing = false)
+@org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics(export = true)
 @ActiveProfiles("test")
 class SecurityHardeningIT {
 

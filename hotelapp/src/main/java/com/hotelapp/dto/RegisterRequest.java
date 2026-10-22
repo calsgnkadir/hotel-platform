@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelapp.enums.BusinessType;
 import com.hotelapp.enums.Role;
 import com.hotelapp.validation.PasswordPolicy;
+import com.hotelapp.validation.PasswordMaxBytes;
 import com.hotelapp.validation.TurkeyPhone;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
@@ -32,6 +33,7 @@ public class RegisterRequest {
      *   - En az 1 harf (a-zA-Z) + en az 1 rakam (0-9)
      */
     @NotBlank(message = "Şifre zorunlu")
+    @PasswordMaxBytes
     @Size(min = PasswordPolicy.MIN_LENGTH, message = PasswordPolicy.MSG_LENGTH)
     @Pattern(regexp = PasswordPolicy.PATTERN, message = PasswordPolicy.MSG_PATTERN)
     private String password;

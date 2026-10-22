@@ -36,8 +36,8 @@ class ForwardedHeadersConfigTest {
     }
 
     private static String resolve(String peer, String xff) throws Exception {
-        Request request = new Request(new Connector());
-        request.setCoyoteRequest(new org.apache.coyote.Request());
+        org.apache.coyote.Request coyoteRequest = new org.apache.coyote.Request();
+        Request request = new Request(new Connector(), coyoteRequest);
         request.setRemoteAddr(peer);
         request.setRemoteHost(peer);
         if (xff != null) {
@@ -51,7 +51,7 @@ class ForwardedHeadersConfigTest {
                 seen.set(req.getRemoteAddr());
             }
         });
-        valve.invoke(request, new Response());
+        valve.invoke(request, new Response(new org.apache.coyote.Response()));
         return seen.get();
     }
 
