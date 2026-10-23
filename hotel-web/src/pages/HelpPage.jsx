@@ -15,25 +15,25 @@ import EmptyState from '../components/EmptyState'
 const FAQS = [
   // ── ADAY ──
   { cat: 'Aday', q: 'Bir ilana başvurduktan sonra ne olur?',
-    a: 'İşletme başvurunu inceler. Onaylarsa "Kabul" durumuna geçer, mesajlaşma sekmesinden iletişime geçebilirsin. Reddedilirse "Red" olarak görürsün.' },
+    a: 'İşletme başvurunu inceler. Onaylarsa "Kabul edildi" durumuna geçer, mesajlaşma sekmesinden iletişime geçebilirsin. Seçilmezsen başvurunu "Seçilmedi" olarak görürsün.' },
   { cat: 'Aday', q: 'Belgelerimi yüklemek zorunda mıyım?',
     a: 'Hayır. Profilinde veya başvuru sırasında belge yüklemen gerekmez. İşletme bir belge isterse ilgili sohbette Dosya / Foto ekle düğmesiyle paylaşabilirsin.' },
   { cat: 'Aday', q: 'Başvurumu iptal edebilir miyim?',
-    a: 'Evet, sadece "Gönderildi" veya "İnceleniyor" durumdaki başvurular iptal edilebilir. Kabul edilmiş bir başvuruyu iptal edemezsin (no-show olarak işaretlenir).' },
+    a: 'Evet, "Gönderildi" veya "İnceleniyor" durumdaki başvurular iptal edilebilir. Yedek listesindeysen ("Yedeksin") de iptal edebilirsin; sana yedek teklifi geldiyse ("Sıra sende") iptal yerine teklifi "Kabul et" ya da "Gelemem" ile yanıtlarsın. Kabul edilmiş bir başvuruyu iptal edemezsin; vardiyaya gitmezsen "Gelmedi" olarak işaretlenir.' },
   { cat: 'Aday', q: 'Başvurum "Yanıtın bekleniyor" görünüyor, ne demek?',
-    a: 'İşletme seninle ilgileniyor ve 24 saat içinde cevap vermeni bekliyor. Onaylarsan başvurun "Kabul" durumuna geçer, reddedersen diğer başvurulara devam edersin.' },
-  { cat: 'Aday', q: 'No-show ne demek? Cezalandırılır mıyım?',
-    a: 'Kabul ettiğin vardiyaya gitmediğin durumdur. İşletme no-show işaretlediğinde 1 "strike" alırsın. 3 strike sonrası hesabın 30 gün askıya alınır.' },
+    a: 'İşletme seninle ilgileniyor ve 24 saat içinde cevap vermeni bekliyor. Onaylarsan başvurun "Kabul edildi" durumuna geçer, reddedersen diğer başvurulara devam edersin.' },
+  { cat: 'Aday', q: '"Gelmedi" ne demek? Cezalandırılır mıyım?',
+    a: 'Kabul ettiğin vardiyaya gitmediğin durumdur. İşletme seni "Gelmedi" olarak işaretlediğinde 1 ceza hakkın düşer. 3 ceza hakkın da bitince hesabın 30 gün askıya alınır.' },
 
   // ── İSLETME ──
   { cat: 'İşletme', q: '"Doğrulanmış işletme" rozetini nasıl alırım?',
     a: 'Vergi numarası + faaliyet belgesi + telefon doğrulaması ile admin onayına başvurursun. Onay sonrası profilinde ve ilanlarında "Doğrulanmış işletme" onay rozeti görünür — güven sinyali.' },
   { cat: 'İşletme', q: 'İlan oluştururken hangi alanlar zorunlu?',
     a: 'Pozisyon, başlık, açıklama ve en az 1 vardiya slotu (tarih + başlangıç/bitiş saat + kaç aday). Ücret ve gereksinimler güçlü öneri ama opsiyonel.' },
-  { cat: 'İşletme', q: 'Bir adayı "no-show" olarak nasıl işaretlerim?',
-    a: 'Başvurular sekmesinden ilgili adayın kartını aç → "Gelmedi olarak işaretle" butonu. Aday otomatik bildirim alır; üçüncü strike sonrası 30 gün ban.' },
+  { cat: 'İşletme', q: 'Bir adayı "Gelmedi" olarak nasıl işaretlerim?',
+    a: 'Başvurular sekmesinden ilgili adayın kartını aç → "Gelmedi olarak işaretle" butonu. Aday otomatik bildirim alır ve 1 ceza hakkı düşer; 3 ceza hakkı biten aday 30 gün askıya alınır.' },
   { cat: 'İşletme', q: 'Başvurulara ne kadar hızlı yanıt vermeliyim?',
-    a: 'En geç 24 saat. Kanban kartının sol kenarında yanıt süresi şeridi vardır: yeşil (< 6sa), amber (6-24sa), mercan (> 24sa). Hızlı yanıt, kabul oranını yükseltir.' },
+    a: 'En geç 24 saat. Kanban görünümünde yanıt bekleyen kartın sol kenarındaki şerit, başvurunun ne kadar süredir yanıtsız kaldığını gösterir: 6 saatten az (zamanında), 6–24 saat (dikkat), 24 saatten fazla (acil yanıt). Hızlı yanıt, kabul oranını yükseltir.' },
 
   // ── GENEL ──
   { cat: 'Genel', q: 'Şifremi unuttum, ne yapmalıyım?',

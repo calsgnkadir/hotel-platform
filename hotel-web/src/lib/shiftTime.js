@@ -13,6 +13,8 @@
  * hesaplanir (UTC toISOString() gece yarisi civarinda bir gun kaydirir).
  */
 
+import { formatHours } from './format'
+
 export const MAX_SHIFT_HOURS = 16
 /** Musaitlik blogu ust siniri (vardiya degil; esit saat zaten gecersiz). */
 export const MAX_AVAILABILITY_HOURS = 24
@@ -65,9 +67,7 @@ export function shiftDuration(startTime, endTime) {
   if (mins == null) return null
   if (mins < 60) return `${mins} dk`
   const hours = Math.round(mins / 6) / 10           // bir ondalik; 23:59 -> 24 (",0" yok)
-  return Number.isInteger(hours)
-    ? `${hours} saat`
-    : `${String(hours).replace('.', ',')} saat`      // TR ondalik: 7,5 saat
+  return formatHours(hours)                          // TR ondalik: 7,5 saat (lib/format)
 }
 
 /**

@@ -7,7 +7,7 @@ import { extractErrorMessage } from '../../api/client'
 import { useConfirm } from '../../lib/useConfirm'
 import { POSITION_LABELS, BUSINESS_TYPE_LABELS } from '../../utils/labels'
 import { ROLE, resolveTab, defaultTabFor } from '../../lib/navigation'
-import { SkeletonList, SkeletonStatGrid } from '../../components/Skeleton'
+import { SkeletonList, SkeletonStatGrid, SkeletonBlock } from '../../components/Skeleton'
 import LoadError from '../../components/ui/LoadError'
 import EmptyState from '../../components/EmptyState'
 import DismissReportDialog from './DismissReportDialog'
@@ -137,10 +137,7 @@ function OverviewTab() {
   }, [])
   useEffect(() => { load() }, [load])
 
-  if (loading) return <SkeletonStatGrid count={4} />
-  if (error || !stats) return <LoadError message={error || 'İstatistikler yüklenemedi.'} onRetry={load} />
-
-  const groups = [
+  const groups = stats && [
     {
       title: 'Kullanıcılar',
       items: [
@@ -164,8 +161,10 @@ function OverviewTab() {
 
   return (
     <div className="space-y-6">
-      <TabHeader title="Genel bakış" description="Platformdaki hesap ve içerik sayıları." />
-      {groups.map(g => (
+      <TabHeader title="Genel bakış" description="Platformdaki hesap ve içerik sayıları, bekleyen işler." />
+      {loading ? <SkeletonStatGrid count={4} />
+        : (error || !stats) ? <LoadError message={error || 'İstatistikler yüklenemedi.'} onRetry={load} />
+        : groups.map(g => (
         <section key={g.title} aria-labelledby={`admin-stat-${g.title}`} className="space-y-2.5">
           <h3 id={`admin-stat-${g.title}`} className="type-card">{g.title}</h3>
           <ul className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -177,7 +176,165 @@ function OverviewTab() {
           </ul>
         </section>
       ))}
+
+      {/* Bekleyen işler — mevcut uçlardan en yeni 5 kayıt; istatistiklerden bağımsız yüklenir */}
+      <section aria-labelledby="admin-queues" className="space-y-2.5">
+        <h3 id="admin-queues" className="type-card">Bekleyen işler</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <PendingReportsPanel />
+          <OpenSupportPanel />
+        </div>
+      </section>
     </div>
+  )
+}
+
+const QUEUE_SIZE = 5
+
+/** Genel bakış kuyruk paneli: başlık + toplam, en yeni 5 satır, "Tümünü gör" bağlantısı.
+ *  Yükleme / hata (yeniden dene) / boş durumları kart içinde; kart içinde kart yok. */
+function QueuePanel({ id, title, tab, total, capped, loading, error, onRetry, emptyTitle, emptyHint, children }) {
+  return (
+    <section aria-labelledby={id} className="card !p-0 flex flex-col min-w-0">
+      <header className="flex items-center justify-between gap-3 pl-4 pr-2 py-2 sm:pl-5 border-b"
+              style={{ borderColor: 'var(--ah-line)' }}>
+        <div className="flex items-center gap-2 min-w-0">
+          <h4 id={id} className="type-subhead truncate" style={{ color: 'var(--ah-ink)' }}>{title}</h4>
+          {!loading && !error && (
+            <span className={`badge type-num ${total > 0 ? 'badge-attention' : 'badge-neutral'}`}>
+              {total}{capped ? '+' : ''}
+            </span>
+          )}
+        </div>
+        <Link to={`/admin?tab=${tab}`}
+              className="type-meta font-semibold inline-flex items-center gap-1 min-h-[40px] px-3 rounded-lg flex-shrink-0
+                         transition-colors hover:bg-[var(--ah-band)]
+                         focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ah-brand)]"
+              style={{ color: 'var(--ah-ink-2)' }}>
+          Tümünü gör<span className="sr-only">: {title}</span>
+          <Icon d="m8.25 4.5 7.5 7.5-7.5 7.5" className="w-3.5 h-3.5" />
+        </Link>
+      </header>
+      <div className="flex-1">
+        {loading ? (
+          <div className="p-4 sm:px-5 space-y-3" aria-busy="true" aria-label={`${title} yükleniyor`}>
+            {Array.from({ length: 3 }).map((_, i) => <SkeletonBlock key={i} height={44} />)}
+          </div>
+        ) : error ? (
+          <div className="px-5 py-8 text-center space-y-3" role="alert">
+            <p className="type-body">{error}</p>
+            <button type="button" onClick={onRetry} className="btn-secondary">Tekrar dene</button>
+          </div>
+        ) : total === 0 ? (
+          <div className="px-5 py-8 text-center">
+            <span className="w-9 h-9 rounded-full grid place-items-center mx-auto mb-2"
+                  style={{ background: 'var(--ah-ok-soft)', color: 'var(--ah-ok)' }}>
+              <Icon d={ICONS.check} className="w-4 h-4" />
+            </span>
+            <p className="type-body font-semibold" style={{ color: 'var(--ah-ink)' }}>{emptyTitle}</p>
+            <p className="type-caption mt-0.5">{emptyHint}</p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-[color:var(--ah-line)]">{children}</ul>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/** Kuyruk satırı: ilgili sekmeye giden tüm-satır bağlantı. */
+function QueueRow({ tab, badges, text, meta }) {
+  return (
+    <li>
+      <Link to={`/admin?tab=${tab}`}
+            className="block px-4 py-3 sm:px-5 transition-colors hover:bg-[var(--ah-band)]
+                       focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ah-brand)]">
+        <span className="flex items-center gap-1.5 flex-wrap">{badges}</span>
+        {text && <span className="type-body block mt-1 truncate" style={{ color: 'var(--ah-ink)' }}>{text}</span>}
+        <span className="type-caption block mt-0.5 truncate">{meta}</span>
+      </Link>
+    </li>
+  )
+}
+
+function PendingReportsPanel() {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    hotelApi.adminListReports('PENDING')
+      .then(data => setItems(Array.isArray(data) ? data : []))
+      .catch(() => setError('Şikâyetler yüklenemedi.'))
+      .finally(() => setLoading(false))
+  }, [])
+  useEffect(() => { load() }, [load])
+
+  return (
+    <QueuePanel id="admin-queue-reports" title="Bekleyen şikâyetler" tab="reports"
+      total={items.length} loading={loading} error={error} onRetry={load}
+      emptyTitle="Bekleyen şikâyet yok" emptyHint="Yeni bir şikâyet geldiğinde burada görünür.">
+      {items.slice(0, QUEUE_SIZE).map(r => (
+        <QueueRow key={r.id} tab="reports"
+          badges={<>
+            <span className="badge badge-neutral">{labelOf(REPORT_REASON_LABELS, r.reason)}</span>
+            <span className="type-caption type-num">{labelOf(REPORT_TYPE_LABELS, r.targetType, 'Kayıt')} #{r.targetId}</span>
+          </>}
+          text={r.description}
+          meta={`${r.reporterName || 'Kullanıcı'} · ${fmtDateTime(r.createdAt)}`} />
+      ))}
+    </QueuePanel>
+  )
+}
+
+/** Açık = Yeni + İnceleniyor. Uç tek durum alır; iki istek birleşip tarihe göre sıralanır. */
+const SUPPORT_OPEN_LIMIT = 100
+function OpenSupportPanel() {
+  const [items, setItems] = useState([])
+  const [capped, setCapped] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    Promise.all([
+      hotelApi.adminListSupport('OPEN', SUPPORT_OPEN_LIMIT),
+      hotelApi.adminListSupport('IN_PROGRESS', SUPPORT_OPEN_LIMIT),
+    ])
+      .then(([open, inProgress]) => {
+        const lists = [open, inProgress].map(l => (Array.isArray(l) ? l : []))
+        const byId = new Map()
+        lists.flat().forEach(t => byId.set(t.id, t))
+        const merged = [...byId.values()]
+          .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+        setItems(merged)
+        setCapped(lists.some(l => l.length >= SUPPORT_OPEN_LIMIT))
+      })
+      .catch(() => setError('Destek talepleri yüklenemedi.'))
+      .finally(() => setLoading(false))
+  }, [])
+  useEffect(() => { load() }, [load])
+
+  return (
+    <QueuePanel id="admin-queue-support" title="Açık destek talepleri" tab="support"
+      total={items.length} capped={capped} loading={loading} error={error} onRetry={load}
+      emptyTitle="Açık destek talebi yok" emptyHint="Yeni ve incelenen talepler burada listelenir.">
+      {items.slice(0, QUEUE_SIZE).map(t => {
+        const sm = statusMeta(SUPPORT_STATUS, t.status)
+        return (
+          <QueueRow key={t.id} tab="support"
+            badges={<>
+              <span className={sm.cls}>{sm.label}</span>
+              <span className="badge badge-neutral">{labelOf(SUPPORT_SUBJECT_LABELS, t.subject, 'Genel')}</span>
+            </>}
+            text={t.message}
+            meta={`${t.userFullName || 'Kullanıcı'} · ${labelOf(ROLE_LABELS, t.userRole, 'Kullanıcı')} · ${fmtDateTime(t.createdAt)}`} />
+        )
+      })}
+    </QueuePanel>
   )
 }
 

@@ -2,6 +2,7 @@ import * as hotelApi from '../../../api/hotel'
 import toast from 'react-hot-toast'
 import { extractErrorMessage } from '../../../api/client'
 import { shiftHours, rosterSlots } from '../../../lib/shiftTime'
+import { formatHours, formatHoursNumber } from '../../../lib/format'
 import EmptyState from '../../../components/EmptyState'
 import AvatarCluster from '../../../components/AvatarCluster'  // FAZ 5.14
 import cldImg, { ImgSize } from '../../../lib/cldImg'
@@ -59,6 +60,7 @@ export default function WorkersTab({ applications, onOpenMessages }) {
   }
 
   const totalHours = workers.reduce((s, w) => s + w.totalHours, 0)
+  const totalJobs = workers.reduce((s, w) => s + w.jobCount, 0)
 
   // FAZ 5.14 — avatar cluster için worker -> AvatarCluster item formatına çevir
   const clusterItems = workers.map(w => ({
@@ -69,115 +71,92 @@ export default function WorkersTab({ applications, onOpenMessages }) {
 
   return (
     <div className="space-y-4">
-      {/* FAZ 5.14 — Ekip vitrin satırı: avatar cluster + sayım */}
-      {/* Eski koyu tema gölgesi (0.30 siyah) açık zeminde kirli duruyordu → düz kart */}
-      <div className="card !p-5 flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
-          <AvatarCluster items={clusterItems} size={40} max={5} showOnlineDot />
-          <div>
-            <div className="type-card">
-              {workers.length} kişilik ekip
-            </div>
-            <div className="type-caption mt-0.5">
-              Yeşil nokta: şu an çevrimiçi
-            </div>
+      {/* Özet şeridi — ekip, toplam saat, tamamlanan iş tek kartta (eskiden toplam
+          saat iki ayrı kartta tekrar ediyordu ve kartlar boş/yüksek duruyordu). */}
+      <section aria-label="Ekip özeti"
+               className="card !p-0 grid grid-cols-2 sm:grid-cols-[minmax(0,1.4fr)_repeat(2,minmax(0,1fr))]">
+        <div className="col-span-2 sm:col-span-1 flex items-center gap-3 px-4 py-3.5 sm:px-5 border-b sm:border-b-0 sm:border-r"
+             style={{ borderColor: 'var(--ah-line)' }}>
+          <AvatarCluster items={clusterItems} size={36} max={5} showOnlineDot />
+          <div className="min-w-0">
+            <div className="type-card">{workers.length} kişilik ekip</div>
+            <div className="type-caption mt-0.5">Yeşil nokta: şu an çevrimiçi</div>
           </div>
         </div>
-        <div className="tabular-nums"
-             style={{ color: 'var(--ah-ink)', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1 }}>
-          {totalHours.toFixed(0)} <span className="type-label ml-1">saat</span>
-        </div>
-      </div>
+        <SummaryStat label="Toplam iş saati" value={formatHoursNumber(totalHours, { maxFraction: 0 })} unit="saat"
+                     className="border-r" trend={weeklyTrend(applications, null)} />
+        <SummaryStat label="Tamamlanan iş" value={totalJobs.toLocaleString('tr-TR')}
+                     trend={weeklyTrend(applications, a => a.status === 'ACCEPTED')} />
+      </section>
 
-      {/* Özet */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="stat-card">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: 'var(--ah-brand-soft)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.8} stroke="var(--ah-brand)" className="w-5 h-5" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-            </svg>
-          </div>
-          <div className="flex items-end justify-between gap-2">
-            <div>
-              <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>{workers.length}</div>
-              <div className="type-meta mt-0.5">Farklı aday çalıştı</div>
-            </div>
-            {/* FAZ D1 — son 8 hafta yeni iseaccept trend */}
-            <Sparkline data={weeklyTrend(applications, a => a.status === 'ACCEPTED')}
-                       color="var(--ah-ink-4)" width={56} height={24} />
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: 'var(--ah-brand-soft)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 strokeWidth={1.8} stroke="var(--ah-brand)" className="w-5 h-5" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-            </svg>
-          </div>
-          <div className="flex items-end justify-between gap-2">
-            <div>
-              <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>{totalHours.toFixed(0)}<span className="text-base font-semibold ml-0.5">sa</span></div>
-              <div className="type-meta mt-0.5">Toplam iş saati</div>
-            </div>
-            {/* FAZ D1 — son 8 hafta toplam başvuru trendi (yoğunluk göstergesi) */}
-            <Sparkline data={weeklyTrend(applications, null)} width={56} height={24} />
-          </div>
-        </div>
-      </div>
-
-      {/* Aday listesi */}
-      <div className="space-y-3">
+      {/* Aday listesi — kompakt satır kartlar; geniş ekranda 2-3 sütun */}
+      <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5" aria-label="Bizde çalışanlar">
         {workers.map(w => (
-          <div key={w.candidate.id} className="card">
-            <div className="p-4 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3 flex-1 min-w-0">
-                {w.candidate?.avatarUrl ? (
-                  <img src={cldImg(w.candidate.avatarUrl, { w: ImgSize.avatarSm })} alt={w.candidate.fullName}
-                    loading="lazy" decoding="async"
-                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-cream-300" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
-                       style={{
-                         background: 'rgba(31, 41, 55, 0.08)',
-                         border: '1px solid rgba(31, 41, 55, 0.22)',
-                         color: '#1f2937',
-                       }}>
-                    {w.candidate?.fullName?.charAt(0) || '?'}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-ink-800 dark:text-ink-900 truncate">{w.candidate?.fullName}</span>
-                  </div>
-                  <div className="text-xs text-ink-500 mt-0.5">{w.candidate?.email}</div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
-                    <span className="text-ink-600">{w.totalHours.toFixed(1)} saat</span>
-                    <span className="text-ink-600">{w.jobCount} iş</span>
-                    {w.lastDate && (
-                      <span className="text-ink-600">
-                        Son: {new Date(w.lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </span>
-                    )}
-                  </div>
-                </div>
+          <li key={w.candidate.id}
+              className="card !p-3.5 flex items-center gap-3 min-w-0 hover:border-[var(--ah-line-2)]">
+            {w.candidate?.avatarUrl ? (
+              <img src={cldImg(w.candidate.avatarUrl, { w: ImgSize.avatarSm })} alt=""
+                loading="lazy" decoding="async"
+                className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                style={{ border: '1px solid var(--ah-line)' }} />
+            ) : (
+              <div aria-hidden="true"
+                   className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0"
+                   style={{ background: 'var(--ah-brand-soft)', border: '1px solid var(--ah-line)', color: 'var(--ah-brand)' }}>
+                {(w.candidate?.fullName?.charAt(0) || '?').toLocaleUpperCase('tr-TR')}
               </div>
-              <button
-                onClick={async () => {
-                  try {
-                    const conv = await hotelApi.startConversation({ otherPartyId: w.candidate.id })
-                    onOpenMessages?.(conv?.id)
-                  } catch (err) { toast.error(extractErrorMessage(err)) }
-                }}
-                className="text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors font-medium flex-shrink-0">
-                Mesaj
-              </button>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="type-body font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
+                {w.candidate?.fullName}
+              </div>
+              {w.candidate?.email && (
+                <div className="type-caption truncate">{w.candidate.email}</div>
+              )}
+              {/* Ayıraç sonraki öğeyle birlikte kayar: dar ekranda satır sonunda "·" kalmaz */}
+              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1 type-meta type-num">
+                <span className="font-semibold whitespace-nowrap" style={{ color: 'var(--ah-ink-2)' }}>{formatHours(w.totalHours)}</span>
+                <span className="whitespace-nowrap"><span aria-hidden="true">· </span>{w.jobCount} iş</span>
+                {w.lastDate && (
+                  <span className="whitespace-nowrap">
+                    <span aria-hidden="true">· </span>Son: {new Date(w.lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const conv = await hotelApi.startConversation({ otherPartyId: w.candidate.id })
+                  onOpenMessages?.(conv?.id)
+                } catch (err) { toast.error(extractErrorMessage(err)) }
+              }}
+              aria-label={`${w.candidate?.fullName || 'Aday'} ile mesajlaş`}
+              className="btn-secondary !px-3 md:!min-h-[36px] flex-shrink-0">
+              Mesaj
+            </button>
+          </li>
         ))}
+      </ul>
+    </div>
+  )
+}
+
+/** Özet şeridindeki tek metrik: etiket üstte, sayı + birim, sağda 8 haftalık eğilim. */
+function SummaryStat({ label, value, unit, trend, className = '' }) {
+  return (
+    <div className={`px-4 py-3.5 sm:px-5 flex items-end justify-between gap-2 min-w-0 ${className}`}
+         style={{ borderColor: 'var(--ah-line)' }}>
+      <div className="min-w-0">
+        <div className="type-meta truncate">{label}</div>
+        <div className="type-page type-num mt-0.5" style={{ color: 'var(--ah-ink)' }}>
+          {value}{unit && <span className="type-meta font-semibold ml-1">{unit}</span>}
+        </div>
       </div>
+      <span className="hidden min-[420px]:block flex-shrink-0">
+        <Sparkline data={trend} color="var(--ah-ink-4)" width={56} height={24} />
+      </span>
     </div>
   )
 }

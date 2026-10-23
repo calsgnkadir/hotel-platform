@@ -16,7 +16,6 @@ import ReportModal from '../ReportModal'
 import { formatRelative } from './utils'
 
 function startedLabelOf(createdAt) {
-  if (!createdAt) return '—'
   const days = Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000)
   if (days === 0) return 'Bugün'
   if (days === 1) return 'Dün'
@@ -95,14 +94,18 @@ function ContextDetails({ conversation: c, userRole, navigate, onReport, onActio
         </section>
       )}
 
-      {/* Sohbet bilgisi */}
+      {/* Sohbet bilgisi — yalnız verisi olan satırlar; hiçbiri yoksa bölüm gizli
+          (eskiden başlangıç tarihi yokken "Başladı —" görünüyordu). */}
+      {(c.createdAt || c.lastMessageAt || c.unreadCount > 0) && (
       <section className="px-5 py-4 border-b" style={{ borderColor: 'var(--ah-line)' }} aria-label="Sohbet bilgisi">
         <h4 className="type-label mb-2">Sohbet</h4>
         <dl className="space-y-1.5">
-          <div className="flex justify-between items-center gap-3">
-            <dt className="type-meta">Başladı</dt>
-            <dd className="type-meta font-semibold" style={{ color: 'var(--ah-ink-2)' }}>{startedLabelOf(c.createdAt)}</dd>
-          </div>
+          {c.createdAt && (
+            <div className="flex justify-between items-center gap-3">
+              <dt className="type-meta">Başladı</dt>
+              <dd className="type-meta font-semibold" style={{ color: 'var(--ah-ink-2)' }}>{startedLabelOf(c.createdAt)}</dd>
+            </div>
+          )}
           {c.lastMessageAt && (
             <div className="flex justify-between items-center gap-3">
               <dt className="type-meta">Son mesaj</dt>
@@ -117,6 +120,7 @@ function ContextDetails({ conversation: c, userRole, navigate, onReport, onActio
           )}
         </dl>
       </section>
+      )}
 
       {/* Hızlı işlemler */}
       <section className="px-5 py-4 space-y-1.5 flex-1" aria-label="Hızlı işlemler">

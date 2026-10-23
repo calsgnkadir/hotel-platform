@@ -75,3 +75,24 @@ describe('ContextSheet (mobil sohbet bilgileri)', () => {
     expect(onClose).toHaveBeenCalled()
   })
 })
+
+describe('ContextPanel sohbet bilgisi', () => {
+  it('başlangıç tarihi yoksa "Başladı" satırı gösterilmez, diğer satırlar kalır', () => {
+    render(<ContextPanel conversation={{ id: 2, otherPartyId: 5, otherPartyName: 'Ayşe', otherPartyRole: 'CANDIDATE', lastMessageAt: new Date().toISOString() }} userRole="BUSINESS_OWNER" />)
+    expect(screen.queryByText('Başladı')).not.toBeInTheDocument()
+    expect(screen.getByText('Son mesaj')).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent('Başladı—')
+  })
+
+  it('hiç sohbet verisi yoksa bölüm gizlenir', () => {
+    render(<ContextPanel conversation={{ id: 3, otherPartyId: 5, otherPartyName: 'Ayşe', otherPartyRole: 'CANDIDATE' }} userRole="BUSINESS_OWNER" />)
+    expect(screen.queryByRole('region', { name: 'Sohbet bilgisi' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Başladı')).not.toBeInTheDocument()
+  })
+
+  it('başlangıç tarihi varsa satır görünür', () => {
+    render(<ContextPanel conversation={{ ...base, otherPartyRole: 'CANDIDATE' }} userRole="BUSINESS_OWNER" />)
+    expect(screen.getByText('Başladı')).toBeInTheDocument()
+    expect(screen.getByText('Bugün')).toBeInTheDocument()
+  })
+})

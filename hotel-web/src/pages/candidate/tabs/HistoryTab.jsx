@@ -7,6 +7,7 @@ import EmptyState from '../../../components/EmptyState'
 import { totalHoursForApplication } from '../../../utils/shifts'
 import { POSITION_LABELS } from '../../../utils/labels'
 import { rosterSlots } from '../../../lib/shiftTime'
+import { formatHours, formatHoursNumber } from '../../../lib/format'
 
 /** 'YYYY-MM-DD' -> yerel gece yarısı (new Date('2026-01-12') UTC'dir; UTC batısında bir gün geri kayar). */
 function localDay(iso) {
@@ -73,7 +74,7 @@ export default function HistoryTab({ applications, onOpenMessages }) {
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} aria-hidden="true" />
             <span className="type-label">Toplam çalışma</span>
           </div>
-          <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>{totalHours.toFixed(0)}<span className="text-sm font-semibold ml-0.5" style={{ color: 'var(--ah-ink-3)' }}>sa</span></div>
+          <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>{formatHoursNumber(totalHours, { maxFraction: 0 })}<span className="text-sm font-semibold ml-0.5" style={{ color: 'var(--ah-ink-3)' }}>sa</span></div>
         </div>
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
@@ -110,7 +111,7 @@ export default function HistoryTab({ applications, onOpenMessages }) {
                     <div className="text-[13px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{app.listing?.businessName}</div>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 type-meta">
                       <span className="type-num">{dateLabel}</span>
-                      <span className="type-num">{hours.toFixed(1)} saat</span>
+                      <span className="type-num">{formatHours(hours)}</span>
                       <span>{POSITION_LABELS[app.listing?.position] || app.listing?.position}</span>
                     </div>
                   </div>

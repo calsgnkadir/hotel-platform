@@ -257,31 +257,48 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
         </div>
       )}
 
-      {/* Dalga H4 — chip filtresine gore kolonlari goster */}
-      <div className="space-y-5">
-        {visibleColumns.map(col => (
-          <Column key={col.id} col={col} count={grouped[col.id]?.length || 0}>
-            {(grouped[col.id]?.length || 0) === 0 ? (
-              <div className="type-overline italic py-6 text-center">
-                Bu kolonda başvuru yok
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {grouped[col.id].map(app => (
-                  <Card
-                    key={app.id}
-                    app={app}
-                    selected={selectedIds.has(app.id)}
-                    onToggleSelect={() => toggleSelect(app.id)}
-                    onClick={() => onCardClick?.(app)}
-                    onMessage={() => onOpenMessages?.(app.conversationId)}
-                  />
-                ))}
-              </div>
-            )}
-          </Column>
-        ))}
-      </div>
+      {/* Dalga H4 — chip filtresine gore kolonlari goster.
+          Mobil/tablet: kolonlar alt alta (dikey akis korunur).
+          lg+: birden fazla kolon varsa yan yana pano; sigmazsa yatay kaydirma.
+          Tek kolon (chip filtresi) tam genislikte kart izgarasi olarak kalir. */}
+      {(() => {
+        const board = visibleColumns.length > 1
+        return (
+          <div
+            className={board
+              ? 'space-y-4 lg:space-y-0 lg:flex lg:items-stretch lg:gap-3 lg:overflow-x-auto lg:pb-2 lg:snap-x'
+              : 'space-y-4'}
+            role="list"
+            aria-label="Başvuru panosu"
+          >
+            {visibleColumns.map(col => (
+              <Column key={col.id} col={col} count={grouped[col.id]?.length || 0} board={board}>
+                {(grouped[col.id]?.length || 0) === 0 ? (
+                  <div className="type-caption text-center py-4 lg:py-8 rounded-lg"
+                       style={{ border: '1px dashed var(--ah-line-2)', color: 'var(--ah-ink-3)' }}>
+                    Bu sütunda başvuru yok
+                  </div>
+                ) : (
+                  <div className={board
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2'
+                    : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5'}>
+                    {grouped[col.id].map(app => (
+                      <Card
+                        key={app.id}
+                        app={app}
+                        selected={selectedIds.has(app.id)}
+                        onToggleSelect={() => toggleSelect(app.id)}
+                        onClick={() => onCardClick?.(app)}
+                        onMessage={() => onOpenMessages?.(app.conversationId)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </Column>
+            ))}
+          </div>
+        )
+      })()}
 
       <DragOverlay dropAnimation={{ duration: 180 }}>
         {activeApp ? <CardSilhouette app={activeApp} /> : null}
@@ -299,31 +316,32 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
 
 /* ─────────── Column ─────────── */
 
-function Column({ col, count, children }) {
+function Column({ col, count, children, board = false }) {
   const { setNodeRef, isOver } = useDroppable({ id: col.id })
 
   // Durum dili paketi — kolon basligi renksiz duz metin + sayi; birakma aninda
   // yalniz tier-featured (grafit cerceve), renkli glow yok.
+  // Pano duzeninde (lg+) sabit-esnek genislik: 5 kolon 1440'ta sigar, daha dar
+  // ekranda yatay kaydirilir. Mobilde min-yukseklik yok (bos kolon alan kaplamasin).
   return (
-    <div
+    <section
       ref={setNodeRef}
-      className={`flex flex-col min-h-[480px] transition-all ${isOver ? 'tier-featured' : 'tier-raised'}`}
+      role="listitem"
+      aria-label={`${col.label}: ${count} başvuru`}
+      className={`flex flex-col transition-all ${isOver ? 'tier-featured' : 'tier-raised'}
+                  ${board ? 'lg:flex-1 lg:min-w-[232px] lg:max-w-[340px] lg:snap-start lg:min-h-[420px]' : ''}`}
     >
-      <div className="px-4 py-3 flex items-center justify-between border-b border-hairline">
-        <div>
-          <h3 className="flex items-baseline gap-2 type-subhead" style={{ color: 'var(--ah-ink)' }}>
-            <span>{col.label}</span>
-            <span className="type-meta tabular-nums" style={{ color: 'var(--ah-ink-3)' }}>{count}</span>
-          </h3>
-          <div className="type-caption mt-0.5">
-            {col.sub}
-          </div>
+      <header className="px-3.5 py-3 flex items-start justify-between gap-2 border-b border-hairline">
+        <div className="min-w-0">
+          <h3 className="type-subhead truncate" style={{ color: 'var(--ah-ink)' }}>{col.label}</h3>
+          <div className="type-caption mt-0.5 truncate" title={col.sub}>{col.sub}</div>
         </div>
-      </div>
-      <div className="p-2.5 space-y-2 overflow-y-auto flex-1">
+        <span className="badge badge-neutral type-num flex-shrink-0" aria-hidden="true">{count}</span>
+      </header>
+      <div className="p-2.5 flex-1">
         {children}
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -381,7 +399,8 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
       >
         {heatColor && (
           <div
-            aria-label={`Yanit bekleyen sure: ${heatColor.label}`}
+            role="img"
+            aria-label={`Yanıt bekleyen süre: ${heatColor.label}`}
             title={`Yanıtlanmadı (${heatColor.label})`}
             style={{
               position: 'absolute',
@@ -464,8 +483,8 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
         <div className="flex items-center justify-between gap-2 mt-2 pt-2"
              style={{ borderTop: '1px solid var(--ah-line)' }}>
           {/* ink-4 (#98a1a0) beyaz zeminde 2.5:1 — AA alti. ink-3 = 4.7:1. */}
-          <span className="text-[11px] flex-shrink-0" title={dateTooltip}
-                style={{ color: 'var(--ah-ink-3)' }}>
+          <span className="type-label flex-shrink-0" title={dateTooltip}
+                style={{ color: 'var(--ah-ink-3)', fontWeight: 500 }}>
             {date}
           </span>
           <div className="flex items-center gap-1.5">
@@ -473,7 +492,7 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
               <button
                 onClick={(e) => { e.stopPropagation(); onMessage?.() }}
                 onPointerDown={(e) => e.stopPropagation()}
-                className="text-[11px] font-semibold px-2 py-1 rounded-md transition-colors"
+                className="type-label px-2.5 py-1 min-h-[28px] rounded-md transition-colors hover:bg-[var(--ah-band)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ah-brand)]"
                 style={{ background: 'var(--ah-card)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}
               >
                 Mesaj
@@ -482,7 +501,7 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
             <button
               onClick={(e) => { e.stopPropagation(); onClick?.() }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="text-[11px] font-semibold px-2 py-1 rounded-md transition-colors"
+              className="type-label px-2.5 py-1 min-h-[28px] rounded-md transition-colors hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ah-brand)]"
               style={{ background: 'var(--ah-brand)', color: '#fff', border: '1px solid var(--ah-brand)' }}
             >
               Aç

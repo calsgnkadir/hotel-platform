@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 
@@ -185,5 +185,61 @@ describe('Ham enum metinleri', () => {
     expect(await screen.findByText('E-posta')).toBeInTheDocument()
     expect(screen.queryByText('DEAD')).not.toBeInTheDocument()
     expect(screen.queryByText('Dead Letter')).not.toBeInTheDocument()
+  })
+})
+
+describe('Genel bakış — bekleyen işler', () => {
+  it('bekleyen şikâyet ve açık destek talebi kısa listede, ilgili sekmeye bağlı', async () => {
+    renderAt('/admin')
+    const reports = await screen.findByRole('region', { name: 'Bekleyen şikâyetler' })
+    expect(api.adminListReports).toHaveBeenCalledWith('PENDING')
+    const reportRow = await within(reports).findByRole('link', { name: /Sürekli aynı ilan/ })
+    expect(reportRow).toHaveAttribute('href', '/admin?tab=reports')
+    expect(within(reports).getByRole('link', { name: /Tümünü gör/ })).toHaveAttribute('href', '/admin?tab=reports')
+
+    const support = screen.getByRole('region', { name: 'Açık destek talepleri' })
+    const supportRow = await within(support).findByRole('link', { name: /Yardım/ })
+    expect(supportRow).toHaveAttribute('href', '/admin?tab=support')
+    expect(api.adminListSupport).toHaveBeenCalledWith('OPEN', 100)
+    expect(api.adminListSupport).toHaveBeenCalledWith('IN_PROGRESS', 100)
+    // iki istek aynı kaydı döndürse de tek satır (id ile tekilleşir)
+    expect(within(support).getAllByRole('listitem')).toHaveLength(1)
+    expect(within(support).queryByText('OPEN')).not.toBeInTheDocument()
+  })
+
+  it('en yeni 5 kayıt gösterilir, rozet toplamı verir', async () => {
+    api.adminListReports.mockResolvedValue(Array.from({ length: 7 }, (_, i) => ({
+      ...REPORT, id: 100 + i, description: `Şikâyet ${i}`,
+    })))
+    renderAt('/admin')
+    const reports = await screen.findByRole('region', { name: 'Bekleyen şikâyetler' })
+    await within(reports).findByText('Şikâyet 0')
+    expect(within(reports).getAllByRole('listitem')).toHaveLength(5)
+    expect(within(reports).getByText('7')).toBeInTheDocument()
+    expect(within(reports).queryByText('Şikâyet 5')).not.toBeInTheDocument()
+  })
+
+  it('destek talepleri tarihe göre yeniden eskiye birleşir', async () => {
+    api.adminListSupport.mockImplementation(async (status) => status === 'OPEN'
+      ? [{ id: 1, status: 'OPEN', subject: 'GENERAL', message: 'Eski talep', createdAt: '2026-10-01T10:00:00' }]
+      : [{ id: 2, status: 'IN_PROGRESS', subject: 'TECHNICAL', message: 'Yeni talep', createdAt: '2026-10-05T10:00:00' }])
+    renderAt('/admin')
+    const support = await screen.findByRole('region', { name: 'Açık destek talepleri' })
+    await within(support).findByText('Yeni talep')
+    const rows = within(support).getAllByRole('listitem')
+    expect(rows[0]).toHaveTextContent('Yeni talep')
+    expect(rows[0]).toHaveTextContent('İnceleniyor')
+    expect(rows[1]).toHaveTextContent('Eski talep')
+  })
+
+  it('boş ve hata durumları; hata yeniden denenebilir', async () => {
+    api.adminListReports.mockResolvedValue([])
+    api.adminListSupport.mockRejectedValueOnce(new Error('x'))
+    renderAt('/admin')
+    expect(await screen.findByText('Bekleyen şikâyet yok')).toBeInTheDocument()
+    expect(await screen.findByText('Destek talepleri yüklenemedi.')).toBeInTheDocument()
+    api.adminListSupport.mockResolvedValue([])
+    fireEvent.click(screen.getByRole('button', { name: 'Tekrar dene' }))
+    expect(await screen.findByText('Açık destek talebi yok')).toBeInTheDocument()
   })
 })

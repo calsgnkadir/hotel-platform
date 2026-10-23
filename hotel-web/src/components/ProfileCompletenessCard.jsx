@@ -5,18 +5,38 @@
  * %100 olunca kutlama mesajı.
  *
  * `bare`: dış .card sarmalını atlar — birleşik panel içinde bölüm olarak kullanılır.
+ * `audience`: 'candidate' (varsayılan) | 'business' — ileti metni role göre.
  * Tema: açık + monokrom (eski koyu-tema beyaz pill/metin bırakıldı — açık kartta görünmüyordu).
  */
-export default function ProfileCompletenessCard({ data, bare = false }) {
+/** Role göre ileti: aday işverene, işletme adaya görünür. Eşik sırası yukarıdan aşağı. */
+const MESSAGES = {
+  candidate: {
+    full: 'Tebrikler, profilin tamamen dolu.',
+    near: 'Çok yakın — son birkaç alanı doldur.',
+    good: 'İyi gidiyor, birkaç alan eksik.',
+    mid:  'Profilini tamamla — dolu profiller işverenlerde daha çok güven uyandırır.',
+    low:  'Profilin çok eksik; işverenler başvurunu değerlendirirken zorlanabilir.',
+  },
+  business: {
+    full: 'Tebrikler, işletme profilin tamamen dolu.',
+    near: 'Çok yakın — son birkaç alanı doldur.',
+    good: 'İyi gidiyor, birkaç alan eksik.',
+    mid:  'Profilini tamamla — dolu işletme profilleri adaylarda daha çok güven uyandırır.',
+    low:  'Profilin çok eksik; adaylar ilanına başvurmadan önce işletmeni tanımak ister.',
+  },
+}
+
+export default function ProfileCompletenessCard({ data, bare = false, audience = 'candidate' }) {
   if (!data) return null
   const { percentage, missing } = data
+  const m = MESSAGES[audience] || MESSAGES.candidate
 
   const message =
-    percentage >= 100 ? 'Tebrikler — profilin %100 dolu!' :
-    percentage >= 90  ? 'Çok yakın — son birkaç alanı doldur.' :
-    percentage >= 70  ? 'İyi gidiyor, biraz daha eksik var.' :
-    percentage >= 40  ? 'Profilini tamamla — işverenler güveniyor.' :
-                        'Profilin çok eksik. Başvuruların görünmüyor olabilir.'
+    percentage >= 100 ? m.full :
+    percentage >= 90  ? m.near :
+    percentage >= 70  ? m.good :
+    percentage >= 40  ? m.mid :
+                        m.low
 
   return (
     <div className={bare ? '' : 'card p-5'}>

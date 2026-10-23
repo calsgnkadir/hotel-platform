@@ -24,9 +24,21 @@ describe('WorkersTab — vardiya bazlı gelmedi', () => {
     ]} />)
     expect(screen.getByText('Ayşe Yılmaz')).toBeInTheDocument()
     expect(screen.queryByText('Mehmet Kaya')).toBeNull()
-    expect(screen.getByText('8.0 saat')).toBeInTheDocument()
+    expect(screen.getByText('8 saat')).toBeInTheDocument()
+    expect(screen.queryByText('8.0 saat')).toBeNull()
     expect(screen.getByText(/Son: 5 Eki 2026/)).toBeInTheDocument()
     expect(screen.getByText('1 kişilik ekip')).toBeInTheDocument()
+  })
+
+  it('saat Türkçe biçimde: buçuklu süre virgüllü, özet şeridinde toplam', () => {
+    const HALF = { id: 3, date: '2026-10-06', startTime: '09:00:00', endTime: '14:30:00' }   // 5,5 saat
+    render(<WorkersTab applications={[
+      { id: 3, status: 'ACCEPTED', workCompleted: true, candidate: ayse, requestedSlots: [HALF] },
+    ]} />)
+    expect(screen.getByText('5,5 saat')).toBeInTheDocument()
+    expect(screen.queryByText('5.5 saat')).toBeNull()
+    expect(screen.getByText('Toplam iş saati')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ayşe Yılmaz ile mesajlaş' })).toBeInTheDocument()
   })
 
   it('tüm çalışanlar gelmediyse boş durum', () => {

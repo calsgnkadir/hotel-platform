@@ -204,7 +204,7 @@ export default function ProfileTab() {
   return (
     <div className="grid xl:grid-cols-[1fr_360px] gap-4 items-start">
     <div className="space-y-5 min-w-0">
-    <ProfileCompletenessCard data={completeness} />
+    <ProfileCompletenessCard data={completeness} audience="business" />
     <form onSubmit={handleSubmit} className="space-y-4">
       <MediaBlock
         logoUrl={logoUrl}
