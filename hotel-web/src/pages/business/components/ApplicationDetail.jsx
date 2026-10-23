@@ -146,7 +146,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
   async function handleNoShow(slot) {
     const ok = await confirm({
       title: 'Gelmedi olarak işaretle',
-      description: `${formatSlotShort(slot)} vardiyası gelmedi olarak işaretlenecek. Bu vardiya için adaya 1 ceza puanı düşer. Bu işlem geri alınamaz.`,
+      description: `${formatSlotShort(slot)} vardiyası gelmedi olarak işaretlenecek. Bu vardiya için adayın 1 ceza hakkı düşer. Bu işlem geri alınamaz.`,
       confirmLabel: 'Evet, işaretle',
       destructive: true,
     })
@@ -365,7 +365,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                   ? `Acil teklif gönderildi — aday ${app.standbyDeadline
                       ? new Date(app.standbyDeadline).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit' })
                       : ''} saatine kadar cevap verecek.`
-                  : 'Asıl aday no-show işaretlenirse bu adaya otomatik acil teklif gider.'}
+                  : 'Asıl aday gelmedi olarak işaretlenirse bu adaya otomatik acil teklif gider.'}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -472,7 +472,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
             <h3 className="type-overline">İşe gelme durumu</h3>
             <p className="type-caption">
               Aday kabul edilen bir vardiyaya gelmediyse o vardiyayı işaretleyin. Her işaret
-              adaya 1 ceza puanı düşürür; ceza hakkı biten aday 30 gün askıya alınır.
+              adayın 1 ceza hakkını düşürür; ceza hakkı biten aday 30 gün askıya alınır.
             </p>
             {noShowCandidates.length === 0 ? (
               <p className="type-caption" style={{ color: 'var(--ah-ink-3)' }}>
@@ -517,7 +517,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
                   {noShowIds.size > 1 ? `${noShowIds.size} vardiya gelmedi olarak işaretlendi` : 'Gelmedi olarak işaretlendi'}
                 </div>
                 <div className="type-caption mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
-                  İşaretlenen her vardiya için adaya 1 ceza puanı düştü.
+                  İşaretlenen her vardiya için adayın 1 ceza hakkı düştü.
                 </div>
               </div>
             </div>

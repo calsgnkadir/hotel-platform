@@ -46,4 +46,15 @@ describe('ApplicationsKanban düzen', () => {
     const { container } = render(<ApplicationsKanban applications={APPS} />)
     expect(container.innerHTML).not.toContain('text-[11px]')
   })
+
+  it('kompakt kart: tarih ve Aç düğmesi isim bloğunda, ayrı alt şerit yok; inline rgba gölge yok', () => {
+    const { container } = render(<ApplicationsKanban applications={[APPS[0]]} statusFilter="PENDING" />)
+    const name = screen.getByText('Ayşe Yılmaz')
+    const block = name.closest('.min-w-0.flex-1')
+    expect(within(block).getByText('Bugün')).toBeInTheDocument()
+    expect(within(block).getByRole('button', { name: 'Ayşe Yılmaz başvurusunu aç' })).toHaveTextContent('Aç')
+    expect(within(block).getByText('Garson')).toBeInTheDocument()
+    expect(container.innerHTML).not.toMatch(/rgba\(/)
+    expect(screen.getByRole('link', { name: /Ayşe Yılmaz profilini/ })).toHaveAttribute('href', '/p/candidate/1')
+  })
 })

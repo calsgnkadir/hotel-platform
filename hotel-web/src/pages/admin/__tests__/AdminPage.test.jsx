@@ -243,3 +243,81 @@ describe('Genel bakış — bekleyen işler', () => {
     expect(await screen.findByText('Açık destek talebi yok')).toBeInTheDocument()
   })
 })
+
+describe('Genel bakış — başarısız giden kuyruk', () => {
+  it('dead kayıtlar üçüncü panelde; satır ve "Tümünü gör" Başarısız filtreli Giden kuyruğa gider', async () => {
+    renderAt('/admin')
+    const panel = await screen.findByRole('region', { name: 'Başarısız giden kuyruk' })
+    expect(api.adminListOutbox).toHaveBeenCalledWith('dead', 6)
+    const row = await within(panel).findByRole('link', { name: /Son hata: smtp/ })
+    expect(row).toHaveAttribute('href', '/admin?tab=outbox&filter=dead')
+    expect(row).toHaveTextContent('E-posta')
+    expect(row).toHaveTextContent('5 deneme')
+    expect(within(panel).getByRole('link', { name: /Tümünü gör/ })).toHaveAttribute('href', '/admin?tab=outbox&filter=dead')
+    expect(within(panel).queryByText('DEAD')).not.toBeInTheDocument()
+  })
+
+  it('5ten fazla kayıtta 5 satır ve "5+" rozeti', async () => {
+    api.adminListOutbox.mockResolvedValue(Array.from({ length: 6 }, (_, i) => ({
+      id: 50 + i, status: 'DEAD', eventType: 'EMAIL', attempts: 5, createdAt: '2026-10-01T10:00:00', lastError: `hata ${i}`,
+    })))
+    renderAt('/admin')
+    const panel = await screen.findByRole('region', { name: 'Başarısız giden kuyruk' })
+    await within(panel).findByText('Son hata: hata 0')
+    expect(within(panel).getAllByRole('listitem')).toHaveLength(5)
+    expect(within(panel).getByText('5+')).toBeInTheDocument()
+  })
+
+  it('boş ve hata durumları; hata yeniden denenebilir', async () => {
+    api.adminListOutbox.mockRejectedValueOnce(new Error('x'))
+    renderAt('/admin')
+    const panel = await screen.findByRole('region', { name: 'Başarısız giden kuyruk' })
+    expect(await within(panel).findByText('Giden kuyruk yüklenemedi.')).toBeInTheDocument()
+    api.adminListOutbox.mockResolvedValue([])
+    fireEvent.click(within(panel).getByRole('button', { name: 'Tekrar dene' }))
+    expect(await within(panel).findByText('Başarısız kayıt yok')).toBeInTheDocument()
+  })
+
+  it('?filter=dead Giden kuyruk sekmesini Başarısız filtresiyle açar; Tümü filtreyi adresten siler', async () => {
+    renderAt('/admin?tab=outbox&filter=dead')
+    await screen.findByText('E-posta')
+    expect(api.adminListOutbox).toHaveBeenCalledWith('dead', 100)
+    expect(screen.getByRole('button', { name: 'Başarısız' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByRole('button', { name: 'Tümü' }))
+    await waitFor(() => expect(api.adminListOutbox).toHaveBeenLastCalledWith('all', 100))
+    expect(screen.getByTestId('where').textContent).not.toContain('filter=')
+  })
+})
+
+describe('Terim birliği — askıya alma / ceza hakkı', () => {
+  it('genel bakışta "Askıdaki hesap", ban kelimesi yok', async () => {
+    renderAt('/admin')
+    expect(await screen.findByText('Askıdaki hesap')).toBeInTheDocument()
+    expect(screen.queryByText(/Banlı|ban/i)).not.toBeInTheDocument()
+  })
+
+  it('kullanıcı detayı: Kalan ceza hakkı, Askıya al, Askı kaldırıldı', async () => {
+    const user = { id: 5, fullName: 'Can Demir', email: 'c@x.com', role: 'CANDIDATE', strikesRemaining: 2, currentlyBanned: false, createdAt: '2026-10-01T10:00:00' }
+    api.adminListUsers.mockResolvedValue([user])
+    api.adminGetUser.mockResolvedValue(user)
+    api.adminBanUser.mockResolvedValue({ ...user, currentlyBanned: true, bannedUntil: '2026-11-01T10:00:00' })
+    api.adminUnbanUser.mockResolvedValue({ ...user, currentlyBanned: false })
+    const toast = (await import('react-hot-toast')).default
+    renderAt('/admin?tab=users')
+    expect(await screen.findByText(/Kalan ceza hakkı:/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Can Demir/ }))
+    expect(await screen.findByText('Hesap askısı')).toBeInTheDocument()
+    expect(screen.getAllByText('Kalan ceza hakkı').length).toBeGreaterThan(0)
+    fireEvent.click(screen.getByRole('button', { name: /30 gün askıya al/ }))
+    await waitFor(() => expect(confirmMock).toHaveBeenCalled())
+    const arg = confirmMock.mock.calls.at(-1)[0]
+    expect(arg.title).toBe('Hesabı askıya al')
+    expect(arg.confirmLabel).toBe('30 gün askıya al')
+    expect(JSON.stringify(arg)).not.toMatch(/ban/i)
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Hesap 30 gün askıya alındı'))
+    expect(await screen.findByText(/Askı bitişi:/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Askıyı kaldır/ }))
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Askı kaldırıldı'))
+    expect(screen.queryByText(/uyarı hakkı|Banlı|banla/i)).not.toBeInTheDocument()
+  })
+})

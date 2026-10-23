@@ -61,7 +61,8 @@ describe('ApplicationDetail — vardiya bazlı gelmedi', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Gelmedi olarak işaretle' }))
     await waitFor(() => expect(markNoShow).toHaveBeenCalledWith(11, 32))
     const opts = confirmMock.mock.calls[0][0]
-    expect(opts.description).toContain('Bu vardiya için adaya 1 ceza puanı düşer.')
+    expect(opts.description).toContain('Bu vardiya için adayın 1 ceza hakkı düşer.')
+    expect(opts.description).not.toMatch(/puan|strike|no-show/i)
     expect(opts.description).toContain('22:00–06:00 +1')
     expect(opts.destructive).toBe(true)
     await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith(expect.stringContaining('kalan ceza hakkı: 2')))

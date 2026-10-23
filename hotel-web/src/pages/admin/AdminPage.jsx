@@ -145,7 +145,7 @@ function OverviewTab() {
         { label: 'Aday',             value: stats.candidates,     icon: 'user',   tab: 'users' },
         { label: 'İşletme sahibi',   value: stats.businessOwners, icon: 'building', tab: 'users' },
         { label: 'Yönetici',         value: stats.admins,         icon: 'shield', tab: 'users' },
-        { label: 'Banlı hesap',      value: stats.bannedUsers,    icon: 'ban',    tab: 'users', warn: (stats.bannedUsers || 0) > 0 },
+        { label: 'Askıdaki hesap',   value: stats.bannedUsers,    icon: 'ban',    tab: 'users', warn: (stats.bannedUsers || 0) > 0 },
       ],
     },
     {
@@ -180,9 +180,13 @@ function OverviewTab() {
       {/* Bekleyen işler — mevcut uçlardan en yeni 5 kayıt; istatistiklerden bağımsız yüklenir */}
       <section aria-labelledby="admin-queues" className="space-y-2.5">
         <h3 id="admin-queues" className="type-card">Bekleyen işler</h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
           <PendingReportsPanel />
           <OpenSupportPanel />
+          {/* lg'de iki sütunda tek kalmasın: tam genişlik; xl'de üçüncü sütun */}
+          <div className="min-w-0 flex lg:col-span-2 xl:col-span-1 [&>section]:flex-1">
+            <DeadOutboxPanel />
+          </div>
         </div>
       </section>
     </div>
@@ -193,20 +197,20 @@ const QUEUE_SIZE = 5
 
 /** Genel bakış kuyruk paneli: başlık + toplam, en yeni 5 satır, "Tümünü gör" bağlantısı.
  *  Yükleme / hata (yeniden dene) / boş durumları kart içinde; kart içinde kart yok. */
-function QueuePanel({ id, title, tab, total, capped, loading, error, onRetry, emptyTitle, emptyHint, children }) {
+function QueuePanel({ id, title, tab, href, total, capped, loading, error, onRetry, emptyTitle, emptyHint, children }) {
   return (
     <section aria-labelledby={id} className="card !p-0 flex flex-col min-w-0">
       <header className="flex items-center justify-between gap-3 pl-4 pr-2 py-2 sm:pl-5 border-b"
               style={{ borderColor: 'var(--ah-line)' }}>
         <div className="flex items-center gap-2 min-w-0">
-          <h4 id={id} className="type-subhead truncate" style={{ color: 'var(--ah-ink)' }}>{title}</h4>
+          <h4 id={id} className="type-subhead min-w-0 [overflow-wrap:anywhere]" style={{ color: 'var(--ah-ink)' }}>{title}</h4>
           {!loading && !error && (
             <span className={`badge type-num ${total > 0 ? 'badge-attention' : 'badge-neutral'}`}>
               {total}{capped ? '+' : ''}
             </span>
           )}
         </div>
-        <Link to={`/admin?tab=${tab}`}
+        <Link to={href || `/admin?tab=${tab}`}
               className="type-meta font-semibold inline-flex items-center gap-1 min-h-[40px] px-3 rounded-lg flex-shrink-0
                          transition-colors hover:bg-[var(--ah-band)]
                          focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ah-brand)]"
@@ -243,10 +247,10 @@ function QueuePanel({ id, title, tab, total, capped, loading, error, onRetry, em
 }
 
 /** Kuyruk satırı: ilgili sekmeye giden tüm-satır bağlantı. */
-function QueueRow({ tab, badges, text, meta }) {
+function QueueRow({ tab, href, badges, text, meta }) {
   return (
     <li>
-      <Link to={`/admin?tab=${tab}`}
+      <Link to={href || `/admin?tab=${tab}`}
             className="block px-4 py-3 sm:px-5 transition-colors hover:bg-[var(--ah-band)]
                        focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--ah-brand)]">
         <span className="flex items-center gap-1.5 flex-wrap">{badges}</span>
@@ -338,6 +342,44 @@ function OpenSupportPanel() {
   )
 }
 
+/** Başarısız giden kuyruk (DLQ): deneme hakkını bitirmiş, teslim edilmemiş kayıtlar.
+ *  Bir fazla kayıt istenir; 5'ten fazlaysa rozet "5+" gösterir. Bağlantılar Giden kuyruk
+ *  sekmesini "Başarısız" filtresiyle açar. */
+const DEAD_OUTBOX_HREF = '/admin?tab=outbox&filter=dead'
+function DeadOutboxPanel() {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    hotelApi.adminListOutbox('dead', QUEUE_SIZE + 1)
+      .then(data => setItems(Array.isArray(data) ? data : []))
+      .catch(() => setError('Giden kuyruk yüklenemedi.'))
+      .finally(() => setLoading(false))
+  }, [])
+  useEffect(() => { load() }, [load])
+
+  const capped = items.length > QUEUE_SIZE
+  return (
+    <QueuePanel id="admin-queue-outbox" title="Başarısız giden kuyruk" tab="outbox" href={DEAD_OUTBOX_HREF}
+      total={Math.min(items.length, QUEUE_SIZE)} capped={capped} loading={loading} error={error} onRetry={load}
+      emptyTitle="Başarısız kayıt yok" emptyHint="E-posta ve arka plan işlemleri sorunsuz gönderiliyor.">
+      {/* Panelin tamamı "Başarısız" durumda; satırda durum rozeti tekrarlanmaz */}
+      {items.slice(0, QUEUE_SIZE).map(e => (
+          <QueueRow key={e.id} href={DEAD_OUTBOX_HREF}
+            badges={<>
+              <span className="badge badge-neutral">{labelOf(OUTBOX_EVENT_LABELS, e.eventType, 'Diğer kayıt')}</span>
+              <span className="type-caption type-num">#{e.id}</span>
+            </>}
+            text={e.lastError ? `Son hata: ${e.lastError}` : null}
+            meta={`${e.attempts ?? 0} deneme · ${fmtDateTime(e.createdAt)}`} />
+      ))}
+    </QueuePanel>
+  )
+}
+
 /** KPI kartı: ikon kutusu + etiket üstte + sayı altta. `tab` verilirse ilgili sekmeye bağlanır. */
 function AdminKpiCard({ label, value, icon, tab, warn }) {
   const body = (
@@ -379,16 +421,16 @@ function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
 
   async function handleBan() {
     const ok = await confirm({
-      title: 'Kullanıcıyı banla',
-      description: `${user.fullName} ${banDays} gün süreyle banlanacak. Süre bitince ban kendiliğinden kalkar.`,
-      confirmLabel: `${banDays} gün banla`,
+      title: 'Hesabı askıya al',
+      description: `${user.fullName} hesabı ${banDays} gün süreyle askıya alınacak. Süre bitince askı kendiliğinden kalkar.`,
+      confirmLabel: `${banDays} gün askıya al`,
       destructive: true,
     })
     if (!ok) return
     setActionLoading(true)
     try {
       const updated = await hotelApi.adminBanUser(user.id, banDays)
-      toast.success(`Kullanıcı ${banDays} gün banlandı`)
+      toast.success(`Hesap ${banDays} gün askıya alındı`)
       onUpdated(updated)
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionLoading(false) }
@@ -398,7 +440,7 @@ function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
     setActionLoading(true)
     try {
       const updated = await hotelApi.adminUnbanUser(user.id)
-      toast.success('Ban kaldırıldı')
+      toast.success('Askı kaldırıldı')
       onUpdated(updated)
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setActionLoading(false) }
@@ -408,7 +450,7 @@ function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
   const isAdmin = user.role === 'ADMIN'
 
   const facts = [
-    { label: 'Kalan uyarı hakkı', value: user.strikesRemaining ?? '—' },
+    { label: 'Kalan ceza hakkı', value: user.strikesRemaining ?? '—' },
     { label: 'İlçe', value: user.district || '—' },
     isCandidate && { label: 'Başvuru', value: user.applicationCount ?? 0 },
     user.role === 'BUSINESS_OWNER' && { label: 'İlan', value: user.listingCount ?? 0 },
@@ -424,7 +466,7 @@ function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
               <span className="badge badge-neutral">{labelOf(ROLE_LABELS, user.role)}</span>
               {user.currentlyBanned
-                ? <span className="badge badge-negative">Banlı</span>
+                ? <span className="badge badge-negative">Askıda</span>
                 : <span className="badge badge-positive">Aktif</span>}
             </div>
           </div>
@@ -447,16 +489,16 @@ function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
         {user.currentlyBanned && user.bannedUntil && (
           <div className="rounded-lg p-3 type-body" role="status"
                style={{ background: 'var(--ah-danger-soft)', color: 'var(--ah-danger)' }}>
-            Ban bitişi: {fmtDateTime(user.bannedUntil)}
+            Askı bitişi: {fmtDateTime(user.bannedUntil)}
           </div>
         )}
 
         {!isAdmin && (
           <section className="pt-4 border-t space-y-3" style={{ borderColor: 'var(--ah-line)' }}>
-            <h3 className="type-label">Ban yönetimi</h3>
+            <h3 className="type-label">Hesap askısı</h3>
             {user.currentlyBanned ? (
               <button type="button" onClick={handleUnban} disabled={actionLoading} className="btn-secondary w-full">
-                <Icon d={ICONS.check} className="w-4 h-4" /> Banı kaldır
+                <Icon d={ICONS.check} className="w-4 h-4" /> Askıyı kaldır
               </button>
             ) : (
               <div className="flex items-end gap-2">
@@ -467,7 +509,7 @@ function UserDetailModal({ user, onClose, onUpdated, variant = 'modal' }) {
                     min="1" max="365" className="input" />
                 </div>
                 <button type="button" onClick={handleBan} disabled={actionLoading} className="btn-danger flex-1">
-                  <Icon d={ICONS.ban} className="w-4 h-4" /> {banDays} gün banla
+                  <Icon d={ICONS.ban} className="w-4 h-4" /> {banDays} gün askıya al
                 </button>
               </div>
             )}
@@ -551,7 +593,7 @@ function UsersTab() {
 
   return (
     <div className="space-y-4">
-      <TabHeader title="Kullanıcılar" description="Hesapları incele, gerekirse süreli ban uygula."
+      <TabHeader title="Kullanıcılar" description="Hesapları incele, gerekirse süreli olarak askıya al."
         count={loading ? undefined : users.length} countLabel="kullanıcı" />
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <FilterChips label="Rol filtresi" options={ROLE_FILTERS} value={roleFilter} onChange={setRoleFilter} />
@@ -577,7 +619,7 @@ function UsersTab() {
                         <div className="type-meta truncate">{u.email}</div>
                         {!split && (
                           <div className="type-caption mt-1">
-                            Kalan uyarı hakkı: <span className="type-num font-semibold" style={{ color: 'var(--ah-ink-2)' }}>{u.strikesRemaining ?? '—'}</span>
+                            Kalan ceza hakkı: <span className="type-num font-semibold" style={{ color: 'var(--ah-ink-2)' }}>{u.strikesRemaining ?? '—'}</span>
                             {' · '}Kayıt: {fmtDate(u.createdAt)}
                           </div>
                         )}
@@ -585,7 +627,7 @@ function UsersTab() {
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                         <span className="badge badge-neutral">{labelOf(ROLE_LABELS, u.role)}</span>
                         {u.currentlyBanned
-                          ? <span className="badge badge-negative">Banlı</span>
+                          ? <span className="badge badge-negative">Askıda</span>
                           : <span className="badge badge-positive">Aktif</span>}
                       </div>
                     </div>
@@ -706,7 +748,7 @@ function ReportsTab() {
                 {r.status === 'PENDING' && (
                   <p className="type-caption mt-3 inline-flex items-start gap-1.5">
                     <Icon d={ICONS.info} className="w-4 h-4 flex-shrink-0" />
-                    Gerekirse Kullanıcılar sekmesinden ilgili hesabı bulup banlayabilirsin.
+                    Gerekirse Kullanıcılar sekmesinden ilgili hesabı bulup askıya alabilirsin.
                   </p>
                 )}
               </li>
@@ -728,10 +770,10 @@ function ReportsTab() {
 
 /* ── İşlem geçmişi ── */
 const ACTION_META = {
-  BAN_USER:       { path: ICONS.ban,   label: 'Kullanıcı banlandı',   tone: 'badge-negative' },
-  UNBAN_USER:     { path: ICONS.check, label: 'Ban kaldırıldı',       tone: 'badge-neutral' },
+  BAN_USER:       { path: ICONS.ban,   label: 'Hesap askıya alındı',  tone: 'badge-negative' },
+  UNBAN_USER:     { path: ICONS.check, label: 'Askı kaldırıldı',      tone: 'badge-neutral' },
   MARK_NO_SHOW:   { path: ICONS.ban,   label: 'Gelmedi işaretlendi',  tone: 'badge-attention' },
-  AUTO_BAN:       { path: ICONS.bolt,  label: 'Otomatik ban',         tone: 'badge-negative' },
+  AUTO_BAN:       { path: ICONS.bolt,  label: 'Otomatik askı',        tone: 'badge-negative' },
   RESOLVE_REPORT: { path: ICONS.check, label: 'Şikâyet çözüldü',      tone: 'badge-positive' },
   DISMISS_REPORT: { path: ICONS.xmark, label: 'Şikâyet reddedildi',   tone: 'badge-neutral' },
   SUPPORT_IN_PROGRESS: { path: ICONS.doc,   label: 'Destek incelemede', tone: 'badge-neutral' },
@@ -740,8 +782,8 @@ const ACTION_META = {
 }
 const AUDIT_FILTERS = [
   { value: '',               label: 'Tümü' },
-  { value: 'BAN_USER',       label: 'Banlar' },
-  { value: 'AUTO_BAN',       label: 'Otomatik ban' },
+  { value: 'BAN_USER',       label: 'Askıya almalar' },
+  { value: 'AUTO_BAN',       label: 'Otomatik askı' },
   { value: 'MARK_NO_SHOW',   label: 'Gelmedi' },
   { value: 'RESOLVE_REPORT', label: 'Şikâyet işlemleri' },
 ]
@@ -769,7 +811,7 @@ function AuditTab() {
       <FilterChips label="İşlem filtresi" options={AUDIT_FILTERS} value={actionFilter} onChange={setActionFilter} />
 
       <ListState loading={loading} error={error} onRetry={fetchLogs} empty={logs.length === 0}
-        emptyType="history" emptyTitle="Henüz işlem kaydı yok" emptyDescription="Ban, şikâyet ve destek işlemleri burada listelenir.">
+        emptyType="history" emptyTitle="Henüz işlem kaydı yok" emptyDescription="Askıya alma, şikâyet ve destek işlemleri burada listelenir.">
         <ul className="card !p-0 divide-y" style={{ borderColor: 'var(--ah-line)' }}>
           {logs.map(l => {
             const m = ACTION_META[l.action] || { path: ICONS.doc, label: 'Diğer işlem', tone: 'badge-neutral' }
@@ -1164,8 +1206,21 @@ const OUTBOX_FILTERS = [
   { value: 'dead',    label: 'Başarısız' },
 ]
 
+const OUTBOX_FILTER_VALUES = OUTBOX_FILTERS.map(f => f.value)
+
 function OutboxTab() {
-  const [filter, setFilter] = useState('all')
+  // Filtre adreste (?filter=dead): genel bakıştaki "Başarısız giden kuyruk" paneli doğrudan açar.
+  const [params, setParams] = useSearchParams()
+  const rawFilter = params.get('filter')
+  const filter = OUTBOX_FILTER_VALUES.includes(rawFilter) ? rawFilter : 'all'
+  const setFilter = useCallback((v) => {
+    setParams(prev => {
+      const next = new URLSearchParams(prev)
+      if (v === 'all') next.delete('filter')
+      else next.set('filter', v)
+      return next
+    }, { replace: true })
+  }, [setParams])
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

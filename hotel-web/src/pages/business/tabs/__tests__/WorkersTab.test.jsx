@@ -47,4 +47,15 @@ describe('WorkersTab — vardiya bazlı gelmedi', () => {
     ]} />)
     expect(screen.getByText('Bizde çalışan yok')).toBeInTheDocument()
   })
+
+  it('aday adı herkese açık profile bağlanır (Kanban kartıyla aynı desen)', () => {
+    render(<WorkersTab applications={[
+      { id: 3, status: 'ACCEPTED', workCompleted: true, candidate: ayse, requestedSlots: [DAY] },
+    ]} />)
+    const link = screen.getByRole('link', { name: /Ayşe Yılmaz profilini/ })
+    expect(link).toHaveAttribute('href', '/p/candidate/42')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'))
+    expect(link).toHaveTextContent('Ayşe Yılmaz')
+  })
 })

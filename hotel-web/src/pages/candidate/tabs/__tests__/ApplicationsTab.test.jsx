@@ -18,7 +18,8 @@ vi.mock('../../../../api/client', () => ({ extractErrorMessage: () => 'hata' }))
 vi.mock('../../../../lib/useMyLocation', () => ({
   useMyLocation: () => ({ location: null, loading: false, request: vi.fn() }),
 }))
-vi.mock('../../../../lib/useConfirm', () => ({ useConfirm: () => async () => true }))
+const { confirmSpy } = vi.hoisted(() => ({ confirmSpy: vi.fn(async () => true) }))
+vi.mock('../../../../lib/useConfirm', () => ({ useConfirm: () => confirmSpy }))
 vi.mock('../../../../components/LegalNotice', () => ({ PlatformRoleNotice: () => null }))
 const toastSuccess = vi.fn()
 vi.mock('react-hot-toast', () => ({
@@ -107,5 +108,15 @@ describe('Aday ApplicationsTab — vardiya bazlı gelmedi', () => {
       requestedSlots: [{ id: 40, date: '2099-01-01', startTime: '09:00:00', endTime: '17:00:00' }],
     })]} onRefresh={vi.fn()} />)
     expect(screen.queryByTestId('candidate-no-show-slots')).not.toBeInTheDocument()
+  })
+
+  it('acil yedek teklifi kabul onayında "ceza hakkı" terimi; "strike" yok', async () => {
+    confirmSpy.mockClear()
+    render(<ApplicationsTab applications={[app(3, 'STANDBY', { standbyOfferActive: true })]} onRefresh={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Kabul et' }))
+    await waitFor(() => expect(confirmSpy).toHaveBeenCalled())
+    const arg = confirmSpy.mock.calls[0][0]
+    expect(arg.description).toContain('gelmezsen 1 ceza hakkın düşer')
+    expect(JSON.stringify(arg)).not.toMatch(/strike/i)
   })
 })

@@ -154,17 +154,16 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             onChange={e => { setSearch(e.target.value); setPage(0) }}
             placeholder="Aday adı ara..." className="input text-sm" />
         </div>
-        {/* Liste / Kanban view toggle */}
-        <div className="tier-raised inline-flex p-1 self-start" style={{ borderRadius: '999px' }}>
+        {/* Liste / Kanban gorunum secici — Ekibim/Favoriler ile ayni .ah-segment deseni.
+            Ayni veriyi farkli dizer (ayri panel degil) -> toggle grubu + aria-pressed. */}
+        <div className="ah-segment self-start flex-shrink-0" role="group" aria-label="Başvuru görünümü">
           {[
             { id: 'list',   label: 'Liste' },
             { id: 'kanban', label: 'Kanban' },
           ].map(v => (
-            <button key={v.id} onClick={() => setView(v.id)}
-              className="type-overline px-3 py-1 rounded-full transition-all"
-              style={view === v.id
-                ? { background: 'rgba(31, 41, 55, 0.18)', color: 'var(--text-headline)', border: '1px solid rgba(31, 41, 55, 0.42)' }
-                : { color: 'var(--text-muted)', border: '1px solid transparent' }}>
+            <button key={v.id} type="button" onClick={() => setView(v.id)}
+              aria-pressed={view === v.id}
+              className={`ah-segment__item transition-colors${view === v.id ? ' is-active' : ''}`}>
               {v.label}
             </button>
           ))}

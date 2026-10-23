@@ -86,11 +86,11 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
   async function handleBulkAction(targetStatus) {
     const ids = [...selectedIds]
     if (ids.length === 0) return
-    const label = targetStatus === 'ACCEPTED' ? 'kabul' : 'red'
+    const isAccept = targetStatus === 'ACCEPTED'
     const ok = await confirm({
-      title: `Toplu ${label} işlemi`,
-      description: `${ids.length} başvuru ${label} edilecek. Bu işlem geri alınamaz.`,
-      confirmLabel: `Evet, ${label} et`,
+      title: isAccept ? 'Toplu kabul işlemi' : 'Toplu ret işlemi',
+      description: `${ids.length} başvuru ${isAccept ? 'kabul edilecek' : 'reddedilecek'}. Bu işlem geri alınamaz.`,
+      confirmLabel: isAccept ? 'Evet, kabul et' : 'Evet, reddet',
       destructive: targetStatus === 'REJECTED',
     })
     if (!ok) return
@@ -100,11 +100,15 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
       // (Eski hatali cagri: hotelApi.updateApplicationStatus — boyle bir export yok,
       //  toplu islem her seferinde patliyordu.)
       const hotelApi = await import('../../../api/hotel')
-      await Promise.allSettled(
+      const results = await Promise.allSettled(
         ids.map(id => hotelApi.reviewApplication(id, targetStatus))
       )
       const toast = (await import('react-hot-toast')).default
-      toast.success(`${ids.length} başvuru güncellendi`)
+      // allSettled hatayi yutar; basarisiz olanlari ayrica bildir (eskiden hepsi "guncellendi" deniyordu).
+      const failed = results.filter(r => r.status === 'rejected').length
+      if (failed === 0) toast.success(`${ids.length} başvuru güncellendi`)
+      else if (failed === ids.length) toast.error('Toplu işlem başarısız')
+      else toast.error(`${ids.length - failed} başvuru güncellendi, ${failed} başvuru güncellenemedi`)
       setSelectedIds(new Set())
       onRefresh?.()
     } catch {
@@ -247,7 +251,7 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
             </button>
             <button type="button" onClick={() => handleBulkAction('REJECTED')}
               className="btn-danger md:!min-h-[34px] !px-3 !text-[13px]">
-              Toplu red
+              Toplu ret
             </button>
             <button type="button" onClick={() => setSelectedIds(new Set())}
               className="btn-ghost md:!min-h-[34px] !px-2 !text-[13px]">
@@ -392,7 +396,7 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
           // (Eskiden rgba(255,255,255,...) idi: beyaz kartta gorunmuyordu.)
           background: selected ? 'var(--ah-brand-soft)' : 'var(--ah-card)',
           border: `1px solid ${selected ? 'var(--ah-brand)' : 'var(--ah-line)'}`,
-          boxShadow: selected ? '0 2px 10px rgba(31,41,55,.18)' : 'var(--elev-1)',
+          boxShadow: selected ? 'var(--elev-2)' : 'var(--elev-1)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -435,9 +439,10 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
           )}
         </button>
 
-        {/* FAZ E — Kompakt kart: avatar + isim + ilan, altta tarih + aksiyonlar.
+        {/* Kompakt kart (iki satir): ust satir isim + tarih, alt satir ilan + aksiyonlar.
+            Eskiden tarih/aksiyonlar ayri bir alt seritteydi; kart ~%25 kisaldi.
             Guvenilirlik halkasi/rozeti KALDIRILDI (kullanici istegi). */}
-        <div className="flex items-start gap-2.5 pr-6">
+        <div className="flex items-center gap-2.5">
           <a
             href={app.candidate?.id ? `/p/candidate/${app.candidate.id}` : undefined}
             target="_blank"
@@ -446,21 +451,20 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
             onPointerDown={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
             title="Aday profilini gör"
-            className="flex-shrink-0 rounded-full overflow-hidden"
+            aria-label={`${app.candidate?.fullName || 'Aday'} profilini yeni sekmede aç`}
+            className="flex-shrink-0 rounded-full overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ah-brand)]"
             style={{ width: 34, height: 34 }}
           >
             {app.candidate?.avatarUrl ? (
               <img
                 src={cldImg(app.candidate.avatarUrl, { w: ImgSize.avatarSm })}
-                alt={app.candidate.fullName}
+                alt=""
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover"
               />
             ) : (
-              // Fotograf yoksa: yumusak teal disk + koyu harf.
-              // (Eskiden dolgun yesil gradient idi — kullanici "a yesil gibi" diye
-              //  sikayet etti; artik sessiz bir yer tutucu.)
+              // Fotograf yoksa: sessiz yer tutucu (marka-soft disk + koyu harf).
               <div className="w-full h-full grid place-items-center text-[13px] font-bold"
                    style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)',
                             border: '1px solid var(--ah-line)' }}>
@@ -470,42 +474,48 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
           </a>
 
           <div className="min-w-0 flex-1">
-            <div className="text-[13.5px] font-semibold truncate"
-                 style={{ color: 'var(--ah-ink)', letterSpacing: '-0.005em' }}>
-              {app.candidate?.fullName || 'Anonim'}
+            {/* Ust satir: isim + tarih (sag ustteki secim kutusuna yer birakir) */}
+            <div className="flex items-baseline justify-between gap-2 pr-6">
+              <span className="text-[13.5px] font-semibold truncate"
+                    style={{ color: 'var(--ah-ink)', letterSpacing: '-0.005em' }}>
+                {app.candidate?.fullName || 'Anonim'}
+              </span>
+              {/* ink-4 beyaz zeminde AA alti; ink-3 = 4.7:1. */}
+              <span className="text-[12px] flex-shrink-0 whitespace-nowrap type-num" title={dateTooltip}
+                    style={{ color: 'var(--ah-ink-3)', fontWeight: 500 }}>
+                {date}
+              </span>
             </div>
-            <div className="text-[12px] truncate mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>
-              {app.listing?.title || 'İlan bilgisi yok'}
+            {/* Alt satir: ilan + aksiyonlar */}
+            <div className="flex items-center justify-between gap-2 mt-0.5">
+              <span className="text-[12px] truncate" style={{ color: 'var(--ah-ink-3)' }}>
+                {app.listing?.title || 'İlan bilgisi yok'}
+              </span>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {app.conversationId && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onMessage?.() }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    aria-label={`${app.candidate?.fullName || 'Aday'} ile mesajlaş`}
+                    className="text-[12px] font-medium px-2 min-h-[26px] rounded-md transition-colors hover:bg-[var(--ah-band)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ah-brand)]"
+                    style={{ background: 'var(--ah-card)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}
+                  >
+                    Mesaj
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onClick?.() }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  aria-label={`${app.candidate?.fullName || 'Aday'} başvurusunu aç`}
+                  className="text-[12px] font-semibold px-2.5 min-h-[26px] rounded-md transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ah-brand)]"
+                  style={{ background: 'var(--ah-brand)', color: '#fff', border: '1px solid var(--ah-brand)' }}
+                >
+                  Aç
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 mt-2 pt-2"
-             style={{ borderTop: '1px solid var(--ah-line)' }}>
-          {/* ink-4 (#98a1a0) beyaz zeminde 2.5:1 — AA alti. ink-3 = 4.7:1. */}
-          <span className="type-label flex-shrink-0" title={dateTooltip}
-                style={{ color: 'var(--ah-ink-3)', fontWeight: 500 }}>
-            {date}
-          </span>
-          <div className="flex items-center gap-1.5">
-            {app.conversationId && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onMessage?.() }}
-                onPointerDown={(e) => e.stopPropagation()}
-                className="type-label px-2.5 py-1 min-h-[28px] rounded-md transition-colors hover:bg-[var(--ah-band)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ah-brand)]"
-                style={{ background: 'var(--ah-card)', color: 'var(--ah-ink-2)', border: '1px solid var(--ah-line-2)' }}
-              >
-                Mesaj
-              </button>
-            )}
-            <button
-              onClick={(e) => { e.stopPropagation(); onClick?.() }}
-              onPointerDown={(e) => e.stopPropagation()}
-              className="type-label px-2.5 py-1 min-h-[28px] rounded-md transition-colors hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ah-brand)]"
-              style={{ background: 'var(--ah-brand)', color: '#fff', border: '1px solid var(--ah-brand)' }}
-            >
-              Aç
-            </button>
           </div>
         </div>
       </div>
@@ -519,9 +529,9 @@ function CardSilhouette({ app }) {
     <div
       className="rounded-xl p-3 pointer-events-none"
       style={{
-        background: 'rgba(255, 255, 255, 0.95)',
-        border: '1.5px solid rgba(31, 41, 55, 0.45)',
-        boxShadow: '0 2px 8px rgba(18, 32, 31, 0.08)',
+        background: 'var(--ah-card)',
+        border: '1.5px solid var(--ah-brand)',
+        boxShadow: 'var(--elev-3)',
         transform: 'rotate(-2deg)',
         width: '260px',
       }}

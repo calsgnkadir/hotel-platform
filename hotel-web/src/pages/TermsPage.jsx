@@ -68,9 +68,9 @@ export default function TermsPage() {
           <Section title="4. Aday Yükümlülükleri">
             <ul>
               <li>Profilde paylaşılan bilgilerin doğruluğunu taahhüt eder.</li>
-              <li>Kabul edilen başvuruya ait vardiyaya bildirimsiz katılmama (<strong>no-show</strong>)
-                  durumunda strike kaydı oluşur; 3 strike sonrası hesap 30 gün süreyle askıya alınır
-                  (otomatik ban).</li>
+              <li>Kabul edilen başvuruya ait vardiyaya bildirimsiz katılmama (<strong>gelmedi</strong>)
+                  durumunda 1 ceza hakkı düşer; 3 ceza hakkı biten hesap 30 gün süreyle askıya alınır
+                  (otomatik askı).</li>
               <li>Mesajlaşmada saldırgan, küfürlü veya yanıltıcı içerik üretmez.</li>
             </ul>
           </Section>

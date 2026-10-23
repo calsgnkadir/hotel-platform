@@ -117,7 +117,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     const ok = await confirm(accept
       ? {
           title: 'Vardiyayı kabul et',
-          description: 'Asıl aday gelmedi, iş senin. Bağlayıcı bir kabul oluşturur — gelmezsen strike alırsın.',
+          description: 'Asıl aday gelmedi, iş senin. Bağlayıcı bir kabul oluşturur — gelmezsen 1 ceza hakkın düşer.',
           confirmLabel: 'Evet, kabul ediyorum',
         }
       : {
@@ -300,10 +300,10 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                             <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
                           </svg>
                           <div className="min-w-0">
-                            <div className="text-[13px] font-semibold" style={{ color: '#3f4b4a' }}>
+                            <div className="text-[13px] font-semibold" style={{ color: 'var(--ah-ink-2)' }}>
                               Sıra sende — asıl aday gelmedi
                             </div>
-                            <div className="text-[12px] mt-0.5" style={{ color: '#3f4b4a' }}>
+                            <div className="text-[12px] mt-0.5" style={{ color: 'var(--ah-ink-2)' }}>
                               Kabul edersen vardiya senin.
                               {standbyLeft(app.standbyDeadline) && (
                                 <> Cevap için <b className="tabular-nums">{standbyLeft(app.standbyDeadline)}</b> kaldı.</>
@@ -398,7 +398,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
               {isExpanded && app.note && (
                 <div className="px-4 pb-4" onClick={(e) => e.stopPropagation()}>
-                  <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: '#3f4b4a' }}>
+                  <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: 'var(--ah-warn-soft)', border: '1px solid var(--ah-warn)', color: 'var(--ah-ink-2)' }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="w-3.5 h-3.5 flex-shrink-0 mt-0.5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>
                     <span className="type-body"><b className="font-semibold">İşletme Notu:</b> {app.note}</span>
                   </div>

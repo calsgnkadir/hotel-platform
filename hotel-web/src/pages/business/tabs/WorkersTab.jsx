@@ -94,6 +94,9 @@ export default function WorkersTab({ applications, onOpenMessages }) {
         {workers.map(w => (
           <li key={w.candidate.id}
               className="card !p-3.5 flex items-center gap-3 min-w-0 hover:border-[var(--ah-line-2)]">
+            {/* Avatar da profile gider; klavye/ekran okuyucu icin tek hedef isim baglantisi */}
+            <a href={`/p/candidate/${w.candidate.id}`} target="_blank" rel="noopener noreferrer"
+               tabIndex={-1} aria-hidden="true" className="flex-shrink-0 rounded-full">
             {w.candidate?.avatarUrl ? (
               <img src={cldImg(w.candidate.avatarUrl, { w: ImgSize.avatarSm })} alt=""
                 loading="lazy" decoding="async"
@@ -106,10 +109,16 @@ export default function WorkersTab({ applications, onOpenMessages }) {
                 {(w.candidate?.fullName?.charAt(0) || '?').toLocaleUpperCase('tr-TR')}
               </div>
             )}
+            </a>
             <div className="min-w-0 flex-1">
-              <div className="type-body font-semibold truncate" style={{ color: 'var(--ah-ink)' }}>
-                {w.candidate?.fullName}
-              </div>
+              {/* Kanban kartindaki desenle ayni: aday adi herkese acik profile (yeni sekme) */}
+              <a href={`/p/candidate/${w.candidate.id}`} target="_blank" rel="noopener noreferrer"
+                 title="Aday profilini gör"
+                 aria-label={`${w.candidate?.fullName || 'Aday'} profilini yeni sekmede aç`}
+                 className="block type-body !font-semibold truncate rounded-sm hover:underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ah-brand)]"
+                 style={{ color: 'var(--ah-ink)' }}>
+                {w.candidate?.fullName || 'Aday'}
+              </a>
               {w.candidate?.email && (
                 <div className="type-caption truncate">{w.candidate.email}</div>
               )}
