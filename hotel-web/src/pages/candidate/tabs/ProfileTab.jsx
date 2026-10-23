@@ -200,7 +200,7 @@ export default function ProfileTab() {
                 </p>
                 <p className="type-caption mt-0.5">
                   {form.isAvailable
-                    ? 'İşletmeler seni 3 kat daha hızlı bulsun.'
+                    ? 'Profilini tamamla, işletmeler seni daha kolay bulsun.'
                     : 'Aktif olduğunda daha çok teklif alırsın.'}
                 </p>
               </div>

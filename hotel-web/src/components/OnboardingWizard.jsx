@@ -61,7 +61,7 @@ const STEPS_CANDIDATE = [
   },
   {
     title: 'Profilini Tamamla',
-    description: 'Profil fotoğrafı, telefon ve ilçe bilgisi başvurularının yanıt oranını 3 kat artırır.',
+    description: 'Profil fotoğrafı, telefon ve ilçe bilgisi işletmelerin seni tanımasını kolaylaştırır.',
     icon: ICON_PROFILE,
     cta: 'Profile Git',
     targetTab: 'profile',
