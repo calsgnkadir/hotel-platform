@@ -125,7 +125,7 @@ public class OutboxRelay {
      * Default 30 gun retention; observability icin "su olaydan sonra ne oldu"
      * sorularina cevap vermek icin yeterli, sonra DB sismesini engeller.
      */
-    @Scheduled(cron = "${app.outbox.cleanupCron:0 0 4 * * *}")
+    @Scheduled(cron = "${app.outbox.cleanupCron:0 0 4 * * *}", zone = "Europe/Istanbul")
     @org.springframework.transaction.annotation.Transactional
     public void cleanupProcessed() {
         var cutoff = java.time.LocalDateTime.now(clock).minusDays(30);

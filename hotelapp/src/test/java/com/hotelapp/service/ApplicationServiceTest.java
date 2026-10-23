@@ -330,6 +330,13 @@ class ApplicationServiceTest {
     @DisplayName("markNoShow")
     class MarkNoShow {
 
+        /** markNoShow önce aday satırını kilitler (aday → başvuru → slot). */
+        @org.junit.jupiter.api.BeforeEach
+        void candidateLock() {
+            lenient().when(applicationRepository.findCandidateIdById(APP_ID)).thenReturn(Optional.of(CANDIDATE_ID));
+            lenient().when(userRepository.findByIdForUpdate(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+        }
+
         @Test
         @DisplayName("PENDING başvuru: 'sadece kabul edilmiş' hatası")
         void notAccepted_throws() {

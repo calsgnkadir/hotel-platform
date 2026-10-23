@@ -198,7 +198,7 @@ public class GdprService {
      *
      * Cron: 0 0 3 * * * (saniye dakika saat gunay haftaicigunu)
      */
-    @Scheduled(cron = "${app.scheduling.gdpr-anonymize-cron:0 0 3 * * *}")
+    @Scheduled(cron = "${app.scheduling.gdpr-anonymize-cron:0 0 3 * * *}", zone = "Europe/Istanbul")
     public void anonymizeDueAccounts() {
         LocalDateTime now = LocalDateTime.now(clock);
         List<Long> dueIds = userRepository.findAllByScheduledAnonymizeAtBefore(now).stream()

@@ -76,7 +76,7 @@ public class AdminService {
 
     @Transactional
     public UserSummary setStudentStatus(Long id, boolean approved) {
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", id));
         if (user.getRole() != Role.CANDIDATE) {
             throw new BusinessRuleException("Sadece CANDIDATE rolündeki kullanıcılar için öğrenci onayı verilir.");
@@ -93,7 +93,7 @@ public class AdminService {
         if (days < 1 || days > 365) {
             throw new BusinessRuleException("Ban süresi 1-365 gün aralığında olmalı.");
         }
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", id));
         if (user.getRole() == Role.ADMIN) {
             throw new BusinessRuleException("Admin kullanıcı banlanamaz.");
@@ -119,7 +119,7 @@ public class AdminService {
 
     @Transactional
     public UserSummary unban(Long id) {
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", id));
         user.setBannedUntil(null);
         userRepository.save(user);

@@ -16,7 +16,7 @@ class OAuthProvidersTest {
     void placeholderOrFakeValues_areDisabled() {
         String[][] fakes = {
                 {"not-configured", "not-configured"},      // varsayılan (ayarlanmamış)
-                {"dummy-client-id", "dummy-client-secret"}, // render.yaml vitrin
+                {"dummy-client-id", "dummy-client-secret"}, // eski vitrin yer tutucusu
                 {"test-client-id", "test-client-secret"},   // test profili
                 {"", ""},
                 {"1234567890-abc.apps.googleusercontent.com", ""},              // gizli anahtar yok

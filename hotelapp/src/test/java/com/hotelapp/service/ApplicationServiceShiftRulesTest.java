@@ -382,6 +382,13 @@ class ApplicationServiceShiftRulesTest {
     @DisplayName("Y2 — no-show kuralları (vardiya bazında, V25; gece vardiyası dahil)")
     class NoShow {
 
+        /** markNoShow önce aday satırını kilitler (aday → başvuru → slot). */
+        @org.junit.jupiter.api.BeforeEach
+        void candidateLock() {
+            lenient().when(applicationRepository.findCandidateIdById(APP_ID)).thenReturn(Optional.of(CANDIDATE_ID));
+            lenient().when(userRepository.findByIdForUpdate(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+        }
+
         private void marksPersist() {
             when(noShowSlotRepository.saveAndFlush(any())).thenAnswer(i -> i.getArgument(0));
         }
@@ -431,6 +438,24 @@ class ApplicationServiceShiftRulesTest {
             ArgumentCaptor<NoShowMarkedEvent> ev = ArgumentCaptor.forClass(NoShowMarkedEvent.class);
             verify(eventPublisher).publishEvent(ev.capture());
             assertThat(ev.getValue().vacatedSlotIds()).containsExactly(901L);
+        }
+
+        @Test
+        @DisplayName("Kilit sırası kabul yollarıyla aynı: aday satırı → başvuru satırı → slot koltuğu")
+        void lockOrder_candidateThenApplicationThenSlot() {
+            ShiftSlot s = slot(901L, DAY, 8, 16);
+            Application app = app(ApplicationStatus.ACCEPTED, s);
+            when(applicationRepository.findByIdForCheckIn(APP_ID)).thenReturn(Optional.of(app));
+            marksPersist();
+            at(DAY.atTime(9, 0));
+
+            service.markNoShow(APP_ID, OWNER_ID, 901L);
+
+            InOrder order = inOrder(userRepository, applicationRepository, shiftSlotRepository);
+            order.verify(applicationRepository).findCandidateIdById(APP_ID);
+            order.verify(userRepository).findByIdForUpdate(CANDIDATE_ID);
+            order.verify(applicationRepository).findByIdForCheckIn(APP_ID);
+            order.verify(shiftSlotRepository).decrementFilled(901L);
         }
 
         @Test

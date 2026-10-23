@@ -131,7 +131,7 @@ public class RefreshTokenService {
     }
 
     /** Cleanup task — her gece 03:00 (30 günden eski revoked + tüm expired) */
-    @Scheduled(cron = "${app.scheduling.refresh-token-cleanup-cron:0 0 3 * * *}")
+    @Scheduled(cron = "${app.scheduling.refresh-token-cleanup-cron:0 0 3 * * *}", zone = "Europe/Istanbul")
     @Transactional
     public void cleanup() {
         int deleted = repo.deleteExpiredAndRevoked(LocalDateTime.now(clock).minusDays(30));

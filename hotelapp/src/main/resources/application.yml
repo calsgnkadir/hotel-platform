@@ -87,7 +87,7 @@ spring:
   # #92: Google OAuth2 sign-in — istege bagli.
   # GOOGLE_CLIENT_ID (...apps.googleusercontent.com) + GOOGLE_CLIENT_SECRET gercekse
   # Google butonu gorunur; degilse gizlenir, e-posta/sifre girisi calisir
-  # (OAuthProviders, GET /api/auth/providers). Kurulum: docs/DEPLOY_RENDER.md → "Google ile giriş".
+  # (OAuthProviders, GET /api/auth/providers). Kurulum: docs/SERVICE_KEYS.md → "Google ile giriş".
   security:
     oauth2:
       client:
@@ -182,7 +182,7 @@ app:
   # FAZ 1/#23 — Web Push (VAPID) — Pure Java, BouncyCastle YOK.
   # Key'ler bos ise startup'ta gecici cift uretilir (dev icin; ozel anahtar loglanmaz).
   # Prod: env vars ZORUNLU (yoksa acilmaz); key'leri kaybetme — yeniden uretirsen abone uyumsuz olur.
-  # Uretim: docs/DEPLOY_RENDER.md → "Bildirim anahtarlari".
+  # Uretim: docs/SERVICE_KEYS.md → "Bildirim anahtarlari".
   push:
     vapid:
       public-key:  ${VAPID_PUBLIC_KEY:}     # 65-byte uncompressed, Base64URL no-padding

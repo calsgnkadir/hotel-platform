@@ -21,6 +21,13 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Query("SELECT a FROM Application a WHERE a.id = :id")
     Optional<Application> findByIdForCheckIn(@Param("id") Long id);
 
+    /**
+     * Kilitsiz, entity yüklemeden aday id'si. Gelmedi işareti aday satırını başvuru
+     * kilidinden ÖNCE kilitlemek için kullanır (kilit sırası: aday → başvuru → slot).
+     */
+    @Query("SELECT a.candidate.id FROM Application a WHERE a.id = :id")
+    Optional<Long> findCandidateIdById(@Param("id") Long id);
+
     List<Application> findAllByCandidateId(Long candidateId);
 
     /** Kabul kapısı: adayın verilen durumdaki başvuruları (vardiya çakışması kontrolü). */

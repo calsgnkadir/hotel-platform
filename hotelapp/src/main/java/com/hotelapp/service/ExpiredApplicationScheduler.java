@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,35 +23,76 @@ public class ExpiredApplicationScheduler {
     private final StandbyService standbyService;   // FAZ C.1
     private final SgkReminderService sgkReminderService;   // FAZ C.3
 
-    // Her gece 02:00'de çalışır
-    @Scheduled(cron = "${app.scheduling.expire-applications-cron:0 0 2 * * *}")
-    @Transactional
+    /**
+     * Kayit basina transaction (REQUIRES_NEW): bir basvurudaki @Version cakismasi (ayni anda
+     * kabul/geri cekme) yalniz o kaydi geri alir, partinin geri kalani islenir. Spring
+     * baglaminda kurulur; baglam disi birim testlerinde transaction'siz calisir (GdprService deseni).
+     */
+    private org.springframework.transaction.support.TransactionOperations perRecordTx =
+            org.springframework.transaction.support.TransactionOperations.withoutTransaction();
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setTransactionManager(org.springframework.transaction.PlatformTransactionManager txManager) {
+        org.springframework.transaction.support.TransactionTemplate t =
+                new org.springframework.transaction.support.TransactionTemplate(txManager);
+        t.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        this.perRecordTx = t;
+    }
+
+    // Her gece 02:00'de (Türkiye saati) çalışır
+    @Scheduled(cron = "${app.scheduling.expire-applications-cron:0 0 2 * * *}", zone = "Europe/Istanbul")
     public void markExpiredApplications() {
-        List<Application> expired = applicationRepository.findExpiredApplications(LocalDateTime.now(clock));
-
-        expired.forEach(app -> {
-            app.setStatus(ApplicationStatus.EXPIRED);
-            log.info("Başvuru süresi doldu, EXPIRED yapıldı. ID: {}", app.getId());
-        });
-
-        applicationRepository.saveAll(expired);
-        log.info("Toplam {} başvuru EXPIRED olarak işaretlendi.", expired.size());
+        LocalDateTime now = LocalDateTime.now(clock);
+        List<Long> ids = applicationRepository.findExpiredApplications(now).stream()
+                .map(Application::getId).toList();
+        int done = expireEach(ids, "PENDING",
+                app -> app.getStatus() == ApplicationStatus.PENDING
+                        && app.getDeadline() != null && app.getDeadline().isBefore(now));
+        log.info("Toplam {} / {} başvuru EXPIRED olarak işaretlendi.", done, ids.size());
     }
 
     // FAZ 2/#28 — Her 5 dakikada bir suresi gecmis HOLD basvurularini EXPIRED yap
     @Scheduled(fixedDelayString = "${app.scheduling.hold-expiry-delay-ms:300000}",
                initialDelayString = "${app.scheduling.hold-expiry-initial-delay-ms:0}")
-    @Transactional
     public void expireOverdueHolds() {
         LocalDateTime now = LocalDateTime.now(clock);
-        List<Application> overdue = applicationRepository
-                .findByStatusAndHoldDeadlineBefore(ApplicationStatus.HELD, now);
-        if (overdue.isEmpty()) return;
-        overdue.forEach(app -> {
-            app.setStatus(ApplicationStatus.EXPIRED);
-            log.info("HOLD süresi doldu, EXPIRED. ID: {}", app.getId());
-        });
-        applicationRepository.saveAll(overdue);
+        List<Long> ids = applicationRepository
+                .findByStatusAndHoldDeadlineBefore(ApplicationStatus.HELD, now).stream()
+                .map(Application::getId).toList();
+        if (ids.isEmpty()) return;
+        expireEach(ids, "HOLD",
+                app -> app.getStatus() == ApplicationStatus.HELD
+                        && app.getHoldDeadline() != null && app.getHoldDeadline().isBefore(now));
+    }
+
+    /**
+     * Her kaydi kendi transaction'inda taze okur, kosul hala gecerliyse EXPIRED yapar.
+     * Arada baska bir islem (kabul, geri cekme) durumu degistirdiyse dokunmaz; @Version
+     * cakismasi ya da baska hata yalniz o kaydi atlar ve loglanir (sonraki calismada tekrar denenir).
+     */
+    int expireEach(List<Long> ids, String kind, java.util.function.Predicate<Application> stillDue) {
+        int done = 0, failed = 0;
+        for (Long id : ids) {
+            try {
+                Boolean changed = perRecordTx.execute(st -> {
+                    Application app = applicationRepository.findById(id).orElse(null);
+                    if (app == null || !stillDue.test(app)) return false;
+                    app.setStatus(ApplicationStatus.EXPIRED);
+                    applicationRepository.saveAndFlush(app);
+                    return true;
+                });
+                if (Boolean.TRUE.equals(changed)) {
+                    done++;
+                    log.info("{} başvuru süresi doldu, EXPIRED yapıldı. ID: {}", kind, id);
+                }
+            } catch (RuntimeException ex) {
+                failed++;
+                log.warn("{} başvuru {} EXPIRED yapılamadı (sonraki çalışmada tekrar denenecek): {}",
+                        kind, id, ex.toString());
+            }
+        }
+        if (failed > 0) log.warn("{} süre dolumu: {} / {} kayıt işlenemedi", kind, failed, ids.size());
+        return done;
     }
 
     /**
@@ -76,7 +116,7 @@ public class ExpiredApplicationScheduler {
      * isletmeye tek sefer hatirlatma. Sabah calisir cunku isveren gun icinde
      * bildirgeyi verecek zamana sahip olsun.
      */
-    @Scheduled(cron = "${app.scheduling.sgk-reminder-cron:0 0 9 * * *}")
+    @Scheduled(cron = "${app.scheduling.sgk-reminder-cron:0 0 9 * * *}", zone = "Europe/Istanbul")
     public void sendSgkReminders() {
         try {
             int n = sgkReminderService.sendDueReminders();

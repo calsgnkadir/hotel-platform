@@ -508,6 +508,15 @@ public class ApplicationService {
 
     @Transactional
     public NoShowResult markNoShow(Long applicationId, Long ownerId, Long slotId) {
+        // Kilit sirasi kabul yollariyla ayni: aday satiri -> basvuru satiri -> slot.
+        // Aday kilidi: ayni adayin iki farkli basvurusuna eszamanli isaret ceza puanini
+        // ayni eski degerden dusurmesin (User @Version'siz; kayip ceza). Aday id'si
+        // entity yuklenmeden okunur; aday satiri persistence context'e ILK kez kilitli
+        // sorguyla girer, boylece strike kilitli (guncel) satirdan hesaplanir.
+        Long candidateId = applicationRepository.findCandidateIdById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
+        userRepository.findByIdForUpdate(candidateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Başvuru", applicationId));
         // Giris yollariyla (QR/elle/GPS) ayni satir kilidi: "giris var mi" ve "zaten
         // isaretli mi" kontrolleri yarissiz (ayni basvuruya iki isaret sirayla islenir).
         Application application = applicationRepository.findByIdForCheckIn(applicationId)

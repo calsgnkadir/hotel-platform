@@ -49,7 +49,7 @@ class AdminServiceTest {
         User u = new User();
         u.setId(5L);
         u.setRole(Role.CANDIDATE);
-        when(users.findById(5L)).thenReturn(Optional.of(u));
+        when(users.findByIdForUpdate(5L)).thenReturn(Optional.of(u));
 
         service.ban(5L, 7);
 
@@ -65,7 +65,7 @@ class AdminServiceTest {
         User u = new User();
         u.setId(6L);
         u.setRole(Role.BUSINESS_OWNER);
-        when(users.findById(6L)).thenReturn(Optional.of(u));
+        when(users.findByIdForUpdate(6L)).thenReturn(Optional.of(u));
 
         service.ban(6L, 7);
 
@@ -83,7 +83,7 @@ class AdminServiceTest {
         u.setId(6L);
         u.setRole(Role.BUSINESS_OWNER);
         u.setBannedUntil(java.time.LocalDateTime.now().plusDays(3));
-        when(users.findById(6L)).thenReturn(Optional.of(u));
+        when(users.findByIdForUpdate(6L)).thenReturn(Optional.of(u));
 
         service.unban(6L);
 
