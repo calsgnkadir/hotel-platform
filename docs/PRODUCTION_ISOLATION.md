@@ -68,18 +68,18 @@ verisinde veri silmeden açılışın durmasını kontrol eder.
   yüklenmemiş, `kadrom/documents` yok — temizlenecek eski belge yok.
   Gerçek üründe `CLOUDINARY_URL`'yi gir; yeni özel sohbet akışını gerçek hesapla doğrula.
 - E-posta (Resend): alan adını doğrula, `RESEND_API_KEY` + `RESEND_FROM` gir
-  (docs/DEPLOY_RENDER.md → "E-posta (Resend)"). `prod` bunlarsız açılmaz.
+  (docs/SERVICE_KEYS.md → "E-posta (Resend)"). `prod` bunlarsız açılmaz.
   Gönderim hataları artık yutulmuyor: outbox 5 kez dener, son hata admin
   Outbox panelinde görünür.
 - Google ile giriş isteğe bağlı: ayarlanmazsa buton otomatik gizlenir; açmak için
-  docs/DEPLOY_RENDER.md → "Google ile giriş". (GOOGLE_* artık boş bırakılabilir —
+  docs/SERVICE_KEYS.md → "Google ile giriş". (GOOGLE_* artık boş bırakılabilir —
   eskiden boş değer sunucuyu "Client id must not be empty" ile çökertiyordu.)
 - Ödeme (iyzico) isteğe bağlı: anahtar yoksa ödeme kapalı, ilan kotası uygulanmaz
   (eskiden boşken koddaki sandbox anahtarlarına düşülüyordu). `prod`'da sandbox
-  ayarı veya https olmayan callback reddedilir; ayrıntı docs/DEPLOY_RENDER.md →
+  ayarı veya https olmayan callback reddedilir; ayrıntı docs/SERVICE_KEYS.md →
   "Ödeme (iyzico)". Canlı ödeme öncesi `IyzicoClient`'taki sabit alıcı bilgisi
   (TCKN/GSM/IP) gerçek veriye bağlanmalı.
-- Kalıcı VAPID anahtar çiftini üret ve gir (docs/DEPLOY_RENDER.md → "Bildirim
+- Kalıcı VAPID anahtar çiftini üret ve gir (docs/SERVICE_KEYS.md → "Bildirim
   anahtarları"). `prod` profili anahtarsız açılmaz; özel anahtar loglanmaz.
   Push adresleri yalnızca tarayıcı push servislerine (FCM, Mozilla, Apple, WNS)
   izinlidir; çıkışta cihazın aboneliği sunucuda koparılır.

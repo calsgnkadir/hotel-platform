@@ -2,279 +2,220 @@
 
 # Kadrom
 
-**İstanbul'daki hotel, restoran ve kafelerde günlük/aylık iş arayan adaylarla işletmeleri buluşturan platform.**
+**İstanbul'daki otel, restoran ve kafeleri vardiyalı personelle buluşturan platform. Komisyon yok.**
 
-Başvurudan çalışmaya kadar tüm süreç tek ekranda: ilan açma → vardiya planı → başvuru → mesajlaşma → kapıda QR giriş.
+İşletme ilanı vardiya vardiya açar, aday istediği vardiyalara başvurur. Kabul, mesajlaşma,
+kapıda QR ile giriş ve yoklama aynı uygulamada yürür.
 
 [![CI](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/calsgnkadir/hotel-platform/actions/workflows/ci.yml)
-
-[![Docker](https://img.shields.io/badge/docker%20compose%20up-tam%20stack-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#hızlı-başlangıç-docker)
-[![Arayüz Önizleme](https://img.shields.io/badge/Aray%C3%BCz%20%C3%96nizleme-sadece%20UI%20%C2%B7%20backend%20yok-6b7574?style=for-the-badge)](#arayüz-önizleme)
-[![License](https://img.shields.io/badge/License-MIT-34d399?style=for-the-badge)](#lisans)
-
-![Java](https://img.shields.io/badge/Java%2017-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot%203.2-6DB33F?logo=springboot&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL%208-4479A1?logo=mysql&logoColor=white)
-![React](https://img.shields.io/badge/React%2018-61DAFB?logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite%205-646CFF?logo=vite&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind%203-06B6D4?logo=tailwindcss&logoColor=white)
+![Java 17](https://img.shields.io/badge/Java-17-555)
+![Spring Boot 4.1](https://img.shields.io/badge/Spring%20Boot-4.1-555)
+![MySQL 8](https://img.shields.io/badge/MySQL-8-555)
+![React 18](https://img.shields.io/badge/React-18-555)
+![Vite 5](https://img.shields.io/badge/Vite-5-555)
 
 </div>
 
----
+![Kadrom ana sayfa](docs/screenshots/landing.png)
 
-## Hızlı Başlangıç (Docker)
-
-Tüm stack tek komutla ayağa kalkar — MySQL + Spring Boot + React, kurulum derdi yok:
-
-```bash
-git clone https://github.com/calsgnkadir/hotel-platform.git
-cd hotel-platform
-cp .env.example .env
-docker compose up --build
-```
-
-| Servis | Adres |
-| :----- | :---- |
-| Arayüz | <http://localhost:5174> (yerel Vite'ın 5173'üyle çakışmaz) |
-| API + Swagger | <http://localhost:8081/swagger-ui/index.html> (IntelliJ'deki yerel backend'in 8080'iyle çakışmaz) |
-| MySQL | `localhost:3307` (yereldeki 3306 ile çakışmaz) |
-
-İlk açılışta demo verisi otomatik yüklenir; aşağıdaki hesaplarla giriş yapabilirsin.
-
-> **Yerel geliştirme (Docker'sız):** backend `hotelapp/` → `mvn spring-boot:run`,
-> frontend `hotel-web/` → `npm install && npm run dev`. MySQL 8 ve `.env` gerekir.
+> **Canlı sürüm yok.** <https://hotel-platform-seven.vercel.app/> yalnızca arayüz önizlemesidir;
+> arkasında çalışan bir sunucu olmadığı için giriş, ilan listesi ve mesajlaşma orada çalışmaz.
+> Uygulamanın tamamını görmek için [Docker ile yerelde çalıştırın](#hızlı-başlangıç-docker).
 
 ---
 
-## Arayüz Önizleme
+## İçindekiler
 
-🌐 **<https://hotel-platform-seven.vercel.app/>** — yalnızca **arayüz** önizlemesi.
-
-> [!IMPORTANT]
-> **Bu çalışan bir demo değil, sadece arayüz.** Backend yayında değil; giriş,
-> ilan listeleme, mesajlaşma gibi veri gerektiren hiçbir akış bu adreste
-> çalışmaz. Uygulamanın tamamını çalışır görmek için tek yol
-> [Docker adımları](#hızlı-başlangıç-docker) — 3 servis de ayağa kalkar, demo
-> verisi otomatik yüklenir.
-
-**Neden canlı bir backend yok?** Barındırma denemesi (Railway) sona erdi ve
-yerine ücretsiz katman aramak yerine bilinçli bir tercih yapıldı: çalışmayan bir
-"Canlı Demo" linki, hiç link olmamasından kötüdür. Backend'i ayağa kaldırmak
-isteyen için deploy tarifi hazır ve test edilmiş —
-[`docs/DEPLOY_FLY.md`](docs/DEPLOY_FLY.md) + [`deploy/fly/`](deploy/fly).
-Aynı imajlar herhangi bir VPS'te `docker compose up` ile de çalışır.
-
-### Demo Hesaplar
-
-| Rol      | E-posta                    | Şifre        |
-| :------- | :------------------------- | :----------- |
-| Aday     | `demo-aday1@test.com`      | `Demo1234!`  |
-| İşletme  | `demo-isletme1@test.com`   | `Demo1234!`  |
-
-> Demo verisi `@Profile("demo")` ile idempotent olarak yüklenir — 9 başvuru, 3 işletme, 12 ilan içerir.
-
-### 60 Saniyede Tur
-
-> Docker ile ayağa kaldırdıktan sonra <http://localhost:5174> üzerinde (Docker'sız yerel geliştirmede <http://localhost:5173>):
-
-1. **Aday olarak giriş yap** → İlanlar'da vardiya bazlı bir ilana başvur
-2. **"Bugün müsaitim"** anahtarını aç — acil ilanlarda önceliklisin
-3. **Çıkış → İşletme olarak giriş yap** → gelen başvuruyu **Kabul Et** / **Yedeğe Al** / **Reddet**
-4. Bir ilanı **Acil** işaretle → o an müsait adaylara anında bildirim gider
-5. **Mesajlar**'da aday ile WebSocket üzerinden canlı yazış
-6. **Gelen Başvurular**'da Kanban (sürükle-bırak) ve A4 kart listesi arasında geçiş yap
+- [Ekran görüntüleri](#ekran-görüntüleri)
+- [Özellikler](#özellikler)
+- [Teknoloji](#teknoloji)
+- [Hızlı başlangıç (Docker)](#hızlı-başlangıç-docker)
+- [Yerel geliştirme](#yerel-geliştirme)
+- [Google ile giriş](#google-ile-giriş-isteğe-bağlı)
+- [Testler ve CI](#testler-ve-ci)
+- [Yayın durumu](#yayın-durumu)
+- [Yol haritası](#yol-haritası)
 
 ---
 
-## Ekran Görüntüleri
+## Ekran görüntüleri
 
-### İşletme Paneli — güncel arayüz (açık, grafit gri + muted semantik)
+> Görseller örnek (sahte) verilerle hazırlanmıştır; gerçek kişi veya işletme bilgisi içermez.
 
-Gelen başvuruları **Kanban** (sürükle-bırak durum yönetimi) veya **A4 kart
-listesi** olarak yönet:
+### Aday
 
 <table>
 <tr>
-<td width="50%"><b>Gelen Başvurular — Kanban</b><br/><img src="docs/screenshots/business-applications.png" alt="Kanban" /></td>
-<td width="50%"><b>Gelen Başvurular — A4 kart listesi</b><br/><img src="docs/screenshots/business-applications-list.png" alt="A4 kart listesi" /></td>
+<td width="50%"><b>İlanlar</b>: tarih, vardiya saati, çalışma türü ve ücrete göre filtre<br/><img src="docs/screenshots/listings.png" alt="İlan listesi" /></td>
+<td width="50%"><b>İlan detayı</b>: vardiyalar, ödeme, kıyafet, toplanma yeri<br/><img src="docs/screenshots/listing-detail.png" alt="İlan detayı" /></td>
+</tr>
+<tr>
+<td width="50%"><b>Başvurularım</b>: durum, vardiya, yedek sırası, mesaiye başla<br/><img src="docs/screenshots/candidate-applications.png" alt="Başvurularım" /></td>
+<td width="50%"><b>Geçmiş işlerim</b>: çalışılan vardiyalar ve toplam saat<br/><img src="docs/screenshots/candidate-history.png" alt="Geçmiş işlerim" /></td>
 </tr>
 </table>
 
-### İşletme — Genel Bakış + İlanlarım
+### İşletme
 
 <table>
 <tr>
-<td width="50%"><b>Genel Bakış (bugün + stat şeridi + akış)</b><br/><img src="docs/screenshots/business-overview.png" alt="Genel Bakış" /></td>
-<td width="50%"><b>İlanlarım (günlük ücret + vardiya + aciliyet)</b><br/><img src="docs/screenshots/business-listings.png" alt="İlanlarım" /></td>
+<td width="50%"><b>Genel bakış</b>: yapılacaklar ve son hareketler<br/><img src="docs/screenshots/business-overview.png" alt="İşletme genel bakış" /></td>
+<td width="50%"><b>İlanlarım</b>: doluluk, görüntülenme, yoklama<br/><img src="docs/screenshots/business-listings.png" alt="İlanlarım" /></td>
+</tr>
+<tr>
+<td width="50%"><b>Başvurular, Kanban görünümü</b><br/><img src="docs/screenshots/business-applications.png" alt="Başvurular Kanban" /></td>
+<td width="50%"><b>Başvurular, liste görünümü</b><br/><img src="docs/screenshots/business-applications-list.png" alt="Başvurular liste" /></td>
+</tr>
+<tr>
+<td width="50%"><b>Yoklama</b>: QR ile kapıda giriş, elle "Geldi", Excel ekip listesi<br/><img src="docs/screenshots/business-attendance.png" alt="Yoklama" /></td>
+<td width="50%"><b>Ekibim</b>: bizde çalışanlar, favoriler, engellenenler<br/><img src="docs/screenshots/business-team.png" alt="Ekibim" /></td>
+</tr>
+<tr>
+<td colspan="2"><b>İşletme profili</b>: profil doluluğu ve adayın gördüğü canlı önizleme<br/><img src="docs/screenshots/business-profile.png" alt="İşletme profili" /></td>
 </tr>
 </table>
 
-### İşletme — Profil + canlı önizleme + KVKK
-
-<p align="center"><img src="docs/screenshots/business-profile.png" alt="İşletme Profili" width="100%" /></p>
-
----
-
-> [!NOTE]
-> **Aşağıdaki aday/genel sayfa görselleri eski.** 8 Haziran 2026'da, arayüz
-> güncel açık tasarıma geçirilmeden önce çekildiler; eski koyu temayı gösteriyorlar
-> (yukarıdaki işletme paneli görselleri günceldir). Aday tarafı da yeniden
-> çekilecek — rehber: [`docs/screenshots/README.md`](docs/screenshots/README.md).
-> Bu sırada güncel aday arayüzü için [Docker ile](#hızlı-başlangıç-docker) çalıştırıp
-> `demo-aday1@test.com` / `Demo1234!` ile gir.
-
-### Landing — hero + canlı vardiya nabzı
-
-<p align="center"><img src="docs/screenshots/landing.png" alt="Kadrom Landing" width="100%" /></p>
-
-### Aday Paneli · İlan Detayı · Mesajlaşma · KVKK
+### Ortak ve yönetim
 
 <table>
 <tr>
-<td width="50%"><b>Aday Genel Bakış</b><br/><img src="docs/screenshots/candidate-overview.png" alt="Aday Genel Bakış" /></td>
-<td width="50%"><b>İlan Detayı + canlı harita</b><br/><img src="docs/screenshots/listing-detail.png" alt="İlan Detayı" /></td>
-</tr>
-<tr>
-<td width="50%"><b>Mesajlaşma</b><br/><img src="docs/screenshots/messages.png" alt="Sohbet" /></td>
-<td width="50%"><b>KVKK aydınlatma</b><br/><img src="docs/screenshots/kvkk.png" alt="KVKK" /></td>
+<td width="50%"><b>Mesajlar</b>: başvuru bağlamlı sohbet, hızlı yanıtlar, ekler<br/><img src="docs/screenshots/messages.png" alt="Mesajlar" /></td>
+<td width="50%"><b>Yönetim paneli</b>: kullanıcı, ilan, şikayet, destek, işlem geçmişi<br/><img src="docs/screenshots/admin-overview.png" alt="Yönetim paneli" /></td>
 </tr>
 </table>
-> (Eski listede geçen `stats.png` düştü: Analitik sekmesi projeden kaldırıldı.)
+
+### Mobil
+
+<p>
+<img src="docs/screenshots/mobile-landing.png" alt="Mobil ana sayfa" width="30%" />
+&nbsp;
+<img src="docs/screenshots/mobile-listings.png" alt="Mobil ilan listesi" width="30%" />
+&nbsp;
+<img src="docs/screenshots/mobile-business-overview.png" alt="Mobil işletme genel bakış" width="30%" />
+</p>
 
 ---
 
 ## Özellikler
 
-### Aday Tarafı
+### Aday
 
-- **Vardiya bazlı başvuru** — Tek bir ilana birden fazla vardiya seçeneğiyle başvuru
-- **Sohbetten belge/foto** — Adli sicil, hijyen raporu vb. uygulamada saklanmaz; işletme isterse aday sohbetten ek olarak gönderir. Ekler gizli saklanır, yalnızca sohbetin iki tarafı açabilir.
-- **Akıllı sıralama** — İlanlar tercihine göre puanlanır (position/district/jobType/recency); "sana özel" default listing sıralaması
-- **Kayıtlı Aramalar** — Filtre setini kaydet; yeni eşleşen ilan gelince otomatik bildirim (30 dk scan)
-- **Tercih bazlı eşleştirme** — İlgi alanına uygun ilan açılınca otomatik bildirim
-- **Geçmiş işlerim** — Çalışılmış vardiyalar + saat toplamı
+- **Vardiya bazlı başvuru:** bir ilanın vardiyalarından istenenler seçilir; her vardiya ayrı takip edilir.
+- **Gece vardiyası:** ertesi güne taşan vardiyalar (ör. 22:00–07:00) ilan, giriş kartı, yoklama ve kazanç hesabında doğru işlenir. Müsaitlik de gece bloğu olarak girilebilir.
+- **Filtre ve sıralama:** tarih, vardiya saati, çalışma türü, pozisyon, en az ücret; "Sana özel" sıralama, yakınlık, "Bugün müsaitim".
+- **Kayıtlı aramalar ve kaydedilen ilanlar:** yeni eşleşen ilan çıkınca bildirim.
+- **Yedek aday:** kontenjan doluysa aday yedeğe alınır; asıl aday düşerse sıradaki yedeğe süreli teklif gider.
+- **Giriş ve çıkış:** vardiya günü kişisel tek kullanımlık QR giriş kartı; mesai başlangıç ve bitişi GPS ile işyerine uzaklık kontrolüyle kaydedilir.
+- **Geçmiş işlerim:** tamamlanan vardiyalar ve toplam çalışma saati.
 
-### İşletme Tarafı
+### İşletme
 
-- **Vardiya editörü** — Tarih + saat + ihtiyaç sayısı, drag-drop sıralı galeri
-- **Başvuru iş akışı** — Bekliyor → İnceleniyor → Kabul / Red
-- **No-show takibi** — 2 hatadan sonra otomatik 30 günlük ban
-- **İstatistik panosu** — Donut, bar chart, kabul oranı, ortalama yanıt süresi
-- **Bizde çalışanlar** — Geçmiş çalışma kaydı + toplam saat
+- **İlan editörü:** tarih, saat ve kişi sayısıyla vardiya listesi; ücret birimi (saatlik, günlük, aylık), ödeme zamanı ve şekli, kıyafet, toplanma yeri.
+- **Başvuru yönetimi:** Kanban ve liste görünümü; kabul, red, aday onayına sunma, yedeğe alma.
+- **Gelmedi ve ceza vardiya başına:** her gelmeyen vardiya ayrı kayıt ve ayrı ceza; çalışılan vardiyalar korunur. Üç gelmedi işaretinde aday 30 gün askıya alınır.
+- **Yoklama:** QR okutma, elle "Geldi" işaretleme, Excel ekip listesi.
+- **Acil ilan:** o an müsait adaylara bildirim.
+- **Ekibim:** bizde çalışanlar, favori adaylar, engellenen adaylar.
+- **İşletme profili:** logo, sıralanabilir galeri, çalışma saatleri, harita konumu, herkese açık işletme sayfası.
+- **İlan kotası:** ücretsiz planda aynı anda en fazla 5, ücretli abonelikte en fazla 10 aktif ilan. Duraklatılan ve kapanan ilanlar sayılmaz. Ödeme altyapısı (iyzico) kodda hazır ancak anahtar verilmediği sürece kapalıdır; açılışta ödeme alınmaz.
+- **İlan yaşam döngüsü:** ilan son vardiyası bitince kendiliğinden kapanır; açık başvurular "süresi doldu" olur.
 
-### Sistem
+### Ortak
 
-- **Mesajlaşma** — Sohbet + listing context + WebSocket real-time + okundu bilgisi
-- **Bildirim sistemi** — 13 bildirim tipi (`MATCHING_LISTING` dahil), WebSocket push + Web Push (VAPID) + in-app dropdown
-- **Outbox pattern** — Email + audit log async publish, at-least-once delivery + retry (max 5 attempt)
-- **Şikayet sistemi** — Kullanıcı bildir + admin moderasyon
-- **Audit log** — Ban / no-show / şikayet işlemleri loglanır
-- **Admin paneli** — Kullanıcı yönetimi + şikayet inceleme + işlem geçmişi
-- **Sade açık arayüz** — Grafit/gri marka (`#1f2937`) + muted semantik durum renkleri (yeşil/amber/kiremit/mavi — sadece durum sinyali, dekorasyon değil), tek font (Inter), birleşik rounded kart sistemi, hairline ayraçlar
-- **KVKK uyumlu** — Açık rıza akışı + aydınlatma metni
+- **Mesajlaşma:** başvuruyla açılan sohbet, WebSocket ile anlık iletim, okundu bilgisi, yanıtlama, tepki, dosya ve fotoğraf eki (ekler yalnız sohbetin iki tarafına açık).
+- **Bildirimler:** uygulama içi, WebSocket ve Web Push (VAPID); e-posta (Resend).
+- **Engelleme ve şikayet:** aday işletmeyi, işletme adayı engelleyebilir; şikayetler yönetim panelinde incelenir.
+- **KVKK:** kayıtta aydınlatma metni onayı ve onay kaydı, kişisel verileri dışa aktarma (`GET /api/me/export`), hesap silme ve anonimleştirme (`DELETE /api/me`).
+- **Google ile giriş (isteğe bağlı):** yapılandırılmamışsa düğme gizlenir.
+- **Yönetim paneli:** kullanıcılar, ilanlar, işletme doğrulama, şikayetler, destek talepleri, işlem geçmişi, giden e-posta kuyruğu.
 
 ---
 
-## Mimari
+## Teknoloji
 
-```
-┌──────────────┐   HTTPS / WSS    ┌──────────────────┐
-│  Frontend    │ ◄──────────────► │     Backend      │
-│  (nginx)     │  /api/*  · /ws   │                  │
-│  React 18    │      CORS        │  Spring Boot 3.2 │
-│  Vite 5      │                  │  Java 17         │
-│  Tailwind 3  │                  │  Hibernate 6.4   │
-│  Recharts    │                  │  STOMP/WebSocket │
-└──────────────┘                  └────────┬─────────┘
-      :5173                          :8080 │ JDBC
-                                           ▼
-                                  ┌──────────────────┐
-                                  │   MySQL 8        │
-                                  │   (volume)       │
-                                  └──────────────────┘
-        └──────── docker compose: 3 servis, tek ağ ────────┘
-
-                ┌──────────────────┐
-                │   Cloudinary     │  ◄── Sohbet ekleri (gizli) + işletme görselleri
-                │   (CDN + DAM)    │      (signed URL)
-                └──────────────────┘
-```
-
-### Proje Yapısı
+| Katman | Kullanılan |
+| :-- | :-- |
+| Backend | Spring Boot 4.1.1, Java 17, Spring Security, JWT (erişim + yenileme), STOMP/WebSocket, OAuth2 Client |
+| Veritabanı | MySQL 8, Flyway (V1–V27), Hibernate `ddl-auto=validate` |
+| Frontend | React 18, Vite 5, Tailwind CSS 3, TanStack Query 5, React Router 6, React Hook Form, Leaflet |
+| Depolama | Cloudinary (sohbet ekleri gizli, işletme görselleri herkese açık) |
+| Diğer | Bucket4j (istek sınırı), Apache POI (Excel), springdoc (Swagger), iyzico (kapalı), Resend (e-posta) |
+| Test | JUnit 5, Vitest + Testing Library, Playwright |
+| Paketleme | Docker, Docker Compose (MySQL + backend + nginx) |
 
 ```
 hotel-platform/
-├── hotelapp/                  Spring Boot backend
-│   ├── controller/            REST endpoint'leri
-│   ├── service/               İş mantığı
-│   ├── repository/            JPA + Specification
-│   ├── entity/                JPA entities
-│   ├── dto/                   Request/Response DTO'lar
-│   ├── security/              JWT + RateLimit filter
-│   ├── config/                CORS + Security + Cloudinary
-│   └── seeder/                DemoSeeder (idempotent)
-│
-├── hotel-web/                 React frontend
-│   ├── src/
-│   │   ├── pages/             Landing, Auth, Candidate, Business, Admin
-│   │   ├── components/        DashboardLayout, ThemeToggle, NotificationBell ...
-│   │   ├── context/           Auth + Theme
-│   │   ├── api/               Axios client + endpoint helpers
-│   │   └── utils/             Validation, formatters
-│   └── tailwind.config.js     Grafit/gri palet
-│
-└── README.md                  Bu dosya
+├── hotelapp/        Spring Boot backend (controller, service, repository, entity, security, config)
+│   └── src/main/resources/db/migration   Flyway betikleri
+├── hotel-web/       React arayüzü (pages, components, api, lib, context)
+│   └── e2e/         Playwright testleri
+├── deploy/          Sunucu yayını için örnek yapılandırmalar
+└── docker-compose.yml
 ```
 
 ---
 
-## Tech Stack
+## Hızlı başlangıç (Docker)
 
-| Katman          | Teknoloji                                        |
-| :-------------- | :----------------------------------------------- |
-| **Backend**     | Spring Boot 3.2, Java 17, Hibernate 6.4, JWT     |
-| **Database**    | MySQL 8 (Hibernate ORM, Specification API)       |
-| **Storage**     | Cloudinary (gizli sohbet ekleri + herkese açık işletme görselleri) |
-| **Frontend**    | React 18, Vite 5, React Router 6, React Hook Form|
-| **Styling**     | Tailwind 3 (tek açık tema · grafit + muted semantik) |
-| **Grafikler**   | Recharts (PieChart, AreaChart, BarChart)         |
-| **Auth**        | JJWT (HS256) + Spring Security                   |
-| **Rate Limit**  | Bucket4j                                         |
-| **Validation**  | Hibernate Validator + react-hook-form            |
-| **Container**   | Docker + Compose (MySQL + backend + nginx)       |
-| **CI**          | GitHub Actions — push/PR'da build + test (259 backend, 86 frontend) |
+Docker kurulu bir makinede tüm sistem tek komutla açılır:
+
+```bash
+git clone https://github.com/calsgnkadir/hotel-platform.git
+cd hotel-platform
+cp .env.example .env        # DB_PASSWORD ve JWT_SECRET (en az 32 karakter) değerlerini girin
+docker compose up --build
+```
+
+| Servis | Adres |
+| :-- | :-- |
+| Arayüz | <http://localhost:5174> |
+| API | <http://localhost:8081> (Swagger: <http://localhost:8081/swagger-ui.html>) |
+| MySQL | `localhost:3307` |
+
+Portlar, yerel geliştirme ortamıyla (5173, 8080, 3306) çakışmayacak şekilde seçildi.
+Compose, backend'i `dev,demo` profiliyle başlatır; şema Flyway ile kurulur ve demo verisi yüklenir.
+
+### Demo hesaplar
+
+Yalnızca `demo` profilinde (prod dışında) yüklenir.
+
+| Rol | E-posta | Şifre |
+| :-- | :-- | :-- |
+| Aday | `demo-aday1@test.com` | `Demo1234!` |
+| İşletme | `demo-isletme1@test.com` | `Demo1234!` |
+
+Seeder `demo-aday1` … `demo-aday10` ve `demo-isletme1` … `demo-isletme6` hesaplarını aynı şifreyle oluşturur.
+
+```bash
+docker compose logs -f backend   # log takibi
+docker compose down              # durdur (veri volume'de kalır)
+docker compose down -v           # veritabanını da sil
+```
 
 ---
 
-## Lokal Kurulum
+## Yerel geliştirme
 
-### Gereksinimler
+Gereksinimler: Java 17, Node 20, MySQL 8.
 
-- Java 17+ (`java -version`)
-- MySQL 8 (`mysql --version`)
-- Node 18+ (`node -v`)
-- IntelliJ IDEA önerilir (Maven wrapper stub olduğu için)
-
-### 1) Veritabanı
+**1. Veritabanı**
 
 ```sql
 CREATE DATABASE hotel_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_turkish_ci;
 ```
 
-### 2) Backend
+**2. Backend** (port 8080)
 
 ```bash
 cd hotelapp
-cp .env.example .env
-# .env dosyasını doldur: DB_PASSWORD, JWT_SECRET (32+ char), CLOUDINARY_*
+cp .env.example .env    # değerleri doldurun
+mvn spring-boot:run     # ya da IntelliJ'de HotelStudentPlatformApplication
 ```
 
-IntelliJ'de `HotelStudentPlatformApplication`'ı çalıştır → http://localhost:8080
+Demo verisi için `SPRING_PROFILES_ACTIVE=dev,demo`. Swagger: <http://localhost:8080/swagger-ui.html>
+(prod profilinde kapalıdır).
 
-> **Swagger UI:** <http://localhost:8080/swagger-ui.html>
-
-### 3) Frontend
+**3. Frontend** (port 5173)
 
 ```bash
 cd hotel-web
@@ -282,201 +223,75 @@ npm install
 npm run dev
 ```
 
-Tarayıcı: <http://localhost:5173>
+Vite `strictPort` ile çalışır: 5173 doluysa başka porta kaymaz, hata verir. `/api` ve `/ws`
+istekleri 8080'deki backend'e yönlendirilir.
 
-### Demo verisini yükle (opsiyonel)
+### Ortam değişkenleri
 
-`.env` içinde `SPRING_PROFILES_ACTIVE=demo` yap, backend'i restart et. İlk açılışta 3 işletme + 5 aday + 12 ilan + 9 başvuru otomatik gelir (idempotent).
+Değerler `.env.example` dosyalarındadır; gerçek anahtarları depoya koymayın.
+
+| Dosya | Değişkenler |
+| :-- | :-- |
+| `.env.example` (Docker) | `DB_PASSWORD`, `JWT_SECRET` |
+| `hotelapp/.env.example` | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `JWT_EXPIRATION`, `SERVER_PORT`, `APP_BASE_URL`, `CLOUDINARY_URL`, `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_FROM_NAME`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FILE_UPLOAD_DIR`, `JPA_DDL_AUTO`, `JPA_SHOW_SQL`, `LOG_LEVEL`, `LOG_LEVEL_SECURITY`, `PWD_RESET_EXPIRY_HOURS` |
+| `hotel-web/.env.example` | `VITE_API_URL` |
+
+İlan kotası ve ödeme `BILLING_*` ve `IYZICO_*` değişkenleriyle ayarlanır (varsayılanlar
+`hotelapp/src/main/resources/application.yml` içinde). `IYZICO_API_KEY` boşsa ödeme kapalıdır.
 
 ---
 
-## Deploy
+## Google ile giriş (isteğe bağlı)
 
-### Docker (önerilen — her ortamda aynı)
+1. Google Cloud Console'da bir OAuth 2.0 istemcisi (Web uygulaması) oluşturun.
+2. Yetkili yönlendirme adresi: `http://localhost:8080/login/oauth2/code/google`
+3. `hotelapp/.env` içine `GOOGLE_CLIENT_ID` ve `GOOGLE_CLIENT_SECRET` girin, backend'i yeniden başlatın.
 
-Backend ve frontend container'lanmıştır; `docker-compose.yml` tam stack'i tanımlar.
-Herhangi bir container platformuna (Render, Fly.io, Koyeb, kendi VPS'in) aynı
-imajlarla taşınabilir:
+Bu değerler yoksa sunucu yine açılır, giriş ekranında Google düğmesi görünmez ve e-posta/şifre
+girişi çalışır. Google ile ilk kez giriş yapan kullanıcıya **aday** hesabı açılır; işletme hesabı
+e-posta ile kayıt olarak açılır. İlk girişte KVKK onayı istenir.
+
+---
+
+## Testler ve CI
 
 ```bash
-docker compose up --build -d      # tüm stack
-docker compose logs -f backend    # log takibi
-docker compose down               # durdur (veri volume'de kalır)
+cd hotelapp && mvn verify     # backend birim + entegrasyon testleri
+cd hotel-web && npm test      # Vitest
+cd hotel-web && npm run build
+cd hotel-web && npm run e2e   # Playwright (çalışan backend ve MySQL gerekir)
 ```
 
-Ortam değişkenleri `.env` üzerinden geçilir (`.env.example`'a bak): `DB_PASSWORD`,
-`JWT_SECRET`, opsiyonel `CLOUDINARY_URL`, `GOOGLE_CLIENT_ID/SECRET`, `RESEND_API_KEY`.
+| Katman | Kapsam |
+| :-- | :-- |
+| Backend | 700+ birim testi, 45 entegrasyon testi (JUnit 5) |
+| Frontend | 507 test, 75 dosya (Vitest) |
+| E2E | Playwright, gerçek MySQL ve backend ile |
 
-### Veritabanı migration'ları
-
-Şema **Flyway** ile kurulur (`FLYWAY_ENABLED=true`); Hibernate `ddl-auto=validate`
-ile yalnızca doğrular — şema entity'lerle uyuşmazsa uygulama hiç açılmaz. Docker
-stack'i de bu yolu kullanır, yani yerelde çalıştırdığın şey production yolunun aynısı.
-
-<details>
-<summary><b>V4 checksum notu</b> — bu repoyu daha önce çalıştırdıysan oku</summary>
-
-`V4__version_columns_default.sql` idempotent hâle getirildi. Eski hâli
-`applications.version` kolonunu koşulsuz `MODIFY` ediyordu; o kolonu V1 baseline
-oluşturmadığı için **sıfırdan kurulan her veritabanında** zincir
-`Unknown column 'version'` ile patlıyor ve uygulama ayağa kalkmıyordu. Artık
-`information_schema` kontrolüyle korumalı: temiz şemada atlanır, eski şemada
-eskisi gibi uygulanır.
-
-Bu, dosyanın checksum'ını değiştirdi. **V4'ü daha önce uygulamış** bir
-veritabanın varsa uygulama şu hatayla açılmaz:
-
-```
-Migration checksum mismatch for migration version 4
--> Applied to database : -1231884147
--> Resolved locally    : -638485747
-```
-
-İki seçenek:
-
-**A) Mevcut veriyi koru — geçmiş tablosundaki checksum'ı güncelle** (tek seferlik):
-
-```bash
-mysql -uroot -p hotel_platform -e "UPDATE flyway_schema_history SET checksum = -638485747 WHERE version = '4';"
-```
-
-Windows'ta `mysql` genelde PATH'te olmaz. **PowerShell** kullanıyorsan tırnaklı
-yolu çalıştırmak için başına `&` (call operator) koyman gerekir, yoksa
-`Unexpected token '-uroot'` hatası alırsın:
-
-```powershell
-& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -uroot -p hotel_platform -e "UPDATE flyway_schema_history SET checksum = -638485747 WHERE version = '4';"
-```
-
-**cmd.exe**'de `&` gerekmez, yolu doğrudan tırnak içinde yaz.
-
-> `-p`'den sonra parola yazma — komut sana sorar.
->
-> Bu, `flyway repair`'in checksum uyuşmazlığı için yaptığı işin aynısı.
-> `flyway-maven-plugin` bu projenin `pom.xml`'inde tanımlı değil, o yüzden
-> `mvn flyway:repair` çalışmaz — doğrudan SQL kullan.
-
-**B) Şemayı sıfırdan kur** (demo verisi zaten seeder'dan gelir):
-
-```bash
-docker compose down -v && docker compose up -d
-```
-</details>
-
-### Canlıya alma
-
-- **Render + Aiven (bedava, kartsız):** frontend Render static site, backend
-  Render free web service (Docker), MySQL Aiven free. Tek tıkla Blueprint →
-  [`render.yaml`](render.yaml), adımlar ve kısıtlar (0.1 CPU'da ~6 dk açılış,
-  uyku, keep-alive) → [`docs/DEPLOY_RENDER.md`](docs/DEPLOY_RENDER.md).
-- **Tek sunucu:** tüm stack tek Linux sunucuda `docker compose` +
-  Caddy (otomatik HTTPS, tek origin). Öğrenci kredisiyle bedava (GitHub Student
-  Pack → DigitalOcean, ya da Azure for Students). Hazır config + adım adım
-  rehber → [`docs/DEPLOY_VPS.md`](docs/DEPLOY_VPS.md) ve [`deploy/prod/`](deploy/prod).
-- **Frontend (Vercel):** kök dizin `hotel-web/`, build `npm run build`, output
-  `dist`, `VITE_API_URL` = backend adresi.
-- **Backend (Fly.io):** alternatif — hazır `fly.toml`'lar →
-  [`docs/DEPLOY_FLY.md`](docs/DEPLOY_FLY.md). Küçük makinelerde JVM heap'i sıkı
-  tut: `JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70 -XX:+UseSerialGC`.
-
-### GitHub Actions
-
-- `ci.yml` — **her push/PR'da** backend `mvn verify` + frontend test/build
-- `daily-health-check.yml` — uptime + auth smoke testi, `status.md`'ye rapor yazar.
-  **Cron şu an kapalı, yalnızca elle tetikleniyor:** hedeflediği backend adresi ölü
-  olduğu için her sabah 404 raporu commit'liyordu. Canlı bir backend ayağa kalkınca
-  geri açılacak (bkz. `docs/DEPLOY_FLY.md` → adım 6).
+GitHub Actions (`.github/workflows/ci.yml`) her push ve pull request'te üç iş çalıştırır:
+backend `mvn verify`, frontend `vitest` + `vite build`, ve MySQL 8 servisiyle ayağa kaldırılan
+backend'e karşı Playwright E2E. `daily-health-check.yml` canlı backend olmadığı için yalnız elle
+tetiklenir.
 
 ---
 
-## Önemli Endpoint'ler
+## Yayın durumu
 
-| Endpoint                              | Method | Rol        | Açıklama                  |
-| :------------------------------------ | :----- | :--------- | :------------------------ |
-| `/api/auth/register`                  | POST   | -          | Kayıt                     |
-| `/api/auth/login`                     | POST   | -          | Giriş (JWT döner)         |
-| `/api/candidate/profile`              | GET    | CANDIDATE  | Aday profili              |
-| `/api/business/listings`              | POST   | BUSINESS   | İlan oluştur (vardiyalı)  |
-| `/api/applications/{id}/decide`       | PUT    | BUSINESS   | Kabul/Red                 |
-| `/api/applications/{id}/no-show`      | POST   | BUSINESS   | No-show işaretle          |
-| `/api/conversations`                  | GET    | *          | Sohbetler                 |
-| `/api/notifications`                  | GET    | *          | Bildirimler               |
-| `/api/business/stats`                 | GET    | BUSINESS   | Donut + bar verisi        |
-| `/api/candidate/stats`                | GET    | CANDIDATE  | Kabul oranı + yanıt süresi|
-| `/api/admin/users`                    | GET    | ADMIN      | Kullanıcı listesi         |
-| `/api/reports`                        | POST   | *          | Şikayet oluştur           |
-| `/api/listings?ranked=true`           | GET    | CANDIDATE  | Weighted ranking (sana özel sıralama) |
-| `/api/saved-searches`                 | GET/POST | CANDIDATE| Kayıtlı aramalar listesi + oluştur |
-| `/api/saved-searches/{id}`            | PATCH/DELETE | CANDIDATE | Bildirim toggle / sil |
-| `/api/public/pulse`                   | GET    | -          | Landing canlı vardiya nabzı |
-
-Tam liste: <http://localhost:8080/swagger-ui.html>
+- **Canlı backend yok.** Önceki barındırma denemeleri (Railway, Render) kullanılmıyor.
+- **Arayüz önizlemesi:** <https://hotel-platform-seven.vercel.app/> (Vercel, yalnız statik arayüz).
+- **Plan:** sunucunun Türkiye'de barındırılması. O zamana kadar uygulamayı denemenin yolu
+  [Docker ile yerel kurulum](#hızlı-başlangıç-docker).
 
 ---
 
-## Sorun Giderme
+## Yol haritası
 
-**Backend başlamıyor, `Access denied`** → `.env` içindeki `DB_PASSWORD` doğru mu?
+Tamamlananların ayrıntısı commit geçmişindedir. Açık işler:
 
-**Frontend açılıyor ama API hatası** → Backend 8080'de çalışıyor mu? Network sekmesinde CORS hatası var mı?
+- [ ] KVKK aydınlatma metnindeki yer tutucuların (şirket unvanı, adres, iletişim) doldurulması ve hukuki inceleme
+- [ ] Onay metni sürümünün sunucu tarafında kontrolü
+- [ ] Veri dışa aktarma ve anonimleştirme kapsamının gözden geçirilmesi
+- [ ] Geçmiş işler ve işletme paneli listelerinde sayfalama
+- [ ] Yönetim paneli tablolarında sayfalama
+- [ ] Türkiye'de sunucuya yayın
 
-**Port 8080 dolu** → `.env`'de `SERVER_PORT=8090`, `vite.config.js`'te proxy hedefini güncelle.
-
-**`./mvnw: Permission denied` (Mac/Linux)** → `chmod +x hotelapp/mvnw`
-
-**`AVG(...) Object` Hibernate hatası** → `ApplicationRepository.avgResponseSecondsForCandidate` için `CAST AS double` kullanıldı (hotfix `0add1c7`).
-
-**Lokal Hibernate SQL log gürültüsü** → Dev config (`application-dev.yml`) default olarak SQL log'unu kapalı tutar. Belirli bir sorguyu tek seferlik görmek için: `JPA_SHOW_SQL=true mvn spring-boot:run` (veya IntelliJ'de env var ekle).
-
-**OutboxRelay + LandingPulse çok sık sorgu atıyor** → Dev'de scheduler'lar sakinleşti (Outbox 15 sn, Pulse 60 sn). Prod default'ları 5 sn / 30 sn — dev override'ları `application-dev.yml`'de `app.outbox.relayDelayMs` + `app.pulse.intervalMs`.
-
----
-
-## Yol Haritası
-
-### Tamamlanan
-- [x] Vardiya bazlı ilan + başvuru
-- [x] Mesajlaşma + bildirimler (WebSocket + Web Push)
-- [x] Kişisel tek kullanımlık QR giriş kartı + Excel ekip listesi
-- [x] Cloudinary entegrasyonu (gizli sohbet ekleri)
-- [x] Dashboard istatistikleri (Recharts)
-- [x] Email + şifre sıfırlama (Resend SMTP + Outbox pattern)
-- [x] Harita konum gösterimi (Leaflet + OpenStreetMap)
-- [x] **Kayıtlı Aramalar** — kullanıcı filtre setini kaydeder, yeni eşleşmede bildirim (scheduled matcher, 30 dk)
-- [x] **Akıllı sıralama** — aday tercihlerine göre weighted ranking (position +50, district +30, jobType +20, recency +10)
-- [x] **Sade açık arayüz** — grafit/gri marka (`#1f2937`) + muted semantik durum renkleri (yeşil/amber/kiremit/mavi, sadece durum sinyali), tek font (Inter), birleşik rounded kart sistemi, hairline ayraçlar
-- [x] **Test coverage** — backend 607 birim + 43 entegrasyon testi (JUnit; entegrasyon testleri MySQL 8 + Flyway üzerinde de doğrulandı), frontend 410 vitest (62 dosya), Playwright E2E 20 test (`playwright.config.js`); CI'da her push/PR'da koşar
-- [x] Landing "Vardiya Nabzı" canlı widget (WebSocket broadcast)
-- [x] **Engelleme** — aday işletmeyi, işletme adayı engelleyebilir; engel başvuru, yedek/HOLD teklifi, mesaj, tepki, "yazıyor" sinyali ve tüm bildirim/SMS yollarında uygulanır, karşı tarafa bildirilmez
-- [x] **Durum dili** — başvuru durumları tek sözlükten (`lib/applicationStatus.js`), aday ve işletme bakış açısına göre ayrı etiket
-- [x] **Güvenlik sertleştirme (Ekim 2026)** — proxy başlığıyla istek sınırı atlatma kapatıldı, e-posta başına giriş sınırı, STOMP CONNECT/SUBSCRIBE/SEND yetkisi, banlı/silinmiş hesapta oturum iptali, admin askısını işletme açamaz, actuator yalnız admin, loglarda kişisel veri yok
-- [x] **KVKK** — başvuruda paylaşılan veri başvuru ekranında ve aydınlatma metninde açıkça belirtilir; e-posta yalnız başvurulan işletmeye
-- [x] **Kapasite ve vardiya güvenliği** — atomik slot sayacı (son yere eşzamanlı kabul aşılamaz), başvuruda iyimser kilit, beklemede/yedekteyken mükerrer başvuru engeli, vardiya bazlı no-show (başlangıç + 30 dk, girişsiz slot; her vardiya ayrı kayıt ve ayrı ceza, çalışılan vardiyalar ve kazanç korunur), vardiya bazlı yedek zinciri
-- [x] **Gece vardiyası** — ertesi güne taşan slotlar (ör. 22:00–06:00) ilan, giriş kartı, yoklama, no-show ve kazanç hesaplarında
-- [x] **iyzico ödeme oturumları** — her checkout ayrı kayıt, tekrar gelen başarılı callback idempotent, tutar/sepet doğrulaması, 10 dk'da bir mutabakat
-- [x] **Gece müsaitliği** — aday ertesi güne taşan müsaitlik bloğu girebilir (ör. 22:00–06:00); eşleştirme gün kaydırmasını ve hafta sonu sarmasını hesaplar
-- [x] **İlan yaşam döngüsü** — ilan son vardiyası bitince otomatik kapanır (gece vardiyasında ertesi gün); manuel, admin ve otomatik kapanışta açık başvurular "süresi doldu" olur, adaya tek bildirim gider
-- [x] **Altyapı** — bildirim, WS mesaj yayını ve SMS commit sonrası ve sınırlı havuzda asenkron; outbox üstel bekleme (30 sn → 1 sa, 10 deneme), devre açıkken deneme sayılmaz; e-posta/SMS HTTP zaman aşımları; zamanlanmış işler için 4 thread'lik ayrı havuz
-- [x] **Güvenlik sertleştirme (2. tur)** — ön yüz güvenlik başlıkları (CSP, frame-ancestors, HSTS), Google girişinde tek kullanımlık kod (adreste token yok), kilitli/kapalı hesapta ifşasız 401, yanlış rolde 403, ortak şifre kuralı, web sitesi yalnız http(s), arama daveti yalnız Jitsi, prod'da Swagger kapalı, vitrin demo hesabı korumalı, iyzico zaman aşımı
-- [x] **Arayüz Paket 4** — birimli ücret filtresi, vardiya saati filtresi, günlük karşılığa göre ücret sıralaması, mobilde tam ekran filtre paneli, erişilebilir ilan kartı
-- [x] **Arayüz Paket 5** — tek kaynaklı navigasyon, "Ekibim" sekmesi, mobil alt sekme çubuğu, "Yapılacaklar" kartlı işletme ana ekranı
-- [x] **Bildirimler** — beklemeye alma için kendi tipleri, jargonsuz metinler, yalnız aynı bağlamdaki bildirimler birleşir
-- [x] **Hesap kapatma ve KVKK** — silme talebi ve ban'da açık başvurular ve gelecek vardiyalar temizlenir (yedeğe teklif, işletmeye bildirim); anonimleştirme profil, tercih, başvuru notu ve görselleri kapsar
-- [x] **Arayüz cilası** — admin paneli, işletme herkese açık sayfası, mobil sohbet bilgileri paneli, favoriler ve takip listeleri; tüm form etiketleri alanlara bağlı
-
-### Sıradaki
-
-**Altyapı ve ilan yaşam döngüsü**
-- [ ] Kayıtlı aramada vardiya saati ve ücret biriminin backend'de doğru eşleşmesi
-- [ ] İlan düzenleme kuralları (geçmiş slot, kapasite ≥ dolu yer), GPS girişinde vardiya eşleşmesi
-
-**Önceki plandan**
-- [ ] Metrics dashboard (Grafana / Prometheus)
-- [ ] Public rate-limit ayrı tier (anonim read için, k6 baseline ~1 req/s)
-- [ ] Sanal liste (react-window) — 1000+ kayıt için
-
----
-
-## Lisans
-
-MIT © 2026 [calsgnkadir](https://github.com/calsgnkadir)
