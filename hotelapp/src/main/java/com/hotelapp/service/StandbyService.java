@@ -57,6 +57,14 @@ public class StandbyService {
     private final SmsService smsService;   // yedek kanal (push'a EK) — acil aktivasyonda
     private final CandidateBlockRepository candidateBlockRepository;   // isletme adayi engeller
     private final com.hotelapp.repository.UserRepository userRepository; // kabulde aday satiri kilidi
+    private final com.hotelapp.repository.JobListingRepository jobListingRepository; // yedek zinciri kilidi
+
+    /**
+     * Secilen yedegi kilitleyip taze okumak icin (REPEATABLE READ cagiranlarda eski
+     * anlik goruntu yerine guncel satir). Baglam disi birim testlerinde null olabilir.
+     */
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
 
     /** Vardiya saatleri Türkiye yerel saati (testte sabitlenebilir). */
     java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
@@ -68,8 +76,12 @@ public class StandbyService {
     /**
      * Basvuruyu yedek (STANDBY) olarak isaretler.
      * Sadece henuz sonuclanmamis (PENDING/REVIEWING/HELD) basvurular yedek olabilir.
+     *
+     * <p>Sira numarasi ilan satiri kilidi altinda MAX(sira) + 1: esz. iki isaretleme
+     * ayni sirayi alamaz; cikarilan yedekten sonra da sira tekrarlanmaz. READ_COMMITTED:
+     * kilit sonrasi MAX sorgusu digerinin commit'ini gorsun.
      */
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ApplicationResponse markAsStandby(Long applicationId, Long ownerId) {
         Application app = getForOwner(applicationId, ownerId);
 
@@ -85,11 +97,12 @@ public class StandbyService {
                     + current.label());
         }
 
-        long existing = applicationRepository.countByJobListingIdAndStatus(
-                app.getJobListing().getId(), ApplicationStatus.STANDBY);
+        Long listingId = app.getJobListing().getId();
+        jobListingRepository.lockById(listingId);
+        Integer maxRank = applicationRepository.findMaxStandbyRank(listingId);
 
         app.setStatus(ApplicationStatus.STANDBY);
-        app.setStandbyRank((int) existing + 1);
+        app.setStandbyRank(maxRank == null ? 1 : maxRank + 1);
         app.setHoldDeadline(null);          // HOLD'dan geldiyse sayaci temizle
         app.setStandbyOfferedAt(null);
         app.setStandbyDeadline(null);
@@ -116,7 +129,8 @@ public class StandbyService {
      * Yedeklikten cikarir, basvuru yeniden degerlendirmeye (REVIEWING) doner.
      * Aktif teklifi olan yedek cikarilirsa sira bir sonraki yedege gecer.
      */
-    @Transactional
+    // READ_COMMITTED: zincir devami ilan kilidinden sonra taze veriyi gorsun.
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public ApplicationResponse removeStandby(Long applicationId, Long ownerId) {
         Application app = getForOwner(applicationId, ownerId);
 
@@ -153,7 +167,7 @@ public class StandbyService {
      *
      * @return teklif gonderilen basvuru id'si, yedek yoksa null
      */
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public Long offerAfterNoShow(Long noShowApplicationId) {
         return offerAfterNoShow(noShowApplicationId, null);
     }
@@ -166,15 +180,34 @@ public class StandbyService {
      * bitmemis bu slotlarla kesisen yedek cagrilir. {@code vacatedSlotIds} null ise
      * (zincir devami) ilanin hala bos ve bitmemis tum slotlari kullanilir.
      *
+     * <p><b>Zincir kilidi:</b> ilan satiri (PESSIMISTIC_WRITE). Ayni ilandaki tum teklif
+     * tetiklemeleri (no-show dinleyicisi, zamanlanmis sure dolumu, cevap aninda sure
+     * dolumu, ret/cekilme/cikarma/engel) sirayla calisir: kilit altinda ayni bosluk icin
+     * suresi dolmamis teklif varsa yeni teklif gonderilmez; secilen yedek kilitlenip
+     * taze okunur, arada baskasina teklif gittiyse siradakine gecilir.
+     *
+     * <p>Kilit sirasi: (cagiranin aday/basvuru kilitleri) → ilan → secilen yedek
+     * basvuru. Kilit altinda slot kilitlenmez (slotlar yalniz okunur). Secilen yedek
+     * teklifsiz bir STANDBY satiridir; boyle bir satiri yazip sonra ayni ilan kilidini
+     * isteyen akis yok (markAsStandby once ilani kilitler), dolayisiyla dongu olusmaz.
+     *
      * @return teklif gonderilen basvuru id'si, yedek yoksa null
      */
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public Long offerAfterNoShow(Long noShowApplicationId, Collection<Long> vacatedSlotIds) {
         Application noShowApp = applicationRepository.findById(noShowApplicationId).orElse(null);
         if (noShowApp == null) return null;
 
         Long listingId = noShowApp.getJobListing().getId();
+        jobListingRepository.lockById(listingId);
         LocalDateTime now = LocalDateTime.now(clock);
+
+        // Ayni bosluk icin zaten acik (suresi dolmamis) bir teklif var: ikinci yedek cagrilmaz.
+        if (applicationRepository.existsActiveStandbyOffer(listingId, noShowApplicationId, now)) {
+            log.info("[STANDBY] app={} icin aktif yedek teklifi zaten var, yeni teklif atlandi",
+                    noShowApplicationId);
+            return null;
+        }
 
         // Kapalı ya da yönetici tarafından askıya alınmış ilanda yedek çağrılmaz:
         // teklif kabul edilemez (AcceptanceGuard), aday boşuna aranmasın. İşletmenin
@@ -207,7 +240,23 @@ public class StandbyService {
         List<Application> standbys = applicationRepository.findAvailableStandbys(listingId).stream()
                 .filter(sb -> !slotted || matchesVacancy(sb, vacancy, now))
                 .toList();
-        if (standbys.isEmpty()) {
+
+        Application next = null;
+        for (Application candidate : standbys) {
+            Application fresh = lockFresh(candidate);
+            if (fresh.getStatus() == ApplicationStatus.STANDBY && fresh.getStandbyOfferedAt() == null) {
+                next = fresh;
+                break;
+            }
+            // Eski anlik goruntude teklifsiz gorunuyordu; bu arada ayni bosluga teklif gitmis.
+            if (noShowApplicationId.equals(activeOfferReplaces(fresh))
+                    && fresh.getStandbyDeadline() != null && fresh.getStandbyDeadline().isAfter(now)) {
+                log.info("[STANDBY] app={} icin aktif yedek teklifi zaten var, yeni teklif atlandi",
+                        noShowApplicationId);
+                return null;
+            }
+        }
+        if (next == null) {
             log.info("[STANDBY] listing={} icin musait yedek yok", listingId);
             // Isletmeye bilgi: yedek yok, acik kapanmadi
             notificationService.notify(
@@ -220,7 +269,6 @@ public class StandbyService {
             return null;
         }
 
-        Application next = standbys.get(0);
         next.setStandbyOfferedAt(now);
         next.setStandbyDeadline(now.plusHours(OFFER_WINDOW_HOURS));
         next.setStandbyReplacesApplicationId(noShowApplicationId);
@@ -269,9 +317,11 @@ public class StandbyService {
         if (app.getStatus() != ApplicationStatus.STANDBY || app.getStandbyOfferedAt() == null) {
             throw new BusinessRuleException("Bu başvuru için aktif bir yedek teklifi yok.");
         }
-        if (app.getStandbyDeadline() != null && LocalDateTime.now(clock).isAfter(app.getStandbyDeadline())) {
-            expireOffer(app, "Aday süresinde cevap vermedi");
-            cascadeToNextStandby(app);
+        LocalDateTime respondedAt = LocalDateTime.now(clock);
+        if (app.getStandbyDeadline() != null && respondedAt.isAfter(app.getStandbyDeadline())) {
+            // Zamanlanmis isle ayni yol: sure dolumu kendi transaction'inda kalici olur,
+            // zincir devami AYRI transaction'da; zincir patlarsa sure dolumu geri alinmaz.
+            expireAndContinueChain(applicationId, respondedAt, "Aday süresinde cevap vermedi");
             throw new OfferExpiredException("Yedek teklifinin süresi doldu.");
         }
 
@@ -336,12 +386,24 @@ public class StandbyService {
     private org.springframework.transaction.support.TransactionOperations perRecordTx =
             org.springframework.transaction.support.TransactionOperations.withoutTransaction();
 
+    /**
+     * Zincir devami icin ayri transaction (REQUIRES_NEW + READ_COMMITTED): ilan kilidi
+     * alindiktan sonraki okumalar diger zincirin commit'ini gorsun.
+     */
+    private org.springframework.transaction.support.TransactionOperations chainTx =
+            org.springframework.transaction.support.TransactionOperations.withoutTransaction();
+
     @org.springframework.beans.factory.annotation.Autowired
     void setTransactionManager(org.springframework.transaction.PlatformTransactionManager txManager) {
         org.springframework.transaction.support.TransactionTemplate t =
                 new org.springframework.transaction.support.TransactionTemplate(txManager);
         t.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.perRecordTx = t;
+        org.springframework.transaction.support.TransactionTemplate c =
+                new org.springframework.transaction.support.TransactionTemplate(txManager);
+        c.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        c.setIsolationLevel(org.springframework.transaction.TransactionDefinition.ISOLATION_READ_COMMITTED);
+        this.chainTx = c;
     }
 
     /**
@@ -365,38 +427,51 @@ public class StandbyService {
 
         int n = 0, failed = 0;
         for (Long id : ids) {
-            java.util.Optional<Long> replaces;   // null: islenmedi; bos: zincir devami yok
+            boolean expired;
             try {
-                replaces = perRecordTx.execute(st -> {
-                    Application app = applicationRepository.findById(id).orElse(null);
-                    if (app == null || app.getStatus() != ApplicationStatus.STANDBY
-                            || app.getStandbyDeadline() == null
-                            || !app.getStandbyDeadline().isBefore(now)) {
-                        return null;
-                    }
-                    expireOffer(app, "Teklif süresi doldu");
-                    applicationRepository.flush();   // @Version cakismasi burada, bu kayitta kalsin
-                    return java.util.Optional.ofNullable(app.getStandbyReplacesApplicationId());
-                });
+                expired = expireAndContinueChain(id, now, "Teklif süresi doldu");
             } catch (RuntimeException ex) {
                 failed++;
                 log.warn("[STANDBY] app={} teklif suresi kapatilamadi (sonraki calismada tekrar denenecek): {}",
                         id, ex.toString());
                 continue;
             }
-            if (replaces == null) continue;
-            n++;
-            if (replaces.isEmpty()) continue;
+            if (expired) n++;
+        }
+        if (failed > 0) log.warn("[STANDBY] {} / {} suresi gecen teklif islenemedi", failed, ids.size());
+        return n;
+    }
+
+    /**
+     * Suresi gecmis teklifi kendi transaction'inda (taze okuma) kapatir, ardindan zincir
+     * devamini AYRI transaction'da calistirir. Zincir hatasi loglanir, sure dolumu kalici
+     * kalir. Sure dolumu hatasi (ör. @Version cakismasi) cagirana firlatilir.
+     *
+     * @return sure dolumu bu cagrida islendiyse true; arada cevaplandi/kapandiysa false
+     */
+    private boolean expireAndContinueChain(Long id, LocalDateTime now, String reason) {
+        java.util.Optional<Long> replaces = perRecordTx.execute(st -> {   // null: islenmedi
+            Application app = applicationRepository.findById(id).orElse(null);
+            if (app == null || app.getStatus() != ApplicationStatus.STANDBY
+                    || app.getStandbyDeadline() == null
+                    || !app.getStandbyDeadline().isBefore(now)) {
+                return null;
+            }
+            expireOffer(app, reason);
+            applicationRepository.flush();   // @Version cakismasi burada, bu kayitta kalsin
+            return java.util.Optional.ofNullable(app.getStandbyReplacesApplicationId());
+        });
+        if (replaces == null) return false;
+        if (replaces.isPresent()) {
             Long noShowAppId = replaces.get();
             try {
-                perRecordTx.executeWithoutResult(st -> offerAfterNoShow(noShowAppId));
+                chainTx.executeWithoutResult(st -> offerAfterNoShow(noShowAppId));
             } catch (RuntimeException ex) {
                 log.error("[STANDBY] app={} sonrasi siradaki yedege gecilemedi (no-show app={}): {}",
                         id, noShowAppId, ex.toString(), ex);
             }
         }
-        if (failed > 0) log.warn("[STANDBY] {} / {} suresi gecen teklif islenemedi", failed, ids.size());
-        return n;
+        return true;
     }
 
     // ================================================================
@@ -424,6 +499,16 @@ public class StandbyService {
                 app.getCandidate().getFullName() + " · " + app.getJobListing().getTitle()
                         + " teklifine süresinde cevap vermedi.",
                 "applications");
+    }
+
+    /**
+     * Yedegi satir kilidiyle yeniden okur (SELECT ... FOR UPDATE, guncel satir).
+     * Ilan kilidinden sonra cagrilir; bkz. offerAfterNoShow kilit sirasi.
+     */
+    private Application lockFresh(Application app) {
+        if (entityManager == null) return app;   // baglam disi birim testi
+        entityManager.refresh(app, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        return app;
     }
 
     /** Reddedilen/suresi gecen teklifin yerine siradaki yedegi cagirir. */

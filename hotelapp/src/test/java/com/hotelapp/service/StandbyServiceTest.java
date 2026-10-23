@@ -45,6 +45,7 @@ class StandbyServiceTest {
     @Mock private SmsService smsService;
     @Mock private com.hotelapp.repository.CandidateBlockRepository candidateBlockRepository;
     @Mock private com.hotelapp.repository.UserRepository userRepository;
+    @Mock private com.hotelapp.repository.JobListingRepository jobListingRepository;
 
     private StandbyService service;
 
@@ -59,7 +60,7 @@ class StandbyServiceTest {
         if (service == null) {
             service = new StandbyService(applicationRepository, shiftSlotRepository,
                     notificationService, outboxService, applicationMapper, smsService,
-                    candidateBlockRepository, userRepository);
+                    candidateBlockRepository, userRepository, jobListingRepository);
             lenient().when(applicationMapper.toResponse(any()))
                     .thenReturn(ApplicationResponse.builder().build());
         }
@@ -124,8 +125,7 @@ class StandbyServiceTest {
         void pending_becomesStandby() {
             Application a = app(APP_ID, ApplicationStatus.PENDING);
             when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(a));
-            when(applicationRepository.countByJobListingIdAndStatus(LISTING_ID, ApplicationStatus.STANDBY))
-                    .thenReturn(0L);
+            when(applicationRepository.findMaxStandbyRank(LISTING_ID)).thenReturn(null);
 
             svc().markAsStandby(APP_ID, OWNER_ID);
 
@@ -141,12 +141,28 @@ class StandbyServiceTest {
         void secondStandby_getsRankTwo() {
             Application a = app(APP_ID, ApplicationStatus.REVIEWING);
             when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(a));
-            when(applicationRepository.countByJobListingIdAndStatus(LISTING_ID, ApplicationStatus.STANDBY))
-                    .thenReturn(1L);
+            when(applicationRepository.findMaxStandbyRank(LISTING_ID)).thenReturn(1);
 
             svc().markAsStandby(APP_ID, OWNER_ID);
 
             assertThat(a.getStandbyRank()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("Sıra ilan kilidi altında MAX + 1: çıkarılan yedekten sonra sıra tekrarlanmaz")
+        void rank_isMaxPlusOne_underListingLock() {
+            Application a = app(APP_ID, ApplicationStatus.PENDING);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(a));
+            // 1, 2, 3 sıralı yedeklerden 1 çıkarıldı: sayı 2 ama en büyük sıra 3
+            when(applicationRepository.findMaxStandbyRank(LISTING_ID)).thenReturn(3);
+
+            svc().markAsStandby(APP_ID, OWNER_ID);
+
+            assertThat(a.getStandbyRank()).isEqualTo(4);
+            org.mockito.InOrder order = inOrder(jobListingRepository, applicationRepository);
+            order.verify(jobListingRepository).lockById(LISTING_ID);
+            order.verify(applicationRepository).findMaxStandbyRank(LISTING_ID);
+            order.verify(applicationRepository).save(a);
         }
 
         @Test
@@ -197,6 +213,74 @@ class StandbyServiceTest {
             assertThat(standby.getStandbyReplacesApplicationId()).isEqualTo(APP_ID);
             verify(notificationService).notify(eq(CANDIDATE_ID),
                     eq(NotificationType.STANDBY_ACTIVATED), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Zincir kilidi: ilan kilitlenir; aynı boşluk için aktif teklif varsa ikinci teklif gitmez")
+        void activeOfferForSameVacancy_skips() {
+            Application noShow = app(APP_ID, ApplicationStatus.ACCEPTED, upcomingSlot(1, 0));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
+            when(applicationRepository.existsActiveStandbyOffer(eq(LISTING_ID), eq(APP_ID), any()))
+                    .thenReturn(true);
+
+            assertThat(svc().offerAfterNoShow(APP_ID)).isNull();
+
+            org.mockito.InOrder order = inOrder(jobListingRepository, applicationRepository);
+            order.verify(jobListingRepository).lockById(LISTING_ID);
+            order.verify(applicationRepository).existsActiveStandbyOffer(eq(LISTING_ID), eq(APP_ID), any());
+            verify(applicationRepository, never()).findAvailableStandbys(any());
+            verify(applicationRepository, never()).save(any());
+            verifyNoInteractions(notificationService, smsService);
+        }
+
+        @Test
+        @DisplayName("Seçilen yedek kilitle taze okunur: arada başka boşluğa çağrıldıysa sıradakine geçilir")
+        void freshLockedRead_skipsStandbyOfferedMeanwhile() {
+            Application noShow = app(APP_ID, ApplicationStatus.ACCEPTED, upcomingSlot(1, 0));
+            Application first = app(77L, ApplicationStatus.STANDBY, upcomingSlot(1, 0));
+            Application second = app(78L, ApplicationStatus.STANDBY, upcomingSlot(1, 0));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
+            when(shiftSlotRepository.findAllByJobListingId(LISTING_ID)).thenReturn(List.of(upcomingSlot(1, 0)));
+            when(applicationRepository.findAvailableStandbys(LISTING_ID)).thenReturn(List.of(first, second));
+            jakarta.persistence.EntityManager em = mock(jakarta.persistence.EntityManager.class);
+            doAnswer(inv -> {   // eski görüntüde teklifsizdi; güncel satırda başka boşluğa teklif var
+                first.setStandbyOfferedAt(LocalDateTime.now().minusMinutes(1));
+                first.setStandbyDeadline(LocalDateTime.now().plusHours(3));
+                first.setStandbyReplacesApplicationId(41L);
+                return null;
+            }).when(em).refresh(first, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+            org.springframework.test.util.ReflectionTestUtils.setField(svc(), "entityManager", em);
+
+            assertThat(svc().offerAfterNoShow(APP_ID)).isEqualTo(78L);
+
+            assertThat(first.getStandbyReplacesApplicationId()).isEqualTo(41L);
+            assertThat(second.getStandbyReplacesApplicationId()).isEqualTo(APP_ID);
+            verify(em).refresh(second, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        }
+
+        @Test
+        @DisplayName("Taze okumada aynı boşluğa aktif teklif çıkarsa yeni teklif gitmez")
+        void freshLockedRead_sameVacancyOffered_skips() {
+            Application noShow = app(APP_ID, ApplicationStatus.ACCEPTED, upcomingSlot(1, 0));
+            Application first = app(77L, ApplicationStatus.STANDBY, upcomingSlot(1, 0));
+            Application second = app(78L, ApplicationStatus.STANDBY, upcomingSlot(1, 0));
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
+            when(shiftSlotRepository.findAllByJobListingId(LISTING_ID)).thenReturn(List.of(upcomingSlot(1, 0)));
+            when(applicationRepository.findAvailableStandbys(LISTING_ID)).thenReturn(List.of(first, second));
+            jakarta.persistence.EntityManager em = mock(jakarta.persistence.EntityManager.class);
+            doAnswer(inv -> {
+                first.setStandbyOfferedAt(LocalDateTime.now().minusMinutes(1));
+                first.setStandbyDeadline(LocalDateTime.now().plusHours(3));
+                first.setStandbyReplacesApplicationId(APP_ID);
+                return null;
+            }).when(em).refresh(first, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+            org.springframework.test.util.ReflectionTestUtils.setField(svc(), "entityManager", em);
+
+            assertThat(svc().offerAfterNoShow(APP_ID)).isNull();
+
+            assertThat(second.getStandbyOfferedAt()).isNull();
+            verify(applicationRepository, never()).save(any());
+            verifyNoInteractions(notificationService, smsService);
         }
 
         @Test
@@ -565,6 +649,23 @@ class StandbyServiceTest {
                     .getMethod("respondToOffer", Long.class, Long.class, boolean.class)
                     .getAnnotation(org.springframework.transaction.annotation.Transactional.class);
             assertThat(tx.noRollbackFor()).contains(com.hotelapp.exception.OfferExpiredException.class);
+        }
+
+        @Test
+        @DisplayName("Cevap anında süre dolumu: zincir devamı patlasa da süre dolumu kalıcı, 422 döner")
+        void expiredOffer_cascadeFailure_keepsExpiry() {
+            Application a = standby(77L, 1, slot(500L, 1, 0));
+            a.setStandbyOfferedAt(LocalDateTime.now().minusHours(4));
+            a.setStandbyDeadline(LocalDateTime.now().minusMinutes(1));
+            a.setStandbyReplacesApplicationId(APP_ID);
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(applicationRepository.findById(APP_ID)).thenThrow(new RuntimeException("db down"));
+
+            assertThatThrownBy(() -> svc().respondToOffer(77L, CANDIDATE_ID, false))
+                    .isInstanceOf(com.hotelapp.exception.OfferExpiredException.class);
+
+            assertThat(a.getStatus()).isEqualTo(ApplicationStatus.EXPIRED);
+            verify(applicationRepository).flush();
         }
 
         @Test

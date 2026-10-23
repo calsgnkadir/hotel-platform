@@ -30,6 +30,16 @@ public interface JobListingRepository
 
     List<JobListing> findAllByBusiness_OwnerId(Long ownerId);
 
+    /**
+     * Yedek zinciri kilidi: ayni ilanin yedek siralamasi ve yedek teklifleri bu satir
+     * kilidinde sirayla islenir (iki esz. teklif ayni yedegi secmesin, ayni bosluga iki
+     * teklif gitmesin, iki yedek ayni sirayi almasin). Kilit altinda yalniz yedek
+     * basvuru satirlari yazilir; slot kilidi alinmaz (bkz. StandbyService).
+     */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT j FROM JobListing j WHERE j.id = :id")
+    java.util.Optional<JobListing> lockById(@Param("id") Long id);
+
     /** FAZ pagination — isletmenin kendi ilanlari, DB-seviyesi sayfalama. */
     org.springframework.data.domain.Page<JobListing> findByBusiness_OwnerId(
             Long ownerId, org.springframework.data.domain.Pageable pageable);

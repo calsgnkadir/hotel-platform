@@ -211,8 +211,35 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     """)
     List<Application> findAvailableStandbys(@Param("listingId") Long listingId);
 
-    /** Ilandaki mevcut yedek sayisi — yeni yedege rank atamak icin. */
+    /** Ilandaki mevcut yedek sayisi. */
     long countByJobListingIdAndStatus(Long jobListingId, ApplicationStatus status);
+
+    /**
+     * Ilandaki en buyuk yedek sirasi (yedek yoksa null). Yeni yedege MAX + 1 verilir;
+     * cagiran ilan satirini kilitlemis olmalidir (JobListingRepository.lockById).
+     */
+    @Query("""
+        SELECT MAX(a.standbyRank) FROM Application a
+        WHERE a.jobListing.id = :listingId
+          AND a.status = com.hotelapp.enums.ApplicationStatus.STANDBY
+    """)
+    Integer findMaxStandbyRank(@Param("listingId") Long listingId);
+
+    /**
+     * Ayni bosluk (gelmeyen asil basvuru) icin suresi dolmamis bir yedek teklifi var mi?
+     * Zincir devami ilan kilidi altinda bunu sorar; varsa ikinci teklif gonderilmez.
+     */
+    @Query("""
+        SELECT COUNT(a) > 0 FROM Application a
+        WHERE a.jobListing.id = :listingId
+          AND a.standbyReplacesApplicationId = :noShowApplicationId
+          AND a.status = com.hotelapp.enums.ApplicationStatus.STANDBY
+          AND a.standbyOfferedAt IS NOT NULL
+          AND a.standbyDeadline > :now
+    """)
+    boolean existsActiveStandbyOffer(@Param("listingId") Long listingId,
+                                     @Param("noShowApplicationId") Long noShowApplicationId,
+                                     @Param("now") LocalDateTime now);
 
     /** Suresi gecmis yedek teklifleri (scheduler her 5 dakika temizler). */
     List<Application> findByStatusAndStandbyDeadlineBefore(
