@@ -8,7 +8,6 @@ import com.hotelapp.repository.ApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,33 +42,71 @@ public class SgkReminderService {
     private final OutboxService outboxService;
 
     /**
+     * Kayıt başına transaction (REQUIRES_NEW): bir başvurudaki hata ya da @Version
+     * çakışması (aynı anda gelmedi işareti / iptal) yalnız o kaydı geri alır; diğer
+     * işletmelerin hatırlatmaları gider. Bildirim commit sonrası kuyruğa alındığından
+     * gönderim ile {@code sgkReminderSentAt} aynı kayıt transaction'ında kalır: kayıt
+     * geri alınırsa bildirim de gitmez, ertesi çalışmada yeniden denenir. Spring
+     * bağlamında kurulur; bağlam dışı birim testlerinde transaction'sız çalışır
+     * (ExpiredApplicationScheduler deseni).
+     */
+    private org.springframework.transaction.support.TransactionOperations perRecordTx =
+            org.springframework.transaction.support.TransactionOperations.withoutTransaction();
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setTransactionManager(org.springframework.transaction.PlatformTransactionManager txManager) {
+        org.springframework.transaction.support.TransactionTemplate t =
+                new org.springframework.transaction.support.TransactionTemplate(txManager);
+        t.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        this.perRecordTx = t;
+    }
+
+    /**
      * Vardiyası bugün veya yarın olan, henüz hatırlatılmamış kabul edilmiş
-     * başvurular için işletmeye SGK hatırlatması gönderir.
+     * başvurular için işletmeye SGK hatırlatması gönderir. Bilerek
+     * {@code @Transactional} değil: her kayıt kendi transaction'ında taze okunur.
      *
      * @return gönderilen hatırlatma sayısı
      */
-    @Transactional
     public int sendDueReminders() {
         LocalDate today = LocalDate.now(clock);
         LocalDate tomorrow = today.plusDays(1);
 
-        List<Application> due = applicationRepository
-                .findAcceptedNeedingSgkReminder(today, tomorrow);
-        if (due.isEmpty()) return 0;
+        List<Long> ids = applicationRepository
+                .findAcceptedNeedingSgkReminder(today, tomorrow).stream()
+                .map(Application::getId).toList();
+        if (ids.isEmpty()) return 0;
 
-        int sent = 0;
-        for (Application app : due) {
+        int sent = 0, failed = 0;
+        for (Long id : ids) {
             try {
-                notifyOwner(app);
-                app.setSgkReminderSentAt(LocalDateTime.now(clock));
-                applicationRepository.save(app);
-                sent++;
-            } catch (Exception ex) {
-                log.warn("[SGK] hatirlatma basarisiz app={}: {}", app.getId(), ex.getMessage());
+                Boolean done = perRecordTx.execute(st -> {
+                    Application app = applicationRepository.findById(id).orElse(null);
+                    // Arada iptal/gelmedi/başka çalışma hatırlattıysa dokunulmaz
+                    if (app == null || !stillDue(app, today, tomorrow)) return false;
+                    notifyOwner(app);
+                    app.setSgkReminderSentAt(LocalDateTime.now(clock));
+                    applicationRepository.saveAndFlush(app);
+                    return true;
+                });
+                if (Boolean.TRUE.equals(done)) sent++;
+            } catch (RuntimeException ex) {
+                failed++;
+                log.warn("[SGK] hatirlatma basarisiz app={} (sonraki calismada tekrar denenecek): {}",
+                        id, ex.toString());
             }
         }
+        if (failed > 0) log.warn("[SGK] {} / {} hatirlatma gonderilemedi", failed, ids.size());
         log.info("[SGK] {} isletmeye ise giris bildirgesi hatirlatmasi gonderildi", sent);
         return sent;
+    }
+
+    /** Sorgu koşulu taze kayıtta hâlâ geçerli mi (ACCEPTED, gelmedi yok, hatırlatılmamış, vardiya bugün/yarın). */
+    static boolean stillDue(Application app, LocalDate from, LocalDate to) {
+        if (app.getStatus() != com.hotelapp.enums.ApplicationStatus.ACCEPTED
+                || app.isNoShow() || app.getSgkReminderSentAt() != null) return false;
+        return app.getRequestedSlots() != null && app.getRequestedSlots().stream()
+                .anyMatch(s -> s.getDate() != null && !s.getDate().isBefore(from) && !s.getDate().isAfter(to));
     }
 
     private void notifyOwner(Application app) {

@@ -8,6 +8,7 @@ import com.hotelapp.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,6 +25,12 @@ import java.util.Set;
 // Hibernate 50 user'i tek IN(...) sorgusuyla toplar. Application list'lerinde
 // (getBusinessApplications, getMyApplications) 20 user -> 1 sorgu.
 @BatchSize(size = 50)
+// Kayıp güncellemeye karşı: UPDATE yalnız değişen kolonları yazar. User @Version'sız;
+// kilitsiz okuyup kaydeden yollar (profil, avatar, şifre, müsaitlik, KVKK talebi) aksi
+// halde tüm kolonları eski değerleriyle yazıp eşzamanlı ceza/ban/enabled değişikliğini
+// ezerdi. Aynı kolonu değiştiren yollar (strikesRemaining, bannedUntil, isStudent,
+// enabled, OTP) ayrıca aday satırı kilidi (findByIdForUpdate) altında çalışır.
+@DynamicUpdate
 public class User {
 
     @Id

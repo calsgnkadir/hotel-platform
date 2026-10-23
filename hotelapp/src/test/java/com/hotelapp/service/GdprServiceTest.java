@@ -59,7 +59,7 @@ class GdprServiceTest {
     @DisplayName("requestDeletion: enabled=false + deletionRequestedAt + 30 gun cutoff")
     void requestDeletion_setsFields() {
         User u = user(42L);
-        when(userRepository.findById(42L)).thenReturn(Optional.of(u));
+        when(userRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(u));
 
         service.requestDeletion(42L);
 
@@ -82,7 +82,7 @@ class GdprServiceTest {
     void requestDeletion_idempotent() {
         User u = user(42L);
         u.setDeletionRequestedAt(LocalDateTime.now().minusDays(1));
-        when(userRepository.findById(42L)).thenReturn(Optional.of(u));
+        when(userRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(u));
 
         service.requestDeletion(42L);
 
@@ -94,7 +94,7 @@ class GdprServiceTest {
     @Test
     @DisplayName("requestDeletion: user yoksa ResourceNotFoundException")
     void requestDeletion_userNotFound() {
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+        when(userRepository.findByIdForUpdate(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.requestDeletion(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
@@ -154,7 +154,7 @@ class GdprServiceTest {
     void requestDeletion_businessOwner_closesListings() {
         User u = user(50L);
         u.setRole(Role.BUSINESS_OWNER);
-        when(userRepository.findById(50L)).thenReturn(Optional.of(u));
+        when(userRepository.findByIdForUpdate(50L)).thenReturn(Optional.of(u));
 
         service.requestDeletion(50L);
 
@@ -167,7 +167,7 @@ class GdprServiceTest {
     void requestDeletion_candidate_releasesCommitments() {
         User u = user(42L);
         u.setAvailableUntil(LocalDateTime.now().plusHours(3));
-        when(userRepository.findById(42L)).thenReturn(Optional.of(u));
+        when(userRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(u));
 
         service.requestDeletion(42L);
 
@@ -181,7 +181,7 @@ class GdprServiceTest {
     void requestDeletion_idempotent_noClosure() {
         User u = user(42L);
         u.setDeletionRequestedAt(LocalDateTime.now().minusDays(1));
-        when(userRepository.findById(42L)).thenReturn(Optional.of(u));
+        when(userRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(u));
 
         service.requestDeletion(42L);
 

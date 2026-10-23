@@ -144,7 +144,10 @@ public class GdprService {
      */
     @Transactional
     public void requestDeletion(Long userId) {
-        User u = userRepository.findById(userId)
+        // Satır kilidi (aday → başvuru → slot): eşzamanlı iki silme talebi idempotency
+        // kontrolünü birlikte geçip taahhütleri iki kez bırakmasın; enabled yazımı ban/
+        // ceza işlemleriyle sıralansın.
+        User u = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", userId));
 
         if (u.getDeletionRequestedAt() != null) {

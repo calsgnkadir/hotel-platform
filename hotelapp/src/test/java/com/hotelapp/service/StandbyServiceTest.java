@@ -404,6 +404,7 @@ class StandbyServiceTest {
 
             when(applicationRepository.findByStatusAndStandbyDeadlineBefore(
                     eq(ApplicationStatus.STANDBY), any())).thenReturn(List.of(a));
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
 
             int n = svc().expireOverdueOffers();
 
@@ -413,6 +414,66 @@ class StandbyServiceTest {
                     eq(NotificationType.STANDBY_OFFER_EXPIRED), any(), any(), any());
             verify(notificationService).notify(eq(OWNER_ID),
                     eq(NotificationType.STANDBY_DECLINED), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Bir teklifte hata olsa da diğer süresi geçen teklifler kapanır")
+        void oneFailureDoesNotBlockOthers() {
+            Application bad = app(77L, ApplicationStatus.STANDBY, upcomingSlot(1, 0));
+            bad.setStandbyOfferedAt(LocalDateTime.now().minusHours(4));
+            bad.setStandbyDeadline(LocalDateTime.now().minusHours(1));
+            Application ok = app(78L, ApplicationStatus.STANDBY, upcomingSlot(1, 0));
+            ok.setStandbyOfferedAt(LocalDateTime.now().minusHours(4));
+            ok.setStandbyDeadline(LocalDateTime.now().minusHours(1));
+            when(applicationRepository.findByStatusAndStandbyDeadlineBefore(
+                    eq(ApplicationStatus.STANDBY), any())).thenReturn(List.of(bad, ok));
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(bad));
+            when(applicationRepository.findById(78L)).thenReturn(Optional.of(ok));
+            when(applicationRepository.save(bad)).thenThrow(
+                    new org.springframework.orm.ObjectOptimisticLockingFailureException(Application.class, 77L));
+
+            int n = svc().expireOverdueOffers();
+
+            assertThat(n).isEqualTo(1);
+            assertThat(ok.getStatus()).isEqualTo(ApplicationStatus.EXPIRED);
+            verify(notificationService, times(1)).notify(eq(CANDIDATE_ID),
+                    eq(NotificationType.STANDBY_OFFER_EXPIRED), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Arada cevaplanan teklif (taze okumada STANDBY değil) atlanır")
+        void freshReadNoLongerStandby_skipped() {
+            Application listed = app(77L, ApplicationStatus.STANDBY);
+            listed.setStandbyDeadline(LocalDateTime.now().minusHours(1));
+            Application fresh = app(77L, ApplicationStatus.ACCEPTED);
+            when(applicationRepository.findByStatusAndStandbyDeadlineBefore(
+                    eq(ApplicationStatus.STANDBY), any())).thenReturn(List.of(listed));
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(fresh));
+
+            assertThat(svc().expireOverdueOffers()).isZero();
+            assertThat(fresh.getStatus()).isEqualTo(ApplicationStatus.ACCEPTED);
+            verifyNoInteractions(notificationService);
+        }
+
+        @Test
+        @DisplayName("Sıradaki yedeğe geçiş patlasa da süresi dolma kalıcı ve sayılır")
+        void cascadeFailure_keepsExpiry() {
+            Application a = app(77L, ApplicationStatus.STANDBY, upcomingSlot(1, 0));
+            a.setStandbyOfferedAt(LocalDateTime.now().minusHours(4));
+            a.setStandbyDeadline(LocalDateTime.now().minusHours(1));
+            a.setStandbyReplacesApplicationId(40L);
+            Application b = app(78L, ApplicationStatus.STANDBY, upcomingSlot(1, 0));
+            b.setStandbyOfferedAt(LocalDateTime.now().minusHours(4));
+            b.setStandbyDeadline(LocalDateTime.now().minusHours(1));
+            when(applicationRepository.findByStatusAndStandbyDeadlineBefore(
+                    eq(ApplicationStatus.STANDBY), any())).thenReturn(List.of(a, b));
+            when(applicationRepository.findById(77L)).thenReturn(Optional.of(a));
+            when(applicationRepository.findById(78L)).thenReturn(Optional.of(b));
+            when(applicationRepository.findById(40L)).thenThrow(new RuntimeException("db down"));
+
+            assertThat(svc().expireOverdueOffers()).isEqualTo(2);
+            assertThat(a.getStatus()).isEqualTo(ApplicationStatus.EXPIRED);
+            assertThat(b.getStatus()).isEqualTo(ApplicationStatus.EXPIRED);
         }
 
         @Test

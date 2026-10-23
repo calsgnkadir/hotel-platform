@@ -19,6 +19,7 @@ import org.mockito.quality.Strictness;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,6 +67,7 @@ class SgkReminderServiceTest {
         Application a = app(1L, OWNER_ID);
         when(applicationRepository.findAcceptedNeedingSgkReminder(any(), any()))
                 .thenReturn(List.of(a));
+        when(applicationRepository.findById(1L)).thenReturn(Optional.of(a));
 
         int n = service().sendDueReminders();
 
@@ -73,7 +75,7 @@ class SgkReminderServiceTest {
         assertThat(a.getSgkReminderSentAt()).isNotNull();
         verify(notificationService).notify(eq(OWNER_ID),
                 eq(NotificationType.SGK_REMINDER), any(), any(), eq("applications"));
-        verify(applicationRepository).save(a);
+        verify(applicationRepository).saveAndFlush(a);
     }
 
     @Test
@@ -93,6 +95,8 @@ class SgkReminderServiceTest {
         Application bad = app(2L, 99L);
         when(applicationRepository.findAcceptedNeedingSgkReminder(any(), any()))
                 .thenReturn(List.of(bad, ok));
+        when(applicationRepository.findById(1L)).thenReturn(Optional.of(ok));
+        when(applicationRepository.findById(2L)).thenReturn(Optional.of(bad));
         // bad -> bildirim patlar
         doThrow(new RuntimeException("push fail"))
                 .when(notificationService).notify(eq(99L), any(), any(), any(), any());
@@ -102,6 +106,38 @@ class SgkReminderServiceTest {
         assertThat(n).isEqualTo(1);                       // sadece ok gonderildi
         assertThat(ok.getSgkReminderSentAt()).isNotNull();
         assertThat(bad.getSgkReminderSentAt()).isNull();  // patlayan tekrar denenebilir
+    }
+
+    @Test
+    @DisplayName("Kayıt yazımı (sürüm çakışması) patlayınca diğer hatırlatmalar yine gider")
+    void saveFailureDoesNotBlockOthers() {
+        Application bad = app(2L, 99L);
+        Application ok = app(1L, OWNER_ID);
+        when(applicationRepository.findAcceptedNeedingSgkReminder(any(), any()))
+                .thenReturn(List.of(bad, ok));
+        when(applicationRepository.findById(1L)).thenReturn(Optional.of(ok));
+        when(applicationRepository.findById(2L)).thenReturn(Optional.of(bad));
+        when(applicationRepository.saveAndFlush(bad)).thenThrow(
+                new org.springframework.orm.ObjectOptimisticLockingFailureException(Application.class, 2L));
+
+        assertThat(service().sendDueReminders()).isEqualTo(1);
+        assertThat(ok.getSgkReminderSentAt()).isNotNull();
+        verify(applicationRepository).saveAndFlush(ok);
+    }
+
+    @Test
+    @DisplayName("Taze okumada artık uygun değilse (iptal/gelmedi/hatırlatılmış) atlanır")
+    void freshReadNoLongerDue_skipped() {
+        Application listed = app(1L, OWNER_ID);
+        Application fresh = app(1L, OWNER_ID);
+        fresh.setStatus(ApplicationStatus.WITHDRAWN);
+        when(applicationRepository.findAcceptedNeedingSgkReminder(any(), any()))
+                .thenReturn(List.of(listed));
+        when(applicationRepository.findById(1L)).thenReturn(Optional.of(fresh));
+
+        assertThat(service().sendDueReminders()).isZero();
+        verifyNoInteractions(notificationService);
+        verify(applicationRepository, never()).saveAndFlush(any());
     }
 
     @Test

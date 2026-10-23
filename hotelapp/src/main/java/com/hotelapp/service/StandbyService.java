@@ -330,26 +330,72 @@ public class StandbyService {
     // ================================================================
 
     /**
+     * Kayit basina transaction (REQUIRES_NEW). Spring baglaminda kurulur; baglam disi
+     * birim testlerinde transaction'siz calisir (ExpiredApplicationScheduler deseni).
+     */
+    private org.springframework.transaction.support.TransactionOperations perRecordTx =
+            org.springframework.transaction.support.TransactionOperations.withoutTransaction();
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setTransactionManager(org.springframework.transaction.PlatformTransactionManager txManager) {
+        org.springframework.transaction.support.TransactionTemplate t =
+                new org.springframework.transaction.support.TransactionTemplate(txManager);
+        t.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        this.perRecordTx = t;
+    }
+
+    /**
      * Suresi gecmis yedek tekliflerini kapatir ve siradaki yedege gecer.
      * ExpiredApplicationScheduler her 5 dakikada cagirir.
+     *
+     * <p>Bilerek {@code @Transactional} degil. Her teklif kendi transaction'inda taze
+     * okunur; arada aday cevap verdiyse/isletme cikardiysa dokunulmaz. Bir kayittaki
+     * hata (ör. @Version cakismasi) yalniz o kaydi geri alir, digerleri islenir ve
+     * bildirimleri (commit sonrasi) gider. Siradaki yedegin cagrilmasi AYRI bir
+     * transaction'dadir: zincir devami patlarsa (repository hatasi transaction'i
+     * rollback-only yapar) suresi dolma kaydi yine kalici olur — eski tek transaction'da
+     * bu durum butun partiyi UnexpectedRollbackException ile geri aliyordu.
      */
-    @Transactional
     public int expireOverdueOffers() {
-        List<Application> overdue = applicationRepository
-                .findByStatusAndStandbyDeadlineBefore(ApplicationStatus.STANDBY, LocalDateTime.now(clock));
-        if (overdue.isEmpty()) return 0;
+        LocalDateTime now = LocalDateTime.now(clock);
+        List<Long> ids = applicationRepository
+                .findByStatusAndStandbyDeadlineBefore(ApplicationStatus.STANDBY, now).stream()
+                .map(Application::getId).toList();
+        if (ids.isEmpty()) return 0;
 
-        int n = 0;
-        for (Application app : overdue) {
-            if (app.getStatus() != ApplicationStatus.STANDBY) continue;
-            expireOffer(app, "Teklif süresi doldu");
-            n++;
+        int n = 0, failed = 0;
+        for (Long id : ids) {
+            java.util.Optional<Long> replaces;   // null: islenmedi; bos: zincir devami yok
             try {
-                cascadeToNextStandby(app);
+                replaces = perRecordTx.execute(st -> {
+                    Application app = applicationRepository.findById(id).orElse(null);
+                    if (app == null || app.getStatus() != ApplicationStatus.STANDBY
+                            || app.getStandbyDeadline() == null
+                            || !app.getStandbyDeadline().isBefore(now)) {
+                        return null;
+                    }
+                    expireOffer(app, "Teklif süresi doldu");
+                    applicationRepository.flush();   // @Version cakismasi burada, bu kayitta kalsin
+                    return java.util.Optional.ofNullable(app.getStandbyReplacesApplicationId());
+                });
             } catch (RuntimeException ex) {
-                log.warn("[STANDBY] app={} sonrasi siradaki yedege gecilemedi: {}", app.getId(), ex.getMessage());
+                failed++;
+                log.warn("[STANDBY] app={} teklif suresi kapatilamadi (sonraki calismada tekrar denenecek): {}",
+                        id, ex.toString());
+                continue;
+            }
+            if (replaces == null) continue;
+            n++;
+            if (replaces.isEmpty()) continue;
+            Long noShowAppId = replaces.get();
+            try {
+                perRecordTx.executeWithoutResult(st -> offerAfterNoShow(noShowAppId));
+            } catch (RuntimeException ex) {
+                log.error("[STANDBY] app={} sonrasi siradaki yedege gecilemedi (no-show app={}): {}",
+                        id, noShowAppId, ex.toString(), ex);
             }
         }
+        if (failed > 0) log.warn("[STANDBY] {} / {} suresi gecen teklif islenemedi", failed, ids.size());
         return n;
     }
 
