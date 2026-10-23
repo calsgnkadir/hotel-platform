@@ -2,6 +2,7 @@ package com.hotelapp.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.hibernate.query.sqm.UnknownPathException;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -196,6 +200,26 @@ public class GlobalExceptionHandler {
         // Specific yorumlama yapmak yerine generic mesaj — DB schema detayı sızdırmasın
         String msg = "Veritabanı kuralı ihlali (örn: kayıt zaten var)";
         return build(HttpStatus.CONFLICT, msg);
+    }
+
+    // 400 — tek bir sıralama alanı entity yoluna karşılık gelmiyorsa Spring Data
+    // hatayı Hibernate UnknownPathException ile sarar. Yalnız sort parametresi
+    // içeren bu belirli client hatasını dönüştür; diğer JPA kullanım hataları 500 kalır.
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidDataAccessApiUsage(
+            InvalidDataAccessApiUsageException ex, HttpServletRequest request) {
+        if (request.getParameterValues("sort") != null && causedBy(ex, UnknownPathException.class)) {
+            log.info("Rejected sort property that does not exist on the requested entity");
+            return build(HttpStatus.BAD_REQUEST, "Sıralama alanı geçersiz.");
+        }
+        return handleRuntime(ex);
+    }
+
+    private static boolean causedBy(Throwable ex, Class<? extends Throwable> causeType) {
+        for (Throwable cause = ex; cause != null; cause = cause.getCause()) {
+            if (causeType.isInstance(cause)) return true;
+        }
+        return false;
     }
 
     // 400 — IllegalArgumentException = "client'tan gelen veri geçersiz"
