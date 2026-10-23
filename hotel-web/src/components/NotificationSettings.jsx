@@ -78,8 +78,6 @@ export default function NotificationSettings() {
                   className="relative flex-shrink-0 mt-0.5 w-11 h-6 rounded-full transition-colors disabled:opacity-60
                              after:content-[''] after:absolute after:-inset-2.5"
                   style={{ background: state === 'on' ? 'var(--ah-brand)' : 'var(--ah-line-2)' }}>
-            {/* Tutamaç: .bg-white sınıfı .card içinde !important ile saydamlaşıyordu
-                (index.css ".card .bg-white") → anahtar tutamaçsız görünüyordu. */}
             <span aria-hidden="true"
                   className="absolute top-0.5 w-5 h-5 rounded-full shadow transition-[left] duration-150"
                   style={{ left: state === 'on' ? 22 : 2, background: 'var(--ah-card)' }} />

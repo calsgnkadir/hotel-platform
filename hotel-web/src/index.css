@@ -349,8 +349,10 @@ code, pre, kbd, samp {
   color: var(--ah-ink-3) !important;
 }
 
-/* Card icindeki bg-cream / bg-white nested kutucuklari — hafif notr ic yuzey */
-.card .bg-white,
+/* Card icindeki bg-cream nested kutucuklari — hafif notr ic yuzey.
+   .bg-white BILEREK kapsam disi: eski koyu tema (faz-5.4) kalintisiydi; acik
+   temada kart zaten beyaz, kural ise anahtar tutamaci / QR zemini gibi beyaz
+   olmasi gereken ogeleri saydamlastiriyordu. */
 .card .bg-cream-50,
 .card .bg-cream-100 {
   background: rgba(185, 185, 185, 0.04) !important;

@@ -209,7 +209,6 @@ export default function ProfileTab() {
                 className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0
                            after:content-[''] after:absolute after:-inset-2.5"
                 style={{ background: form.isAvailable ? 'var(--ah-brand)' : 'var(--ah-line-2)' }}>
-                {/* .card içinde .bg-white saydamlaşıyor (index.css) → tutamaç rengi token ile */}
                 <span aria-hidden="true" className="inline-block rounded-full shadow transition-transform"
                       style={{ width: 18, height: 18, background: 'var(--ah-card)', transform: form.isAvailable ? 'translateX(23px)' : 'translateX(3px)' }} />
               </button>
