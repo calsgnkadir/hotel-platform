@@ -77,6 +77,67 @@ describe('Aday ApplicationsTab — Türkçe durum etiketleri', () => {
   })
 })
 
+describe('Aday ApplicationsTab — düğme önceliği ve filtre çipleri', () => {
+  beforeEach(() => { confirmSpy.mockClear(); confirmSpy.mockResolvedValue(true) })
+
+  const chips = () => screen.getAllByRole('button').filter(b => b.className.includes('cand-filter-chip'))
+
+  it('Mesajlaşma ikincil, İptal et çerçevesiz metin düğmesi; birincil yalnız gerçek eylem', () => {
+    render(<ApplicationsTab applications={[app(1, 'PENDING')]} onRefresh={vi.fn()} />)
+    const msg = screen.getByRole('button', { name: 'Mesajlaşma' })
+    expect(msg.className).toContain('btn-secondary')
+    expect(msg.className).not.toContain('btn-primary')
+    const cancel = screen.getByRole('button', { name: 'İptal et' })
+    expect(cancel.className).toContain('btn-ghost')
+    expect(cancel.className).not.toContain('btn-danger')
+    expect(cancel.className).not.toContain('btn-primary')
+  })
+
+  it('kabul edilen başvuruda "Mesaiye başla" birincil, Mesajlaşma ikincil', () => {
+    render(<ApplicationsTab applications={[app(4, 'ACCEPTED')]} onRefresh={vi.fn()} />)
+    expect(screen.getByRole('button', { name: /Mesaiye başla/ }).className).toContain('btn-primary')
+    expect(screen.getByRole('button', { name: 'Mesajlaşma' }).className).toContain('btn-secondary')
+    expect(screen.queryByRole('button', { name: 'İptal et' })).toBeNull()
+  })
+
+  it('İptal et onay penceresini korur, onaylanınca geri çekme çağrılır', async () => {
+    const hotel = await import('../../../../api/hotel')
+    hotel.withdrawApplication.mockResolvedValue({})
+    const onRefresh = vi.fn()
+    render(<ApplicationsTab applications={[app(7, 'REVIEWING')]} onRefresh={onRefresh} />)
+    fireEvent.click(screen.getByRole('button', { name: 'İptal et' }))
+    await waitFor(() => expect(confirmSpy).toHaveBeenCalled())
+    expect(confirmSpy.mock.calls[0][0]).toMatchObject({ destructive: true })
+    await waitFor(() => expect(hotel.withdrawApplication).toHaveBeenCalledWith(7))
+    await waitFor(() => expect(onRefresh).toHaveBeenCalled())
+  })
+
+  it('İptal et onayı reddedilirse geri çekme çağrılmaz', async () => {
+    const hotel = await import('../../../../api/hotel')
+    hotel.withdrawApplication.mockClear()
+    confirmSpy.mockResolvedValue(false)
+    render(<ApplicationsTab applications={[app(8, 'PENDING')]} onRefresh={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'İptal et' }))
+    await waitFor(() => expect(confirmSpy).toHaveBeenCalled())
+    expect(hotel.withdrawApplication).not.toHaveBeenCalled()
+  })
+
+  it('sayısı 0 olan çipler gizlenir, "Tümü" her zaman görünür', () => {
+    render(<ApplicationsTab applications={[app(1, 'PENDING'), app(2, 'REVIEWING')]} onRefresh={vi.fn()} />)
+    expect(chips().map(c => c.textContent)).toEqual(['Tümü2', 'Süren2'])
+    expect(screen.queryByRole('button', { name: /Kabul edildi/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Kapanan/ })).toBeNull()
+  })
+
+  it('derin linkle seçili grup boş olsa da çipi görünür ve aktif kalır', () => {
+    render(<ApplicationsTab applications={[app(1, 'PENDING')]} initialFilter="ACCEPTED" onRefresh={vi.fn()} />)
+    const chip = chips().find(c => /Kabul edildi/.test(c.textContent))
+    expect(chip).toBeTruthy()
+    expect(chip).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('Bu filtrede başvuru yok')).toBeInTheDocument()
+  })
+})
+
 describe('Aday ApplicationsTab — işletme logosu', () => {
   it('her satırda ortak BusinessLogo baş harf kutusu', () => {
     render(<ApplicationsTab applications={APPS} onRefresh={vi.fn()} />)

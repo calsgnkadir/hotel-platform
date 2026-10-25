@@ -14,7 +14,7 @@ const REASONS = [
 ]
 
 /**
- * Genel şikayet modal'ı.
+ * Genel şikâyet modal'ı.
  * @param {string} targetType - 'LISTING' | 'BUSINESS' | 'USER'
  * @param {number} targetId
  * @param {string} targetLabel - başlıkta gösterilecek isim (örn. ilan başlığı)
@@ -41,7 +41,7 @@ export default function ReportModal({ targetType, targetId, targetLabel, onClose
         reason,
         description: description.trim() || null,
       })
-      toast.success('Şikayetiniz alındı. İnceleyeceğiz, teşekkürler.')
+      toast.success('Şikâyetiniz alındı. İnceleyeceğiz, teşekkürler.')
       onClose()
     } catch (err) {
       toast.error(extractErrorMessage(err))

@@ -181,9 +181,11 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
 
   const activeGroup = CAND_FILTER_GROUPS.find(g => g.key === statusFilter) || CAND_FILTER_GROUPS[0]
   const filtered = applications.filter(activeGroup.match)
-  // "Yanitin bekleniyor" yalniz sayi > 0 ise (ya da o an seciliyse) gorunur
+  // Sayisi 0 olan grup cipi gizlenir (375px'te "Kabul edildi 0" gibi bos cipler
+  // listeyi asagi itiyordu). "Tümü" her zaman, secili grup ise bos olsa da gorunur
+  // (aktif filtre gizlenirse "neye gore filtreliyim?" belirsizligi olurdu).
   const groupCounts = Object.fromEntries(CAND_FILTER_GROUPS.map(g => [g.key, applications.filter(g.match).length]))
-  const visibleGroups = CAND_FILTER_GROUPS.filter(g => !g.hideWhenEmpty || groupCounts[g.key] > 0 || g.key === statusFilter)
+  const visibleGroups = CAND_FILTER_GROUPS.filter(g => g.key === 'ALL' || groupCounts[g.key] > 0 || g.key === statusFilter)
 
   return (
     <motion.div className="ah-surface space-y-3"
@@ -324,7 +326,8 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                       </div>
                     )}
 
-                    {/* aksiyon barI */}
+                    {/* Aksiyon cubugu — birincil yalniz gercek eylem (Onayla / Mesaiye basla);
+                        Mesajlasma ikincil, Iptal et sagda metin dugmesi (44px dokunma hedefi). */}
                     <div className="flex flex-wrap items-center gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
                       {app.status === 'PENDING' && meta.hint && (
                         <span className="type-caption w-full" style={{ color: 'var(--ah-ink-3)' }}>{meta.hint}</span>
@@ -354,24 +357,26 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
                         </>
                       )}
 
-                      {(app.status === 'PENDING' || app.status === 'REVIEWING'
-                        || app.status === 'STANDBY' || app.status === 'ACCEPTED') && (
-                        <SpringBtn onClick={() => onOpenMessages?.(app.conversationId)} variant="primary"
-                                   icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>}>Mesajlaşma</SpringBtn>
-                      )}
-
-                      {(app.status === 'PENDING' || app.status === 'REVIEWING'
-                        || (app.status === 'STANDBY' && !app.standbyOfferActive)) && (
-                        <SpringBtn onClick={() => handleWithdraw(app.id)} disabled={withdrawingId === app.id} variant="ghost-danger" small>
-                          {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal et'}
-                        </SpringBtn>
-                      )}
-
                       {app.status === 'ACCEPTED' && (
                         <ClockControls app={app} session={activeSessions[app.id]}
                                        busy={clockBusyId === app.id} locLoading={myLoc.loading}
                                        onClock={handleClock} />
                       )}
+
+                      {(app.status === 'PENDING' || app.status === 'REVIEWING'
+                        || app.status === 'STANDBY' || app.status === 'ACCEPTED') && (
+                        <SpringBtn onClick={() => onOpenMessages?.(app.conversationId)} variant="secondary" small
+                                   icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>}>Mesajlaşma</SpringBtn>
+                      )}
+
+                      {(app.status === 'PENDING' || app.status === 'REVIEWING'
+                        || (app.status === 'STANDBY' && !app.standbyOfferActive)) && (
+                        <SpringBtn onClick={() => handleWithdraw(app.id)} disabled={withdrawingId === app.id} variant="text-danger" small
+                                   className="ml-auto sm:ml-0">
+                          {withdrawingId === app.id ? 'İptal ediliyor...' : 'İptal et'}
+                        </SpringBtn>
+                      )}
+
                     </div>
                   </div>
                 </div>
@@ -437,18 +442,22 @@ const CARD = {
 const SPRING_BTN_CLASS = {
   primary:        'btn-primary !w-auto',
   success:        'btn-primary !w-auto',
+  secondary:      'btn-secondary',
   gold:           'btn-secondary',
   danger:         'btn-danger',
   'ghost-danger': 'btn-danger',
+  // Satir ici geri alinabilir-olmayan ama ikincil eylem (Iptal et): cerceve yok,
+  // kirmizi metin; onay penceresi korunur. Yukseklik .btn-* olcegiyle (mobil 44px).
+  'text-danger':  'btn-ghost !text-[color:var(--ah-danger)] hover:!bg-[var(--ah-danger-soft)]',
 }
-function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, small }) {
+function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, small, className = '' }) {
   return (
     <motion.button
       type="button"
       onClick={onClick}
       disabled={disabled}
       whileTap={disabled ? undefined : { scale: 0.98 }}
-      className={`${SPRING_BTN_CLASS[variant] || SPRING_BTN_CLASS.primary}${small ? ' !px-3' : ''}`}>
+      className={`${SPRING_BTN_CLASS[variant] || SPRING_BTN_CLASS.primary}${small ? ' !px-3' : ''}${className ? ` ${className}` : ''}`}>
       {icon && <span className="inline-flex">{icon}</span>}
       <span>{children}</span>
     </motion.button>

@@ -41,6 +41,19 @@ describe('WorkersTab — vardiya bazlı gelmedi', () => {
     expect(screen.getByRole('button', { name: 'Ayşe Yılmaz ile mesajlaş' })).toBeInTheDocument()
   })
 
+  it('meta satırında ayıraç önceki öğenin sonunda; hiçbir öğe "·" ile başlamaz', () => {
+    render(<WorkersTab applications={[
+      { id: 3, status: 'ACCEPTED', workCompleted: true, candidate: ayse, requestedSlots: [DAY] },
+    ]} />)
+    const row = screen.getByText(/Son: 5 Eki 2026/).parentElement
+    const items = [...row.children]
+    expect(items).toHaveLength(3)
+    for (const it of items) expect(it.textContent.trimStart().startsWith('·')).toBe(false)
+    expect(items[0].textContent).toBe('8 saat ·')
+    expect(items[1].textContent).toBe('1 iş ·')
+    expect(items[2].textContent.endsWith('·')).toBe(false)
+  })
+
   it('tüm çalışanlar gelmediyse boş durum', () => {
     render(<WorkersTab applications={[
       { id: 2, status: 'ACCEPTED', workCompleted: true, candidate: mehmet, requestedSlots: [NIGHT], noShowSlotIds: [2] },

@@ -49,7 +49,7 @@ const ADMIN_NAV = [
   { id: 'overview',   label: 'Genel bakış', icon: 'overview',  placement: 'top', shortcut: 'o' },
   { id: 'users',      label: 'Kullanıcılar', icon: 'users',    placement: 'top', shortcut: 'u' },
   { id: 'listings',   label: 'İlanlar',     icon: 'briefcase', placement: 'top', shortcut: 'l' },
-  { id: 'reports',    label: 'Şikayetler',  icon: 'alert',     placement: 'top', shortcut: 'r' },
+  { id: 'reports',    label: 'Şikâyetler', icon: 'alert',     placement: 'top', shortcut: 'r' },
   { id: 'businesses', label: 'İşletmeler',  icon: 'building',  placement: 'top', mobileBar: false },
   { id: 'support',    label: 'Destek',      icon: 'lifebuoy',  placement: 'top', mobileBar: false },
   { id: 'audit',      label: 'İşlem geçmişi', icon: 'activity', placement: 'top', mobileBar: false },

@@ -154,12 +154,12 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
             onChange={e => { setSearch(e.target.value); setPage(0) }}
             placeholder="Aday adı ara..." className="input text-sm" />
         </div>
-        {/* Liste / Kanban gorunum secici — Ekibim/Favoriler ile ayni .ah-segment deseni.
+        {/* Liste / Pano gorunum secici — Ekibim/Favoriler ile ayni .ah-segment deseni.
             Ayni veriyi farkli dizer (ayri panel degil) -> toggle grubu + aria-pressed. */}
         <div className="ah-segment self-start flex-shrink-0" role="group" aria-label="Başvuru görünümü">
           {[
             { id: 'list',   label: 'Liste' },
-            { id: 'kanban', label: 'Kanban' },
+            { id: 'kanban', label: 'Pano' },
           ].map(v => (
             <button key={v.id} type="button" onClick={() => setView(v.id)}
               aria-pressed={view === v.id}

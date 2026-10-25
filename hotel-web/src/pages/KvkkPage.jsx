@@ -95,7 +95,7 @@ export default function KvkkPage() {
                        basis="Sözleşmenin ifası (m.5/2-c); meşru menfaat (m.5/2-f)" />
               <Purpose title="Bildirim ve hizmet e-postaları (doğrulama, şifre sıfırlama, başvuru durumu)"
                        basis="Sözleşmenin ifası (m.5/2-c)" />
-              <Purpose title="Kötüye kullanımın önlenmesi, şikayetlerin incelenmesi, platform güvenliği"
+              <Purpose title="Kötüye kullanımın önlenmesi, şikâyetlerin incelenmesi, platform güvenliği"
                        basis="Meşru menfaat (m.5/2-f); bir hakkın tesisi, kullanılması veya korunması (m.5/2-e)" />
               <Purpose title="Mevzuattan doğan kayıt tutma ve yetkili mercilere bilgi verme"
                        basis="Kanunlarda açıkça öngörülme ve hukuki yükümlülük (m.5/2-a, m.5/2-ç)" />
@@ -184,7 +184,7 @@ export default function KvkkPage() {
             </p>
             <p className="mt-3">
               Talebin en geç <b>30 gün</b> içinde ücretsiz olarak sonuçlandırılır. Yanıtı yeterli
-              bulmazsan Kişisel Verileri Koruma Kurulu'na şikayette bulunabilirsin.
+              bulmazsan Kişisel Verileri Koruma Kurulu'na şikâyette bulunabilirsin.
             </p>
             <p className="mt-3">
               Hesabını ve verilerini panelindeki hesap ayarlarından da kapatabilirsin.

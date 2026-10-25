@@ -240,7 +240,7 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
             <span className="numeral-hero" style={{ fontSize: '22px', color: 'var(--ah-brand)' }}>
               {selectedIds.size}
             </span>
-            <span className="type-overline" style={{ color: 'var(--ah-ink-2)' }}>
+            <span className="type-meta" style={{ color: 'var(--ah-ink-2)' }}>
               başvuru seçildi
             </span>
           </div>
@@ -309,8 +309,8 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
       </DragOverlay>
 
       {busy && (
-        <div className="fixed bottom-6 right-6 z-50 tier-featured px-4 py-2 type-overline text-ivory-200"
-             style={{ borderRadius: '999px' }}>
+        <div className="fixed bottom-6 right-6 z-50 tier-featured px-4 py-2 type-meta" role="status"
+             style={{ borderRadius: '999px', color: 'var(--ah-ink)' }}>
           Güncelleniyor...
         </div>
       )}

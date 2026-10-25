@@ -33,7 +33,7 @@ const FAQS = [
   { cat: 'İşletme', q: 'Bir adayı "Gelmedi" olarak nasıl işaretlerim?',
     a: 'Başvurular sekmesinden ilgili adayın kartını aç → "Gelmedi olarak işaretle" butonu. Aday otomatik bildirim alır ve 1 ceza hakkı düşer; 3 ceza hakkı biten aday 30 gün askıya alınır.' },
   { cat: 'İşletme', q: 'Başvurulara ne kadar hızlı yanıt vermeliyim?',
-    a: 'En geç 24 saat. Kanban görünümünde yanıt bekleyen kartın sol kenarındaki şerit, başvurunun ne kadar süredir yanıtsız kaldığını gösterir: 6 saatten az (zamanında), 6–24 saat (dikkat), 24 saatten fazla (acil yanıt). Hızlı yanıt, kabul oranını yükseltir.' },
+    a: 'En geç 24 saat. Pano görünümünde yanıt bekleyen kartın sol kenarındaki şerit, başvurunun ne kadar süredir yanıtsız kaldığını gösterir: 6 saatten az (zamanında), 6–24 saat (dikkat), 24 saatten fazla (acil yanıt). Hızlı yanıt, kabul oranını yükseltir.' },
 
   // ── GENEL ──
   { cat: 'Genel', q: 'Şifremi unuttum, ne yapmalıyım?',
@@ -42,8 +42,8 @@ const FAQS = [
     a: 'Hayır. İstersen "Şifremi unuttum" akışıyla bir şifre belirleyebilir, sonradan hem Google hem normal şifre ile giriş yapabilirsin.' },
   { cat: 'Genel', q: 'Bildirimleri nasıl kapatırım?',
     a: 'Sağ üstteki dişli ikonundan açılan menüde "Bildirimler" toggle\'ını kapat. Web push bildirimleri ayrıca tarayıcı ayarlarından da yönetilebilir.' },
-  { cat: 'Genel', q: 'Bir kullanıcıyı nasıl şikayet ederim?',
-    a: 'İlgili kullanıcının profilinde veya başvurusunda "Şikayet Et" butonu olur. Sebebi açıklayıp gönder. Yönetici 24 saat içinde inceler ve karar bildirir.' },
+  { cat: 'Genel', q: 'Bir kullanıcıyı, ilanı ya da işletmeyi nasıl şikâyet ederim?',
+    a: 'Mesajlaşma ekranındaki kişi panelinde "Kullanıcıyı bildir", ilan sayfasında "İlanı bildir", işletme sayfasında "İşletmeyi bildir" bağlantısı bulunur. Sebebi seçip kısaca açıkla ve gönder. Yönetici 24 saat içinde inceler ve karar bildirir.' },
 
   // ── KVKK ──
   { cat: 'KVKK', q: 'Kişisel verilerimi nasıl indirebilirim?',

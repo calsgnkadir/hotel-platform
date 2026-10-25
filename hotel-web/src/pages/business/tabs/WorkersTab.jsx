@@ -122,13 +122,18 @@ export default function WorkersTab({ applications, onOpenMessages }) {
               {w.candidate?.email && (
                 <div className="type-caption truncate">{w.candidate.email}</div>
               )}
-              {/* Ayıraç sonraki öğeyle birlikte kayar: dar ekranda satır sonunda "·" kalmaz */}
+              {/* Ayıraç önceki öğenin sonunda: dar ekranda kırılınca yeni satır "·" ile başlamaz */}
               <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1 type-meta type-num">
-                <span className="font-semibold whitespace-nowrap" style={{ color: 'var(--ah-ink-2)' }}>{formatHours(w.totalHours)}</span>
-                <span className="whitespace-nowrap"><span aria-hidden="true">· </span>{w.jobCount} iş</span>
+                <span className="whitespace-nowrap">
+                  <span className="font-semibold" style={{ color: 'var(--ah-ink-2)' }}>{formatHours(w.totalHours)}</span>
+                  <span aria-hidden="true"> ·</span>
+                </span>
+                <span className="whitespace-nowrap">
+                  {w.jobCount} iş{w.lastDate && <span aria-hidden="true"> ·</span>}
+                </span>
                 {w.lastDate && (
                   <span className="whitespace-nowrap">
-                    <span aria-hidden="true">· </span>Son: {new Date(w.lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    Son: {new Date(w.lastDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                 )}
               </div>

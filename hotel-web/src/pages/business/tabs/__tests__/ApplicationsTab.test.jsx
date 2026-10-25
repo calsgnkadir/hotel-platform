@@ -73,7 +73,7 @@ describe('ApplicationsTab URL status filtresi (FAZ 19)', () => {
   it('chip tiklayinca filtre URL e yazilir (refresh te kaybolmaz)', () => {
     renderTab('/business?tab=applications')
 
-    fireEvent.click(screen.getByRole('button', { name: /^Red/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^Reddedildi/ }))
     expect(lastSearch).toContain('status=REJECTED')
   })
 
@@ -108,13 +108,14 @@ describe('ApplicationsTab URL status filtresi (FAZ 19)', () => {
     expect(screen.getByRole('button', { name: /Süresi doldu/ })).toBeInTheDocument()
   })
 
-  it('Liste/Kanban seçici: .ah-segment grubu, aria-pressed ile aktif görünüm', () => {
+  it('Liste/Pano seçici: .ah-segment grubu, aria-pressed ile aktif görünüm', () => {
     renderTab('/business?tab=applications')
     const group = screen.getByRole('group', { name: 'Başvuru görünümü' })
     expect(group.className).toContain('ah-segment')
     expect(group.getAttribute('style')).toBeNull()
     const list = screen.getByRole('button', { name: 'Liste' })
-    const kanban = screen.getByRole('button', { name: 'Kanban' })
+    const kanban = screen.getByRole('button', { name: 'Pano' })
+    expect(screen.queryByRole('button', { name: 'Kanban' })).toBeNull()
     expect(list).toHaveAttribute('aria-pressed', 'true')
     expect(list.className).toContain('is-active')
     expect(kanban).toHaveAttribute('aria-pressed', 'false')
