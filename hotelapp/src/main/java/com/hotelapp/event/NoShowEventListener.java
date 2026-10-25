@@ -35,18 +35,19 @@ public class NoShowEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onNoShowMarked(NoShowMarkedEvent e) {
         log.info("[NO-SHOW-ASYNC] handling event for application={} candidate={}",
-                e.applicationId(), e.candidateEmail());
+                e.applicationId(), e.candidateId());
 
         // FAZ C.2 — Audit log Outbox'a yazilir, OutboxRelay async deliverıyor.
+        // KVKK: kayitta e-posta yok, aday id'si.
         outboxService.appendAuditLog(AuditLoggedEvent.user(
                 e.actorOwnerId(), "MARK_NO_SHOW", "APPLICATION", e.applicationId(),
-                "Aday " + e.candidateEmail() + " no-show isaretlendi. Kalan strike: "
+                "Aday candidateId=" + e.candidateId() + " no-show isaretlendi. Kalan strike: "
                         + e.candidateStrikesRemaining()));
 
         if (e.autoBanned()) {
             outboxService.appendAuditLog(AuditLoggedEvent.system(
                     "AUTO_BAN", "USER", e.candidateId(),
-                    "3 strike -> " + e.candidateEmail() + " otomatik 30 gun banlandi (bitis: "
+                    "3 strike -> candidateId=" + e.candidateId() + " otomatik 30 gun banlandi (bitis: "
                             + e.bannedUntil() + ")"));
         }
 

@@ -115,11 +115,9 @@ public class LoginAttemptLimiter {
         return k.isEmpty() ? null : k;
     }
 
-    /** Log icin e-posta maskeleme (KVKK): ilk harf + alan adi. */
+    /** Log icin e-posta maskeleme (KVKK) — ortak yardimci {@link PiiMasking#email}. */
     static String mask(String email) {
-        int at = email.indexOf('@');
-        if (at <= 0) return "***";
-        return email.charAt(0) + "***" + email.substring(at);
+        return PiiMasking.email(email);
     }
 
     private static Bucket newBucket(int capacity) {

@@ -13,7 +13,7 @@ public record NoShowMarkedEvent(
         Long actorOwnerId,
         Long applicationId,
         Long candidateId,
-        String candidateEmail,
+        // KVKK: e-posta tasinmaz; audit/log aday id'si ile yazilir.
         String candidateName,
         String listingTitle,
         int candidateStrikesRemaining,

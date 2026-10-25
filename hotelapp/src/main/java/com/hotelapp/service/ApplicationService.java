@@ -73,6 +73,23 @@ public class ApplicationService {
             ApplicationStatus.STANDBY,
             ApplicationStatus.ACCEPTED);
 
+    /** Ihlal V28 aktif-basvuru kisitindan mi (FK vb. diger ihlaller 409 olarak kalir)? */
+    static boolean isActiveDuplicateViolation(Throwable e) {
+        String name = Application.UK_ACTIVE_LISTING.toLowerCase(java.util.Locale.ROOT);
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof org.hibernate.exception.ConstraintViolationException cve
+                    && cve.getConstraintName() != null
+                    && cve.getConstraintName().toLowerCase(java.util.Locale.ROOT).contains(name)) {
+                return true;
+            }
+            if (t.getMessage() != null && t.getMessage().toLowerCase(java.util.Locale.ROOT).contains(name)) {
+                return true;
+            }
+            if (t.getCause() == t) break;
+        }
+        return false;
+    }
+
     // ----------------------------------------------------------------
     // CANDIDATE: Apply to a job listing
     // ----------------------------------------------------------------
@@ -172,7 +189,16 @@ public class ApplicationService {
             application.setRequestedSlots(selected);
         }
 
-        applicationRepository.save(application);
+        // V28: yukaridaki kontrol eszamanli iki istekte yarisa acik; DB kisiti
+        // (uk_applications_candidate_active_listing) ikinciyi durdurur -> ayni 422 mesaji.
+        try {
+            applicationRepository.saveAndFlush(application);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            if (isActiveDuplicateViolation(e)) {
+                throw BusinessRuleException.keyed("error.application.dupActive");
+            }
+            throw e;
+        }
 
         // FAZ D.4 — Prometheus counter
         var m = metricsProvider.getIfAvailable();
@@ -283,7 +309,7 @@ public class ApplicationService {
                 request.getDecision() == ApplicationStatus.ACCEPTED ? "ACCEPT_APPLICATION" : "REJECT_APPLICATION",
                 "APPLICATION", applicationId,
                 "İlan: " + application.getJobListing().getTitle()
-                        + " · Aday: " + application.getCandidate().getEmail()
+                        + " · candidateId=" + application.getCandidate().getId()
                         + " · Önceki durum: " + current
                         + (request.getNote() != null && !request.getNote().isBlank()
                             ? " · Not: " + request.getNote() : "")));
@@ -348,7 +374,7 @@ public class ApplicationService {
         outboxService.appendAuditLog(com.hotelapp.event.AuditLoggedEvent.user(
                 ownerId, "HOLD_APPLICATION", "APPLICATION", applicationId,
                 "İlan: " + app.getJobListing().getTitle()
-                        + " · Aday: " + app.getCandidate().getEmail()
+                        + " · candidateId=" + app.getCandidate().getId()
                         + " · Son tarih: " + app.getHoldDeadline()));
 
         // Adaya bildirim: 24 saat icinde cevap vermesi gerek
@@ -583,7 +609,6 @@ public class ApplicationService {
                 ownerId,
                 applicationId,
                 candidate.getId(),
-                candidate.getEmail(),
                 candidate.getFullName(),
                 application.getJobListing().getTitle(),
                 candidate.getStrikesRemaining(),

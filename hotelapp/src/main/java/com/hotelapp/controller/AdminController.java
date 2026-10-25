@@ -115,7 +115,7 @@ public class AdminController {
             @Valid @RequestBody BanRequest request) {
         UserSummary result = adminService.ban(id, request.getDays());
         outboxService.appendAuditLog(AuditLoggedEvent.user(currentUser.getId(), "BAN_USER", "USER", id,
-                request.getDays() + " gün ban (" + result.getEmail() + ")"));
+                request.getDays() + " gün ban (userId=" + id + ")"));
         return ResponseEntity.ok(result);
     }
 
@@ -126,7 +126,7 @@ public class AdminController {
             @PathVariable Long id) {
         UserSummary result = adminService.unban(id);
         outboxService.appendAuditLog(AuditLoggedEvent.user(currentUser.getId(), "UNBAN_USER", "USER", id,
-                "Ban kaldırıldı (" + result.getEmail() + ")"));
+                "Ban kaldırıldı (userId=" + id + ")"));
         return ResponseEntity.ok(result);
     }
 

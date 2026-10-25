@@ -139,7 +139,7 @@ class ApplicationServiceTest {
             assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
                     .isInstanceOf(BusinessRuleException.class)
                     .hasMessage("Bu işletmeye başvuru yapamazsın.");
-            verify(applicationRepository, never()).save(any());
+            verify(applicationRepository, never()).saveAndFlush(any());
             verify(messageService, never()).openConversationForApplication(any(), any());
         }
 
@@ -156,8 +156,36 @@ class ApplicationServiceTest {
 
             var resp = service.createApplication(CANDIDATE_ID, req());
 
-            verify(applicationRepository).save(any(Application.class));
+            verify(applicationRepository).saveAndFlush(any(Application.class));
             assertThat(resp.getConversationId()).isEqualTo(5L);
+        }
+
+        @Test
+        @DisplayName("V28: yarışta DB aktif-başvuru kısıtı ihlali aynı 422 dupActive'e çevrilir, sohbet açılmaz")
+        void activeUniqueViolation_translatedToDupActive() {
+            when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(activeListing()));
+            when(applicationRepository.saveAndFlush(any(Application.class))).thenThrow(
+                    new org.springframework.dao.DataIntegrityViolationException("could not execute statement",
+                            new java.sql.SQLIntegrityConstraintViolationException(
+                                    "Duplicate entry '7-3' for key 'applications.uk_applications_candidate_active_listing'")));
+
+            assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
+                    .isInstanceOf(BusinessRuleException.class)
+                    .hasMessageContaining("error.application.dupActive");
+            verify(messageService, never()).openConversationForApplication(any(), any());
+        }
+
+        @Test
+        @DisplayName("V28: başka bir bütünlük ihlali (FK vb.) dupActive'e çevrilmez, aynen yükselir")
+        void otherIntegrityViolation_rethrown() {
+            when(userRepository.findById(CANDIDATE_ID)).thenReturn(Optional.of(candidate()));
+            when(jobListingRepository.findById(LISTING_ID)).thenReturn(Optional.of(activeListing()));
+            var fk = new org.springframework.dao.DataIntegrityViolationException("fk",
+                    new java.sql.SQLIntegrityConstraintViolationException("Cannot add or update a child row: FKk0nbh7a4olvjc73i2ctr80mom"));
+            when(applicationRepository.saveAndFlush(any(Application.class))).thenThrow(fk);
+
+            assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req())).isSameAs(fk);
         }
 
         @Test
@@ -174,7 +202,7 @@ class ApplicationServiceTest {
                         .isInstanceOf(BusinessRuleException.class)
                         .hasMessage("Bu işletme şu anda başvuru kabul etmiyor. Başka bir ilana göz atabilirsin.");
             }
-            verify(applicationRepository, never()).save(any());
+            verify(applicationRepository, never()).saveAndFlush(any());
         }
 
         @Test
@@ -190,7 +218,7 @@ class ApplicationServiceTest {
                     .thenReturn(com.hotelapp.dto.ApplicationResponse.builder().build());
 
             service.createApplication(CANDIDATE_ID, req());
-            verify(applicationRepository).save(any(Application.class));
+            verify(applicationRepository).saveAndFlush(any(Application.class));
         }
 
         @Test
@@ -203,7 +231,7 @@ class ApplicationServiceTest {
             assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, req()))
                     .isInstanceOf(com.hotelapp.exception.EmailNotVerifiedException.class)
                     .hasMessage("Devam etmek için e-posta adresini doğrula.");
-            verify(applicationRepository, never()).save(any());
+            verify(applicationRepository, never()).saveAndFlush(any());
         }
 
         @Test
@@ -220,7 +248,7 @@ class ApplicationServiceTest {
                     .thenReturn(com.hotelapp.dto.ApplicationResponse.builder().build());
 
             service.createApplication(CANDIDATE_ID, req());
-            verify(applicationRepository).save(any(Application.class));
+            verify(applicationRepository).saveAndFlush(any(Application.class));
         }
 
         @Test
@@ -377,6 +405,25 @@ class ApplicationServiceTest {
         }
 
         @Test
+        @DisplayName("KVKK: gelmedi olayı aday e-postası taşımaz (audit/log yalnız id ile yazılır)")
+        void noShowEvent_carriesNoEmail() {
+            Application app = appWithStatus(ApplicationStatus.ACCEPTED);
+            app.getCandidate().setStrikesRemaining(2);
+            when(applicationRepository.findByIdForCheckIn(APP_ID)).thenReturn(Optional.of(app));
+
+            service.markNoShow(APP_ID, OWNER_ID);
+
+            ArgumentCaptor<com.hotelapp.event.NoShowMarkedEvent> ev =
+                    ArgumentCaptor.forClass(com.hotelapp.event.NoShowMarkedEvent.class);
+            verify(eventPublisher).publishEvent(ev.capture());
+            assertThat(ev.getValue().candidateId()).isEqualTo(CANDIDATE_ID);
+            assertThat(ev.getValue().toString()).doesNotContain("aday@test.com");
+            assertThat(java.util.Arrays.stream(com.hotelapp.event.NoShowMarkedEvent.class.getRecordComponents())
+                    .map(java.lang.reflect.RecordComponent::getName))
+                    .noneMatch(n -> n.toLowerCase(java.util.Locale.ROOT).contains("email"));
+        }
+
+        @Test
         @DisplayName("1 strike → 0: autoBan, 30 gün ban, strikes 3'e reset")
         void lastStrike_triggersAutoBan() {
             Application app = appWithStatus(ApplicationStatus.ACCEPTED);
@@ -436,7 +483,21 @@ class ApplicationServiceTest {
             assertThat(ev.actorId()).isEqualTo(OWNER_ID);
             assertThat(ev.targetType()).isEqualTo("APPLICATION");
             assertThat(ev.targetId()).isEqualTo(APP_ID);
-            assertThat(ev.details()).contains("Test İlan", "aday@test.com", "PENDING");
+            assertThat(ev.details()).contains("Test İlan", "candidateId=" + CANDIDATE_ID, "PENDING");
+            // KVKK: audit kaydinda aday e-postasi duz metin yer almaz
+            assertThat(ev.details()).doesNotContain("aday@test.com").doesNotContain("@");
+        }
+
+        @Test
+        @DisplayName("Bekletme: HOLD_APPLICATION audit'i e-posta değil aday id'si içerir")
+        void hold_auditHasCandidateIdNotEmail() {
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(appWithStatus(ApplicationStatus.PENDING)));
+
+            service.holdApplication(APP_ID, OWNER_ID);
+
+            var ev = captureAudit();
+            assertThat(ev.action()).isEqualTo("HOLD_APPLICATION");
+            assertThat(ev.details()).contains("candidateId=" + CANDIDATE_ID).doesNotContain("@");
         }
 
         @Test
@@ -452,7 +513,8 @@ class ApplicationServiceTest {
 
             var ev = captureAudit();
             assertThat(ev.action()).isEqualTo("REJECT_APPLICATION");
-            assertThat(ev.details()).contains("REVIEWING", "Deneyim yetersiz");
+            assertThat(ev.details()).contains("REVIEWING", "Deneyim yetersiz", "candidateId=" + CANDIDATE_ID)
+                    .doesNotContain("aday@test.com");
         }
 
         @Test

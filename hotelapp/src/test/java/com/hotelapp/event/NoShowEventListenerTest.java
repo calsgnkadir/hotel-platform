@@ -39,7 +39,7 @@ class NoShowEventListenerTest {
     @InjectMocks private NoShowEventListener listener;
 
     private NoShowMarkedEvent event(boolean banned, LocalDateTime until) {
-        return new NoShowMarkedEvent(11L, 33L, 7L, "aday@test.local", "Test Aday", "Garson",
+        return new NoShowMarkedEvent(11L, 33L, 7L, "Test Aday", "Garson",
                 banned ? 3 : 2, banned, until, List.of(500L));
     }
 
@@ -75,6 +75,23 @@ class NoShowEventListenerTest {
         verify(notificationService).notify(eq(7L), eq(NotificationType.AUTO_BANNED),
                 any(), msg.capture(), any());
         assertThat(msg.getValue()).doesNotContainPattern(JARGON).contains("2 kabul edilmiş vardiyan iptal edildi");
+    }
+
+    @Test
+    @DisplayName("KVKK: MARK_NO_SHOW ve AUTO_BAN audit kayıtları e-posta değil aday id'si içerir")
+    void auditDetails_useCandidateIdNotEmail() {
+        LocalDateTime until = LocalDateTime.of(2026, 11, 15, 12, 0);
+        when(accountClosureService.releaseCandidate(any(), any(), any()))
+                .thenReturn(AccountClosureService.Result.NONE);
+
+        listener.onNoShowMarked(event(true, until));
+
+        ArgumentCaptor<AuditLoggedEvent> cap = ArgumentCaptor.forClass(AuditLoggedEvent.class);
+        verify(outboxService, org.mockito.Mockito.times(2)).appendAuditLog(cap.capture());
+        assertThat(cap.getAllValues()).extracting(AuditLoggedEvent::action)
+                .containsExactly("MARK_NO_SHOW", "AUTO_BAN");
+        assertThat(cap.getAllValues()).allSatisfy(ev ->
+                assertThat(ev.details()).contains("candidateId=7").doesNotContain("@"));
     }
 
     @Test

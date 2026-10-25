@@ -128,7 +128,7 @@ class ApplicationServiceShiftRulesTest {
                     .isInstanceOf(BusinessRuleException.class)
                     .hasMessageContaining(key);
             assertThat(statuses.getValue()).contains(existing);
-            verify(applicationRepository, never()).save(any());
+            verify(applicationRepository, never()).saveAndFlush(any());
         }
     }
 
@@ -301,7 +301,7 @@ class ApplicationServiceShiftRulesTest {
             assertThatThrownBy(() -> service.createApplication(CANDIDATE_ID, request(901L)))
                     .isInstanceOf(BusinessRuleException.class)
                     .hasMessageContaining("Bu vardiya başladı");
-            verify(applicationRepository, never()).save(any());
+            verify(applicationRepository, never()).saveAndFlush(any());
         }
     }
 

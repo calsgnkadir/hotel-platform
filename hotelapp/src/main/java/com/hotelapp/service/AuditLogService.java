@@ -32,21 +32,26 @@ public class AuditLogService {
     private final AuditLogRepository auditLogRepository;
     private final UserRepository userRepository;
 
-    /** Bir kullanıcının yaptığı eylemi kaydet (actor email/role otomatik çözülür).
+    /** Kayitta aktor e-postasi yerine yazilan takma ad oneki (KVKK: audit kaydinda duz e-posta yok). */
+    static final String ACTOR_REF_PREFIX = "user:";
+
+    /** Bir kullanıcının yaptığı eylemi kaydet (actor rolü otomatik çözülür).
+     *  KVKK: actor_email kolonuna e-posta değil "user:{id}" yazılır; admin listesinde
+     *  e-posta okuma anında güncel kullanıcı kaydından çözülür (anonimleştirilen hesap
+     *  geçmiş kayıtlarda da anonim görünür).
      *  REQUIRES_NEW: ana akışı bozmaz, kendi tx'inde calisir. */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(Long actorId, String action, String targetType, Long targetId, String details) {
         try {
-            String email = "?";
+            String actorRef = actorId != null ? ACTOR_REF_PREFIX + actorId : "?";
             String role = "?";
             if (actorId != null) {
                 User u = userRepository.findById(actorId).orElse(null);
-                if (u != null) {
-                    email = u.getEmail();
+                if (u != null && u.getRole() != null) {
                     role = u.getRole().name();
                 }
             }
-            save(actorId, email, role, action, targetType, targetId, details);
+            save(actorId, actorRef, role, action, targetType, targetId, details);
         } catch (Exception e) {
             // Audit log hatası ana akışı bozmaz, sadece uyarı
             log.warn("Audit log yazılamadı: action={} - {}", action, e.getMessage());
@@ -85,13 +90,29 @@ public class AuditLogService {
         Page<AuditLog> page = (action != null && !action.isBlank())
                 ? auditLogRepository.findAllByActionOrderByCreatedAtDesc(action, pageable)
                 : auditLogRepository.findAllByOrderByCreatedAtDesc(pageable);
-        return page.getContent().stream().map(this::toDto).toList();
+        List<AuditLog> rows = page.getContent();
+        // Aktor e-postasi kayitta tutulmaz; admin ekrani icin tek sorguda guncel kayittan cozulur.
+        java.util.Set<Long> actorIds = rows.stream()
+                .filter(a -> a.getActorId() != null
+                        && a.getActorEmail() != null && a.getActorEmail().startsWith(ACTOR_REF_PREFIX))
+                .map(AuditLog::getActorId)
+                .collect(java.util.stream.Collectors.toSet());
+        java.util.Map<Long, String> emails = actorIds.isEmpty() ? java.util.Map.of()
+                : userRepository.findAllById(actorIds).stream()
+                    .filter(u -> u.getEmail() != null)
+                    .collect(java.util.stream.Collectors.toMap(User::getId, User::getEmail, (x, y) -> x));
+        return rows.stream().map(a -> toDto(a, emails)).toList();
     }
 
-    private AuditLogDto toDto(AuditLog a) {
+    private AuditLogDto toDto(AuditLog a, java.util.Map<Long, String> emails) {
+        String actor = a.getActorEmail();
+        if (actor != null && actor.startsWith(ACTOR_REF_PREFIX) && a.getActorId() != null) {
+            actor = emails.getOrDefault(a.getActorId(), actor);
+        }
         return AuditLogDto.builder()
                 .id(a.getId())
-                .actorEmail(a.getActorEmail())
+                .actorId(a.getActorId())
+                .actorEmail(actor)
                 .actorRole(a.getActorRole())
                 .action(a.getAction())
                 .targetType(a.getTargetType())
@@ -104,6 +125,7 @@ public class AuditLogService {
     @Data @Builder
     public static class AuditLogDto {
         private Long id;
+        private Long actorId;
         private String actorEmail;
         private String actorRole;
         private String action;

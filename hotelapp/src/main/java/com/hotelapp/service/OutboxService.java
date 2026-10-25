@@ -44,7 +44,8 @@ public class OutboxService {
         try {
             payload = objectMapper.writeValueAsString(message);
         } catch (JsonProcessingException e) {
-            log.error("[OUTBOX] EmailMessage serialize edilemedi to={}", message.to(), e);
+            log.error("[OUTBOX] EmailMessage serialize edilemedi to={}",
+                    com.hotelapp.security.PiiMasking.email(message.to()), e);
             return;
         }
         OutboxEvent row = OutboxEvent.builder()

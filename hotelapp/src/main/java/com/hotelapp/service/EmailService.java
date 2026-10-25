@@ -163,11 +163,8 @@ public class EmailService {
         return new EmailTemplates().passwordReset(userName, resetLink);
     }
 
-    /** KVKK: loglarda tam e-posta yok — "a***@alan.com". */
+    /** KVKK: loglarda tam e-posta yok — "a***@a***.com" ({@link com.hotelapp.security.PiiMasking#email}). */
     static String maskEmail(String email) {
-        if (email == null) return null;
-        int at = email.indexOf('@');
-        if (at <= 0) return "***";
-        return email.charAt(0) + "***" + email.substring(at);
+        return com.hotelapp.security.PiiMasking.email(email);
     }
 }

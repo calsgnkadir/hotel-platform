@@ -66,7 +66,7 @@ class LoginAttemptLimiterTest {
     @Test
     @DisplayName("Log maskeleme e-postayi acik yazmaz")
     void mask_hidesLocalPart() {
-        assertThat(LoginAttemptLimiter.mask("hedef@test.com")).isEqualTo("h***@test.com");
+        assertThat(LoginAttemptLimiter.mask("hedef@test.com")).isEqualTo("h***@t***.com");
         assertThat(LoginAttemptLimiter.mask("bozuk")).isEqualTo("***");
     }
 }

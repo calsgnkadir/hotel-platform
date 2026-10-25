@@ -14,12 +14,17 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "applications")
+// V28 — ayni aday + ayni ilan icin tek AKTIF basvuru (DB garantisi; servis kontrolu yarisa acik).
+@Table(name = "applications", uniqueConstraints = @UniqueConstraint(
+        name = Application.UK_ACTIVE_LISTING, columnNames = {"candidate_id", "active_listing_key"}))
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Application {
+
+    /** V28 benzersizlik kisiti adi (ihlal 422 "zaten basvurdun"a cevrilir). */
+    public static final String UK_ACTIVE_LISTING = "uk_applications_candidate_active_listing";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,6 +53,17 @@ public class Application {
     @Column(nullable = false)
     @Builder.Default
     private ApplicationStatus status = ApplicationStatus.PENDING;
+
+    /**
+     * V28 — salt okunur generated kolon: aktif durumda (ApplicationService.ACTIVE_FOR_DUPLICATE)
+     * job_listing_id, degilse NULL. Uygulama yazmaz; MySQL'de Flyway (VIRTUAL) olusturur,
+     * columnDefinition yalniz testteki H2 create-drop semasi icindir. Ifade iki yerde ayni olmali.
+     */
+    @Column(name = "active_listing_key", insertable = false, updatable = false,
+            columnDefinition = "bigint GENERATED ALWAYS AS (CASE WHEN status IN "
+                    + "('PENDING','REVIEWING','HELD','STANDBY','ACCEPTED') THEN job_listing_id ELSE NULL END)")
+    @Setter(AccessLevel.NONE)
+    private Long activeListingKey;
 
     @Column(columnDefinition = "TEXT")
     private String coverLetter;

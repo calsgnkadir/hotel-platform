@@ -190,6 +190,66 @@ class StandbyServiceTest {
 
     // ================================================================
     @Nested
+    @DisplayName("KVKK: audit kaydında e-posta yok")
+    class AuditNoEmail {
+
+        private com.hotelapp.event.AuditLoggedEvent onlyAudit() {
+            org.mockito.ArgumentCaptor<com.hotelapp.event.AuditLoggedEvent> cap =
+                    org.mockito.ArgumentCaptor.forClass(com.hotelapp.event.AuditLoggedEvent.class);
+            verify(outboxService).appendAuditLog(cap.capture());
+            return cap.getValue();
+        }
+
+        @Test
+        @DisplayName("MARK_STANDBY: details aday id'si içerir, e-posta içermez")
+        void markStandby_detailsHaveCandidateId() {
+            Application a = app(APP_ID, ApplicationStatus.PENDING);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(a));
+            when(applicationRepository.findMaxStandbyRank(LISTING_ID)).thenReturn(null);
+
+            svc().markAsStandby(APP_ID, OWNER_ID);
+
+            var ev = onlyAudit();
+            assertThat(ev.action()).isEqualTo("MARK_STANDBY");
+            assertThat(ev.details()).contains("candidateId=" + CANDIDATE_ID)
+                    .doesNotContain("user" + CANDIDATE_ID + "@test.com").doesNotContain("@");
+        }
+
+        @Test
+        @DisplayName("REMOVE_STANDBY: details aday id'si içerir, e-posta içermez")
+        void removeStandby_detailsHaveCandidateId() {
+            Application a = app(APP_ID, ApplicationStatus.STANDBY);
+            a.setStandbyRank(1);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(a));
+
+            svc().removeStandby(APP_ID, OWNER_ID);
+
+            var ev = onlyAudit();
+            assertThat(ev.action()).isEqualTo("REMOVE_STANDBY");
+            assertThat(ev.details()).contains("candidateId=" + CANDIDATE_ID).doesNotContain("@");
+        }
+
+        @Test
+        @DisplayName("STANDBY_OFFERED: çağrılan yedek id ile yazılır, e-posta içermez")
+        void standbyOffered_detailsHaveCandidateId() {
+            Application noShow = app(APP_ID, ApplicationStatus.ACCEPTED, upcomingSlot(1, 0));
+            Application standby = app(77L, ApplicationStatus.STANDBY, upcomingSlot(1, 0));
+            standby.setStandbyRank(1);
+            when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(noShow));
+            when(applicationRepository.findAvailableStandbys(LISTING_ID)).thenReturn(List.of(standby));
+            when(shiftSlotRepository.findAllByJobListingId(LISTING_ID)).thenReturn(List.of(upcomingSlot(1, 0)));
+
+            assertThat(svc().offerAfterNoShow(APP_ID)).isEqualTo(77L);
+
+            var ev = onlyAudit();
+            assertThat(ev.action()).isEqualTo("STANDBY_OFFERED");
+            assertThat(ev.targetId()).isEqualTo(77L);
+            assertThat(ev.details()).contains("candidateId=" + CANDIDATE_ID).doesNotContain("@");
+        }
+    }
+
+    // ================================================================
+    @Nested
     @DisplayName("offerAfterNoShow")
     class OfferAfterNoShow {
 

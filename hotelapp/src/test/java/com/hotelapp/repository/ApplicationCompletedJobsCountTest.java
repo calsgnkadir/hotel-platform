@@ -43,19 +43,28 @@ class ApplicationCompletedJobsCountTest {
     @Autowired private EntityManager em;
 
     private User owner;
+    private Business business;
     private JobListing listing;
     private User candidate;
 
     @BeforeEach
     void setUp() {
         owner = user("owner@test.com", Role.BUSINESS_OWNER);
-        Business b = Business.builder().name("Otel").type(BusinessType.HOTEL)
+        business = Business.builder().name("Otel").type(BusinessType.HOTEL)
                 .city("Istanbul").district("Sisli").owner(owner).build();
-        em.persist(b);
-        listing = JobListing.builder().business(b).position(Position.WAITER).jobType(JobType.PERMANENT)
+        em.persist(business);
+        useNewListing();
+        candidate = user("aday@test.com", Role.CANDIDATE);
+    }
+
+    /**
+     * Ayni isletmede yeni ilan; sonraki slot()/accepted() bu ilani kullanir.
+     * V28: ayni aday ayni ilanda tek aktif (ACCEPTED dahil) basvuru tutabilir.
+     */
+    private void useNewListing() {
+        listing = JobListing.builder().business(business).position(Position.WAITER).jobType(JobType.PERMANENT)
                 .title("Banket").description("demo").status(ListingStatus.ACTIVE).build();
         em.persist(listing);
-        candidate = user("aday@test.com", Role.CANDIDATE);
     }
 
     private User user(String email, Role role) {
@@ -128,14 +137,21 @@ class ApplicationCompletedJobsCountTest {
 
     @Test
     void mixed_history_counts_per_rule_and_ignores_other_candidates() {
-        ShiftSlot a1 = slot(5), a2 = slot(4), b1 = slot(3);
+        // Her başvuru aynı işletmenin ayrı ilanında (V28: ilan başına tek aktif başvuru).
+        ShiftSlot a1 = slot(5), a2 = slot(4);
         Application partial = accepted(candidate, true, a1, a2);   // 1 gelmedi, 1 çalışıldı → tamamlandı
         markNoShow(partial, a2);
+        useNewListing();
+        ShiftSlot b1 = slot(3);
         Application fullNoShow = accepted(candidate, true, b1);    // tek vardiya gelmedi → düşer
         markNoShow(fullNoShow, b1);
+        useNewListing();
         accepted(candidate, true, slot(6));                       // eski kayıt → düşer, 1 gelmedi
+        useNewListing();
         accepted(candidate, false, slot(7));                      // temiz → tamamlandı
+        useNewListing();
         accepted(candidate, false);                               // slotsuz eski akış → tamamlandı
+        useNewListing();
         Application pending = Application.builder().candidate(candidate).jobListing(listing)
                 .status(ApplicationStatus.PENDING).build();
         em.persist(pending);                                      // kabul değil → sayılmaz

@@ -111,7 +111,7 @@ public class StandbyService {
         outboxService.appendAuditLog(AuditLoggedEvent.user(
                 ownerId, "MARK_STANDBY", "APPLICATION", applicationId,
                 "İlan: " + app.getJobListing().getTitle()
-                        + " · Aday: " + app.getCandidate().getEmail()
+                        + " · candidateId=" + app.getCandidate().getId()
                         + " · Yedek sırası: " + app.getStandbyRank()
                         + " · Önceki durum: " + current));
 
@@ -149,7 +149,7 @@ public class StandbyService {
         outboxService.appendAuditLog(AuditLoggedEvent.user(
                 ownerId, "REMOVE_STANDBY", "APPLICATION", applicationId,
                 "İlan: " + app.getJobListing().getTitle()
-                        + " · Aday: " + app.getCandidate().getEmail()));
+                        + " · candidateId=" + app.getCandidate().getId()));
 
         if (cascadeFor != null) {
             offerAfterNoShow(cascadeFor);
@@ -276,8 +276,8 @@ public class StandbyService {
 
         outboxService.appendAuditLog(AuditLoggedEvent.system(
                 "STANDBY_OFFERED", "APPLICATION", next.getId(),
-                "No-show app=" + noShowApplicationId + " yerine yedek "
-                        + next.getCandidate().getEmail() + " cagrildi. Son: " + next.getStandbyDeadline()));
+                "No-show app=" + noShowApplicationId + " yerine yedek candidateId="
+                        + next.getCandidate().getId() + " cagrildi. Son: " + next.getStandbyDeadline()));
 
         notificationService.notify(next.getCandidate().getId(),
                 NotificationType.STANDBY_ACTIVATED,
