@@ -79,16 +79,53 @@ public class OutboxAdminService {
                 .createdAt(e.getCreatedAt())
                 .processedAt(e.getProcessedAt())
                 .attempts(e.getAttempts())
-                .lastError(e.getLastError())
+                .lastError(com.hotelapp.security.PiiMasking.scrub(e.getLastError()))
                 .nextAttemptAt(e.getNextAttemptAt())
                 .status(status)
-                .payloadPreview(preview(e.getPayload()))
+                .payloadPreview(preview(e))
                 .build();
     }
 
-    private String preview(String payload) {
+    /**
+     * KVKK: admin onizlemesi ham payload'i gostermez.
+     *  - EMAIL: yalniz maskeli alici + konu; html govdesi (sifirlama/dogrulama
+     *    baglantisi icerebilir) HIC gosterilmez.
+     *  - Diger turler: e-posta/telefon desenleri maskelenir, sonra 200 karaktere kesilir
+     *    (maskeleme kesmeden once — yarim kalan adres sizmasin).
+     */
+    static String preview(OutboxEvent e) {
+        String payload = e.getPayload();
         if (payload == null) return null;
-        return payload.length() > 200 ? payload.substring(0, 200) + "…" : payload;
+        if (OutboxService.TYPE_EMAIL.equals(e.getEventType())) {
+            return emailPreview(payload);
+        }
+        String masked = com.hotelapp.security.PiiMasking.scrub(payload);
+        return masked.length() > PREVIEW_LIMIT ? masked.substring(0, PREVIEW_LIMIT) + "…" : masked;
+    }
+
+    private static final int PREVIEW_LIMIT = 200;
+    private static final com.fasterxml.jackson.databind.ObjectMapper JSON =
+            new com.fasterxml.jackson.databind.ObjectMapper();
+
+    private static String emailPreview(String payload) {
+        try {
+            var node = JSON.readTree(payload);
+            var out = JSON.createObjectNode();
+            out.put("to", com.hotelapp.security.PiiMasking.email(text(node, "to")));
+            String subject = com.hotelapp.security.PiiMasking.scrub(text(node, "subject"));
+            if (subject != null && subject.length() > PREVIEW_LIMIT) {
+                subject = subject.substring(0, PREVIEW_LIMIT) + "…";
+            }
+            out.put("subject", subject);
+            return JSON.writeValueAsString(out);
+        } catch (Exception ex) {
+            return "[e-posta içeriği gizlendi]";
+        }
+    }
+
+    private static String text(com.fasterxml.jackson.databind.JsonNode node, String field) {
+        var v = node == null ? null : node.get(field);
+        return v == null || v.isNull() ? null : v.asText();
     }
 
     @Data @Builder

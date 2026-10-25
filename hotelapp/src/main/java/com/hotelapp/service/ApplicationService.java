@@ -311,8 +311,7 @@ public class ApplicationService {
                 "İlan: " + application.getJobListing().getTitle()
                         + " · candidateId=" + application.getCandidate().getId()
                         + " · Önceki durum: " + current
-                        + (request.getNote() != null && !request.getNote().isBlank()
-                            ? " · Not: " + request.getNote() : "")));
+                        + noteAuditSuffix(request.getNote())));
 
         // Bildirim: adaya kabul/red
         Long candidateId = application.getCandidate().getId();
@@ -705,4 +704,14 @@ public class ApplicationService {
     }
 
     // FAZ 4.5 — Entity -> DTO donusumu ApplicationMapper'a tasindi (god class temizligi).
+
+    /**
+     * KVKK: isletmenin adaya yazdigi karar notu serbest metindir (saglik, kisisel
+     * durum, iletisim bilgisi icerebilir). Audit kaydina metin yazilmaz; yalniz
+     * not oldugu ve uzunlugu. Notun kendisi adaya giden bildirim/e-postada kalir.
+     */
+    static String noteAuditSuffix(String note) {
+        if (note == null || note.isBlank()) return "";
+        return " · Not var (" + note.strip().length() + " karakter)";
+    }
 }

@@ -83,4 +83,58 @@ class OutboxStatusWriterTest {
         assertThat(e.getNextAttemptAt()).isAfterOrEqualTo(before.plusSeconds(29));
         assertThat(e.getLastError()).contains("OPEN");
     }
+
+    @Test
+    @DisplayName("KVKK: başarılı EMAIL teslimi sonrası html gövdesi boşaltılır, alıcı maskelenir")
+    void markProcessed_email_redactsBody() throws Exception {
+        OutboxEvent e = row(1);
+        e.setPayload("{\"to\":\"tam.adres@ornek.com\",\"subject\":\"Kadrom — Email Doğrulama\","
+                + "\"html\":\"<a href='https://kadrom.me/verify?token=GIZLI123'>doğrula</a>\"}");
+
+        writer.markProcessed(1L);
+
+        assertThat(e.getProcessedAt()).isNotNull();
+        var node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(e.getPayload());
+        assertThat(node.get("to").asText()).isEqualTo("t***@o***.com");
+        assertThat(node.get("subject").asText()).isEqualTo("Kadrom — Email Doğrulama");
+        assertThat(node.get("html").asText()).isEmpty();
+        assertThat(e.getPayload()).doesNotContain("GIZLI123", "tam.adres");
+        verify(repo).save(e);
+    }
+
+    @Test
+    @DisplayName("Başarılı AUDIT_LOG teslimi payload'a dokunmaz")
+    void markProcessed_audit_keepsPayload() {
+        OutboxEvent e = row(0);
+        e.setEventType("AUDIT_LOG");
+        e.setPayload("{\"action\":\"X\"}");
+
+        writer.markProcessed(1L);
+
+        assertThat(e.getPayload()).isEqualTo("{\"action\":\"X\"}");
+    }
+
+    @Test
+    @DisplayName("Bozuk EMAIL payload'ı da teslim sonrası gövdesiz hale gelir")
+    void redact_unparseable() {
+        String out = OutboxStatusWriter.redactDeliveredEmail("bozuk <a href=reset?token=X>");
+        assertThat(out).doesNotContain("token").contains("\"html\":\"\"");
+    }
+
+    @Test
+    @DisplayName("KVKK: last_error'da e-posta yok; HTTP durum kodu + hata sınıfı kalır")
+    void markFailed_masksEmailAndKeepsStatus() {
+        OutboxEvent e = row(0);
+        var http = org.springframework.web.client.HttpClientErrorException.create(
+                org.springframework.http.HttpStatus.FORBIDDEN, "Forbidden", new org.springframework.http.HttpHeaders(),
+                "{\"message\":\"only to owner@resend-hesap.com\"}".getBytes(), null);
+        var ex = new IllegalStateException("Email gönderilemedi: alıcı tam.adres@ornek.com", http);
+
+        writer.markFailed(1L, ex, OutboxRelay.MAX_ATTEMPTS);
+
+        assertThat(e.getLastError())
+                .startsWith("IllegalStateException HTTP 403")
+                .contains("t***@o***.com")
+                .doesNotContain("tam.adres", "owner@");
+    }
 }

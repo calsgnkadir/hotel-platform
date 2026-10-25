@@ -169,7 +169,8 @@ public class AuthService {
         loginAttemptLimiter.reset(request.getEmail(), clientIp);
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", request.getEmail()));
+                // KVKK: e-posta istisna mesajina/loga girmesin
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı."));
 
         // F0.2: refresh token üret
         String refreshToken = refreshTokenService.createForUser(user);

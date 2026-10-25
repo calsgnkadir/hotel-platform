@@ -50,7 +50,23 @@ class AuthServiceTest {
     @Mock private RefreshTokenService refreshTokenService;
     @Mock private PushSubscriptionService pushSubscriptionService;
     @Mock private com.hotelapp.security.oauth.OAuthLoginCodeStore oAuthLoginCodeStore;
+    @Mock private com.hotelapp.security.LoginAttemptLimiter loginAttemptLimiter;
     @InjectMocks private AuthService authService;
+
+    @Test
+    @DisplayName("KVKK: girişte kullanıcı kaybolursa 404 mesajı e-postayı içermez")
+    void login_userVanished_messageHasNoEmail() {
+        var req = new com.hotelapp.dto.LoginRequest();
+        req.setEmail("gizli.kisi@ornek.com");
+        req.setPassword("Sifre12345!");
+        when(loginAttemptLimiter.tryAcquire(anyString(), any())).thenReturn(true);
+        when(userRepository.findByEmail("gizli.kisi@ornek.com")).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> authService.login(req, "127.0.0.1"))
+                .isInstanceOf(com.hotelapp.exception.ResourceNotFoundException.class)
+                .hasMessage("Kullanıcı bulunamadı.")
+                .hasMessageNotContaining("gizli");
+    }
 
     // ── KVKK onay kaydı ───────────────────────────────────────────────
 

@@ -34,4 +34,26 @@ class PiiMaskingTest {
         assertThat(PiiMasking.email("a@b@c.com")).isEqualTo("***");
         assertThat(PiiMasking.email("")).isEqualTo("***");
     }
+
+    @Test
+    @DisplayName("Telefon: yalnız son 2 hane kalır; kısa/null değerler")
+    void phoneMasking() {
+        assertThat(PiiMasking.phone("+90 532 123 45 67")).isEqualTo("***67");
+        assertThat(PiiMasking.phone("05321234567")).isEqualTo("***67");
+        assertThat(PiiMasking.phone("123")).isEqualTo("***");
+        assertThat(PiiMasking.phone(null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Serbest metin: e-posta ve telefon maskelenir, tarih/saat/kısa sayı dokunulmaz")
+    void scrubFreeText() {
+        String out = PiiMasking.scrub(
+                "{\"to\":\"ayse.yilmaz@ornek.com\",\"n\":\"Ara: 0532 123 45 67 veya +90 (533) 765-43-21\","
+                + "\"t\":\"2026-10-25 12:30\",\"id\":12345}");
+        assertThat(out)
+                .contains("a***@o***.com", "***67", "***21", "2026-10-25 12:30", "12345")
+                .doesNotContain("ayse", "ornek", "0532", "765");
+        assertThat(PiiMasking.scrub(null)).isNull();
+        assertThat(PiiMasking.scrub("a***@o***.com")).isEqualTo("a***@o***.com");
+    }
 }

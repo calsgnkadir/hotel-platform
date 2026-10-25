@@ -44,7 +44,8 @@ class EmailResendHttpTest {
             RECEIVED.add(body);
             boolean reject = body.get("to").get(0).asText().startsWith("reddet");
             byte[] out = (reject
-                    ? "{\"statusCode\":403,\"message\":\"The kadrom.me domain is not verified.\"}"
+                    ? ("{\"statusCode\":403,\"message\":\"The kadrom.me domain is not verified. Recipient: "
+                        + body.get("to").get(0).asText() + "\"}")
                     : "{\"id\":\"msg_1\"}").getBytes(StandardCharsets.UTF_8);
             ex.getResponseHeaders().add("Content-Type", "application/json");
             ex.sendResponseHeaders(reject ? 403 : 200, out.length);
@@ -70,7 +71,10 @@ class EmailResendHttpTest {
     void resendRejection_isNotSwallowed_soOutboxRetries() {
         assertThatThrownBy(() -> emailService.send("reddet@ornek.com", "Test", "<p>x</p>"))
                 .hasMessageContaining("403")
-                .hasMessageContaining("not verified");
+                .hasMessageContaining("not verified")
+                // KVKK: saglayici metnindeki alici adresi maskelenir (last_error/log'a ham gitmez)
+                .hasMessageNotContaining("reddet@ornek.com")
+                .hasMessageContaining("r***@o***.com");
     }
 
     @Test

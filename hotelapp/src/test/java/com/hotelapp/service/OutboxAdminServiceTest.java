@@ -135,4 +135,44 @@ class OutboxAdminServiceTest {
 
         assertThat(dto.getPayloadPreview()).hasSize(201).endsWith("…");
     }
+
+    @Test
+    @DisplayName("KVKK: EMAIL önizlemesi yalnız maskeli alıcı + konu; html gövdesi yok")
+    void preview_email_masksRecipient_hidesBody() {
+        OutboxEvent e = ev(1L, OutboxRelay.MAX_ATTEMPTS, null);
+        e.setEventType("EMAIL");
+        e.setPayload("{\"to\":\"tam.adres@ornek.com\",\"subject\":\"Kadrom — Şifre sıfırlama\","
+                + "\"html\":\"<a href='https://kadrom.me/reset?token=GIZLI123'>sıfırla</a>\"}");
+        e.setLastError("IllegalStateException: Email gönderilemedi: alıcı tam.adres@ornek.com reddedildi");
+        when(outboxRepository.findAllByOrderByCreatedAtDesc(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(e)));
+
+        var dto = service.list("all", 50).get(0);
+
+        assertThat(dto.getPayloadPreview())
+                .contains("t***@o***.com", "Şifre sıfırlama")
+                .doesNotContain("tam.adres", "html", "token", "GIZLI123", "href");
+        assertThat(dto.getLastError()).contains("t***@o***.com").doesNotContain("tam.adres");
+    }
+
+    @Test
+    @DisplayName("KVKK: EMAIL payload bozuksa ham metin yerine sabit ibare")
+    void preview_email_unparseable_hidden() {
+        OutboxEvent e = ev(1L, 0, null);
+        e.setEventType("EMAIL");
+        e.setPayload("bozuk tam.adres@ornek.com <a href=reset?token=X>");
+
+        assertThat(OutboxAdminService.preview(e)).isEqualTo("[e-posta içeriği gizlendi]");
+    }
+
+    @Test
+    @DisplayName("KVKK: diğer olaylarda e-posta/telefon maskelenir, kesmeden önce")
+    void preview_audit_masksPii() {
+        OutboxEvent e = ev(1L, 0, null);
+        e.setPayload("{\"details\":\"" + "y".repeat(150) + " ali.veli@ornek.com 0532 123 45 67\"}");
+
+        String p = OutboxAdminService.preview(e);
+
+        assertThat(p).doesNotContain("ali.veli", "ornek", "0532").contains("a***@o***.com");
+    }
 }

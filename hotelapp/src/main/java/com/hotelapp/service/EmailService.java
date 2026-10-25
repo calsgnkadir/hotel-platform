@@ -109,8 +109,9 @@ public class EmailService {
             log.info("[EMAIL] Gönderildi: to={} subject={} status={}",
                     maskEmail(toEmail), subject, response.getStatusCode());
         } catch (RestClientException e) {
-            log.error("[EMAIL] Gönderim hatası: to={} hata={}", maskEmail(toEmail), e.getMessage());
-            throw new IllegalStateException("Email gönderilemedi: " + e.getMessage(), e);
+            String safe = safeError(e);
+            log.error("[EMAIL] Gönderim hatası: to={} hata={}", maskEmail(toEmail), safe);
+            throw new IllegalStateException("Email gönderilemedi: " + safe, e);
         }
     }
 
@@ -142,8 +143,9 @@ public class EmailService {
             restTemplate.postForEntity(apiUrl, new HttpEntity<>(body, headers), String.class);
             log.info("[EMAIL] Ekli gönderildi: to={} subject={} ek={}", maskEmail(toEmail), subject, fileName);
         } catch (RestClientException e) {
-            log.error("[EMAIL] Ekli gönderim hatası: to={} hata={}", maskEmail(toEmail), e.getMessage());
-            throw new IllegalStateException("Email gönderilemedi: " + e.getMessage(), e);
+            String safe = safeError(e);
+            log.error("[EMAIL] Ekli gönderim hatası: to={} hata={}", maskEmail(toEmail), safe);
+            throw new IllegalStateException("Email gönderilemedi: " + safe, e);
         }
     }
 
@@ -151,7 +153,7 @@ public class EmailService {
     private void sendWithAttachmentFallback(String toEmail, String subject, String htmlBody,
                                            String fileName, byte[] content, Throwable t) {
         log.warn("[EMAIL][CB-FALLBACK] ekli email atlandı - to={} subject={} sebep={}",
-                maskEmail(toEmail), subject, t.getMessage());
+                maskEmail(toEmail), subject, com.hotelapp.security.PiiMasking.scrub(t.getMessage()));
     }
 
     /**
@@ -161,6 +163,35 @@ public class EmailService {
      */
     public String buildPasswordResetHtml(String userName, String resetLink) {
         return new EmailTemplates().passwordReset(userName, resetLink);
+    }
+
+    private static final com.fasterxml.jackson.databind.ObjectMapper JSON =
+            new com.fasterxml.jackson.databind.ObjectMapper();
+
+    /**
+     * KVKK: saglayici hata metni (yanit govdesi) alici adresini icerebilir. Loga ve
+     * outbox last_error'a yalniz durum kodu / hata sinifi + maskeli kisa mesaj gider.
+     * Resend govdesi JSON ise yalniz "message" alani alinir.
+     */
+    static String safeError(RestClientException e) {
+        if (e instanceof org.springframework.web.client.RestClientResponseException r) {
+            String body = r.getResponseBodyAsString();
+            String msg = body;
+            try {
+                var node = JSON.readTree(body);
+                if (node != null && node.hasNonNull("message")) msg = node.get("message").asText();
+            } catch (Exception ignored) {
+                // JSON degil: ham govde maskelenip kisaltilir
+            }
+            return "HTTP " + r.getStatusCode().value() + (msg == null || msg.isBlank() ? "" : " " + shortMasked(msg));
+        }
+        return e.getClass().getSimpleName() + ": " + shortMasked(e.getMessage());
+    }
+
+    private static String shortMasked(String text) {
+        if (text == null) return "";
+        String m = com.hotelapp.security.PiiMasking.scrub(text);
+        return m.length() > 200 ? m.substring(0, 200) + "…" : m;
     }
 
     /** KVKK: loglarda tam e-posta yok — "a***@a***.com" ({@link com.hotelapp.security.PiiMasking#email}). */

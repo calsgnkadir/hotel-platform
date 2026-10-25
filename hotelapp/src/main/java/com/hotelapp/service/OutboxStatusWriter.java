@@ -34,8 +34,42 @@ public class OutboxStatusWriter {
     public void markProcessed(Long id) {
         outboxRepository.findById(id).ifPresent(e -> {
             e.setProcessedAt(LocalDateTime.now(clock));
+            if (OutboxService.TYPE_EMAIL.equals(e.getEventType())) {
+                e.setPayload(redactDeliveredEmail(e.getPayload()));
+            }
             outboxRepository.save(e);
         });
+    }
+
+    private static final com.fasterxml.jackson.databind.ObjectMapper JSON =
+            new com.fasterxml.jackson.databind.ObjectMapper();
+
+    /**
+     * KVKK: teslim edilmis e-postanin govdesi (sifirlama/dogrulama baglantisi, ad-soyad)
+     * 30 gunluk saklama boyunca DB'de durmasin. Teslim edilmis olay yeniden denenemez
+     * (OutboxAdminService.retry guard'i), govdeye artik ihtiyac yok. Alici maskelenir,
+     * konu gozlem icin kalir. Ayristirilamazsa govdesiz bos mesaj yazilir.
+     */
+    static String redactDeliveredEmail(String payload) {
+        String to = null;
+        String subject = null;
+        try {
+            var node = payload == null ? null : JSON.readTree(payload);
+            if (node != null) {
+                if (node.hasNonNull("to")) to = node.get("to").asText();
+                if (node.hasNonNull("subject")) subject = node.get("subject").asText();
+            }
+        } catch (Exception ignored) {
+            // bozuk payload: alici/konu bilinmiyor, yine de govde silinir
+        }
+        try {
+            return JSON.writeValueAsString(new com.hotelapp.event.EmailMessage(
+                    com.hotelapp.security.PiiMasking.email(to),
+                    com.hotelapp.security.PiiMasking.scrub(subject),
+                    ""));
+        } catch (Exception ex) {
+            return "{}";
+        }
     }
 
     /**
@@ -78,8 +112,30 @@ public class OutboxStatusWriter {
         });
     }
 
-    private static String errorText(Exception ex) {
-        String msg = ex.getClass().getSimpleName() + ": " + ex.getMessage();
-        return msg.length() > 500 ? msg.substring(0, 500) : msg;
+    /**
+     * KVKK: saglayici hata metni alici adresi/yanit govdesi icerebilir. last_error ve
+     * loga yalniz hata sinifi + (varsa) HTTP durum kodu + maskeli kisa mesaj yazilir.
+     */
+    static String errorText(Exception ex) {
+        StringBuilder sb = new StringBuilder(ex.getClass().getSimpleName());
+        Integer status = httpStatusOf(ex);
+        if (status != null) sb.append(" HTTP ").append(status);
+        String raw = ex.getMessage();
+        if (raw != null && !raw.isBlank()) {
+            String masked = com.hotelapp.security.PiiMasking.scrub(raw);
+            if (masked.length() > 300) masked = masked.substring(0, 300) + "…";
+            sb.append(": ").append(masked);
+        }
+        return sb.toString();
+    }
+
+    private static Integer httpStatusOf(Throwable ex) {
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            if (t instanceof org.springframework.web.client.RestClientResponseException r) {
+                return r.getStatusCode().value();
+            }
+            if (t.getCause() == t) break;
+        }
+        return null;
     }
 }

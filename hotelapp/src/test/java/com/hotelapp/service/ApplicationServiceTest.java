@@ -501,19 +501,22 @@ class ApplicationServiceTest {
         }
 
         @Test
-        @DisplayName("Red: REJECT_APPLICATION audit'lenir, gerekçe not'u detaya girer")
+        @DisplayName("Red: REJECT_APPLICATION audit'lenir; KVKK — not metni değil yalnız 'not var' + uzunluk")
         void reject_appendsAuditWithNote() {
             when(applicationRepository.findById(APP_ID)).thenReturn(Optional.of(appWithStatus(ApplicationStatus.REVIEWING)));
 
             ReviewRequest req = new ReviewRequest();
             req.setDecision(ApplicationStatus.REJECTED);
-            req.setNote("Deneyim yetersiz");
+            req.setNote("Deneyim yetersiz, 0532 123 45 67 arayın");
 
             service.reviewApplication(APP_ID, OWNER_ID, req);
 
             var ev = captureAudit();
             assertThat(ev.action()).isEqualTo("REJECT_APPLICATION");
-            assertThat(ev.details()).contains("REVIEWING", "Deneyim yetersiz", "candidateId=" + CANDIDATE_ID)
+            assertThat(ev.details()).contains("REVIEWING", "candidateId=" + CANDIDATE_ID,
+                            "Not var (" + req.getNote().length() + " karakter)")
+                    .doesNotContain("Deneyim yetersiz")
+                    .doesNotContain("0532")
                     .doesNotContain("aday@test.com");
         }
 
