@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 class RefreshTokenServiceTest {
 
     @Mock private RefreshTokenRepository repo;
+    @Mock private RefreshTokenReplayRevoker replayRevoker;
     @InjectMocks private RefreshTokenService service;
 
     private User testUser;
@@ -113,7 +114,7 @@ class RefreshTokenServiceTest {
                 .hasMessageContaining("error.auth.tokenBreach");  // "güvenlik ihlali" Türkçe i = ASCII güvenli kelime
 
         // Tum user token'lari revoke edilmis olmali (replay saldirisi defense)
-        verify(repo).revokeAllForUser(eq(42L));
+        verify(replayRevoker).revokeAllForUser(eq(42L));
     }
 
     @Test

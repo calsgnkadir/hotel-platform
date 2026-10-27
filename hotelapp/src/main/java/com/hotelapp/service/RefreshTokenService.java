@@ -39,6 +39,7 @@ public class RefreshTokenService {
     java.time.Clock clock = java.time.Clock.system(java.time.ZoneId.of("Europe/Istanbul"));
 
     private final RefreshTokenRepository repo;
+    private final RefreshTokenReplayRevoker replayRevoker;
 
     /** 7 gün geçerli (access token 15 dk) */
     private static final long EXPIRES_DAYS = 7;
@@ -82,7 +83,7 @@ public class RefreshTokenService {
         if (token.isRevoked()) {
             log.warn("Refresh token REUSE detected — user {} tüm token'lar revoke edilir",
                     token.getUser().getId());
-            repo.revokeAllForUser(token.getUser().getId());
+            replayRevoker.revokeAllForUser(token.getUser().getId());
             throw UnauthorizedException.keyed("error.auth.tokenBreach");
         }
 
