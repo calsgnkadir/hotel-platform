@@ -168,11 +168,14 @@ docker compose up --build
 
 | Servis | Adres |
 | :-- | :-- |
-| Arayüz | <http://localhost:5174> |
+| Arayüz | <http://localhost:5173> |
 | API | <http://localhost:8081> (Swagger: <http://localhost:8081/swagger-ui.html>) |
 | MySQL | `localhost:3307` |
 
-Portlar, yerel geliştirme ortamıyla (5173, 8080, 3306) çakışmayacak şekilde seçildi.
+Arayüzün tek yerel adresi **http://localhost:5173**: Docker, Vite geliştirme ve
+derlenmiş önizleme aynı portu kullanır. Birini başlatmadan önce diğerini durdurun;
+aynı anda iki arayüz sunucusu açılmaz. Docker API ve MySQL portları ise yerel
+geliştirmedeki servislerle çakışmaması için sırasıyla 8081 ve 3307'dir.
 Compose, backend'i `dev,demo` profiliyle başlatır; şema Flyway ile kurulur ve demo verisi yüklenir.
 
 ### Demo hesaplar
@@ -225,6 +228,9 @@ npm run dev
 
 Vite `strictPort` ile çalışır: 5173 doluysa başka porta kaymaz, hata verir. `/api` ve `/ws`
 istekleri 8080'deki backend'e yönlendirilir.
+
+Derlenmiş arayüzü görmek için geliştirme sunucusunu durdurup `npm run build` ve
+`npm run preview` çalıştırın. Önizleme adresi de **http://localhost:5173** olur.
 
 ### Ortam değişkenleri
 

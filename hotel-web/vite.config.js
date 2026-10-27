@@ -50,7 +50,7 @@ export default defineConfig(({ command, mode }) => {
   },
   server: {
     port: 5173,
-    // Port doluysa sessizce 5174'e kayma: backend CORS/WebSocket, e-posta linkleri ve
+    // Port doluysa sessizce başka porta kayma: backend CORS/WebSocket, e-posta linkleri ve
     // Google dönüşü 5173'e ayarlı. Dolu ise açık hata ver (eski sunucuyu kapat).
     strictPort: true,
     // Geliştirmede CORS sorunu yaşamamak için backend'e proxy
@@ -91,6 +91,11 @@ export default defineConfig(({ command, mode }) => {
         },
       },
     },
+  },
+  // Geliştirme, Docker ve derlenmiş önizleme için tek yerel arayüz portu.
+  preview: {
+    port: 5173,
+    strictPort: true,
   },
   // FAZ 3/#A3 — Bundle optimize: agir kutuphaneleri ayri chunk'a bol
   // Boylelikle landing/login sayfalari recharts+leaflet+stomp yuklemez,

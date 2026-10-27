@@ -21,6 +21,10 @@ npm run dev
 
 Tarayıcıda aç: `http://localhost:5173`
 
+Docker, geliştirme ve derlenmiş önizleme için arayüz adresi aynıdır.
+`npm run build` ardından `npm run preview` de `http://localhost:5173` üzerinde açılır.
+Bu çalışma biçimlerinden yalnızca birini aynı anda çalıştırın; port doluysa sunucu hata verir.
+
 ## Yapı
 
 ```

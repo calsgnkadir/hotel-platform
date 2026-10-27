@@ -36,7 +36,7 @@ docker compose -p hotel-qr-review up -d --build --wait
 docker compose -p hotel-qr-review ps
 ```
 
-Yerel adres: http://localhost:5174. Bu Compose dosyası `dev,demo` profillerini kullanır; gerçek üretim ortamına dağıtım yapmaz.
+Yerel adres: http://localhost:5173. Önce aynı porttaki Vite geliştirme/önizleme sunucusunu durdurun. Bu Compose dosyası `dev,demo` profillerini kullanır; gerçek üretim ortamına dağıtım yapmaz.
 
 ## 28 Eylül 2026 doğrulama sonuçları
 

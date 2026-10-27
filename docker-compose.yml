@@ -1,6 +1,7 @@
 # Kadrom — tam yerel stack: MySQL + Spring Boot + React (nginx).
 # Kullanim:  cp .env.example .env  &&  docker compose up --build
-# Sonra: frontend http://localhost:5174 · API/Swagger http://localhost:8081/swagger-ui
+# Sonra: frontend http://localhost:5173 · API/Swagger http://localhost:8081/swagger-ui
+# Vite geliştirme/önizleme sunucusuyla aynı anda başlatmayın; arayüz portu ortaktır.
 #
 # Not: Bu YEREL/portfoy stack'i. Canli backend yok (Railway denemesi bitti);
 # Vercel'de yalniz arayuz onizlemesi var. "Clone'la calistir" icin.
@@ -41,9 +42,8 @@ services:
       # ezilir (konsol log'u ve dev ayarlari kaybolur). dev, DB'yi zaten
       # env'den okuyor; cakisma yok.
       SPRING_PROFILES_ACTIVE: dev,demo
-      # Frontend 5174'te (5173'u yerel Vite dev server kullanabiliyor) —
-      # CORS'a eklenmezse tarayici istekleri bloklar.
-      APP_CORS_ALLOWED_ORIGINS: http://localhost:5174,http://localhost:5173,http://localhost:3000
+      # Yerel arayüzün tek adresi: Docker ve Vite aynı origin'i kullanır.
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:5173
       # Sema FLYWAY ile kurulur — production'daki yolun aynisi.
       #
       # Onceden burada FLYWAY_ENABLED=false + ddl-auto=update vardi: V4
@@ -70,7 +70,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-dummy-client-secret}
       # E-posta gonderimi kapali (Resend) — yerel stack'te mail atilmaz.
       RESEND_API_KEY: ${RESEND_API_KEY:-test-key}
-      APP_BASE_URL: http://localhost:5174
+      APP_BASE_URL: http://localhost:5173
     ports:
       # Host 8081: IntelliJ'deki yerel backend 8080'i tutabiliyor, cakismasin
       - "8081:8080"
@@ -91,7 +91,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "5174:80"
+      - "5173:80"
 
 volumes:
   mysql_data:
