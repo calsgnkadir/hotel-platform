@@ -796,7 +796,8 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
 
   return (
     <div className="ah-surface space-y-3">
-      {/* Araç çubuğu: 1. satır arama + Filtreler, 2. satır sayı + sıralama + düğmeler.
+      {/* Araç çubuğu: arama + Filtreler, ardından sayı + sıralama.
+          Mobilde müsaitlik ve yakınlık düğmeleri ayrı satırda tamamen görünür.
           Sayfa başlığı panelde (DashboardLayout) — burada tekrar edilmez. */}
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0">
@@ -842,25 +843,25 @@ export default function ListingsPage({ onApplicationSubmitted, onMessagesOpen })
         </button>
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 py-0.5 no-scrollbar">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 py-0.5 sm:flex sm:flex-wrap">
         <span className="type-meta tabular-nums flex-shrink-0 mr-auto pr-1" data-testid="listing-count"
               aria-live="polite">
           {loading ? 'Yükleniyor' : `${total} ilan`}
         </span>
-        <label className="inline-flex flex-shrink-0 items-center gap-1.5 type-meta">
+        <label className="min-w-0 inline-flex items-center justify-end gap-1.5 type-meta sm:ml-auto">
           <span className="hidden sm:inline">Sırala</span>
           <select value={sortBy} onChange={e => setSortBy(e.target.value)}
                   disabled={nearbyFirst}
                   aria-label="Sıralama"
                   title={nearbyFirst ? 'Yakınlar açıkken sıralama mesafeye göre' : 'Sıralama'}
-                  className="input text-sm"
-                  style={{ padding: '6px 28px 6px 10px', width: 'auto', minWidth: 132 }}>
+                  className="input text-sm min-w-0 min-h-11 md:min-h-0"
+                  style={{ padding: '6px 28px 6px 10px', width: 'auto', minWidth: 132, maxWidth: '100%' }}>
             <option value="relevance">Sana özel</option>
             <option value="newest">En yeni</option>
             <option value="wage">Ücret (günlük karşılık)</option>
           </select>
         </label>
-        <div className="flex-shrink-0 whitespace-nowrap flex items-center gap-2">
+        <div className="col-span-2 grid grid-cols-[minmax(0,1fr)_auto] gap-2 sm:flex sm:flex-shrink-0 sm:items-center">
           <AvailableNowToggle />
           <NearbyToggle
             nearbyFirst={nearbyFirst}
@@ -1263,13 +1264,13 @@ function AvailableNowToggle() {
       title={active
         ? `Bugün ${untilLabel}'a kadar müsait görünüyorsun. Kapatmak için tıkla.`
         : 'Bugün çalışabilecek durumdaysan işaretle — acil ilanlarda önceliklisin'}
-      className={`chip cand-filter-chip disabled:opacity-60${active ? ' is-active' : ''}`}>
+      className={`chip cand-filter-chip min-w-0 justify-center sm:whitespace-nowrap disabled:opacity-60${active ? ' is-active' : ''}`}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+           strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
         <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
       </svg>
-      {busy ? 'Kaydediliyor'
-        : active ? `Bugün müsaitsin · ${untilLabel}` : 'Bugün müsaitim'}
+      <span className="min-w-0">{busy ? 'Kaydediliyor'
+        : active ? `Bugün müsaitsin · ${untilLabel}` : 'Bugün müsaitim'}</span>
     </button>
   )
 }
@@ -1288,9 +1289,9 @@ function NearbyToggle({ nearbyFirst, onToggle, loading, hasLocation, error }) {
       disabled={loading}
       title={title}
       aria-pressed={active}
-      className={`chip cand-filter-chip disabled:opacity-60${active ? ' is-active' : ''}`}>
+      className={`chip cand-filter-chip justify-center whitespace-nowrap disabled:opacity-60${active ? ' is-active' : ''}`}>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+           strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
         <circle cx="12" cy="12" r="10" /><path d="M12 2v20M2 12h20" />
       </svg>
       {loading ? 'Konum alınıyor' : (active ? 'Yakınlar önce' : 'Yakınlar')}

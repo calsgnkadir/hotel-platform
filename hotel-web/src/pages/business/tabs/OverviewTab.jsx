@@ -120,19 +120,19 @@ export default function OverviewTab({ applications = [], onTabChange }) {
   )
 }
 
-/** KPI kartı: solda ikon kutusu, etiket üstte, sayı altta; kart ilgili sekmeye gider. */
+/** KPI kartı: dar kartlarda ikon üstte; etiket kesilmeden, sayı aynı hizada görünür. */
 function KpiCard({ label, value, icon, to }) {
   return (
     <Link to={to}
-          className="card !p-4 h-full flex items-start gap-3 transition-[border-color,box-shadow] duration-150
+          className="card !p-4 h-full flex flex-col lg:flex-row items-start gap-2 lg:gap-3 transition-[border-color,box-shadow] duration-150
                      hover:border-[var(--ah-line-2)] hover:shadow-[var(--elev-hover)]
                      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ah-brand)]">
       <span className="w-8 h-8 rounded-lg grid place-items-center flex-shrink-0"
             style={{ background: 'var(--ah-brand-soft)', color: 'var(--ah-brand)' }}>
         <NavIcon name={icon} size={16} />
       </span>
-      <span className="min-w-0">
-        <span className="type-meta block truncate">{label}</span>
+      <span className="min-w-0 w-full lg:flex-1">
+        <span className="type-meta block min-h-9 lg:min-h-0 whitespace-normal break-words">{label}</span>
         <span className="type-page type-num block mt-0.5" style={{ color: 'var(--ah-ink)' }}>{value}</span>
       </span>
     </Link>
