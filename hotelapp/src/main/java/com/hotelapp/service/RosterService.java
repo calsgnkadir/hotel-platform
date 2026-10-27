@@ -136,7 +136,7 @@ public class RosterService {
                 }
                 continue;
             }
-            LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul"));
+            LocalDateTime now = LocalDateTime.now(clock);
             for (ShiftSlot s : slots) {
                 if (onlyDate != null && !onlyDate.equals(s.getDate())) continue;
                 WorkSession ws = ShiftAttendance.sessionFor(a, s, sessions).orElse(null);
@@ -162,7 +162,7 @@ public class RosterService {
         String phone = a.getCandidate().getPhone();
         return new RosterRow(a.getId(), a.getCandidate().getFullName(), phone == null ? "" : phone, shift, in, out, status,
                 slot == null ? null : slot.getId(), slot != null && ws == null && !noShow
-                && ShiftAttendance.isCurrent(slot, LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul"))));
+                && ShiftAttendance.isCurrent(slot, LocalDateTime.now(clock)));
     }
 
     byte[] toXlsx(JobListing listing, Map<LocalDate, List<RosterRow>> byDate) {

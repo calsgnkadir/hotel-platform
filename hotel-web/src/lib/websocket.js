@@ -18,7 +18,10 @@ import SockJS from 'sockjs-client'
 
 let client = null
 let connected = false
-let pendingSubs = []  // bağlanmadan önce sub ister isen, buraya kuyruğa al
+// Keep mounted consumers registered across transport reconnects. Logout clears
+// this registry, so a new account never inherits the previous account's callbacks.
+const subscriptions = new Set()
+let subscriptionRevision = 0
 let connectionRevision = 0
 
 // FAZ D.10 — connection state machine
@@ -105,21 +108,10 @@ export function wsConnect() {
       connected = true
       connectionState = STATE.CONNECTED
       reconnectAttempts = 0     // Basarili — backoff sifirla
+      ++subscriptionRevision
       import.meta.env.DEV && console.log('[WS] Bağlandı')
-      // Bekleyen sub'ları gerçekle
-      pendingSubs.forEach(({ destination, callback, ref }) => {
-        if (ref.cancelled) return
-        ref.sub = connection.subscribe(destination, (msg) => {
-          if (client !== connection || ref.cancelled) return
-          try {
-            const data = JSON.parse(msg.body)
-            callback(data)
-          } catch {
-            callback(msg.body)
-          }
-        })
-      })
-      pendingSubs = []
+      // STOMP creates a new broker session on every successful reconnect.
+      subscriptions.forEach(ref => attachSubscription(connection, ref))
       notifyStatus()
     },
 
@@ -181,8 +173,9 @@ export function wsForceReconnect() {
   const revision = ++connectionRevision
   reconnectAttempts = 0
   connected = false
-  pendingSubs = []
+  ++subscriptionRevision
   connectionState = STATE.IDLE
+  notifyStatus()
 
   if (client) {
     const old = client
@@ -212,7 +205,12 @@ export function wsDisconnect() {
   const old = client
   client = null
   connected = false
-  pendingSubs = []
+  ++subscriptionRevision
+  subscriptions.forEach(ref => {
+    ref.cancelled = true
+    ref.sub = null
+  })
+  subscriptions.clear()
   connectionState = STATE.IDLE
   reconnectAttempts = 0
   if (old) {
@@ -226,22 +224,11 @@ export function wsDisconnect() {
  * Return: { unsubscribe() } — daima çağrılabilir, idempotent.
  */
 export function wsSubscribe(destination, callback) {
-  const ref = { sub: null, cancelled: false }
+  const ref = { destination, callback, sub: null, cancelled: false }
+  subscriptions.add(ref)
 
   if (client && connected) {
-    const connection = client
-    ref.sub = connection.subscribe(destination, (msg) => {
-      if (client !== connection || ref.cancelled) return
-      try {
-        const data = JSON.parse(msg.body)
-        callback(data)
-      } catch {
-        callback(msg.body)
-      }
-    })
-  } else {
-    // Bekleyen kuyruğa
-    pendingSubs.push({ destination, callback, ref })
+    attachSubscription(client, ref)
   }
 
   return {
@@ -251,10 +238,22 @@ export function wsSubscribe(destination, callback) {
         try { ref.sub.unsubscribe() } catch {}
         ref.sub = null
       }
-      // Pending'den de çıkar
-      pendingSubs = pendingSubs.filter(p => p.ref !== ref)
+      subscriptions.delete(ref)
     },
   }
+}
+
+function attachSubscription(connection, ref) {
+  if (ref.cancelled) return
+  // Remove any stale subscription handle before registering in the new session.
+  try { ref.sub?.unsubscribe() } catch {}
+  const revision = subscriptionRevision
+  ref.sub = connection.subscribe(ref.destination, (msg) => {
+    if (client !== connection || !connected || revision !== subscriptionRevision || ref.cancelled) return
+    let payload
+    try { payload = JSON.parse(msg.body) } catch { payload = msg.body }
+    ref.callback(payload)
+  })
 }
 
 /**

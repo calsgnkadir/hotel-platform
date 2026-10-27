@@ -268,6 +268,10 @@ cd hotel-web && npm run build
 cd hotel-web && npm run e2e   # Playwright (çalışan backend ve MySQL gerekir)
 ```
 
+Yedi vardiyalık hızlandırılmış senaryo ve iki hesapla gerçek tarayıcı kullanımı için
+[kafe pilotu test rehberine](docs/PILOT_SIMULATION.md) bakın. Bu testler gerçek banka
+transferi veya fiziksel QR kamerası denemesi yapmaz.
+
 | Katman | Kapsam |
 | :-- | :-- |
 | Backend | 700+ birim testi, 45 entegrasyon testi (JUnit 5) |

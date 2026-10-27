@@ -1,6 +1,5 @@
 package com.hotelapp.service;
 
-import com.hotelapp.entity.JobListing;
 import com.hotelapp.enums.NotificationType;
 import com.hotelapp.repository.JobListingRepository;
 import com.hotelapp.repository.ShiftSlotRepository;
@@ -9,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -33,6 +35,7 @@ public class RosterEmailScheduler {
     private final EmailService emailService;
     private final EmailTemplates emailTemplates;
     private final NotificationService notificationService;
+    private final PlatformTransactionManager transactionManager;
 
     @Value("${app.base-url:http://localhost:5173}")
     private String baseUrl;
@@ -50,11 +53,11 @@ public class RosterEmailScheduler {
         try {
             byte[] xlsx = rosterService.xlsxAllOrNull(e.listingId());
             if (xlsx == null) return;
-            JobListing l = jobListingRepository.findById(e.listingId()).orElse(null);
+            Recipient l = recipient(e.listingId());
             if (l == null) return;
-            send(l, xlsx, "tüm vardiya günlerinin", "Ekip listesi (ilan kapandı) · " + l.getTitle(),
-                    "kadrom-ekip-" + l.getId() + "-tum.xlsx",
-                    "\"" + l.getTitle() + "\" kapandı, tüm günlerin listesi e-postana gönderildi");
+            send(l, xlsx, "tüm vardiya günlerinin", "Ekip listesi (ilan kapandı) · " + l.title(),
+                    "kadrom-ekip-" + l.listingId() + "-tum.xlsx",
+                    "\"" + l.title() + "\" kapandı, tüm günlerin listesi e-postana gönderildi");
         } catch (Exception ex) {
             log.warn("[ROSTER] kapanış listesi gönderilemedi ilan={}: {}", e.listingId(), ex.getMessage());
         }
@@ -67,11 +70,11 @@ public class RosterEmailScheduler {
             try {
                 byte[] xlsx = rosterService.xlsxForDateOrNull(listingId, date);
                 if (xlsx == null) continue;
-                JobListing l = jobListingRepository.findById(listingId).orElse(null);
+                Recipient l = recipient(listingId);
                 if (l == null) continue;
-                send(l, xlsx, D.format(date), "Ekip listesi · " + l.getTitle() + " · " + D.format(date),
+                send(l, xlsx, D.format(date), "Ekip listesi · " + l.title() + " · " + D.format(date),
                         "kadrom-ekip-" + listingId + "-" + date + ".xlsx",
-                        "\"" + l.getTitle() + "\" · " + D.format(date) + " listesi e-postana gönderildi");
+                        "\"" + l.title() + "\" · " + D.format(date) + " listesi e-postana gönderildi");
                 sent++;
             } catch (Exception e) {
                 // Bir ilanın hatası diğerlerini durdurmasın
@@ -82,11 +85,23 @@ public class RosterEmailScheduler {
         return sent;
     }
 
-    private void send(JobListing l, byte[] xlsx, String dateText, String subject, String fileName, String notice) {
-        var owner = l.getBusiness().getOwner();
-        String html = emailTemplates.rosterReady(owner.getFullName(), l.getTitle(), dateText,
+    /** Materialize lazy owner fields before leaving the short DB transaction. */
+    private Recipient recipient(Long listingId) {
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        tx.setReadOnly(true);
+        tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return tx.execute(status -> jobListingRepository.findById(listingId).map(l -> {
+            var owner = l.getBusiness().getOwner();
+            return new Recipient(l.getId(), l.getTitle(), owner.getId(), owner.getFullName(), owner.getEmail());
+        }).orElse(null));
+    }
+
+    private record Recipient(Long listingId, String title, Long ownerId, String ownerName, String ownerEmail) {}
+
+    private void send(Recipient l, byte[] xlsx, String dateText, String subject, String fileName, String notice) {
+        String html = emailTemplates.rosterReady(l.ownerName(), l.title(), dateText,
                 Math.max(1, xlsx.length / 1024), baseUrl + "/business?tab=listings");
-        emailService.sendWithAttachment(owner.getEmail(), subject, html, fileName, xlsx);
-        notificationService.notify(owner.getId(), NotificationType.GENERIC, "Ekip listesi hazır", notice, "mylistings");
+        emailService.sendWithAttachment(l.ownerEmail(), subject, html, fileName, xlsx);
+        notificationService.notify(l.ownerId(), NotificationType.GENERIC, "Ekip listesi hazır", notice, "mylistings");
     }
 }

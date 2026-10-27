@@ -4,6 +4,7 @@ import com.hotelapp.entity.User;
 import com.hotelapp.enums.JobType;
 import com.hotelapp.enums.ListingStatus;
 import com.hotelapp.enums.Position;
+import com.hotelapp.enums.SalaryType;
 import com.hotelapp.enums.Shift;
 import com.hotelapp.service.JobListingQueryService;
 import com.hotelapp.service.JobListingService;
@@ -182,10 +183,11 @@ public class JobListingController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Pozisyon icin maas benchmark (AVG/MIN/MAX) — Glassdoor pattern")
+    @Operation(summary = "Aynı pozisyon ve ücret birimi için ücret karşılaştırması; birim yoksa boş sonuç")
     @GetMapping("/salary-benchmark")
     public ResponseEntity<JobListingService.SalaryBenchmarkResponse> salaryBenchmark(
-            @RequestParam Position position) {
-        return ResponseEntity.ok(jobListingService.getSalaryBenchmark(position));
+            @RequestParam Position position,
+            @RequestParam(required = false) SalaryType salaryType) {
+        return ResponseEntity.ok(jobListingService.getSalaryBenchmark(position, salaryType));
     }
 }

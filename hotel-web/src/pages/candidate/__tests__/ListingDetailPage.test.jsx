@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
  * galeri yalnız fotoğraf varsa, dev harfli kapak yok, bilgi tekrarı yok.
  */
 const getListing = vi.fn()
+const getSalaryBenchmark = vi.fn()
 const getBusinessGallery = vi.fn()
 const getMyApplications = vi.fn()
 const applyToListing = vi.fn()
@@ -16,7 +17,7 @@ vi.mock('../../../api/hotel', () => ({
   getBusinessGallery: (...a) => getBusinessGallery(...a),
   getMyApplications: (...a) => getMyApplications(...a),
   trackListingView: vi.fn(),
-  getSalaryBenchmark: vi.fn(async () => null),
+  getSalaryBenchmark: (...a) => getSalaryBenchmark(...a),
   getSimilarListings: vi.fn(async () => []),
   applyToListing: (...a) => applyToListing(...a),
 }))
@@ -73,6 +74,21 @@ describe('ListingDetailPage mobil öncelikli', () => {
     getListing.mockReset(); getBusinessGallery.mockReset(); getBusinessGallery.mockResolvedValue([])
     getMyApplications.mockReset(); getMyApplications.mockResolvedValue({ content: [] })
     applyToListing.mockReset()
+    getSalaryBenchmark.mockReset(); getSalaryBenchmark.mockResolvedValue(null)
+  })
+
+  it('ücret karşılaştırması aynı ücret birimiyle istenir ve birimi gösterilir', async () => {
+    getSalaryBenchmark.mockResolvedValue({ count: 2, avgMin: 150, avgMax: 200 })
+    renderPage({ ...LISTING, salaryType: 'HOURLY', salaryMin: 150 })
+    expect(await screen.findByTestId('salary-benchmark')).toHaveTextContent('150 ₺ – 200 ₺ /saat')
+    expect(getSalaryBenchmark).toHaveBeenCalledWith('WAITER', 'HOURLY')
+  })
+
+  it('görüşülecek ücret için sayısal karşılaştırma gösterilmez', async () => {
+    renderPage({ ...LISTING, salaryType: 'NEGOTIABLE' })
+    await screen.findByTestId('mobile-apply-bar')
+    expect(getSalaryBenchmark).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('salary-benchmark')).not.toBeInTheDocument()
   })
 
   it('mobil alt bar ücret (/gün) ve aktif "Başvur" ile render edilir; Başvur pencereyi açar', async () => {

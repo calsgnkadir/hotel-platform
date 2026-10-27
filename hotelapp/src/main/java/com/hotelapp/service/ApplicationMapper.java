@@ -75,7 +75,7 @@ public class ApplicationMapper {
                         && app.getStandbyOfferedAt() != null
                         && app.getStandbyDeadline() != null
                         && app.getStandbyDeadline().isAfter(java.time.LocalDateTime.now(clock)))
-                .workCompleted(isWorkCompleted(app))
+                .workCompleted(isWorkCompleted(app, java.time.LocalDateTime.now(clock)))
                 .candidate(buildCandidateSummary(app.getCandidate()))
                 .listing(ApplicationResponse.ListingSummary.builder()
                         .id(listing.getId())

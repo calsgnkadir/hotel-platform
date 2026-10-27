@@ -89,9 +89,9 @@ export default function ListingDetailPage() {
 
   // Dalga 4 / Ozellik 6 — Pozisyon bazli maas benchmark
   const { data: benchmark } = useQuery({
-    queryKey: ['salary-benchmark', listing?.position],
-    queryFn: () => hotelApi.getSalaryBenchmark(listing.position),
-    enabled: !!listing?.position,
+    queryKey: ['salary-benchmark', listing?.position, listing?.salaryType],
+    queryFn: () => hotelApi.getSalaryBenchmark(listing.position, listing.salaryType),
+    enabled: !!listing?.position && !!listing?.salaryType && listing.salaryType !== 'NEGOTIABLE',
     staleTime: 5 * 60_000,
   })
 
@@ -249,12 +249,13 @@ export default function ListingDetailPage() {
                 {listing.tipsIncluded && <span className="type-meta ml-1" style={{ color: 'var(--ah-ink-3)' }}>+ bahşiş</span>}
               </p>
               {benchmark && benchmark.count > 0 && benchmark.avgMin && (
-                <p className="type-caption mt-1" style={{ color: 'var(--ah-ink-3)' }}>
+                <p className="type-caption mt-1" style={{ color: 'var(--ah-ink-3)' }} data-testid="salary-benchmark">
                   İstanbul {positionLabel} ortalaması{' '}
                   <span className="type-num">
                     {Number(benchmark.avgMin).toLocaleString('tr-TR')} ₺
                     {benchmark.avgMax && Number(benchmark.avgMax) !== Number(benchmark.avgMin) &&
                       ` – ${Number(benchmark.avgMax).toLocaleString('tr-TR')} ₺`}
+                    {' '}/{salaryTypeShort(listing.salaryType)}
                   </span>
                   {' '}({benchmark.count} aktif ilan)
                 </p>
@@ -341,7 +342,7 @@ export default function ListingDetailPage() {
                   {listing.meetingMinutesBefore ? ` — vardiyadan ${listing.meetingMinutesBefore} dk önce` : ''}
                 </p>
                 <p className="type-caption mt-1" style={{ color: 'var(--ah-ink-3)' }}>
-                  Vardınca oradaki QR kodu telefonunla okut, girişin kaydedilir.
+                  Vardığında giriş kartındaki QR kodu görevliye göster; görevli okutunca girişin kaydedilir.
                 </p>
               </div>
             )}

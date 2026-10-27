@@ -2,6 +2,7 @@ package com.hotelapp.repository;
 
 import com.hotelapp.entity.JobListing;
 import com.hotelapp.enums.Position;
+import com.hotelapp.enums.SalaryType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -86,11 +87,22 @@ public interface JobListingRepository
      * Sadece salaryMin null olmayan ilanlar dahil.
      */
     @Query("""
-        SELECT AVG(j.salaryMin), AVG(j.salaryMax), MIN(j.salaryMin), MAX(j.salaryMax), COUNT(j)
+        SELECT avg(j.salaryMin) AS averageMinimum, avg(j.salaryMax) AS averageMaximum,
+               min(j.salaryMin) AS minimum, max(j.salaryMax) AS maximum, count(j) AS listingCount
         FROM JobListing j
         WHERE j.position = :position
           AND j.status = com.hotelapp.enums.ListingStatus.ACTIVE
+          AND j.salaryType = :salaryType
           AND j.salaryMin IS NOT NULL
     """)
-    Object[] salaryBenchmark(@Param("position") Position position);
+    SalaryBenchmarkRow salaryBenchmark(@Param("position") Position position, @Param("salaryType") SalaryType salaryType);
+
+    /** Named aggregate projection avoids provider-dependent Object[] row wrapping. */
+    interface SalaryBenchmarkRow {
+        Number getAverageMinimum();
+        Number getAverageMaximum();
+        Number getMinimum();
+        Number getMaximum();
+        Long getListingCount();
+    }
 }

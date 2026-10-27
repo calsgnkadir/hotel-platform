@@ -648,20 +648,27 @@ public class JobListingService {
     }
 
     /**
-     * Dalga 4 / Ozellik 6 — Maas benchmark: pozisyon icin AVG/MIN/MAX.
+     * Maas benchmark: ayni pozisyon VE ucret birimi icin AVG/MIN/MAX.
      * Frontend ilan detay sayfasinda "Bu pozisyon Istanbul ort: ₺X-Y" chip.
      */
     @Transactional(readOnly = true)
-    public SalaryBenchmarkResponse getSalaryBenchmark(com.hotelapp.enums.Position position) {
-        Object[] row = jobListingRepository.salaryBenchmark(position);
-        if (row == null || row.length < 5) return SalaryBenchmarkResponse.empty(position);
-        java.math.BigDecimal avgMin = (java.math.BigDecimal) row[0];
-        java.math.BigDecimal avgMax = (java.math.BigDecimal) row[1];
-        java.math.BigDecimal min    = (java.math.BigDecimal) row[2];
-        java.math.BigDecimal max    = (java.math.BigDecimal) row[3];
-        Long count = (row[4] != null) ? ((Number) row[4]).longValue() : 0L;
+    public SalaryBenchmarkResponse getSalaryBenchmark(com.hotelapp.enums.Position position, SalaryType salaryType) {
+        if (salaryType == null || salaryType == SalaryType.NEGOTIABLE) {
+            return SalaryBenchmarkResponse.empty(position, salaryType);
+        }
+        JobListingRepository.SalaryBenchmarkRow row = jobListingRepository.salaryBenchmark(position, salaryType);
+        if (row == null) return SalaryBenchmarkResponse.empty(position, salaryType);
+        // JPQL AVG returns Double even for decimal columns; MIN/MAX retain BigDecimal.
+        java.util.function.Function<Number, BigDecimal> decimal = value -> value == null ? null
+                : value instanceof BigDecimal amount ? amount : new BigDecimal(value.toString());
+        BigDecimal avgMin = decimal.apply(row.getAverageMinimum());
+        BigDecimal avgMax = decimal.apply(row.getAverageMaximum());
+        BigDecimal min    = decimal.apply(row.getMinimum());
+        BigDecimal max    = decimal.apply(row.getMaximum());
+        Long count = row.getListingCount() != null ? row.getListingCount() : 0L;
         return SalaryBenchmarkResponse.builder()
                 .position(position.name())
+                .salaryType(salaryType.name())
                 .avgMin(avgMin).avgMax(avgMax)
                 .min(min).max(max)
                 .count(count)
@@ -671,14 +678,16 @@ public class JobListingService {
     @Data @Builder
     public static class SalaryBenchmarkResponse {
         private String position;
+        private String salaryType;
         private java.math.BigDecimal avgMin;
         private java.math.BigDecimal avgMax;
         private java.math.BigDecimal min;
         private java.math.BigDecimal max;
         private Long count;
 
-        public static SalaryBenchmarkResponse empty(com.hotelapp.enums.Position p) {
-            return SalaryBenchmarkResponse.builder().position(p.name()).count(0L).build();
+        public static SalaryBenchmarkResponse empty(com.hotelapp.enums.Position p, SalaryType salaryType) {
+            return SalaryBenchmarkResponse.builder().position(p.name())
+                    .salaryType(salaryType == null ? null : salaryType.name()).count(0L).build();
         }
     }
 

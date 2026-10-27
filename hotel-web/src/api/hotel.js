@@ -128,8 +128,8 @@ export async function getSimilarListings(id, limit = 6) {
  * — benchmark karti runtime'da "not a function" ile patliyordu. Backend
  * endpoint'i (GET /api/listings/salary-benchmark) bastan beri mevcuttu.
  */
-export async function getSalaryBenchmark(position) {
-  const { data } = await api.get('/api/listings/salary-benchmark', { params: { position } })
+export async function getSalaryBenchmark(position, salaryType) {
+  const { data } = await api.get('/api/listings/salary-benchmark', { params: { position, salaryType } })
   return data  // SalaryBenchmarkResponse
 }
 
