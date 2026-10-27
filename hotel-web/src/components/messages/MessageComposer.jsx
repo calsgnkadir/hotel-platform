@@ -137,7 +137,7 @@ export default function MessageComposer({
             </div>
           </div>
           <button type="button" onClick={onClearReply}
-                  className="w-6 h-6 grid place-items-center rounded-full text-ivory-600 hover:text-ink-800"
+                  className="w-11 h-11 shrink-0 grid place-items-center rounded-full text-ivory-600 hover:text-ink-800"
                   title="Yanıtı iptal et">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -157,32 +157,36 @@ export default function MessageComposer({
       )}
 
       {/* Kompozer — dosya ekle + metin + sesli mesaj + gönder */}
-      <form onSubmit={handleSend} className="px-3 py-3 border-t border-hairline flex items-center gap-2 flex-shrink-0">
+      <form onSubmit={handleSend}
+            className="px-3 py-3 border-t border-hairline flex flex-wrap items-center gap-2 flex-shrink-0"
+            style={{ containerType: 'inline-size', containerName: 'message-composer' }}>
         {/* Kayıt modu: özel UI (brick signal, dark theme) */}
         {recording ? (
           <>
             <button type="button" onClick={() => stopRecording(true)}
-                    className="w-10 h-10 grid place-items-center rounded-full transition-colors shrink-0"
+                    className="w-11 h-11 grid place-items-center rounded-full transition-colors shrink-0"
                     style={{ background: 'rgba(31, 41, 55, 0.08)', color: 'var(--text-secondary)', border: '1px solid rgba(31, 41, 55, 0.18)' }}
                     title="İptal">
               ×
             </button>
-            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg"
+            <div className="message-composer-recording-status flex-1 min-w-0 flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 rounded-lg"
                  style={{ background: 'var(--ah-danger-soft)', border: '1px solid var(--ah-line)' }}>
               <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: 'var(--ah-danger)' }} aria-hidden="true" />
               <span className="type-body type-num font-semibold" style={{ color: 'var(--ah-danger)' }} role="timer">
                 Kayıt {fmtDuration(recDuration)}
               </span>
-              <span className="type-caption ml-auto">Göndermek için durdur</span>
+              <span className="type-caption">Göndermek için durdur</span>
             </div>
             <button type="button" onClick={() => stopRecording(false)}
                     disabled={sending}
-                    className="btn-secondary flex-shrink-0">
+                    className="message-composer-recording-stop btn-secondary !min-h-11 flex-shrink-0">
               Durdur
             </button>
           </>
         ) : (
           <>
+            {/* Araçlar dar sohbet alanında ayrı satıra geçer; yazma alanı sıkışmaz. */}
+            <div className="flex shrink-0 items-center gap-2">
             {/* Dosya ekle butonu */}
             <input ref={fileInputRef} type="file"
                    accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx,.mp3,.m4a,.ogg,.wav,.webm"
@@ -207,7 +211,9 @@ export default function MessageComposer({
             <IconButton onClick={() => sendCall('video')} disabled={sending}
                         title="Görüntülü arama başlat (Jitsi)"
                         d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+            </div>
 
+            <div className="flex flex-1 basis-64 min-w-0 items-center gap-2">
             <div className="relative flex-1 min-w-0">
               <input type="text" value={draft}
                 onChange={e => setDraft(e.target.value)}
@@ -229,9 +235,19 @@ export default function MessageComposer({
               )}
             </div>
             <SendButton sending={sending} disabled={!draft.trim() || sending} />
+            </div>
           </>
         )}
       </form>
+      <style>{`
+        @container message-composer (max-width: 280px) {
+          .message-composer-recording-status { order: -1; flex-basis: 100%; }
+          .message-composer-recording-stop { margin-left: auto; }
+        }
+        @container message-composer (max-width: 260px) {
+          .message-composer-send-busy-label { display: none; }
+        }
+      `}</style>
     </>
   )
 }
@@ -247,7 +263,7 @@ export function fmtDuration(s) {
 function IconButton({ onClick, disabled, title, d }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled} title={title}
-            className="tier-raised tier-raised-hover w-10 h-10 grid place-items-center disabled:opacity-50 shrink-0"
+            className="tier-raised tier-raised-hover w-11 h-11 grid place-items-center disabled:opacity-50 shrink-0"
             style={{ borderRadius: '999px', color: 'var(--text-secondary)' }}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
            strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
@@ -262,10 +278,11 @@ function SendButton({ sending, disabled }) {
   return (
     <button type="submit"
       disabled={disabled}
+      aria-label={sending ? 'Gönderiliyor…' : 'Gönder'}
       title={disabled && !sending ? 'Mesaj yaz' : 'Gönder (Enter)'}
       style={{
         position: 'relative',
-        padding: '0 18px', height: 40,
+        padding: '0 18px', minWidth: 44, minHeight: 44,
         borderRadius: 10,
         // Send = filled amber CTA (sayfada tek accent-filled element kurali):
         // uzun bir konusmada bu buton sohbet penceresi icindeki ana eylem.
@@ -293,7 +310,7 @@ function SendButton({ sending, disabled }) {
             borderTopColor: '#fff',
             animation: 'sb-spin 700ms linear infinite',
           }} />
-          <span>Gönderiliyor…</span>
+          <span className="message-composer-send-busy-label">Gönderiliyor…</span>
         </span>
       ) : (
         <span className="inline-flex items-center gap-1.5">
@@ -349,7 +366,7 @@ export function QuickReplyChips({ role, listingTitle, onPick, messageCount }) {
             key={i}
             type="button"
             onClick={() => onPick?.(text)}
-            className="chip whitespace-nowrap"
+            className="chip min-h-11 md:min-h-0 whitespace-nowrap"
             style={{ flexShrink: 0 }}>
             {text}
           </button>
