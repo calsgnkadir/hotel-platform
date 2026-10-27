@@ -40,7 +40,50 @@ async function openDashboard(page, role) {
     await route.fulfill({ json: data })
   })
   await page.route('**/ws/**', route => route.abort())
-  await page.goto(role === 'BUSINESS_OWNER' ? '/business' : '/candidate')
+  await page.goto(role === 'ADMIN' ? '/admin' : role === 'BUSINESS_OWNER' ? '/business' : '/candidate')
+}
+
+// All destinations must be discoverable without scrolling the navigation itself.
+for (const width of [375, 767, 768, 820, 1024, 1279, 1280, 1440]) {
+  for (const [role, lastLabel, lastTab] of [
+    ['ADMIN', 'Giden kuyruk', 'outbox'],
+    ['BUSINESS_OWNER', 'Abonelik', 'billing'],
+    ['CANDIDATE', 'Kaydettiklerim', 'saved'],
+  ]) {
+    test(`Panel sekmeleri ${role} ${width}px genişlikte erişilebilir`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 1000 })
+      await openDashboard(page, role)
+      const desktop = page.getByRole('navigation', { name: 'Ana navigasyon', exact: true })
+      let target
+      if (width >= 768) {
+        await expect(desktop).toBeVisible()
+        const bounds = await desktop.boundingBox()
+        for (const button of await desktop.getByRole('button').all()) {
+          await expectUnclipped(button)
+          const box = await button.boundingBox()
+          expect(box.x).toBeGreaterThanOrEqual(bounds.x - 1)
+          expect(box.x + box.width).toBeLessThanOrEqual(bounds.x + bounds.width + 1)
+          expect(box.height).toBeGreaterThanOrEqual(44)
+        }
+        expect(await desktop.evaluate(el => el.scrollWidth)).toBeLessThanOrEqual(bounds.width + 1)
+        target = desktop.getByRole('button', { name: lastLabel, exact: true })
+      } else {
+        await expect(desktop).toBeHidden()
+        if (role === 'ADMIN') {
+          await page.getByRole('button', { name: 'Ayarlar menüsü' }).click()
+          target = page.locator('#settings-menu').getByRole('button', { name: lastLabel, exact: true })
+        } else {
+          target = page.getByRole('navigation', { name: 'Ana navigasyon (mobil)' })
+            .getByRole('button', { name: lastLabel, exact: true })
+        }
+      }
+      await expect(target).toBeInViewport({ ratio: 1 })
+      await target.focus()
+      await page.keyboard.press('Enter')
+      await expect(page).toHaveURL(new RegExp(`\\?tab=${lastTab}$`))
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+    })
+  }
 }
 
 async function expectUnclipped(locator) {

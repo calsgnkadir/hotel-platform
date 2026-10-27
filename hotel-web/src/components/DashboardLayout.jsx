@@ -79,14 +79,14 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
       <header className="sticky top-0 z-40 border-b"
               style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
         <div className="ah-container">
-          <div className="h-14 flex items-center gap-4">
+          <div className="min-h-14 flex flex-wrap items-center gap-x-4">
             <Link to={panelPathFor(role)} className="flex items-baseline gap-2 flex-shrink-0">
               <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '0.02em', color: 'var(--ah-ink)' }}>Kadrom</span>
               <span className="hidden sm:inline" style={{ fontSize: 12, fontWeight: 500, color: 'var(--ah-ink-3)' }}>İstanbul</span>
             </Link>
 
-            {/* Masaüstü nav */}
-            <nav className="hidden md:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar" aria-label="Ana navigasyon">
+            {/* Tablette sekmeler ayrı satırda sarılır; geniş ekranda başlığa katılır. */}
+            <nav className="hidden md:flex order-last w-full flex-wrap items-center gap-1 py-2 xl:order-none xl:w-auto xl:flex-1 xl:py-0" aria-label="Ana navigasyon">
               {navItems.map(item => (
                 <TopNavItem key={item.id}
                             item={item}
@@ -94,10 +94,10 @@ export default function DashboardLayout({ children, activeTab, onTabChange }) {
                             onClick={() => handleTabClick(item.id)} />
               ))}
             </nav>
-            <div className="flex-1 md:hidden" />
+            <div className="flex-1 xl:hidden" />
 
             {/* Sağ eylemler — her biri 44px vuruş alanı + aria-label */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex min-h-14 items-center gap-1 flex-shrink-0">
               {hasMessages && (
                 <MessagesButton active={activeTab === 'messages'}
                                 onClick={() => handleTabClick('messages')} />
@@ -160,7 +160,7 @@ function TopNavItem({ item, active, onClick }) {
       type="button"
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className="relative flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors"
+      className="relative flex flex-shrink-0 min-h-11 items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors"
       style={{
         background: active ? 'var(--ah-brand-soft)' : 'transparent',
         color: active ? 'var(--ah-brand)' : 'var(--ah-ink-2)',
