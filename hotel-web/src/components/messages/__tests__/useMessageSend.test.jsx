@@ -26,7 +26,7 @@ vi.mock('../../../lib/useWsConnected', () => ({ default: () => wsConnected }))
  * ise kuyruga ALINMAZ — tekrar denemek ayni hatayi verir.
  */
 const CONV = { id: 7 }
-const QUEUE_KEY = 'kadrom.offline-queue.7'
+const QUEUE_KEY = 'kadrom.offline-queue.1.7'
 
 function setup({ conversation = CONV, onSent = vi.fn(), onMessageSent = vi.fn() } = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -47,6 +47,7 @@ describe('useMessageSend (FAZ 20)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     sessionStorage.clear()
+    localStorage.setItem('user', JSON.stringify({ userId: 1 }))
     wsConnected = true
   })
 

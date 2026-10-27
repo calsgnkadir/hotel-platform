@@ -41,12 +41,19 @@ export function readAndClearOAuthCode() {
 
 export default function OAuthSuccessPage() {
   const navigate = useNavigate()
-  const { loginFromOAuth } = useAuth()
+  const { loginFromOAuth, user } = useAuth()
   const handledRef = useRef(false)  // StrictMode double-mount koruma
   const [needsConsent, setNeedsConsent] = useState(false)
   const returnRef = useRef(null)
 
   useEffect(() => {
+    // loginFromOAuth replaces the session and remounts this route. The original
+    // exchange handler still owns navigation; don't re-read the cleared code and
+    // report a false failure from the new authenticated instance.
+    if (user && !window.location.hash.includes('code=')) {
+      navigate(homeForRole(user.role), { replace: true })
+      return
+    }
     if (handledRef.current) return
     handledRef.current = true
 
@@ -73,7 +80,7 @@ export default function OAuthSuccessPage() {
         toast.error(extractErrorMessage(err))
         navigate('/login', { replace: true })
       })
-  }, [navigate, loginFromOAuth])
+  }, [navigate, loginFromOAuth, user])
 
   if (needsConsent) {
     return <ConsentStep returnPath={returnRef.current} />

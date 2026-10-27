@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
-// App'teki QueryClientProvider ile ayni ornek; bilesen provider'siz da render edilebilir
-import { queryClient, keys } from '../../../lib/queryClient'
+import { keys } from '../../../lib/queryClient'
 import { StatusBadge, NoShowBadge } from './Badges'
 import cldImg, { ImgSize } from '../../../lib/cldImg'
 import { celebrate } from '../../../lib/confetti'
@@ -29,6 +29,7 @@ const DAY_LABEL = Object.fromEntries(WEEKDAYS.map(d => [d.key, d.label]))
  * state'ini senkronize etmesi icin.
  */
 export default function ApplicationDetail({ app, variant = 'panel', onClose, onRefresh, onOpenMessages, onChanged }) {
+  const queryClient = useQueryClient()
   const confirm = useConfirm()
   const [actionLoading, setActionLoading] = useState(false)
   const [blockLoading, setBlockLoading] = useState(false)

@@ -1,5 +1,9 @@
 import axios from 'axios'
 import { isPublicPath, rememberReturn } from '../lib/authReturn'
+import {
+  advanceSessionRevision, getSessionSnapshot, isSessionCurrent,
+  onSessionBoundary, waitForPendingLogout,
+} from '../lib/sessionLifecycle'
 
 /**
  * F0.2 — Merkezi Axios instance + refresh token rotation.
@@ -60,6 +64,7 @@ export const sessionNav = {
  *        false → herkese açık sayfa; oturum sessizce temizlendi, istek girişsiz sürebilir
  */
 export function handleSessionExpired() {
+  advanceSessionRevision()
   localStorage.removeItem('token')
   localStorage.removeItem('user')
   try { window.dispatchEvent(new Event(SESSION_CLEARED_EVENT)) } catch { /* yok say */ }
@@ -74,18 +79,34 @@ export function handleSessionExpired() {
 /* ─────────── Refresh token rotation ─────────── */
 
 // Aynı anda birden fazla 401 → tek bir refresh çağrısı yapılsın
-let refreshPromise = null
+let refreshFlight = null
+
+onSessionBoundary(() => {
+  refreshFlight?.controller.abort()
+  refreshFlight = null
+})
+
+function changedSessionError() {
+  return new axios.Cancel('Oturum değişti; önceki isteğin sonucu kullanılmadı')
+}
 
 /** /api/auth/refresh çağırır — eski cookie ile yenisini alır, yeni access token döner */
 async function performRefresh() {
-  if (refreshPromise) return refreshPromise
+  if (refreshFlight && isSessionCurrent(refreshFlight.snapshot)) return refreshFlight.promise
+  refreshFlight?.controller.abort()
+  const flight = { snapshot: getSessionSnapshot(), controller: new AbortController() }
 
-  refreshPromise = axios.post(
+  flight.promise = axios.post(
     (import.meta.env.VITE_API_URL || '') + '/api/auth/refresh',
     {},
-    { withCredentials: true }
+    { withCredentials: true, signal: flight.controller.signal }
   ).then(res => {
+    if (!isSessionCurrent(flight.snapshot)) throw changedSessionError()
     const { token, ...userFields } = res.data
+    if (flight.snapshot.identity != null && userFields.userId != null
+        && String(userFields.userId) !== flight.snapshot.identity) {
+      throw new Error('Yenilenen oturum mevcut hesaba ait değil')
+    }
     if (token) localStorage.setItem('token', token)
     // user bilgileri de güncellenir (rol değişmiş olabilir). Önceki kayıttaki alanlar
     // korunur: eskiden yalnız 4 alan yazılıyordu, emailVerified düşünce doğrulanmış
@@ -101,10 +122,11 @@ async function performRefresh() {
     }
     return token
   }).finally(() => {
-    refreshPromise = null
+    if (refreshFlight === flight) refreshFlight = null
   })
 
-  return refreshPromise
+  refreshFlight = flight
+  return flight.promise
 }
 
 /* ─────────── REQUEST interceptor ─────────── */
@@ -115,6 +137,8 @@ const NO_TOKEN_PATHS = ['/api/auth/login', '/api/auth/register', '/api/auth/refr
 api.interceptors.request.use(async (config) => {
   const url = config.url || ''
   const skipToken = NO_TOKEN_PATHS.some(p => url.includes(p))
+  if (skipToken && !url.includes('/api/auth/refresh')) await waitForPendingLogout()
+  config._sessionSnapshot = getSessionSnapshot()
   if (skipToken) return config
 
   let token = localStorage.getItem('token')
@@ -123,12 +147,14 @@ api.interceptors.request.use(async (config) => {
   if (token && isTokenExpired(token)) {
     try {
       token = await performRefresh()
-    } catch {
+    } catch (error) {
+      if (axios.isCancel(error) || !isSessionCurrent(config._sessionSnapshot)) throw changedSessionError()
       if (handleSessionExpired()) {
         return Promise.reject(new axios.Cancel('Oturum süresi doldu'))
       }
       token = null  // herkese açık sayfa: istek girişsiz devam eder
     }
+    config._sessionSnapshot = getSessionSnapshot()
   }
 
   if (token) config.headers.Authorization = `Bearer ${token}`
@@ -146,9 +172,17 @@ api.interceptors.request.use(async (config) => {
 
 /* ─────────── RESPONSE interceptor — 401 → reactive refresh ─────────── */
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.config?._sessionSnapshot && !isSessionCurrent(response.config._sessionSnapshot)) {
+      throw changedSessionError()
+    }
+    return response
+  },
   async (error) => {
     const original = error.config
+    if (original?._sessionSnapshot && !isSessionCurrent(original._sessionSnapshot)) {
+      return Promise.reject(changedSessionError())
+    }
 
     // 403 EMAIL_NOT_VERIFIED — ham toast yerine doğrulama penceresi açılır
     if (isEmailNotVerifiedError(error)) {
@@ -175,7 +209,10 @@ api.interceptors.response.use(
         const newToken = await performRefresh()
         original.headers.Authorization = `Bearer ${newToken}`
         return api(original)   // request'i tekrar dene
-      } catch {
+      } catch (refreshError) {
+        if (axios.isCancel(refreshError) || !isSessionCurrent(original._sessionSnapshot)) {
+          return Promise.reject(changedSessionError())
+        }
         if (handleSessionExpired()) return Promise.reject(error)
         // Herkese açık sayfa: aynı isteği girişsiz bir kez daha dene
         // (ilan detayı, işletme profili girişsiz de okunur)

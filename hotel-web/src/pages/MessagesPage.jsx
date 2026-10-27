@@ -23,20 +23,25 @@ import ConversationsRail from '../components/messages/ConversationsRail'
 import MessageThread from '../components/messages/MessageThread'
 import ContextPanel from '../components/messages/ContextPanel'
 
-const STAR_KEY = 'kadrom.starred-conversations'
+const STAR_KEY_PREFIX = 'kadrom.starred-conversations.'
 const PANEL_KEY = 'kadrom.messages.context-panel'
 
-function loadStarred() {
-  try { return new Set(JSON.parse(localStorage.getItem(STAR_KEY) || '[]')) }
+function loadStarred(key) {
+  if (!key) return new Set()
+  try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')) }
   catch { return new Set() }
 }
-function saveStarred(set) {
-  try { localStorage.setItem(STAR_KEY, JSON.stringify([...set])) } catch {}
+function saveStarred(key, set) {
+  if (!key) return
+  try { localStorage.setItem(key, JSON.stringify([...set])) } catch {}
 }
 
 export default function MessagesPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const userId = user?.userId ?? user?.id
+  // Never migrate the legacy shared key: its owner's identity is unknown.
+  const starKey = userId == null ? null : STAR_KEY_PREFIX + encodeURIComponent(userId)
   const queryClient = useQueryClient()
   const wsOk = useWsConnected()  // FAZ 4.8
 
@@ -44,7 +49,7 @@ export default function MessagesPage() {
   const [showListMobile, setShowListMobile] = useState(true)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')  // 'all' | 'unread' | 'starred'
-  const [starred, setStarred] = useState(loadStarred)
+  const [starred, setStarred] = useState(() => loadStarred(starKey))
 
   // FAZ 11.W3.1 — Sag context panel toggle (kullanici tercihi: kalici)
   const [panelOpen, setPanelOpen] = useState(() => {
@@ -62,7 +67,7 @@ export default function MessagesPage() {
       const next = new Set(prev)
       if (next.has(convId)) next.delete(convId)
       else next.add(convId)
-      saveStarred(next)
+      saveStarred(starKey, next)
       return next
     })
   }

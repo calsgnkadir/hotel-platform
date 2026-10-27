@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { QueryClientProvider } from '@tanstack/react-query'
 
 const blockCandidate = vi.fn()
 const checkFavorite = vi.fn()
@@ -34,7 +35,7 @@ const APP = {
 
 function renderDetail(onRefresh = vi.fn()) {
   const invalidate = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined)
-  render(<ApplicationDetail app={APP} onRefresh={onRefresh} />)
+  render(<QueryClientProvider client={queryClient}><ApplicationDetail app={APP} onRefresh={onRefresh} /></QueryClientProvider>)
   return { invalidate, onRefresh }
 }
 
@@ -47,7 +48,7 @@ describe('ApplicationDetail — Adayı engelle', () => {
     toastError.mockReset()
   })
 
-  afterEach(() => { vi.restoreAllMocks() })
+  afterEach(() => { vi.restoreAllMocks(); queryClient.clear() })
 
   it('onay verilmezse API çağrılmaz', async () => {
     confirmMock.mockResolvedValue(false)

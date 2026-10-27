@@ -25,23 +25,28 @@ import * as hotelApi from '../../api/hotel'
 import { extractErrorMessage } from '../../api/client'
 import { keys } from '../../lib/queryClient'
 import useWsConnected from '../../lib/useWsConnected'
+import { getSessionSnapshot, isSessionCurrent } from '../../lib/sessionLifecycle'
 
 export const MAX_FILE_BYTES = 15 * 1024 * 1024
 
 export default function useMessageSend({ conversation, onSent, onMessageSent }) {
   const [sending, setSending] = useState(false)
+  // AuthProvider remounts this hook for each session. An old async handler must
+  // not replay messages, rebuild a queue or show a call window in the next one.
+  const [session] = useState(getSessionSnapshot)
   const queryClient = useQueryClient()
   const wsOk = useWsConnected()
 
   const convId = conversation?.id
-  const OFFLINE_QUEUE_KEY = `kadrom.offline-queue.${convId}`
+  const OFFLINE_QUEUE_KEY = `kadrom.offline-queue.${encodeURIComponent(session.identity)}.${convId}`
+  const sessionActive = () => session.identity != null && isSessionCurrent(session)
 
   // Yeni mesajı cache'in başına ekle (optimistic update — anında UI'a yansır).
   // Backend page'i en yeniden eskiye sıralıyor: content[0] en yeni.
   // Yarış: sunucunun WS bildirimi HTTP yanıtından önce gelip listeyi yeniden
   // yükleyebilir; o zaman mesaj zaten listededir — ikinci kez eklenmez.
   function appendMsg(msg) {
-    if (!convId) return
+    if (!convId || !sessionActive()) return
     queryClient.setQueryData(keys.conversations.messages(convId), (old) => {
       if (!old) return { content: [msg] }
       if (msg?.id != null && old.content?.some(m => m.id === msg.id)) return old
@@ -51,12 +56,15 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
 
   /** Gonderim sonrasi ortak ritual — TEK yer. */
   function finish(msg) {
+    if (!sessionActive()) return false
     appendMsg(msg)
     onSent?.(msg)
+    return true
   }
 
   // ── Offline kuyruk ──
   function queueOffline(content, parentMessageId) {
+    if (!sessionActive()) return
     try {
       const q = JSON.parse(sessionStorage.getItem(OFFLINE_QUEUE_KEY) || '[]')
       q.push({ content, parentMessageId, at: Date.now() })
@@ -65,7 +73,7 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
   }
 
   useEffect(() => {
-    if (!wsOk || !conversation) return
+    if (!wsOk || !conversation || !sessionActive()) return
     // Baglanti geldi — kuyrugu drain et
     let cancelled = false
     async function drain() {
@@ -74,15 +82,17 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
       if (q.length === 0) return
       sessionStorage.removeItem(OFFLINE_QUEUE_KEY)
       for (const item of q) {
-        if (cancelled) return
+        if (cancelled || !sessionActive()) return
         try {
           const msg = await hotelApi.sendMessage(convId, item.content, item.parentMessageId || null)
-          finish(msg)
+          if (cancelled || !finish(msg)) return
         } catch {
+          if (cancelled || !sessionActive()) return
           queueOffline(item.content, item.parentMessageId)  // tekrar kuyrukla
           return
         }
       }
+      if (cancelled || !sessionActive()) return
       toast.success(`${q.length} bekleyen mesaj gönderildi`)
       onMessageSent?.()
     }
@@ -95,14 +105,15 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
    * @returns 'sent' | 'queued' | 'failed' — composer draft'i 'failed' disinda temizler.
    */
   async function sendText(content, parentMessageId = null) {
-    if (!content || sending) return 'failed'
+    if (!content || sending || !sessionActive()) return 'failed'
     setSending(true)
     try {
       const msg = await hotelApi.sendMessage(convId, content, parentMessageId)
-      finish(msg)
+      if (!finish(msg)) return 'failed'
       onMessageSent?.()
       return 'sent'
     } catch (err) {
+      if (!sessionActive() || err.code === 'ERR_CANCELED') return 'failed'
       const isNetwork = !err.response || err.code === 'ERR_NETWORK'
       if (isNetwork) {
         queueOffline(content, parentMessageId)
@@ -127,14 +138,15 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
 
   /** Tek dosya/ses gonder. @returns true = gonderildi */
   async function sendFile(file, caption = '') {
-    if (!file || sending || isTooBig(file)) return false
+    if (!file || sending || !sessionActive() || isTooBig(file)) return false
     setSending(true)
     try {
       const msg = await hotelApi.sendMessageAttachment(convId, file, caption)
-      finish(msg)
+      if (!finish(msg)) return false
       onMessageSent?.()
       return true
     } catch (err) {
+      if (!sessionActive() || err.code === 'ERR_CANCELED') return false
       toast.error(extractErrorMessage(err))
       return false
     } finally {
@@ -144,19 +156,22 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
 
   /** Coklu dosya (surukle-birak). Sirayla — paralel server'i zorlar. */
   async function sendFiles(files) {
-    if (sending) return
+    if (sending || !sessionActive()) return
     const valid = files.filter(f => !isTooBig(f, true))
     if (valid.length === 0) return
     setSending(true)
     try {
       for (const file of valid) {
+        if (!sessionActive()) return
         try {
           const msg = await hotelApi.sendMessageAttachment(convId, file, '')
-          finish(msg)
+          if (!finish(msg)) return
         } catch (err) {
+          if (!sessionActive() || err.code === 'ERR_CANCELED') return
           toast.error(`${file.name}: ${extractErrorMessage(err)}`)
         }
       }
+      if (!sessionActive()) return
       onMessageSent?.()
       if (valid.length > 1) toast.success(`${valid.length} dosya gönderildi`)
     } finally {
@@ -166,7 +181,7 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
 
   /** Jitsi arama daveti gonder + davet edene aramayi ac. */
   async function sendCall(type) {
-    if (sending) return
+    if (sending || !sessionActive()) return
     // Rastgele room — tahmin edilemez, sohbet-bazlı isim
     const slug = `kadrom-${convId}-${Math.random().toString(36).slice(2, 10)}`
     const baseUrl = `https://meet.jit.si/${slug}`
@@ -175,10 +190,11 @@ export default function useMessageSend({ conversation, onSent, onMessageSent }) 
     setSending(true)
     try {
       const msg = await hotelApi.sendMessage(convId, `[CALL:${type}]${callUrl}`)
-      finish(msg)
+      if (!finish(msg)) return
       onMessageSent?.()
       window.open(callUrl, '_blank', 'noopener,noreferrer')
     } catch (err) {
+      if (!sessionActive() || err.code === 'ERR_CANCELED') return
       toast.error(extractErrorMessage(err))
     } finally {
       setSending(false)

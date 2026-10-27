@@ -1,7 +1,8 @@
 import { QueryClient } from '@tanstack/react-query'
 
 /**
- * F0.10 — Merkezi QueryClient.
+ * Her oturuma ait QueryClient. Anahtarlar yalnız bu istemcinin önbelleğinde
+ * anlamlıdır: hesap değişince aynı anahtarlar yeni ve boş istemcide kullanılır.
  *
  * Default ayarlar:
  *  - staleTime: 30sn (yeni veri 30sn taze sayılır, refetch tetiklenmez)
@@ -11,20 +12,38 @@ import { QueryClient } from '@tanstack/react-query'
  *
  * Bireysel hook'larda override edilir (örn mesaj polling: refetchInterval).
  */
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30 * 1000,
-      gcTime: 5 * 60 * 1000,
-      retry: 1,
-      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
-      refetchOnWindowFocus: false,
+export function createSessionQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 30 * 1000,
+        gcTime: 5 * 60 * 1000,
+        retry: 1,
+        retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
+        refetchOnWindowFocus: false,
+      },
+      mutations: {
+        retry: 0,
+      },
     },
-    mutations: {
-      retry: 0,
-    },
-  },
-})
+  })
+}
+
+/**
+ * Eski oturumun sorgularını hemen iptal edip query ve mutation kayıtlarını siler.
+ * Bekleyen HTTP isteği AbortSignal kullanmasa bile Query'nin geç gelen sonucu
+ * iptal edilir. Önceden başlamış mutation/WS callback'i eski istemciyi tutar;
+ * yeni oturum ayrı istemci kullandığı için o callback yeni önbelleğe yazamaz.
+ */
+export function retireSessionQueryClient(client) {
+  if (!client) return
+  void client.cancelQueries()
+  client.clear()
+}
+
+// Eski bağımsız bileşen testleri için. Uygulama bu ortak örneği kullanmaz;
+// bileşenler oturumun istemcisini useQueryClient() ile almalıdır.
+export const queryClient = createSessionQueryClient()
 
 /**
  * Merkezi queryKey hiyerarşisi.

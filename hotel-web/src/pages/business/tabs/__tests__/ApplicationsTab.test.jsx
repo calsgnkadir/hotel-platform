@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ApplicationsTab from '../ApplicationsTab'
 
 /**
@@ -32,11 +33,14 @@ function SearchProbe() {
 }
 
 function renderTab(initialUrl = '/business?tab=applications', apps = APPS) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
-    <MemoryRouter initialEntries={[initialUrl]}>
-      <SearchProbe />
-      <ApplicationsTab applications={apps} onRefresh={vi.fn()} onOpenMessages={vi.fn()} />
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[initialUrl]}>
+        <SearchProbe />
+        <ApplicationsTab applications={apps} onRefresh={vi.fn()} onOpenMessages={vi.fn()} />
+      </MemoryRouter>
+    </QueryClientProvider>
   )
 }
 

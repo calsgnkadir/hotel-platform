@@ -1,46 +1,94 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, Fragment, useContext, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
+import { QueryClientProvider } from '@tanstack/react-query'
 import * as authApi from '../api/auth'
 import { wsConnect, wsDisconnect } from '../lib/websocket'
 import { presenceInit, presenceSubscribe, presenceUnsubscribe } from '../lib/presence'
 import { syncPushSubscription, getPushEndpoint } from '../lib/webpush'
+import { createSessionQueryClient, retireSessionQueryClient } from '../lib/queryClient'
+import { advanceSessionRevision, getSessionSnapshot, isSessionCurrent, trackLogout } from '../lib/sessionLifecycle'
 import { SESSION_CLEARED_EVENT } from '../api/client'
 import EmailVerifyDialog from '../components/EmailVerifyDialog'
 
 const AuthContext = createContext(null)
 
+function storedUser() {
+  try { return JSON.parse(localStorage.getItem('user') || 'null') } catch { return null }
+}
+
+function identity(user) {
+  const id = user?.userId ?? user?.id
+  return id == null ? null : String(id)
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+  const [session, setSession] = useState(() => ({
+    user: storedUser(), client: createSessionQueryClient(), revision: getSessionSnapshot().revision,
+  }))
+  const sessionRef = useRef(session)
+  const presenceTimer = useRef(null)
+  const { user } = session
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser))
-        // FAZ 1/#12 — page reload sonrası user mevcutsa WS bağlan
-        wsConnect()
-        // FAZ 1/#60 — Online presence init + sub
-        presenceInit()
-        presenceSubscribe()
-        syncPushSubscription()  // izin varsa aboneligi bu kullaniciya bagla (sessiz)
-      } catch {
-        localStorage.removeItem('user')
-      }
+  function disconnect() {
+    clearTimeout(presenceTimer.current)
+    presenceTimer.current = null
+    presenceUnsubscribe()
+    wsDisconnect()
+  }
+
+  function connect(delayedPresence = false) {
+    const snapshot = getSessionSnapshot()
+    wsConnect()
+    const subscribe = () => {
+      if (!isSessionCurrent(snapshot)) return
+      presenceInit()
+      presenceSubscribe()
     }
+    if (delayedPresence) presenceTimer.current = setTimeout(subscribe, 800)
+    else subscribe()
+    syncPushSubscription()
+  }
+
+  // Replace cache and account-owned component state together. Old callbacks
+  // retain only the retired client, never the new account's cache.
+  function replaceSession(nextUser, advance = true) {
+    disconnect()
+    const revision = advance ? advanceSessionRevision() : getSessionSnapshot().revision
+    retireSessionQueryClient(sessionRef.current.client)
+    const next = { user: nextUser, client: createSessionQueryClient(), revision }
+    sessionRef.current = next
+    flushSync(() => setSession(next))
+  }
+
+  useEffect(() => {
+    if (sessionRef.current.user) connect()
     setLoading(false)
+    return () => disconnect()
   }, [])
 
   // api/client.js oturumu yenileyemeyip temizlediğinde (ör. herkese açık sayfada
   // sessizce) arayüz de çıkış yapmış görünsün: WS/presence kapanır, kullanıcı düşer.
   useEffect(() => {
     function onCleared() {
-      presenceUnsubscribe()
-      wsDisconnect()
-      setUser(null)
+      // api/client advances the revision before announcing expiration.
+      replaceSession(null, false)
+    }
+    function onStorage(event) {
+      if (event.key !== null && event.key !== 'user' && event.key !== 'token') return
+      // Queued event.newValue can already be stale: read current storage.
+      const nextUser = storedUser()
+      const previous = sessionRef.current.user
+      if (identity(nextUser) === identity(previous) && nextUser?.role === previous?.role) return
+      replaceSession(nextUser)
+      if (nextUser) connect()
     }
     window.addEventListener(SESSION_CLEARED_EVENT, onCleared)
-    return () => window.removeEventListener(SESSION_CLEARED_EVENT, onCleared)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener(SESSION_CLEARED_EVENT, onCleared)
+      window.removeEventListener('storage', onStorage)
+    }
   }, [])
 
   // FAZ 5.1 — Hibrit tema: BIZ koyu (Dark Concierge), CAND/default acik (Hospitality SaaS).
@@ -65,43 +113,42 @@ export function AuthProvider({ children }) {
     return data
   }
 
-  async function logout() {
+  function logout() {
     // Once bu cihazdaki oturum ANINDA kapanir: eskiden sunucu istegi bitene kadar
     // token localStorage'da kaliyordu; o arada sayfa yenilenir/kapanirsa oturum acik kaliyordu.
-    presenceUnsubscribe()
-    wsDisconnect()
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    setUser(null)
+    replaceSession(null)
+    const snapshot = getSessionSnapshot()
 
     // F0.2: Sunucu refresh token'i iptal eder + cookie'yi siler. Push adresi de gider:
     // ortak cihazda bir sonraki kisiye bu kullanicinin bildirimi gitmesin (sunucu
     // kullaniciyi refresh cookie'den bulur — access token gerekmez).
     // keepalive: sayfa kapansa/yenilense de istek tamamlanir.
-    const pushEndpoint = await getPushEndpoint()
-    try {
-      await fetch((import.meta.env.VITE_API_URL || '') + '/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-        keepalive: true,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pushEndpoint ? { pushEndpoint } : {}),
-      })
-    } catch { /* sessiz: yerel oturum zaten kapandi */ }
+    const task = (async () => {
+      try {
+        const pushEndpoint = await getPushEndpoint()
+        if (!isSessionCurrent(snapshot)) return
+        await fetch((import.meta.env.VITE_API_URL || '') + '/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+          keepalive: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pushEndpoint ? { pushEndpoint } : {}),
+        })
+      } catch { /* sessiz: yerel oturum zaten kapandi */ }
+    })()
+    // New authentication waits until logout has finished setting its cookie.
+    trackLogout(task)
+    return task
   }
 
   function persist(authResponse) {
     const { token, ...userInfo } = authResponse
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(userInfo))
-    // FIX: flushSync ile setUser senkron commit edilir. Aksi halde await login()
-    // sonrasi navigate yapilirsa ProtectedRoute user'i hala null gorur ve
-    // /login'e geri atar. "Bazen tek seferde girilemiyor" bug'inin sebebi buydu.
-    flushSync(() => setUser(userInfo))
-    wsConnect()
-    // FAZ 1/#60 — Presence (WS bağlandıktan sonra init/sub)
-    setTimeout(() => { presenceInit(); presenceSubscribe() }, 800)
-    syncPushSubscription()
+    replaceSession(userInfo)
+    connect(true)
   }
 
   /** #92: Google OAuth callback'inden gelen veriyi persist eder. */
@@ -123,9 +170,13 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
-      {/* 403 EMAIL_NOT_VERIFIED gelince açılan doğrulama penceresi (tek yer) */}
-      <EmailVerifyDialog />
+      <QueryClientProvider client={session.client}>
+        <Fragment key={session.revision}>
+          {children}
+          {/* 403 EMAIL_NOT_VERIFIED gelince açılan doğrulama penceresi (tek yer) */}
+          <EmailVerifyDialog />
+        </Fragment>
+      </QueryClientProvider>
     </AuthContext.Provider>
   )
 }

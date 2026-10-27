@@ -1,5 +1,6 @@
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
+import { render as renderReact, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { QueryClientProvider } from '@tanstack/react-query'
 
 /**
  * Vardiya bazlı "Gelmedi": yalnız başlangıcı + 30 dk geçmiş ve işaretlenmemiş
@@ -27,6 +28,10 @@ vi.mock('../../../../components/LegalNotice', () => ({ SgkNotice: () => null }))
 import ApplicationDetail from '../ApplicationDetail'
 import { queryClient } from '../../../../lib/queryClient'
 
+function render(ui) {
+  return renderReact(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
+}
+
 // Sabit an: 12 Ekim 2026 23:00 (yerel)
 const NOW = new Date(2026, 9, 12, 23, 0, 0)
 const PAST_DAY = { id: 31, date: '2026-10-12', startTime: '08:00:00', endTime: '16:00:00' }
@@ -48,7 +53,7 @@ beforeEach(() => {
   markNoShow.mockReset(); toastSuccess.mockReset(); toastError.mockReset(); confirmMock.mockReset()
   invalidate = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined)
 })
-afterEach(() => { vi.useRealTimers(); invalidate.mockRestore() })
+afterEach(() => { vi.useRealTimers(); invalidate.mockRestore(); queryClient.clear() })
 
 describe('ApplicationDetail — vardiya bazlı gelmedi', () => {
   it('tek uygun vardiya: doğrudan onay, ceza metni, slotId ile çağrı, toast + yenileme', async () => {

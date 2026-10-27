@@ -19,6 +19,7 @@ import SockJS from 'sockjs-client'
 let client = null
 let connected = false
 let pendingSubs = []  // bağlanmadan önce sub ister isen, buraya kuyruğa al
+let connectionRevision = 0
 
 // FAZ D.10 — connection state machine
 const STATE = { IDLE: 'idle', CONNECTING: 'connecting', CONNECTED: 'connected', RECONNECTING: 'reconnecting', FAILED: 'failed' }
@@ -80,7 +81,7 @@ export function wsConnect() {
   notifyStatus()
   const initialDelay = computeBackoffDelay()
 
-  client = new Client({
+  const connection = new Client({
     webSocketFactory: () => new SockJS(WS_URL),
     connectHeaders: {
       Authorization: `Bearer ${token}`,
@@ -91,7 +92,7 @@ export function wsConnect() {
     // token API refresh interceptor'i (client.js) ile taze tutuluyor -> buradan tekrar okuyoruz.
     beforeConnect: () => {
       const fresh = getToken()
-      if (fresh && client) client.connectHeaders = { Authorization: `Bearer ${fresh}` }
+      if (fresh && client === connection) connection.connectHeaders = { Authorization: `Bearer ${fresh}` }
     },
     // FAZ D.10 — Stomp's own reconnectDelay (her fail'de bu degeri yeniden hesaplariz)
     reconnectDelay: initialDelay,
@@ -100,13 +101,16 @@ export function wsConnect() {
     debug: () => {},            // log spam kapalı (DEV'de istersen aç)
 
     onConnect: () => {
+      if (client !== connection) return
       connected = true
       connectionState = STATE.CONNECTED
       reconnectAttempts = 0     // Basarili — backoff sifirla
       import.meta.env.DEV && console.log('[WS] Bağlandı')
       // Bekleyen sub'ları gerçekle
       pendingSubs.forEach(({ destination, callback, ref }) => {
-        ref.sub = client.subscribe(destination, (msg) => {
+        if (ref.cancelled) return
+        ref.sub = connection.subscribe(destination, (msg) => {
+          if (client !== connection || ref.cancelled) return
           try {
             const data = JSON.parse(msg.body)
             callback(data)
@@ -120,20 +124,24 @@ export function wsConnect() {
     },
 
     onStompError: (frame) => {
+      if (client !== connection) return
       console.warn('[WS] STOMP error:', frame.headers?.message || frame)
     },
 
     onWebSocketError: (e) => {
+      if (client !== connection) return
       console.warn('[WS] Socket error:', e?.message || e)
     },
 
     onDisconnect: () => {
+      if (client !== connection) return
       connected = false
       // Asagidaki onWebSocketClose backoff arttirir
       notifyStatus()
     },
 
     onWebSocketClose: () => {
+      if (client !== connection) return
       // SockJS transport kapanışı — Stomp.js bunu auto-reconnect ile dener.
       // FAZ F.5: zaten RECONNECTING state'indeysek bu yeni close olayi sadece
       // Stomp'un kendi retry doneminin "artigi". attempt sayacini iki kez
@@ -156,7 +164,8 @@ export function wsConnect() {
     },
   })
 
-  client.activate()
+  client = connection
+  connection.activate()
 }
 
 /**
@@ -169,6 +178,7 @@ export function wsConnect() {
  * tamamlanmasini bekleyip wsConnect() cagiriyoruz.
  */
 export function wsForceReconnect() {
+  const revision = ++connectionRevision
   reconnectAttempts = 0
   connected = false
   pendingSubs = []
@@ -180,7 +190,7 @@ export function wsForceReconnect() {
     // Deactivate Promise döner; sonucu ne olursa olsun yeni baglantiya gec
     Promise.resolve(old.deactivate())
       .catch(() => {})    // hata olsa bile yeni baglanti acilmali
-      .finally(() => wsConnect())
+      .finally(() => { if (revision === connectionRevision) wsConnect() })
     return
   }
   wsConnect()
@@ -198,12 +208,17 @@ if (typeof document !== 'undefined') {
 }
 
 export function wsDisconnect() {
-  if (client) {
-    try { client.deactivate() } catch {}
-    client = null
-    connected = false
-    pendingSubs = []
+  ++connectionRevision
+  const old = client
+  client = null
+  connected = false
+  pendingSubs = []
+  connectionState = STATE.IDLE
+  reconnectAttempts = 0
+  if (old) {
+    try { Promise.resolve(old.deactivate()).catch(() => {}) } catch {}
   }
+  notifyStatus()
 }
 
 /**
@@ -214,7 +229,9 @@ export function wsSubscribe(destination, callback) {
   const ref = { sub: null, cancelled: false }
 
   if (client && connected) {
-    ref.sub = client.subscribe(destination, (msg) => {
+    const connection = client
+    ref.sub = connection.subscribe(destination, (msg) => {
+      if (client !== connection || ref.cancelled) return
       try {
         const data = JSON.parse(msg.body)
         callback(data)

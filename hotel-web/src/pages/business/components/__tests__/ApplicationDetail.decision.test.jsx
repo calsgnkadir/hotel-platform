@@ -1,5 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render as renderReact, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 /**
  * Başvuru detayı: karar düğmeleri ayırt edilebilir (Kabul birincil, Beklet/Yedeğe al
@@ -18,6 +19,11 @@ vi.mock('../../../../lib/confetti', () => ({ celebrate: vi.fn() }))
 vi.mock('../../../../components/LegalNotice', () => ({ SgkNotice: () => null }))
 
 import ApplicationDetail from '../ApplicationDetail'
+
+function render(ui) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return renderReact(<QueryClientProvider client={client}>{ui}</QueryClientProvider>)
+}
 
 const APP = {
   id: 11,

@@ -1,9 +1,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { QueryClientProvider } from '@tanstack/react-query'
 import { initHapticForToasts } from './lib/haptic'  // FAZ 3
-import { queryClient } from './lib/queryClient'
 import { lazyPage } from './lib/lazyPage'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
@@ -56,7 +54,6 @@ export default function App() {
   useEffect(() => { initHapticForToasts() }, [])  // FAZ 3 - mobile haptic
   return (
     <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
     <ThemeProvider>
     <MotionConfig reducedMotion="user" transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -80,7 +77,6 @@ export default function App() {
     </BrowserRouter>
     </MotionConfig>
     </ThemeProvider>
-    </QueryClientProvider>
     </ErrorBoundary>
   )
 }
