@@ -7,7 +7,7 @@
 #
 # Kullanim:
 #   deploy/prod dizininden:  ./backup.sh
-#   cron (her gece 03:30):   30 3 * * *  cd /opt/kadrom/deploy/prod && ./backup.sh >> backups/backup.log 2>&1
+#   Zamanlanmis calistirma/dis kopya/hata uyarisi: run-backup.sh ve docs/BACKUP_READINESS.md
 #
 # Env (opsiyonel): BACKUP_DIR (varsayilan ./backups), KEEP (varsayilan 14)
 # MYSQL_ROOT_PASSWORD .env.prod'tan okunur (compose ile ayni kaynak).
@@ -58,6 +58,9 @@ fi
 
 echo "[backup] tamam (${SIZE} bayt). Mevcut yedekler:"
 for FILE in "${BACKUPS[@]:0:KEEP}"; do printf '  %s\n' "$BACKUP_DIR/$FILE"; done
+
+# Optional private hand-off for the scheduler wrapper; never parse human log output.
+if [ -n "${BACKUP_RESULT_FILE:-}" ]; then printf '%s\n' "$OUT" > "$BACKUP_RESULT_FILE"; fi
 
 # ONEMLI: Bu dosyalar SUNUCUDA duruyor — disk olursen yedek de gider.
 # En az bir kopyayi baska yere al (rclone/scp ile S3, B2, baska sunucu).

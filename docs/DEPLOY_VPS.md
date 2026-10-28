@@ -101,7 +101,7 @@ sudo ufw allow OpenSSH && sudo ufw allow 80 && sudo ufw allow 443 && sudo ufw en
 | ☐ | **SSH yalnız anahtarla** | `ssh-copy-id` ile anahtarını ekle → `/etc/ssh/sshd_config`: `PasswordAuthentication no`, `PermitRootLogin no` → `sudo systemctl restart ssh` (önce ikinci oturumda anahtarla girişi dene) |
 | ☐ | **Otomatik güvenlik güncellemeleri** | `sudo apt install unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades` |
 | ☐ | **Saat (NTP) ve saat dilimi** | `timedatectl` → `System clock synchronized: yes`; değilse `sudo timedatectl set-ntp true`. Uygulama Europe/Istanbul kullanır; vardiya/QR girişi doğru saate bağlı. |
-| ☐ | **Gece yedeği (cron)** | aşağıda "Yedekleme" — `backup.sh` her gece |
+| ☐ | **Gece yedeği (cron)** | aşağıda "Yedekleme" — `run-backup.sh` her gece; dış kopya ve hata uyarısı ayrıca yapılandırılır |
 | ☐ | **Sunucu dışı kopya** | yedeği başka bir yere (ikinci sunucu / nesne depolama) kopyala; disk giderse yedek de gider |
 | ☐ | **Geri yükleme provası** | ilk kurulumda bir kez ve ayda bir: yedeği ayrı bir test veritabanına `restore.sh` ile yükle, giriş yapılabildiğini gör |
 | ☐ | **`.env.prod` izni** | `chmod 600 deploy/prod/.env.prod`; repoya girmez |
@@ -249,18 +249,20 @@ docker compose --env-file deploy/prod/.env.prod -f deploy/prod/docker-compose.pr
 ## Yedekleme (backup)
 
 DB `mysql_data` volume'unde tutulur. Sunucu/disk olurse veri gider — duzenli **mysqldump** al.
-Bu repoda hazir script'ler: `deploy/prod/backup.sh` (yedek + rotasyon) ve `deploy/prod/restore.sh` (geri yukle).
+Bu repoda hazir script'ler: `deploy/prod/backup.sh` (yedek + rotasyon), `run-backup.sh`
+(zamanlanmış çalıştırma, isteğe bağlı dış kopya ve hata uyarısı) ve `restore.sh` (geri yükleme).
+Kurulum ve sınırlar: [BACKUP_READINESS.md](BACKUP_READINESS.md). Henüz otomatik bir görev veya dış depo kurulmuş değildir.
 
 ```bash
 # tek seferlik yedek (deploy/prod icinden)
 cd deploy/prod && chmod +x backup.sh restore.sh
-./backup.sh                      # -> backups/hotel_platform-YYYYMMDD-HHMMSS.sql.gz
+./backup.sh                      # -> backups/hotel_platform-TARIH-SAAT-BENZERSIZ.sql.gz
 
 # her gece 03:30 otomatik (crontab -e)
-30 3 * * * cd /opt/kadrom/deploy/prod && ./backup.sh >> backups/backup.log 2>&1
+30 3 * * * cd /opt/kadrom/deploy/prod && bash ./run-backup.sh >> backups/backup.log 2>&1
 
 # geri yukleme (DIKKAT: ustune yazar)
-./restore.sh backups/hotel_platform-YYYYMMDD-HHMMSS.sql.gz
+./restore.sh backups/hotel_platform-TARIH-SAAT-BENZERSIZ.sql.gz
 ```
 
 - `backup.sh` son **14** yedegi tutar (`KEEP` env ile degistir), `--single-transaction` ile
@@ -268,7 +270,8 @@ cd deploy/prod && chmod +x backup.sh restore.sh
 - **Off-site kopya sart:** yedekler sunucuda; diski kaybedersen yedek de gider. En az bir
   kopyayi baska yere al (rclone -> nesne depolama, ya da `scp`/`rsync` ile baska sunucu).
   Ornek (yedekten sonra, 04:00): `0 4 * * * rsync -a /opt/kadrom/deploy/prod/backups/ yedek@ikinci-sunucu:/yedek/kadrom/`
-  Kopya da Turkiye'de olsun (KVKK); dump sifreli alanlari sifreli tasir, `APP_ENCRYPTION_KEY`'i
+  Depo ülkesini ve gerekiyorsa yurt dışı aktarım dayanağını ayrıca belirle; konum tek başına KVKK uygunluğu değildir.
+  Dump şifreli alanları şifreli taşır; diğer kişisel veriler için de yedeğin erişimi ve şifrelemesi planlanmalıdır. `APP_ENCRYPTION_KEY`'i
   yedekle AYNI yerde tutma.
 - Ayda bir **geri yukleme provasi** yap — test edilmemis yedek, yedek degildir.
 

@@ -14,11 +14,20 @@ Son kontrol: 28 Ekim 2026. Bu belge, kod/test ortamındaki kanıt ile gerçek ci
 | Boşluk içeren dizinde rotasyon | Geçti; kontrollü Docker taklidiyle | Son iki yedek tutuldu; eski yedek silindi; `KEEP=0` reddedildi. Sıralama dosya değiştirilme zamanına göre. |
 | Gerçek MySQL yedek/restore | Geçti; izole MySQL 8.4 | 100 satırın SHA-256 karşılaştırması ve iki outbox kaydı geri yüklendi. Bozuk arşiv veritabanını değiştirmedi; başarısız dump ve rotasyon kontrolleri geçti. |
 | V30 MySQL migration + büyük ek | Geçti; izole MySQL 8.4 | Eski üç alanlı EMAIL kaydı korundu; MEDIUMTEXT üzerinde 95.000 bayt ek içeriği saklandı. |
-| Gerçek e-posta gelen kutusu | Geçti; geçici test ortamı | Kullanıcı test e-postasını ve uygulamanın gerçek doğrulama e-postasını kendi gelen kutusunda gördü. Ekli ekip listesi ve canlı sunucu ayarları henüz gerçek teslimle sınanmadı. |
+| Gerçek e-posta gelen kutusu | Geçti; geçici test ortamı | Kullanıcı test e-postasını ve uygulamanın gerçek doğrulama e-postasını kendi gelen kutusunda gördü. Canlı sunucu ayarları henüz gerçek teslimle sınanmadı. |
+| Gerçek ekli ekip listesi e-postası | **Geçti; kullanıcı gelen kutusunu ve ek açılışını doğruladı** | 28 Ekim 2026 20:16 TR: gerçek RosterService XLSX → EmailService → izole H2 outbox → relay zinciriyle kullanıcının izin verdiği adrese tek test gönderildi. İki hayali çalışan; `kadrom-test-ekip-listesi.xlsx`. Tek HTTP isteği ve processedAt doğrulandı. Resend kimliği: `01a18386-b8c6-7656-8508-6f8b25c650fa`. Kullanıcı: “Geldi, Excel eki de açıldı.” Canlı sunucu testi yerine geçmez. |
 | iPhone web push | Geçti; geçici HTTPS demo | Kullanıcı uygulamayı Ana Ekran'a ekleyip izin verdi; demo işletmeden gönderilen mesajın bildirimi telefona ulaştı ve doğru sohbet açıldı. Canlı sunucuda kalıcı VAPID anahtarlarıyla ve yeniden başlatma sonrasında tekrarlanmalı. |
 | iPhone kamera ile QR | Geçti; geçici HTTPS demo | İşletme hesabıyla adayın giriş ve çıkış kodları kamerayla okutuldu; tekrar okutma uyarısı ve tek kayıt/doğrulanan çıkış saati kontrol edildi. Canlı ortamda tekrarlanmalı. |
 | Kalıcı VAPID anahtar çifti | Yerel hazırlık tamam | Eşleşen P-256 çifti Git'in yok saydığı `hotelapp/.env` dosyasına kaydedildi, biçim ve imza doğrulandı. Canlıya otomatik yüklenmez; sunucuya güvenli aktarım ve restart sonrası teslim testi gerekir. |
 | Sunucu dışı yedekten kurtarma | **Doğrulanmadı** | Ayrı depoya kopyalanmış yedekle boş bir ortama dönüş ve veri karşılaştırması gerekli. |
+| Zamanlanmış yedek görevi hata yolları | Geçti; offline taklitlerle | Yerel yedek, dump/kopya hatası, yerel hedef reddi, kilit çakışmasında uyarı ve durum dosyası hatasında uyarı doğrulandı. `backup-job-DTihPL`; güncel safety testi `backup-safety-Q1AGwk` exit 0. Gerçek cron, dış depo veya bildirim teslimi kurulmuş değildir. |
+
+## Harcama gerektirmeyen hazırlık belgeleri
+
+- [E-posta ve canlı ayar hazırlığı](MAIL_READINESS.md): gerçek Excel teslim kanıtı; yerel anahtar kontrolü ve eksik Cloudinary bağlantısı.
+- [Yedekleme hazırlığı](BACKUP_READINESS.md): zamanlama, dış kopya ve hata uyarısı kurulumu; gerçek hedef ve kurtarma denemesi bekliyor.
+- [Kafe ve çalışan kullanım kılavuzu](CAFE_PILOT_GUIDE.md): mevcut QR akışı ve görevli yokluğundaki sınır; saat düzeltme süreci yalnız öneridir.
+- [Hukuki görüşme hazırlığı](LEGAL_READINESS.md): İŞKUR'a sorulacak kapsam soruları ve mevcut KVKK yer tutucuları. İzin veya nihai hukuk incelemesi yerine geçmez.
 
 ## Tekrar çalıştırılabilir kontroller
 
@@ -28,12 +37,19 @@ Repo kökünden, Bash ortamında:
 # Gerçek prod scriptlerini kontrollü sahte Docker CLI ile sınar; veritabanına erişmez.
 bash deploy/prod/tests/backup-safety-test.sh
 
+# Zamanlayıcı, dış kopya ve uyarı hata yollarını offline taklitlerle sınar.
+bash deploy/prod/tests/backup-job-test.sh
+
 # Docker çalışırken: ayrı Compose projesi, portsuz MySQL 8.4 ve tmpfs veri dizini.
 # Production .env veya mevcut Compose projesi kullanılmaz.
 bash deploy/prod/tests/backup-restore-drill.sh
 ```
 
 İlk komut 28 Ekim 2026'da exit code 0 ile tekrar tamamlandı. İlgili yerel çalışma çıktıları `hotelapp/target/backup-safety-BGpTc0/` altında; üretilen dosyalar Git'e eklenmez.
+
+Commit öncesi son tekrar: safety ve zamanlanmış görev testleri aynı gün exit code 0 ile geçti.
+Kanıt klasörleri: `hotelapp/target/backup-safety-XJDROJ/` ve `hotelapp/target/backup-job-4c3Uez/`.
+Gerçek servis veya posta gönderimi bu tekrarda kullanılmadı.
 
 Gerçek MySQL provasında şu kontroller geçti: eski üç alanlı EMAIL satırını koruyan V30, 95.000 bayt ek içeriğinin MEDIUMTEXT üzerinde saklanması, 100 satırın tamamını içeren SHA-256 karşılaştırmasıyla restore, bozuk arşiv reddi, başarısız dump temizliği ve rotasyon. Kanıt klasörü `hotelapp/target/backup-drill-x4p8gj/`. Script `EXIT` sırasında yalnız kendisinin oluşturduğu geçici Compose projesini kaldırır; MySQL verisi tmpfs olduğu için kalıcı değildir. Çalışma klasörü test kanıtı olarak kalır.
 
