@@ -132,7 +132,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      DOMAIN: ${DOMAIN:?Caddy icin alan adi, orn. kadrom.me (HTTP-only test icin :80)}
+      DOMAIN: ${DOMAIN:?Caddy icin alan adi, orn. kadrom.me}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

@@ -8,9 +8,7 @@
 # kalan her sey frontend nginx'e (SPA). Boylece tarayici her seyi TEK origin
 # olarak gorur — CORS yok, mixed-content yok.
 #
-# ── HTTP-only hizli test (henuz alan adin yoksa) ──
-# .env.prod'da DOMAIN yerine  DOMAIN=:80  yaz, PUBLIC_URL=http://SUNUCU_IP ve
-# COOKIE_SECURE=false yap. Caddy sertifika denemez, dogrudan HTTP servis eder.
+# Prod profili HTTPS ve secure cerez gerektirir; IP ile HTTP-only test desteklenmez.
 
 {$DOMAIN} {
 	encode zstd gzip

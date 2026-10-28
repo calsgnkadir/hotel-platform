@@ -22,15 +22,24 @@ anlatı: *"containerized full-stack'i CI ile kendi sunucumda deploy ettim."*
 
 ---
 
-## 0. Öğrenci = bedava sunucu
+## 0. Sunucu ve öğrenci teklifleri
 
-Kredi kartı gerektirmeyen / öğrenci kredili yollar:
+Fiyatlar ve kampanyalar değişir; aşağıdaki bilgiler **28 Ekim 2026** tarihinde
+sağlayıcıların kendi sayfalarından kontrol edildi. Bir servis oluşturmadan önce
+seçilen bölge, vergi, IP, disk, yedek, taahhüt ve yenileme ücretlerini hesapta
+kontrol et. Öğrenci faydasının hesapta etkin olduğunu varsayma.
 
-| Yol | Kredi | Not |
+| Yol | Kontrol edilen bilgiler | Sınır / kalan kontrol |
 | :-- | :-- | :-- |
-| **GitHub Student Pack → DigitalOcean** | genelde $200 / 1 yıl | En temiz. `.edu.tr` ile başvur. Bir de ücretsiz domain (Namecheap `.me`) çıkar. |
-| **Azure for Students** | ~$100, kart istemez | VM (B1s/B2s) aç, aynı adımlar. |
-| Hetzner / herhangi VPS | ~€4/ay | Öğrenci değilsen en ucuz always-on. |
+| [Azure for Students](https://learn.microsoft.com/azure/education-hub/about-azure-for-students) | Uygun öğrencilere 12 ay içinde kullanılacak 100 USD kredi; kayıt için kredi kartı gerekmez. | 18+ tam zamanlı yükseköğretim ve kurum e-postasıyla doğrulama gerekir; aktif öğrenciyken yıllık yenileme mümkündür. [Microsoft FAQ](https://learn.microsoft.com/en-us/azure/education-hub/faq) kullanım amacını eğitim/öğretim, ticari olmayan araştırma ve bu amaçlarla geliştirme/test/demoyla sınırlar. Ticari kafelerin kullanacağı üretim için uygun olduğunu varsayma. Kredi biter veya 12 ay dolarsa abonelik durabilir. |
+| [GitHub Student Developer Pack](https://education.github.com/pack) | Namecheap için bir yıllık `.me` alan adı kaydı ve Azure teklifi listeleniyor. | `kadrom.me` mevcut kayıt olduğundan yeni domain satın almadan registrar, yenileme tarihi ve teklifin hesaba uygulanabilirliği kontrol edilmeli. Mevcut listede DigitalOcean teklifi doğrulanamadı; eski `$200 / 1 yıl` ve kart gerekmeme iddiasına güvenme. |
+| [DigitalOcean Basic](https://www.digitalocean.com/pricing/droplets) | Aylık üst sınır: 1 GiB RAM için 6 USD, 2 GiB için 12 USD. | 1 GiB bu uygulamanın tüm servisleri ve imaj derlemesi için risklidir; 2 GiB kullanıcı bütçesini aşar. Vergi ve yedek maliyeti ayrıca kontrol edilmeli. Türkiye lokasyonu gereksinimini karşılayıp karşılamadığı teyit edilmeli. |
+| [Hetzner CX23](https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/) | 4 GB RAM; Almanya/Finlandiya için 6,49 USD/ay, IPv4 hariç ve vergi hariç. | [Primary IPv4](https://docs.hetzner.com/general/infrastructure-and-availability/ipv4-pricing/) 0,60 USD/ay ek; toplam 7,09 USD/ay + uygulanacak vergi, yedek hariç. 6 USD sınırını aşar. |
+
+Türkiye'deki alternatiflerde ilan edilen fiyatın aylık yenileme mi, uzun dönem
+peşin karşılığı mı olduğu; KDV, public IPv4, Linux root/Docker desteği, veri merkezi
+ve sunucu dışı yedeğin ücreti satın almadan doğrulanmalıdır. Sağlayıcı kalitesi,
+destek ve gerçek kapasitesi bu listeyle doğrulanmış sayılmaz.
 
 > **Sunucu Türkiye'de olacak (karar).** Kullanıcı verisi (aday profili, telefon,
 > vardiya/giriş kayıtları) KVKK kapsamında; veritabanı ve yedekler Türkiye'deki bir
@@ -40,12 +49,15 @@ Kredi kartı gerektirmeyen / öğrenci kredili yollar:
 > yurt dışı hizmetlerdir — bunlara giden veri için Aydınlatma Metni'nde yurt dışı
 > aktarım bilgisi gerekir (hukuki değerlendirme: açık konu).
 
-Sunucu: **Ubuntu 22.04+, en az 2 GB RAM** (Spring Boot + MySQL + build için 1 GB
-sıkışır; 2 GB rahat). 1 vCPU yeterli.
+Sunucu: **Ubuntu 22.04+, en az 2 GB RAM ile başlama hedefi**. Spring Boot, MySQL,
+frontend ve Caddy birlikte çalışır; uygulama 2 GB üzerinde yük ve derleme testi
+geçirmediği için bu yeterlilik garantisi değildir. Özellikle Maven ve Vite
+derlemesi aynı sunucuda bellek tüketimini artırabilir; önceden oluşturulmuş imaj,
+swap ve kapasite ölçümü değerlendirilmelidir. Daha fazla bellek güvenli pay sağlar.
 
-> **Bu adımlar sana ait:** hesap açma, `.edu.tr` doğrulama, sunucu oluşturma,
-> DNS ayarı. Asistan bunları yapamaz (hesap/kimlik). Aşağısı senin çalıştıracağın
-> komutlar; config repoda hazır.
+> Hesap/kimlik doğrulama, ödeme ve canlı DNS değişiklikleri kullanıcıyla birlikte
+> yapılmalıdır. Aşağıdaki komutlar ve config hazırlık içindir; önce seçilen
+> sağlayıcı ve maliyet doğrulanmalıdır.
 
 ---
 
@@ -57,10 +69,12 @@ Sunucunun public IP'sini al. Domain sağlayıcında bir **A kaydı**:
 kadrom.me   →   <SUNUCU_IP>
 ```
 
-DNS yayılmadan Caddy sertifika alamaz. `ping kadrom.me` IP'yi
-gösteriyorsa hazırsın.
+DNS kaydının sunucu IP'sine yönlendiğini doğrula; DNS sonucu tek başına HTTPS'in
+hazır olduğunu göstermez. Caddy'nin sertifika alabilmesi için 80 ve 443 numaralı
+portların dışarıdan erişilebilir olması ve sertifikanın başarıyla oluşturulması
+da kontrol edilmelidir.
 
-> Henüz domain yoksa §7'deki **HTTP-only hızlı test** ile IP üzerinden deneyebilirsin.
+> Üretim profili HTTPS gerektirir; alan adı henüz yönlenmiyorsa §7'deki açıklamaya bak.
 
 ---
 

@@ -14,9 +14,10 @@ Son kontrol: 28 Ekim 2026. Bu belge, kod/test ortamındaki kanıt ile gerçek ci
 | Boşluk içeren dizinde rotasyon | Geçti; kontrollü Docker taklidiyle | Son iki yedek tutuldu; eski yedek silindi; `KEEP=0` reddedildi. Sıralama dosya değiştirilme zamanına göre. |
 | Gerçek MySQL yedek/restore | Geçti; izole MySQL 8.4 | 100 satırın SHA-256 karşılaştırması ve iki outbox kaydı geri yüklendi. Bozuk arşiv veritabanını değiştirmedi; başarısız dump ve rotasyon kontrolleri geçti. |
 | V30 MySQL migration + büyük ek | Geçti; izole MySQL 8.4 | Eski üç alanlı EMAIL kaydı korundu; MEDIUMTEXT üzerinde 95.000 bayt ek içeriği saklandı. |
-| Gerçek e-posta gelen kutusu | **Doğrulanmadı** | Bu kontrol kapsamında gerçek mail gönderilmedi. Yerel Resend yapılandırması ve doğrulanmış gönderen hazırlanmalı. Sağlayıcının HTTP kabulü, gelen kutusu teslimi anlamına gelmez. |
-| iPhone web push | **Doğrulanmadı** | Public HTTPS, kalıcı VAPID anahtarları ve gerçek telefonda izin/teslim kontrolü gerekli. |
-| iPhone kamera ile QR | **Doğrulanmadı** | Gerçek kamera, konum izinleri ve iki farklı hesapla giriş/çıkış tamamlanmalı. |
+| Gerçek e-posta gelen kutusu | Geçti; geçici test ortamı | Kullanıcı test e-postasını ve uygulamanın gerçek doğrulama e-postasını kendi gelen kutusunda gördü. Ekli ekip listesi ve canlı sunucu ayarları henüz gerçek teslimle sınanmadı. |
+| iPhone web push | Geçti; geçici HTTPS demo | Kullanıcı uygulamayı Ana Ekran'a ekleyip izin verdi; demo işletmeden gönderilen mesajın bildirimi telefona ulaştı ve doğru sohbet açıldı. Canlı sunucuda kalıcı VAPID anahtarlarıyla ve yeniden başlatma sonrasında tekrarlanmalı. |
+| iPhone kamera ile QR | Geçti; geçici HTTPS demo | İşletme hesabıyla adayın giriş ve çıkış kodları kamerayla okutuldu; tekrar okutma uyarısı ve tek kayıt/doğrulanan çıkış saati kontrol edildi. Canlı ortamda tekrarlanmalı. |
+| Kalıcı VAPID anahtar çifti | Yerel hazırlık tamam | Eşleşen P-256 çifti Git'in yok saydığı `hotelapp/.env` dosyasına kaydedildi, biçim ve imza doğrulandı. Canlıya otomatik yüklenmez; sunucuya güvenli aktarım ve restart sonrası teslim testi gerekir. |
 | Sunucu dışı yedekten kurtarma | **Doğrulanmadı** | Ayrı depoya kopyalanmış yedekle boş bir ortama dönüş ve veri karşılaştırması gerekli. |
 
 ## Tekrar çalıştırılabilir kontroller
@@ -38,7 +39,7 @@ Gerçek MySQL provasında şu kontroller geçti: eski üç alanlı EMAIL satır�
 
 İlk denemede Docker Desktop başlangıç hatası vardı. Kullanıcı Docker'ı açtıktan sonra daemon 29.6.1 ile gerçek prova tamamlandı. Verileri etkileyebilecek factory reset veya mevcut veritabanına müdahale yapılmadı.
 
-## Telefonda tamamlanacak deneme
+## Canlı ortamda tekrarlanacak deneme
 
 1. HTTPS adresini iPhone'da aç; iOS sürümünü kaydet. Aday ve işletme hesapları farklı oturumlarda olsun.
 2. Push için web uygulamasını Ana Ekran'a ekle, buradan aç ve uygulamadaki bildirim düğmesine dokunarak izin ver. iOS/iPadOS 16.4 ve sonrası bu akışı destekler. [WebKit açıklaması](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/)
