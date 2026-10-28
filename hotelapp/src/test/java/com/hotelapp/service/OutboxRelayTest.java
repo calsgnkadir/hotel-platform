@@ -34,6 +34,7 @@ class OutboxRelayTest {
     @Mock private AuditLogService auditLogService;
     @Mock private EmailService emailService;       // FAZ D.9
     @Mock private OutboxStatusWriter statusWriter; // FAZ F.4
+    @Mock private NotificationService notifications;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private OutboxRelay relay;
@@ -43,7 +44,7 @@ class OutboxRelayTest {
         org.springframework.beans.factory.ObjectProvider<com.hotelapp.metrics.AppMetrics> noMetrics =
                 emptyProvider();
         relay = new OutboxRelay(outboxRepository, objectMapper, auditLogService, emailService,
-                statusWriter, noMetrics);
+                statusWriter, noMetrics, notifications);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

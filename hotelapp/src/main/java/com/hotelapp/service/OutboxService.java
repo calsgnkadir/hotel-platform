@@ -46,7 +46,10 @@ public class OutboxService {
         } catch (JsonProcessingException e) {
             log.error("[OUTBOX] EmailMessage serialize edilemedi to={}",
                     com.hotelapp.security.PiiMasking.email(message.to()), e);
-            return;
+            throw new IllegalStateException("E-posta kuyruğa alınamadı", e);
+        }
+        if (payload.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 4 * 1024 * 1024) {
+            throw new IllegalArgumentException("E-posta kuyruk kaydı 4 MiB sınırını aşıyor");
         }
         OutboxEvent row = OutboxEvent.builder()
                 .eventType(TYPE_EMAIL)

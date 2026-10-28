@@ -35,7 +35,7 @@ public class OutboxEvent {
 
     /** JSON payload — Jackson serialize edilmis event record. */
     @Lob
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "MEDIUMTEXT")
     private String payload;
 
     @Column(name = "created_at", nullable = false)

@@ -115,17 +115,21 @@ public class EmailService {
         }
     }
 
-    /**
-     * Ek dosyalı e-posta (ekip listesi .xlsx). Outbox'a yazılmaz — ek büyük ve
-     * gönderilemezse liste panelden indirilebilir durumda; kayıp kritik değil.
-     */
-    @CircuitBreaker(name = "resend", fallbackMethod = "sendWithAttachmentFallback")
+    /** Persist the exact attachment before claiming it is queued; never silently fall back to inline delivery. */
+    public void queueWithAttachment(String toEmail, String subject, String htmlBody,
+                                    String fileName, byte[] content, Long deliveryNoticeUserId) {
+        OutboxService outbox = outboxProvider.getIfAvailable();
+        if (outbox == null) throw new IllegalStateException("E-posta kuyruğu kullanılamıyor");
+        outbox.appendEmail(new com.hotelapp.event.EmailMessage(toEmail, subject, htmlBody,
+                new com.hotelapp.event.EmailMessage.Attachment(fileName, content), deliveryNoticeUserId));
+    }
+
+    /** Relay-only attachment delivery. Provider errors and open circuits must reach retry handling. */
+    @CircuitBreaker(name = "resend")
     public void sendWithAttachment(String toEmail, String subject, String htmlBody,
                                    String fileName, byte[] content) {
         if (apiKey == null || apiKey.isBlank()) {
-            log.warn("[EMAIL DEV MODE] API key yok — ekli email gönderilmedi: to={} subject={} ek={} ({} bayt)",
-                    maskEmail(toEmail), subject, fileName, content.length);
-            return;
+            throw new IllegalStateException("Ekli e-posta gönderilemedi: e-posta sağlayıcısı yapılandırılmamış");
         }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -147,13 +151,6 @@ public class EmailService {
             log.error("[EMAIL] Ekli gönderim hatası: to={} hata={}", maskEmail(toEmail), safe);
             throw new IllegalStateException("Email gönderilemedi: " + safe, e);
         }
-    }
-
-    @SuppressWarnings("unused")
-    private void sendWithAttachmentFallback(String toEmail, String subject, String htmlBody,
-                                           String fileName, byte[] content, Throwable t) {
-        log.warn("[EMAIL][CB-FALLBACK] ekli email atlandı - to={} subject={} sebep={}",
-                maskEmail(toEmail), subject, com.hotelapp.security.PiiMasking.scrub(t.getMessage()));
     }
 
     /**

@@ -6,12 +6,16 @@
 set -euo pipefail
 
 cd "$(dirname "$0")"                       # deploy/prod
-COMPOSE_FILE="docker-compose.prod.yml"
+COMPOSE_FILE="${KADROM_COMPOSE_FILE:-docker-compose.prod.yml}"
+ENV_FILE="${KADROM_ENV_FILE:-.env.prod}"
 DB_NAME="hotel_platform"
 FILE="${1:?Kullanim: ./restore.sh <yedek.sql.gz>}"
 [ -f "$FILE" ] || { echo "Dosya yok: $FILE" >&2; exit 1; }
+# Reject a truncated archive before MySQL receives any SQL. SQL import itself is
+# not atomic (DDL commits); rehearse in a separate database before production.
+gzip -t -- "$FILE"
 
-if [ -f .env.prod ]; then set -a; . ./.env.prod; set +a; fi
+if [ -f "$ENV_FILE" ]; then set -a; . "$ENV_FILE"; set +a; fi
 : "${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD gerekli (.env.prod ya da env)}"
 
 echo "DIKKAT: '$DB_NAME' veritabaninin USTUNE '$FILE' yuklenecek."

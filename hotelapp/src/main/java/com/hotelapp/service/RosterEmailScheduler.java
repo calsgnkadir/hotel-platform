@@ -57,7 +57,7 @@ public class RosterEmailScheduler {
             if (l == null) return;
             send(l, xlsx, "tüm vardiya günlerinin", "Ekip listesi (ilan kapandı) · " + l.title(),
                     "kadrom-ekip-" + l.listingId() + "-tum.xlsx",
-                    "\"" + l.title() + "\" kapandı, tüm günlerin listesi e-postana gönderildi");
+                    "\"" + l.title() + "\" kapandı, tüm günlerin listesi e-posta gönderim kuyruğuna alındı");
         } catch (Exception ex) {
             log.warn("[ROSTER] kapanış listesi gönderilemedi ilan={}: {}", e.listingId(), ex.getMessage());
         }
@@ -74,14 +74,14 @@ public class RosterEmailScheduler {
                 if (l == null) continue;
                 send(l, xlsx, D.format(date), "Ekip listesi · " + l.title() + " · " + D.format(date),
                         "kadrom-ekip-" + listingId + "-" + date + ".xlsx",
-                        "\"" + l.title() + "\" · " + D.format(date) + " listesi e-postana gönderildi");
+                        "\"" + l.title() + "\" · " + D.format(date) + " listesi e-posta gönderim kuyruğuna alındı");
                 sent++;
             } catch (Exception e) {
                 // Bir ilanın hatası diğerlerini durdurmasın
                 log.warn("[ROSTER] ilan={} tarih={} gönderilemedi: {}", listingId, date, e.getMessage());
             }
         }
-        if (sent > 0) log.info("[ROSTER] {} için {} ekip listesi gönderildi", date, sent);
+        if (sent > 0) log.info("[ROSTER] {} için {} ekip listesi gönderim kuyruğuna alındı", date, sent);
         return sent;
     }
 
@@ -101,7 +101,7 @@ public class RosterEmailScheduler {
     private void send(Recipient l, byte[] xlsx, String dateText, String subject, String fileName, String notice) {
         String html = emailTemplates.rosterReady(l.ownerName(), l.title(), dateText,
                 Math.max(1, xlsx.length / 1024), baseUrl + "/business?tab=listings");
-        emailService.sendWithAttachment(l.ownerEmail(), subject, html, fileName, xlsx);
-        notificationService.notify(l.ownerId(), NotificationType.GENERIC, "Ekip listesi hazır", notice, "mylistings");
+        emailService.queueWithAttachment(l.ownerEmail(), subject, html, fileName, xlsx, l.ownerId());
+        notificationService.notify(l.ownerId(), NotificationType.GENERIC, "Ekip listesi gönderim sırasında", notice, "mylistings");
     }
 }

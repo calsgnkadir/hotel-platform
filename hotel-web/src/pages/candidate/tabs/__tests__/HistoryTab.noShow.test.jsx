@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import HistoryTab from '../HistoryTab'
 
-vi.mock('../../../../api/hotel', () => ({ startConversation: vi.fn() }))
+const getMyEarnings = vi.fn()
+vi.mock('../../../../api/hotel', () => ({ startConversation: vi.fn(), getMyEarnings: (...args) => getMyEarnings(...args) }))
+
+function renderHistory(applications) {
+  return render(<QueryClientProvider client={new QueryClient()}><HistoryTab applications={applications} /></QueryClientProvider>)
+}
 
 const slot = (id, date) => ({ id, date, startTime: '09:00', endTime: '17:00' })
 const app = (id, extra = {}) => ({
@@ -13,19 +19,22 @@ const app = (id, extra = {}) => ({
 })
 
 describe('HistoryTab — vardiya bazlı gelmedi', () => {
-  it('gelmedi işaretli vardiya saatten düşer, çalışılan vardiyalar kalır', () => {
-    render(<HistoryTab applications={[app(1, { noShow: true, noShowSlotIds: [13] })]} />)
+  beforeEach(() => { getMyEarnings.mockResolvedValue({ entries: [1, 2, 3, 4].flatMap(id =>
+    [1, 2, 3].map(day => ({ applicationId: id, shiftSlotId: id * 10 + day, hours: 8, durationMinutes: 480, hoursSource: 'PLANNED' }))) }) })
+  it('gelmedi işaretli vardiya planlanan saatten düşer, kayıt olmadan çalışıldı denmez', async () => {
+    renderHistory([app(1, { noShow: true, noShowSlotIds: [13] })])
     expect(screen.getByText('İlan 1')).toBeInTheDocument()
     // 3 x 8 saat yerine 2 x 8 = 16 saat
-    expect(screen.getAllByText((_, el) => el?.textContent === '16sa').length).toBeGreaterThan(0)
+    expect(await screen.findByText('16 saat planlanan (kayıt yok)')).toBeInTheDocument()
+    expect(screen.queryByText('24 saat planlanan (kayıt yok)')).not.toBeInTheDocument()
   })
 
   it('tüm vardiyaları gelmedi olan ve eski (vardiyasız) gelmedi kaydı listelenmez', () => {
-    render(<HistoryTab applications={[
+    renderHistory([
       app(2, { noShow: true, noShowSlotIds: [21, 22, 23] }),
       app(3, { noShow: true, noShowSlotIds: [] }),
       app(4),
-    ]} />)
+    ])
     expect(screen.queryByText('İlan 2')).toBeNull()
     expect(screen.queryByText('İlan 3')).toBeNull()
     expect(screen.getByText('İlan 4')).toBeInTheDocument()

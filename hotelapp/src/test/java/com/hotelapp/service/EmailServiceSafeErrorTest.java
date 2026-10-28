@@ -9,9 +9,32 @@ import org.springframework.web.client.ResourceAccessException;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** KVKK: saglayici hata metni loga/last_error'a ham gitmez. */
 class EmailServiceSafeErrorTest {
+
+    @Test
+    void missingProviderConfigurationCannotReportAttachmentAsSent() {
+        var service = unconfiguredService();
+        assertThatThrownBy(() -> service.sendWithAttachment("owner@example.test", "Roster", "<p>x</p>",
+                "roster.xlsx", new byte[]{1}))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("yapılandırılmamış");
+    }
+
+    @Test
+    void unavailableOutboxCannotSilentlyFallBackToAttachmentDelivery() {
+        assertThatThrownBy(() -> unconfiguredService().queueWithAttachment("owner@example.test", "Roster", "<p>x</p>",
+                "roster.xlsx", new byte[]{1}, 42L))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("kuyruğu kullanılamıyor");
+    }
+
+    @SuppressWarnings("unchecked")
+    private EmailService unconfiguredService() {
+        var provider = (org.springframework.beans.factory.ObjectProvider<OutboxService>)
+                org.mockito.Mockito.mock(org.springframework.beans.factory.ObjectProvider.class);
+        return new EmailService("", "sender@example.test", "Test", "https://provider.example.test", provider, 100, 100);
+    }
 
     @Test
     @DisplayName("HTTP hatası: durum kodu + JSON 'message' alanı, e-posta maskeli; ham gövde yok")

@@ -18,6 +18,87 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class EarningsServiceTest {
 
+    @Nested
+    class ActualShiftHours {
+        private final java.time.LocalDate day = java.time.LocalDate.of(2030, 1, 2);
+        private final java.time.ZoneId zone = java.time.ZoneId.of("Europe/Istanbul");
+        private ShiftSlot slot(long id, int start, int end) {
+            return ShiftSlot.builder().id(id).date(day).startTime(LocalTime.of(start, 0)).endTime(LocalTime.of(end, 0)).build();
+        }
+        private com.hotelapp.entity.WorkSession session(Long slotId, java.time.LocalDateTime in, java.time.LocalDateTime out) {
+            return com.hotelapp.entity.WorkSession.builder().shiftSlotId(slotId).clockInAt(in).clockOutAt(out).build();
+        }
+        private com.hotelapp.dto.EarningsResponse earnings(java.util.List<ShiftSlot> slots, com.hotelapp.entity.WorkSession... records) {
+            var apps = org.mockito.Mockito.mock(com.hotelapp.repository.ApplicationRepository.class);
+            var sessions = org.mockito.Mockito.mock(com.hotelapp.repository.WorkSessionRepository.class);
+            var listing = com.hotelapp.entity.JobListing.builder().id(10L).title("Pilot")
+                    .salaryType(SalaryType.HOURLY).salaryMin(new BigDecimal("100"))
+                    .business(com.hotelapp.entity.Business.builder().id(3L).name("Test Kafe").build()).build();
+            var app = com.hotelapp.entity.Application.builder().id(5L).status(com.hotelapp.enums.ApplicationStatus.ACCEPTED)
+                    .jobListing(listing).requestedSlots(new java.util.HashSet<>(slots)).build();
+            org.mockito.Mockito.when(apps.findAllByCandidateId(7L)).thenReturn(java.util.List.of(app));
+            org.mockito.Mockito.when(sessions.findByApplicationIdOrderByClockInAtDesc(5L)).thenReturn(java.util.List.of(records));
+            var service = new EarningsService(apps, sessions);
+            service.clock = java.time.Clock.fixed(day.plusDays(2).atStartOfDay(zone).toInstant(), zone);
+            return service.getMyEarnings(7L);
+        }
+        @Test void shorterRealSessionReplacesEightPlannedHours() {
+            var response = earnings(java.util.List.of(slot(1, 9, 17)), session(1L, day.atTime(10, 0), day.atTime(16, 0)));
+            assertThat(response.getTotalHours()).isEqualTo(6);
+            assertThat(response.getTotalGross()).isEqualByComparingTo("600");
+            assertThat(response.getEntries().get(0).getHoursSource()).isEqualTo("CLOCKED");
+            assertThat(response.getEntries().get(0).getDurationMinutes()).isEqualTo(360L);
+        }
+        @Test void multipleShiftsOnSameDateUseTheirOwnSessions() {
+            var response = earnings(java.util.List.of(slot(1, 0, 8), slot(2, 10, 18)),
+                    session(1L, day.atTime(0, 0), day.atTime(6, 0)), session(2L, day.atTime(10, 0), day.atTime(12, 0)));
+            assertThat(response.getTotalHours()).isEqualTo(8);
+            assertThat(response.getEntries()).extracting(e -> e.getHours()).containsExactlyInAnyOrder(6.0, 2.0);
+        }
+        @Test void legacyNightSessionStartingAfterMidnightBelongsToPreviousDayShift() {
+            var response = earnings(java.util.List.of(slot(1, 22, 6)),
+                    session(null, day.plusDays(1).atTime(0, 0), day.plusDays(1).atTime(5, 0)));
+            assertThat(response.getTotalHours()).isEqualTo(5);
+            assertThat(response.getEntries().get(0).getShiftSlotId()).isEqualTo(1L);
+            assertThat(response.getEntries().get(0).getHoursSource()).isEqualTo("CLOCKED");
+        }
+        @Test void legacySameDaySessionsAreNotCountedForBothShifts() {
+            var response = earnings(java.util.List.of(slot(1, 0, 8), slot(2, 10, 18)),
+                    session(null, day.atTime(0, 0), day.atTime(6, 0)),
+                    session(null, day.atTime(10, 0), day.atTime(12, 0)));
+            assertThat(response.getTotalHours()).isEqualTo(8);
+            assertThat(response.getEntries()).extracting(e -> e.getHours()).containsExactlyInAnyOrder(6.0, 2.0);
+            assertThat(response.getEntries()).extracting(e -> e.getHoursSource()).containsOnly("CLOCKED");
+        }
+        @Test void zeroLengthClosedSessionDoesNotBecomeEightPlannedHours() {
+            var response = earnings(java.util.List.of(slot(1, 9, 17)), session(1L, day.atTime(9, 0), day.atTime(9, 0)));
+            assertThat(response.getTotalHours()).isZero();
+            assertThat(response.getTotalGross()).isEqualByComparingTo("0");
+            assertThat(response.getEntries().get(0).getHoursSource()).isEqualTo("CLOCKED");
+            assertThat(response.getEntries().get(0).getDurationMinutes()).isZero();
+        }
+        @Test void openSessionIsIncompleteInsteadOfPlannedOrPaid() {
+            var response = earnings(java.util.List.of(slot(1, 9, 17)), session(1L, day.atTime(9, 0), null));
+            assertThat(response.getTotalHours()).isZero();
+            assertThat(response.getShiftCount()).isZero();
+            assertThat(response.getTotalGross()).isEqualByComparingTo("0");
+            assertThat(response.getEntries().get(0).getHoursSource()).isEqualTo("INCOMPLETE");
+            assertThat(response.getEntries().get(0).getDurationMinutes()).isNull();
+            assertThat(response.getEntries().get(0).getGross()).isNull();
+        }
+        @Test void invalidNegativeSessionIsIncompleteInsteadOfPlanned() {
+            var response = earnings(java.util.List.of(slot(1, 9, 17)), session(1L, day.atTime(10, 0), day.atTime(9, 0)));
+            assertThat(response.getTotalHours()).isZero();
+            assertThat(response.getEntries().get(0).getHoursSource()).isEqualTo("INCOMPLETE");
+        }
+        @Test void missingSessionKeepsExplicitPlannedFallback() {
+            var response = earnings(java.util.List.of(slot(1, 9, 17)));
+            assertThat(response.getTotalHours()).isEqualTo(8);
+            assertThat(response.getEntries().get(0).getHoursSource()).isEqualTo("PLANNED");
+            assertThat(response.getEntries().get(0).getDurationMinutes()).isEqualTo(480L);
+        }
+    }
+
     @Nested @DisplayName("avgRate")
     class AvgRate {
         @Test void bothPresent_average() {

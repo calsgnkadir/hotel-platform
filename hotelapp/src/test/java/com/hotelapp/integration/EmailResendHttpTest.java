@@ -86,4 +86,21 @@ class EmailResendHttpTest {
         assertThat(last.get("to").get(0).asText()).isEqualTo("aday@ornek.com");
         assertThat(last.get("subject").asText()).isEqualTo("Kadrom — Email Doğrulama");
     }
+
+    @Test
+    void attachmentRejectionAlsoEscapesTheCircuitBreakerProxy() {
+        assertThatThrownBy(() -> emailService.sendWithAttachment(
+                "reddet-ek@ornek.com", "Ekip", "<p>roster</p>", "roster.xlsx", new byte[]{1, 2, 3}))
+                .hasMessageContaining("403")
+                .hasMessageNotContaining("reddet-ek@ornek.com");
+    }
+
+    @Test
+    void successfulAttachmentUsesTheOriginalFilenameAndBytes() {
+        emailService.sendWithAttachment("ek@ornek.com", "Ekip", "<p>roster</p>",
+                "ekip.xlsx", new byte[]{1, 2, 3});
+        JsonNode last = RECEIVED.get(RECEIVED.size() - 1);
+        assertThat(last.get("attachments").get(0).get("filename").asText()).isEqualTo("ekip.xlsx");
+        assertThat(last.get("attachments").get(0).get("content").asText()).isEqualTo("AQID");
+    }
 }

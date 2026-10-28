@@ -35,15 +35,18 @@ public class EarningsResponse {
     @Builder
     public static class LedgerEntry {
         private Long applicationId;
+        private Long shiftSlotId;
         private LocalDate date;
         private String businessName;
         private String listingTitle;
         private String position;          // enum adi
         private double hours;
+        /** Exact per-shift minutes; null while a recorded session has no valid exit. */
+        private Long durationMinutes;
         private BigDecimal gross;         // null = hesaplanamadi (NEGOTIABLE)
         private String salaryType;        // HOURLY | DAILY | MONTHLY | NEGOTIABLE
         private boolean tipsIncluded;
-        /** CLOCKED = gercek mesai kaydi, PLANNED = planlanan slot suresi */
+        /** CLOCKED = actual closed session, PLANNED = no session, INCOMPLETE = missing/invalid exit. */
         private String hoursSource;
     }
 }

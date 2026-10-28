@@ -52,6 +52,7 @@ public class OutboxRelay {
     private final EmailService emailService; // FAZ D.9
     private final OutboxStatusWriter statusWriter; // FAZ F.4 — self-invocation fix
     private final org.springframework.beans.factory.ObjectProvider<AppMetrics> metrics; // optional
+    private final NotificationService notificationService;
 
     @Scheduled(fixedDelayString = "${app.outbox.relayDelayMs:5000}",
                initialDelayString = "${app.outbox.relayInitialDelayMs:0}")
@@ -63,15 +64,19 @@ public class OutboxRelay {
         log.debug("[OUTBOX-RELAY] {} pending event islenecek", pending.size());
         AppMetrics m = metrics.getIfAvailable();
         for (OutboxEvent row : pending) {
+            int attemptsBefore = row.getAttempts();
+            Long noticeUserId = deliveryNoticeUserId(row);
             try {
                 handle(row);
                 statusWriter.markProcessed(row.getId());
+                notice(noticeUserId, true);
                 if (m != null) m.outboxPublished.increment();
             } catch (Exception ex) {
                 if (isCircuitOpen(ex)) {
                     statusWriter.markDeferred(row.getId(), CIRCUIT_OPEN_DELAY, ex);
                 } else {
                     statusWriter.markFailed(row.getId(), ex, MAX_ATTEMPTS);
+                    if (attemptsBefore + 1 >= MAX_ATTEMPTS) notice(noticeUserId, false);
                     if (m != null) m.outboxFailed.increment();
                 }
             }
@@ -108,12 +113,39 @@ public class OutboxRelay {
             }
             case OutboxService.TYPE_EMAIL -> {
                 EmailMessage e = objectMapper.readValue(row.getPayload(), EmailMessage.class);
-                emailService.send(e.to(), e.subject(), e.html());
+                if (e.attachment() == null) {
+                    emailService.send(e.to(), e.subject(), e.html());
+                } else {
+                    emailService.sendWithAttachment(e.to(), e.subject(), e.html(),
+                            e.attachment().fileName(), e.attachment().content());
+                }
             }
             default -> {
                 log.warn("[OUTBOX-RELAY] bilinmeyen eventType={} id={}", row.getEventType(), row.getId());
                 throw new IllegalArgumentException("unknown event type: " + row.getEventType());
             }
+        }
+    }
+
+    private Long deliveryNoticeUserId(OutboxEvent row) {
+        if (!OutboxService.TYPE_EMAIL.equals(row.getEventType())) return null;
+        try {
+            EmailMessage message = objectMapper.readValue(row.getPayload(), EmailMessage.class);
+            return message.attachment() == null ? null : message.deliveryNoticeUserId();
+        } catch (Exception ignored) { return null; }
+    }
+
+    private void notice(Long recipient, boolean accepted) {
+        if (recipient == null) return;
+        try {
+            notificationService.notify(recipient, com.hotelapp.enums.NotificationType.GENERIC,
+                    accepted ? "Ekip listesi sağlayıcıya iletildi" : "Ekip listesi gönderilemedi",
+                    accepted ? "Ekip listesi e-postası gönderim sağlayıcısı tarafından kabul edildi. Bu, gelen kutusuna teslim onayı değildir."
+                            : "Ekip listesi e-postası tekrar denemelere rağmen gönderilemedi. Listeyi İlanlarım bölümünden indirebilirsin.",
+                    "mylistings");
+        } catch (Exception ignored) {
+            // Delivery state is already persisted; a best-effort UI notice must never cause duplicate email retries.
+            log.warn("[OUTBOX-RELAY] teslim durumu bildirimi oluşturulamadı");
         }
     }
 

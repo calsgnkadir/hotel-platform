@@ -83,38 +83,45 @@ public class EarningsService {
                 // vardiyalari kalir (V25 satiri; eski kayit onceki gibi sayilir).
                 if (NoShowSlots.isMarked(app, slot)) continue;
 
-                // Gercek clocked saat var mi (ayni gunde clock-out'lu session)?
-                Double clockedHours = clockedHoursForDate(sessions, slot.getDate());
+                // Use stable shift identity (including night and multiple same-day shifts).
+                // An open/zero-length session is not the same as an absent session.
+                WorkSession session = ShiftAttendance.sessionFor(app, slot, sessions).orElse(null);
                 double hours;
                 String source;
-                if (clockedHours != null && clockedHours > 0) {
-                    hours = clockedHours;
-                    source = "CLOCKED";
+                boolean incomplete = session != null && (session.getClockOutAt() == null
+                        || session.getClockOutAt().isBefore(session.getClockInAt()));
+                if (session != null) {
+                    hours = incomplete ? 0 : Duration.between(session.getClockInAt(), session.getClockOutAt()).toMinutes() / 60.0;
+                    source = incomplete ? "INCOMPLETE" : "CLOCKED";
                 } else {
                     hours = plannedHours(slot);
                     source = "PLANNED";
                 }
-                if (hours <= 0) continue;
+                if (hours <= 0 && session == null) continue;
 
-                BigDecimal gross = computeGross(hours, type, rate);
+                BigDecimal gross = incomplete ? null : hours == 0 ? BigDecimal.ZERO : computeGross(hours, type, rate);
 
-                totalHours += hours;
-                shiftCount++;
-                if (gross != null) {
-                    totalGross = totalGross.add(gross);
-                    if (!slot.getDate().isBefore(monthStart)) monthGross = monthGross.add(gross);
-                    if (!slot.getDate().isBefore(yearStart))  yearGross  = yearGross.add(gross);
-                } else {
-                    unpriced++;
+                if (!incomplete) {
+                    totalHours += hours;
+                    shiftCount++;
+                    if (gross != null) {
+                        totalGross = totalGross.add(gross);
+                        if (!slot.getDate().isBefore(monthStart)) monthGross = monthGross.add(gross);
+                        if (!slot.getDate().isBefore(yearStart))  yearGross  = yearGross.add(gross);
+                    } else {
+                        unpriced++;
+                    }
                 }
 
                 entries.add(LedgerEntry.builder()
                         .applicationId(app.getId())
+                        .shiftSlotId(slot.getId())
                         .date(slot.getDate())
                         .businessName(bizName)
                         .listingTitle(listing.getTitle())
                         .position(listing.getPosition() != null ? listing.getPosition().name() : null)
                         .hours(round1(hours))
+                        .durationMinutes(incomplete ? null : Math.round(hours * 60))
                         .gross(gross)
                         .salaryType(type != null ? type.name() : "NEGOTIABLE")
                         .tipsIncluded(tips)
@@ -171,17 +178,6 @@ public class EarningsService {
         // Gece vardiyasi (22:00–06:00) ertesi gun biter: 8 saat, 0 degil.
         double h = ShiftWindow.duration(slot).toMinutes() / 60.0;
         return h > 0 ? h : 0;
-    }
-
-    /** Belirli tarihte clock-out'lu session'in gercek suresi (saat) — yoksa null. */
-    private Double clockedHoursForDate(List<WorkSession> sessions, LocalDate date) {
-        for (WorkSession ws : sessions) {
-            if (ws.getClockInAt() == null || ws.getClockOutAt() == null) continue;
-            if (!ws.getClockInAt().toLocalDate().equals(date)) continue;
-            double h = Duration.between(ws.getClockInAt(), ws.getClockOutAt()).toMinutes() / 60.0;
-            if (h > 0) return h;
-        }
-        return null;
     }
 
     private static double round1(double v) {

@@ -1,10 +1,10 @@
 // FAZ 5.2 — CandidateDashboard'dan ayrildi (Gecmis Islerim — #78)
-import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import * as hotelApi from '../../../api/hotel'
 import { extractErrorMessage } from '../../../api/client'
 import EmptyState from '../../../components/EmptyState'
-import { totalHoursForApplication } from '../../../utils/shifts'
+import { historyHoursForApplication } from '../../../utils/shifts'
 import { POSITION_LABELS } from '../../../utils/labels'
 import { rosterSlots } from '../../../lib/shiftTime'
 import { formatHours, formatHoursNumber } from '../../../lib/format'
@@ -46,7 +46,22 @@ export default function HistoryTab({ applications, onOpenMessages }) {
       return (bd || '').localeCompare(ad || '')
     })
 
-  const totalHours = completed.reduce((s, a) => s + totalHoursForApplication(a), 0)
+  const { data: earnings, isPending, isError, refetch } = useQuery({
+    queryKey: ['candidate-earnings'],
+    queryFn: hotelApi.getMyEarnings,
+    enabled: completed.length > 0,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    retry: 1,
+  })
+  const hoursByApplication = new Map(completed.map(a => [a.id, historyHoursForApplication(a, earnings?.entries)]))
+  const totals = [...hoursByApplication.values()].reduce((sum, h) => ({
+    recordedHours: sum.recordedHours + h.recordedHours,
+    recordedCount: sum.recordedCount + h.recordedCount,
+    plannedHours: sum.plannedHours + h.plannedHours,
+    incompleteCount: sum.incompleteCount + h.incompleteCount + h.missingCount,
+  }), { recordedHours: 0, recordedCount: 0, plannedHours: 0, incompleteCount: 0 })
+  const hoursReady = !isPending && !isError
   const uniqueBusinesses = new Set(completed.map(a => a.listing?.businessId)).size
 
   if (completed.length === 0) {
@@ -72,9 +87,16 @@ export default function HistoryTab({ applications, onOpenMessages }) {
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} aria-hidden="true" />
-            <span className="type-label">Toplam çalışma</span>
+            <span className="type-label">Kaydedilen çalışma</span>
           </div>
-          <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>{formatHoursNumber(totalHours, { maxFraction: 0 })}<span className="text-sm font-semibold ml-0.5" style={{ color: 'var(--ah-ink-3)' }}>sa</span></div>
+          <div className="type-page type-num" style={{ color: 'var(--ah-ink)' }}>
+            {hoursReady && totals.recordedCount > 0
+              ? <>{formatHoursNumber(totals.recordedHours, { maxFraction: 1 })}<span className="text-sm font-semibold ml-0.5" style={{ color: 'var(--ah-ink-3)' }}>sa</span></>
+              : '—'}
+          </div>
+          <p className="type-meta mt-1">Giriş/çıkış kayıtlarına göre</p>
+          {hoursReady && totals.plannedHours > 0 && <p className="type-meta mt-1">Kayıt bulunmayan vardiyalarda {formatHours(totals.plannedHours)} planlandı.</p>}
+          {hoursReady && totals.incompleteCount > 0 && <p className="type-meta mt-1">{totals.incompleteCount} vardiyanın çalışma kaydı eksik.</p>}
         </div>
         <div className="stat-card !p-3">
           <div className="flex items-center gap-1.5 mb-1.5">
@@ -85,9 +107,15 @@ export default function HistoryTab({ applications, onOpenMessages }) {
         </div>
       </div>
 
+      {isPending && <p role="status" className="type-meta">Çalışma süreleri yükleniyor…</p>}
+      {isError && <div role="alert" className="card p-4">
+        <p>Çalışma süreleri alınamadı. Planlanan süreler çalışılmış olarak gösterilmedi.</p>
+        <button type="button" className="btn-secondary mt-2" onClick={() => refetch()}>Tekrar dene</button>
+      </div>}
+
       <div className="space-y-3">
         {completed.map(app => {
-          const hours = totalHoursForApplication(app)
+          const hours = hoursByApplication.get(app.id)
           const slotDates = (app.requestedSlots || [])
             .map(s => s.date).filter(Boolean).sort()
           const firstDate = slotDates[0]
@@ -111,7 +139,12 @@ export default function HistoryTab({ applications, onOpenMessages }) {
                     <div className="text-[13px] mt-0.5" style={{ color: 'var(--ah-ink-3)' }}>{app.listing?.businessName}</div>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 type-meta">
                       <span className="type-num">{dateLabel}</span>
-                      <span className="type-num">{formatHours(hours)}</span>
+                      <span className="type-num">{!hoursReady ? 'Saat bilgisi bekleniyor'
+                        : hours.recordedCount > 0 ? `${formatHours(hours.recordedHours)} kayıtlı`
+                        : 'Giriş/çıkış kaydı yok'}</span>
+                      {hoursReady && hours.plannedHours > 0 && <span>{formatHours(hours.plannedHours)} planlanan (kayıt yok)</span>}
+                      {hoursReady && hours.incompleteCount > 0 && <span>Çıkış kaydı tamamlanmamış</span>}
+                      {hoursReady && hours.missingCount > 0 && <span>Çalışma süresi kaydı eksik</span>}
                       <span>{POSITION_LABELS[app.listing?.position] || app.listing?.position}</span>
                     </div>
                   </div>

@@ -50,8 +50,9 @@ Git'e alınmayan `hotel-web/test-results/weekly-pilot-browser/` klasörüne yaz�
 - Tahmini kazanç ve ücret konuşması doğrulanır; banka transferi yapılmaz.
 - Hızlandırılmış senaryo gerçek bir haftalık kesintisiz çalışma, JWT eskimesi,
   gerçek e-posta/push teslimi veya üretim yük testi yerine geçmez.
-- Ekli ekip listesi e-postasının gerçek sağlayıcıya teslimi canlı anahtarlarla
-  ayrıca doğrulanmalıdır; mevcut ekli gönderim kalıcı outbox kuyruğunu kullanmaz.
+- Ekli ekip listesi e-postası kalıcı outbox kuyruğuna alınır; sağlayıcı hatasında
+  yeniden denenir. Sağlayıcının kabul etmesi gelen kutusuna teslim kanıtı değildir.
+  Gerçek teslim canlı anahtarlarla ayrıca doğrulanmalıdır.
 
 ## Bu denemede düzeltilenler
 
@@ -74,3 +75,24 @@ Git'e alınmayan `hotel-web/test-results/weekly-pilot-browser/` klasörüne yaz�
 - Son gerçek MySQL/Chrome denemesi 11 kullanım adımını tamamladı; API ve JavaScript
   hata listeleri boş. Saatlik karşılaştırma yalnız saatlik ilanı kapsadı (150 TL/saat).
 - Oluşturulan test ilanı kapatıldı, işletmenin eski profil/konum bilgisi geri yüklendi.
+
+## Takip düzeltmeleri — 28 Ekim 2026
+
+- Geçmiş işler ekranı kazanç API'sindeki vardiya kayıtlarını kullanır. Sekiz saat
+  planlanıp altı saat çalışılan vardiya altı saat görünür; kayıtsız planlanan süre
+  ayrı belirtilir. Açık/geçersiz çıkış gerçek çalışılmış süreye eklenmez, kapalı
+  sıfır süreli kayıt sıfır olarak kalır. Aynı günkü vardiyalar kimlikleriyle eşlenir.
+- Ekli ekip listesi kalıcı EMAIL kuyruğuna alınır. Sağlayıcı hatası tekrar denemeye,
+  son başarısızlık yönetici kuyruğuna gider; yönetici yeniden deneyebilir. Başarılı
+  sağlayıcı yanıtından sonra ek ve özel gövde kuyruk kaydından temizlenir.
+- Gerçek transaction/H2 ve yerel HTTP sağlayıcı testleri geçti. Bunlar gerçek
+  alıcının gelen kutusuna teslim veya iPhone bildirimi alındığı anlamına gelmez.
+- Mesai/e-posta/haftalık senaryoda 75 farklı backend testi, push aboneliği,
+  şifreleme ve endpoint kontrollerinde 36 test geçti (toplam 111). Frontend
+  üretim derlemesi başarılı; bu derleme canlı ortam ayarlarıyla yapılmadı.
+- Geçmiş işler ekranının üç frontend test dosyasındaki 13 test geçti: gerçek,
+  planlanan, eksik ve sıfır süre; istek hatası; gelmedi ve tarih gösterimi.
+- Docker açıldıktan sonra `deploy/prod/tests/backup-restore-drill.sh` ayrı MySQL
+  8.4 ortamında geçti: V30, büyük ek, 100 satırın sağlama toplamıyla geri yükleme,
+  bozuk arşiv reddi, başarısız dump temizliği ve rotasyon doğrulandı. Sunucu dışı
+  üretim yedeğinden kurtarma ayrıca denenmelidir.

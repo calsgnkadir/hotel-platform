@@ -73,14 +73,14 @@ class RosterEmailSchedulerTest {
         doAnswer(call -> {
             networkInsideTransaction.set(TransactionSynchronizationManager.isActualTransactionActive());
             return null;
-        }).when(email).sendWithAttachment(anyString(), anyString(), anyString(), anyString(), any());
+        }).when(email).queueWithAttachment(anyString(), anyString(), anyString(), anyString(), any(), anyLong());
 
         assertThat(scheduler.sendRostersFor(day)).isEqualTo(1);
 
-        verify(email).sendWithAttachment(eq(fixture.email()), contains("Vardiya"), eq("<p>Roster</p>"),
-                eq("kadrom-ekip-" + fixture.listingId() + "-" + day + ".xlsx"), same(XLSX));
+        verify(email).queueWithAttachment(eq(fixture.email()), contains("Vardiya"), eq("<p>Roster</p>"),
+                eq("kadrom-ekip-" + fixture.listingId() + "-" + day + ".xlsx"), same(XLSX), eq(fixture.ownerId()));
         verify(notifications).notify(eq(fixture.ownerId()), eq(NotificationType.GENERIC),
-                eq("Ekip listesi hazır"), contains("listesi e-postana gönderildi"), eq("mylistings"));
+                eq("Ekip listesi gönderim sırasında"), contains("gönderim kuyruğuna alındı"), eq("mylistings"));
         assertThat(networkInsideTransaction).isFalse();
     }
 
@@ -96,7 +96,7 @@ class RosterEmailSchedulerTest {
             networkInsideTransaction.set(TransactionSynchronizationManager.isActualTransactionActive());
             senderThread.set(Thread.currentThread().getName());
             return null;
-        }).when(email).sendWithAttachment(anyString(), anyString(), anyString(), anyString(), any());
+        }).when(email).queueWithAttachment(anyString(), anyString(), anyString(), anyString(), any(), anyLong());
 
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
             listings.findById(fixture.listingId()).orElseThrow().setStatus(ListingStatus.CLOSED);
@@ -104,11 +104,11 @@ class RosterEmailSchedulerTest {
             verifyNoInteractions(email);
         });
 
-        verify(email, timeout(5000)).sendWithAttachment(eq(fixture.email()),
+        verify(email, timeout(5000)).queueWithAttachment(eq(fixture.email()),
                 contains("ilan kapandı"), eq("<p>Closing roster</p>"),
-                eq("kadrom-ekip-" + fixture.listingId() + "-tum.xlsx"), same(XLSX));
+                eq("kadrom-ekip-" + fixture.listingId() + "-tum.xlsx"), same(XLSX), eq(fixture.ownerId()));
         verify(notifications, timeout(5000)).notify(eq(fixture.ownerId()), eq(NotificationType.GENERIC),
-                eq("Ekip listesi hazır"), contains("kapandı"), eq("mylistings"));
+                eq("Ekip listesi gönderim sırasında"), contains("kapandı"), eq("mylistings"));
         assertThat(senderThread.get()).startsWith("roster-regression-");
         assertThat(networkInsideTransaction).isFalse();
     }
@@ -120,8 +120,23 @@ class RosterEmailSchedulerTest {
             events.publishEvent(new ListingClosedEvent(fixture.listingId()));
             status.setRollbackOnly();
         });
-        verify(email, after(300).never()).sendWithAttachment(anyString(), anyString(), anyString(), anyString(), any());
+        verify(email, after(300).never()).queueWithAttachment(anyString(), anyString(), anyString(), anyString(), any(), anyLong());
         verifyNoInteractions(rosters, notifications);
+    }
+
+    @Test
+    void queueFailureNeverClaimsTheEmailWasQueuedOrSent() {
+        LocalDate day = LocalDate.of(2031, 1, 6);
+        Fixture fixture = fixture(day);
+        when(rosters.xlsxForDateOrNull(fixture.listingId(), day)).thenReturn(XLSX);
+        when(templates.rosterReady(anyString(), anyString(), anyString(), anyInt(), anyString()))
+                .thenReturn("<p>Roster</p>");
+        doThrow(new IllegalStateException("DB unavailable"))
+                .when(email).queueWithAttachment(anyString(), anyString(), anyString(), anyString(), any(), anyLong());
+
+        assertThat(scheduler.sendRostersFor(day)).isZero();
+        verifyNoInteractions(notifications);
+        verify(email, never()).sendWithAttachment(anyString(), anyString(), anyString(), anyString(), any());
     }
 
     private Fixture fixture(LocalDate day) {

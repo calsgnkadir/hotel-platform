@@ -133,6 +133,12 @@ export async function getSalaryBenchmark(position, salaryType) {
   return data  // SalaryBenchmarkResponse
 }
 
+/** Canonical per-shift hours and their actual/planned source. */
+export async function getMyEarnings() {
+  const { data } = await api.get('/api/candidate/earnings')
+  return data
+}
+
 export async function updateCandidateProfile(payload) {
   const { data } = await api.put('/api/candidate/profile', payload)
   return data
