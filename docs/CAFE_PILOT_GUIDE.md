@@ -13,6 +13,26 @@ konuların çözüldüğü anlamına gelmez.
 - Hatalı veya eksik kaydın kime bildirileceği. Görevli bulunamayacaksa aşağıdaki
   mevcut sınırı önceden konuşun.
 
+## Vardiyanın tamamlanması ve zorunlu ayrılma
+
+Kararlaştırılan ürün kuralı: ilandaki vardiyanın tamamında çalışma beklenir.
+İşletme vardiya saatlerini, ücret koşullarını ve acil durumda ulaşılacak yetkiliyi
+ilan açıklamasında aday başvurmadan önce belirtmelidir. İlan oluşturma, düzenleme
+ve tekrar açma formundaki açıklama alanı bu konuları hatırlatır; aday ilan detayında
+işletmenin yazdığı metni başvurmadan önce görür. Ayrı bir koşul alanı veya aday
+onay ekranı eklenmemiştir.
+
+Normal çıkış mevcut işletme onaylı QR akışıyla kaydedilir. Standart erken çıkış
+talebi özelliği eklenmesi planlanmıyor. Sağlık veya güvenlik gibi zorunlu ayrılma
+durumlarında çalışan, mümkün olan en kısa sürede işletmeye haber verir; ayrıldığı
+saat ve gerekçe ilgili sohbetten iletilebilir. Mesajın gönderim saati ile bildirilen
+ayrılış saati farklı olabilir. Mesaj mevcut mesai kaydını otomatik değiştirmez.
+
+Gerçek çalışma saatleri ve bildirim kaydı korunmalıdır. Erken ayrılma otomatik
+olarak bütün ücretin silinmesine bağlanmaz; ücret uyuşmazlığı çalışma koşulları ve
+ilgili yükümlülükler çerçevesinde ayrıca ele alınır. Sonradan QR okutmak yerine
+gerçek ayrılış saatinin düzeltilmesi gerekiyorsa aşağıdaki mevcut sınır geçerlidir.
+
 Kadrom ücret konuşmasını ve mesai kaydını destekler. Çalışan ücretini tahsil edip
 dağıtmaz; banka transferi, bordro, sigorta veya ödeme garantisi sağlamaz. Ekrandaki
 kazanç tutarı tahminidir; gerçek ücret ve çalışma koşulları taraflarca açıklığa
@@ -82,7 +102,9 @@ yazıp işletmeye bildirebilir. Bu mesaj yalnız iletişim kaydıdır; mesaiyi k
 saat düzeltmez ve ödeme onayı sayılmaz. Kayıt uyuşmazlığı çözülmeden bu süreyi
 kesinleşmiş ücret hesabı gibi kullanmayın.
 
-Aşağıdaki süreç **uygulanmamış ürün önerisidir**; bu kılavuzla kullanıma açılmaz:
+Aşağıdaki süreç **uygulanmamış ürün önerisidir**; bu kılavuzla kullanıma açılmaz.
+Yalnız zorunlu ayrılma veya hatalı/eksik kayıt düzeltmesi içindir; standart erken
+çıkış seçeneği değildir:
 
 1. Aday açık mesai için ayrıldığını bildirdiği saat ve gerekçeyle bir düzeltme
    talebi oluşturur. Talep, mevcut mesai kaydını değiştirmez.

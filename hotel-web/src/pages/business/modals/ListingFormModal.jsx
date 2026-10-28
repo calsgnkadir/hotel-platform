@@ -326,8 +326,14 @@ export default function ListingFormModal({ listing, duplicateFrom, onClose, onSu
           <div>
             <label htmlFor="listing-form-description" className="label">Açıklama *</label>
             <textarea id="listing-form-description" name="description" value={form.description} onChange={handleChange}
-              className="input resize-none h-24 text-sm"
-              placeholder="Pozisyon hakkında detaylı bilgi verin..." />
+              aria-describedby="listing-form-description-help"
+              className="input min-h-32 resize-y text-sm"
+              placeholder="Örn: Vardiyanın tamamında servis görevi için personel arıyoruz. Ücret ve ödeme koşulları: … Zorunlu ayrılmada haber verilecek yetkili ve iletişim yolu: …" />
+            <p id="listing-form-description-help" className="mt-2 text-sm text-ink-500 dark:text-ink-300">
+              Vardiyanın tamamında çalışma beklentisini, görevleri ve ücret koşullarını açıkça yazın.
+              {' '}Sağlık veya güvenlik nedeniyle zorunlu ayrılmada kime, nasıl haber verileceğini belirtin.
+              {' '}Bu açıklama adaylara başvurmadan önce gösterilir.
+            </p>
           </div>
 
           <div>

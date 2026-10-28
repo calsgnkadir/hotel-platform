@@ -21,10 +21,12 @@ Son kontrol: 28 Ekim 2026. Bu belge, kod/test ortamındaki kanıt ile gerçek ci
 | Kalıcı VAPID anahtar çifti | Yerel hazırlık tamam | Eşleşen P-256 çifti Git'in yok saydığı `hotelapp/.env` dosyasına kaydedildi, biçim ve imza doğrulandı. Canlıya otomatik yüklenmez; sunucuya güvenli aktarım ve restart sonrası teslim testi gerekir. |
 | Sunucu dışı yedekten kurtarma | **Doğrulanmadı** | Ayrı depoya kopyalanmış yedekle boş bir ortama dönüş ve veri karşılaştırması gerekli. |
 | Zamanlanmış yedek görevi hata yolları | Geçti; offline taklitlerle | Yerel yedek, dump/kopya hatası, yerel hedef reddi, kilit çakışmasında uyarı ve durum dosyası hatasında uyarı doğrulandı. `backup-job-DTihPL`; güncel safety testi `backup-safety-Q1AGwk` exit 0. Gerçek cron, dış depo veya bildirim teslimi kurulmuş değildir. |
+| Cloudinary bağlantısı ve üretim Compose ayarları | Geçti; gerçek sağlayıcı ve yerel yapılandırma | Kimlik doğrulamalı ping, tek piksellik test PNG yükleme ve yalnız bu görseli silme geçti. Doğrulanan ayar yerel `.env.prod` dosyasına aktarıldı; Compose `config --quiet` exit 0. Gizli dosyalar Git dışında. Container veya canlı sunucu başlatılmadı. |
+| İlan açıklamasında vardiya ve zorunlu ayrılma yönlendirmesi | Geçti; 27 mevcut frontend testi, üretim derlemesi ve Chrome kontrolü | Form + kota + aday ilan detayı testleri geçti. Gerçek form bileşeni örnek verilerle 375/390/768/1440 px genişlikte incelendi; yardım metni taşmadı, yazarken görünür kaldı, sayfa hatası oluşmadı. Yeni/düzenle/tekrar aç modları doğrulandı. API yanıtları taklit edildi; gerçek ilan yayımlanmadı, gerçek iPhone testi değildir. Görseller ve sonuç `hotel-web/test-results/listing-guidance-*` altında, Git dışında. |
 
 ## Harcama gerektirmeyen hazırlık belgeleri
 
-- [E-posta ve canlı ayar hazırlığı](MAIL_READINESS.md): gerçek Excel teslim kanıtı; yerel anahtar kontrolü ve eksik Cloudinary bağlantısı.
+- [E-posta ve canlı ayar hazırlığı](MAIL_READINESS.md): gerçek Excel teslim kanıtı; yerel anahtar kontrolü, doğrulanan Cloudinary bağlantısı ve Compose yapılandırması.
 - [Yedekleme hazırlığı](BACKUP_READINESS.md): zamanlama, dış kopya ve hata uyarısı kurulumu; gerçek hedef ve kurtarma denemesi bekliyor.
 - [Kafe ve çalışan kullanım kılavuzu](CAFE_PILOT_GUIDE.md): mevcut QR akışı ve görevli yokluğundaki sınır; saat düzeltme süreci yalnız öneridir.
 - [Hukuki görüşme hazırlığı](LEGAL_READINESS.md): İŞKUR'a sorulacak kapsam soruları ve mevcut KVKK yer tutucuları. İzin veya nihai hukuk incelemesi yerine geçmez.
