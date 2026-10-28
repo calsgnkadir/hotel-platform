@@ -194,10 +194,20 @@ class WeeklyPilotFlowIT {
             at(start.plusHours(8));
             mvc.perform(post("/api/candidate/work-sessions/" + applicationId + "/clock-out")
                             .header("Authorization", candidate.bearer()).contentType(MediaType.APPLICATION_JSON).content(GPS))
-                    .andExpect(status().isOk()).andExpect(jsonPath("$.durationMinutes").value(480));
-            mvc.perform(post("/api/candidate/work-sessions/" + applicationId + "/clock-out")
-                            .header("Authorization", candidate.bearer()).contentType(MediaType.APPLICATION_JSON).content(GPS))
                     .andExpect(status().isUnprocessableEntity());
+            JsonNode exits = body(mvc.perform(get("/api/candidate/exit-passes")
+                    .header("Authorization", candidate.bearer())).andExpect(status().isOk()));
+            assertThat(exits.size()).isEqualTo(1);
+            String exitUrl = exits.get(0).path("passUrl").asText();
+            String exitCard = exitUrl.substring(exitUrl.lastIndexOf('/') + 1);
+            scanExit(candidate, exitCard).andExpect(status().isForbidden());
+            scanExit(foreignOwner, exitCard).andExpect(status().isForbidden());
+            scanExit(owner, card).andExpect(status().isUnprocessableEntity());
+            scan(owner, exitCard).andExpect(status().isUnprocessableEntity());
+            scanExit(owner, exitCard).andExpect(status().isOk()).andExpect(jsonPath("$.alreadyUsed").value(false));
+            scanExit(owner, exitCard).andExpect(status().isOk()).andExpect(jsonPath("$.alreadyUsed").value(true));
+            mvc.perform(get("/api/candidate/exit-passes").header("Authorization", candidate.bearer()))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
             mvc.perform(get("/api/candidate/work-sessions/" + applicationId + "/active")
                             .header("Authorization", candidate.bearer()))
                     .andExpect(status().isNoContent());
@@ -215,7 +225,7 @@ class WeeklyPilotFlowIT {
         assertThat(persisted).hasSize(7).allSatisfy(session -> {
             assertThat(session.getClockOutAt()).isNotNull();
             assertThat(Duration.between(session.getClockInAt(), session.getClockOutAt())).isEqualTo(Duration.ofHours(8));
-            assertThat(session.getClockOutDistanceMeters()).isZero();
+            assertThat(session.getClockOutDistanceMeters()).isNull();
         });
         assertThat(sessions.findByApplicationCandidateIdAndClockOutAtIsNull(candidate.id())).isEmpty();
         JsonNode history = body(mvc.perform(get("/api/candidate/work-sessions/" + applicationId)
@@ -254,6 +264,10 @@ class WeeklyPilotFlowIT {
 
     private ResultActions scan(Account owner, String card) throws Exception {
         return mvc.perform(post("/api/business/passes/" + card + "/scan").header("Authorization", owner.bearer()));
+    }
+
+    private ResultActions scanExit(Account owner, String card) throws Exception {
+        return mvc.perform(post("/api/business/passes/" + card + "/exit").header("Authorization", owner.bearer()));
     }
 
     /** Verify the application's actual earnings response, not only test-side arithmetic. */

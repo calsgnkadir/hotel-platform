@@ -9,7 +9,7 @@ import AuthModal from '../components/AuthModal'
  *
  * Konumlandirma (kullanici vizyonu): "internetteki ajans" —
  * isletme ajansa komisyon odemez, calisan kazancinin tamamini alir.
- * Guven blogu urunun GERCEK ozelliklerini anlatir (GPS giris-cikis,
+ * Guven blogu urunun GERCEK ozelliklerini anlatir (mesai kaydi,
  * kisisel giris karti, Excel ekip listesi) — uydurma istatistik yok.
  * Puanlama ve uygulama ici belge sistemi yok; burada da anlatilmaz.
  */
@@ -26,7 +26,7 @@ export default function LandingPage() {
     <div className="min-h-screen ah-surface" style={{ background: 'var(--ah-page)', color: 'var(--ah-ink-2)' }}>
 
       {/* ───── Header ───── */}
-      <header className="sticky top-0 z-30 border-b" style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)' }}>
+      <header className="sticky top-0 z-30 border-b" style={{ background: 'var(--ah-card)', borderColor: 'var(--ah-line)', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-baseline gap-2">
             <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.01em', color: 'var(--ah-ink)' }}>Kadrom</span>
@@ -95,7 +95,7 @@ export default function LandingPage() {
 
             {/* Guven satiri — urunun gercek ozellikleri */}
             <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-[13px] font-medium" style={{ color: 'var(--ah-ink-2)' }}>
-              {['GPS doğrulamalı giriş-çıkış', 'Kişisel giriş kartı', 'Excel ekip listesi'].map(label => (
+              {['Vardiya giriş-çıkış kaydı', 'Kişisel QR kartı', 'Excel ekip listesi'].map(label => (
                 <span key={label} className="flex items-center gap-1.5">
                   <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="var(--ah-ok)"
                        strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -152,7 +152,7 @@ export default function LandingPage() {
             steps={[
               ['Profilini oluştur', 'Deneyimini ve çalışmak istediğin pozisyonları ekle.'],
               ['Vardiyaya başvur', 'İlana değil, çalışabileceğin spesifik vardiya gün ve saatine başvurursun.'],
-              ['Çalış, kazan', 'Kapıda kişisel giriş kartını okut ya da GPS ile giriş-çıkış yap; çalıştığın her vardiya kayıt altında.'],
+              ['Çalış, kazan', 'Vardiyaya QR kartınla veya konumla giriş yap; çıkış kartını işletme görevlisine okut.'],
             ]}
           />
           <StepsCard
@@ -160,7 +160,7 @@ export default function LandingPage() {
             steps={[
               ['Vardiya ilanı ver', 'Pozisyon, gün, saat ve ücreti belirt — dakikalar içinde yayında.'],
               ['Adayı seç', 'Başvuranların tamamladığı vardiya sayısını ve gelmediği vardiyaları gör.'],
-              ['Takip et', 'Görevlin giriş kartını okutur, giriş saati yazılır; ekip listesi Excel olarak e-postana gelir.'],
+              ['Takip et', 'Görevlin giriş ve çıkış kartlarını okutur; ekip listesi Excel olarak e-postana gelir.'],
             ]}
           />
         </div>
@@ -196,13 +196,13 @@ export default function LandingPage() {
             />
             <WhyCard
               iconPath="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Zm-5 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              title="GPS doğrulamalı mesai"
-              text="Giriş ve çıkış, işyerine uzaklıkla birlikte kayda geçer. Kim, ne zaman, nerede — tartışma değil, kayıt konuşur."
+              title="Kayıtlı mesai"
+              text="Vardiya giriş ve çıkış saatleri kayda geçer; işletme ve çalışan çalışma süresini takip edebilir."
             />
             <WhyCard
               iconPath="M4 4h6v6H4ZM14 4h6v6h-6ZM4 14h6v6H4ZM14 14h2v2h-2ZM18 18h2v2h-2ZM14 18h2M18 14h2"
-              title="Kapıda tek okutma"
-              text="Her çalışanın kişisel, tek kullanımlık giriş kartı var. Görevli okutur, giriş saati yazılır; aynı kart ikinci kez geçmez."
+              title="Kişisel QR kartları"
+              text="Çalışan kişisel kartlarını gösterir; görevli giriş ve çıkışta okutarak mesaiyi kaydeder."
             />
             <WhyCard
               iconPath="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"

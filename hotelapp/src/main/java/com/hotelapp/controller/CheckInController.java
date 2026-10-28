@@ -33,6 +33,25 @@ public class CheckInController {
         return ResponseEntity.ok(checkInService.myPasses(currentUser.getId()));
     }
 
+    @Operation(summary = "Çalışan: açık mesailer için süreli çıkış kartları")
+    @GetMapping("/api/candidate/exit-passes")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<List<CheckInService.ExitPassDto>> myExitPasses(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser) {
+        return ResponseEntity.ok(checkInService.myExitPasses(currentUser.getId()));
+    }
+
+    @Operation(summary = "İşletme: çalışanın çıkış kartını okutup mesaiyi bitir")
+    @PostMapping("/api/business/passes/{token}/exit")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<CheckInService.ExitScanResult> scanExit(
+            @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
+            @PathVariable String token) {
+        return ResponseEntity.ok(checkInService.scanExit(token, currentUser.getId()));
+    }
+
     @Operation(summary = "Görevli (işletme hesabı): çalışanın giriş kartını okut — tek kullanımlık")
     @PostMapping("/api/business/passes/{token}/scan")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")

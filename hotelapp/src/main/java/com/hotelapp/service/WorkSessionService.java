@@ -24,11 +24,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * FAZ 2/#21 — Geo-fenced clock-in / clock-out.
+ * Geo-fenced clock-in and read access to work sessions.
  *
  * Aday "Mesaiye Basla" basinca GPS koordinati gelir, isletmenin konumuyla
  * Haversine formulu ile metre cinsinden mesafe hesaplanir. 200m disindaysa
- * reddedilir. Acik session varsa once "bitir" denmeli (UI'da gosterilir).
+ * reddedilir. Acik session varsa once cikis karti gorevliye okutulmalidir.
  */
 @Service
 @RequiredArgsConstructor
@@ -81,7 +81,7 @@ public class WorkSessionService {
                 workSessionRepository.findByApplicationCandidateIdAndClockOutAtIsNull(candidateId);
         if (!openSessions.isEmpty()) {
             throw new BusinessRuleException(
-                    "Zaten açık bir mesain var. Önce \"Mesaiyi Bitir\" demelisin.");
+                    "Zaten açık bir mesain var. Önce çıkış kartını işletme görevlisine okutmalısın.");
         }
 
         LocalDateTime now = LocalDateTime.now(clock);
@@ -116,39 +116,6 @@ public class WorkSessionService {
         return toDto(ws);
     }
 
-    @Transactional
-    public WorkSessionDto clockOut(Long candidateId, Long applicationId,
-                                    BigDecimal lat, BigDecimal lng) {
-        Application app = getOwnedAcceptedApplication(applicationId, candidateId);
-        if (lat == null || lng == null) {
-            throw new BusinessRuleException("Konum bilgisi alınamadı. Konum iznini açıp tekrar dene.");
-        }
-        Business biz = app.getJobListing().getBusiness();
-
-        WorkSession ws = workSessionRepository
-                .findFirstByApplicationIdAndClockOutAtIsNull(applicationId)
-                .orElseThrow(() -> new BusinessRuleException(
-                        "Açık bir mesain yok. Önce \"Mesaiye Başla\" demelisin."));
-
-        int distance = (biz.getLatitude() != null && biz.getLongitude() != null)
-                ? haversineMeters(lat, lng, biz.getLatitude(), biz.getLongitude())
-                : -1;
-        // Cikis icin fence kontrolu yumusak: mesafe loglanir ama reddedilmez
-        // (aday yorgun gelmis olabilir, "bitir" niyetini blokladmamali)
-        if (distance > FENCE_RADIUS_METERS) {
-            log.warn("[WS-CLOCK-OUT] uzak cikis kabul edildi: appId={} dist={}m", applicationId, distance);
-        }
-
-        ws.setClockOutAt(LocalDateTime.now(clock));
-        ws.setClockOutLat(lat);
-        ws.setClockOutLng(lng);
-        ws.setClockOutDistanceMeters(distance);
-        workSessionRepository.save(ws);
-        log.info("[WS-CLOCK-OUT] appId={} candId={} dist={}m duration={}min",
-                applicationId, candidateId, distance, durationMinutes(ws));
-        return toDto(ws);
-    }
-
     /** Aday: acik session var mi? (UI butonu kararsiz olmasin) */
     @Transactional(readOnly = true)
     public WorkSessionDto getActiveSession(Long candidateId, Long applicationId) {
@@ -169,13 +136,6 @@ public class WorkSessionService {
     }
 
     // ─── helpers ─────────────────────────────────────────────────────────
-
-    private Application getOwnedAcceptedApplication(Long appId, Long candidateId) {
-        Application app = applicationRepository.findById(appId)
-                .orElseThrow(() -> new ResourceNotFoundException("Başvuru", appId));
-        validateApplication(app, candidateId);
-        return app;
-    }
 
     private void validateApplication(Application app, Long candidateId) {
         if (!app.getCandidate().getId().equals(candidateId)) {

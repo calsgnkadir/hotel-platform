@@ -42,14 +42,14 @@ public class WorkSessionController {
                 currentUser.getId(), applicationId, body.getLat(), body.getLng()));
     }
 
-    @Operation(summary = "Mesaiyi bitir — GPS koordinati ile")
+    @Operation(summary = "Eski aday çıkış yolu — işletmenin QR onayı gerekir")
     @PostMapping("/{applicationId}/clock-out")
     public ResponseEntity<WorkSessionDto> clockOut(
             @AuthenticationPrincipal com.hotelapp.security.UserPrincipal currentUser,
             @PathVariable Long applicationId,
             @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody GeoBody body) {
-        return ResponseEntity.ok(workSessionService.clockOut(
-                currentUser.getId(), applicationId, body.getLat(), body.getLng()));
+        throw new com.hotelapp.exception.BusinessRuleException(
+                "Mesai çıkışı için çıkış kartını işletme görevlisine okutmalısın.");
     }
 
     @Operation(summary = "Acik (henuz bitmemis) mesai var mi?")

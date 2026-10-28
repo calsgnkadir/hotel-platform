@@ -8,7 +8,7 @@ yerel MySQL demo ortamında iki Chrome oturumuyla doğrulanır.
 
 `WeeklyPilotFlowIT`: işletme, aday ve yetkisiz ikinci işletme kaydı; yedi
 vardiyalı ilan; başvuru; ücret/örnek IBAN konuşması; kabul; her gün kişisel
-QR giriş kartı; işletmenin girişi onaylaması; GPS çıkışı ve yoklama.
+QR giriş kartı; işletmenin girişi onaylaması; QR çıkış kartı ve yoklama.
 Son vardiya 22:00–06:00 ile ertesi güne taşar. Gerçek kazanç API'si her gün
 kontrol edilir: yedi vardiya sonunda 56 saat ve saatlik 125 TL'den 7.000 TL
 **tahmini brüt kazanç**. İlan kapanışı ve iki taraftaki kalıcı mesajlar doğrulanır.
@@ -35,7 +35,8 @@ Betik demo işletmesiyle ilan oluşturur, yeni örnek aday kaydeder, başvuru ve
 kabul yapar; ücret/örnek IBAN mesajlarını iki yönde anlık alır. Gerçek STOMP
 bağlantısını yeniden kurup karşılıklı mesajlaşmanın sürdüğünü doğrular.
 Adayın QR kartını açar ve aynı kart bağlantısını işletme oturumunda kullanır;
-tekrar girişin önlendiğini ve adayın GPS ile çıkış yaptığını kontrol eder.
+tekrar girişin önlendiğini, işletmenin çıkış kartını okuttuğunu ve çıkışın tekrar
+okutulmasının yeni bir kayıt oluşturmadığını kontrol eder.
 
 Demo işletmesinin konumu yoksa test hazırlığı için API üzerinden geçici konum
 verilir ve sonunda eski profil geri yüklenir. Oluşturulan test ilanı kapatılır.
@@ -44,7 +45,7 @@ Git'e alınmayan `hotel-web/test-results/weekly-pilot-browser/` klasörüne yaz�
 
 ## Sınırlar
 
-- QR şu anda giriş içindir; çıkış adayın “Mesaiyi bitir” işlemidir.
+- Çıkış için aday ayrı kartını açar; işletme yetkilisi QR kodunu okutur.
 - QR bağlantısının yazılım akışı denenir; fiziksel telefon kamerası veya kişinin
   işyerinde bulunması bu testle kanıtlanmaz.
 - Tahmini kazanç ve ücret konuşması doğrulanır; banka transferi yapılmaz.
@@ -96,3 +97,18 @@ Git'e alınmayan `hotel-web/test-results/weekly-pilot-browser/` klasörüne yaz�
   8.4 ortamında geçti: V30, büyük ek, 100 satırın sağlama toplamıyla geri yükleme,
   bozuk arşiv reddi, başarısız dump temizliği ve rotasyon doğrulandı. Sunucu dışı
   üretim yedeğinden kurtarma ayrıca denenmelidir.
+
+## QR ile çıkış kontrolü — 28 Ekim 2026
+
+- Çıkış için açık mesaiye ve kısa süreli ayrı bir karta ihtiyaç vardır. Kartı
+  yalnız ilgili işletme hesabı okutabilir; adayın eski doğrudan çıkış isteği reddedilir.
+- Yedi günlük akış, yetki, kartın süresi ve eşzamanlı/tekrar okutma dahil 36
+  backend testi ve ilgili 27 arayüz testi geçti. Backend paketi ve frontend derlemesi başarılı.
+- Gerçek MySQL/Chrome denemesi 11 adımı tamamladı; giriş ve çıkış kartları ayrı
+  okutuldu, tekrar okutma kontrol edildi ve API/JavaScript hata listeleri boştu.
+  Test ilanı kapatıldı, geçici işletme profili geri yüklendi.
+- iPhone kamerasıyla çıkış okutuldu; "Çıkış yazıldı" gösterildi ve bir çıkış saati
+  doğrulandı. Tekrar okutma "Bu kart zaten kullanıldı" dedi ve saat değişmedi.
+  Kullanıcı iOS ana ekran uygulamasındaki üst menü çakışmasının düzeldiğini doğruladı.
+  QR işletme hesabının onayını kaydeder; tek başına çalışanın fiziksel olarak
+  işyerinde bulunduğunu kanıtlamaz.

@@ -123,6 +123,88 @@ public class CheckInService {
         }
     }
 
+    // Exit tokens have a separate purpose and bind to one work-session ID.
+    // Bucket issuance keeps the displayed card stable during short UI polling;
+    // it remains valid for between five and ten minutes.
+    String exitTokenFor(Long applicationId, Long sessionId) {
+        long issued = Math.floorDiv(clock.instant().getEpochSecond(), 300) * 300;
+        return signedToken("exit1:" + applicationId + ":" + sessionId + ":" + issued);
+    }
+
+    record ExitToken(Long applicationId, Long sessionId) {}
+
+    private ExitToken parseExit(String token) {
+        try {
+            String[] parts = token.split("\\.", -1);
+            if (parts.length != 2) throw new IllegalArgumentException();
+            String payload = new String(Base64.getUrlDecoder().decode(parts[0]), StandardCharsets.UTF_8);
+            if (!MessageDigest.isEqual(sign(payload).getBytes(StandardCharsets.UTF_8),
+                    parts[1].getBytes(StandardCharsets.UTF_8))) throw new IllegalArgumentException();
+            String[] f = payload.split(":", -1);
+            if (f.length != 4 || !"exit1".equals(f[0])) throw new IllegalArgumentException();
+            long issued = Long.parseLong(f[3]);
+            long now = clock.instant().getEpochSecond();
+            if (issued > now || now - issued >= 600) throw new IllegalArgumentException();
+            return new ExitToken(Long.valueOf(f[1]), Long.valueOf(f[2]));
+        } catch (RuntimeException e) {
+            throw new BusinessRuleException("Çıkış kartı geçersiz veya süresi dolmuş; kartı yeniden aç");
+        }
+    }
+
+    /** An open session stays eligible even when its shift or listing has ended. */
+    @Transactional(readOnly = true)
+    public List<ExitPassDto> myExitPasses(Long candidateId) {
+        return workSessionRepository.findByApplicationCandidateIdAndClockOutAtIsNull(candidateId)
+                .stream().map(ws -> {
+                    Application app = ws.getApplication();
+                    JobListing listing = app.getJobListing();
+                    return ExitPassDto.builder()
+                            .applicationId(app.getId()).sessionId(ws.getId())
+                            .fullName(app.getCandidate().getFullName())
+                            .businessName(listing.getBusiness().getName()).listingTitle(listing.getTitle())
+                            .shift(shiftLabel(app, ws)).clockInAt(ws.getClockInAt())
+                            .passUrl(baseUrl.replaceAll("/$", "") + "/cikis/" + exitTokenFor(app.getId(), ws.getId()))
+                            .build();
+                }).toList();
+    }
+
+    /** Serialize entry/exit on the application row; repeated scans never alter the first exit time. */
+    @Transactional
+    public ExitScanResult scanExit(String token, Long ownerId) {
+        ExitToken parsed = parseExit(token);
+        Application app = applicationRepository.findByIdForCheckIn(parsed.applicationId())
+                .orElseThrow(() -> new BusinessRuleException("Çıkış kartı geçersiz"));
+        if (!app.getJobListing().getBusiness().getOwner().getId().equals(ownerId)) {
+            throw new UnauthorizedException("Bu kart senin işletmene ait değil");
+        }
+        WorkSession ws = workSessionRepository.findById(parsed.sessionId())
+                .filter(s -> s.getApplication().getId().equals(app.getId()))
+                .orElseThrow(() -> new BusinessRuleException("Çıkış kartına ait mesai bulunamadı"));
+        boolean alreadyUsed = ws.getClockOutAt() != null;
+        if (!alreadyUsed) {
+            LocalDateTime now = LocalDateTime.now(clock);
+            if (ws.getClockInAt() == null || now.isBefore(ws.getClockInAt())) {
+                throw new BusinessRuleException("Mesai giriş zamanı geçersiz");
+            }
+            ws.setClockOutAt(now);
+            workSessionRepository.save(ws);
+            log.info("[PASS-EXIT] appId={} owner={}", app.getId(), ownerId);
+        }
+        User c = app.getCandidate();
+        return ExitScanResult.builder().applicationId(app.getId()).fullName(c.getFullName())
+                .photoUrl(c.getAvatarPath() == null ? null : fileStorageService.publicUrl(c.getAvatarPath()))
+                .listingTitle(app.getJobListing().getTitle()).shift(shiftLabel(app, ws))
+                .clockInAt(ws.getClockInAt()).clockOutAt(ws.getClockOutAt()).alreadyUsed(alreadyUsed).build();
+    }
+
+    private String shiftLabel(Application app, WorkSession ws) {
+        if (app.getRequestedSlots() == null) return "Mesai kaydı";
+        return app.getRequestedSlots().stream()
+                .filter(s -> ws.getShiftSlotId() != null && ws.getShiftSlotId().equals(s.getId()))
+                .findFirst().map(s -> T.format(s.getStartTime()) + " – " + T.format(s.getEndTime()))
+                .orElse("Mesai kaydı");
+    }
+
     // ── Çalışan: bugünkü giriş kartlarım ───────────────────────────────
 
     /**
@@ -291,6 +373,30 @@ public class CheckInService {
             throw new UnauthorizedException("Bu ilanın yoklamasını göremezsin");
         }
         return l;
+    }
+
+    @Data @Builder
+    public static class ExitPassDto {
+        private Long applicationId;
+        private Long sessionId;
+        private String fullName;
+        private String businessName;
+        private String listingTitle;
+        private String shift;
+        private LocalDateTime clockInAt;
+        private String passUrl;
+    }
+
+    @Data @Builder
+    public static class ExitScanResult {
+        private Long applicationId;
+        private String fullName;
+        private String photoUrl;
+        private String listingTitle;
+        private String shift;
+        private LocalDateTime clockInAt;
+        private LocalDateTime clockOutAt;
+        private boolean alreadyUsed;
     }
 
     @Data @Builder

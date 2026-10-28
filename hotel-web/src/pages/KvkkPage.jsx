@@ -71,7 +71,7 @@ export default function KvkkPage() {
               <li><b>Mesleki deneyim:</b> Eğitim durumu, önceki iş deneyimi, tercih edilen pozisyonlar (aday)</li>
               <li><b>İşletme bilgileri:</b> İşletme adı, türü, konumu, açıklaması, logo ve galeri fotoğrafları (işletme yetkilisi)</li>
               <li><b>Başvuru ve vardiya:</b> Başvurduğun ilan, ön yazı, seçtiğin vardiyalar, başvuru durumu</li>
-              <li><b>Konum:</b> Vardiyaya giriş ve çıkış anında cihaz konumu ve işyerine uzaklık (yalnız bu iki anda)</li>
+              <li><b>Konum:</b> Konumla vardiya girişi yapıldığında cihaz konumu ve işyerine uzaklık. Önceki çıkış işlemlerinden kalma konum kayıtları da bulunabilir.</li>
               <li><b>Yazışmalar ve ekler:</b> Sohbet mesajları, gönderdiğin dosya ve fotoğraflar</li>
               <li><b>İşlem güvenliği:</b> IP adresi, oturum ve giriş kayıtları, profil görüntülenme kayıtları</li>
             </ul>
@@ -91,7 +91,7 @@ export default function KvkkPage() {
                        basis="Sözleşmenin kurulması ve ifası (m.5/2-c)" />
               <Purpose title="Aday ile işletme arasında başvuru bilgilerinin paylaşılması ve mesajlaşma"
                        basis="Sözleşmenin kurulması ve ifası (m.5/2-c)" />
-              <Purpose title="Vardiya giriş-çıkışında konumun doğrulanması"
+              <Purpose title="Konumla vardiya girişinin doğrulanması"
                        basis="Sözleşmenin ifası (m.5/2-c); meşru menfaat (m.5/2-f)" />
               <Purpose title="Bildirim ve hizmet e-postaları (doğrulama, şifre sıfırlama, başvuru durumu)"
                        basis="Sözleşmenin ifası (m.5/2-c)" />

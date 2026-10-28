@@ -11,6 +11,7 @@ vi.mock('../../../api/hotel', () => ({ getMyApplications: vi.fn(async () => []) 
 vi.mock('../../../context/AuthContext', () => ({ useAuth: () => ({ user: { id: 1, role: 'CANDIDATE' } }) }))
 vi.mock('../../../components/OnboardingWizard', () => ({ default: () => null, shouldShowOnboarding: () => false }))
 vi.mock('../../../components/candidate/EntryPasses', () => ({ default: () => null }))
+vi.mock('../../../components/candidate/ExitPasses', () => ({ default: () => null }))
 vi.mock('../../../components/DashboardLayout', () => ({
   default: ({ children, activeTab, onTabChange }) => (
     <div>

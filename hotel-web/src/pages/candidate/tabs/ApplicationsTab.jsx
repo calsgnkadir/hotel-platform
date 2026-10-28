@@ -42,7 +42,7 @@ function appRelative(iso) {
   return new Date(iso).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })
 }
 
-export default function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessages, onTabChange, initialFilter }) {
+export default function ApplicationsTab({ applications: rawApplications, onRefresh, onOpenMessages, onTabChange, initialFilter, sessionRevision }) {
   const confirm = useConfirm()
   // Suresi gecen + tamamlanmis isler "Basvurularim"da gorunmez (Gecmis Islerim'e gider)
   const applications = (rawApplications || []).filter(a => {
@@ -58,8 +58,8 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
   // Wave 2'de split-panel gelince bu state kaldirilir.
   const [expandedId, setExpandedId] = useState(null)
 
-  // FAZ 2/#21 — Geo-fenced mesai (clock-in/out). Kabul edilen basvurular icin
-  // acik mesai durumunu tek batch call ile ceker; buton karar verir.
+  // Kabul edilen başvurular için açık mesai durumunu tek batch çağrısıyla al.
+  // GPS ile giriş desteklenir; çıkışı işletme görevlisi ayrı QR kartıyla onaylar.
   const myLoc = useMyLocation()
   const [activeSessions, setActiveSessions] = useState({})   // { [appId]: WorkSessionDto|null }
   const [clockBusyId, setClockBusyId] = useState(null)
@@ -72,7 +72,7 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     hotelApi.getActiveSessionsBatch(acceptedKey.split(',').map(Number))
       .then(map => { if (!cancelled) setActiveSessions(map || {}) })
     return () => { cancelled = true }
-  }, [acceptedKey])
+  }, [acceptedKey, sessionRevision])
 
   async function refreshSessions() {
     if (!acceptedKey) return
@@ -80,14 +80,14 @@ export default function ApplicationsTab({ applications: rawApplications, onRefre
     setActiveSessions(map || {})
   }
 
-  async function handleClock(app, action) {
+  async function handleClock(app) {
     let pos = myLoc.location
     if (!pos) pos = await myLoc.request()
     if (!pos) { toast.error('Mesai kaydı için konum izni gerekli.'); return }
     setClockBusyId(app.id)
     try {
-      if (action === 'in') { await hotelApi.clockIn(app.id, pos.lat, pos.lng); toast.success('Mesaiye başladın') }
-      else                 { await hotelApi.clockOut(app.id, pos.lat, pos.lng); toast.success('Mesaiyi bitirdin') }
+      await hotelApi.clockIn(app.id, pos.lat, pos.lng)
+      toast.success('Mesaiye başladın')
       await refreshSessions()
     } catch (err) { toast.error(extractErrorMessage(err)) }
     finally { setClockBusyId(null) }
@@ -464,9 +464,7 @@ function SpringBtn({ children, onClick, disabled, variant = 'primary', icon, sma
   )
 }
 
-/* FAZ 2/#21 — Geo-fenced mesai kontrolu (kabul edilen basvuru). Acik session
-   varsa "Mesaideyim" + bitir; yoksa "Mesaiye basla". Konum 200m fence ile
-   backend'de dogrulanir. */
+/* Açık mesaide çıkış kartına yönlendir; konumla girişte backend 200 m kontrolü uygular. */
 function ClockControls({ app, session, busy, locLoading, onClock }) {
   if (session) {
     const t = session.clockInAt
@@ -479,14 +477,12 @@ function ClockControls({ app, session, busy, locLoading, onClock }) {
           <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--ah-brand)' }} aria-hidden="true" />
           Mesaidesin{t && ` · ${t}`}
         </span>
-        <SpringBtn onClick={() => onClock(app, 'out')} disabled={busy} variant="danger" small>
-          {busy ? '...' : 'Mesaiyi bitir'}
-        </SpringBtn>
+        <span className="type-caption">Çıkış için yukarıdaki çıkış kartını görevliye okut.</span>
       </>
     )
   }
   return (
-    <SpringBtn onClick={() => onClock(app, 'in')} disabled={busy || locLoading} variant="success" small
+    <SpringBtn onClick={() => onClock(app)} disabled={busy || locLoading} variant="success" small
                icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                           strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>}>
       {busy ? '...' : 'Mesaiye başla'}

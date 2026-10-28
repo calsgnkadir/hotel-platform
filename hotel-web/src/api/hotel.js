@@ -435,8 +435,8 @@ export async function clockIn(applicationId, lat, lng) {
   const { data } = await api.post(`/api/candidate/work-sessions/${applicationId}/clock-in`, { lat, lng })
   return data
 }
-export async function clockOut(applicationId, lat, lng) {
-  const { data } = await api.post(`/api/candidate/work-sessions/${applicationId}/clock-out`, { lat, lng })
+export async function getMyExitPasses() {
+  const { data } = await api.get('/api/candidate/exit-passes')
   return data
 }
 export async function getActiveSession(applicationId) {
@@ -486,6 +486,11 @@ export async function getMyPasses() {
 export async function scanPass(token) {
   const { data } = await api.post(`/api/business/passes/${encodeURIComponent(token)}/scan`)
   return data  // { fullName, photoUrl, shift, clockInAt, alreadyUsed }
+}
+
+export async function scanExitPass(token) {
+  const { data } = await api.post(`/api/business/passes/${encodeURIComponent(token)}/exit`)
+  return data
 }
 
 // Ekip listesi (.xlsx) — her vardiya günü ayrı sayfa; date (YYYY-MM-DD) verilirse sadece o gün

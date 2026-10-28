@@ -108,6 +108,7 @@ function AnimatedRoutes() {
         <Route path="/listings/:id"    element={<ListingDetailPage />} />
         {/* Giriş kartı: görevli çalışanın QR'ını okutunca açılır (işletme hesabı; giriş yoksa login → geri döner) */}
         <Route path="/giris/:token"    element={<ProtectedRoute roles={['BUSINESS_OWNER']}><ScanPassPage /></ProtectedRoute>} />
+        <Route path="/cikis/:token"    element={<ProtectedRoute roles={['BUSINESS_OWNER']}><ScanPassPage mode="exit" /></ProtectedRoute>} />
 
         {/* FAZ 5.9 — Public isletme profil (paylasilabilir + SEO) */}
         <Route path="/p/business/:id"  element={<BusinessPublicPage />} />

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  * FAZ 2/#21 — Geo-fenced clock-in.
  *
  * Aday kabul edildigi bir basvurunun isinde "mesaiye basla" basinca
- * bir WorkSession acilir. "Mesaiyi bitir" ile kapanir.
+ * bir WorkSession acilir. Isletmenin cikis kartini okutmasiyla kapanir.
  * GPS koordinatlari kayit edilir (denetim icin).
  *
  * Bir aday icin ayni anda 1 acik session olabilir (clockOutAt null).

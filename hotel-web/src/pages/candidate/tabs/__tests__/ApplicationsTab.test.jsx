@@ -27,6 +27,7 @@ vi.mock('react-hot-toast', () => ({
 }))
 
 import ApplicationsTab from '../ApplicationsTab'
+import * as hotelApi from '../../../../api/hotel'
 
 function app(id, status, extra = {}) {
   return {
@@ -81,6 +82,14 @@ describe('Aday ApplicationsTab — düğme önceliği ve filtre çipleri', () =>
   beforeEach(() => { confirmSpy.mockClear(); confirmSpy.mockResolvedValue(true) })
 
   const chips = () => screen.getAllByRole('button').filter(b => b.className.includes('cand-filter-chip'))
+
+  it('açık mesaide adayın doğrudan çıkış düğmesi yok, görevli QR yönlendirmesi var', async () => {
+    hotelApi.getActiveSessionsBatch.mockResolvedValueOnce({ 4: { clockInAt: '2026-10-28T09:00:00' } })
+    render(<ApplicationsTab applications={[app(4, 'ACCEPTED')]} onRefresh={vi.fn()} />)
+    expect(await screen.findByText(/Çıkış için yukarıdaki çıkış kartını/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mesaiyi bitir' })).not.toBeInTheDocument()
+    expect(hotelApi.clockOut).not.toHaveBeenCalled()
+  })
 
   it('Mesajlaşma ikincil, İptal et çerçevesiz metin düğmesi; birincil yalnız gerçek eylem', () => {
     render(<ApplicationsTab applications={[app(1, 'PENDING')]} onRefresh={vi.fn()} />)

@@ -7,30 +7,29 @@ import usePageTitle from '../../lib/usePageTitle'
 const fmtTime = iso => new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
 
 /**
- * Görevli ekranı — kapıdaki otel görevlisi çalışanın giriş kartını (QR) kendi
- * telefon kamerasıyla okutunca bu sayfa açılır (işletme hesabıyla). Giriş
- * yazılır; ad + fotoğraf gösterilir ki görevli yüzü karşılaştırsın. Kart tek
- * kullanımlık: ikinci okutmada "zaten kullanıldı" uyarısı çıkar.
+ * İşletme görevlisi adayın giriş veya çıkış kartını okutur. İki işlem ayrı
+ * uç noktalara gider ve her biri tekrar okutmayı ayrı belirtir.
  */
-export default function ScanPassPage() {
+export default function ScanPassPage({ mode = 'entry' }) {
   const { token } = useParams()
-  usePageTitle('Giriş kartı')
+  const isExit = mode === 'exit'
+  usePageTitle(isExit ? 'Çıkış kartı' : 'Giriş kartı')
   const [resultState, setState] = useState({ status: 'loading' })
   const request = useRef(null)
-  const state = resultState.token === token ? resultState : { status: 'loading' }
+  const state = resultState.token === token && resultState.mode === mode ? resultState : { status: 'loading' }
 
   useEffect(() => {
     let active = true
     // Reuse the in-flight request during StrictMode's effect replay, but scan new tokens.
-    if (request.current?.token !== token) {
-      request.current = { token, promise: hotelApi.scanPass(token) }
+    if (request.current?.token !== token || request.current?.mode !== mode) {
+      request.current = { token, mode, promise: isExit ? hotelApi.scanExitPass(token) : hotelApi.scanPass(token) }
     }
-    setState({ status: 'loading', token })
+    setState({ status: 'loading', token, mode })
     request.current.promise
-      .then(result => { if (active) setState({ status: 'ok', token, result }) })
-      .catch(err => { if (active) setState({ status: 'error', token, message: extractErrorMessage(err) }) })
+      .then(result => { if (active) setState({ status: 'ok', token, mode, result }) })
+      .catch(err => { if (active) setState({ status: 'error', token, mode, message: extractErrorMessage(err) }) })
     return () => { active = false }
-  }, [token])
+  }, [token, mode, isExit])
 
   const r = state.result
   const tone = state.status === 'error' ? 'danger' : r?.alreadyUsed ? 'warn' : 'ok'
@@ -47,8 +46,8 @@ export default function ScanPassPage() {
           <div className="rounded-xl px-4 py-3 mb-4 text-sm font-semibold"
                style={{ background: `var(--ah-${tone}-soft)`, color: `var(--ah-${tone})`, border: `1px solid var(--ah-${tone})` }}>
             {state.status === 'error' ? 'Geçersiz kart'
-              : r.alreadyUsed ? `Bu kart zaten kullanıldı · ${fmtTime(r.clockInAt)}`
-              : `Giriş yazıldı · ${fmtTime(r.clockInAt)}`}
+              : r.alreadyUsed ? `Bu kart zaten kullanıldı · ${fmtTime(isExit ? r.clockOutAt : r.clockInAt)}`
+              : `${isExit ? 'Çıkış' : 'Giriş'} yazıldı · ${fmtTime(isExit ? r.clockOutAt : r.clockInAt)}`}
           </div>
         )}
 

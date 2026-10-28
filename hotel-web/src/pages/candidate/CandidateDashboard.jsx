@@ -5,7 +5,7 @@
 //   tabs/ProfileTab.jsx
 //   components/candidate/StatusBadge.jsx
 //   utils/shifts.js + utils/labels.js
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import DashboardLayout from '../../components/DashboardLayout'
@@ -17,6 +17,7 @@ import LoadError from '../../components/ui/LoadError'
 import { ROLE, validTabsFor, defaultTabFor } from '../../lib/navigation'
 import OnboardingWizard, { shouldShowOnboarding } from '../../components/OnboardingWizard'
 import EntryPasses from '../../components/candidate/EntryPasses'  // vardiya günü giriş kartı
+import ExitPasses from '../../components/candidate/ExitPasses'
 
 import ListingsPage from './ListingsPage'
 import MessagesPage from '../MessagesPage'
@@ -37,6 +38,8 @@ export default function CandidateDashboard() {
   const initialTab = VALID_TABS.includes(params.get('tab')) ? params.get('tab') : DEFAULT_TAB
   const [activeTab, _setActiveTab] = useState(initialTab)
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding(user?.id))
+  const [sessionRevision, setSessionRevision] = useState(0)
+  const refreshSessionState = useCallback(() => setSessionRevision(n => n + 1), [])
   const queryClient = useQueryClient()
 
   // URL query degisirse activeTab sync et (CommandPalette navigate sonrasi)
@@ -89,8 +92,9 @@ export default function CandidateDashboard() {
         <div key={activeTab} className="page-enter">
           {/* Vardiya günü: kapıda okutulacak kişisel giriş kartı (sohbet ekranı hariç) */}
           {activeTab !== 'messages' && <EntryPasses />}
+          {activeTab !== 'messages' && <ExitPasses onSessionChange={refreshSessionState} />}
           {activeTab === 'listings'      && <ListingsPage onApplicationSubmitted={refetchApplications} onMessagesOpen={openMessages} />}
-          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={openMessages} onTabChange={handleTabChange} />}
+          {activeTab === 'applications'  && <ApplicationsTab applications={applications} onRefresh={refetchApplications} onOpenMessages={openMessages} onTabChange={handleTabChange} sessionRevision={sessionRevision} />}
           {activeTab === 'history'       && <HistoryTab applications={applications} onOpenMessages={openMessages} />}
           {activeTab === 'messages'      && <MessagesPage />}
           {activeTab === 'profile'       && <ProfileTab />}
