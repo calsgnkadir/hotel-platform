@@ -34,15 +34,15 @@ export default function AttendanceModal({ listing, onClose }) {
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="attendance-title"
            className="modal-content max-h-[92vh] overflow-y-auto" style={{ maxWidth: 720 }}
            onClick={e => e.stopPropagation()}>
-        <div className="p-5 border-b border-hairline flex items-start justify-between gap-3 print:hidden">
+        <div className="p-5 border-b border-hairline flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 print:hidden">
           <div className="min-w-0">
             <h2 id="attendance-title" className="text-lg font-bold" style={{ color: 'var(--ah-ink)' }}>Yoklama</h2>
             <p className="text-sm truncate" style={{ color: 'var(--ah-ink-3)' }}>{listing.title}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 w-full sm:w-auto sm:shrink-0">
             <input type="date" value={date} onChange={e => setDate(e.target.value)}
-                   className="input text-sm !py-1.5" aria-label="Tarih" />
-            <button type="button" onClick={onClose} className="px-3 py-1.5 text-sm rounded-lg"
+                   className="input text-sm !py-1.5 flex-1 min-w-0 sm:flex-none" aria-label="Tarih" />
+            <button type="button" onClick={onClose} className="px-3 py-1.5 text-sm rounded-lg shrink-0"
                     style={{ border: '1px solid var(--ah-line)', color: 'var(--ah-ink-2)' }}>
               Kapat
             </button>

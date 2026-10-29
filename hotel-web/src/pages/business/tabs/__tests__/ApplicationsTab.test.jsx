@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -128,5 +128,14 @@ describe('ApplicationsTab URL status filtresi (FAZ 19)', () => {
     expect(kanban).toHaveAttribute('aria-pressed', 'true')
     expect(list).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getByRole('list', { name: 'Başvuru panosu' })).toBeInTheDocument()
+  })
+
+  it('aday arama kutusu erişilebilir adlı searchbox ve listeyi süzer', async () => {
+    renderTab('/business?tab=applications')
+    const box = screen.getByRole('searchbox', { name: 'Aday adı ara' })
+    expect(box).toHaveAttribute('placeholder', 'Aday adı ara…')
+    fireEvent.change(box, { target: { value: 'Burak' } })
+    await waitFor(() => expect(screen.queryByText('Deniz')).toBeNull())
+    expect(screen.getByText('Burak')).toBeInTheDocument()
   })
 })

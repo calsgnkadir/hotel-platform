@@ -150,9 +150,9 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
           })}
         </div>
         <div className="relative flex-1 sm:max-w-xs sm:ml-auto">
-          <input type="text" value={search}
+          <input type="search" value={search} aria-label="Aday adı ara"
             onChange={e => { setSearch(e.target.value); setPage(0) }}
-            placeholder="Aday adı ara..." className="input text-sm" />
+            placeholder="Aday adı ara…" className="input text-sm" />
         </div>
         {/* Liste / Pano gorunum secici — Ekibim/Favoriler ile ayni .ah-segment deseni.
             Ayni veriyi farkli dizer (ayri panel degil) -> toggle grubu + aria-pressed. */}
