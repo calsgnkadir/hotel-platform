@@ -138,4 +138,12 @@ describe('ApplicationsTab URL status filtresi (FAZ 19)', () => {
     await waitFor(() => expect(screen.queryByText('Deniz')).toBeNull())
     expect(screen.getByText('Burak')).toBeInTheDocument()
   })
+
+  it('kart aksiyonları type=button; mesaj düğmesi aday adıyla etiketli', () => {
+    renderTab('/business?tab=applications', [{ ...app(1, 'PENDING', 'Ayse'), conversationId: 99 }])
+    expect(screen.getByRole('button', { name: 'Ayse ile mesajlaş' })).toHaveAttribute('type', 'button')
+    for (const btn of screen.getAllByRole('button', { name: /başvurusunun detayı$/ })) {
+      expect(btn).toHaveAttribute('type', 'button')
+    }
+  })
 })

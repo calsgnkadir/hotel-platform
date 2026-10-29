@@ -245,18 +245,18 @@ export default function ApplicationsTab({ applications, onRefresh, onOpenMessage
                   {' arası'}
                 </span>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setPage(p => Math.max(0, p - 1))}
+                  <button type="button" onClick={() => setPage(p => Math.max(0, p - 1))}
                     disabled={safePage === 0}
-                    className="tier-raised tier-raised-hover px-3 py-1.5 rounded-md disabled:opacity-40 disabled:cursor-not-allowed type-caption font-semibold"
+                    className="tier-raised tier-raised-hover px-3 py-1.5 min-h-[44px] sm:min-h-0 rounded-md disabled:opacity-40 disabled:cursor-not-allowed type-caption font-semibold"
                     style={{ color: 'var(--text-secondary)' }}>
                     Önceki
                   </button>
                   <span className="font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>
                     {safePage + 1} / {pageCount}
                   </span>
-                  <button onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
+                  <button type="button" onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
                     disabled={safePage >= pageCount - 1}
-                    className="tier-raised tier-raised-hover px-3 py-1.5 rounded-md disabled:opacity-40 disabled:cursor-not-allowed type-caption font-semibold"
+                    className="tier-raised tier-raised-hover px-3 py-1.5 min-h-[44px] sm:min-h-0 rounded-md disabled:opacity-40 disabled:cursor-not-allowed type-caption font-semibold"
                     style={{ color: 'var(--text-secondary)' }}>
                     Sonraki
                   </button>
@@ -390,22 +390,21 @@ function ApplicantCardA4({ app, active, onClick, onOpenMessages }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={e => { e.stopPropagation(); onClick?.() }}
             aria-label={`${name} başvurusunun detayı`}
-            className="flex-1 text-[12px] font-semibold py-1.5 rounded-md transition-colors"
+            className="flex-1 text-[12px] font-semibold py-1.5 min-h-[44px] sm:min-h-0 rounded-md transition-colors"
             style={{ background: 'var(--ah-brand)', color: '#fff', border: '1px solid var(--ah-brand)' }}
           >
             Detay
           </button>
           {app.conversationId && (
-            <button
+            <button type="button"
               onClick={e => { e.stopPropagation(); onOpenMessages?.() }}
               title="Mesajlaşma"
-              aria-label="Mesajlaşma"
-              className="grid place-items-center rounded-md transition-colors"
+              aria-label={`${name} ile mesajlaş`}
+              className="grid place-items-center rounded-md transition-colors w-11 h-11 sm:w-8 sm:h-[30px] flex-shrink-0"
               style={{
-                width: 32, height: 30,
                 background: 'var(--ah-card)',
                 color: 'var(--ah-ink-2)',
                 border: '1px solid var(--ah-line-2)',

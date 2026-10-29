@@ -18,7 +18,7 @@ export default function AttendanceModal({ listing, onClose }) {
   useFocusTrap(dialogRef, true, onClose)
 
   const queryKey = ['attendance', listing.id, date]
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey,
     queryFn: () => hotelApi.getAttendance(listing.id, date),
     refetchInterval: 15000,
@@ -49,8 +49,13 @@ export default function AttendanceModal({ listing, onClose }) {
           </div>
         </div>
 
-        {isLoading && <p className="p-6 text-sm" style={{ color: 'var(--ah-ink-3)' }}>Yükleniyor…</p>}
-        {error && <p className="p-6 text-sm" style={{ color: 'var(--ah-danger)' }}>{extractErrorMessage(error)}</p>}
+        {isLoading && <p className="p-6 text-sm" role="status" style={{ color: 'var(--ah-ink-3)' }}>Yükleniyor…</p>}
+        {error && (
+          <div className="p-6 space-y-3" role="alert">
+            <p className="text-sm" style={{ color: 'var(--ah-danger)' }}>{extractErrorMessage(error)}</p>
+            <button type="button" onClick={() => refetch()} className="btn-secondary">Tekrar dene</button>
+          </div>
+        )}
 
         {data && (
           <div className="p-5 space-y-5">

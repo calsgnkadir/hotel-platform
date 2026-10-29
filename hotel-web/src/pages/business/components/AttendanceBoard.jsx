@@ -87,7 +87,7 @@ export default function AttendanceBoard({ data, onMarkArrived, onDownload }) {
                     <button type="button" onClick={() => mark(r.applicationId, r.shiftSlotId)}
                             disabled={busyId === r.applicationId}
                             className="text-xs font-semibold px-2.5 py-1 rounded-lg disabled:opacity-60 print:hidden"
-                            style={{ background: '#1f2937', color: '#ffffff' }}>
+                            style={{ background: 'var(--ah-brand)', color: '#ffffff' }}>
                       Geldi
                     </button>
                   )}

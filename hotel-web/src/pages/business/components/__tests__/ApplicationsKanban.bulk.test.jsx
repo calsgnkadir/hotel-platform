@@ -24,17 +24,27 @@ describe('ApplicationsKanban toplu işlem', () => {
   it('seçim yapılınca Toplu kabul btn-primary, Toplu ret btn-danger', () => {
     render(<ApplicationsKanban applications={APPS} />)
     expect(screen.queryByRole('button', { name: 'Toplu kabul' })).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Seç' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ayşe Yılmaz adayını seç' }))
     expect(screen.getByRole('button', { name: 'Toplu kabul' }).className).toContain('btn-primary')
     expect(screen.getByRole('button', { name: 'Toplu ret' }).className).toContain('btn-danger')
     fireEvent.click(screen.getByRole('button', { name: 'İptal' }))
     expect(screen.queryByRole('button', { name: 'Toplu kabul' })).not.toBeInTheDocument()
   })
 
+  it('seçim kutusu aday adıyla etiketli ve seçili durumu aria-pressed ile bildirir', () => {
+    render(<ApplicationsKanban applications={APPS} />)
+    const box = screen.getByRole('button', { name: 'Ayşe Yılmaz adayını seç' })
+    expect(box).toHaveAttribute('aria-pressed', 'false')
+    expect(box).toHaveAttribute('title', 'Toplu işlem için seç')
+    fireEvent.click(box)
+    expect(box).toHaveAttribute('aria-pressed', 'true')
+    expect(box).toHaveAttribute('title', 'Seçimi kaldır')
+  })
+
   it('toplu ret onayı doğru Türkçe: "reddedilecek" / "Evet, reddet"', async () => {
     confirmSpy.mockClear()
     render(<ApplicationsKanban applications={APPS} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Seç' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ayşe Yılmaz adayını seç' }))
     fireEvent.click(screen.getByRole('button', { name: 'Toplu ret' }))
     await waitFor(() => expect(confirmSpy).toHaveBeenCalled())
     const arg = confirmSpy.mock.calls[0][0]
@@ -47,7 +57,7 @@ describe('ApplicationsKanban toplu işlem', () => {
   it('toplu kabul onayı "kabul edilecek" / "Evet, kabul et"', async () => {
     confirmSpy.mockClear()
     render(<ApplicationsKanban applications={APPS} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Seç' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ayşe Yılmaz adayını seç' }))
     fireEvent.click(screen.getByRole('button', { name: 'Toplu kabul' }))
     await waitFor(() => expect(confirmSpy).toHaveBeenCalled())
     const arg = confirmSpy.mock.calls[0][0]

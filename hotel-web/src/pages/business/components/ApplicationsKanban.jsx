@@ -311,7 +311,7 @@ export default function ApplicationsKanban({ applications, statusFilter = 'ALL',
       {busy && (
         <div className="fixed bottom-6 right-6 z-50 tier-featured px-4 py-2 type-meta" role="status"
              style={{ borderRadius: '999px', color: 'var(--ah-ink)' }}>
-          Güncelleniyor...
+          Güncelleniyor…
         </div>
       )}
     </DndContext>
@@ -418,25 +418,29 @@ function Card({ app, selected, onToggleSelect, onClick, onMessage }) {
           />
         )}
 
-        {/* Dalga H4 — Checkbox sag ust kose */}
+        {/* Dalga H4 — Checkbox sag ust kose. Gorunur kutu 20px; dokunma alani 32px
+            (44px alttaki aksiyon satiriyla cakisir). */}
         <button type="button"
                 onClick={(e) => { e.stopPropagation(); onToggleSelect?.() }}
                 onPointerDown={(e) => e.stopPropagation()}
                 onMouseDown={(e) => e.stopPropagation()}
-                aria-label={selected ? 'Seç kaldır' : 'Seç'}
-                title={selected ? 'Seç kaldır' : 'Toplu işlem için seç'}
-                className="absolute top-2 right-2 w-5 h-5 rounded-md flex items-center justify-center transition-all"
+                aria-pressed={selected}
+                aria-label={`${app.candidate?.fullName || 'Aday'} adayını seç`}
+                title={selected ? 'Seçimi kaldır' : 'Toplu işlem için seç'}
+                className="absolute top-0 right-0 w-8 h-8 flex items-center justify-center">
+          <span className="w-5 h-5 rounded-md flex items-center justify-center transition-all"
                 style={{
                   background: selected ? 'var(--ah-brand)' : 'var(--ah-card)',
                   border: `2px solid ${selected ? 'var(--ah-brand)' : 'var(--ah-line-2)'}`,
                   color: '#ffffff',
                 }}>
-          {selected && (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
+            {selected && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </span>
         </button>
 
         {/* Kompakt kart (iki satir): ust satir isim + tarih, alt satir ilan + aksiyonlar.

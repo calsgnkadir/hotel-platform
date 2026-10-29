@@ -361,7 +361,7 @@ export default function ApplicationDetail({ app, variant = 'panel', onClose, onR
               <div className="text-[13px] font-semibold" style={{ color: 'var(--ah-info)' }}>
                 {app.standbyRank ? `${app.standbyRank}. yedek` : 'Yedek listesinde'}
               </div>
-              <div className="text-[12px] mt-1" style={{ color: '#3f4b4a' }}>
+              <div className="text-[12px] mt-1" style={{ color: 'var(--ah-ink-2)' }}>
                 {app.standbyOfferActive
                   ? `Acil teklif gönderildi — aday ${app.standbyDeadline
                       ? new Date(app.standbyDeadline).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit' })
