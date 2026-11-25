@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserRepositoryCandidatePoolTest {
 
     @Autowired private UserRepository userRepository;
+    @Autowired private UserAvailabilityBlockRepository blockRepository;
     @Autowired private EntityManager em;
 
     private Business biz;
@@ -110,6 +111,48 @@ class UserRepositoryCandidatePoolTest {
     void availabilityBlockOptIns_excludeBlockedDisabledAndBanned() {
         var pool = userRepository.findCandidatesWithAvailabilityBlocks(biz.getId(), LocalDateTime.now());
         assertThat(emails(pool)).containsExactlyElementsOf(EXPECTED);
+    }
+
+    private User candidateWith(String email, Set<String> districts, Set<Position> positions, boolean withBlock) {
+        User u = User.builder()
+                .email(email).password("x").fullName("Aday " + email)
+                .role(Role.CANDIDATE).isStudent(false).strikesRemaining(3).enabled(true)
+                .preferredDistricts(new java.util.HashSet<>(districts))
+                .preferredPositions(new java.util.HashSet<>(positions))
+                .build();
+        em.persist(u);
+        if (withBlock) {
+            em.persist(UserAvailabilityBlock.builder().user(u)
+                    .dayOfWeek(DayOfWeek.TUESDAY).startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(17, 0)).build());
+        }
+        return u;
+    }
+
+    @Test
+    void availabilityChannel_requiresCompatiblePreferences_emptyPreferenceDoesNotBlock() {
+        User noPrefs = candidateWith("noprefs@test.com", Set.of(), Set.of(), true);
+        User districtOnly = candidateWith("sisli-only@test.com", Set.of("Sisli"), Set.of(), true);
+        User positionOnly = candidateWith("waiter-only@test.com", Set.of(), Set.of(Position.WAITER), true);
+        candidateWith("kadikoy@test.com", Set.of("Kadikoy"), Set.of(), true);                  // ilçe uyuşmaz
+        candidateWith("kitchen@test.com", Set.of(), Set.of(Position.KITCHEN_STAFF), true);     // pozisyon uyuşmaz
+        candidateWith("noblock@test.com", Set.of("Sisli"), Set.of(Position.WAITER), false);    // blok yok
+        em.flush();
+        em.clear();
+
+        var ids = userRepository.findCandidateIdsWithAvailabilityMatchingPreferences(
+                "Sisli", Position.WAITER, biz.getId(), LocalDateTime.now());
+
+        // setUp'taki ok + blocked-by-other (Sisli/WAITER, blok var) + boş tercihli uyumlular;
+        // engelli, devre dışı ve banlı adaylar yine dışarıda
+        assertThat(ids).containsExactlyInAnyOrder(ok.getId(), blockedByOther.getId(),
+                noPrefs.getId(), districtOnly.getId(), positionOnly.getId());
+    }
+
+    @Test
+    void bulkBlockFetch_returnsOnlyRequestedCandidatesBlocks() {
+        var blocks = blockRepository.findAllByUserIdIn(List.of(ok.getId(), banned.getId()));
+        assertThat(blocks).extracting(b -> b.getUser().getId())
+                .containsExactlyInAnyOrder(ok.getId(), banned.getId());
     }
 
     @Test

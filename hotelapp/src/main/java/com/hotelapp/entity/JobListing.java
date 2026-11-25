@@ -166,6 +166,40 @@ public class JobListing {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    /**
+     * V31 — Son yayına alınma anı: ilan ACTIVE oluşturulduğunda ve ACTIVE olmayan
+     * durumdan ACTIVE'e her geçişte {@link #markPublished} ile atanır. Kayıtlı arama
+     * taraması bu ana bakar (yoksa createdAt), böylece durdurulup yeniden yayına alınan
+     * ilan da yeni ilan gibi değerlendirilir. NULL = eski satır (createdAt geçerli).
+     */
+    @Column(name = "published_at")
+    private LocalDateTime publishedAt;
+
+    /**
+     * Durdur/aç döngüsüyle kayıtlı arama bildirimi üretilmesin: önceki yayın anı bu
+     * süreden yeniyse yeniden yayına alma publishedAt'i ilerletmez.
+     */
+    public static final java.time.Duration REPUBLISH_COOLDOWN = java.time.Duration.ofHours(24);
+
+    /**
+     * Yayına alma anını işler. İlk yayında daima atanır; sonrakilerde önceki yayın
+     * {@link #REPUBLISH_COOLDOWN} içindeyse değişmez.
+     *
+     * @return publishedAt bu çağrıda ilerletildiyse true
+     */
+    public boolean markPublished(LocalDateTime now) {
+        if (publishedAt != null && publishedAt.isAfter(now.minus(REPUBLISH_COOLDOWN))) {
+            return false;
+        }
+        publishedAt = now;
+        return true;
+    }
+
+    /** Kayıtlı arama penceresinde kullanılan yayın anı: publishedAt, yoksa createdAt. */
+    public LocalDateTime publishedOrCreatedAt() {
+        return publishedAt != null ? publishedAt : createdAt;
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

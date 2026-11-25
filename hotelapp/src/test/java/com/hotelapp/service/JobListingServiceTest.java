@@ -166,6 +166,26 @@ class JobListingServiceTest {
         }
 
         @Test
+        @DisplayName("Yeni ilan ACTIVE yayinlanir; publishedAt enjekte edilen clock'tan atanir")
+        void create_setsPublishedAtFromClock() {
+            java.time.LocalDateTime now = java.time.LocalDateTime.of(2026, 11, 25, 9, 30);
+            java.time.ZoneId tr = java.time.ZoneId.of("Europe/Istanbul");
+            service.clock = java.time.Clock.fixed(now.atZone(tr).toInstant(), tr);
+            Business b = businessOwnedBy(OWNER_ID);
+            b.setType(com.hotelapp.enums.BusinessType.HOTEL);
+            when(businessRepository.findByOwnerId(OWNER_ID)).thenReturn(Optional.of(b));
+            ListingRequest r = validRequest();
+            r.setShiftSlots(List.of(slot(now.toLocalDate().plusDays(2), "10:00", "18:00", 1)));
+
+            service.createListing(OWNER_ID, r);
+
+            org.mockito.ArgumentCaptor<JobListing> saved = org.mockito.ArgumentCaptor.forClass(JobListing.class);
+            verify(jobListingRepository).save(saved.capture());
+            assertThat(saved.getValue().getStatus()).isEqualTo(ListingStatus.ACTIVE);
+            assertThat(saved.getValue().getPublishedAt()).isEqualTo(now);
+        }
+
+        @Test
         @DisplayName("Business profili yoksa BusinessRuleException")
         void noBusiness_throws() {
             when(businessRepository.findByOwnerId(OWNER_ID)).thenReturn(Optional.empty());
@@ -389,6 +409,62 @@ class JobListingServiceTest {
             return l;
         }
 
+        private void fixClock(java.time.LocalDateTime at) {
+            java.time.ZoneId tr = java.time.ZoneId.of("Europe/Istanbul");
+            service.clock = java.time.Clock.fixed(at.atZone(tr).toInstant(), tr);
+        }
+
+        @Test
+        @DisplayName("Yeniden yayina alma publishedAt'i clock'tan ilerletir; 24 saat icinde durdur/ac ilerletmez")
+        void republish_advancesPublishedAt_withCooldown() {
+            java.time.LocalDateTime t0 = java.time.LocalDateTime.of(2026, 11, 25, 9, 0);
+            JobListing l = closedListing();
+            l.setStatus(ListingStatus.PAUSED);
+            l.setPublishedAt(t0.minusDays(3));
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+
+            fixClock(t0);
+            service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE);
+            assertThat(l.getPublishedAt()).isEqualTo(t0);
+
+            // 23 saat sonra durdur/ac: ilerlemez (spam freni)
+            fixClock(t0.plusHours(1));
+            service.updateStatus(42L, OWNER_ID, ListingStatus.PAUSED);
+            fixClock(t0.plusHours(23));
+            service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE);
+            assertThat(l.getPublishedAt()).isEqualTo(t0);
+
+            // ACTIVE -> ACTIVE gecis degildir: ilerlemez
+            fixClock(t0.plusHours(30));
+            service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE);
+            assertThat(l.getPublishedAt()).isEqualTo(t0);
+
+            // 24 saat dolduktan sonra durdur/ac: ilerler
+            service.updateStatus(42L, OWNER_ID, ListingStatus.PAUSED);
+            fixClock(t0.plus(JobListing.REPUBLISH_COOLDOWN));
+            service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE);
+            assertThat(l.getPublishedAt()).isEqualTo(t0.plus(JobListing.REPUBLISH_COOLDOWN));
+        }
+
+        @Test
+        @DisplayName("Kota/askida reddinde publishedAt degismez; duraklatma publishedAt'e dokunmaz")
+        void refusedActivation_doesNotTouchPublishedAt() {
+            java.time.LocalDateTime old = java.time.LocalDateTime.of(2026, 11, 1, 9, 0);
+            JobListing l = closedListing();
+            l.setStatus(ListingStatus.PAUSED);
+            l.setPublishedAt(old);
+            when(jobListingRepository.findById(42L)).thenReturn(Optional.of(l));
+            doThrow(new BusinessRuleException("Ücretsiz planda aynı anda en fazla 5 aktif ilan"))
+                    .when(billingService).requireActivationSlot(100L);
+
+            assertThatThrownBy(() -> service.updateStatus(42L, OWNER_ID, ListingStatus.ACTIVE))
+                    .isInstanceOf(BusinessRuleException.class);
+            assertThat(l.getPublishedAt()).isEqualTo(old);
+
+            service.updateStatus(42L, OWNER_ID, ListingStatus.CLOSED);
+            assertThat(l.getPublishedAt()).isEqualTo(old);
+        }
+
         @Test
         @DisplayName("Kapali ilani yeniden yayina almak aktif ilan siniri doluyken reddedilir, ilan kapali kalir")
         void reopening_closed_listing_without_quota_is_refused() {
@@ -509,6 +585,125 @@ class JobListingServiceTest {
 
     // ============================================================
     @Nested
+    @DisplayName("Yeni ilan eşleşme bildirimi — tercih + müsaitlik, toplu blok okuma, ilan linki")
+    class MatchingNotification {
+
+        private final LocalDate shiftDay = LocalDate.now().plusDays(2);
+
+        private User candidate(long id) {
+            User u = new User();
+            u.setId(id);
+            return u;
+        }
+
+        private com.hotelapp.entity.UserAvailabilityBlock block(long userId, String s, String e) {
+            return com.hotelapp.entity.UserAvailabilityBlock.builder().user(candidate(userId))
+                    .dayOfWeek(shiftDay.getDayOfWeek())
+                    .startTime(LocalTime.parse(s)).endTime(LocalTime.parse(e)).build();
+        }
+
+        /** createListing'i ilan id=77 ile kaydeder; vardiya shiftDay 10:00-18:00. */
+        private void createListing() {
+            Business b = businessOwnedBy(OWNER_ID);
+            b.setType(com.hotelapp.enums.BusinessType.HOTEL);
+            when(businessRepository.findByOwnerId(OWNER_ID)).thenReturn(Optional.of(b));
+            when(jobListingRepository.save(any(JobListing.class))).thenAnswer(inv -> {
+                JobListing l = inv.getArgument(0);
+                l.setId(77L);
+                return l;
+            });
+            ListingRequest r = validRequest();
+            r.setShiftSlots(List.of(slot(shiftDay, "10:00", "18:00", 1)));
+            service.createListing(OWNER_ID, r);
+        }
+
+        @Test
+        @DisplayName("Blok vardiyayı kapsamayan aday bildirim almaz; bloklar tek toplu sorguyla okunur")
+        void onlyFittingCandidatesNotified_blocksFetchedInBulk() {
+            // 2: blok kapsar -> bildirilir
+            // 3: blok vardiyayı kapsamaz -> bildirilmez
+            // 4: blok kapsar -> bildirilir
+            when(userRepository.findCandidateIdsWithAvailabilityMatchingPreferences(
+                    any(), any(), any(), any())).thenReturn(List.of(2L, 3L, 4L));
+            when(availabilityBlockRepository.findAllByUserIdIn(any())).thenReturn(List.of(
+                    block(2L, "08:00", "20:00"), block(3L, "19:00", "23:00"), block(4L, "09:00", "18:00")));
+
+            createListing();
+
+            verify(userRepository).findCandidateIdsWithAvailabilityMatchingPreferences(
+                    org.mockito.ArgumentMatchers.eq("Beyoğlu"), org.mockito.ArgumentMatchers.eq(Position.WAITER),
+                    org.mockito.ArgumentMatchers.eq(100L), any());
+            // Tek kanal: tercih kanalı ve tercih uyumsuz/blok sahibi her adayı getiren eski sorgu kullanılmaz
+            verify(userRepository, never()).findCandidatesMatchingPreferences(any(), any(), any(), any());
+            verify(userRepository, never()).findCandidatesWithAvailabilityBlocks(any(), any());
+            verify(availabilityBlockRepository).findAllByUserIdIn(List.of(2L, 3L, 4L));
+            verify(availabilityBlockRepository, never()).findByUserIdOrderByDayOfWeekAscStartTimeAsc(any());
+            for (long notified : new long[]{2L, 4L}) {
+                verify(notificationService).notify(org.mockito.ArgumentMatchers.eq(notified),
+                        org.mockito.ArgumentMatchers.eq(com.hotelapp.enums.NotificationType.MATCHING_LISTING),
+                        org.mockito.ArgumentMatchers.eq("İlgini çekebilir"),
+                        org.mockito.ArgumentMatchers.contains("Garson"),
+                        org.mockito.ArgumentMatchers.eq("/listings/77"));
+            }
+            verify(notificationService, never()).notify(org.mockito.ArgumentMatchers.eq(3L),
+                    any(), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Müsaitlik bloğu olmayan aday (sorgu ile okuma arasında silinmiş olsa da) bildirim almaz")
+        void candidateWithoutBlocks_notNotified() {
+            // 5: sorgu döndürdü ama blokları yok (ör. arada silindi) -> bildirilmez
+            // 6: blok kapsar -> bildirilir
+            when(userRepository.findCandidateIdsWithAvailabilityMatchingPreferences(
+                    any(), any(), any(), any())).thenReturn(List.of(5L, 6L));
+            when(availabilityBlockRepository.findAllByUserIdIn(any()))
+                    .thenReturn(List.of(block(6L, "08:00", "20:00")));
+
+            createListing();
+
+            verify(notificationService, never()).notify(org.mockito.ArgumentMatchers.eq(5L),
+                    any(), any(), any(), any());
+            verify(notificationService).notify(org.mockito.ArgumentMatchers.eq(6L),
+                    any(), any(), any(), org.mockito.ArgumentMatchers.eq("/listings/77"));
+            // fitsListingSlots'ın "blok yoksa engelleme" sözleşmesi değişmedi; filtre eşleştirmede
+            assertThat(JobListingService.fitsListingSlots(List.of(), JobListing.builder().build())).isTrue();
+        }
+
+        @Test
+        @DisplayName("Eşleşen aday yoksa blok sorgusu ve bildirim yapılmaz")
+        void noCandidates_noBlockQuery() {
+            when(userRepository.findCandidateIdsWithAvailabilityMatchingPreferences(
+                    any(), any(), any(), any())).thenReturn(List.of());
+
+            createListing();
+
+            verify(availabilityBlockRepository, never()).findAllByUserIdIn(any());
+            verify(notificationService, never()).notify(any(), any(), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Büyük aday kümesinde bloklar parçalı IN sorgularıyla okunur (aday başına değil)")
+        void largeCandidatePool_chunkedBlockQueries() {
+            List<Long> ids = java.util.stream.LongStream.rangeClosed(1, JobListingService.BLOCK_FETCH_CHUNK + 1)
+                    .boxed().toList();
+            when(userRepository.findCandidateIdsWithAvailabilityMatchingPreferences(
+                    any(), any(), any(), any())).thenReturn(ids);
+            // Her parça yalnız kendi adaylarının bloklarını döndürür (vardiyayı kapsayan)
+            when(availabilityBlockRepository.findAllByUserIdIn(any())).thenAnswer(inv -> {
+                java.util.Collection<Long> chunk = inv.getArgument(0);
+                return chunk.stream().map(id -> block(id, "08:00", "20:00")).toList();
+            });
+
+            createListing();
+
+            verify(availabilityBlockRepository, org.mockito.Mockito.times(2)).findAllByUserIdIn(any());
+            verify(notificationService, org.mockito.Mockito.times(ids.size()))
+                    .notify(any(), any(), any(), any(), org.mockito.ArgumentMatchers.eq("/listings/77"));
+        }
+    }
+
+    // ============================================================
+    @Nested
     @DisplayName("Müsaitlik eşleşmesi — gece bloğu ve gün kaydırması")
     class AvailabilityFit {
 
@@ -522,11 +717,10 @@ class JobListingServiceTest {
 
         private boolean fits(List<com.hotelapp.entity.UserAvailabilityBlock> blocks,
                              LocalDate date, String start, String end) {
-            when(availabilityBlockRepository.findByUserIdOrderByDayOfWeekAscStartTimeAsc(7L)).thenReturn(blocks);
             JobListing l = JobListing.builder().id(1L).build();
             l.setShiftSlots(new java.util.ArrayList<>(List.of(ShiftSlot.builder().id(1L).date(date)
                     .startTime(LocalTime.parse(start)).endTime(LocalTime.parse(end)).build())));
-            return service.candidateFitsListingSlots(7L, l);
+            return JobListingService.fitsListingSlots(blocks, l);
         }
 
         @Test

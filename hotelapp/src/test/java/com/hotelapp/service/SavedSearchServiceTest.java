@@ -281,14 +281,14 @@ class SavedSearchServiceTest {
             LocalDateTime created = LocalDateTime.of(2026, 6, 1, 10, 0);
             SavedSearch s = savedSearch("X", true, lastNotified, created);
             when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
-            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                     .thenReturn(List.of());
 
             service.notifyNewMatches(SAVED_ID);
 
             ArgumentCaptor<LocalDateTime> sinceCap = ArgumentCaptor.forClass(LocalDateTime.class);
-            verify(listingQueryService).findActiveSince(
-                    sinceCap.capture(), any(), any(), any(), any(), any(), any(), any(), any()
+            verify(listingQueryService).findActivePublishedBetween(
+                    sinceCap.capture(), any(), any(), any(), any(), any(), any(), any(), any(), any()
             );
             assertThat(sinceCap.getValue()).isEqualTo(lastNotified);
         }
@@ -299,14 +299,14 @@ class SavedSearchServiceTest {
             LocalDateTime created = LocalDateTime.of(2026, 6, 1, 10, 0);
             SavedSearch s = savedSearch("X", true, null, created);
             when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
-            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                     .thenReturn(List.of());
 
             service.notifyNewMatches(SAVED_ID);
 
             ArgumentCaptor<LocalDateTime> sinceCap = ArgumentCaptor.forClass(LocalDateTime.class);
-            verify(listingQueryService).findActiveSince(
-                    sinceCap.capture(), any(), any(), any(), any(), any(), any(), any(), any()
+            verify(listingQueryService).findActivePublishedBetween(
+                    sinceCap.capture(), any(), any(), any(), any(), any(), any(), any(), any(), any()
             );
             assertThat(sinceCap.getValue()).isEqualTo(created);
         }
@@ -317,7 +317,7 @@ class SavedSearchServiceTest {
             LocalDateTime originalLastNotified = LocalDateTime.of(2026, 6, 15, 10, 0);
             SavedSearch s = savedSearch("X", true, originalLastNotified, LocalDateTime.now());
             when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
-            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                     .thenReturn(List.of());
 
             int n = service.notifyNewMatches(SAVED_ID);
@@ -332,12 +332,12 @@ class SavedSearchServiceTest {
         void singleMatchNotifies() {
             SavedSearch s = savedSearch("Besiktas Garson", true, LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1));
             when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
-            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                     .thenReturn(List.of(listing(50L, "Cumartesi garson")));
 
-            LocalDateTime before = LocalDateTime.now().minusSeconds(1);
+            LocalDateTime before = LocalDateTime.now().minus(SavedSearchService.COMMIT_GRACE).minusSeconds(1);
             int n = service.notifyNewMatches(SAVED_ID);
-            LocalDateTime after = LocalDateTime.now().plusSeconds(1);
+            LocalDateTime after = LocalDateTime.now().minus(SavedSearchService.COMMIT_GRACE).plusSeconds(1);
 
             assertThat(n).isEqualTo(1);
 
@@ -355,7 +355,7 @@ class SavedSearchServiceTest {
             assertThat(msgCap.getValue()).isEqualTo("Cumartesi garson");
             assertThat(linkCap.getValue()).isEqualTo("/listings/50");
 
-            // lastNotifiedAt now'a set edilmis
+            // lastNotifiedAt sorgulanan pencerenin sonuna (now - commit payi) set edilmis
             assertThat(s.getLastNotifiedAt()).isBetween(before, after);
         }
 
@@ -364,7 +364,7 @@ class SavedSearchServiceTest {
         void multipleMatchesAggregateMessage() {
             SavedSearch s = savedSearch("Test", true, LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1));
             when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
-            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                     .thenReturn(List.of(
                             listing(11L, "Ilan A"),
                             listing(22L, "Ilan B"),
@@ -394,13 +394,14 @@ class SavedSearchServiceTest {
             SavedSearch s = savedSearch("Test", true, LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1));
             s.setShifts(new HashSet<>());
             when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
-            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                     .thenReturn(List.of());
 
             service.notifyNewMatches(SAVED_ID);
 
             ArgumentCaptor<List<Shift>> shiftsCap = ArgumentCaptor.forClass(List.class);
-            verify(listingQueryService).findActiveSince(
+            verify(listingQueryService).findActivePublishedBetween(
+                    any(LocalDateTime.class),
                     any(LocalDateTime.class),
                     any(),
                     any(),
@@ -427,7 +428,7 @@ class SavedSearchServiceTest {
         void blockedBusinessesAreExcluded() {
             SavedSearch s = savedSearch("Test", true, LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1));
             when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
-            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                     .thenReturn(List.of(
                             listingOf(11L, "Aday engelledi", 1L),
                             listingOf(22L, "Isletme engelledi", 2L),
@@ -448,12 +449,82 @@ class SavedSearchServiceTest {
             LocalDateTime last = LocalDateTime.now().minusHours(1);
             SavedSearch s = savedSearch("Test", true, last, LocalDateTime.now().minusDays(1));
             when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
-            when(listingQueryService.findActiveSince(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                     .thenReturn(List.of(listingOf(11L, "Engelli", 1L)));
             when(businessBlockRepository.findBusinessIdsByUserId(USER_ID)).thenReturn(Set.of(1L));
 
             assertThat(service.notifyNewMatches(SAVED_ID)).isZero();
             verifyNoInteractions(notificationService);
+            assertThat(s.getLastNotifiedAt()).isEqualTo(last);
+        }
+
+        private void fixClock(LocalDateTime at) {
+            java.time.ZoneId tr = java.time.ZoneId.of("Europe/Istanbul");
+            service.clock = java.time.Clock.fixed(at.atZone(tr).toInstant(), tr);
+        }
+
+        @Test
+        @DisplayName("Pencere: since = imlec, until = tarama baslangici - commit payi; imlec until'e ilerler")
+        void windowUpperBoundIsScanStartMinusGrace() {
+            LocalDateTime scanAt = LocalDateTime.of(2026, 11, 25, 12, 0);
+            fixClock(scanAt);
+            LocalDateTime last = LocalDateTime.of(2026, 11, 25, 11, 0);
+            SavedSearch s = savedSearch("Test", true, last, LocalDateTime.of(2026, 11, 1, 9, 0));
+            when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                    .thenReturn(List.of(listing(7L, "Yeni ilan")));
+
+            assertThat(service.notifyNewMatches(SAVED_ID)).isEqualTo(1);
+
+            ArgumentCaptor<LocalDateTime> sinceCap = ArgumentCaptor.forClass(LocalDateTime.class);
+            ArgumentCaptor<LocalDateTime> untilCap = ArgumentCaptor.forClass(LocalDateTime.class);
+            verify(listingQueryService).findActivePublishedBetween(sinceCap.capture(), untilCap.capture(),
+                    any(), any(), any(), any(), any(), any(), any(), any());
+            LocalDateTime expectedUntil = scanAt.minus(SavedSearchService.COMMIT_GRACE);
+            assertThat(sinceCap.getValue()).isEqualTo(last);
+            assertThat(untilCap.getValue()).isEqualTo(expectedUntil);
+            // Imlec tarama bitis anina degil, sorgulanan pencerenin sonuna ilerler
+            assertThat(s.getLastNotifiedAt()).isEqualTo(expectedUntil);
+        }
+
+        @Test
+        @DisplayName("Ardisik taramalar bitisik ve cakismasiz pencere sorar: ayni ilan iki kez bildirilmez")
+        void consecutiveScansUseAdjacentWindows() {
+            LocalDateTime t0 = LocalDateTime.of(2026, 11, 25, 12, 0);
+            SavedSearch s = savedSearch("Test", true, t0.minusHours(1), t0.minusDays(3));
+            when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
+            when(listingQueryService.findActivePublishedBetween(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                    .thenReturn(List.of(listing(7L, "Ilk")), List.of(listing(8L, "Ikinci")));
+
+            fixClock(t0);
+            service.notifyNewMatches(SAVED_ID);
+            fixClock(t0.plusMinutes(30));
+            service.notifyNewMatches(SAVED_ID);
+
+            ArgumentCaptor<LocalDateTime> sinceCap = ArgumentCaptor.forClass(LocalDateTime.class);
+            ArgumentCaptor<LocalDateTime> untilCap = ArgumentCaptor.forClass(LocalDateTime.class);
+            verify(listingQueryService, times(2)).findActivePublishedBetween(sinceCap.capture(), untilCap.capture(),
+                    any(), any(), any(), any(), any(), any(), any(), any());
+            // 2. pencerenin alt siniri 1. pencerenin ust siniri (yari acik: (since, until])
+            assertThat(sinceCap.getAllValues().get(1)).isEqualTo(untilCap.getAllValues().get(0));
+            assertThat(untilCap.getAllValues().get(1)).isEqualTo(t0.plusMinutes(30).minus(SavedSearchService.COMMIT_GRACE));
+            verify(notificationService).notify(eq(USER_ID), eq(NotificationType.MATCHING_LISTING),
+                    any(), eq("Ilk"), eq("/listings/7"));
+            verify(notificationService).notify(eq(USER_ID), eq(NotificationType.MATCHING_LISTING),
+                    any(), eq("Ikinci"), eq("/listings/8"));
+        }
+
+        @Test
+        @DisplayName("Imlec commit payindan yeniyse (yeni kayit) sorgu yapilmaz, imlec geri gitmez")
+        void cursorWithinGrace_skipsQuery() {
+            LocalDateTime scanAt = LocalDateTime.of(2026, 11, 25, 12, 0);
+            fixClock(scanAt);
+            LocalDateTime last = scanAt.minusMinutes(2);   // arama 2 dk once olusturuldu
+            SavedSearch s = savedSearch("Test", true, last, last);
+            when(repo.findById(SAVED_ID)).thenReturn(Optional.of(s));
+
+            assertThat(service.notifyNewMatches(SAVED_ID)).isZero();
+            verifyNoInteractions(listingQueryService, notificationService);
             assertThat(s.getLastNotifiedAt()).isEqualTo(last);
         }
 

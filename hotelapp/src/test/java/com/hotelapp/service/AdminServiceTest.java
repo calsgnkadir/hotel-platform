@@ -112,4 +112,36 @@ class AdminServiceTest {
         assertThat(dto.isAdminSuspended()).isFalse();
         assertThat(l.getStatus()).isEqualTo(ListingStatus.ACTIVE);
     }
+
+    @Test
+    @DisplayName("Admin ACTIVE yapinca publishedAt clock'tan ilerler; 24 saat icinde ve ACTIVE->ACTIVE ilerlemez")
+    void listingStatus_activation_advancesPublishedAt() {
+        java.time.ZoneId tr = java.time.ZoneId.of("Europe/Istanbul");
+        java.time.LocalDateTime t0 = java.time.LocalDateTime.of(2026, 11, 25, 9, 0);
+        JobListing l = JobListing.builder().id(9L).title("Garson").status(ListingStatus.PAUSED)
+                .adminSuspended(true).publishedAt(t0.minusDays(5)).build();
+        when(listings.findById(9L)).thenReturn(Optional.of(l));
+
+        service.clock = java.time.Clock.fixed(t0.atZone(tr).toInstant(), tr);
+        service.setListingStatus(9L, ListingStatus.ACTIVE);
+        assertThat(l.getPublishedAt()).isEqualTo(t0);
+
+        // ACTIVE -> ACTIVE gecis degil
+        service.clock = java.time.Clock.fixed(t0.plusDays(2).atZone(tr).toInstant(), tr);
+        service.setListingStatus(9L, ListingStatus.ACTIVE);
+        assertThat(l.getPublishedAt()).isEqualTo(t0);
+
+        // Askiya al ve 24 saat icinde ac: ilerlemez
+        service.clock = java.time.Clock.fixed(t0.plusHours(2).atZone(tr).toInstant(), tr);
+        service.setListingStatus(9L, ListingStatus.PAUSED);
+        assertThat(l.getPublishedAt()).isEqualTo(t0);
+        service.setListingStatus(9L, ListingStatus.ACTIVE);
+        assertThat(l.getPublishedAt()).isEqualTo(t0);
+
+        // Kapali ilani 24 saat sonra ac: ilerler
+        service.setListingStatus(9L, ListingStatus.CLOSED);
+        service.clock = java.time.Clock.fixed(t0.plusHours(25).atZone(tr).toInstant(), tr);
+        service.setListingStatus(9L, ListingStatus.ACTIVE);
+        assertThat(l.getPublishedAt()).isEqualTo(t0.plusHours(25));
+    }
 }

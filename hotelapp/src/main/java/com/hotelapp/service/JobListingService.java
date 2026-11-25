@@ -213,6 +213,10 @@ public class JobListingService {
             }
         }
 
+        // Yeni ilan ACTIVE yayınlanır (builder varsayılanı): yayın anı kayıtlı arama penceresi için
+        if (listing.getStatus() == ListingStatus.ACTIVE) {
+            listing.markPublished(LocalDateTime.now(clock));
+        }
         jobListingRepository.save(listing);
 
         // ADIM J: Tercihleri eşleşen adaylara "İlgini çekebilir" bildirimi
@@ -221,9 +225,22 @@ public class JobListingService {
         return toResponse(listing);
     }
 
+    /** Toplu blok okumasında tek IN sorgusuna giren en fazla aday kimliği. */
+    static final int BLOCK_FETCH_CHUNK = 500;
+
     /**
-     * ADIM J: İlanın ilçe + pozisyonuyla eşleşen aday tercihleri varsa bildirim at.
-     * Tercih boş (opt-out) olan adaylar bildirilmez.
+     * ADIM J + J2: Yeni ilanı ilgilenebilecek adaylara "İlgini çekebilir" bildirimi.
+     *
+     * Tek kanal (kullanıcı kararı 2026-11-25): yalnız haftalık müsaitlik bloğu tanımlamış
+     * adaylar bildirim alır. Aday kümesi
+     * {@code UserRepository#findCandidateIdsWithAvailabilityMatchingPreferences}: bloklu,
+     * tercihleri ilanla çelişmeyen (boş tercih o kriteri engellemez), devre dışı/banlı
+     * olmayan ve işletmeyle iki yönden engelli olmayan adaylar. Ayrıca ilanın en az bir
+     * vardiyası adayın bloklarına düşmeli ({@link #fitsListingSlots}).
+     * Blok tanımlamamış aday (tercihi uysa bile) bildirim almaz; sorgu ile blok okuması
+     * arasında bloklarını silen aday da atlanır.
+     *
+     * Bloklar aday başına değil, aday kümesi için toplu (parçalı IN) okunur.
      */
     private void notifyMatchingCandidates(JobListing listing) {
         try {
@@ -234,42 +251,41 @@ public class JobListingService {
                 return;
             }
 
-            // Iki opt-in kanali: (1) district+position tercihi (klasik), (2) musaitlik blogu tanimlamis.
-            // Sorgular devre disi/banli hesaplari ve bu isletmeyle iki yonlu engelli adaylari disarida birakir.
             Long businessId = listing.getBusiness().getId();
             LocalDateTime now = LocalDateTime.now(clock);
-            var prefMatched = userRepository.findCandidatesMatchingPreferences(
-                    district, listing.getPosition(), businessId, now);
-            var availOptIn  = userRepository.findCandidatesWithAvailabilityBlocks(businessId, now);
-            // Set ile birlestir (duplicate adayi onle)
-            java.util.Map<Long, com.hotelapp.entity.User> matching = new java.util.LinkedHashMap<>();
-            for (var u : prefMatched) matching.put(u.getId(), u);
-            for (var u : availOptIn)  matching.putIfAbsent(u.getId(), u);
+            // Sıralı küme: sorgu tekrar dönse de aday tek bildirim alır
+            java.util.Set<Long> candidateIds = new java.util.LinkedHashSet<>(
+                    userRepository.findCandidateIdsWithAvailabilityMatchingPreferences(
+                            district, listing.getPosition(), businessId, now));
 
-            log.info("[MATCH] Listing #{} — district='{}', position={}, pref-eşleşen={}, avail-blok={}, toplam aday={}",
-                    listing.getId(), district, listing.getPosition(),
-                    prefMatched.size(), availOptIn.size(), matching.size());
+            log.info("[MATCH] Listing #{} — district='{}', position={}, müsaitlik tanımlı aday={}",
+                    listing.getId(), district, listing.getPosition(), candidateIds.size());
+            if (candidateIds.isEmpty()) return;
+
+            java.util.Map<Long, List<com.hotelapp.entity.UserAvailabilityBlock>> blocksByCandidate =
+                    loadBlocksByCandidate(candidateIds);
 
             String posLabel = listing.getPosition().label();
+            String message = listing.getBusiness().getName() + " · " + district
+                    + " · " + posLabel + " — " + listing.getTitle();
+            String link = "/listings/" + listing.getId();
             int notifiedCount = 0, skippedNoFit = 0;
-            for (var aday : matching.values()) {
-                // FAZ J2 ext: aday haftalık müsaitlik bloğu tanımladıysa, ilan
-                // slot'larından en az biri bloğunun içine düşmeli. Hiç blok yoksa
-                // opt-out: her ilana açık (eski davranış).
-                if (!candidateFitsListingSlots(aday.getId(), listing)) {
+            for (Long candidateId : candidateIds) {
+                List<com.hotelapp.entity.UserAvailabilityBlock> blocks =
+                        blocksByCandidate.getOrDefault(candidateId, List.of());
+                // Blok yoksa bildirim yok (fitsListingSlots boş blokta true döner; burada ayrıca
+                // denetlenir). Blok varsa ilanın en az bir vardiyası bloklarına düşmeli.
+                if (blocks.isEmpty() || !fitsListingSlots(blocks, listing)) {
                     skippedNoFit++;
                     continue;
                 }
-                log.debug("[MATCH]   -> Bildirim atılıyor: candidateId={}", aday.getId());
-                notificationService.notify(aday.getId(),
+                log.debug("[MATCH]   -> Bildirim atılıyor: candidateId={}", candidateId);
+                notificationService.notify(candidateId,
                         com.hotelapp.enums.NotificationType.MATCHING_LISTING,
-                        "İlgini çekebilir",
-                        listing.getBusiness().getName() + " · " + district
-                                + " · " + posLabel + " — " + listing.getTitle(),
-                        "listings");
+                        "İlgini çekebilir", message, link);
                 notifiedCount++;
             }
-            log.info("[MATCH] Listing #{} — bildirilen={}, müsaitlik uyumsuzlugu={}",
+            log.info("[MATCH] Listing #{} — bildirilen={}, blok yok/müsaitlik uyumsuzlugu={}",
                     listing.getId(), notifiedCount, skippedNoFit);
         } catch (Exception e) {
             // Bildirim hatası ilan oluşturmayı bozmasın
@@ -435,6 +451,10 @@ public class JobListingService {
             closeListing(listing, false);
         } else {
             listing.setStatus(status);
+            // Yeniden yayına alma: kayıtlı aramalar ilanı yeniden görsün (24 saat frenli)
+            if (activating) {
+                listing.markPublished(LocalDateTime.now(clock));
+            }
             jobListingRepository.save(listing);
         }
         return toResponse(listing);
@@ -808,6 +828,20 @@ public class JobListingService {
                 .build();
     }
 
+    /** Aday kümesinin müsaitlik bloklarını parçalı IN sorgularıyla okur (aday başına sorgu yok). */
+    private java.util.Map<Long, List<com.hotelapp.entity.UserAvailabilityBlock>> loadBlocksByCandidate(
+            java.util.Collection<Long> candidateIds) {
+        java.util.Map<Long, List<com.hotelapp.entity.UserAvailabilityBlock>> byCandidate = new java.util.HashMap<>();
+        List<Long> ids = new ArrayList<>(candidateIds);
+        for (int from = 0; from < ids.size(); from += BLOCK_FETCH_CHUNK) {
+            List<Long> chunk = ids.subList(from, Math.min(from + BLOCK_FETCH_CHUNK, ids.size()));
+            for (var b : availabilityBlockRepository.findAllByUserIdIn(chunk)) {
+                byCandidate.computeIfAbsent(b.getUser().getId(), k -> new ArrayList<>()).add(b);
+            }
+        }
+        return byCandidate;
+    }
+
     /**
      * FAZ J2 ext — Aday'ın haftalık müsaitlik bloklarıyla ilanın vardiya slot'larından
      * en az biri eşleşiyor mu? Aday hiç blok tanımlamamışsa true döner (opt-in mantık).
@@ -817,10 +851,8 @@ public class JobListingService {
      * (Pzt 22:00–06:00 bloğu Sal 00:00–06:00'ı kapsar); bitişik bloklar birleşir.
      * Kural tek kaynakta: {@link ShiftWindow#blocksCover}.
      */
-    boolean candidateFitsListingSlots(Long candidateId, JobListing listing) {
-        var blocks = availabilityBlockRepository
-                .findByUserIdOrderByDayOfWeekAscStartTimeAsc(candidateId);
-        if (blocks.isEmpty()) return true;  // tanımlamadıysa engelleme
+    static boolean fitsListingSlots(List<com.hotelapp.entity.UserAvailabilityBlock> blocks, JobListing listing) {
+        if (blocks == null || blocks.isEmpty()) return true;  // tanımlamadıysa engelleme
 
         var slots = listing.getShiftSlots();
         if (slots == null || slots.isEmpty()) return true;  // ilan slot kullanmıyorsa filtre yok

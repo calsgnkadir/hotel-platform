@@ -175,22 +175,50 @@ public class JobListingQueryService {
     }
 
     /**
-     * FAZ 5 — SavedSearch matcher: aynı filtre seti, ek olarak createdAt > since.
-     * Entity döner ki scheduler id/title/createdAt'e doğrudan erişebilsin.
+     * FAZ 5 — SavedSearch matcher: aynı filtre seti, ek olarak yayın anı penceresi
+     * since &lt; COALESCE(publishedAt, createdAt) &lt;= until. publishedAt yeniden yayına
+     * almada ilerlediği için durdurulup açılan ilan da yeni pencerede görünür.
+     * Yarı açık pencere: ardışık taramalar (bir öncekinin until'i = sonrakinin since'i)
+     * aynı yayını iki kez döndürmez. null sınır uygulanmaz. En yeni yayın önce gelir
+     * (toplu bildirimin linki en yeni eşleşmeye gider).
+     *
+     * COALESCE, (status, published_at) indeksinin kullanılabilmesi için eşdeğer iki
+     * dallı OR olarak yazılır: publishedAt doluysa yalnız ona, boşsa createdAt'e bakılır.
+     * Sıralama bellekte yapılır: DISTINCT'li (anahtar kelime/tarih filtresi) sorguda
+     * seçilmeyen bir ifadeye göre ORDER BY H2'de reddedilir; pencere küçüktür.
      */
     @Transactional(readOnly = true)
-    public List<JobListing> findActiveSince(
-            java.time.LocalDateTime since,
+    public List<JobListing> findActivePublishedBetween(
+            java.time.LocalDateTime since, java.time.LocalDateTime until,
             Position position, JobType jobType, List<Shift> shifts,
             String district, BigDecimal minSalary, String keyword,
             LocalDate dateFrom, LocalDate dateTo
     ) {
         Specification<JobListing> spec = buildActiveListingSpec(
                 position, jobType, shifts, district, minSalary, keyword, dateFrom, dateTo);
-        if (since != null) {
-            spec = spec.and((root, q, cb) -> cb.greaterThan(root.get("createdAt"), since));
+        if (since != null || until != null) {
+            spec = spec.and((root, q, cb) -> {
+                jakarta.persistence.criteria.Path<java.time.LocalDateTime> published = root.get("publishedAt");
+                jakarta.persistence.criteria.Path<java.time.LocalDateTime> created = root.get("createdAt");
+                List<Predicate> byPublished = new ArrayList<>(List.of(cb.isNotNull(published)));
+                List<Predicate> byCreated = new ArrayList<>(List.of(cb.isNull(published)));
+                if (since != null) {
+                    byPublished.add(cb.greaterThan(published, since));
+                    byCreated.add(cb.greaterThan(created, since));
+                }
+                if (until != null) {
+                    byPublished.add(cb.lessThanOrEqualTo(published, until));
+                    byCreated.add(cb.lessThanOrEqualTo(created, until));
+                }
+                return cb.or(cb.and(byPublished.toArray(new Predicate[0])),
+                        cb.and(byCreated.toArray(new Predicate[0])));
+            });
         }
-        return jobListingRepository.findAll(spec);
+        List<JobListing> result = new ArrayList<>(jobListingRepository.findAll(spec));
+        result.sort(java.util.Comparator.comparing(JobListing::publishedOrCreatedAt,
+                        java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder()))
+                .thenComparing(JobListing::getId, java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder())));
+        return result;
     }
 
     /** Business owner: kendi ilanları (defensive 500 cap). */

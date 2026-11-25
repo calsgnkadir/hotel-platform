@@ -263,11 +263,17 @@ public class AdminService {
     public AdminListingDto setListingStatus(Long listingId, com.hotelapp.enums.ListingStatus status) {
         var listing = jobListingRepository.findById(listingId)
             .orElseThrow(() -> new ResourceNotFoundException("İlan", listingId));
+        boolean activating = status == com.hotelapp.enums.ListingStatus.ACTIVE
+                && listing.getStatus() != com.hotelapp.enums.ListingStatus.ACTIVE;
         if (status == com.hotelapp.enums.ListingStatus.CLOSED) {
             // Açık başvurular askıda kalmasın: manuel/otomatik kapanışla aynı yol
             jobListingService.closeAsModeration(listing);
         } else {
             listing.setStatus(status);
+        }
+        // Yeniden yayına alma: kayıtlı aramalar ilanı yeniden görsün (24 saat frenli)
+        if (activating) {
+            listing.markPublished(LocalDateTime.now(clock));
         }
         // Admin'in PAUSED/CLOSED yaptigi ilan askida isaretlenir (isletme ACTIVE yapamaz);
         // admin ACTIVE yapinca bayrak kalkar.

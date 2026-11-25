@@ -12,6 +12,13 @@ public interface UserAvailabilityBlockRepository extends JpaRepository<UserAvail
 
     List<UserAvailabilityBlock> findByUserIdOrderByDayOfWeekAscStartTimeAsc(Long userId);
 
+    /**
+     * Toplu müsaitlik okuması: yeni ilan eşleştirmesinde aday başına ayrı sorgu (N+1)
+     * yerine aday kümesinin bloklarını tek IN sorgusuyla getirir. Çağıran listeyi parçalar.
+     */
+    @Query("SELECT b FROM UserAvailabilityBlock b WHERE b.user.id IN :userIds")
+    List<UserAvailabilityBlock> findAllByUserIdIn(@Param("userIds") java.util.Collection<Long> userIds);
+
     @Modifying
     @Query("DELETE FROM UserAvailabilityBlock b WHERE b.user.id = :userId")
     void deleteAllByUserId(@Param("userId") Long userId);

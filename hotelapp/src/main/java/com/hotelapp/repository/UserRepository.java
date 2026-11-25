@@ -140,6 +140,35 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("businessId") Long businessId,
             @Param("now") LocalDateTime now);
 
+    /**
+     * Yeni ilan eşleştirmesi, müsaitlik kanalı: müsaitlik bloğu tanımlamış VE tercihleri
+     * ilanla çelişmeyen adayların kimlikleri. Tercih boşsa o kriter engellemez
+     * (pozisyon tercihi yok = her pozisyon, ilçe tercihi yok = her ilçe); doluysa ilanın
+     * pozisyonu / işletme ilçesi tercihte olmalı. Vardiya-blok uyumu servis tarafında
+     * (toplu blok okumasıyla) denetlenir. Devre dışı/banlı hesaplar ve ilan sahibi
+     * işletmeyle iki yönden engelli adaylar dışlanır.
+     */
+    @Query("""
+        SELECT u.id FROM User u
+        WHERE u.role = com.hotelapp.enums.Role.CANDIDATE
+          AND u.enabled = true
+          AND (u.bannedUntil IS NULL OR u.bannedUntil <= :now)
+          AND EXISTS (
+              SELECT 1 FROM UserAvailabilityBlock b WHERE b.user.id = u.id
+          )
+          AND (u.preferredPositions IS EMPTY OR :position MEMBER OF u.preferredPositions)
+          AND (u.preferredDistricts IS EMPTY OR :district MEMBER OF u.preferredDistricts)
+          AND NOT EXISTS (SELECT 1 FROM CandidateBlock cb
+                          WHERE cb.business.id = :businessId AND cb.candidate.id = u.id)
+          AND NOT EXISTS (SELECT 1 FROM BusinessBlock bb
+                          WHERE bb.business.id = :businessId AND bb.user.id = u.id)
+    """)
+    List<Long> findCandidateIdsWithAvailabilityMatchingPreferences(
+            @Param("district") String district,
+            @Param("position") Position position,
+            @Param("businessId") Long businessId,
+            @Param("now") LocalDateTime now);
+
     /** FAZ D.8 — Anonymize cutoff'u gecmis pending deletion'lar. */
     List<User> findAllByScheduledAnonymizeAtBefore(LocalDateTime now);
 }
